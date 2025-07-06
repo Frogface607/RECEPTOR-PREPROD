@@ -163,12 +163,23 @@ class User(BaseModel):
     email: str
     name: str
     city: str
+    subscription_plan: str = "free"  # free, starter, pro, business
+    subscription_start_date: datetime = Field(default_factory=datetime.utcnow)
+    monthly_tech_cards_used: int = 0
+    monthly_reset_date: datetime = Field(default_factory=datetime.utcnow)
+    kitchen_equipment: List[str] = []  # List of equipment IDs
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class UserCreate(BaseModel):
     email: str
     name: str
     city: str
+
+class UserSubscription(BaseModel):
+    subscription_plan: str
+    
+class KitchenEquipmentUpdate(BaseModel):
+    equipment_ids: List[str]
 
 class DishRequest(BaseModel):
     dish_name: str
