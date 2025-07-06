@@ -31,6 +31,107 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Subscription Plans Configuration
+SUBSCRIPTION_PLANS = {
+    "free": {
+        "name": "Free",
+        "price": 0,
+        "monthly_tech_cards": 3,
+        "features": [
+            "3 техкарты в месяц",
+            "Базовые рецепты",
+            "Экспорт в PDF",
+            "Поддержка email"
+        ],
+        "kitchen_equipment": False,
+        "ai_editing": True,
+        "voice_input": True,
+        "price_calculation": True
+    },
+    "starter": {
+        "name": "Starter",
+        "price": 990,
+        "monthly_tech_cards": 25,
+        "features": [
+            "25 техкарт в месяц",
+            "Все возможности Free",
+            "Расширенные рецепты",
+            "Приоритетная поддержка",
+            "История техкарт"
+        ],
+        "kitchen_equipment": False,
+        "ai_editing": True,
+        "voice_input": True,
+        "price_calculation": True
+    },
+    "pro": {
+        "name": "PRO",
+        "price": 2990,
+        "monthly_tech_cards": -1,  # unlimited
+        "features": [
+            "Неограниченные техкарты",
+            "Все возможности Starter",
+            "🔥 Адаптация под оборудование",
+            "Премиум AI-алгоритмы",
+            "Расширенная аналитика",
+            "Персональный менеджер"
+        ],
+        "kitchen_equipment": True,
+        "ai_editing": True,
+        "voice_input": True,
+        "price_calculation": True
+    },
+    "business": {
+        "name": "Business",
+        "price": 7990,
+        "monthly_tech_cards": -1,  # unlimited
+        "features": [
+            "Все возможности PRO",
+            "Командная работа",
+            "Интеграция с POS",
+            "Корпоративная поддержка",
+            "Индивидуальные настройки",
+            "Обучение персонала"
+        ],
+        "kitchen_equipment": True,
+        "ai_editing": True,
+        "voice_input": True,
+        "price_calculation": True,
+        "team_features": True
+    }
+}
+
+# Kitchen Equipment Types
+KITCHEN_EQUIPMENT = {
+    "cooking_methods": [
+        {"id": "gas_stove", "name": "Газовая плита", "category": "cooking"},
+        {"id": "electric_stove", "name": "Электрическая плита", "category": "cooking"},
+        {"id": "induction_stove", "name": "Индукционная плита", "category": "cooking"},
+        {"id": "convection_oven", "name": "Конвекционная печь", "category": "cooking"},
+        {"id": "steam_oven", "name": "Пароконвектомат", "category": "cooking"},
+        {"id": "grill", "name": "Гриль", "category": "cooking"},
+        {"id": "fryer", "name": "Фритюрница", "category": "cooking"},
+        {"id": "salamander", "name": "Саламандра", "category": "cooking"},
+        {"id": "plancha", "name": "Планча", "category": "cooking"},
+        {"id": "wok", "name": "Вок-плита", "category": "cooking"}
+    ],
+    "prep_equipment": [
+        {"id": "food_processor", "name": "Кухонный комбайн", "category": "prep"},
+        {"id": "blender", "name": "Блендер", "category": "prep"},
+        {"id": "meat_grinder", "name": "Мясорубка", "category": "prep"},
+        {"id": "slicer", "name": "Слайсер", "category": "prep"},
+        {"id": "vacuum_sealer", "name": "Вакуумный упаковщик", "category": "prep"},
+        {"id": "sous_vide", "name": "Су-вид", "category": "prep"},
+        {"id": "immersion_blender", "name": "Погружной блендер", "category": "prep"}
+    ],
+    "storage": [
+        {"id": "blast_chiller", "name": "Шокзаморозка", "category": "storage"},
+        {"id": "proofer", "name": "Расстоечный шкаф", "category": "storage"},
+        {"id": "refrigerator", "name": "Холодильник", "category": "storage"},
+        {"id": "freezer", "name": "Морозильник", "category": "storage"}
+    ]
+}
+
 # Regional price coefficients
 REGIONAL_COEFFICIENTS = {
     "moskva": 1.25,
