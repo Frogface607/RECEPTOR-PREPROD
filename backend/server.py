@@ -528,19 +528,56 @@ async def get_user(email: str):
 @api_router.post("/generate-tech-card")
 async def generate_tech_card(request: DishRequest):
     try:
-        # Get user to determine regional coefficient
+        # Get user to determine regional coefficient and subscription
         user = await db.users.find_one({"id": request.user_id})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
+        # Reset monthly usage if needed
+        reset_data = reset_monthly_usage_if_needed(user)
+        if reset_data:
+            await db.users.update_one(
+                {"id": request.user_id},
+                {"$set": reset_data}
+            )
+            user.update(reset_data)
+        
+        # Check tech card limit
+        can_create, limit_message = check_tech_card_limit(user)
+        if not can_create:
+            raise HTTPException(status_code=403, detail=limit_message)
+        
         # Get regional coefficient
         regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
         
-        # Prepare the prompt
+        # Get user's kitchen equipment if PRO user
+        subscription_plan = user.get("subscription_plan", "free")
+        plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+        
+        # Prepare equipment context for PRO users
+        equipment_context = ""
+        if plan_info.get("kitchen_equipment", False):
+            user_equipment = user.get("kitchen_equipment", [])
+            if user_equipment:
+                equipment_names = []
+                for category in KITCHEN_EQUIPMENT.values():
+                    for equipment in category:
+                        if equipment["id"] in user_equipment:
+                            equipment_names.append(equipment["name"])
+                
+                if equipment_names:
+                    equipment_context = f"""
+                    
+ДОСТУПНОЕ ОБОРУДОВАНИЕ:
+{', '.join(equipment_names)}
+
+ВАЖНО: Адаптируй рецепт под указанное оборудование. Если есть более эффективные способы приготовления с этим оборудованием, предложи их. Укажи оптимальные температуры и время для каждого вида оборудования."""
+        
+        # Prepare the prompt with equipment context
         prompt = GOLDEN_PROMPT.format(
             dish_name=request.dish_name,
             regional_coefficient=regional_coefficient
-        )
+        ) + equipment_context
         
         # Generate tech card using OpenAI
         response = openai_client.chat.completions.create(
@@ -564,10 +601,18 @@ async def generate_tech_card(request: DishRequest):
         
         await db.tech_cards.insert_one(tech_card.dict())
         
+        # Update user's monthly usage
+        await db.users.update_one(
+            {"id": request.user_id},
+            {"$inc": {"monthly_tech_cards_used": 1}}
+        )
+        
         return {
             "success": True,
             "tech_card": tech_card_content,
-            "id": tech_card.id
+            "id": tech_card.id,
+            "monthly_used": user.get("monthly_tech_cards_used", 0) + 1,
+            "monthly_limit": plan_info["monthly_tech_cards"]
         }
         
     except Exception as e:
