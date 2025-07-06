@@ -28,7 +28,6 @@ function App() {
 
   useEffect(() => {
     fetchCities();
-    // Check if user is already logged in
     const savedUser = localStorage.getItem('receptor_user');
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser));
@@ -69,7 +68,6 @@ function App() {
       setShowRegistration(false);
     } catch (error) {
       if (error.response?.status === 400) {
-        // User already exists, try to fetch
         try {
           const userResponse = await axios.get(`${API}/user/${registrationData.email}`);
           const user = userResponse.data;
@@ -101,7 +99,7 @@ function App() {
       setDishName('');
       setIsEditing(false);
       parseIngredients(response.data.tech_card);
-      fetchUserTechCards(); // Refresh the list
+      fetchUserTechCards();
     } catch (error) {
       console.error('Error generating tech card:', error);
       alert('Ошибка при генерации техкарты. Попробуйте еще раз.');
@@ -124,7 +122,7 @@ function App() {
       setTechCard(response.data.tech_card);
       setEditInstruction('');
       parseIngredients(response.data.tech_card);
-      fetchUserTechCards(); // Refresh the list
+      fetchUserTechCards();
     } catch (error) {
       console.error('Error editing tech card:', error);
       alert('Ошибка при редактировании техкарты. Попробуйте еще раз.');
@@ -148,31 +146,24 @@ function App() {
     const newIngredients = [...ingredients];
     newIngredients[index][field] = value;
     setIngredients(newIngredients);
-    
-    // Auto-recalculate tech card with new ingredients
     updateTechCardWithIngredients(newIngredients);
   };
 
   const updateTechCardWithIngredients = (newIngredients) => {
-    // Calculate new cost
     const totalCost = newIngredients.reduce((sum, ing) => sum + (ing.price || 0), 0);
     const recommendedPrice = Math.round(totalCost * 3);
     
-    // Update tech card content with new prices
     let updatedContent = techCard;
     
-    // Update ingredients section
     const ingredientsSection = newIngredients.map(ing => 
       `- ${ing.name} — ${ing.quantity} — ~${ing.price} ₽`
     ).join('\n');
     
-    // Replace ingredients section
     updatedContent = updatedContent.replace(
       /(\*\*Ингредиенты:\*\*\n\n)([\s\S]*?)(\n\n\*\*Пошаговый рецепт:\*\*)/,
       `$1${ingredientsSection}$3`
     );
     
-    // Update cost section
     updatedContent = updatedContent.replace(
       /- По ингредиентам: \d+ ₽/,
       `- По ингредиентам: ${Math.round(totalCost)} ₽`
@@ -211,75 +202,90 @@ function App() {
         <head>
           <title>Технологическая карта - ${dishName}</title>
           <meta charset="utf-8">
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
           <style>
+            * { font-family: 'Montserrat', sans-serif !important; }
             body { 
-              font-family: 'Times New Roman', serif; 
               line-height: 1.6; 
               margin: 40px; 
               background: white; 
-              color: black; 
+              color: #1A2B42; 
             }
             h1 { 
-              color: #4a5568; 
-              font-size: 24px; 
-              margin-bottom: 20px; 
+              color: #FF6B35; 
+              font-size: 28px; 
+              font-weight: 900;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
               text-align: center; 
+              margin-bottom: 30px; 
+              border-bottom: 3px solid #FF6B35;
+              padding-bottom: 15px;
             }
             h2 { 
-              color: #2d3748; 
+              color: #1A2B42; 
               font-size: 18px; 
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
               margin-top: 25px; 
-              margin-bottom: 10px; 
-              border-bottom: 2px solid #e2e8f0; 
-              padding-bottom: 5px; 
+              margin-bottom: 15px; 
+              border-bottom: 2px solid #FFB547; 
+              padding-bottom: 8px; 
             }
-            h3 { 
-              color: #4a5568; 
-              font-size: 16px; 
-              margin-top: 20px; 
-              margin-bottom: 8px; 
+            .ingredients-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+              border: 2px solid #FF6B35;
+              border-radius: 8px;
             }
-            p { 
-              margin-bottom: 8px; 
-              font-size: 14px; 
+            .ingredients-table th {
+              background: linear-gradient(135deg, #FF6B35, #FFB547);
+              color: white;
+              font-weight: 800;
+              font-size: 12px;
+              text-transform: uppercase;
+              padding: 12px;
             }
-            .ingredient-list { 
-              margin-left: 20px; 
+            .ingredients-table td {
+              padding: 10px 12px;
+              border-bottom: 1px solid #FFB547;
+              font-weight: 500;
             }
-            .step-list { 
-              margin-left: 20px; 
+            .cost-box {
+              background: #F0FDF4;
+              border: 2px solid #10B981;
+              border-radius: 8px;
+              padding: 15px;
+              margin: 15px 0;
+              font-weight: 700;
             }
-            .highlight { 
-              background-color: #f7fafc; 
-              padding: 10px; 
-              border-left: 4px solid #9f7aea; 
-              margin: 10px 0; 
+            .step {
+              background: #F8FAFC;
+              border-left: 4px solid #FF6B35;
+              padding: 15px;
+              margin: 10px 0;
+              border-radius: 0 8px 8px 0;
             }
-            .cost-info { 
-              background-color: #f0fff4; 
-              padding: 15px; 
-              border: 1px solid #68d391; 
-              margin: 15px 0; 
-            }
-            .footer { 
-              margin-top: 30px; 
-              text-align: center; 
-              font-size: 12px; 
-              color: #718096; 
+            .tip {
+              background: #FFF7ED;
+              border: 2px solid #FFB547;
+              border-radius: 8px;
+              padding: 12px;
+              margin: 10px 0;
+              font-style: italic;
             }
             @media print {
               body { margin: 20px; }
-              .no-print { display: none; }
             }
           </style>
         </head>
         <body>
           <h1>📋 ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
-          <div id="tech-card-content">
-            ${formatTechCardForPrint(techCard)}
-          </div>
-          <div class="footer">
-            <p>Сгенерировано RECEPTOR AI — экономьте 2 часа на каждой техкарте</p>
+          <div>${formatTechCardForPrint(techCard)}</div>
+          <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B;">
+            <p><strong>Сгенерировано RECEPTOR AI</strong></p>
             <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
           </div>
         </body>
@@ -297,19 +303,23 @@ function App() {
   const formatTechCardForPrint = (content) => {
     return content.split('\n').map(line => {
       if (line.startsWith('**') && line.endsWith('**')) {
-        return `<h2>${line.replace(/\*\*/g, '')}</h2>`;
+        const title = line.replace(/\*\*/g, '');
+        if (title.includes('Название:')) {
+          return `<h1>${title.replace('Название:', '').trim()}</h1>`;
+        }
+        return `<h2>${title}</h2>`;
       }
       if (line.startsWith('💡') || line.startsWith('🔥') || line.startsWith('🌀')) {
-        return `<div class="highlight">${line}</div>`;
+        return `<div class="tip">${line}</div>`;
       }
       if (line.includes('Себестоимость:') || line.includes('Рекомендуемая цена')) {
-        return `<div class="cost-info">${line}</div>`;
+        return `<div class="cost-box">${line}</div>`;
       }
       if (line.startsWith('- ')) {
-        return `<p class="ingredient-list">${line}</p>`;
+        return `<p style="margin-left: 20px;">${line}</p>`;
       }
       if (line.match(/^\d+\./)) {
-        return `<p class="step-list">${line}</p>`;
+        return `<div class="step">${line}</div>`;
       }
       if (line.trim()) {
         return `<p>${line}</p>`;
@@ -320,55 +330,36 @@ function App() {
 
   const formatTechCard = (content) => {
     return content.split('\n').map((line, index) => {
-      // Main sections headers
+      // Main title
       if (line.startsWith('**') && line.endsWith('**')) {
         const title = line.replace(/\*\*/g, '');
         if (title.includes('Название:')) {
           return (
-            <div key={index} className="mb-6">
-              <h1 className="text-3xl font-bold text-center text-purple-100 mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <div key={index} className="fade-in-scale">
+              <div className="tech-card-title">
                 {title.replace('Название:', '').trim()}
-              </h1>
+              </div>
             </div>
           );
         }
         return (
-          <h2 key={index} className="text-xl font-bold text-purple-300 mt-6 mb-3 pb-2 border-b border-purple-500/30">
+          <div key={index} className="tech-card-section slide-in-bottom">
             {title}
-          </h2>
+          </div>
         );
       }
       
-      // Ingredients section - convert to table if we're not in editing mode
-      if (line.startsWith('- ') && !isEditing && content.includes('**Ингредиенты:**')) {
-        const isInIngredientsSection = content.split('\n').slice(0, index).some(l => l.includes('**Ингредиенты:**')) &&
-                                      !content.split('\n').slice(0, index).some(l => l.includes('**Пошаговый рецепт:**'));
-        
-        if (isInIngredientsSection) {
-          const parts = line.replace('- ', '').split(' — ');
-          if (parts.length >= 3) {
-            return (
-              <tr key={index} className="border-b border-purple-500/20">
-                <td className="text-purple-200 py-2">{parts[0].trim()}</td>
-                <td className="text-gray-300 py-2 text-center">{parts[1].trim()}</td>
-                <td className="text-green-300 py-2 text-right font-medium">{parts[2].trim()}</td>
-              </tr>
-            );
-          }
-        }
-      }
-      
-      // Check if we need to start ingredients table
+      // Ingredients table
       if (line.includes('**Ингредиенты:**') && !isEditing) {
         const ingredientLines = content.split('\n').slice(index + 1).filter(l => l.startsWith('- ') && l.includes(' — '));
         const tableRows = ingredientLines.map((ingLine, ingIndex) => {
           const parts = ingLine.replace('- ', '').split(' — ');
           if (parts.length >= 3) {
             return (
-              <tr key={`ing-${ingIndex}`} className="border-b border-purple-500/20 hover:bg-purple-900/20">
-                <td className="text-purple-200 py-2 px-4">{parts[0].trim()}</td>
-                <td className="text-gray-300 py-2 px-4 text-center">{parts[1].trim()}</td>
-                <td className="text-green-300 py-2 px-4 text-right font-medium">{parts[2].trim()}</td>
+              <tr key={`ing-${ingIndex}`} className="slide-in-bottom" style={{animationDelay: `${ingIndex * 0.1}s`}}>
+                <td className="font-semibold text-blue-100">{parts[0].trim()}</td>
+                <td className="text-center text-gray-300">{parts[1].trim()}</td>
+                <td className="text-right font-bold text-green-300">{parts[2].trim()}</td>
               </tr>
             );
           }
@@ -377,17 +368,15 @@ function App() {
         
         if (tableRows.length > 0) {
           return (
-            <div key={index} className="mb-6">
-              <h2 className="text-xl font-bold text-purple-300 mt-6 mb-3 pb-2 border-b border-purple-500/30">
-                Ингредиенты
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full bg-gray-800/30 rounded-lg overflow-hidden">
-                  <thead className="bg-purple-600/30">
+            <div key={index} className="my-8 slide-in-right">
+              <div className="tech-card-section">ИНГРЕДИЕНТЫ</div>
+              <div className="ingredients-table">
+                <table className="w-full">
+                  <thead>
                     <tr>
-                      <th className="text-purple-100 py-3 px-4 text-left">Ингредиент</th>
-                      <th className="text-purple-100 py-3 px-4 text-center">Количество</th>
-                      <th className="text-purple-100 py-3 px-4 text-right">Цена</th>
+                      <th className="text-left py-4 px-6">ИНГРЕДИЕНТ</th>
+                      <th className="text-center py-4 px-6">КОЛИЧЕСТВО</th>
+                      <th className="text-right py-4 px-6">ЦЕНА</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -400,32 +389,29 @@ function App() {
         }
       }
       
-      // Skip ingredient lines if we already processed them in table
+      // Skip processed ingredient lines
       if (line.startsWith('- ') && !isEditing && content.includes('**Ингредиенты:**')) {
         const isInIngredientsSection = content.split('\n').slice(0, index).some(l => l.includes('**Ингредиенты:**')) &&
                                       !content.split('\n').slice(0, index).some(l => l.includes('**Пошаговый рецепт:**'));
         if (isInIngredientsSection && line.includes(' — ')) {
-          return null; // Skip, already processed in table
+          return null;
         }
       }
       
-      // Cost information - highlight important
+      // Cost information
       if (line.includes('Себестоимость:') || line.includes('Рекомендуемая цена')) {
         return (
-          <div key={index} className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-2">
-            <p className="text-green-200 font-medium">{line}</p>
+          <div key={index} className="cost-highlight slide-in-left">
+            <div className="font-bold text-lg text-green-100">{line}</div>
           </div>
         );
       }
       
       // Tips and advice
       if (line.startsWith('💡') || line.startsWith('🔥') || line.startsWith('🌀')) {
-        const bgColor = line.startsWith('💡') ? 'bg-blue-900/20 border-blue-500/30' :
-                       line.startsWith('🔥') ? 'bg-red-900/20 border-red-500/30' :
-                       'bg-orange-900/20 border-orange-500/30';
         return (
-          <div key={index} className={`${bgColor} border rounded-lg p-3 mb-2`}>
-            <p className="text-indigo-200 italic">{line}</p>
+          <div key={index} className="tip-box slide-in-bottom">
+            <div className="font-semibold text-orange-100">{line}</div>
           </div>
         );
       }
@@ -433,17 +419,17 @@ function App() {
       // Food pairing
       if (line.startsWith('🍷') || line.startsWith('🍺') || line.startsWith('🍹')) {
         return (
-          <p key={index} className="text-pink-200 mb-1 ml-4">
+          <div key={index} className="ml-6 mb-2 font-medium text-pink-200">
             {line}
-          </p>
+          </div>
         );
       }
       
       // Sales script
       if (line.startsWith('💬')) {
         return (
-          <div key={index} className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 mb-2">
-            <p className="text-green-200">{line}</p>
+          <div key={index} className="tip-box border-purple-400 bg-purple-900/20">
+            <div className="font-semibold text-purple-200">{line}</div>
           </div>
         );
       }
@@ -451,8 +437,8 @@ function App() {
       // Photography tips
       if (line.startsWith('📸')) {
         return (
-          <div key={index} className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-2">
-            <p className="text-blue-200">{line}</p>
+          <div key={index} className="tip-box border-blue-400 bg-blue-900/20">
+            <div className="font-medium text-blue-200">{line}</div>
           </div>
         );
       }
@@ -460,26 +446,26 @@ function App() {
       // Menu tags
       if (line.startsWith('🏷️')) {
         return (
-          <p key={index} className="text-yellow-200 mb-2">
+          <div key={index} className="font-medium text-yellow-300 mb-4">
             {line}
-          </p>
+          </div>
         );
       }
       
       // Regular list items
       if (line.startsWith('- ')) {
         return (
-          <p key={index} className="text-gray-200 mb-1 ml-4">
+          <div key={index} className="ml-6 mb-2 text-gray-300 font-medium">
             {line}
-          </p>
+          </div>
         );
       }
       
       // Numbered steps
       if (line.match(/^\d+\./)) {
         return (
-          <div key={index} className="bg-gray-800/30 rounded-lg p-3 mb-3 ml-4">
-            <p className="text-gray-200">{line}</p>
+          <div key={index} className="step-card slide-in-bottom" style={{animationDelay: `${index * 0.05}s`}}>
+            <div className="font-medium text-gray-200 leading-relaxed">{line}</div>
           </div>
         );
       }
@@ -487,93 +473,109 @@ function App() {
       // Regular paragraphs
       if (line.trim()) {
         return (
-          <p key={index} className="text-gray-300 mb-2">
+          <div key={index} className="mb-3 text-gray-300 font-medium leading-relaxed">
             {line}
-          </p>
+          </div>
         );
       }
       
-      return <div key={index} className="mb-2"></div>;
+      return <div key={index} className="mb-3"></div>;
     }).filter(Boolean);
   };
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800">
-        <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full filter blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
           <div className="max-w-md w-full">
-            <div className="text-center mb-8">
-              <div className="mb-4">
-                <img 
-                  src="/logo.png" 
-                  alt="Receptor Logo" 
-                  className="w-24 h-24 mx-auto mb-4"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
+            <div className="text-center mb-12 slide-in-bottom">
+              <div className="mb-8">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center pulse-glow">
+                  <span className="text-4xl">👨‍🍳</span>
+                </div>
               </div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                receptor
+              <h1 className="heading-main slide-in-left">
+                RECEPTOR
               </h1>
-              <p className="text-purple-200 text-lg">
-                AI-помощник для шеф-поваров
+              <p className="text-selling mb-4 slide-in-right">
+                AI-ПОМОЩНИК ДЛЯ ШЕФ-ПОВАРОВ
               </p>
-              <p className="text-gray-300 mt-2">
-                Создавайте технологические карты за секунды
+              <p className="text-subtitle slide-in-bottom">
+                Создавайте профессиональные технологические карты за секунды
               </p>
+              
+              {/* Selling Points */}
+              <div className="mt-8 space-y-3">
+                <div className="selling-point slide-in-left" style={{animationDelay: '0.2s'}}>
+                  ⚡ ЭКОНОМЬТЕ 2 ЧАСА НА КАЖДОЙ ТЕХКАРТЕ
+                </div>
+                <div className="selling-point slide-in-left" style={{animationDelay: '0.4s'}}>
+                  💰 ТОЧНЫЕ РАСЧЕТЫ ДО КОПЕЙКИ
+                </div>
+                <div className="selling-point slide-in-left" style={{animationDelay: '0.6s'}}>
+                  🚀 ОТ ИДЕИ ДО ТЕХКАРТЫ ЗА 30 СЕКУНД
+                </div>
+              </div>
             </div>
 
             {!showRegistration ? (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
-                <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                  Добро пожаловать!
+              <div className="card-glass p-8 slide-in-bottom">
+                <h2 className="heading-section text-center mb-8">
+                  ДОБРО ПОЖАЛОВАТЬ!
                 </h2>
                 <button
                   onClick={() => setShowRegistration(true)}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="w-full btn-primary"
                 >
-                  Начать работу
+                  НАЧАТЬ РАБОТУ
                 </button>
               </div>
             ) : (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
-                <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                  Регистрация
+              <div className="card-glass p-8 slide-in-scale">
+                <h2 className="heading-section text-center mb-8">
+                  РЕГИСТРАЦИЯ
                 </h2>
-                <form onSubmit={handleRegistration}>
-                  <div className="mb-4">
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Email
+                <form onSubmit={handleRegistration} className="space-y-6">
+                  <div>
+                    <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                      EMAIL
                     </label>
                     <input
                       type="email"
                       value={registrationData.email}
                       onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
-                      className="w-full px-4 py-2 bg-gray-700/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full input-modern"
+                      placeholder="ваш@email.com"
                       required
                     />
                   </div>
-                  <div className="mb-4">
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Имя
+                  <div>
+                    <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                      ИМЯ
                     </label>
                     <input
                       type="text"
                       value={registrationData.name}
                       onChange={(e) => setRegistrationData({...registrationData, name: e.target.value})}
-                      className="w-full px-4 py-2 bg-gray-700/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full input-modern"
+                      placeholder="Имя Фамилия"
                       required
                     />
                   </div>
-                  <div className="mb-6">
-                    <label className="block text-purple-200 text-sm font-medium mb-2">
-                      Город
+                  <div>
+                    <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                      ГОРОД
                     </label>
                     <select
                       value={registrationData.city}
                       onChange={(e) => setRegistrationData({...registrationData, city: e.target.value})}
-                      className="w-full px-4 py-2 bg-gray-700/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full input-modern"
                       required
                     >
                       <option value="">Выберите город</option>
@@ -586,16 +588,16 @@ function App() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="w-full btn-primary"
                   >
-                    Зарегистрироваться
+                    ЗАРЕГИСТРИРОВАТЬСЯ
                   </button>
                 </form>
                 <button
                   onClick={() => setShowRegistration(false)}
-                  className="w-full mt-3 text-purple-300 hover:text-purple-200 text-sm"
+                  className="w-full mt-4 text-amber-300 hover:text-amber-200 text-sm font-semibold uppercase tracking-wide"
                 >
-                  Назад
+                  НАЗАД
                 </button>
               </div>
             )}
@@ -606,119 +608,126 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800">
-      <header className="bg-gray-800/50 backdrop-blur-sm border-b border-purple-500/20">
+    <div className="min-h-screen relative">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full filter blur-3xl"></div>
+      </div>
+
+      <header className="relative z-10 card-glass border-0 border-b border-orange-400/30 rounded-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-white">receptor</h1>
-              <span className="ml-2 text-purple-300">AI для шеф-поваров</span>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center slide-in-left">
+              <h1 className="heading-card text-3xl">RECEPTOR</h1>
+              <span className="ml-4 text-amber-300 font-semibold uppercase tracking-wide">AI для шеф-поваров</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-purple-200">
-                {currentUser.name} ({cities.find(c => c.code === currentUser.city)?.name})
+            <div className="flex items-center space-x-6 slide-in-right">
+              <span className="text-gray-300 font-medium">
+                <span className="text-amber-300 font-bold">{currentUser.name}</span>
+                <span className="text-gray-400 ml-2">
+                  ({cities.find(c => c.code === currentUser.city)?.name})
+                </span>
               </span>
               <button
                 onClick={handleLogout}
-                className="text-purple-300 hover:text-purple-200 text-sm"
+                className="text-orange-300 hover:text-orange-200 font-semibold uppercase tracking-wide transition-all duration-300"
               >
-                Выйти
+                ВЫЙТИ
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Generation Form */}
-          <div className="lg:col-span-1">
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
-              <h2 className="text-xl font-bold text-white mb-4">
-                Создать техкарту
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Left Panel */}
+          <div className="lg:col-span-1 slide-in-left">
+            <div className="card-glass p-8">
+              <h2 className="heading-card mb-6">
+                СОЗДАТЬ ТЕХКАРТУ
               </h2>
-              <form onSubmit={handleGenerateTechCard}>
-                <div className="mb-4">
-                  <label className="block text-purple-200 text-sm font-medium mb-2">
-                    Название блюда
+              <form onSubmit={handleGenerateTechCard} className="space-y-6">
+                <div>
+                  <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                    НАЗВАНИЕ БЛЮДА
                   </label>
                   <input
                     type="text"
                     value={dishName}
                     onChange={(e) => setDishName(e.target.value)}
                     placeholder="Например: Стейк с картофелем"
-                    className="w-full px-4 py-2 bg-gray-700/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full input-modern"
                     required
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isGenerating}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className={`w-full btn-primary ${isGenerating ? 'loading-pulse' : ''}`}
                 >
-                  {isGenerating ? 'Генерируется...' : 'Создать техкарту'}
+                  {isGenerating ? 'ГЕНЕРИРУЕТСЯ...' : 'СОЗДАТЬ ТЕХКАРТУ'}
                 </button>
               </form>
 
               {/* AI Editing */}
               {techCard && (
-                <div className="mt-6 border-t border-purple-500/20 pt-6">
-                  <h3 className="text-lg font-bold text-white mb-4">
-                    🤖 Редактировать через AI
+                <div className="mt-8 border-t border-orange-400/30 pt-8 slide-in-bottom">
+                  <h3 className="heading-card text-lg mb-6">
+                    🤖 РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
                   </h3>
-                  <form onSubmit={handleEditWithAI}>
-                    <div className="mb-4">
-                      <input
-                        type="text"
-                        value={editInstruction}
-                        onChange={(e) => setEditInstruction(e.target.value)}
-                        placeholder="Например: увеличить порцию в 2 раза"
-                        className="w-full px-4 py-2 bg-gray-700/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
+                  <form onSubmit={handleEditWithAI} className="space-y-4">
+                    <input
+                      type="text"
+                      value={editInstruction}
+                      onChange={(e) => setEditInstruction(e.target.value)}
+                      placeholder="Например: увеличить порцию в 2 раза"
+                      className="w-full input-modern"
+                    />
                     <button
                       type="submit"
                       disabled={isEditingAI || !editInstruction.trim()}
-                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                      className={`w-full btn-secondary ${isEditingAI ? 'loading-pulse' : ''}`}
                     >
-                      {isEditingAI ? 'Редактируется...' : 'Изменить через AI'}
+                      {isEditingAI ? 'РЕДАКТИРУЕТСЯ...' : 'ИЗМЕНИТЬ ЧЕРЕЗ AI'}
                     </button>
                   </form>
                   
-                  <div className="mt-4">
-                    <button
-                      onClick={() => setIsEditing(!isEditing)}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
-                    >
-                      {isEditing ? '📝 Закрыть редактор' : '✏️ Ручное редактирование'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="w-full mt-4 btn-secondary"
+                  >
+                    {isEditing ? '📝 ЗАКРЫТЬ РЕДАКТОР' : '✏️ РУЧНОЕ РЕДАКТИРОВАНИЕ'}
+                  </button>
                 </div>
               )}
 
-              {/* Manual Ingredient Editing */}
+              {/* Manual Editing */}
               {isEditing && ingredients.length > 0 && (
-                <div className="mt-6 border-t border-purple-500/20 pt-6">
-                  <h3 className="text-lg font-bold text-white mb-4">
-                    ✏️ Редактировать ингредиенты
+                <div className="mt-8 border-t border-orange-400/30 pt-8 slide-in-bottom">
+                  <h3 className="heading-card text-lg mb-6">
+                    ✏️ РЕДАКТИРОВАТЬ ИНГРЕДИЕНТЫ
                   </h3>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                  <div className="space-y-4 max-h-80 overflow-y-auto">
                     {ingredients.map((ingredient, index) => (
-                      <div key={index} className="bg-gray-700/30 rounded-lg p-3">
-                        <div className="text-purple-200 text-sm mb-2">{ingredient.name}</div>
-                        <div className="grid grid-cols-2 gap-2">
+                      <div key={index} className="card-glass p-4">
+                        <div className="text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                          {ingredient.name}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
                           <input
                             type="text"
                             value={ingredient.quantity}
                             onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                            className="px-2 py-1 bg-gray-600/50 border border-purple-500/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="input-modern text-sm"
                             placeholder="Количество"
                           />
                           <input
                             type="number"
                             value={ingredient.price}
                             onChange={(e) => handleIngredientChange(index, 'price', parseFloat(e.target.value) || 0)}
-                            className="px-2 py-1 bg-gray-600/50 border border-purple-500/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="input-modern text-sm"
                             placeholder="Цена ₽"
                           />
                         </div>
@@ -729,25 +738,22 @@ function App() {
               )}
 
               {/* History */}
-              <div className="mt-8">
-                <h3 className="text-lg font-bold text-white mb-4">
-                  История ({userTechCards.length})
+              <div className="mt-10 slide-in-bottom">
+                <h3 className="heading-card text-lg mb-6">
+                  ИСТОРИЯ ({userTechCards.length})
                 </h3>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-3 max-h-96 overflow-y-auto">
                   {userTechCards.slice(0, 10).map((card, index) => (
                     <div
                       key={card.id}
                       onClick={() => handleSelectTechCard(card)}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        currentTechCardId === card.id 
-                          ? 'bg-purple-600/30 border border-purple-500'
-                          : 'bg-gray-700/30 hover:bg-gray-700/50'
-                      }`}
+                      className={`history-item ${currentTechCardId === card.id ? 'active' : ''}`}
+                      style={{animationDelay: `${index * 0.1}s`}}
                     >
-                      <div className="text-purple-200 font-medium text-sm">
+                      <div className="font-bold text-amber-300 text-sm uppercase tracking-wide">
                         {card.dish_name}
                       </div>
-                      <div className="text-gray-400 text-xs">
+                      <div className="text-gray-400 text-xs font-medium">
                         {new Date(card.created_at).toLocaleDateString('ru-RU')}
                       </div>
                     </div>
@@ -757,40 +763,45 @@ function App() {
             </div>
           </div>
 
-          {/* Tech Card Display */}
-          <div className="lg:col-span-2">
+          {/* Right Panel */}
+          <div className="lg:col-span-2 slide-in-right">
             {techCard ? (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-white">
-                    Технологическая карта
+              <div className="tech-card-container">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="heading-section">
+                    ТЕХНОЛОГИЧЕСКАЯ КАРТА
                   </h2>
-                  <div className="flex space-x-3">
-                    <button 
-                      onClick={handlePrintTechCard}
-                      className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                    >
-                      📄 Экспорт в PDF
-                    </button>
-                  </div>
+                  <button 
+                    onClick={handlePrintTechCard}
+                    className="btn-success"
+                  >
+                    📄 ЭКСПОРТ В PDF
+                  </button>
                 </div>
-                <div className="prose prose-invert max-w-none">
+                <div className="tech-card-content">
                   {formatTechCard(techCard)}
                 </div>
               </div>
             ) : (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20 text-center">
-                <div className="text-purple-200 mb-4">
-                  <svg className="w-16 h-16 mx-auto mb-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+              <div className="card-glass p-12 text-center slide-in-scale">
+                <div className="mb-8">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-400/30 to-amber-500/30 rounded-2xl flex items-center justify-center border-2 border-orange-400/30">
+                    <svg className="w-12 h-12 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">
-                  Техкарта появится здесь
+                <h3 className="heading-card text-2xl mb-4">
+                  ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ
                 </h3>
-                <p className="text-gray-300">
-                  Введите название блюда слева и нажмите "Создать техкарту"
+                <p className="text-subtitle">
+                  Введите название блюда слева и нажмите <span className="text-amber-300 font-bold">"СОЗДАТЬ ТЕХКАРТУ"</span>
                 </p>
+                <div className="mt-8">
+                  <div className="selling-point">
+                    ⚡ ПРОФЕССИОНАЛЬНОЕ РЕШЕНИЕ ДЛЯ ШЕФОВ
+                  </div>
+                </div>
               </div>
             )}
           </div>
