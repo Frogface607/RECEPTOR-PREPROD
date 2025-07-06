@@ -382,10 +382,10 @@ async def edit_tech_card(request: EditRequest):
         raise HTTPException(status_code=500, detail=f"Error editing tech card: {str(e)}")
 
 @api_router.post("/parse-ingredients")
-async def parse_ingredients(tech_card_content: str):
+async def parse_ingredients(content: str):
     """Parse ingredients from tech card content for editing"""
     try:
-        lines = tech_card_content.split('\n')
+        lines = content.split('\n')
         ingredients = []
         in_ingredients_section = False
         
