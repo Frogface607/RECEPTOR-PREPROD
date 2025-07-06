@@ -121,6 +121,99 @@ class ReceptorAPITest(unittest.TestCase):
                 
         self.assertTrue(found, "Created tech card not found in user's tech cards")
         print(f"✅ Successfully retrieved {len(tech_cards)} tech cards for user")
+        
+    def test_06_parse_ingredients(self):
+        """Test parsing ingredients from tech card"""
+        print("\n🔍 Testing POST /parse-ingredients...")
+        
+        # First ensure we have a tech card
+        if not hasattr(self, 'tech_card_id'):
+            self.test_04_generate_tech_card()
+            
+        # Get the tech card content
+        response = requests.get(f"{self.base_url}/tech-cards/{self.user_id}")
+        self.assertEqual(response.status_code, 200, "Failed to get tech cards")
+        
+        tech_cards = response.json()
+        tech_card = None
+        for card in tech_cards:
+            if card["id"] == self.tech_card_id:
+                tech_card = card
+                break
+                
+        self.assertIsNotNone(tech_card, "Could not find the created tech card")
+        
+        # Parse ingredients
+        response = requests.post(
+            f"{self.base_url}/parse-ingredients", 
+            data=tech_card["content"],
+            headers={"Content-Type": "text/plain"}
+        )
+        
+        self.assertEqual(response.status_code, 200, f"Failed to parse ingredients: {response.text}")
+        result = response.json()
+        self.assertTrue("ingredients" in result, "Ingredients not returned in response")
+        self.assertTrue(len(result["ingredients"]) > 0, "No ingredients parsed from tech card")
+        
+        print(f"✅ Successfully parsed {len(result['ingredients'])} ingredients from tech card")
+        
+    def test_07_edit_tech_card(self):
+        """Test editing a tech card with AI"""
+        print("\n🔍 Testing POST /edit-tech-card...")
+        
+        # First ensure we have a tech card
+        if not hasattr(self, 'tech_card_id'):
+            self.test_04_generate_tech_card()
+            
+        edit_request = {
+            "tech_card_id": self.tech_card_id,
+            "edit_instruction": "Добавь больше грибов и сделай порцию на двоих"
+        }
+        
+        response = requests.post(f"{self.base_url}/edit-tech-card", json=edit_request)
+        
+        self.assertEqual(response.status_code, 200, f"Failed to edit tech card: {response.text}")
+        result = response.json()
+        self.assertTrue("success" in result, "Success flag not in response")
+        self.assertTrue(result["success"], "Tech card edit not marked as successful")
+        self.assertTrue("tech_card" in result, "Edited tech card not returned")
+        
+        print("✅ Successfully edited tech card with AI")
+        
+    def test_08_update_tech_card(self):
+        """Test manually updating a tech card"""
+        print("\n🔍 Testing PUT /tech-card/{tech_card_id}...")
+        
+        # First ensure we have a tech card
+        if not hasattr(self, 'tech_card_id'):
+            self.test_04_generate_tech_card()
+            
+        # Get the current tech card content
+        response = requests.get(f"{self.base_url}/tech-cards/{self.user_id}")
+        self.assertEqual(response.status_code, 200, "Failed to get tech cards")
+        
+        tech_cards = response.json()
+        tech_card = None
+        for card in tech_cards:
+            if card["id"] == self.tech_card_id:
+                tech_card = card
+                break
+                
+        self.assertIsNotNone(tech_card, "Could not find the created tech card")
+        
+        # Update the content
+        updated_content = tech_card["content"] + "\n\n[Manually updated]"
+        response = requests.put(
+            f"{self.base_url}/tech-card/{self.tech_card_id}", 
+            params={"content": updated_content}
+        )
+        
+        self.assertEqual(response.status_code, 200, f"Failed to update tech card: {response.text}")
+        result = response.json()
+        self.assertTrue("success" in result, "Success flag not in response")
+        self.assertTrue(result["success"], "Tech card update not marked as successful")
+        
+        print("✅ Successfully updated tech card manually")
 
 def run_tests():
     """Run all tests in order"""
