@@ -514,6 +514,23 @@ async def register_user(user_data: UserCreate):
         raise HTTPException(status_code=400, detail="User already registered")
     
     user_dict = user_data.dict()
+    
+    # Initialize subscription fields
+    current_date = datetime.utcnow()
+    next_reset = current_date.replace(day=1)
+    if next_reset.month == 12:
+        next_reset = next_reset.replace(year=next_reset.year + 1, month=1)
+    else:
+        next_reset = next_reset.replace(month=next_reset.month + 1)
+    
+    user_dict.update({
+        "subscription_plan": "free",
+        "subscription_start_date": current_date,
+        "monthly_tech_cards_used": 0,
+        "monthly_reset_date": next_reset,
+        "kitchen_equipment": []
+    })
+    
     user_obj = User(**user_dict)
     await db.users.insert_one(user_obj.dict())
     return user_obj
