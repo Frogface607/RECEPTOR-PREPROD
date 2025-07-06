@@ -13,6 +13,11 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [techCard, setTechCard] = useState(null);
   const [userTechCards, setUserTechCards] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editInstruction, setEditInstruction] = useState('');
+  const [isEditingAI, setIsEditingAI] = useState(false);
+  const [currentTechCardId, setCurrentTechCardId] = useState(null);
+  const [ingredients, setIngredients] = useState([]);
 
   // Registration form state
   const [registrationData, setRegistrationData] = useState({
@@ -92,7 +97,10 @@ function App() {
       });
       
       setTechCard(response.data.tech_card);
+      setCurrentTechCardId(response.data.id);
       setDishName('');
+      setIsEditing(false);
+      parseIngredients(response.data.tech_card);
       fetchUserTechCards(); // Refresh the list
     } catch (error) {
       console.error('Error generating tech card:', error);
@@ -102,11 +110,96 @@ function App() {
     }
   };
 
+  const handleEditWithAI = async (e) => {
+    e.preventDefault();
+    if (!editInstruction.trim() || !currentTechCardId) return;
+
+    setIsEditingAI(true);
+    try {
+      const response = await axios.post(`${API}/edit-tech-card`, {
+        tech_card_id: currentTechCardId,
+        edit_instruction: editInstruction
+      });
+      
+      setTechCard(response.data.tech_card);
+      setEditInstruction('');
+      parseIngredients(response.data.tech_card);
+      fetchUserTechCards(); // Refresh the list
+    } catch (error) {
+      console.error('Error editing tech card:', error);
+      alert('Ошибка при редактировании техкарты. Попробуйте еще раз.');
+    } finally {
+      setIsEditingAI(false);
+    }
+  };
+
+  const parseIngredients = async (techCardContent) => {
+    try {
+      const response = await axios.post(`${API}/parse-ingredients`, techCardContent, {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      setIngredients(response.data.ingredients);
+    } catch (error) {
+      console.error('Error parsing ingredients:', error);
+    }
+  };
+
+  const handleIngredientChange = (index, field, value) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index][field] = value;
+    setIngredients(newIngredients);
+    
+    // Auto-recalculate tech card with new ingredients
+    updateTechCardWithIngredients(newIngredients);
+  };
+
+  const updateTechCardWithIngredients = (newIngredients) => {
+    // Calculate new cost
+    const totalCost = newIngredients.reduce((sum, ing) => sum + (ing.price || 0), 0);
+    const recommendedPrice = Math.round(totalCost * 3);
+    
+    // Update tech card content with new prices
+    let updatedContent = techCard;
+    
+    // Update ingredients section
+    const ingredientsSection = newIngredients.map(ing => 
+      `- ${ing.name} — ${ing.quantity} — ~${ing.price} ₽`
+    ).join('\n');
+    
+    // Replace ingredients section
+    updatedContent = updatedContent.replace(
+      /(\*\*Ингредиенты:\*\*\n\n)([\s\S]*?)(\n\n\*\*Пошаговый рецепт:\*\*)/,
+      `$1${ingredientsSection}$3`
+    );
+    
+    // Update cost section
+    updatedContent = updatedContent.replace(
+      /- По ингредиентам: \d+ ₽/,
+      `- По ингредиентам: ${Math.round(totalCost)} ₽`
+    );
+    updatedContent = updatedContent.replace(
+      /- Рекомендуемая цена \(×3\): \d+ ₽/,
+      `- Рекомендуемая цена (×3): ${recommendedPrice} ₽`
+    );
+    
+    setTechCard(updatedContent);
+  };
+
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('receptor_user');
     setTechCard(null);
     setUserTechCards([]);
+    setIsEditing(false);
+    setCurrentTechCardId(null);
+    setIngredients([]);
+  };
+
+  const handleSelectTechCard = (card) => {
+    setTechCard(card.content);
+    setCurrentTechCardId(card.id);
+    setIsEditing(false);
+    parseIngredients(card.content);
   };
 
   const handlePrintTechCard = () => {
@@ -227,41 +320,144 @@ function App() {
 
   const formatTechCard = (content) => {
     return content.split('\n').map((line, index) => {
+      // Main sections headers
       if (line.startsWith('**') && line.endsWith('**')) {
+        const title = line.replace(/\*\*/g, '');
+        if (title.includes('Название:')) {
+          return (
+            <div key={index} className="mb-6">
+              <h1 className="text-3xl font-bold text-center text-purple-100 mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {title.replace('Название:', '').trim()}
+              </h1>
+            </div>
+          );
+        }
         return (
-          <h3 key={index} className="text-lg font-bold text-purple-300 mt-4 mb-2">
-            {line.replace(/\*\*/g, '')}
-          </h3>
+          <h2 key={index} className="text-xl font-bold text-purple-300 mt-6 mb-3 pb-2 border-b border-purple-500/30">
+            {title}
+          </h2>
         );
       }
+      
+      // Ingredients section - convert to table if we're not in editing mode
+      if (line.startsWith('- ') && !isEditing && content.includes('**Ингредиенты:**')) {
+        const isInIngredientsSection = content.split('\n').slice(0, index).some(l => l.includes('**Ингредиенты:**')) &&
+                                      !content.split('\n').slice(0, index).some(l => l.includes('**Пошаговый рецепт:**'));
+        
+        if (isInIngredientsSection) {
+          const parts = line.replace('- ', '').split(' — ');
+          if (parts.length >= 3) {
+            return (
+              <tr key={index} className="border-b border-purple-500/20">
+                <td className="text-purple-200 py-2">{parts[0].trim()}</td>
+                <td className="text-gray-300 py-2 text-center">{parts[1].trim()}</td>
+                <td className="text-green-300 py-2 text-right font-medium">{parts[2].trim()}</td>
+              </tr>
+            );
+          }
+        }
+      }
+      
+      // Check if we need to start ingredients table
+      if (line.includes('**Ингредиенты:**') && !isEditing) {
+        const ingredientLines = content.split('\n').slice(index + 1).filter(l => l.startsWith('- ') && l.includes(' — '));
+        const tableRows = ingredientLines.map((ingLine, ingIndex) => {
+          const parts = ingLine.replace('- ', '').split(' — ');
+          if (parts.length >= 3) {
+            return (
+              <tr key={`ing-${ingIndex}`} className="border-b border-purple-500/20 hover:bg-purple-900/20">
+                <td className="text-purple-200 py-2 px-4">{parts[0].trim()}</td>
+                <td className="text-gray-300 py-2 px-4 text-center">{parts[1].trim()}</td>
+                <td className="text-green-300 py-2 px-4 text-right font-medium">{parts[2].trim()}</td>
+              </tr>
+            );
+          }
+          return null;
+        }).filter(Boolean);
+        
+        if (tableRows.length > 0) {
+          return (
+            <div key={index} className="mb-6">
+              <h2 className="text-xl font-bold text-purple-300 mt-6 mb-3 pb-2 border-b border-purple-500/30">
+                Ингредиенты
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full bg-gray-800/30 rounded-lg overflow-hidden">
+                  <thead className="bg-purple-600/30">
+                    <tr>
+                      <th className="text-purple-100 py-3 px-4 text-left">Ингредиент</th>
+                      <th className="text-purple-100 py-3 px-4 text-center">Количество</th>
+                      <th className="text-purple-100 py-3 px-4 text-right">Цена</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableRows}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        }
+      }
+      
+      // Skip ingredient lines if we already processed them in table
+      if (line.startsWith('- ') && !isEditing && content.includes('**Ингредиенты:**')) {
+        const isInIngredientsSection = content.split('\n').slice(0, index).some(l => l.includes('**Ингредиенты:**')) &&
+                                      !content.split('\n').slice(0, index).some(l => l.includes('**Пошаговый рецепт:**'));
+        if (isInIngredientsSection && line.includes(' — ')) {
+          return null; // Skip, already processed in table
+        }
+      }
+      
+      // Cost information - highlight important
+      if (line.includes('Себестоимость:') || line.includes('Рекомендуемая цена')) {
+        return (
+          <div key={index} className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-2">
+            <p className="text-green-200 font-medium">{line}</p>
+          </div>
+        );
+      }
+      
+      // Tips and advice
       if (line.startsWith('💡') || line.startsWith('🔥') || line.startsWith('🌀')) {
+        const bgColor = line.startsWith('💡') ? 'bg-blue-900/20 border-blue-500/30' :
+                       line.startsWith('🔥') ? 'bg-red-900/20 border-red-500/30' :
+                       'bg-orange-900/20 border-orange-500/30';
         return (
-          <p key={index} className="text-indigo-200 italic mb-2 bg-purple-900/20 p-2 rounded">
-            {line}
-          </p>
+          <div key={index} className={`${bgColor} border rounded-lg p-3 mb-2`}>
+            <p className="text-indigo-200 italic">{line}</p>
+          </div>
         );
       }
+      
+      // Food pairing
       if (line.startsWith('🍷') || line.startsWith('🍺') || line.startsWith('🍹')) {
         return (
-          <p key={index} className="text-pink-200 mb-1">
+          <p key={index} className="text-pink-200 mb-1 ml-4">
             {line}
           </p>
         );
       }
+      
+      // Sales script
       if (line.startsWith('💬')) {
         return (
-          <p key={index} className="text-green-200 bg-green-900/20 p-2 rounded mb-2">
-            {line}
-          </p>
+          <div key={index} className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 mb-2">
+            <p className="text-green-200">{line}</p>
+          </div>
         );
       }
+      
+      // Photography tips
       if (line.startsWith('📸')) {
         return (
-          <p key={index} className="text-blue-200 bg-blue-900/20 p-2 rounded mb-2">
-            {line}
-          </p>
+          <div key={index} className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-2">
+            <p className="text-blue-200">{line}</p>
+          </div>
         );
       }
+      
+      // Menu tags
       if (line.startsWith('🏷️')) {
         return (
           <p key={index} className="text-yellow-200 mb-2">
@@ -269,6 +465,8 @@ function App() {
           </p>
         );
       }
+      
+      // Regular list items
       if (line.startsWith('- ')) {
         return (
           <p key={index} className="text-gray-200 mb-1 ml-4">
@@ -276,13 +474,17 @@ function App() {
           </p>
         );
       }
+      
+      // Numbered steps
       if (line.match(/^\d+\./)) {
         return (
-          <p key={index} className="text-gray-200 mb-2 ml-4">
-            {line}
-          </p>
+          <div key={index} className="bg-gray-800/30 rounded-lg p-3 mb-3 ml-4">
+            <p className="text-gray-200">{line}</p>
+          </div>
         );
       }
+      
+      // Regular paragraphs
       if (line.trim()) {
         return (
           <p key={index} className="text-gray-300 mb-2">
@@ -290,8 +492,9 @@ function App() {
           </p>
         );
       }
+      
       return <div key={index} className="mb-2"></div>;
-    });
+    }).filter(Boolean);
   };
 
   if (!currentUser) {
@@ -457,6 +660,74 @@ function App() {
                 </button>
               </form>
 
+              {/* AI Editing */}
+              {techCard && (
+                <div className="mt-6 border-t border-purple-500/20 pt-6">
+                  <h3 className="text-lg font-bold text-white mb-4">
+                    🤖 Редактировать через AI
+                  </h3>
+                  <form onSubmit={handleEditWithAI}>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        value={editInstruction}
+                        onChange={(e) => setEditInstruction(e.target.value)}
+                        placeholder="Например: увеличить порцию в 2 раза"
+                        className="w-full px-4 py-2 bg-gray-700/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isEditingAI || !editInstruction.trim()}
+                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                    >
+                      {isEditingAI ? 'Редактируется...' : 'Изменить через AI'}
+                    </button>
+                  </form>
+                  
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setIsEditing(!isEditing)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                    >
+                      {isEditing ? '📝 Закрыть редактор' : '✏️ Ручное редактирование'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Manual Ingredient Editing */}
+              {isEditing && ingredients.length > 0 && (
+                <div className="mt-6 border-t border-purple-500/20 pt-6">
+                  <h3 className="text-lg font-bold text-white mb-4">
+                    ✏️ Редактировать ингредиенты
+                  </h3>
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                    {ingredients.map((ingredient, index) => (
+                      <div key={index} className="bg-gray-700/30 rounded-lg p-3">
+                        <div className="text-purple-200 text-sm mb-2">{ingredient.name}</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={ingredient.quantity}
+                            onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                            className="px-2 py-1 bg-gray-600/50 border border-purple-500/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            placeholder="Количество"
+                          />
+                          <input
+                            type="number"
+                            value={ingredient.price}
+                            onChange={(e) => handleIngredientChange(index, 'price', parseFloat(e.target.value) || 0)}
+                            className="px-2 py-1 bg-gray-600/50 border border-purple-500/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            placeholder="Цена ₽"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* History */}
               <div className="mt-8">
                 <h3 className="text-lg font-bold text-white mb-4">
@@ -466,8 +737,12 @@ function App() {
                   {userTechCards.slice(0, 10).map((card, index) => (
                     <div
                       key={card.id}
-                      onClick={() => setTechCard(card.content)}
-                      className="p-3 bg-gray-700/30 rounded-lg cursor-pointer hover:bg-gray-700/50 transition-colors"
+                      onClick={() => handleSelectTechCard(card)}
+                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                        currentTechCardId === card.id 
+                          ? 'bg-purple-600/30 border border-purple-500'
+                          : 'bg-gray-700/30 hover:bg-gray-700/50'
+                      }`}
                     >
                       <div className="text-purple-200 font-medium text-sm">
                         {card.dish_name}
@@ -486,16 +761,18 @@ function App() {
           <div className="lg:col-span-2">
             {techCard ? (
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold text-white">
                     Технологическая карта
                   </h2>
-                  <button 
-                    onClick={handlePrintTechCard}
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                  >
-                    Экспорт в PDF
-                  </button>
+                  <div className="flex space-x-3">
+                    <button 
+                      onClick={handlePrintTechCard}
+                      className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                    >
+                      📄 Экспорт в PDF
+                    </button>
+                  </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
                   {formatTechCard(techCard)}
