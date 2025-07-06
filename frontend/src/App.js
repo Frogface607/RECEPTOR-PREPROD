@@ -134,7 +134,7 @@ function App() {
   const parseIngredients = async (techCardContent) => {
     try {
       const response = await axios.post(`${API}/parse-ingredients`, techCardContent, {
-        headers: { 'Content-Type': 'text/plain' }
+        headers: { 'Content-Type': 'application/json' }
       });
       setIngredients(response.data.ingredients);
     } catch (error) {
