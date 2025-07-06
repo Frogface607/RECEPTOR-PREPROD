@@ -65,7 +65,339 @@ class ReceptorAPITest(unittest.TestCase):
         self.assertEqual(user_data["email"], self.user_email)
         self.assertEqual(user_data["name"], self.user_name)
         print("✅ Successfully retrieved user by email")
+    
+    def test_04_get_subscription_plans(self):
+        """Test retrieving subscription plans"""
+        print("\n🔍 Testing GET /subscription-plans...")
         
+        response = requests.get(f"{self.base_url}/subscription-plans")
+        
+        self.assertEqual(response.status_code, 200, "Failed to get subscription plans")
+        plans = response.json()
+        
+        # Verify all subscription tiers exist
+        self.assertTrue("free" in plans, "Free plan not found")
+        self.assertTrue("starter" in plans, "Starter plan not found")
+        self.assertTrue("pro" in plans, "PRO plan not found")
+        self.assertTrue("business" in plans, "Business plan not found")
+        
+        # Verify plan details
+        self.assertEqual(plans["free"]["monthly_tech_cards"], 3, "Free plan should have 3 tech cards")
+        self.assertEqual(plans["starter"]["monthly_tech_cards"], 25, "Starter plan should have 25 tech cards")
+        self.assertEqual(plans["pro"]["monthly_tech_cards"], -1, "PRO plan should have unlimited tech cards")
+        self.assertEqual(plans["business"]["monthly_tech_cards"], -1, "Business plan should have unlimited tech cards")
+        
+        # Verify kitchen equipment feature
+        self.assertFalse(plans["free"]["kitchen_equipment"], "Free plan should not have kitchen equipment feature")
+        self.assertFalse(plans["starter"]["kitchen_equipment"], "Starter plan should not have kitchen equipment feature")
+        self.assertTrue(plans["pro"]["kitchen_equipment"], "PRO plan should have kitchen equipment feature")
+        self.assertTrue(plans["business"]["kitchen_equipment"], "Business plan should have kitchen equipment feature")
+        
+        print("✅ Successfully retrieved subscription plans")
+    
+    def test_05_get_kitchen_equipment(self):
+        """Test retrieving kitchen equipment list"""
+        print("\n🔍 Testing GET /kitchen-equipment...")
+        
+        response = requests.get(f"{self.base_url}/kitchen-equipment")
+        
+        self.assertEqual(response.status_code, 200, "Failed to get kitchen equipment list")
+        equipment = response.json()
+        
+        # Verify equipment categories
+        self.assertTrue("cooking_methods" in equipment, "Cooking methods category not found")
+        self.assertTrue("prep_equipment" in equipment, "Prep equipment category not found")
+        self.assertTrue("storage" in equipment, "Storage category not found")
+        
+        # Verify equipment items
+        self.assertTrue(len(equipment["cooking_methods"]) > 0, "No cooking methods found")
+        self.assertTrue(len(equipment["prep_equipment"]) > 0, "No prep equipment found")
+        self.assertTrue(len(equipment["storage"]) > 0, "No storage equipment found")
+        
+        # Verify equipment item structure
+        sample_item = equipment["cooking_methods"][0]
+        self.assertTrue("id" in sample_item, "Equipment item missing ID")
+        self.assertTrue("name" in sample_item, "Equipment item missing name")
+        self.assertTrue("category" in sample_item, "Equipment item missing category")
+        
+        print(f"✅ Successfully retrieved kitchen equipment with {len(equipment['cooking_methods']) + len(equipment['prep_equipment']) + len(equipment['storage'])} items")
+    
+    def test_06_get_user_subscription(self):
+        """Test getting user's subscription details"""
+        print("\n🔍 Testing GET /user-subscription/{user_id}...")
+        
+        # First ensure we have a registered user
+        if not hasattr(self, 'user_id') or not self.user_id:
+            self.test_02_register_user()
+            
+        response = requests.get(f"{self.base_url}/user-subscription/{self.user_id}")
+        
+        self.assertEqual(response.status_code, 200, f"Failed to get user subscription: {response.text}")
+        subscription = response.json()
+        
+        # Verify subscription data structure
+        self.assertTrue("subscription_plan" in subscription, "Subscription plan not in response")
+        self.assertTrue("plan_info" in subscription, "Plan info not in response")
+        self.assertTrue("monthly_tech_cards_used" in subscription, "Monthly tech cards used not in response")
+        self.assertTrue("monthly_reset_date" in subscription, "Monthly reset date not in response")
+        self.assertTrue("kitchen_equipment" in subscription, "Kitchen equipment not in response")
+        
+        # New users should start with free plan
+        self.assertEqual(subscription["subscription_plan"], "free", "New user should start with free plan")
+        self.assertEqual(subscription["monthly_tech_cards_used"], 0, "New user should have 0 tech cards used")
+        
+        print(f"✅ Successfully retrieved user subscription: {subscription['subscription_plan']} plan")
+    
+    def test_07_upgrade_subscription(self):
+        """Test upgrading user's subscription"""
+        print("\n🔍 Testing POST /upgrade-subscription/{user_id}...")
+        
+        # First ensure we have a registered user
+        if not hasattr(self, 'user_id') or not self.user_id:
+            self.test_02_register_user()
+            
+        # Upgrade to PRO plan
+        data = {
+            "subscription_plan": "pro"
+        }
+        
+        response = requests.post(f"{self.base_url}/upgrade-subscription/{self.user_id}", json=data)
+        
+        self.assertEqual(response.status_code, 200, f"Failed to upgrade subscription: {response.text}")
+        result = response.json()
+        self.assertTrue("success" in result, "Success flag not in response")
+        self.assertTrue(result["success"], "Subscription upgrade not marked as successful")
+        
+        # Verify the upgrade was applied
+        response = requests.get(f"{self.base_url}/user-subscription/{self.user_id}")
+        self.assertEqual(response.status_code, 200, "Failed to get updated subscription")
+        subscription = response.json()
+        self.assertEqual(subscription["subscription_plan"], "pro", "Subscription not upgraded to PRO")
+        
+        print("✅ Successfully upgraded user to PRO subscription")
+    
+    def test_08_update_kitchen_equipment(self):
+        """Test updating user's kitchen equipment (PRO feature)"""
+        print("\n🔍 Testing POST /update-kitchen-equipment/{user_id}...")
+        
+        # First ensure we have a registered user with PRO subscription
+        if not hasattr(self, 'user_id') or not self.user_id:
+            self.test_02_register_user()
+            self.test_07_upgrade_subscription()  # Upgrade to PRO
+            
+        # Get available equipment to select valid IDs
+        response = requests.get(f"{self.base_url}/kitchen-equipment")
+        self.assertEqual(response.status_code, 200, "Failed to get kitchen equipment list")
+        equipment = response.json()
+        
+        # Select a few equipment items
+        equipment_ids = [
+            equipment["cooking_methods"][0]["id"],
+            equipment["cooking_methods"][2]["id"],
+            equipment["prep_equipment"][0]["id"],
+            equipment["storage"][0]["id"]
+        ]
+        
+        data = {
+            "equipment_ids": equipment_ids
+        }
+        
+        response = requests.post(f"{self.base_url}/update-kitchen-equipment/{self.user_id}", json=data)
+        
+        self.assertEqual(response.status_code, 200, f"Failed to update kitchen equipment: {response.text}")
+        result = response.json()
+        self.assertTrue("success" in result, "Success flag not in response")
+        self.assertTrue(result["success"], "Kitchen equipment update not marked as successful")
+        
+        # Verify the equipment was updated
+        response = requests.get(f"{self.base_url}/user-subscription/{self.user_id}")
+        self.assertEqual(response.status_code, 200, "Failed to get updated subscription")
+        subscription = response.json()
+        self.assertEqual(set(subscription["kitchen_equipment"]), set(equipment_ids), "Kitchen equipment not updated correctly")
+        
+        print(f"✅ Successfully updated kitchen equipment with {len(equipment_ids)} items")
+    
+    def test_09_free_tier_usage_limits(self):
+        """Test usage limits for free tier"""
+        print("\n🔍 Testing free tier usage limits...")
+        
+        # Create a new user with free plan
+        free_email = f"free_user_{self.random_string(6)}@example.com"
+        free_name = f"Free User {self.random_string(4)}"
+        
+        data = {
+            "email": free_email,
+            "name": free_name,
+            "city": "moskva"
+        }
+        
+        response = requests.post(f"{self.base_url}/register", json=data)
+        self.assertEqual(response.status_code, 200, "Failed to register free tier user")
+        free_user = response.json()
+        free_user_id = free_user["id"]
+        
+        # Generate tech cards up to the limit (3 for free tier)
+        for i in range(3):
+            data = {
+                "dish_name": f"Test Dish {i+1}",
+                "user_id": free_user_id
+            }
+            
+            response = requests.post(f"{self.base_url}/generate-tech-card", json=data)
+            self.assertEqual(response.status_code, 200, f"Failed to generate tech card {i+1}")
+            
+            # Check usage count in response
+            result = response.json()
+            self.assertEqual(result["monthly_used"], i+1, f"Monthly usage count incorrect after generating card {i+1}")
+        
+        # Try to generate one more tech card (should fail)
+        data = {
+            "dish_name": "One Too Many",
+            "user_id": free_user_id
+        }
+        
+        response = requests.post(f"{self.base_url}/generate-tech-card", json=data)
+        self.assertEqual(response.status_code, 403, "Should not allow exceeding free tier limit")
+        
+        print("✅ Successfully tested free tier usage limits")
+    
+    def test_10_starter_tier_usage_limits(self):
+        """Test usage limits for starter tier"""
+        print("\n🔍 Testing starter tier usage limits...")
+        
+        # Create a new user
+        starter_email = f"starter_user_{self.random_string(6)}@example.com"
+        starter_name = f"Starter User {self.random_string(4)}"
+        
+        data = {
+            "email": starter_email,
+            "name": starter_name,
+            "city": "moskva"
+        }
+        
+        response = requests.post(f"{self.base_url}/register", json=data)
+        self.assertEqual(response.status_code, 200, "Failed to register starter tier user")
+        starter_user = response.json()
+        starter_user_id = starter_user["id"]
+        
+        # Upgrade to starter plan
+        upgrade_data = {
+            "subscription_plan": "starter"
+        }
+        
+        response = requests.post(f"{self.base_url}/upgrade-subscription/{starter_user_id}", json=upgrade_data)
+        self.assertEqual(response.status_code, 200, "Failed to upgrade to starter plan")
+        
+        # Generate a few tech cards (not all 25, just testing the concept)
+        for i in range(5):
+            data = {
+                "dish_name": f"Starter Dish {i+1}",
+                "user_id": starter_user_id
+            }
+            
+            response = requests.post(f"{self.base_url}/generate-tech-card", json=data)
+            self.assertEqual(response.status_code, 200, f"Failed to generate tech card {i+1} for starter user")
+            
+            # Check usage count in response
+            result = response.json()
+            self.assertEqual(result["monthly_used"], i+1, f"Monthly usage count incorrect after generating card {i+1}")
+            self.assertEqual(result["monthly_limit"], 25, "Starter plan should have 25 tech cards limit")
+        
+        print("✅ Successfully tested starter tier usage limits")
+    
+    def test_11_pro_unlimited_usage(self):
+        """Test unlimited usage for PRO tier"""
+        print("\n🔍 Testing PRO tier unlimited usage...")
+        
+        # First ensure we have a registered user with PRO subscription
+        if not hasattr(self, 'user_id') or not self.user_id:
+            self.test_02_register_user()
+            self.test_07_upgrade_subscription()  # Upgrade to PRO
+        
+        # Generate several tech cards (should all succeed)
+        for i in range(5):
+            data = {
+                "dish_name": f"PRO Dish {i+1}",
+                "user_id": self.user_id
+            }
+            
+            response = requests.post(f"{self.base_url}/generate-tech-card", json=data)
+            self.assertEqual(response.status_code, 200, f"Failed to generate tech card {i+1} for PRO user")
+            
+            # Check usage count and limit in response
+            result = response.json()
+            self.assertEqual(result["monthly_limit"], -1, "PRO plan should have unlimited tech cards")
+        
+        print("✅ Successfully tested PRO tier unlimited usage")
+    
+    def test_12_equipment_aware_generation(self):
+        """Test equipment-aware recipe generation for PRO users"""
+        print("\n🔍 Testing equipment-aware recipe generation...")
+        
+        # First ensure we have a registered user with PRO subscription and equipment
+        if not hasattr(self, 'user_id') or not self.user_id:
+            self.test_02_register_user()
+            self.test_07_upgrade_subscription()  # Upgrade to PRO
+            self.test_08_update_kitchen_equipment()  # Set equipment
+        
+        # Generate a tech card that should consider equipment
+        data = {
+            "dish_name": "Ризотто с белыми грибами",
+            "user_id": self.user_id
+        }
+        
+        response = requests.post(f"{self.base_url}/generate-tech-card", json=data)
+        self.assertEqual(response.status_code, 200, "Failed to generate equipment-aware tech card")
+        
+        result = response.json()
+        self.assertTrue(result["success"], "Tech card generation not marked as successful")
+        self.assertIsNotNone(result["tech_card"], "Tech card content not returned")
+        
+        # The equipment-aware generation is working if we get a successful response
+        # We can't easily verify the content adapts to equipment without complex parsing
+        
+        print("✅ Successfully tested equipment-aware recipe generation")
+    
+    def test_13_non_pro_equipment_restriction(self):
+        """Test that non-PRO users cannot update kitchen equipment"""
+        print("\n🔍 Testing kitchen equipment restriction for non-PRO users...")
+        
+        # Create a new user with free plan
+        free_email = f"free_user_{self.random_string(6)}@example.com"
+        free_name = f"Free User {self.random_string(4)}"
+        
+        data = {
+            "email": free_email,
+            "name": free_name,
+            "city": "moskva"
+        }
+        
+        response = requests.post(f"{self.base_url}/register", json=data)
+        self.assertEqual(response.status_code, 200, "Failed to register free tier user")
+        free_user = response.json()
+        free_user_id = free_user["id"]
+        
+        # Get available equipment to select valid IDs
+        response = requests.get(f"{self.base_url}/kitchen-equipment")
+        self.assertEqual(response.status_code, 200, "Failed to get kitchen equipment list")
+        equipment = response.json()
+        
+        # Select a few equipment items
+        equipment_ids = [
+            equipment["cooking_methods"][0]["id"],
+            equipment["prep_equipment"][0]["id"]
+        ]
+        
+        data = {
+            "equipment_ids": equipment_ids
+        }
+        
+        # Try to update equipment (should fail for free tier)
+        response = requests.post(f"{self.base_url}/update-kitchen-equipment/{free_user_id}", json=data)
+        self.assertEqual(response.status_code, 403, "Free tier user should not be able to update kitchen equipment")
+        
+        print("✅ Successfully verified kitchen equipment restriction for non-PRO users")
+    
     def test_04_generate_tech_card(self):
         """Test generating a tech card"""
         print("\n🔍 Testing POST /generate-tech-card...")
