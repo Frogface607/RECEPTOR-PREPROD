@@ -73,6 +73,14 @@ class DishRequest(BaseModel):
     dish_name: str
     user_id: str
 
+class EditRequest(BaseModel):
+    tech_card_id: str
+    edit_instruction: str
+
+class IngredientUpdate(BaseModel):
+    tech_card_id: str
+    ingredient_updates: dict  # {"ingredient_name": {"quantity": 100, "price": 50}}
+
 class TechCard(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
