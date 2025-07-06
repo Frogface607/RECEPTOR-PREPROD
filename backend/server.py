@@ -330,6 +330,94 @@ async def update_tech_card(tech_card_id: str, content: str):
         raise HTTPException(status_code=404, detail="Tech card not found")
     return {"success": True}
 
+@api_router.post("/edit-tech-card")
+async def edit_tech_card(request: EditRequest):
+    try:
+        # Get the current tech card
+        tech_card = await db.tech_cards.find_one({"id": request.tech_card_id})
+        if not tech_card:
+            raise HTTPException(status_code=404, detail="Tech card not found")
+        
+        # Get user to determine regional coefficient
+        user = await db.users.find_one({"id": tech_card["user_id"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get regional coefficient
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        
+        # Prepare the edit prompt
+        prompt = EDIT_PROMPT.format(
+            current_tech_card=tech_card["content"],
+            edit_instruction=request.edit_instruction,
+            regional_coefficient=regional_coefficient
+        )
+        
+        # Generate edited tech card using OpenAI
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Ты профессиональный AI-помощник для шеф-поваров. Редактируешь технологические карты согласно запросам пользователей."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=3000,
+            temperature=0.7
+        )
+        
+        edited_content = response.choices[0].message.content
+        
+        # Update tech card in database
+        await db.tech_cards.update_one(
+            {"id": request.tech_card_id},
+            {"$set": {"content": edited_content, "updated_at": datetime.utcnow()}}
+        )
+        
+        return {
+            "success": True,
+            "tech_card": edited_content
+        }
+        
+    except Exception as e:
+        logger.error(f"Error editing tech card: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error editing tech card: {str(e)}")
+
+@api_router.post("/parse-ingredients")
+async def parse_ingredients(tech_card_content: str):
+    """Parse ingredients from tech card content for editing"""
+    try:
+        lines = tech_card_content.split('\n')
+        ingredients = []
+        in_ingredients_section = False
+        
+        for line in lines:
+            if line.startswith('**Ингредиенты:**'):
+                in_ingredients_section = True
+                continue
+            elif line.startswith('**') and in_ingredients_section:
+                break
+            elif in_ingredients_section and line.strip() and line.startswith('- '):
+                # Parse ingredient line like "- Мука — 100 г — ~50 ₽"
+                parts = line.replace('- ', '').split(' — ')
+                if len(parts) >= 3:
+                    name = parts[0].strip()
+                    quantity = parts[1].strip()
+                    price_str = parts[2].replace('~', '').replace('₽', '').strip()
+                    try:
+                        price = float(price_str)
+                        ingredients.append({
+                            "name": name,
+                            "quantity": quantity,
+                            "price": price
+                        })
+                    except:
+                        pass
+        
+        return {"ingredients": ingredients}
+        
+    except Exception as e:
+        logger.error(f"Error parsing ingredients: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error parsing ingredients: {str(e)}")
+
 @api_router.get("/cities")
 async def get_cities():
     cities = [
