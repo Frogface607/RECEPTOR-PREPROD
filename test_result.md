@@ -106,52 +106,64 @@ user_problem_statement: "Implement comprehensive subscription system for Recepto
 
 backend:
   - task: "Implement Subscription Models and Plans"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Starting implementation of subscription system backend models"
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented SUBSCRIPTION_PLANS config with Free, Starter, PRO, Business tiers and updated User model with subscription fields"
 
   - task: "Create Subscription API Endpoints"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Will implement subscription management endpoints"
+      - working: "NA"
+        agent: "main"
+        comment: "Added endpoints: /subscription-plans, /user-subscription/{user_id}, /upgrade-subscription/{user_id}, /kitchen-equipment"
 
   - task: "Implement Kitchen Equipment Feature"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "PRO killer feature - equipment-based recipe adaptation"
+      - working: "NA"
+        agent: "main"
+        comment: "Added KITCHEN_EQUIPMENT config with 21 equipment types and /update-kitchen-equipment endpoint. Enhanced tech card generation with equipment context."
 
   - task: "Add Usage Limits and Restrictions"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implement tier-based usage limits"
+      - working: "NA"
+        agent: "main"
+        comment: "Added usage limit checking in tech card generation, monthly usage tracking, and automatic reset functionality"
 
 frontend:
   - task: "Create Subscription Management Pages"
