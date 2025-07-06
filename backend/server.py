@@ -358,6 +358,153 @@ EDIT_PROMPT = """Ты — RECEPTOR, профессиональный AI-помо
 
 Верни отредактированную техкарту в том же формате."""
 
+# Utility functions
+def reset_monthly_usage_if_needed(user_data):
+    """Reset monthly usage if a month has passed"""
+    current_date = datetime.utcnow()
+    reset_date = user_data.get("monthly_reset_date", current_date)
+    
+    if isinstance(reset_date, str):
+        reset_date = datetime.fromisoformat(reset_date.replace('Z', '+00:00'))
+    
+    if current_date >= reset_date:
+        # Reset monthly usage
+        next_reset = current_date.replace(day=1)
+        if next_reset.month == 12:
+            next_reset = next_reset.replace(year=next_reset.year + 1, month=1)
+        else:
+            next_reset = next_reset.replace(month=next_reset.month + 1)
+        
+        return {
+            "monthly_tech_cards_used": 0,
+            "monthly_reset_date": next_reset
+        }
+    
+    return {}
+
+def check_tech_card_limit(user_data):
+    """Check if user can create another tech card"""
+    subscription_plan = user_data.get("subscription_plan", "free")
+    plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+    
+    # Unlimited plans
+    if plan_info["monthly_tech_cards"] == -1:
+        return True, ""
+    
+    # Check monthly limit
+    monthly_used = user_data.get("monthly_tech_cards_used", 0)
+    monthly_limit = plan_info["monthly_tech_cards"]
+    
+    if monthly_used >= monthly_limit:
+        return False, f"Достигнут лимит {monthly_limit} техкарт в месяц. Обновите подписку для продолжения."
+    
+    return True, ""
+
+# Routes
+@api_router.get("/subscription-plans")
+async def get_subscription_plans():
+    """Get all available subscription plans"""
+    return SUBSCRIPTION_PLANS
+
+@api_router.get("/kitchen-equipment")
+async def get_kitchen_equipment():
+    """Get all available kitchen equipment"""
+    return KITCHEN_EQUIPMENT
+
+@api_router.get("/user-subscription/{user_id}")
+async def get_user_subscription(user_id: str):
+    """Get user's current subscription details"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Reset monthly usage if needed
+    reset_data = reset_monthly_usage_if_needed(user)
+    if reset_data:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": reset_data}
+        )
+        user.update(reset_data)
+    
+    subscription_plan = user.get("subscription_plan", "free")
+    plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+    
+    return {
+        "subscription_plan": subscription_plan,
+        "plan_info": plan_info,
+        "monthly_tech_cards_used": user.get("monthly_tech_cards_used", 0),
+        "monthly_reset_date": user.get("monthly_reset_date"),
+        "kitchen_equipment": user.get("kitchen_equipment", [])
+    }
+
+@api_router.post("/upgrade-subscription/{user_id}")
+async def upgrade_subscription(user_id: str, subscription_data: UserSubscription):
+    """Upgrade user's subscription plan"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_plan = subscription_data.subscription_plan
+    if new_plan not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription plan")
+    
+    # In a real implementation, this would integrate with payment processing
+    # For now, we'll just update the subscription
+    
+    update_data = {
+        "subscription_plan": new_plan,
+        "subscription_start_date": datetime.utcnow()
+    }
+    
+    # Reset monthly usage when upgrading
+    if new_plan != user.get("subscription_plan", "free"):
+        update_data["monthly_tech_cards_used"] = 0
+        current_date = datetime.utcnow()
+        next_reset = current_date.replace(day=1)
+        if next_reset.month == 12:
+            next_reset = next_reset.replace(year=next_reset.year + 1, month=1)
+        else:
+            next_reset = next_reset.replace(month=next_reset.month + 1)
+        update_data["monthly_reset_date"] = next_reset
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": update_data}
+    )
+    
+    return {"success": True, "message": f"Подписка обновлена до {SUBSCRIPTION_PLANS[new_plan]['name']}"}
+
+@api_router.post("/update-kitchen-equipment/{user_id}")
+async def update_kitchen_equipment(user_id: str, equipment_data: KitchenEquipmentUpdate):
+    """Update user's kitchen equipment (PRO feature)"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user has PRO subscription
+    subscription_plan = user.get("subscription_plan", "free")
+    plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+    
+    if not plan_info.get("kitchen_equipment", False):
+        raise HTTPException(status_code=403, detail="Kitchen equipment feature requires PRO subscription")
+    
+    # Validate equipment IDs
+    all_equipment_ids = []
+    for category in KITCHEN_EQUIPMENT.values():
+        all_equipment_ids.extend([eq["id"] for eq in category])
+    
+    invalid_ids = [eq_id for eq_id in equipment_data.equipment_ids if eq_id not in all_equipment_ids]
+    if invalid_ids:
+        raise HTTPException(status_code=400, detail=f"Invalid equipment IDs: {invalid_ids}")
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"kitchen_equipment": equipment_data.equipment_ids}}
+    )
+    
+    return {"success": True, "message": "Kitchen equipment updated successfully"}
+
 # Routes
 @api_router.post("/register", response_model=User)
 async def register_user(user_data: UserCreate):
