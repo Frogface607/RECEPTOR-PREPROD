@@ -19,6 +19,12 @@ function App() {
   const [currentTechCardId, setCurrentTechCardId] = useState(null);
   const [ingredients, setIngredients] = useState([]);
 
+  // Voice recognition states
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('');
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [recognition, setRecognition] = useState(null);
+
   // Registration form state
   const [registrationData, setRegistrationData] = useState({
     email: '',
@@ -28,6 +34,7 @@ function App() {
 
   useEffect(() => {
     fetchCities();
+    initVoiceRecognition();
     const savedUser = localStorage.getItem('receptor_user');
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser));
@@ -39,6 +46,63 @@ function App() {
       fetchUserTechCards();
     }
   }, [currentUser]);
+
+  const initVoiceRecognition = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'ru-RU';
+      
+      recognitionInstance.onstart = () => {
+        setIsListening(true);
+        setVoiceStatus('Говорите название блюда...');
+        setShowVoiceModal(true);
+      };
+      
+      recognitionInstance.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setDishName(transcript);
+        setVoiceStatus(`Распознано: "${transcript}"`);
+        setTimeout(() => {
+          setShowVoiceModal(false);
+          setIsListening(false);
+        }, 1500);
+      };
+      
+      recognitionInstance.onerror = (event) => {
+        setVoiceStatus('Ошибка распознавания. Попробуйте еще раз.');
+        setTimeout(() => {
+          setShowVoiceModal(false);
+          setIsListening(false);
+        }, 2000);
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+      
+      setRecognition(recognitionInstance);
+    }
+  };
+
+  const startVoiceRecognition = () => {
+    if (recognition) {
+      recognition.start();
+    } else {
+      alert('Голосовое распознавание не поддерживается в вашем браузере');
+    }
+  };
+
+  const stopVoiceRecognition = () => {
+    if (recognition && isListening) {
+      recognition.stop();
+      setShowVoiceModal(false);
+      setIsListening(false);
+    }
+  };
 
   const fetchCities = async () => {
     try {
@@ -209,39 +273,39 @@ function App() {
               line-height: 1.6; 
               margin: 40px; 
               background: white; 
-              color: #1A2B42; 
+              color: #1A1B23; 
             }
             h1 { 
-              color: #FF6B35; 
+              color: #8B5CF6; 
               font-size: 28px; 
               font-weight: 900;
               text-transform: uppercase;
               letter-spacing: 1.5px;
               text-align: center; 
               margin-bottom: 30px; 
-              border-bottom: 3px solid #FF6B35;
+              border-bottom: 3px solid #8B5CF6;
               padding-bottom: 15px;
             }
             h2 { 
-              color: #1A2B42; 
+              color: #1A1B23; 
               font-size: 18px; 
               font-weight: 800;
               text-transform: uppercase;
               letter-spacing: 0.8px;
               margin-top: 25px; 
               margin-bottom: 15px; 
-              border-bottom: 2px solid #FFB547; 
+              border-bottom: 2px solid #C084FC; 
               padding-bottom: 8px; 
             }
             .ingredients-table {
               width: 100%;
               border-collapse: collapse;
               margin: 20px 0;
-              border: 2px solid #FF6B35;
+              border: 2px solid #8B5CF6;
               border-radius: 8px;
             }
             .ingredients-table th {
-              background: linear-gradient(135deg, #FF6B35, #FFB547);
+              background: linear-gradient(135deg, #8B5CF6, #C084FC);
               color: white;
               font-weight: 800;
               font-size: 12px;
@@ -250,7 +314,7 @@ function App() {
             }
             .ingredients-table td {
               padding: 10px 12px;
-              border-bottom: 1px solid #FFB547;
+              border-bottom: 1px solid #C084FC;
               font-weight: 500;
             }
             .cost-box {
@@ -263,14 +327,14 @@ function App() {
             }
             .step {
               background: #F8FAFC;
-              border-left: 4px solid #FF6B35;
+              border-left: 4px solid #8B5CF6;
               padding: 15px;
               margin: 10px 0;
               border-radius: 0 8px 8px 0;
             }
             .tip {
-              background: #FFF7ED;
-              border: 2px solid #FFB547;
+              background: #F3E8FF;
+              border: 2px solid #C084FC;
               border-radius: 8px;
               padding: 12px;
               margin: 10px 0;
@@ -357,7 +421,7 @@ function App() {
           if (parts.length >= 3) {
             return (
               <tr key={`ing-${ingIndex}`} className="slide-in-bottom" style={{animationDelay: `${ingIndex * 0.1}s`}}>
-                <td className="font-semibold text-blue-100">{parts[0].trim()}</td>
+                <td className="font-semibold text-purple-200">{parts[0].trim()}</td>
                 <td className="text-center text-gray-300">{parts[1].trim()}</td>
                 <td className="text-right font-bold text-green-300">{parts[2].trim()}</td>
               </tr>
@@ -411,7 +475,7 @@ function App() {
       if (line.startsWith('💡') || line.startsWith('🔥') || line.startsWith('🌀')) {
         return (
           <div key={index} className="tip-box slide-in-bottom">
-            <div className="font-semibold text-orange-100">{line}</div>
+            <div className="font-semibold text-purple-100">{line}</div>
           </div>
         );
       }
@@ -488,15 +552,15 @@ function App() {
       <div className="min-h-screen relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full filter blur-3xl"></div>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full filter blur-3xl"></div>
         </div>
         
         <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
           <div className="max-w-md w-full">
             <div className="text-center mb-12 slide-in-bottom">
               <div className="mb-8">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center pulse-glow">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center pulse-glow">
                   <span className="text-4xl">👨‍🍳</span>
                 </div>
               </div>
@@ -543,7 +607,7 @@ function App() {
                 </h2>
                 <form onSubmit={handleRegistration} className="space-y-6">
                   <div>
-                    <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                    <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
                       EMAIL
                     </label>
                     <input
@@ -556,7 +620,7 @@ function App() {
                     />
                   </div>
                   <div>
-                    <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                    <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
                       ИМЯ
                     </label>
                     <input
@@ -569,7 +633,7 @@ function App() {
                     />
                   </div>
                   <div>
-                    <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                    <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
                       ГОРОД
                     </label>
                     <select
@@ -595,7 +659,7 @@ function App() {
                 </form>
                 <button
                   onClick={() => setShowRegistration(false)}
-                  className="w-full mt-4 text-amber-300 hover:text-amber-200 text-sm font-semibold uppercase tracking-wide"
+                  className="w-full mt-4 text-purple-300 hover:text-purple-200 text-sm font-semibold uppercase tracking-wide"
                 >
                   НАЗАД
                 </button>
@@ -611,27 +675,55 @@ function App() {
     <div className="min-h-screen relative">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full filter blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full filter blur-3xl"></div>
+        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full filter blur-3xl"></div>
       </div>
 
-      <header className="relative z-10 card-glass border-0 border-b border-orange-400/30 rounded-none">
+      {/* Voice Recognition Modal */}
+      {showVoiceModal && (
+        <div className="voice-status fade-in-scale">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-purple-300 mb-4">ГОЛОСОВОЙ ВВОД</h3>
+            <p className="text-gray-300 mb-4">{voiceStatus}</p>
+            <div className="voice-waves">
+              <div className="voice-wave"></div>
+              <div className="voice-wave"></div>
+              <div className="voice-wave"></div>
+              <div className="voice-wave"></div>
+              <div className="voice-wave"></div>
+            </div>
+            <button
+              onClick={stopVoiceRecognition}
+              className="btn-secondary mt-4"
+            >
+              ОСТАНОВИТЬ
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header className="relative z-10 card-glass border-0 border-b border-purple-400/30 rounded-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center slide-in-left">
               <h1 className="heading-card text-3xl">RECEPTOR</h1>
-              <span className="ml-4 text-amber-300 font-semibold uppercase tracking-wide">AI для шеф-поваров</span>
+              <span className="ml-4 text-purple-300 font-semibold uppercase tracking-wide">AI для шеф-поваров</span>
             </div>
             <div className="flex items-center space-x-6 slide-in-right">
               <span className="text-gray-300 font-medium">
-                <span className="text-amber-300 font-bold">{currentUser.name}</span>
+                <span className="text-purple-300 font-bold">{currentUser.name}</span>
                 <span className="text-gray-400 ml-2">
                   ({cities.find(c => c.code === currentUser.city)?.name})
                 </span>
               </span>
               <button
                 onClick={handleLogout}
-                className="text-orange-300 hover:text-orange-200 font-semibold uppercase tracking-wide transition-all duration-300"
+                className="text-purple-300 hover:text-purple-200 font-semibold uppercase tracking-wide transition-all duration-300"
               >
                 ВЫЙТИ
               </button>
@@ -650,17 +742,29 @@ function App() {
               </h2>
               <form onSubmit={handleGenerateTechCard} className="space-y-6">
                 <div>
-                  <label className="block text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                  <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
                     НАЗВАНИЕ БЛЮДА
                   </label>
-                  <input
-                    type="text"
-                    value={dishName}
-                    onChange={(e) => setDishName(e.target.value)}
-                    placeholder="Например: Стейк с картофелем"
-                    className="w-full input-modern"
-                    required
-                  />
+                  <div className="voice-input-container">
+                    <input
+                      type="text"
+                      value={dishName}
+                      onChange={(e) => setDishName(e.target.value)}
+                      placeholder="Например: Стейк с картофелем"
+                      className="input-modern"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={startVoiceRecognition}
+                      className={`btn-voice ${isListening ? 'recording' : ''}`}
+                      title="Голосовой ввод"
+                    >
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -673,7 +777,7 @@ function App() {
 
               {/* AI Editing */}
               {techCard && (
-                <div className="mt-8 border-t border-orange-400/30 pt-8 slide-in-bottom">
+                <div className="mt-8 border-t border-purple-400/30 pt-8 slide-in-bottom">
                   <h3 className="heading-card text-lg mb-6">
                     🤖 РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
                   </h3>
@@ -705,14 +809,14 @@ function App() {
 
               {/* Manual Editing */}
               {isEditing && ingredients.length > 0 && (
-                <div className="mt-8 border-t border-orange-400/30 pt-8 slide-in-bottom">
+                <div className="mt-8 border-t border-purple-400/30 pt-8 slide-in-bottom">
                   <h3 className="heading-card text-lg mb-6">
                     ✏️ РЕДАКТИРОВАТЬ ИНГРЕДИЕНТЫ
                   </h3>
                   <div className="space-y-4 max-h-80 overflow-y-auto">
                     {ingredients.map((ingredient, index) => (
                       <div key={index} className="card-glass p-4">
-                        <div className="text-amber-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                        <div className="text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
                           {ingredient.name}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -750,7 +854,7 @@ function App() {
                       className={`history-item ${currentTechCardId === card.id ? 'active' : ''}`}
                       style={{animationDelay: `${index * 0.1}s`}}
                     >
-                      <div className="font-bold text-amber-300 text-sm uppercase tracking-wide">
+                      <div className="font-bold text-purple-300 text-sm uppercase tracking-wide">
                         {card.dish_name}
                       </div>
                       <div className="text-gray-400 text-xs font-medium">
@@ -785,8 +889,8 @@ function App() {
             ) : (
               <div className="card-glass p-12 text-center slide-in-scale">
                 <div className="mb-8">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-400/30 to-amber-500/30 rounded-2xl flex items-center justify-center border-2 border-orange-400/30">
-                    <svg className="w-12 h-12 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-purple-400/30 to-pink-500/30 rounded-2xl flex items-center justify-center border-2 border-purple-400/30">
+                    <svg className="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
@@ -795,11 +899,11 @@ function App() {
                   ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ
                 </h3>
                 <p className="text-subtitle">
-                  Введите название блюда слева и нажмите <span className="text-amber-300 font-bold">"СОЗДАТЬ ТЕХКАРТУ"</span>
+                  Введите название блюда слева и нажмите <span className="text-purple-300 font-bold">"СОЗДАТЬ ТЕХКАРТУ"</span>
                 </p>
                 <div className="mt-8">
                   <div className="selling-point">
-                    ⚡ ПРОФЕССИОНАЛЬНОЕ РЕШЕНИЕ ДЛЯ ШЕФОВ
+                    🎤 ПОПРОБУЙТЕ ГОЛОСОВОЙ ВВОД!
                   </div>
                 </div>
               </div>
