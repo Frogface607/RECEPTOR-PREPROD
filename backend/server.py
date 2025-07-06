@@ -321,14 +321,19 @@ async def get_user_tech_cards(user_id: str):
     return [TechCard(**card) for card in tech_cards]
 
 @api_router.put("/tech-card/{tech_card_id}")
-async def update_tech_card(tech_card_id: str, content: str):
-    result = await db.tech_cards.update_one(
-        {"id": tech_card_id},
-        {"$set": {"content": content, "updated_at": datetime.utcnow()}}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Tech card not found")
-    return {"success": True}
+async def update_tech_card(tech_card_id: str, update_data: dict):
+    try:
+        content = update_data.get("content", "")
+        result = await db.tech_cards.update_one(
+            {"id": tech_card_id},
+            {"$set": {"content": content, "updated_at": datetime.utcnow()}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Tech card not found")
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Error updating tech card: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating tech card: {str(e)}")
 
 @api_router.post("/edit-tech-card")
 async def edit_tech_card(request: EditRequest):
