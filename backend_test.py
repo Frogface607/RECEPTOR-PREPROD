@@ -130,6 +130,9 @@ def run_tests():
     test_suite.addTest(ReceptorAPITest('test_03_get_user'))
     test_suite.addTest(ReceptorAPITest('test_04_generate_tech_card'))
     test_suite.addTest(ReceptorAPITest('test_05_get_user_tech_cards'))
+    test_suite.addTest(ReceptorAPITest('test_06_parse_ingredients'))
+    test_suite.addTest(ReceptorAPITest('test_07_edit_tech_card'))
+    test_suite.addTest(ReceptorAPITest('test_08_update_tech_card'))
     
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(test_suite)
