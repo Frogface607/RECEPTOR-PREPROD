@@ -874,9 +874,9 @@ function App() {
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left Panel */}
-          <div className="lg:col-span-1 slide-in-left">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+          {/* Left Panel - Controls */}
+          <div className="lg:col-span-1 slide-in-left space-y-8">
             <div className="card-glass p-8">
               <h2 className="heading-card mb-6">
                 СОЗДАТЬ ТЕХКАРТУ
@@ -887,12 +887,12 @@ function App() {
                     НАЗВАНИЕ БЛЮДА
                   </label>
                   <div className="voice-input-container">
-                    <input
-                      type="text"
+                    <textarea
                       value={dishName}
                       onChange={(e) => setDishName(e.target.value)}
-                      placeholder="Например: Стейк с картофелем"
-                      className="input-modern"
+                      placeholder="Опишите блюдо подробно. Например: Стейк из говядины с картофельным пюре и соусом из белых грибов"
+                      className="input-modern min-h-[120px] resize-none"
+                      rows={5}
                       required
                     />
                     <button
@@ -950,12 +950,12 @@ function App() {
                     РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
                   </h3>
                   <form onSubmit={handleEditWithAI} className="space-y-4">
-                    <input
-                      type="text"
+                    <textarea
                       value={editInstruction}
                       onChange={(e) => setEditInstruction(e.target.value)}
-                      placeholder="Например: увеличить порцию в 2 раза"
-                      className="w-full input-modern"
+                      placeholder="Детально опишите что изменить. Например: увеличить порцию в 2 раза, заменить картофель на рис, добавить 100г сливочного масла"
+                      className="w-full input-modern min-h-[100px] resize-none"
+                      rows={4}
                     />
                     <button
                       type="submit"
@@ -1027,47 +1027,31 @@ function App() {
                   </div>
                 </div>
               )}
-
-              {/* History */}
-              <div className="mt-10 slide-in-bottom">
-                <h3 className="heading-card text-lg mb-6">
-                  ИСТОРИЯ ({userTechCards.length})
-                </h3>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {userTechCards.slice(0, 10).map((card, index) => (
-                    <div
-                      key={card.id}
-                      onClick={() => handleSelectTechCard(card)}
-                      className={`history-item ${currentTechCardId === card.id ? 'active' : ''}`}
-                      style={{animationDelay: `${index * 0.1}s`}}
-                    >
-                      <div className="font-bold text-purple-300 text-sm uppercase tracking-wide">
-                        {card.dish_name}
-                      </div>
-                      <div className="text-gray-400 text-xs font-medium">
-                        {new Date(card.created_at).toLocaleDateString('ru-RU')}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
-          {/* Right Panel */}
-          <div className="lg:col-span-2 slide-in-right">
+          {/* Center Panel - Main Content */}
+          <div className="lg:col-span-3 slide-in-right">
             {techCard ? (
               <div className="tech-card-container">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="heading-section">
                     ТЕХНОЛОГИЧЕСКАЯ КАРТА
                   </h2>
-                  <button 
-                    onClick={handlePrintTechCard}
-                    className="btn-success"
-                  >
-                    ЭКСПОРТ В PDF
-                  </button>
+                  <div className="flex space-x-4">
+                    <button 
+                      onClick={() => navigator.clipboard.writeText(techCard)}
+                      className="btn-secondary"
+                    >
+                      КОПИРОВАТЬ
+                    </button>
+                    <button 
+                      onClick={handlePrintTechCard}
+                      className="btn-success"
+                    >
+                      ЭКСПОРТ В PDF
+                    </button>
+                  </div>
                 </div>
                 <div className="tech-card-content">
                   {formatTechCard(techCard)}
@@ -1095,6 +1079,48 @@ function App() {
                 </div>
               </div>
             )}
+
+            {/* Collapsible History */}
+            <div className="mt-10 slide-in-bottom">
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="w-full flex justify-between items-center p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-all"
+              >
+                <h3 className="heading-card text-lg">
+                  ИСТОРИЯ ({userTechCards.length})
+                </h3>
+                <svg 
+                  className={`w-5 h-5 transition-transform ${showHistory ? 'rotate-180' : ''}`} 
+                  fill="currentColor" 
+                  viewBox="0 0 20 20"
+                >
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              {showHistory && (
+                <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
+                  {userTechCards
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .slice(0, 20)
+                    .map((card, index) => (
+                    <div
+                      key={card.id}
+                      onClick={() => handleSelectTechCard(card)}
+                      className={`history-item ${currentTechCardId === card.id ? 'active' : ''}`}
+                      style={{animationDelay: `${index * 0.1}s`}}
+                    >
+                      <div className="font-bold text-purple-300 text-sm uppercase tracking-wide">
+                        {card.dish_name}
+                      </div>
+                      <div className="text-gray-400 text-xs font-medium">
+                        {new Date(card.created_at).toLocaleDateString('ru-RU')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
