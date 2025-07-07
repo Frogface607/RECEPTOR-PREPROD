@@ -396,41 +396,54 @@ function App() {
     return content.split('\n').map((line, index) => {
       // Main title
       if (line.startsWith('**') && line.endsWith('**')) {
-        const title = line.replace(/\*\*/g, '');
+        const title = line.replace(/\*\*/g, '').trim();
         if (title.includes('Название:')) {
+          const dishName = title.replace('Название:', '').trim();
           return (
             <div key={index} className="fade-in-scale">
               <div className="tech-card-title">
-                {title.replace('Название:', '').trim()}
+                {dishName}
               </div>
             </div>
           );
         }
         return (
           <div key={index} className="tech-card-section slide-in-bottom">
-            {title}
+            {title.replace(':', '')}
           </div>
         );
       }
       
-      // Ingredients table
-      if (line.includes('**Ингредиенты:**') && !isEditing) {
-        const ingredientLines = content.split('\n').slice(index + 1).filter(l => l.startsWith('- ') && l.includes(' — '));
-        const tableRows = ingredientLines.map((ingLine, ingIndex) => {
-          const parts = ingLine.replace('- ', '').split(' — ');
-          if (parts.length >= 3) {
-            return (
-              <tr key={`ing-${ingIndex}`} className="slide-in-bottom" style={{animationDelay: `${ingIndex * 0.1}s`}}>
-                <td className="font-semibold text-purple-200">{parts[0].trim()}</td>
-                <td className="text-center text-gray-300">{parts[1].trim()}</td>
-                <td className="text-right font-bold text-green-300">{parts[2].trim()}</td>
-              </tr>
-            );
-          }
-          return null;
-        }).filter(Boolean);
+      // Ingredients section - always show as table if not editing
+      if (line.trim() === '**Ингредиенты:**' && !isEditing) {
+        // Find all ingredient lines following this header
+        const allLines = content.split('\n');
+        const ingredientStartIndex = allLines.indexOf(line);
+        const ingredientLines = [];
         
-        if (tableRows.length > 0) {
+        for (let i = ingredientStartIndex + 1; i < allLines.length; i++) {
+          const currentLine = allLines[i].trim();
+          if (currentLine.startsWith('**')) break; // Stop at next section
+          if (currentLine.startsWith('- ') && currentLine.includes(' — ')) {
+            ingredientLines.push(currentLine);
+          }
+        }
+        
+        if (ingredientLines.length > 0) {
+          const tableRows = ingredientLines.map((ingLine, ingIndex) => {
+            const parts = ingLine.replace('- ', '').split(' — ');
+            if (parts.length >= 3) {
+              return (
+                <tr key={`ing-${ingIndex}`} className="slide-in-bottom" style={{animationDelay: `${ingIndex * 0.1}s`}}>
+                  <td className="font-semibold text-purple-200 py-3 px-4">{parts[0].trim()}</td>
+                  <td className="text-center text-gray-300 py-3 px-4">{parts[1].trim()}</td>
+                  <td className="text-right font-bold text-green-300 py-3 px-4">{parts[2].trim()}</td>
+                </tr>
+              );
+            }
+            return null;
+          }).filter(Boolean);
+          
           return (
             <div key={index} className="my-8 slide-in-right">
               <div className="tech-card-section">ИНГРЕДИЕНТЫ</div>
@@ -438,9 +451,9 @@ function App() {
                 <table className="w-full">
                   <thead>
                     <tr>
-                      <th className="text-left py-4 px-6">ИНГРЕДИЕНТ</th>
-                      <th className="text-center py-4 px-6">КОЛИЧЕСТВО</th>
-                      <th className="text-right py-4 px-6">ЦЕНА</th>
+                      <th className="text-left py-4 px-4 text-purple-300 font-bold">ИНГРЕДИЕНТ</th>
+                      <th className="text-center py-4 px-4 text-purple-300 font-bold">КОЛИЧЕСТВО</th>
+                      <th className="text-right py-4 px-4 text-purple-300 font-bold">ЦЕНА</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -453,12 +466,14 @@ function App() {
         }
       }
       
-      // Skip processed ingredient lines
+      // Skip ingredient lines that are already rendered in table
       if (line.startsWith('- ') && !isEditing && content.includes('**Ингредиенты:**')) {
-        const isInIngredientsSection = content.split('\n').slice(0, index).some(l => l.includes('**Ингредиенты:**')) &&
-                                      !content.split('\n').slice(0, index).some(l => l.includes('**Пошаговый рецепт:**'));
-        if (isInIngredientsSection && line.includes(' — ')) {
-          return null;
+        const allLines = content.split('\n');
+        const ingredientsIndex = allLines.findIndex(l => l.trim() === '**Ингредиенты:**');
+        const nextSectionIndex = allLines.findIndex((l, i) => i > ingredientsIndex && l.startsWith('**'));
+        
+        if (index > ingredientsIndex && (nextSectionIndex === -1 || index < nextSectionIndex) && line.includes(' — ')) {
+          return null; // Skip ingredient lines as they're rendered in table
         }
       }
       
@@ -471,47 +486,52 @@ function App() {
         );
       }
       
-      // Tips and advice
-      if (line.startsWith('💡') || line.startsWith('🔥') || line.startsWith('🌀')) {
+      // Tips and advice - remove emojis
+      if (line.includes('Совет от RECEPTOR:') || line.includes('Фишка для продвинутых:') || line.includes('Вариации:')) {
+        const cleanLine = line.replace(/💡|🔥|🌀/g, '').trim();
         return (
           <div key={index} className="tip-box slide-in-bottom">
-            <div className="font-semibold text-purple-100">{line}</div>
+            <div className="font-semibold text-purple-100">{cleanLine}</div>
           </div>
         );
       }
       
-      // Food pairing
-      if (line.startsWith('🍷') || line.startsWith('🍺') || line.startsWith('🍹')) {
+      // Food pairing - remove emojis
+      if (line.includes('Вино:') || line.includes('Пиво:') || line.includes('Коктейли:')) {
+        const cleanLine = line.replace(/🍷|🍺|🍹|🥤|🍽|🎯/g, '').trim();
         return (
           <div key={index} className="ml-6 mb-2 font-medium text-pink-200">
-            {line}
+            {cleanLine}
           </div>
         );
       }
       
-      // Sales script
-      if (line.startsWith('💬')) {
+      // Sales script - remove emojis
+      if (line.includes('СКРИПТ ПРОДАЖ')) {
+        const cleanLine = line.replace(/💬/g, '').trim();
         return (
           <div key={index} className="tip-box border-purple-400 bg-purple-900/20">
-            <div className="font-semibold text-purple-200">{line}</div>
+            <div className="font-semibold text-purple-200">{cleanLine}</div>
           </div>
         );
       }
       
-      // Photography tips
-      if (line.startsWith('📸')) {
+      // Photography tips - remove emojis
+      if (line.includes('Фотогеничность')) {
+        const cleanLine = line.replace(/📸/g, '').trim();
         return (
           <div key={index} className="tip-box border-blue-400 bg-blue-900/20">
-            <div className="font-medium text-blue-200">{line}</div>
+            <div className="font-medium text-blue-200">{cleanLine}</div>
           </div>
         );
       }
       
-      // Menu tags
-      if (line.startsWith('🏷️')) {
+      // Menu tags - remove emojis
+      if (line.includes('Теги для меню')) {
+        const cleanLine = line.replace(/🏷️/g, '').trim();
         return (
           <div key={index} className="font-medium text-yellow-300 mb-4">
-            {line}
+            {cleanLine}
           </div>
         );
       }
@@ -535,7 +555,7 @@ function App() {
       }
       
       // Regular paragraphs
-      if (line.trim()) {
+      if (line.trim() && !line.startsWith('**')) {
         return (
           <div key={index} className="mb-3 text-gray-300 font-medium leading-relaxed">
             {line}
