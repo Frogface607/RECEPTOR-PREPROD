@@ -942,6 +942,33 @@ function App() {
                 >
                   {isGenerating ? 'ГЕНЕРИРУЕТСЯ...' : 'СОЗДАТЬ ТЕХКАРТУ'}
                 </button>
+                
+                {/* Usage Limits Display */}
+                {userSubscription && userSubscription.plan_info.monthly_tech_cards !== -1 && (
+                  <div className="mt-4 p-3 bg-gray-800/50 rounded-lg">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Использовано в этом месяце:</span>
+                      <span className={`font-bold ${
+                        getRemainingTechCards() <= 3 ? 'text-red-400' : 'text-green-400'
+                      }`}>
+                        {userSubscription.monthly_tech_cards_used}/{userSubscription.plan_info.monthly_tech_cards}
+                      </span>
+                    </div>
+                    {getRemainingTechCards() <= 3 && getRemainingTechCards() > 0 && (
+                      <div className="mt-2 text-yellow-400 text-xs">
+                        Осталось {getRemainingTechCards()} техкарт
+                      </div>
+                    )}
+                    {getRemainingTechCards() <= 0 && (
+                      <button
+                        onClick={() => setShowPricingModal(true)}
+                        className="w-full mt-2 btn-primary"
+                      >
+                        ОБНОВИТЬ ПОДПИСКУ
+                      </button>
+                    )}
+                  </div>
+                )}
               </form>
 
               {/* AI Editing */}
