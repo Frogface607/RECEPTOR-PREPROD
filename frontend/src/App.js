@@ -1434,6 +1434,110 @@ function App() {
                       )}
                     </div>
                   )}
+                  
+                  {/* Interactive Steps Editor */}
+                  {editableSteps.length > 0 && (
+                    <div className="mt-8 bg-gray-800/50 rounded-lg p-6">
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="heading-card text-xl">
+                          РЕДАКТОР ЭТАПОВ ПРИГОТОВЛЕНИЯ
+                        </h3>
+                        <button
+                          onClick={() => setIsEditingSteps(!isEditingSteps)}
+                          className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                            isEditingSteps 
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'bg-purple-600 hover:bg-purple-700 text-white'
+                          }`}
+                        >
+                          {isEditingSteps ? 'СОХРАНИТЬ ЭТАПЫ' : 'РЕДАКТИРОВАТЬ ЭТАПЫ'}
+                        </button>
+                      </div>
+                      
+                      {isEditingSteps ? (
+                        <div className="space-y-4">
+                          {editableSteps.map((step, index) => (
+                            <div key={step.id} className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                              <div className="flex items-start space-x-4">
+                                <div className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-1">
+                                  {step.number}
+                                </div>
+                                
+                                <textarea
+                                  value={step.text}
+                                  onChange={(e) => updateStep(step.id, e.target.value)}
+                                  className="flex-1 bg-gray-700 text-white px-3 py-2 rounded border-0 focus:ring-2 focus:ring-purple-500 min-h-[80px] resize-none"
+                                  placeholder="Описание этапа приготовления..."
+                                />
+                                
+                                <div className="flex flex-col space-y-2 flex-shrink-0">
+                                  <button
+                                    onClick={() => moveStep(step.id, 'up')}
+                                    disabled={index === 0}
+                                    className={`p-1 rounded ${
+                                      index === 0 
+                                        ? 'text-gray-600 cursor-not-allowed' 
+                                        : 'text-blue-400 hover:text-blue-300'
+                                    }`}
+                                    title="Переместить вверх"
+                                  >
+                                    ↑
+                                  </button>
+                                  <button
+                                    onClick={() => moveStep(step.id, 'down')}
+                                    disabled={index === editableSteps.length - 1}
+                                    className={`p-1 rounded ${
+                                      index === editableSteps.length - 1 
+                                        ? 'text-gray-600 cursor-not-allowed' 
+                                        : 'text-blue-400 hover:text-blue-300'
+                                    }`}
+                                    title="Переместить вниз"
+                                  >
+                                    ↓
+                                  </button>
+                                  <button
+                                    onClick={() => removeStep(step.id)}
+                                    className="text-red-400 hover:text-red-300 p-1"
+                                    title="Удалить этап"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <div className="flex justify-between items-center pt-4">
+                            <button
+                              onClick={addStep}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold"
+                            >
+                              + ДОБАВИТЬ ЭТАП
+                            </button>
+                            
+                            <div className="flex space-x-4">
+                              <button
+                                onClick={saveStepsToTechCard}
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold"
+                              >
+                                ПРИМЕНИТЬ ИЗМЕНЕНИЯ
+                              </button>
+                              <button
+                                onClick={() => setIsEditingSteps(false)}
+                                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold"
+                              >
+                                ОТМЕНА
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-400 text-center py-8">
+                          Нажмите "РЕДАКТИРОВАТЬ ЭТАПЫ" чтобы изменить последовательность приготовления
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
