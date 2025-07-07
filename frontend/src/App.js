@@ -881,7 +881,7 @@ function App() {
                     onClick={handlePrintTechCard}
                     className="btn-success"
                   >
-                    📄 ЭКСПОРТ В PDF
+                    ЭКСПОРТ В PDF
                   </button>
                 </div>
                 <div className="tech-card-content">
