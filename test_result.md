@@ -306,10 +306,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Create Subscription Management Pages"
-    - "Add Premium UI Elements"
-    - "Implement Kitchen Equipment Interface"
-    - "Add Usage Limit Indicators"
+    - "Fix Ingredients Table Display"
+    - "Fix Header Formatting"
+    - "Implement Interactive Ingredients Editor"
+    - "Implement Interactive Steps Editor"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
