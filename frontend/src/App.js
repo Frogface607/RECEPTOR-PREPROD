@@ -813,7 +813,7 @@ function App() {
               {isEditing && ingredients.length > 0 && (
                 <div className="mt-8 border-t border-purple-400/30 pt-8 slide-in-bottom">
                   <h3 className="heading-card text-lg mb-6">
-                    ✏️ РЕДАКТИРОВАТЬ ИНГРЕДИЕНТЫ
+                    РЕДАКТИРОВАТЬ ИНГРЕДИЕНТЫ
                   </h3>
                   <div className="space-y-4 max-h-80 overflow-y-auto">
                     {ingredients.map((ingredient, index) => (
