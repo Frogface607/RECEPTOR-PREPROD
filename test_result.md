@@ -143,11 +143,11 @@ backend:
 
   - task: "Implement Kitchen Equipment Feature"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -155,6 +155,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Added KITCHEN_EQUIPMENT config with 21 equipment types and /update-kitchen-equipment endpoint. Enhanced tech card generation with equipment context."
+      - working: true
+        agent: "testing"
+        comment: "Kitchen equipment feature is working correctly. The system properly stores user equipment selections and restricts this feature to PRO users only. Equipment-aware recipe generation is functional, though equipment mentions in recipes could be more prominent."
 
   - task: "Add Usage Limits and Restrictions"
     implemented: true
