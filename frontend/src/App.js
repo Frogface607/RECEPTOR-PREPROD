@@ -19,6 +19,15 @@ function App() {
   const [currentTechCardId, setCurrentTechCardId] = useState(null);
   const [ingredients, setIngredients] = useState([]);
 
+  // Subscription states
+  const [subscriptionPlans, setSubscriptionPlans] = useState({});
+  const [userSubscription, setUserSubscription] = useState(null);
+  const [kitchenEquipment, setKitchenEquipment] = useState({});
+  const [userEquipment, setUserEquipment] = useState([]);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('');
