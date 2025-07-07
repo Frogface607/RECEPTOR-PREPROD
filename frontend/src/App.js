@@ -43,6 +43,8 @@ function App() {
 
   useEffect(() => {
     fetchCities();
+    fetchSubscriptionPlans();
+    fetchKitchenEquipment();
     initVoiceRecognition();
     const savedUser = localStorage.getItem('receptor_user');
     if (savedUser) {
@@ -53,6 +55,7 @@ function App() {
   useEffect(() => {
     if (currentUser) {
       fetchUserTechCards();
+      fetchUserSubscription();
     }
   }, [currentUser]);
 
