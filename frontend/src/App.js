@@ -125,6 +125,34 @@ function App() {
     }
   };
 
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const response = await axios.get(`${API}/subscription-plans`);
+      setSubscriptionPlans(response.data);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+    }
+  };
+
+  const fetchKitchenEquipment = async () => {
+    try {
+      const response = await axios.get(`${API}/kitchen-equipment`);
+      setKitchenEquipment(response.data);
+    } catch (error) {
+      console.error('Error fetching kitchen equipment:', error);
+    }
+  };
+
+  const fetchUserSubscription = async () => {
+    try {
+      const response = await axios.get(`${API}/user-subscription/${currentUser.id}`);
+      setUserSubscription(response.data);
+      setUserEquipment(response.data.kitchen_equipment || []);
+    } catch (error) {
+      console.error('Error fetching user subscription:', error);
+    }
+  };
+
   const fetchUserTechCards = async () => {
     try {
       const response = await axios.get(`${API}/tech-cards/${currentUser.id}`);
