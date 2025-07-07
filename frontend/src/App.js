@@ -381,8 +381,78 @@ function App() {
   };
 
   const handlePrintTechCard = () => {
-    const dishName = techCard.split('\n')[0].replace('**Название:**', '').trim();
+    const dishName = techCard.split('\n')[0].replace(/\*\*/g, '').replace('Название:', '').trim();
     const printWindow = window.open('', '_blank');
+    
+    // Process content to create ingredients table
+    const lines = techCard.split('\n');
+    let processedContent = '';
+    let inIngredientsSection = false;
+    let ingredientRows = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.includes('Ингредиенты')) {
+        inIngredientsSection = true;
+        processedContent += `<h2 style="color: #1A1B23; font-size: 18px; font-weight: 800; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #C084FC; padding-bottom: 8px;">ИНГРЕДИЕНТЫ</h2>`;
+        
+        // Collect ingredient lines
+        for (let j = i + 1; j < lines.length; j++) {
+          const nextLine = lines[j];
+          if (nextLine.startsWith('**') || nextLine.includes('Пошаговый рецепт') || nextLine.includes('Время:')) break;
+          if (nextLine.startsWith('- ') && nextLine.includes(' — ')) {
+            const parts = nextLine.replace('- ', '').split(' — ');
+            if (parts.length >= 3) {
+              ingredientRows.push({
+                name: parts[0].trim(),
+                quantity: parts[1].trim(),
+                price: parts[2].trim()
+              });
+            }
+          }
+        }
+        
+        // Create ingredients table
+        if (ingredientRows.length > 0) {
+          processedContent += `
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 2px solid #8B5CF6; border-radius: 8px;">
+              <thead>
+                <tr style="background: linear-gradient(135deg, #8B5CF6, #C084FC);">
+                  <th style="color: white; font-weight: 800; font-size: 12px; text-transform: uppercase; padding: 12px; text-align: left;">ИНГРЕДИЕНТ</th>
+                  <th style="color: white; font-weight: 800; font-size: 12px; text-transform: uppercase; padding: 12px; text-align: center;">КОЛИЧЕСТВО</th>
+                  <th style="color: white; font-weight: 800; font-size: 12px; text-transform: uppercase; padding: 12px; text-align: right;">ЦЕНА</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ingredientRows.map(ing => `
+                  <tr>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #C084FC; font-weight: 500;">${ing.name}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #C084FC; text-align: center;">${ing.quantity}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #C084FC; text-align: right; font-weight: bold;">${ing.price}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+        
+        continue;
+      }
+      
+      // Skip ingredient lines as they're already processed
+      if (inIngredientsSection && line.startsWith('- ') && line.includes(' — ')) {
+        continue;
+      }
+      
+      if (line.startsWith('**') && !line.includes('Ингредиенты')) {
+        inIngredientsSection = false;
+      }
+      
+      // Process other content
+      processedContent += formatTechCardForPrint([line]).join('');
+    }
+    
     const techCardHtml = `
       <!DOCTYPE html>
       <html>
@@ -420,57 +490,14 @@ function App() {
               border-bottom: 2px solid #C084FC; 
               padding-bottom: 8px; 
             }
-            .ingredients-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-              border: 2px solid #8B5CF6;
-              border-radius: 8px;
-            }
-            .ingredients-table th {
-              background: linear-gradient(135deg, #8B5CF6, #C084FC);
-              color: white;
-              font-weight: 800;
-              font-size: 12px;
-              text-transform: uppercase;
-              padding: 12px;
-            }
-            .ingredients-table td {
-              padding: 10px 12px;
-              border-bottom: 1px solid #C084FC;
-              font-weight: 500;
-            }
-            .cost-box {
-              background: #F0FDF4;
-              border: 2px solid #10B981;
-              border-radius: 8px;
-              padding: 15px;
-              margin: 15px 0;
-              font-weight: 700;
-            }
-            .step {
-              background: #F8FAFC;
-              border-left: 4px solid #8B5CF6;
-              padding: 15px;
-              margin: 10px 0;
-              border-radius: 0 8px 8px 0;
-            }
-            .tip {
-              background: #F3E8FF;
-              border: 2px solid #C084FC;
-              border-radius: 8px;
-              padding: 12px;
-              margin: 10px 0;
-              font-style: italic;
-            }
             @media print {
               body { margin: 20px; }
             }
           </style>
         </head>
         <body>
-          <h1>📋 ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
-          <div>${formatTechCardForPrint(techCard)}</div>
+          <h1>ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
+          <div>${processedContent}</div>
           <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B;">
             <p><strong>Сгенерировано RECEPTOR AI</strong></p>
             <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
