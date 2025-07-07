@@ -28,6 +28,8 @@ function App() {
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [editableIngredients, setEditableIngredients] = useState([]);
+  const [isEditingIngredients, setIsEditingIngredients] = useState(false);
 
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
