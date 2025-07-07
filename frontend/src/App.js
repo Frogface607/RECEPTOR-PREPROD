@@ -1099,6 +1099,130 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Pricing Modal */}
+      {showPricingModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="heading-section text-2xl">ВЫБЕРИТЕ ТАРИФ</h2>
+              <button
+                onClick={() => setShowPricingModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Object.entries(subscriptionPlans).map(([planKey, plan]) => (
+                <div
+                  key={planKey}
+                  className={`card-glass p-6 text-center ${
+                    userSubscription?.subscription_plan === planKey 
+                      ? 'border-2 border-purple-500' 
+                      : 'hover:border-purple-400/50'
+                  }`}
+                >
+                  <h3 className="heading-card text-xl mb-4">
+                    {plan.name}
+                    {planKey === 'pro' && <span className="text-xs ml-2 px-2 py-1 bg-purple-600 text-white rounded-full">ПОПУЛЯРНЫЙ</span>}
+                  </h3>
+                  
+                  <div className="text-3xl font-bold text-purple-300 mb-4">
+                    {plan.price === 0 ? 'БЕСПЛАТНО' : `${plan.price}₽`}
+                    {plan.price > 0 && <span className="text-sm text-gray-400">/месяц</span>}
+                  </div>
+                  
+                  <ul className="text-sm text-gray-300 space-y-2 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center">
+                        <span className="text-green-400 mr-2">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  {userSubscription?.subscription_plan === planKey ? (
+                    <button className="w-full btn-primary opacity-50 cursor-not-allowed">
+                      ТЕКУЩИЙ ТАРИФ
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleUpgradeSubscription(planKey)}
+                      disabled={isUpgrading}
+                      className={`w-full ${
+                        planKey === 'pro' ? 'btn-primary' : 'btn-secondary'
+                      } ${isUpgrading ? 'loading-pulse' : ''}`}
+                    >
+                      {isUpgrading ? 'ОБНОВЛЕНИЕ...' : 'ВЫБРАТЬ'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kitchen Equipment Modal */}
+      {showEquipmentModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="heading-section text-2xl">КУХОННОЕ ОБОРУДОВАНИЕ</h2>
+              <button
+                onClick={() => setShowEquipmentModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {Object.entries(kitchenEquipment).map(([categoryKey, equipment]) => (
+                <div key={categoryKey}>
+                  <h3 className="heading-card text-lg mb-4">
+                    {categoryKey === 'cooking_methods' ? 'СПОСОБЫ ПРИГОТОВЛЕНИЯ' :
+                     categoryKey === 'prep_equipment' ? 'ОБОРУДОВАНИЕ ДЛЯ ПОДГОТОВКИ' :
+                     'ХРАНЕНИЕ'}
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {equipment.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => toggleEquipment(item.id)}
+                        className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                          userEquipment.includes(item.id)
+                            ? 'bg-purple-600 border-purple-500 text-white'
+                            : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-purple-400'
+                        }`}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-end space-x-4 mt-8">
+              <button
+                onClick={() => setShowEquipmentModal(false)}
+                className="btn-secondary"
+              >
+                ОТМЕНА
+              </button>
+              <button
+                onClick={handleUpdateKitchenEquipment}
+                className="btn-primary"
+              >
+                СОХРАНИТЬ ({userEquipment.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
