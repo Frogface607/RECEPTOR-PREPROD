@@ -214,6 +214,8 @@ function App() {
     if (limit === -1) return Infinity;
     return Math.max(0, limit - userSubscription.monthly_tech_cards_used);
   };
+
+  const fetchUserTechCards = async () => {
     try {
       const response = await axios.get(`${API}/tech-cards/${currentUser.id}`);
       setUserTechCards(response.data);
