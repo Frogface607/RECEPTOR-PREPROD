@@ -253,6 +253,13 @@ function App() {
     e.preventDefault();
     if (!dishName.trim()) return;
 
+    // Check usage limits
+    const remaining = getRemainingTechCards();
+    if (remaining <= 0) {
+      setShowPricingModal(true);
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const response = await axios.post(`${API}/generate-tech-card`, {
@@ -266,9 +273,22 @@ function App() {
       setIsEditing(false);
       parseIngredients(response.data.tech_card);
       fetchUserTechCards();
+      
+      // Update user subscription data
+      if (userSubscription) {
+        setUserSubscription(prev => ({
+          ...prev,
+          monthly_tech_cards_used: response.data.monthly_used
+        }));
+      }
     } catch (error) {
       console.error('Error generating tech card:', error);
-      alert('Ошибка при генерации техкарты. Попробуйте еще раз.');
+      if (error.response?.status === 403) {
+        alert('Достигнут лимит техкарт. Обновите подписку для продолжения.');
+        setShowPricingModal(true);
+      } else {
+        alert('Ошибка при генерации техкарты. Попробуйте еще раз.');
+      }
     } finally {
       setIsGenerating(false);
     }
