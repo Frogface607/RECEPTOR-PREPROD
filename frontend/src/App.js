@@ -30,6 +30,8 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [editableIngredients, setEditableIngredients] = useState([]);
   const [isEditingIngredients, setIsEditingIngredients] = useState(false);
+  const [editableSteps, setEditableSteps] = useState([]);
+  const [isEditingSteps, setIsEditingSteps] = useState(false);
 
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
