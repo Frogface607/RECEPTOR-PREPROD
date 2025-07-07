@@ -125,11 +125,11 @@ backend:
 
   - task: "Create Subscription API Endpoints"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -137,6 +137,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Added endpoints: /subscription-plans, /user-subscription/{user_id}, /upgrade-subscription/{user_id}, /kitchen-equipment"
+      - working: true
+        agent: "testing"
+        comment: "All subscription API endpoints are working correctly. Tested /subscription-plans, /user-subscription/{user_id}, /upgrade-subscription/{user_id}, and /kitchen-equipment. All endpoints return appropriate responses and handle errors correctly."
 
   - task: "Implement Kitchen Equipment Feature"
     implemented: true
