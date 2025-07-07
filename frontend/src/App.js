@@ -418,6 +418,72 @@ function App() {
     })));
   };
 
+  const addStep = () => {
+    const newStep = {
+      id: `step-${Date.now()}`,
+      number: editableSteps.length + 1,
+      text: ''
+    };
+    setEditableSteps([...editableSteps, newStep]);
+  };
+
+  const removeStep = (id) => {
+    const filtered = editableSteps.filter(step => step.id !== id);
+    // Renumber steps
+    const renumbered = filtered.map((step, index) => ({
+      ...step,
+      number: index + 1
+    }));
+    setEditableSteps(renumbered);
+  };
+
+  const updateStep = (id, text) => {
+    setEditableSteps(editableSteps.map(step => 
+      step.id === id ? { ...step, text } : step
+    ));
+  };
+
+  const moveStep = (id, direction) => {
+    const currentIndex = editableSteps.findIndex(step => step.id === id);
+    if (
+      (direction === 'up' && currentIndex === 0) ||
+      (direction === 'down' && currentIndex === editableSteps.length - 1)
+    ) {
+      return;
+    }
+    
+    const newSteps = [...editableSteps];
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    
+    [newSteps[currentIndex], newSteps[newIndex]] = [newSteps[newIndex], newSteps[currentIndex]];
+    
+    // Renumber steps
+    const renumbered = newSteps.map((step, index) => ({
+      ...step,
+      number: index + 1
+    }));
+    
+    setEditableSteps(renumbered);
+  };
+
+  const saveStepsToTechCard = () => {
+    let updatedContent = techCard;
+    
+    // Create new steps section
+    const stepsSection = editableSteps.map(step => 
+      `${step.number}. ${step.text}`
+    ).join('\n\n');
+    
+    // Replace steps section
+    updatedContent = updatedContent.replace(
+      /(Пошаговый рецепт[:\s]*\n)([\s\S]*?)(\n\n.*?(Время:|Выход:|Себестоимость:|КБЖУ:))/,
+      `$1\n${stepsSection}\n$3`
+    );
+    
+    setTechCard(updatedContent);
+    setIsEditingSteps(false);
+  };
+
   const handleIngredientChange = (index, field, value) => {
     const newIngredients = [...ingredients];
     newIngredients[index][field] = value;
