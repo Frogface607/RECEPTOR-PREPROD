@@ -246,9 +246,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Implement Subscription Models and Plans"
-    - "Create Subscription API Endpoints"
-    - "Implement Kitchen Equipment Feature"
+    - "Create Subscription Management Pages"
+    - "Add Premium UI Elements"
+    - "Implement Kitchen Equipment Interface"
+    - "Add Usage Limit Indicators"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
