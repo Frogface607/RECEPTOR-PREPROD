@@ -1232,6 +1232,125 @@ function App() {
                 </div>
                 <div className="tech-card-content">
                   {formatTechCard(techCard)}
+                  
+                  {/* Interactive Ingredients Editor */}
+                  {editableIngredients.length > 0 && (
+                    <div className="mt-8 bg-gray-800/50 rounded-lg p-6">
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="heading-card text-xl">
+                          ИНТЕРАКТИВНЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ
+                        </h3>
+                        <button
+                          onClick={() => setIsEditingIngredients(!isEditingIngredients)}
+                          className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                            isEditingIngredients 
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'bg-purple-600 hover:bg-purple-700 text-white'
+                          }`}
+                        >
+                          {isEditingIngredients ? 'СОХРАНИТЬ ИЗМЕНЕНИЯ' : 'РЕДАКТИРОВАТЬ'}
+                        </button>
+                      </div>
+                      
+                      {isEditingIngredients ? (
+                        <div className="space-y-4">
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse bg-gray-900/50 rounded-lg overflow-hidden">
+                              <thead>
+                                <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
+                                  <th className="text-left py-3 px-4 text-white font-bold text-sm">ИНГРЕДИЕНТ</th>
+                                  <th className="text-center py-3 px-4 text-white font-bold text-sm">КОЛИЧЕСТВО</th>
+                                  <th className="text-center py-3 px-4 text-white font-bold text-sm">ЦЕНА (₽)</th>
+                                  <th className="text-center py-3 px-4 text-white font-bold text-sm">ДЕЙСТВИЯ</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {editableIngredients.map((ingredient, index) => (
+                                  <tr key={ingredient.id} className="border-b border-gray-700 hover:bg-gray-800/50">
+                                    <td className="py-3 px-4">
+                                      <input
+                                        type="text"
+                                        value={ingredient.name}
+                                        onChange={(e) => updateIngredient(ingredient.id, 'name', e.target.value)}
+                                        className="w-full bg-gray-700 text-white px-3 py-2 rounded border-0 focus:ring-2 focus:ring-purple-500"
+                                        placeholder="Название ингредиента"
+                                      />
+                                    </td>
+                                    <td className="py-3 px-4">
+                                      <input
+                                        type="text"
+                                        value={ingredient.quantity}
+                                        onChange={(e) => updateIngredient(ingredient.id, 'quantity', e.target.value)}
+                                        className="w-full bg-gray-700 text-white px-3 py-2 rounded border-0 focus:ring-2 focus:ring-purple-500 text-center"
+                                        placeholder="100 г"
+                                      />
+                                    </td>
+                                    <td className="py-3 px-4">
+                                      <input
+                                        type="number"
+                                        value={ingredient.price}
+                                        onChange={(e) => updateIngredient(ingredient.id, 'price', parseFloat(e.target.value) || 0)}
+                                        className="w-full bg-gray-700 text-white px-3 py-2 rounded border-0 focus:ring-2 focus:ring-purple-500 text-center"
+                                        placeholder="0"
+                                        step="0.01"
+                                      />
+                                    </td>
+                                    <td className="py-3 px-4 text-center">
+                                      <button
+                                        onClick={() => removeIngredient(ingredient.id)}
+                                        className="text-red-400 hover:text-red-300 font-bold text-lg px-2"
+                                        title="Удалить ингредиент"
+                                      >
+                                        ×
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          
+                          <div className="flex justify-between items-center">
+                            <button
+                              onClick={addIngredient}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold"
+                            >
+                              + ДОБАВИТЬ ИНГРЕДИЕНТ
+                            </button>
+                            
+                            <div className="text-right">
+                              <div className="text-sm text-gray-400">Общая стоимость:</div>
+                              <div className="text-xl font-bold text-green-400">
+                                {editableIngredients.reduce((sum, ing) => sum + (parseFloat(ing.price) || 0), 0).toFixed(2)} ₽
+                              </div>
+                              <div className="text-sm text-purple-400">
+                                Рекомендуемая цена: {(editableIngredients.reduce((sum, ing) => sum + (parseFloat(ing.price) || 0), 0) * 3).toFixed(2)} ₽
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex space-x-4">
+                            <button
+                              onClick={saveIngredientsToTechCard}
+                              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold"
+                            >
+                              ПРИМЕНИТЬ ИЗМЕНЕНИЯ
+                            </button>
+                            <button
+                              onClick={() => setIsEditingIngredients(false)}
+                              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold"
+                            >
+                              ОТМЕНА
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-400 text-center py-8">
+                          Нажмите "РЕДАКТИРОВАТЬ" чтобы изменить ингредиенты
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
