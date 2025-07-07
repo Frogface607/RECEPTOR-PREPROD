@@ -578,43 +578,62 @@ function App() {
   };
 
   const formatTechCard = (content) => {
-    return content.split('\n').map((line, index) => {
+    const lines = content.split('\n');
+    const result = [];
+    
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index].trim();
+      
       // Main title - clean format
-      if (line.startsWith('**') && line.endsWith('**') && line.includes('Название:')) {
+      if (line.startsWith('**') && line.endsWith('**') && line.includes('Название')) {
         const title = line.replace(/\*\*/g, '').replace('Название:', '').trim();
-        return (
+        result.push(
           <div key={index} className="fade-in-scale">
             <div className="tech-card-title">
               {title}
             </div>
           </div>
         );
+        continue;
       }
       
       // Section headers - clean format without stars
       if (line.startsWith('**') && line.endsWith('**')) {
         const title = line.replace(/\*\*/g, '').replace(':', '').trim();
-        return (
+        result.push(
           <div key={index} className="tech-card-section slide-in-bottom">
             {title}
           </div>
         );
+        continue;
       }
       
-      // Ingredients section - always show as formatted list
-      if (line.trim() === 'Ингредиенты' || line.includes('Ингредиенты')) {
-        // Find all ingredient lines following this header
-        const allLines = content.split('\n');
-        const currentIndex = allLines.findIndex((l, i) => i >= index && (l.trim() === 'Ингредиенты' || l.includes('Ингредиенты')));
+      // Ingredients section - CRITICAL FIX
+      if (line === 'Ингредиенты' || line.includes('Ингредиенты')) {
+        // Find all ingredient lines after this header
         const ingredientLines = [];
+        let nextIndex = index + 1;
         
-        for (let i = currentIndex + 1; i < allLines.length; i++) {
-          const currentLine = allLines[i].trim();
-          if (currentLine.startsWith('**') || currentLine.includes('Пошаговый рецепт') || currentLine.includes('Время:')) break;
-          if (currentLine.startsWith('- ') && currentLine.includes(' — ')) {
-            ingredientLines.push(currentLine);
+        while (nextIndex < lines.length) {
+          const nextLine = lines[nextIndex].trim();
+          
+          // Stop at next section header
+          if (nextLine.startsWith('**') || 
+              nextLine.includes('Пошаговый рецепт') || 
+              nextLine.includes('Время:') ||
+              nextLine.includes('Выход:')) {
+            break;
           }
+          
+          // Collect ingredient lines
+          if (nextLine.startsWith('- ') && nextLine.includes(' — ')) {
+            ingredientLines.push(nextLine);
+          }
+          
+          nextIndex++;
         }
+        
+        console.log('Found ingredients:', ingredientLines); // Debug
         
         if (ingredientLines.length > 0) {
           const tableRows = ingredientLines.map((ingLine, ingIndex) => {
@@ -622,25 +641,25 @@ function App() {
             if (parts.length >= 3) {
               return (
                 <tr key={`ing-${ingIndex}`} className="slide-in-bottom" style={{animationDelay: `${ingIndex * 0.1}s`}}>
-                  <td className="font-semibold text-purple-200 py-3 px-4">{parts[0].trim()}</td>
-                  <td className="text-center text-gray-300 py-3 px-4">{parts[1].trim()}</td>
-                  <td className="text-right font-bold text-green-300 py-3 px-4">{parts[2].trim()}</td>
+                  <td className="font-semibold text-purple-200 py-3 px-4 border-b border-purple-400/30">{parts[0].trim()}</td>
+                  <td className="text-center text-gray-300 py-3 px-4 border-b border-purple-400/30">{parts[1].trim()}</td>
+                  <td className="text-right font-bold text-green-300 py-3 px-4 border-b border-purple-400/30">{parts[2].trim()}</td>
                 </tr>
               );
             }
             return null;
           }).filter(Boolean);
           
-          return (
+          result.push(
             <div key={index} className="my-8 slide-in-right">
-              <div className="tech-card-section">ИНГРЕДИЕНТЫ</div>
-              <div className="ingredients-table">
-                <table className="w-full">
+              <div className="tech-card-section mb-4">ИНГРЕДИЕНТЫ</div>
+              <div className="overflow-x-auto bg-gray-800/50 rounded-lg">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr>
-                      <th className="text-left py-4 px-4 text-purple-300 font-bold text-sm">ИНГРЕДИЕНТ</th>
-                      <th className="text-center py-4 px-4 text-purple-300 font-bold text-sm">КОЛИЧЕСТВО</th>
-                      <th className="text-right py-4 px-4 text-purple-300 font-bold text-sm">ЦЕНА</th>
+                    <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
+                      <th className="text-left py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ИНГРЕДИЕНТ</th>
+                      <th className="text-center py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">КОЛИЧЕСТВО</th>
+                      <th className="text-right py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ЦЕНА</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -650,78 +669,101 @@ function App() {
               </div>
             </div>
           );
+        } else {
+          // Fallback if no ingredients found in table format
+          result.push(
+            <div key={index} className="tech-card-section slide-in-bottom">
+              ИНГРЕДИЕНТЫ
+            </div>
+          );
         }
+        continue;
       }
       
       // Skip ingredient lines that are already rendered in table
       if (line.startsWith('- ') && line.includes(' — ')) {
-        const allLines = content.split('\n');
-        const ingredientsIndex = allLines.findIndex(l => l.includes('Ингредиенты'));
-        const nextSectionIndex = allLines.findIndex((l, i) => i > ingredientsIndex && (l.startsWith('**') || l.includes('Пошаговый рецепт')));
+        // Check if we're in ingredients section
+        const previousLines = lines.slice(0, index);
+        const hasIngredientHeader = previousLines.some(l => 
+          l.includes('Ингредиенты') && !l.includes('Пошаговый рецепт')
+        );
+        const hasNextSection = lines.slice(index).some(l => 
+          l.startsWith('**') || l.includes('Пошаговый рецепт') || l.includes('Время:')
+        );
         
-        if (index > ingredientsIndex && (nextSectionIndex === -1 || index < nextSectionIndex)) {
-          return null; // Skip ingredient lines as they're rendered in table
+        if (hasIngredientHeader && !hasNextSection) {
+          continue; // Skip as it's already rendered in table
         }
       }
       
       // Cost information with better formatting
-      if (line.includes('Себестоимость:') || line.includes('Рекомендуемая цена') || line.includes('По ингредиентам:')) {
-        return (
-          <div key={index} className="cost-highlight slide-in-left">
-            <div className="font-bold text-lg text-green-100">{line}</div>
+      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена') || line.includes('По ингредиентам')) {
+        result.push(
+          <div key={index} className="cost-highlight slide-in-left my-4">
+            <div className="font-bold text-lg text-green-100 bg-green-900/20 p-4 rounded-lg border border-green-500/30">
+              {line}
+            </div>
           </div>
         );
+        continue;
       }
       
       // КБЖУ information
       if (line.includes('КБЖУ') || line.includes('Калории')) {
-        return (
+        result.push(
           <div key={index} className="mb-6">
-            <div className="font-bold text-blue-200 bg-blue-900/20 p-3 rounded-lg">{line}</div>
+            <div className="font-bold text-blue-200 bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">{line}</div>
           </div>
         );
+        continue;
       }
       
       // Tips and advice - clean format
       if (line.includes('Совет от RECEPTOR') || line.includes('Фишка для продвинутых') || line.includes('Вариации')) {
         const cleanLine = line.replace(/💡|🔥|🌀|\*/g, '').trim();
-        return (
-          <div key={index} className="tip-box slide-in-bottom">
-            <div className="font-semibold text-purple-100">{cleanLine}</div>
+        result.push(
+          <div key={index} className="tip-box slide-in-bottom my-4">
+            <div className="font-semibold text-purple-100 bg-purple-900/20 p-3 rounded-lg border border-purple-500/30">{cleanLine}</div>
           </div>
         );
+        continue;
       }
       
       // Regular list items
       if (line.startsWith('- ') && !line.includes(' — ')) {
-        return (
-          <div key={index} className="ml-6 mb-2 text-gray-300 font-medium">
-            <span className="text-purple-400 mr-2">•</span>
-            {line.replace('- ', '')}
+        result.push(
+          <div key={index} className="ml-6 mb-2 text-gray-300 font-medium flex items-start">
+            <span className="text-purple-400 mr-2 mt-1">•</span>
+            <span>{line.replace('- ', '')}</span>
           </div>
         );
+        continue;
       }
       
       // Numbered steps with better styling
       if (line.match(/^\d+\./)) {
-        return (
-          <div key={index} className="step-card slide-in-bottom" style={{animationDelay: `${index * 0.05}s`}}>
-            <div className="font-medium text-gray-200 leading-relaxed">{line}</div>
+        result.push(
+          <div key={index} className="step-card slide-in-bottom mb-4" style={{animationDelay: `${index * 0.05}s`}}>
+            <div className="font-medium text-gray-200 leading-relaxed bg-gray-800/50 p-4 rounded-lg border-l-4 border-purple-500">
+              {line}
+            </div>
           </div>
         );
+        continue;
       }
       
       // Regular paragraphs
-      if (line.trim() && !line.startsWith('**') && !line.startsWith('─')) {
-        return (
+      if (line && !line.startsWith('**') && !line.startsWith('─') && line !== '') {
+        result.push(
           <div key={index} className="mb-3 text-gray-300 font-medium leading-relaxed">
             {line}
           </div>
         );
+        continue;
       }
-      
-      return null;
-    }).filter(Boolean);
+    }
+    
+    return result.filter(Boolean);
   };
 
   if (!currentUser) {
