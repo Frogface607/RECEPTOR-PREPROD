@@ -153,7 +153,67 @@ function App() {
     }
   };
 
-  const fetchUserTechCards = async () => {
+  const handleUpgradeSubscription = async (planType) => {
+    setIsUpgrading(true);
+    try {
+      const response = await axios.post(`${API}/upgrade-subscription/${currentUser.id}`, {
+        subscription_plan: planType
+      });
+      
+      if (response.data.success) {
+        await fetchUserSubscription();
+        setShowPricingModal(false);
+        alert(`Подписка успешно обновлена до ${subscriptionPlans[planType]?.name}!`);
+      }
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      alert('Ошибка при обновлении подписки. Попробуйте еще раз.');
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  const handleUpdateKitchenEquipment = async () => {
+    try {
+      const response = await axios.post(`${API}/update-kitchen-equipment/${currentUser.id}`, {
+        equipment_ids: userEquipment
+      });
+      
+      if (response.data.success) {
+        setShowEquipmentModal(false);
+        alert('Оборудование успешно обновлено!');
+      }
+    } catch (error) {
+      console.error('Error updating kitchen equipment:', error);
+      if (error.response?.status === 403) {
+        alert('Управление кухонным оборудованием доступно только в PRO подписке');
+      } else {
+        alert('Ошибка при обновлении оборудования. Попробуйте еще раз.');
+      }
+    }
+  };
+
+  const toggleEquipment = (equipmentId) => {
+    setUserEquipment(prev => {
+      if (prev.includes(equipmentId)) {
+        return prev.filter(id => id !== equipmentId);
+      } else {
+        return [...prev, equipmentId];
+      }
+    });
+  };
+
+  const canUseFeature = (feature) => {
+    if (!userSubscription) return false;
+    return userSubscription.plan_info[feature] || false;
+  };
+
+  const getRemainingTechCards = () => {
+    if (!userSubscription) return 0;
+    const limit = userSubscription.plan_info.monthly_tech_cards;
+    if (limit === -1) return Infinity;
+    return Math.max(0, limit - userSubscription.monthly_tech_cards_used);
+  };
     try {
       const response = await axios.get(`${API}/tech-cards/${currentUser.id}`);
       setUserTechCards(response.data);
