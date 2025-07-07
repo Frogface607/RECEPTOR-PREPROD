@@ -804,7 +804,7 @@ function App() {
                     onClick={() => setIsEditing(!isEditing)}
                     className="w-full mt-4 btn-secondary"
                   >
-                    {isEditing ? '📝 ЗАКРЫТЬ РЕДАКТОР' : '✏️ РУЧНОЕ РЕДАКТИРОВАНИЕ'}
+                    {isEditing ? 'ЗАКРЫТЬ РЕДАКТОР' : 'РУЧНОЕ РЕДАКТИРОВАНИЕ'}
                   </button>
                 </div>
               )}
