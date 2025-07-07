@@ -905,7 +905,7 @@ function App() {
                 </p>
                 <div className="mt-8">
                   <div className="selling-point">
-                    🎤 ПОПРОБУЙТЕ ГОЛОСОВОЙ ВВОД!
+                    ПОПРОБУЙТЕ ГОЛОСОВОЙ ВВОД!
                   </div>
                 </div>
               </div>
