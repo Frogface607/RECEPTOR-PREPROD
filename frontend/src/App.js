@@ -330,6 +330,21 @@ function App() {
       setIngredients(response.data.ingredients);
       
       // Also set editable ingredients for interactive editor
+      // Also parse steps for interactive editor
+      const lines = techCardContent.split('\n');
+      const steps = [];
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.match(/^\d+\./)) {
+          steps.push({
+            id: `step-${steps.length}`,
+            number: steps.length + 1,
+            text: line.replace(/^\d+\.\s*/, '')
+          });
+        }
+      }
+      setEditableSteps(steps);
+      
       setEditableIngredients(response.data.ingredients.map((ing, index) => ({
         id: `ing-${index}`,
         name: ing.name,
