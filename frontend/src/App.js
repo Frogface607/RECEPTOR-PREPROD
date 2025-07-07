@@ -326,9 +326,79 @@ function App() {
         headers: { 'Content-Type': 'application/json' }
       });
       setIngredients(response.data.ingredients);
+      
+      // Also set editable ingredients for interactive editor
+      setEditableIngredients(response.data.ingredients.map((ing, index) => ({
+        id: `ing-${index}`,
+        name: ing.name,
+        quantity: ing.quantity,
+        price: ing.price,
+        unit: ing.quantity.replace(/[0-9\s]/g, '') || 'г' // Extract unit
+      })));
     } catch (error) {
       console.error('Error parsing ingredients:', error);
     }
+  };
+
+  const addIngredient = () => {
+    const newIngredient = {
+      id: `ing-${Date.now()}`,
+      name: '',
+      quantity: '',
+      price: 0,
+      unit: 'г'
+    };
+    setEditableIngredients([...editableIngredients, newIngredient]);
+  };
+
+  const removeIngredient = (id) => {
+    setEditableIngredients(editableIngredients.filter(ing => ing.id !== id));
+  };
+
+  const updateIngredient = (id, field, value) => {
+    setEditableIngredients(editableIngredients.map(ing => 
+      ing.id === id ? { ...ing, [field]: value } : ing
+    ));
+  };
+
+  const saveIngredientsToTechCard = () => {
+    // Calculate total cost
+    const totalCost = editableIngredients.reduce((sum, ing) => sum + (parseFloat(ing.price) || 0), 0);
+    const recommendedPrice = Math.round(totalCost * 3);
+    
+    // Update tech card content with new ingredients
+    let updatedContent = techCard;
+    
+    // Create new ingredients section
+    const ingredientsSection = editableIngredients.map(ing => 
+      `- ${ing.name} — ${ing.quantity} — ~${ing.price} ₽`
+    ).join('\n');
+    
+    // Replace ingredients section
+    updatedContent = updatedContent.replace(
+      /(Ингредиенты[:\s]*\n)([\s\S]*?)(\n\n.*?(Пошаговый рецепт|Время:|Выход:))/,
+      `$1\n${ingredientsSection}$3`
+    );
+    
+    // Update costs
+    updatedContent = updatedContent.replace(
+      /- По ингредиентам: \d+ ₽/,
+      `- По ингредиентам: ${Math.round(totalCost)} ₽`
+    );
+    updatedContent = updatedContent.replace(
+      /- Рекомендуемая цена \(×3\): \d+ ₽/,
+      `- Рекомендуемая цена (×3): ${recommendedPrice} ₽`
+    );
+    
+    setTechCard(updatedContent);
+    setIsEditingIngredients(false);
+    
+    // Update ingredients array for manual editor too
+    setIngredients(editableIngredients.map(ing => ({
+      name: ing.name,
+      quantity: ing.quantity,
+      price: ing.price
+    })));
   };
 
   const handleIngredientChange = (index, field, value) => {
