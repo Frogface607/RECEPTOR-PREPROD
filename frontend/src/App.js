@@ -976,6 +976,25 @@ function App() {
                 </div>
               )}
 
+              {/* Kitchen Equipment - PRO Feature */}
+              {userSubscription && canUseFeature('kitchen_equipment') && (
+                <div className="mt-8 border-t border-purple-400/30 pt-8 slide-in-bottom">
+                  <h3 className="heading-card text-lg mb-6">
+                    КУХОННОЕ ОБОРУДОВАНИЕ
+                    <span className="text-xs ml-2 px-2 py-1 bg-purple-600 text-white rounded-full">PRO</span>
+                  </h3>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Адаптация рецептов под ваше оборудование
+                  </p>
+                  <button
+                    onClick={() => setShowEquipmentModal(true)}
+                    className="w-full btn-secondary"
+                  >
+                    НАСТРОИТЬ ОБОРУДОВАНИЕ ({userEquipment.length})
+                  </button>
+                </div>
+              )}
+
               {/* Manual Editing */}
               {isEditing && ingredients.length > 0 && (
                 <div className="mt-8 border-t border-purple-400/30 pt-8 slide-in-bottom">
