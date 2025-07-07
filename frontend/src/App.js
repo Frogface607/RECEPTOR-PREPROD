@@ -489,29 +489,64 @@ function App() {
 
   const formatTechCardForPrint = (content) => {
     return content.split('\n').map(line => {
+      // Remove all ** formatting
+      let cleanLine = line.replace(/\*\*/g, '');
+      
+      // Format section headers
       if (line.startsWith('**') && line.endsWith('**')) {
-        const title = line.replace(/\*\*/g, '');
-        if (title.includes('Название:')) {
-          return `<h1>${title.replace('Название:', '').trim()}</h1>`;
+        const title = cleanLine.replace(':', '').trim();
+        if (title.includes('Название')) {
+          const dishName = title.replace('Название', '').trim();
+          return `<h1 style="color: #8B5CF6; font-size: 28px; font-weight: 900; margin-bottom: 20px;">${dishName}</h1>`;
         }
-        return `<h2>${title}</h2>`;
+        return `<h2 style="color: #1A1B23; font-size: 18px; font-weight: 800; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #C084FC; padding-bottom: 8px;">${title}</h2>`;
       }
-      if (line.startsWith('💡') || line.startsWith('🔥') || line.startsWith('🌀')) {
-        return `<div class="tip">${line}</div>`;
+      
+      // Format ingredients section
+      if (cleanLine.trim() === 'Ингредиенты') {
+        return `<h2 style="color: #1A1B23; font-size: 18px; font-weight: 800; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #C084FC; padding-bottom: 8px;">ИНГРЕДИЕНТЫ</h2>`;
       }
-      if (line.includes('Себестоимость:') || line.includes('Рекомендуемая цена')) {
-        return `<div class="cost-box">${line}</div>`;
+      
+      // Format ingredient items as table rows
+      if (line.startsWith('- ') && line.includes(' — ')) {
+        const parts = line.replace('- ', '').split(' — ');
+        if (parts.length >= 3) {
+          return `<tr><td style="padding: 8px; border-bottom: 1px solid #C084FC; font-weight: 500;">${parts[0].trim()}</td><td style="padding: 8px; border-bottom: 1px solid #C084FC; text-align: center;">${parts[1].trim()}</td><td style="padding: 8px; border-bottom: 1px solid #C084FC; text-align: right; font-weight: bold;">${parts[2].trim()}</td></tr>`;
+        }
       }
-      if (line.startsWith('- ')) {
-        return `<p style="margin-left: 20px;">${line}</p>`;
+      
+      // Format cost information
+      if (line.includes('Себестоимость:') || line.includes('Рекомендуемая цена') || line.includes('По ингредиентам:')) {
+        return `<div style="background: #F0FDF4; border: 2px solid #10B981; border-radius: 8px; padding: 15px; margin: 15px 0; font-weight: 700;">${cleanLine}</div>`;
       }
+      
+      // Format КБЖУ information
+      if (line.includes('КБЖУ') || line.includes('Калории')) {
+        return `<div style="background: #EFF6FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 15px; margin: 15px 0; font-weight: 700;">${cleanLine}</div>`;
+      }
+      
+      // Format numbered steps
       if (line.match(/^\d+\./)) {
-        return `<div class="step">${line}</div>`;
+        return `<div style="background: #F8FAFC; border-left: 4px solid #8B5CF6; padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0;">${cleanLine}</div>`;
       }
-      if (line.trim()) {
-        return `<p>${line}</p>`;
+      
+      // Format tips and advice
+      if (line.includes('Совет от RECEPTOR') || line.includes('Фишка для продвинутых') || line.includes('Вариации')) {
+        const tipLine = cleanLine.replace(/💡|🔥|🌀/g, '').trim();
+        return `<div style="background: #F3E8FF; border: 2px solid #C084FC; border-radius: 8px; padding: 12px; margin: 10px 0; font-style: italic;">${tipLine}</div>`;
       }
-      return '<br>';
+      
+      // Format regular list items
+      if (line.startsWith('- ') && !line.includes(' — ')) {
+        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanLine.replace('- ', '')}</p>`;
+      }
+      
+      // Format regular paragraphs
+      if (cleanLine.trim() && !cleanLine.startsWith('─')) {
+        return `<p style="margin-bottom: 12px; line-height: 1.6;">${cleanLine}</p>`;
+      }
+      
+      return '';
     }).join('');
   };
 
