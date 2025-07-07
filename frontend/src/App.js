@@ -859,12 +859,37 @@ function App() {
               <span className="ml-4 text-purple-300 font-semibold uppercase tracking-wide">AI для шеф-поваров</span>
             </div>
             <div className="flex items-center space-x-6 slide-in-right">
-              <span className="text-gray-300 font-medium">
-                <span className="text-purple-300 font-bold">{currentUser.name}</span>
-                <span className="text-gray-400 ml-2">
-                  ({cities.find(c => c.code === currentUser.city)?.name})
-                </span>
-              </span>
+              <div className="text-right">
+                <div className="text-gray-300 font-medium">
+                  <span className="text-purple-300 font-bold">{currentUser.name}</span>
+                  <span className="text-gray-400 ml-2">
+                    ({cities.find(c => c.code === currentUser.city)?.name})
+                  </span>
+                </div>
+                {userSubscription && (
+                  <div className="text-sm">
+                    <span className={`font-bold ${
+                      userSubscription.subscription_plan === 'free' ? 'text-gray-400' :
+                      userSubscription.subscription_plan === 'starter' ? 'text-blue-400' :
+                      userSubscription.subscription_plan === 'pro' ? 'text-purple-400' :
+                      'text-yellow-400'
+                    }`}>
+                      {userSubscription.plan_info.name}
+                    </span>
+                    {userSubscription.plan_info.monthly_tech_cards !== -1 && (
+                      <span className="text-gray-400 ml-2">
+                        ({userSubscription.monthly_tech_cards_used}/{userSubscription.plan_info.monthly_tech_cards})
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setShowPricingModal(true)}
+                className="text-purple-300 hover:text-purple-200 font-semibold uppercase tracking-wide transition-all duration-300"
+              >
+                ПОДПИСКА
+              </button>
               <button
                 onClick={handleLogout}
                 className="text-purple-300 hover:text-purple-200 font-semibold uppercase tracking-wide transition-all duration-300"
