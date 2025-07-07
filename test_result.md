@@ -161,11 +161,11 @@ backend:
 
   - task: "Add Usage Limits and Restrictions"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -173,6 +173,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Added usage limit checking in tech card generation, monthly usage tracking, and automatic reset functionality"
+      - working: true
+        agent: "testing"
+        comment: "Usage limits are working correctly. Free tier users are limited to 3 tech cards per month, and attempts to exceed this limit are properly blocked with appropriate error messages. Monthly usage tracking and reset functionality appear to be implemented correctly."
 
 frontend:
   - task: "Create Subscription Management Pages"
