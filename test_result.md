@@ -237,6 +237,66 @@ frontend:
       - working: true
         agent: "testing"
         comment: "Usage limit indicators are implemented correctly. The limits are displayed in the header (lines 914-918) and in the main interface (lines 982-1005). Upgrade prompts appear when limits are reached (lines 998-1003)."
+        
+  - task: "Fix Ingredients Table Display"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Critical fix for ingredients table display"
+      - working: true
+        agent: "testing"
+        comment: "The ingredients table display has been fixed. Ingredients are now properly displayed in a table format with gradient styling (lines 573-592). The parseIngredients function (lines 325-358) correctly extracts ingredients from the tech card content, and the formatTechCard function (lines 735-922) renders them in a table."
+
+  - task: "Fix Header Formatting"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fix header formatting to remove asterisks"
+      - working: true
+        agent: "testing"
+        comment: "Header formatting has been fixed. The formatTechCard function (lines 735-922) now properly processes headers to remove asterisks. Lines 743-764 specifically handle the title and section headers, removing asterisks and applying proper styling."
+
+  - task: "Implement Interactive Ingredients Editor"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Add interactive editor for ingredients"
+      - working: true
+        agent: "testing"
+        comment: "The interactive ingredients editor has been implemented correctly (lines 1320-1436). It allows adding/removing ingredients, changing quantities and prices, and automatically recalculates the total cost. The editor is accessible via the 'РЕДАКТИРОВАТЬ' button in the ingredients section."
+
+  - task: "Implement Interactive Steps Editor"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Add interactive editor for recipe steps"
+      - working: true
+        agent: "testing"
+        comment: "The interactive steps editor has been implemented correctly (lines 1439-1537). It allows adding/removing steps, moving steps up/down, and editing step text. The editor is accessible via the 'РЕДАКТИРОВАТЬ ЭТАПЫ' button in the recipe steps section."
 
 metadata:
   created_by: "main_agent"
