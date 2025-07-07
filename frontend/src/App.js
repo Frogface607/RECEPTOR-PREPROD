@@ -781,7 +781,7 @@ function App() {
               {techCard && (
                 <div className="mt-8 border-t border-purple-400/30 pt-8 slide-in-bottom">
                   <h3 className="heading-card text-lg mb-6">
-                    🤖 РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
+                    РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
                   </h3>
                   <form onSubmit={handleEditWithAI} className="space-y-4">
                     <input
