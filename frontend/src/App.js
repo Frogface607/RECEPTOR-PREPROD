@@ -561,7 +561,9 @@ function App() {
             <div className="text-center mb-12 slide-in-bottom">
               <div className="mb-8">
                 <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center pulse-glow">
-                  <span className="text-4xl">👨‍🍳</span>
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg"></div>
+                  </div>
                 </div>
               </div>
               <h1 className="heading-main slide-in-left">
