@@ -579,13 +579,13 @@ function App() {
               {/* Selling Points */}
               <div className="mt-8 space-y-3">
                 <div className="selling-point slide-in-left" style={{animationDelay: '0.2s'}}>
-                  ⚡ ЭКОНОМЬТЕ 2 ЧАСА НА КАЖДОЙ ТЕХКАРТЕ
+                  ЭКОНОМЬТЕ 2 ЧАСА НА КАЖДОЙ ТЕХКАРТЕ
                 </div>
                 <div className="selling-point slide-in-left" style={{animationDelay: '0.4s'}}>
-                  💰 ТОЧНЫЕ РАСЧЕТЫ ДО КОПЕЙКИ
+                  ТОЧНЫЕ РАСЧЕТЫ ДО КОПЕЙКИ
                 </div>
                 <div className="selling-point slide-in-left" style={{animationDelay: '0.6s'}}>
-                  🚀 ОТ ИДЕИ ДО ТЕХКАРТЫ ЗА 30 СЕКУНД
+                  ОТ ИДЕИ ДО ТЕХКАРТЫ ЗА 30 СЕКУНД
                 </div>
               </div>
             </div>
