@@ -529,7 +529,13 @@ function App() {
                       />
                       <button
                         type="button"
-                        className="absolute right-2 bottom-2 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition-colors"
+                        onClick={startVoiceRecognition}
+                        disabled={isListening}
+                        className={`absolute right-2 bottom-2 p-2 rounded-lg transition-colors ${
+                          isListening 
+                            ? 'bg-red-600 animate-pulse' 
+                            : 'bg-purple-600 hover:bg-purple-700'
+                        } text-white`}
                         title="Голосовой ввод"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
