@@ -322,40 +322,64 @@ function App() {
     }
   };
 
-  const parseIngredients = async (techCardContent) => {
-    try {
-      const response = await axios.post(`${API}/parse-ingredients`, techCardContent, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      setIngredients(response.data.ingredients);
+  const parseIngredients = (techCardContent) => {
+    // Parse ingredients directly from tech card content
+    const lines = techCardContent.split('\n');
+    const ingredients = [];
+    const editableIngredients = [];
+    let inIngredientsSection = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
       
-      // Also set editable ingredients for interactive editor
-      // Also parse steps for interactive editor
-      const lines = techCardContent.split('\n');
-      const steps = [];
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line.match(/^\d+\./)) {
-          steps.push({
-            id: `step-${steps.length}`,
-            number: steps.length + 1,
-            text: line.replace(/^\d+\.\s*/, '')
+      if (line.includes('Ингредиенты')) {
+        inIngredientsSection = true;
+        continue;
+      }
+      
+      if (inIngredientsSection && (line.startsWith('**') || line.includes('Пошаговый рецепт'))) {
+        break;
+      }
+      
+      if (inIngredientsSection && line.startsWith('- ') && (line.includes(' — ') || line.includes(' - '))) {
+        let parts = line.replace('- ', '').split(' — ');
+        if (parts.length < 3) {
+          parts = line.replace('- ', '').split(' - ');
+        }
+        
+        if (parts.length >= 3) {
+          const ingredient = {
+            name: parts[0].trim(),
+            quantity: parts[1].trim(),
+            price: parseFloat(parts[2].replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+          };
+          
+          ingredients.push(ingredient);
+          editableIngredients.push({
+            id: `ing-${editableIngredients.length}`,
+            ...ingredient,
+            unit: parts[1].replace(/[0-9\s]/g, '') || 'г'
           });
         }
       }
-      setEditableSteps(steps);
-      
-      setEditableIngredients(response.data.ingredients.map((ing, index) => ({
-        id: `ing-${index}`,
-        name: ing.name,
-        quantity: ing.quantity,
-        price: ing.price,
-        unit: ing.quantity.replace(/[0-9\s]/g, '') || 'г' // Extract unit
-      })));
-    } catch (error) {
-      console.error('Error parsing ingredients:', error);
     }
-  };
+    
+    setIngredients(ingredients);
+    setEditableIngredients(editableIngredients);
+    
+    // Parse steps for interactive editor
+    const steps = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.match(/^\d+\./)) {
+        steps.push({
+          id: `step-${steps.length}`,
+          number: steps.length + 1,
+          text: line.replace(/^\d+\.\s*/, '')
+        });
+      }
+    }
+    setEditableSteps(steps);
 
   const addIngredient = () => {
     const newIngredient = {
