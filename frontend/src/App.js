@@ -274,6 +274,109 @@ function App() {
     setUserTechCards([]);
   };
 
+  const handlePrintTechCard = () => {
+    const dishName = techCard.split('\n').find(line => line.includes('Название'))?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Техкарта';
+    const printWindow = window.open('', '_blank');
+    
+    const techCardHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Технологическая карта - ${dishName}</title>
+          <meta charset="utf-8">
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+          <style>
+            * { font-family: 'Montserrat', sans-serif !important; }
+            body { 
+              line-height: 1.6; 
+              margin: 40px; 
+              background: white; 
+              color: #1A1B23; 
+            }
+            h1 { 
+              color: #8B5CF6; 
+              font-size: 28px; 
+              font-weight: 900;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              text-align: center; 
+              margin-bottom: 30px; 
+              border-bottom: 3px solid #8B5CF6;
+              padding-bottom: 15px;
+            }
+            h2 { 
+              color: #1A1B23; 
+              font-size: 18px; 
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+              margin-top: 25px; 
+              margin-bottom: 15px; 
+              border-bottom: 2px solid #C084FC; 
+              padding-bottom: 8px; 
+            }
+            .ingredients-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+              border: 2px solid #8B5CF6;
+              border-radius: 8px;
+            }
+            .ingredients-table th {
+              background: linear-gradient(135deg, #8B5CF6, #C084FC);
+              color: white;
+              font-weight: 800;
+              font-size: 12px;
+              text-transform: uppercase;
+              padding: 12px;
+            }
+            .ingredients-table td {
+              padding: 10px 12px;
+              border-bottom: 1px solid #C084FC;
+              font-weight: 500;
+            }
+            @media print {
+              body { margin: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
+          <div>${techCard.split('\n').map(line => {
+            const cleanLine = line.replace(/\*\*/g, '');
+            if (line.startsWith('**') && line.endsWith('**')) {
+              if (line.includes('Название')) {
+                return `<h1>${cleanLine.replace('Название:', '').trim()}</h1>`;
+              }
+              return `<h2>${cleanLine.replace(':', '')}</h2>`;
+            }
+            if (line.startsWith('- ')) {
+              return `<p style="margin-left: 20px;">• ${line.replace('- ', '')}</p>`;
+            }
+            if (line.match(/^\d+\./)) {
+              return `<div style="background: #F8FAFC; border-left: 4px solid #8B5CF6; padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0;">${line}</div>`;
+            }
+            if (line.trim()) {
+              return `<p>${line}</p>`;
+            }
+            return '<br>';
+          }).join('')}</div>
+          <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B;">
+            <p><strong>Сгенерировано RECEPTOR AI</strong></p>
+            <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(techCardHtml);
+    printWindow.document.close();
+    
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
+
   useEffect(() => {
     fetchCities();
     const savedUser = localStorage.getItem('receptor_user');
