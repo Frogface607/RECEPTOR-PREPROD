@@ -371,6 +371,14 @@ function App() {
     }, 500);
   };
 
+  const startVoiceRecognition = () => {
+    if (recognition) {
+      recognition.start();
+    } else {
+      console.log('Speech recognition not initialized');
+    }
+  };
+
   const initVoiceRecognition = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
