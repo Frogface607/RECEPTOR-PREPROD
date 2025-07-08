@@ -80,40 +80,66 @@ function App() {
         continue;
       }
       
-      // Ingredients section - create table
-      if (line === 'Ингредиенты' || line.includes('Ингредиенты')) {
+      // Ingredients section - FIXED parsing
+      if (line === 'Ингредиенты' || line.includes('Ингредиенты') || 
+          (line.startsWith('**') && line.includes('Ингредиенты'))) {
+        
+        console.log('Found ingredients section at line:', index, line); // Debug
+        
         // Find all ingredient lines after this header
         const ingredientLines = [];
         let nextIndex = index + 1;
         
+        // Look ahead to find ingredient lines
         while (nextIndex < lines.length) {
           const nextLine = lines[nextIndex].trim();
           
+          console.log('Checking line:', nextIndex, nextLine); // Debug
+          
           // Stop at next section header
-          if (nextLine.startsWith('**') || 
-              nextLine.includes('Пошаговый рецепт') || 
-              nextLine.includes('Время:') ||
-              nextLine.includes('Выход:') ||
-              nextLine.includes('Себестоимость:')) {
+          if (nextLine.startsWith('**') && !nextLine.includes('Ингредиенты')) {
+            console.log('Stopping at section:', nextLine); // Debug
             break;
           }
           
-          // Collect ingredient lines
-          if ((nextLine.startsWith('- ') && (nextLine.includes(' — ') || nextLine.includes(' - '))) ||
-              (nextLine.includes(' — ') && nextLine.includes('₽'))) {
+          // Collect ingredient lines (both formats)
+          if (nextLine.startsWith('- ') && 
+              (nextLine.includes(' — ') || nextLine.includes(' - ') || nextLine.includes('₽'))) {
+            console.log('Found ingredient:', nextLine); // Debug
             ingredientLines.push(nextLine);
           }
           
           nextIndex++;
         }
         
+        console.log('Total ingredients found:', ingredientLines.length); // Debug
+        
         if (ingredientLines.length > 0) {
           const tableRows = ingredientLines.map((ingLine, ingIndex) => {
-            // Handle both em dash (—) and regular dash (-)
-            let parts = ingLine.replace('- ', '').split(' — ');
-            if (parts.length < 3) {
+            // Handle multiple dash formats
+            let parts = [];
+            
+            if (ingLine.includes(' — ')) {
+              parts = ingLine.replace('- ', '').split(' — ');
+            } else if (ingLine.includes(' - ')) {
               parts = ingLine.replace('- ', '').split(' - ');
+            } else {
+              // Fallback: split by spaces and reconstruct
+              const cleanLine = ingLine.replace('- ', '');
+              const words = cleanLine.split(' ');
+              
+              // Find price (contains ₽)
+              const priceIndex = words.findIndex(word => word.includes('₽'));
+              if (priceIndex > 1) {
+                parts = [
+                  words.slice(0, priceIndex - 1).join(' '), // ingredient name
+                  words[priceIndex - 1], // quantity
+                  words.slice(priceIndex).join(' ') // price
+                ];
+              }
             }
+            
+            console.log('Parsed ingredient parts:', parts); // Debug
             
             if (parts.length >= 3) {
               return (
@@ -126,6 +152,8 @@ function App() {
             }
             return null;
           }).filter(Boolean);
+          
+          console.log('Table rows created:', tableRows.length); // Debug
           
           if (tableRows.length > 0) {
             result.push(
@@ -149,7 +177,36 @@ function App() {
                 </div>
               </div>
             );
+          } else {
+            // Fallback - show ingredients as list if table failed
+            result.push(
+              <div key={index} className="my-8">
+                <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
+                  ИНГРЕДИЕНТЫ
+                </h2>
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  {ingredientLines.map((ingLine, ingIndex) => (
+                    <div key={`ing-fallback-${ingIndex}`} className="mb-2 text-gray-300">
+                      <span className="text-purple-400 mr-2">•</span>
+                      {ingLine.replace('- ', '')}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
           }
+        } else {
+          // Show empty ingredients section
+          result.push(
+            <div key={index} className="my-8">
+              <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
+                ИНГРЕДИЕНТЫ
+              </h2>
+              <div className="bg-gray-800/50 rounded-lg p-4 text-gray-400">
+                Ингредиенты не найдены в техкарте
+              </div>
+            </div>
+          );
         }
         continue;
       }
