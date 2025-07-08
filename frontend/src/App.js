@@ -46,8 +46,12 @@ function App() {
     city: ''
   });
 
-  // Enhanced tech card formatter
+  // Enhanced tech card formatter with debug
   const formatTechCard = (content) => {
+    console.log('=== DEBUG: Full content ===');
+    console.log(content);
+    console.log('=== END DEBUG ===');
+    
     const lines = content.split('\n');
     const result = [];
     
@@ -80,80 +84,81 @@ function App() {
         continue;
       }
       
-      // Ingredients section - FIXED parsing
-      if (line === 'Ингредиенты' || line.includes('Ингредиенты') || 
-          (line.startsWith('**') && line.includes('Ингредиенты'))) {
+      // SPECIAL: Look for ingredients anywhere in the content
+      if (line.includes('Ингредиенты') || index === 0) {
+        // Search for ALL lines that look like ingredients
+        const allIngredientLines = lines.filter(l => {
+          const cleanLine = l.trim();
+          return cleanLine.startsWith('- ') && 
+                 (cleanLine.includes('₽') || cleanLine.includes('руб') || 
+                  cleanLine.includes(' г ') || cleanLine.includes(' мл ') ||
+                  cleanLine.includes(' кг ') || cleanLine.includes(' л '));
+        });
         
-        console.log('Found ingredients section at line:', index, line); // Debug
+        console.log('=== ALL INGREDIENT LINES FOUND ===');
+        console.log(allIngredientLines);
+        console.log('=== END INGREDIENTS ===');
         
-        // Find all ingredient lines after this header
-        const ingredientLines = [];
-        let nextIndex = index + 1;
-        
-        // Look ahead to find ingredient lines
-        while (nextIndex < lines.length) {
-          const nextLine = lines[nextIndex].trim();
-          
-          console.log('Checking line:', nextIndex, nextLine); // Debug
-          
-          // Stop at next section header
-          if (nextLine.startsWith('**') && !nextLine.includes('Ингредиенты')) {
-            console.log('Stopping at section:', nextLine); // Debug
-            break;
-          }
-          
-          // Collect ingredient lines (both formats)
-          if (nextLine.startsWith('- ') && 
-              (nextLine.includes(' — ') || nextLine.includes(' - ') || nextLine.includes('₽'))) {
-            console.log('Found ingredient:', nextLine); // Debug
-            ingredientLines.push(nextLine);
-          }
-          
-          nextIndex++;
-        }
-        
-        console.log('Total ingredients found:', ingredientLines.length); // Debug
-        
-        if (ingredientLines.length > 0) {
-          const tableRows = ingredientLines.map((ingLine, ingIndex) => {
-            // Handle multiple dash formats
+        if (allIngredientLines.length > 0 && line.includes('Ингредиенты')) {
+          const tableRows = allIngredientLines.map((ingLine, ingIndex) => {
+            // Try multiple parsing methods
             let parts = [];
             
+            // Method 1: Split by em dash
             if (ingLine.includes(' — ')) {
               parts = ingLine.replace('- ', '').split(' — ');
-            } else if (ingLine.includes(' - ')) {
+            } 
+            // Method 2: Split by regular dash  
+            else if (ingLine.includes(' - ')) {
               parts = ingLine.replace('- ', '').split(' - ');
-            } else {
-              // Fallback: split by spaces and reconstruct
+            }
+            // Method 3: Complex parsing by keywords
+            else {
               const cleanLine = ingLine.replace('- ', '');
-              const words = cleanLine.split(' ');
               
-              // Find price (contains ₽)
-              const priceIndex = words.findIndex(word => word.includes('₽'));
-              if (priceIndex > 1) {
-                parts = [
-                  words.slice(0, priceIndex - 1).join(' '), // ingredient name
-                  words[priceIndex - 1], // quantity
-                  words.slice(priceIndex).join(' ') // price
-                ];
+              // Find price (contains ₽ or руб)
+              const priceMatch = cleanLine.match(/(.*?)(\d+.*?₽|.*?руб.*?)/);
+              if (priceMatch) {
+                const beforePrice = priceMatch[1].trim();
+                const price = priceMatch[2].trim();
+                
+                // Split before price into name and quantity
+                const words = beforePrice.split(' ');
+                if (words.length >= 2) {
+                  const quantity = words[words.length - 1];
+                  const name = words.slice(0, -1).join(' ');
+                  parts = [name, quantity, price];
+                }
               }
             }
             
-            console.log('Parsed ingredient parts:', parts); // Debug
+            console.log(`Parsing "${ingLine}" => Parts:`, parts);
             
-            if (parts.length >= 3) {
+            if (parts.length >= 2) {
               return (
                 <tr key={`ing-${ingIndex}`} className="hover:bg-gray-700/50 transition-colors">
-                  <td className="font-semibold text-purple-200 py-3 px-4 border-b border-purple-400/30">{parts[0].trim()}</td>
-                  <td className="text-center text-gray-300 py-3 px-4 border-b border-purple-400/30">{parts[1].trim()}</td>
-                  <td className="text-right font-bold text-green-300 py-3 px-4 border-b border-purple-400/30">{parts[2].trim()}</td>
+                  <td className="font-semibold text-purple-200 py-3 px-4 border-b border-purple-400/30">
+                    {parts[0] ? parts[0].trim() : 'N/A'}
+                  </td>
+                  <td className="text-center text-gray-300 py-3 px-4 border-b border-purple-400/30">
+                    {parts[1] ? parts[1].trim() : 'N/A'}
+                  </td>
+                  <td className="text-right font-bold text-green-300 py-3 px-4 border-b border-purple-400/30">
+                    {parts[2] ? parts[2].trim() : parts[1] ? parts[1].trim() : 'N/A'}
+                  </td>
                 </tr>
               );
             }
-            return null;
-          }).filter(Boolean);
-          
-          console.log('Table rows created:', tableRows.length); // Debug
+            
+            // Fallback: show as single line
+            return (
+              <tr key={`ing-fallback-${ingIndex}`} className="hover:bg-gray-700/50 transition-colors">
+                <td colSpan="3" className="text-gray-300 py-3 px-4 border-b border-purple-400/30">
+                  {ingLine.replace('- ', '')}
+                </td>
+              </tr>
+            );
+          });
           
           if (tableRows.length > 0) {
             result.push(
@@ -177,51 +182,16 @@ function App() {
                 </div>
               </div>
             );
-          } else {
-            // Fallback - show ingredients as list if table failed
-            result.push(
-              <div key={index} className="my-8">
-                <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
-                  ИНГРЕДИЕНТЫ
-                </h2>
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  {ingredientLines.map((ingLine, ingIndex) => (
-                    <div key={`ing-fallback-${ingIndex}`} className="mb-2 text-gray-300">
-                      <span className="text-purple-400 mr-2">•</span>
-                      {ingLine.replace('- ', '')}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
           }
-        } else {
-          // Show empty ingredients section
-          result.push(
-            <div key={index} className="my-8">
-              <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
-                ИНГРЕДИЕНТЫ
-              </h2>
-              <div className="bg-gray-800/50 rounded-lg p-4 text-gray-400">
-                Ингредиенты не найдены в техкарте
-              </div>
-            </div>
-          );
         }
         continue;
       }
       
-      // Skip ingredient lines that are already rendered in table
-      if ((line.startsWith('- ') && (line.includes(' — ') || line.includes(' - '))) ||
-          (line.includes(' — ') && line.includes('₽'))) {
-        const previousLines = lines.slice(0, index);
-        const hasIngredientHeader = previousLines.some(l => 
-          l.includes('Ингредиенты') && !l.includes('Пошаговый рецепт')
-        );
-        
-        if (hasIngredientHeader) {
-          continue; // Skip as it's already rendered in table
-        }
+      // Skip ingredient lines that are already rendered
+      if (line.startsWith('- ') && 
+          (line.includes('₽') || line.includes('руб') || 
+           line.includes(' г ') || line.includes(' мл '))) {
+        continue;
       }
       
       // Cost information with better formatting
@@ -245,7 +215,7 @@ function App() {
       }
       
       // List items - improved styling
-      if (line.startsWith('- ') && !line.includes(' — ') && !line.includes(' - ')) {
+      if (line.startsWith('- ')) {
         result.push(
           <div key={index} className="ml-6 mb-2 text-gray-300 flex items-start">
             <span className="text-purple-400 mr-3 mt-1 text-lg">•</span>
