@@ -305,6 +305,49 @@ function App() {
     const dishName = techCard.split('\n').find(line => line.includes('Название'))?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Техкарта';
     const printWindow = window.open('', '_blank');
     
+    // Process content to clean up formatting
+    const cleanedContent = techCard.split('\n').map(line => {
+      // Remove all ** formatting
+      let cleanLine = line.replace(/\*\*/g, '');
+      
+      // Format headers
+      if (line.startsWith('**') && line.endsWith('**')) {
+        const title = cleanLine.replace(':', '').trim();
+        if (title.includes('Название')) {
+          const dishTitle = title.replace('Название', '').trim();
+          return `<h1 style="color: #8B5CF6; font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #8B5CF6; padding-bottom: 15px;">${dishTitle}</h1>`;
+        }
+        return `<h2 style="color: #1A1B23; font-size: 18px; font-weight: 800; text-transform: uppercase; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #C084FC; padding-bottom: 8px;">${title}</h2>`;
+      }
+      
+      // Format ingredients
+      if (line.startsWith('- ') && (line.includes('₽') || line.includes('руб'))) {
+        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanLine.replace('- ', '')}</p>`;
+      }
+      
+      // Format numbered steps
+      if (line.match(/^\d+\./)) {
+        return `<div style="background: #F8FAFC; border-left: 4px solid #8B5CF6; padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0;">${cleanLine}</div>`;
+      }
+      
+      // Format list items
+      if (line.startsWith('- ')) {
+        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanLine.replace('- ', '')}</p>`;
+      }
+      
+      // Cost information
+      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена')) {
+        return `<div style="background: #F0FDF4; border: 2px solid #10B981; border-radius: 8px; padding: 15px; margin: 15px 0; font-weight: 700;">${cleanLine}</div>`;
+      }
+      
+      // Regular paragraphs
+      if (cleanLine.trim() && !cleanLine.startsWith('─')) {
+        return `<p style="margin-bottom: 12px; line-height: 1.6;">${cleanLine}</p>`;
+      }
+      
+      return '';
+    }).filter(Boolean).join('');
+    
     const techCardHtml = `
       <!DOCTYPE html>
       <html>
@@ -320,75 +363,17 @@ function App() {
               background: white; 
               color: #1A1B23; 
             }
-            h1 { 
-              color: #8B5CF6; 
-              font-size: 28px; 
-              font-weight: 900;
-              text-transform: uppercase;
-              letter-spacing: 1.5px;
-              text-align: center; 
-              margin-bottom: 30px; 
-              border-bottom: 3px solid #8B5CF6;
-              padding-bottom: 15px;
-            }
-            h2 { 
-              color: #1A1B23; 
-              font-size: 18px; 
-              font-weight: 800;
-              text-transform: uppercase;
-              letter-spacing: 0.8px;
-              margin-top: 25px; 
-              margin-bottom: 15px; 
-              border-bottom: 2px solid #C084FC; 
-              padding-bottom: 8px; 
-            }
-            .ingredients-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-              border: 2px solid #8B5CF6;
-              border-radius: 8px;
-            }
-            .ingredients-table th {
-              background: linear-gradient(135deg, #8B5CF6, #C084FC);
-              color: white;
-              font-weight: 800;
-              font-size: 12px;
-              text-transform: uppercase;
-              padding: 12px;
-            }
-            .ingredients-table td {
-              padding: 10px 12px;
-              border-bottom: 1px solid #C084FC;
-              font-weight: 500;
-            }
             @media print {
               body { margin: 20px; }
             }
           </style>
         </head>
         <body>
-          <h1>ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
-          <div>${techCard.split('\n').map(line => {
-            const cleanLine = line.replace(/\*\*/g, '');
-            if (line.startsWith('**') && line.endsWith('**')) {
-              if (line.includes('Название')) {
-                return `<h1>${cleanLine.replace('Название:', '').trim()}</h1>`;
-              }
-              return `<h2>${cleanLine.replace(':', '')}</h2>`;
-            }
-            if (line.startsWith('- ')) {
-              return `<p style="margin-left: 20px;">• ${line.replace('- ', '')}</p>`;
-            }
-            if (line.match(/^\d+\./)) {
-              return `<div style="background: #F8FAFC; border-left: 4px solid #8B5CF6; padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0;">${line}</div>`;
-            }
-            if (line.trim()) {
-              return `<p>${line}</p>`;
-            }
-            return '<br>';
-          }).join('')}</div>
-          <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8B5CF6; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
+          </div>
+          <div>${cleanedContent}</div>
+          <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid #E5E7EB; padding-top: 20px;">
             <p><strong>Сгенерировано RECEPTOR AI</strong></p>
             <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
           </div>
