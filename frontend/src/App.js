@@ -732,7 +732,7 @@ function App() {
     }).join('');
   };
 
-  const formatTechCard = (content) => {
+  const formatTechCard = (content) => { // FIXED version
     const lines = content.split('\n');
     const result = [];
     
