@@ -419,13 +419,14 @@ function App() {
     }
   };
 
-  const startVoiceRecognition = () => {
-    if (recognition) {
-      recognition.start();
-    } else {
-      alert('Голосовое распознавание не поддерживается в вашем браузере');
+  useEffect(() => {
+    fetchCities();
+    initVoiceRecognition();
+    const savedUser = localStorage.getItem('receptor_user');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
     }
-  };
+  }, []);
 
   if (!currentUser) {
     return (
