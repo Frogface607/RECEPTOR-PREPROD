@@ -653,6 +653,43 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Voice Recognition Modal */}
+      {showVoiceModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 text-center border border-purple-500/30">
+            <div className="mb-6">
+              {isListening ? (
+                <div className="w-20 h-20 mx-auto bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 715 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              ) : (
+                <div className="w-20 h-20 mx-auto bg-green-500 rounded-full flex items-center justify-center">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <h3 className="text-xl font-bold text-purple-300 mb-4">
+              {isListening ? 'СЛУШАЮ...' : 'ГОТОВО!'}
+            </h3>
+            <p className="text-gray-300">
+              {voiceStatus}
+            </p>
+            {!isListening && (
+              <button
+                onClick={() => setShowVoiceModal(false)}
+                className="mt-6 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                ЗАКРЫТЬ
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
