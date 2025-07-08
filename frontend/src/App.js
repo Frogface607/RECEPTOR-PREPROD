@@ -1293,23 +1293,23 @@ function App() {
           </div>
 
           {/* Center Panel - Main Content */}
-          <div className="lg:col-span-3 slide-in-right">
+          <div className="xl:col-span-3 lg:col-span-2 slide-in-right">
             {techCard ? (
               <div className="tech-card-container">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="heading-section">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                  <h2 className="heading-section text-xl sm:text-2xl">
                     ТЕХНОЛОГИЧЕСКАЯ КАРТА
                   </h2>
-                  <div className="flex space-x-4">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                     <button 
                       onClick={() => navigator.clipboard.writeText(techCard)}
-                      className="btn-secondary"
+                      className="btn-secondary text-sm px-4 py-2"
                     >
                       КОПИРОВАТЬ
                     </button>
                     <button 
                       onClick={handlePrintTechCard}
-                      className="btn-success"
+                      className="btn-success text-sm px-4 py-2"
                     >
                       ЭКСПОРТ В PDF
                     </button>
