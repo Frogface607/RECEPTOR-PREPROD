@@ -524,25 +524,98 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Left Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700">
-              <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
-              <form onSubmit={handleGenerateTechCard} className="space-y-6">
-                <textarea
-                  value={dishName}
-                  onChange={(e) => setDishName(e.target.value)}
-                  placeholder="Опишите блюдо подробно. Например: Стейк из говядины с картофельным пюре и грибным соусом"
-                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none min-h-[120px] resize-none"
-                  rows={5}
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={isGenerating}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50"
-                >
-                  {isGenerating ? 'ГЕНЕРИРУЕТСЯ...' : 'СОЗДАТЬ ТЕХКАРТУ'}
-                </button>
-              </form>
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 space-y-8">
+              <div>
+                <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
+                <form onSubmit={handleGenerateTechCard} className="space-y-6">
+                  <div>
+                    <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                      НАЗВАНИЕ БЛЮДА
+                    </label>
+                    <div className="relative">
+                      <textarea
+                        value={dishName}
+                        onChange={(e) => setDishName(e.target.value)}
+                        placeholder="Опишите блюдо подробно. Например: Стейк из говядины с картофельным пюре и грибным соусом"
+                        className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none min-h-[120px] resize-none"
+                        rows={5}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-2 bottom-2 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition-colors"
+                        title="Голосовой ввод"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isGenerating}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50"
+                  >
+                    {isGenerating ? 'ГЕНЕРИРУЕТСЯ...' : 'СОЗДАТЬ ТЕХКАРТУ'}
+                  </button>
+                </form>
+              </div>
+
+              {/* AI Editing */}
+              {techCard && (
+                <div className="border-t border-purple-400/30 pt-8">
+                  <h3 className="text-xl font-bold text-purple-300 mb-6">
+                    РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
+                  </h3>
+                  <div className="space-y-4">
+                    <textarea
+                      value={editInstruction}
+                      onChange={(e) => setEditInstruction(e.target.value)}
+                      placeholder="Детально опишите что изменить. Например: увеличить порцию в 2 раза, заменить картофель на рис"
+                      className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none min-h-[100px] resize-none"
+                      rows={4}
+                    />
+                    <button
+                      onClick={() => alert('AI редактирование временно недоступно')}
+                      disabled={!editInstruction.trim()}
+                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      ИЗМЕНИТЬ ЧЕРЕЗ AI
+                    </button>
+                  </div>
+                  
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    {isEditing ? 'ЗАКРЫТЬ РЕДАКТОР' : 'РУЧНОЕ РЕДАКТИРОВАНИЕ'}
+                  </button>
+                </div>
+              )}
+
+              {/* Manual Editing */}
+              {isEditing && techCard && (
+                <div className="border-t border-purple-400/30 pt-8">
+                  <h3 className="text-xl font-bold text-purple-300 mb-6">
+                    РУЧНОЕ РЕДАКТИРОВАНИЕ
+                  </h3>
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => alert('Интерактивный редактор ингредиентов скоро')}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      РЕДАКТИРОВАТЬ ИНГРЕДИЕНТЫ
+                    </button>
+                    <button
+                      onClick={() => alert('Редактор этапов скоро')}
+                      className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      РЕДАКТИРОВАТЬ ЭТАПЫ
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
