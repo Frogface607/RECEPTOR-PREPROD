@@ -753,9 +753,6 @@ function App() {
         }
         continue;
       }
-        );
-        continue;
-      }
       
       // Section headers - clean format without stars
       if (line.startsWith('**') && line.endsWith('**')) {
