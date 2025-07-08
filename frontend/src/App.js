@@ -1139,10 +1139,10 @@ function App() {
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Left Panel - Controls */}
-          <div className="lg:col-span-1 slide-in-left space-y-8">
-            <div className="card-glass p-8">
+          <div className="xl:col-span-1 lg:col-span-1 slide-in-left space-y-8">
+            <div className="card-glass p-6 lg:p-8">
               <h2 className="heading-card mb-6">
                 СОЗДАТЬ ТЕХКАРТУ
               </h2>
