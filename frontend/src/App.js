@@ -493,14 +493,22 @@ function App() {
           <div className="lg:col-span-2">
             {techCard ? (
               <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700">
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                   <h2 className="text-2xl font-bold text-purple-300">ТЕХНОЛОГИЧЕСКАЯ КАРТА</h2>
-                  <button 
-                    onClick={() => navigator.clipboard.writeText(techCard)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold"
-                  >
-                    КОПИРОВАТЬ
-                  </button>
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                    <button 
+                      onClick={() => navigator.clipboard.writeText(techCard)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                    >
+                      КОПИРОВАТЬ
+                    </button>
+                    <button 
+                      onClick={handlePrintTechCard}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                    >
+                      ЭКСПОРТ В PDF
+                    </button>
+                  </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
                   {formatTechCard(techCard)}
