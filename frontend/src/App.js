@@ -46,7 +46,7 @@ function App() {
     city: ''
   });
 
-  // Simple tech card formatter without complex parsing
+  // Enhanced tech card formatter
   const formatTechCard = (content) => {
     const lines = content.split('\n');
     const result = [];
@@ -54,25 +54,25 @@ function App() {
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index].trim();
       
-      // Main title
+      // Main title - FIXED to show dish name
       if (line.startsWith('**') && line.endsWith('**') && line.includes('Название')) {
         const title = line.replace(/\*\*/g, '').replace('Название:', '').trim();
         if (title) {
           result.push(
             <div key={index} className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-purple-300 mb-4">{title}</h1>
+              <h1 className="text-4xl font-bold text-purple-300 mb-4 animate-pulse">{title}</h1>
             </div>
           );
         }
         continue;
       }
       
-      // Section headers
+      // Section headers - clean format without stars
       if (line.startsWith('**') && line.endsWith('**')) {
         const title = line.replace(/\*\*/g, '').replace(':', '').trim();
         if (title && !title.includes('Название')) {
           result.push(
-            <h2 key={index} className="text-2xl font-bold text-purple-400 mt-8 mb-4 border-b border-purple-400 pb-2">
+            <h2 key={index} className="text-2xl font-bold text-purple-400 mt-8 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
               {title}
             </h2>
           );
@@ -80,31 +80,138 @@ function App() {
         continue;
       }
       
-      // List items
-      if (line.startsWith('- ')) {
+      // Ingredients section - create table
+      if (line === 'Ингредиенты' || line.includes('Ингредиенты')) {
+        // Find all ingredient lines after this header
+        const ingredientLines = [];
+        let nextIndex = index + 1;
+        
+        while (nextIndex < lines.length) {
+          const nextLine = lines[nextIndex].trim();
+          
+          // Stop at next section header
+          if (nextLine.startsWith('**') || 
+              nextLine.includes('Пошаговый рецепт') || 
+              nextLine.includes('Время:') ||
+              nextLine.includes('Выход:') ||
+              nextLine.includes('Себестоимость:')) {
+            break;
+          }
+          
+          // Collect ingredient lines
+          if ((nextLine.startsWith('- ') && (nextLine.includes(' — ') || nextLine.includes(' - '))) ||
+              (nextLine.includes(' — ') && nextLine.includes('₽'))) {
+            ingredientLines.push(nextLine);
+          }
+          
+          nextIndex++;
+        }
+        
+        if (ingredientLines.length > 0) {
+          const tableRows = ingredientLines.map((ingLine, ingIndex) => {
+            // Handle both em dash (—) and regular dash (-)
+            let parts = ingLine.replace('- ', '').split(' — ');
+            if (parts.length < 3) {
+              parts = ingLine.replace('- ', '').split(' - ');
+            }
+            
+            if (parts.length >= 3) {
+              return (
+                <tr key={`ing-${ingIndex}`} className="hover:bg-gray-700/50 transition-colors">
+                  <td className="font-semibold text-purple-200 py-3 px-4 border-b border-purple-400/30">{parts[0].trim()}</td>
+                  <td className="text-center text-gray-300 py-3 px-4 border-b border-purple-400/30">{parts[1].trim()}</td>
+                  <td className="text-right font-bold text-green-300 py-3 px-4 border-b border-purple-400/30">{parts[2].trim()}</td>
+                </tr>
+              );
+            }
+            return null;
+          }).filter(Boolean);
+          
+          if (tableRows.length > 0) {
+            result.push(
+              <div key={index} className="my-8">
+                <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
+                  ИНГРЕДИЕНТЫ
+                </h2>
+                <div className="overflow-x-auto bg-gray-800/50 rounded-lg">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
+                        <th className="text-left py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ИНГРЕДИЕНТ</th>
+                        <th className="text-center py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">КОЛИЧЕСТВО</th>
+                        <th className="text-right py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ЦЕНА</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableRows}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          }
+        }
+        continue;
+      }
+      
+      // Skip ingredient lines that are already rendered in table
+      if ((line.startsWith('- ') && (line.includes(' — ') || line.includes(' - '))) ||
+          (line.includes(' — ') && line.includes('₽'))) {
+        const previousLines = lines.slice(0, index);
+        const hasIngredientHeader = previousLines.some(l => 
+          l.includes('Ингредиенты') && !l.includes('Пошаговый рецепт')
+        );
+        
+        if (hasIngredientHeader) {
+          continue; // Skip as it's already rendered in table
+        }
+      }
+      
+      // Cost information with better formatting
+      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена') || line.includes('По ингредиентам')) {
         result.push(
-          <div key={index} className="ml-6 mb-2 text-gray-300">
-            <span className="text-purple-400 mr-2">•</span>
-            {line.replace('- ', '')}
+          <div key={index} className="my-6 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+            <div className="font-bold text-lg text-green-200">{line}</div>
           </div>
         );
         continue;
       }
       
-      // Numbered steps
+      // КБЖУ information
+      if (line.includes('КБЖУ') || line.includes('Калории')) {
+        result.push(
+          <div key={index} className="my-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+            <div className="font-bold text-blue-200">{line}</div>
+          </div>
+        );
+        continue;
+      }
+      
+      // List items - improved styling
+      if (line.startsWith('- ') && !line.includes(' — ') && !line.includes(' - ')) {
+        result.push(
+          <div key={index} className="ml-6 mb-2 text-gray-300 flex items-start">
+            <span className="text-purple-400 mr-3 mt-1 text-lg">•</span>
+            <span>{line.replace('- ', '')}</span>
+          </div>
+        );
+        continue;
+      }
+      
+      // Numbered steps with better styling
       if (line.match(/^\d+\./)) {
         result.push(
-          <div key={index} className="bg-gray-800/50 p-4 rounded-lg mb-4 border-l-4 border-purple-500">
-            <div className="text-gray-200">{line}</div>
+          <div key={index} className="bg-gray-800/50 p-4 rounded-lg mb-4 border-l-4 border-purple-500 hover:bg-gray-800/70 transition-colors">
+            <div className="font-medium text-gray-200 leading-relaxed">{line}</div>
           </div>
         );
         continue;
       }
       
-      // Regular text
-      if (line && !line.startsWith('─')) {
+      // Regular paragraphs
+      if (line && !line.startsWith('─') && !line.startsWith('*')) {
         result.push(
-          <p key={index} className="mb-3 text-gray-300">
+          <p key={index} className="mb-3 text-gray-300 leading-relaxed">
             {line}
           </p>
         );
