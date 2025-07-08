@@ -739,15 +739,20 @@ function App() {
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index].trim();
       
-      // Main title - clean format
+      // Main title - FIXED to show dish name
       if (line.startsWith('**') && line.endsWith('**') && line.includes('Название')) {
         const title = line.replace(/\*\*/g, '').replace('Название:', '').trim();
-        result.push(
-          <div key={index} className="fade-in-scale">
-            <div className="tech-card-title">
-              {title}
+        if (title) {
+          result.push(
+            <div key={index} className="fade-in-scale mb-8">
+              <div className="tech-card-title text-center">
+                {title}
+              </div>
             </div>
-          </div>
+          );
+        }
+        continue;
+      }
         );
         continue;
       }
