@@ -84,33 +84,42 @@ function App() {
         continue;
       }
       
-      // SPECIAL: Look for ingredients anywhere in the content
-      if (line.includes('Ингредиенты') || index === 0) {
+      // SPECIAL: Look for ingredients section
+      if (line.includes('Ингредиенты')) {
+        console.log('Processing ingredients section:', line);
+        
         // Search for ALL lines that look like ingredients
         const allIngredientLines = lines.filter(l => {
           const cleanLine = l.trim();
           return cleanLine.startsWith('- ') && 
                  (cleanLine.includes('₽') || cleanLine.includes('руб') || 
                   cleanLine.includes(' г ') || cleanLine.includes(' мл ') ||
-                  cleanLine.includes(' кг ') || cleanLine.includes(' л '));
+                  cleanLine.includes(' кг ') || cleanLine.includes(' л ')) &&
+                 !cleanLine.includes('ингредиентам:') && // exclude cost lines
+                 !cleanLine.includes('Себестоимость') &&
+                 !cleanLine.includes('Рекомендуемая цена');
         });
         
-        console.log('=== ALL INGREDIENT LINES FOUND ===');
+        console.log('=== FILTERED INGREDIENT LINES ===');
         console.log(allIngredientLines);
-        console.log('=== END INGREDIENTS ===');
+        console.log('=== END FILTERED ===');
         
-        if (allIngredientLines.length > 0 && line.includes('Ингредиенты')) {
+        if (allIngredientLines.length > 0) {
           const tableRows = allIngredientLines.map((ingLine, ingIndex) => {
+            console.log(`Processing ingredient ${ingIndex}:`, ingLine);
+            
             // Try multiple parsing methods
             let parts = [];
             
             // Method 1: Split by em dash
             if (ingLine.includes(' — ')) {
               parts = ingLine.replace('- ', '').split(' — ');
+              console.log('Method 1 (em dash):', parts);
             } 
             // Method 2: Split by regular dash  
             else if (ingLine.includes(' - ')) {
               parts = ingLine.replace('- ', '').split(' - ');
+              console.log('Method 2 (dash):', parts);
             }
             // Method 3: Complex parsing by keywords
             else {
@@ -130,9 +139,8 @@ function App() {
                   parts = [name, quantity, price];
                 }
               }
+              console.log('Method 3 (complex):', parts);
             }
-            
-            console.log(`Parsing "${ingLine}" => Parts:`, parts);
             
             if (parts.length >= 2) {
               return (
@@ -160,29 +168,31 @@ function App() {
             );
           });
           
-          if (tableRows.length > 0) {
-            result.push(
-              <div key={index} className="my-8">
-                <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
-                  ИНГРЕДИЕНТЫ
-                </h2>
-                <div className="overflow-x-auto bg-gray-800/50 rounded-lg">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
-                        <th className="text-left py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ИНГРЕДИЕНТ</th>
-                        <th className="text-center py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">КОЛИЧЕСТВО</th>
-                        <th className="text-right py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ЦЕНА</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tableRows}
-                    </tbody>
-                  </table>
-                </div>
+          console.log('Created table rows:', tableRows.length);
+          
+          result.push(
+            <div key={index} className="my-8">
+              <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
+                ИНГРЕДИЕНТЫ
+              </h2>
+              <div className="overflow-x-auto bg-gray-800/50 rounded-lg">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
+                      <th className="text-left py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ИНГРЕДИЕНТ</th>
+                      <th className="text-center py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">КОЛИЧЕСТВО</th>
+                      <th className="text-right py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ЦЕНА</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableRows}
+                  </tbody>
+                </table>
               </div>
-            );
-          }
+            </div>
+          );
+        } else {
+          console.log('No valid ingredients found for table');
         }
         continue;
       }
