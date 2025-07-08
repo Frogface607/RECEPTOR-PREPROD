@@ -371,13 +371,61 @@ function App() {
     }, 500);
   };
 
-  useEffect(() => {
-    fetchCities();
-    const savedUser = localStorage.getItem('receptor_user');
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+  const initVoiceRecognition = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'ru-RU';
+      
+      recognitionInstance.onstart = () => {
+        setIsListening(true);
+        setVoiceStatus('Слушаю...');
+        setShowVoiceModal(true);
+      };
+      
+      recognitionInstance.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setDishName(transcript);
+        setVoiceStatus('Распознано: ' + transcript);
+        setTimeout(() => {
+          setShowVoiceModal(false);
+          setIsListening(false);
+        }, 1500);
+      };
+      
+      recognitionInstance.onerror = (event) => {
+        setVoiceStatus('Ошибка распознавания');
+        setIsListening(false);
+        setTimeout(() => {
+          setShowVoiceModal(false);
+        }, 2000);
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+        if (showVoiceModal) {
+          setTimeout(() => {
+            setShowVoiceModal(false);
+          }, 1000);
+        }
+      };
+      
+      setRecognition(recognitionInstance);
+    } else {
+      console.log('Speech recognition not supported');
     }
-  }, []);
+  };
+
+  const startVoiceRecognition = () => {
+    if (recognition) {
+      recognition.start();
+    } else {
+      alert('Голосовое распознавание не поддерживается в вашем браузере');
+    }
+  };
 
   if (!currentUser) {
     return (
