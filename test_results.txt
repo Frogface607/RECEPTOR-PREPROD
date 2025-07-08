@@ -1,6 +1,6 @@
 ❌ Test failed with error: Page.goto: Timeout 30000ms exceeded.
 Call log:
-  - navigating to "https://1c908a18-8235-4b54-a7bd-319b5e5b1e75.preview.emergentagent.com/", waiting until "load"
+  - navigating to "https://fbae56c9-ab0e-4369-b837-b6829174b68d.preview.emergentagent.com/", waiting until "load"
 
 Traceback (most recent call last):
   File "<string>", line 91, in <module>
