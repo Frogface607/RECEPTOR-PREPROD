@@ -30,6 +30,9 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
   const [showTwistModal, setShowTwistModal] = useState(false);
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [userPrices, setUserPrices] = useState([]);
+  const [uploadingPrices, setUploadingPrices] = useState(false);
   const [editableIngredients, setEditableIngredients] = useState([]);
   const [isEditingIngredients, setIsEditingIngredients] = useState(false);
   const [editableSteps, setEditableSteps] = useState([]);
