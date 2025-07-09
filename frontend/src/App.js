@@ -545,6 +545,36 @@ function App() {
     }
   };
 
+  const handlePriceFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    setUploadingPrices(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user_id', currentUser.id);
+      
+      const response = await axios.post(`${API}/upload-prices`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      setUserPrices(response.data.prices);
+      alert(`Успешно загружено ${response.data.prices.length} позиций!`);
+      
+    } catch (error) {
+      console.error('Error uploading prices:', error);
+      alert('Ошибка загрузки файла. Проверьте формат.');
+    } finally {
+      setUploadingPrices(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
   const fetchUserHistory = async () => {
     try {
       const response = await axios.get(`${API}/user-history/${currentUser.id}`);
