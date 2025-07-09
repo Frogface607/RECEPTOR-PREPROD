@@ -816,25 +816,50 @@ function App() {
       <header className="border-b border-purple-400/30 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-3xl font-bold text-purple-300">RECEPTOR PRO</h1>
-          <div className="flex items-center space-x-6">
-            <button
-              onClick={() => {
-                setShowHistory(!showHistory);
-                if (!showHistory) {
-                  fetchUserHistory();
-                }
-              }}
-              className="text-purple-300 hover:text-purple-200 font-semibold"
-            >
-              ИСТОРИЯ
-            </button>
-            <span className="text-purple-300 font-bold">{currentUser.name}</span>
-            <button
-              onClick={handleLogout}
-              className="text-purple-300 hover:text-purple-200 font-semibold"
-            >
-              ВЫЙТИ
-            </button>
+          
+          {/* Subscription Info */}
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <div className="text-sm text-purple-300 font-bold">
+                {currentUser.subscription_plan?.toUpperCase() || 'FREE'}
+              </div>
+              {currentUser.subscription_plan === 'free' && (
+                <div className="text-xs text-gray-400">
+                  {currentUser.monthly_tech_cards_used || 0}/3 техкарт
+                </div>
+              )}
+              {currentUser.subscription_plan === 'starter' && (
+                <div className="text-xs text-gray-400">
+                  {currentUser.monthly_tech_cards_used || 0}/25 техкарт
+                </div>
+              )}
+              {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
+                <div className="text-xs text-gray-400">
+                  {currentUser.monthly_tech_cards_used || 0} техкарт
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => {
+                  setShowHistory(!showHistory);
+                  if (!showHistory) {
+                    fetchUserHistory();
+                  }
+                }}
+                className="text-purple-300 hover:text-purple-200 font-semibold"
+              >
+                ИСТОРИЯ
+              </button>
+              <span className="text-purple-300 font-bold">{currentUser.name}</span>
+              <button
+                onClick={handleLogout}
+                className="text-purple-300 hover:text-purple-200 font-semibold"
+              >
+                ВЫЙТИ
+              </button>
+            </div>
           </div>
         </div>
       </header>
