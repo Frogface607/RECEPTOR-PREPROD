@@ -132,9 +132,7 @@ function App() {
         const ingredientLines = lines.filter(l => {
           const line = l.trim();
           return line.startsWith('- ') && 
-                 (line.includes('₽') || line.includes('руб')) && 
-                 !line.includes('отходы') &&
-                 !line.includes('не учитывается');
+                 (line.includes('₽') || line.includes('руб'));
         });
         
         console.log('Found ingredient lines:', ingredientLines);
