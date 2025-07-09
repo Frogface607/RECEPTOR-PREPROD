@@ -108,10 +108,13 @@ function App() {
         
         console.log('Real ingredient lines found:', ingredientLines);
         
-        // Parse real ingredients with correct em dash
+        // Parse real ingredients with correct long dash (—)
         ingredientLines.forEach(ingLine => {
-          if (ingLine.includes(' — ')) {
-            const parts = ingLine.replace('- ', '').split(' — ');
+          // Try both regular dash and em dash
+          if (ingLine.includes(' — ') || ingLine.includes(' - ')) {
+            const parts = ingLine.replace('- ', '').split(' — ').length > 1 ? 
+                         ingLine.replace('- ', '').split(' — ') : 
+                         ingLine.replace('- ', '').split(' - ');
             if (parts.length >= 3) {
               realIngredients.push({
                 name: parts[0].trim(),
