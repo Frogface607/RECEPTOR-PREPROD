@@ -1033,6 +1033,13 @@ function App() {
                     const newIngredients = [...editableIngredients];
                     newIngredients[index].price = e.target.value;
                     setEditableIngredients(newIngredients);
+                    
+                    // Auto-recalculate total cost
+                    const totalCost = newIngredients.reduce((sum, ing) => {
+                      const priceNum = parseFloat(ing.price.replace(/[^\d.]/g, '')) || 0;
+                      return sum + priceNum;
+                    }, 0);
+                    console.log('New total cost:', totalCost);
                   }}
                   className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
                   placeholder="Цена"
