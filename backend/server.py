@@ -702,9 +702,13 @@ async def edit_tech_card(request: EditRequest):
             regional_coefficient=regional_coefficient
         )
         
+        # Determine AI model based on subscription plan
+        ai_model = "gpt-4o" if user['subscription_plan'] in ['pro', 'business'] else "gpt-4o-mini"
+        max_tokens = 4000 if user['subscription_plan'] in ['pro', 'business'] else 3000
+        
         # Generate edited tech card using OpenAI
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=ai_model,
             messages=[
                 {"role": "system", "content": "Ты профессиональный AI-помощник для шеф-поваров. Редактируешь технологические карты согласно запросам пользователей."},
                 {"role": "user", "content": prompt}
