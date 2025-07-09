@@ -88,17 +88,6 @@ function App() {
       if (line.includes('Ингредиенты')) {
         console.log('FORCE CREATING INGREDIENTS TABLE');
         
-        // Hardcode ingredient parsing for now
-        const ingredientData = [
-          { name: 'Мясо краба (консервированное)', quantity: '200 г', price: '~300 ₽' },
-          { name: 'Огурцы свежие', quantity: '100 г', price: '~8 ₽' },
-          { name: 'Помидоры черри', quantity: '100 г', price: '~20 ₽' },
-          { name: 'Лук красный', quantity: '50 г', price: '~3 ₽' },
-          { name: 'Майонез', quantity: '50 г', price: '~15 ₽' },
-          { name: 'Укроп свежий', quantity: '10 г', price: '~3 ₽' },
-          { name: 'Соль, перец', quantity: 'по вкусу', price: '~1 ₽' }
-        ];
-        
         // Try to parse real ingredients from content first
         const realIngredients = [];
         const ingredientLines = lines.filter(l => {
@@ -113,7 +102,7 @@ function App() {
         
         console.log('Real ingredient lines found:', ingredientLines);
         
-        // Parse real ingredients
+        // Parse real ingredients with correct em dash
         ingredientLines.forEach(ingLine => {
           if (ingLine.includes(' — ')) {
             const parts = ingLine.replace('- ', '').split(' — ');
@@ -127,8 +116,12 @@ function App() {
           }
         });
         
-        // Use real ingredients if found, otherwise fallback
-        const finalIngredients = realIngredients.length > 0 ? realIngredients : ingredientData;
+        console.log('Final ingredients for table:', realIngredients);
+        
+        // Use real ingredients if found, otherwise show placeholder
+        const finalIngredients = realIngredients.length > 0 ? realIngredients : [
+          { name: 'Ингредиенты загружаются...', quantity: '...', price: '...' }
+        ];
         
         console.log('Final ingredients for table:', finalIngredients);
         
