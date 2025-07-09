@@ -884,6 +884,28 @@ function App() {
                   >
                     {isGenerating ? 'ГЕНЕРИРУЕТСЯ...' : 'СОЗДАТЬ ТЕХКАРТУ'}
                   </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const twists = [
+                        'азиатский стиль',
+                        'здоровое питание', 
+                        'веганская версия',
+                        'премиум вариант',
+                        'быстрое приготовление',
+                        'молекулярная кухня',
+                        'сезонные ингредиенты',
+                        'безглютеновый вариант'
+                      ];
+                      const randomTwist = twists[Math.floor(Math.random() * twists.length)];
+                      setDishName(dishName + ` в стиле ${randomTwist}`);
+                    }}
+                    disabled={!dishName.trim()}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    🎲 ТВИСТ НА БЛЮДО
+                  </button>
                 </form>
               </div>
 
