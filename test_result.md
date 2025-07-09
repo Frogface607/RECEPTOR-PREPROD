@@ -223,20 +223,20 @@ frontend:
         agent: "testing"
         comment: "Kitchen Equipment Interface is implemented correctly. The equipment selection modal (lines 1257-1313) allows PRO users to select and manage their kitchen equipment. The feature is properly restricted to PRO users only (lines 1042-1058)."
 
-  - task: "Add Usage Limit Indicators"
+  - task: "User Registration Interface"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Show usage limits and upgrade prompts"
-      - working: true
-        agent: "testing"
-        comment: "Usage limit indicators are implemented correctly. The limits are displayed in the header (lines 914-918) and in the main interface (lines 982-1005). Upgrade prompts appear when limits are reached (lines 998-1003)."
+        comment: "Implementing user registration interface with login/register functionality"
+      - working: false
+        agent: "user"
+        comment: "User reports: Registration button 'Зарегистрироваться' is not working in the first window"
         
   - task: "Fix Ingredients Table Display"
     implemented: true
