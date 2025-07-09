@@ -62,9 +62,9 @@ function App() {
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index].trim();
       
-      // Main title - FIXED to show dish name
-      if (line.startsWith('**') && line.endsWith('**') && line.includes('Название')) {
-        const title = line.replace(/\*\*/g, '').replace('Название:', '').trim();
+      // Main title - FIXED to show dish name 
+      if (line.includes('**Название:**') || (line.startsWith('**') && line.includes('Название'))) {
+        let title = line.replace(/\*\*/g, '').replace('Название:', '').replace('Название:', '').trim();
         console.log('Found title line:', line);
         console.log('Extracted title:', title);
         if (title) {
@@ -73,7 +73,9 @@ function App() {
               <h1 className="text-4xl font-bold text-purple-300 mb-4 animate-pulse">{title}</h1>
             </div>
           );
+          continue;
         }
+      }
         continue;
       }
       
