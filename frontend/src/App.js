@@ -65,6 +65,8 @@ function App() {
       // Main title - FIXED to show dish name
       if (line.startsWith('**') && line.endsWith('**') && line.includes('Название')) {
         const title = line.replace(/\*\*/g, '').replace('Название:', '').trim();
+        console.log('Found title line:', line);
+        console.log('Extracted title:', title);
         if (title) {
           result.push(
             <div key={index} className="text-center mb-8">
