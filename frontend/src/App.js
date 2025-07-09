@@ -28,6 +28,7 @@ function App() {
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [userHistory, setUserHistory] = useState([]);
   const [editableIngredients, setEditableIngredients] = useState([]);
   const [isEditingIngredients, setIsEditingIngredients] = useState(false);
   const [editableSteps, setEditableSteps] = useState([]);
