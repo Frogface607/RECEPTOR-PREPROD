@@ -238,6 +238,39 @@ function App() {
     }
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    if (!loginEmail) {
+      alert('Введите email');
+      return;
+    }
+    
+    try {
+      console.log('Attempting login with email:', loginEmail);
+      const response = await axios.get(`${API}/user/${loginEmail}`);
+      console.log('Login successful:', response.data);
+      
+      // Update state immediately
+      setCurrentUser(response.data);
+      localStorage.setItem('receptor_user', JSON.stringify(response.data));
+      
+      // Reset form
+      setShowLogin(false);
+      setLoginEmail('');
+      
+      console.log('User logged in:', response.data);
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.response?.status === 404) {
+        alert('Пользователь не найден. Попробуйте зарегистрироваться.');
+      } else {
+        alert('Ошибка входа. Попробуйте еще раз.');
+      }
+    }
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     
