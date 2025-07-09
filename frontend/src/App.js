@@ -325,6 +325,33 @@ function App() {
       setTechCard(response.data.tech_card);
       setCurrentTechCardId(response.data.id);
       setDishName('');
+      
+      // Parse ingredients and steps for editing
+      const lines = response.data.tech_card.split('\n');
+      const ingredients = [];
+      const steps = [];
+      
+      lines.forEach(line => {
+        // Parse ingredients
+        if (line.startsWith('- ') && line.includes('₽')) {
+          const parts = line.replace('- ', '').split(' — ');
+          if (parts.length >= 3) {
+            ingredients.push({
+              name: parts[0].trim(),
+              quantity: parts[1].trim(),
+              price: parts[2].trim()
+            });
+          }
+        }
+        
+        // Parse numbered steps
+        if (line.match(/^\d+\./)) {
+          steps.push(line);
+        }
+      });
+      
+      setEditableIngredients(ingredients);
+      setEditableSteps(steps);
     } catch (error) {
       console.error('Error generating tech card:', error);
       alert('Ошибка при генерации техкарты');
