@@ -95,39 +95,46 @@ function App() {
         console.log('FORCE CREATING INGREDIENTS TABLE');
         console.log('All lines from tech card:', lines);
         
-        // Try to parse real ingredients from content first
+        // Simplified ingredient parsing - look for any line with dashes and price symbols
         const realIngredients = [];
         const ingredientLines = lines.filter(l => {
           const cleanLine = l.trim();
           console.log('Checking line:', cleanLine);
+          
+          // More flexible ingredient detection
           const hasIngredient = cleanLine.startsWith('- ') && 
-                 cleanLine.includes('₽') &&
-                 !cleanLine.includes('ингредиентам:') &&
-                 !cleanLine.includes('Себестоимость') &&
-                 !cleanLine.includes('Рекомендуемая цена') &&
-                 !cleanLine.includes('Ужарка');
+                 (cleanLine.includes('₽') || cleanLine.includes('руб'));
+          
           if (hasIngredient) console.log('Found ingredient line:', cleanLine);
           return hasIngredient;
         });
         
         console.log('Real ingredient lines found:', ingredientLines);
         
-        // Parse real ingredients with correct long dash (—)
+        // Parse ingredients with multiple dash types
         ingredientLines.forEach(ingLine => {
           console.log('Processing ingredient line:', ingLine);
-          // Try both regular dash and em dash
-          if (ingLine.includes(' — ') || ingLine.includes(' - ')) {
-            const parts = ingLine.replace('- ', '').split(' — ').length > 1 ? 
-                         ingLine.replace('- ', '').split(' — ') : 
-                         ingLine.replace('- ', '').split(' - ');
-            console.log('Split parts:', parts);
-            if (parts.length >= 3) {
-              realIngredients.push({
-                name: parts[0].trim(),
-                quantity: parts[1].trim(),
-                price: parts[2].trim()
-              });
-            }
+          
+          // Try multiple separator patterns
+          let parts = [];
+          const cleanLine = ingLine.replace('- ', '');
+          
+          if (cleanLine.includes(' — ')) {
+            parts = cleanLine.split(' — ');
+          } else if (cleanLine.includes(' - ')) {
+            parts = cleanLine.split(' - ');
+          } else if (cleanLine.includes(' – ')) {
+            parts = cleanLine.split(' – ');
+          }
+          
+          console.log('Split parts:', parts);
+          
+          if (parts.length >= 2) {
+            realIngredients.push({
+              name: parts[0] ? parts[0].trim() : 'Ингредиент',
+              quantity: parts[1] ? parts[1].trim() : '',
+              price: parts[2] ? parts[2].trim() : parts[parts.length - 1].trim()
+            });
           }
         });
         
