@@ -43,6 +43,13 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
 
+  // Registration form state
+  const [registrationData, setRegistrationData] = useState({
+    email: '',
+    name: '',
+    city: ''
+  });
+
   // Enhanced tech card formatter with debug
   const formatTechCard = (content) => {
     console.log('=== DEBUG: Full content ===');
