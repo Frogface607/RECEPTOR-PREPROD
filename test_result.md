@@ -267,11 +267,11 @@ frontend:
 
   - task: "Fix Header Formatting"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -279,6 +279,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "Header formatting has been fixed. The formatTechCard function (lines 735-922) now properly processes headers to remove asterisks. Lines 743-764 specifically handle the title and section headers, removing asterisks and applying proper styling."
+      - working: false
+        agent: "user"
+        comment: "User reports: Headers and titles are not displaying properly. No titles showing in tech card display."
 
   - task: "Implement Interactive Ingredients Editor"
     implemented: true
