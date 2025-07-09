@@ -932,6 +932,24 @@ function App() {
                   </button>
                 </form>
                 
+                {/* PRO Price Management */}
+                {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
+                  <div className="border-t border-purple-400/30 pt-6">
+                    <h3 className="text-lg font-bold text-purple-300 mb-4">PRO ФУНКЦИИ</h3>
+                    <button
+                      onClick={() => setShowPriceModal(true)}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
+                    >
+                      💰 УПРАВЛЕНИЕ ПРАЙСАМИ
+                    </button>
+                    {userPrices.length > 0 && (
+                      <div className="text-sm text-green-400 text-center">
+                        Загружено {userPrices.length} позиций
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 {/* Upgrade prompt for Free users */}
                 {currentUser.subscription_plan === 'free' && currentUser.monthly_tech_cards_used >= 3 && (
                   <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-4 mt-4">
