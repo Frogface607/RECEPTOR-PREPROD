@@ -784,11 +784,11 @@ function App() {
                       rows={4}
                     />
                     <button
-                      onClick={() => alert('AI редактирование временно недоступно')}
-                      disabled={!editInstruction.trim()}
+                      onClick={handleEditTechCard}
+                      disabled={!editInstruction.trim() || isEditingAI}
                       className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors"
                     >
-                      ИЗМЕНИТЬ ЧЕРЕЗ AI
+                      {isEditingAI ? 'ОБРАБАТЫВАЮ...' : 'ИЗМЕНИТЬ ЧЕРЕЗ AI'}
                     </button>
                   </div>
                   
