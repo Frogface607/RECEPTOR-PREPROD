@@ -1265,6 +1265,72 @@ function App() {
         </div>
       )}
 
+      {/* Twist Modal */}
+      {showTwistModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-orange-500/30">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🎲</span>
+              </div>
+              <h3 className="text-xl font-bold text-orange-300 mb-4">ТВИСТ НА БЛЮДО</h3>
+              <p className="text-gray-300 mb-6 text-sm">
+                Выберите стиль для интересной вариации вашего блюда
+              </p>
+              
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {[
+                  { emoji: '🍜', text: 'Азиатский стиль' },
+                  { emoji: '🥗', text: 'Здоровое питание' },
+                  { emoji: '🌱', text: 'Веганская версия' },
+                  { emoji: '💎', text: 'Премиум вариант' },
+                  { emoji: '⚡', text: 'Быстрое приготовление' },
+                  { emoji: '🔬', text: 'Молекулярная кухня' },
+                  { emoji: '🍂', text: 'Сезонные ингредиенты' },
+                  { emoji: '🚫', text: 'Безглютеновый' }
+                ].map((twist, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setDishName(dishName + ` в стиле ${twist.text.toLowerCase()}`);
+                      setShowTwistModal(false);
+                    }}
+                    className="bg-gray-700 hover:bg-orange-600 text-white p-3 rounded-lg transition-colors text-sm flex flex-col items-center"
+                  >
+                    <span className="text-lg mb-1">{twist.emoji}</span>
+                    <span className="text-xs">{twist.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    const twists = [
+                      'азиатский стиль', 'здоровое питание', 'веганская версия',
+                      'премиум вариант', 'быстрое приготовление', 'молекулярная кухня',
+                      'сезонные ингредиенты', 'безглютеновый вариант'
+                    ];
+                    const randomTwist = twists[Math.floor(Math.random() * twists.length)];
+                    setDishName(dishName + ` в стиле ${randomTwist}`);
+                    setShowTwistModal(false);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                >
+                  🎲 СЛУЧАЙНЫЙ
+                </button>
+                <button
+                  onClick={() => setShowTwistModal(false)}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                >
+                  ОТМЕНА
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Voice Recognition Modal */}
       {showVoiceModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
