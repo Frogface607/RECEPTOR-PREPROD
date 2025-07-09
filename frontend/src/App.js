@@ -445,15 +445,24 @@ function App() {
 
   const handleGenerateTechCard = async (e) => {
     e.preventDefault();
-    if (!dishName.trim()) return;
+    console.log('Generate button clicked');
+    console.log('Dish name:', dishName);
+    console.log('Current user:', currentUser);
+    
+    if (!dishName.trim()) {
+      console.log('No dish name provided');
+      return;
+    }
 
     setIsGenerating(true);
     try {
+      console.log('Sending request to:', `${API}/generate-tech-card`);
       const response = await axios.post(`${API}/generate-tech-card`, {
         dish_name: dishName,
         user_id: currentUser.id
       });
       
+      console.log('Response received:', response.data);
       setTechCard(response.data.tech_card);
       setCurrentTechCardId(response.data.id);
       setDishName('');
@@ -484,6 +493,7 @@ function App() {
       
       setEditableIngredients(ingredients);
       setEditableSteps(steps);
+      
     } catch (error) {
       console.error('Error generating tech card:', error);
       alert('Ошибка при генерации техкарты');
