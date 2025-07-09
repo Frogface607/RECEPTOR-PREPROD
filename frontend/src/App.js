@@ -39,12 +39,9 @@ function App() {
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [recognition, setRecognition] = useState(null);
 
-  // Registration form state
-  const [registrationData, setRegistrationData] = useState({
-    email: '',
-    name: '',
-    city: ''
-  });
+  // Login states
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
 
   // Enhanced tech card formatter with debug
   const formatTechCard = (content) => {
