@@ -90,6 +90,39 @@ function App() {
         continue;
       }
       
+      // Description section
+      if (line.includes('**Описание:**')) {
+        const descriptionLine = line.replace(/\*\*/g, '').replace('Описание:', '').trim();
+        if (descriptionLine) {
+          result.push(
+            <div key={index} className="my-6">
+              <h3 className="text-lg font-bold text-purple-400 mb-3 uppercase tracking-wide">
+                ОПИСАНИЕ
+              </h3>
+              <p className="text-gray-300 leading-relaxed bg-gray-800/30 p-4 rounded-lg">
+                {descriptionLine}
+              </p>
+            </div>
+          );
+        }
+        continue;
+      }
+      
+      // Category section
+      if (line.includes('**Категория:**')) {
+        const categoryLine = line.replace(/\*\*/g, '').replace('Категория:', '').trim();
+        if (categoryLine) {
+          result.push(
+            <div key={index} className="my-4">
+              <span className="inline-block bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold uppercase">
+                {categoryLine}
+              </span>
+            </div>
+          );
+        }
+        continue;
+      }
+      
       // INGREDIENTS TABLE - simple approach like PDF
       if (line.includes('Ингредиенты')) {
         console.log('CREATING INGREDIENTS TABLE');
