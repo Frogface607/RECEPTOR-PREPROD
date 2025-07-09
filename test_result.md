@@ -253,7 +253,7 @@ frontend:
     file: "frontend/src/App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -264,6 +264,9 @@ frontend:
       - working: false
         agent: "user"
         comment: "User reports: Ingredients are not displaying properly. No ingredients showing in tech card display. Core functionality broken."
+      - working: false
+        agent: "testing"
+        comment: "Tested the application and confirmed that tech card generation is not working properly. After clicking 'СОЗДАТЬ ТЕХКАРТУ', the system does not display the tech card content. The tech card generation process times out after 60 seconds without showing any results. This confirms the user's report that ingredients are not displaying properly."
 
   - task: "Fix Header Formatting"
     implemented: true
