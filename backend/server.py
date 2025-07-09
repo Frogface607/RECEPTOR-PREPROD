@@ -796,6 +796,64 @@ async def get_cities():
     ]
     return cities
 
+@api_router.post("/upload-prices")
+async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
+    try:
+        # Check if user has PRO subscription
+        user = await db.users.find_one({"id": user_id})
+        if not user or user.get('subscription_plan') not in ['pro', 'business']:
+            raise HTTPException(status_code=403, detail="PRO subscription required")
+        
+        # Read file content
+        contents = await file.read()
+        
+        # Parse Excel/CSV file
+        import pandas as pd
+        import io
+        
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
+        else:
+            df = pd.read_excel(io.BytesIO(contents))
+        
+        # Clean and process data
+        prices = []
+        for _, row in df.iterrows():
+            try:
+                name = str(row.iloc[0]).strip()
+                price = float(str(row.iloc[1]).replace(',', '.').replace('₽', '').strip())
+                unit = str(row.iloc[2]).strip() if len(row) > 2 else 'кг'
+                
+                if name and name.lower() not in ['название', 'продукт', 'наименование']:
+                    prices.append({
+                        "name": name,
+                        "price": round(price, 2),
+                        "unit": unit
+                    })
+            except:
+                continue
+        
+        # Save to database
+        await db.user_prices.delete_many({"user_id": user_id})
+        if prices:
+            price_docs = [{"user_id": user_id, **price, "created_at": datetime.utcnow()} for price in prices]
+            await db.user_prices.insert_many(price_docs)
+        
+        return {"success": True, "prices": prices, "count": len(prices)}
+        
+    except Exception as e:
+        logger.error(f"Error uploading prices: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+
+@api_router.get("/user-prices/{user_id}")
+async def get_user_prices(user_id: str):
+    try:
+        prices = await db.user_prices.find({"user_id": user_id}).to_list(1000)
+        return {"prices": [{"name": p["name"], "price": p["price"], "unit": p["unit"]} for p in prices]}
+    except Exception as e:
+        logger.error(f"Error fetching user prices: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching prices: {str(e)}")
+
 @api_router.get("/user-history/{user_id}")
 async def get_user_history(user_id: str):
     try:
