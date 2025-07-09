@@ -243,9 +243,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "FIXED: Enhanced handleRegister function with better validation, error handling, and console logging. Added debug logs to useEffect for localStorage user loading. Registration now works correctly - user can register and immediately enter the main application interface."
-      - working: true
+      - working: false
         agent: "user"
-        comment: "User reports: Registration shows error 'Error registering user: 400: User already registered' when trying to register with existing email. This is correct behavior - the system properly validates that users cannot register with duplicate emails. However, the app needs a login function for existing users."
+        comment: "User reports: After registering with different email, entered main application but core functionality is broken: 'названия нет и ингредиентов тоже' (no titles and no ingredients). Tech card generation and display is not working properly. User requests to fix display issues and add login functionality."
         
   - task: "Fix Ingredients Table Display"
     implemented: true
