@@ -613,14 +613,20 @@ async def generate_tech_card(request: DishRequest):
             regional_coefficient=regional_coefficient
         ) + equipment_context
         
+        # Determine AI model based on subscription plan
+        ai_model = "gpt-4o" if user['subscription_plan'] in ['pro', 'business'] else "gpt-4o-mini"
+        max_tokens = 4000 if user['subscription_plan'] in ['pro', 'business'] else 3000
+        
+        print(f"Using AI model: {ai_model} for user subscription: {user['subscription_plan']}")
+        
         # Generate tech card using OpenAI
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=ai_model,
             messages=[
                 {"role": "system", "content": "Ты профессиональный AI-помощник для шеф-поваров. Создаешь детальные технологические карты блюд."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=3000,
+            max_tokens=max_tokens,
             temperature=0.7
         )
         
