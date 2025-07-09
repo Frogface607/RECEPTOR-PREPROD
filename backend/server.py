@@ -796,6 +796,20 @@ async def get_cities():
     ]
     return cities
 
+@api_router.get("/user-history/{user_id}")
+async def get_user_history(user_id: str):
+    try:
+        # Get user's tech cards history sorted by creation date (newest first)
+        history = await db.tech_cards.find(
+            {"user_id": user_id}
+        ).sort("created_at", -1).limit(20).to_list(20)
+        
+        return {"history": history}
+        
+    except Exception as e:
+        logger.error(f"Error fetching user history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching history: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
