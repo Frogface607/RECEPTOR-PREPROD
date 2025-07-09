@@ -807,6 +807,12 @@ function App() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-3xl font-bold text-purple-300">RECEPTOR PRO</h1>
           <div className="flex items-center space-x-6">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="text-purple-300 hover:text-purple-200 font-semibold"
+            >
+              ИСТОРИЯ
+            </button>
             <span className="text-purple-300 font-bold">{currentUser.name}</span>
             <button
               onClick={handleLogout}
