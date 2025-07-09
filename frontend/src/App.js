@@ -541,6 +541,15 @@ function App() {
     }
   };
 
+  const fetchUserHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/user-history/${currentUser.id}`);
+      setUserHistory(response.data.history || []);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    }
+  };
+
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('receptor_user');
