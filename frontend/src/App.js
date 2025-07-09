@@ -93,28 +93,34 @@ function App() {
       // FORCED INGREDIENTS TABLE - will always show
       if (line.includes('Ингредиенты')) {
         console.log('FORCE CREATING INGREDIENTS TABLE');
+        console.log('All lines from tech card:', lines);
         
         // Try to parse real ingredients from content first
         const realIngredients = [];
         const ingredientLines = lines.filter(l => {
           const cleanLine = l.trim();
-          return cleanLine.startsWith('- ') && 
+          console.log('Checking line:', cleanLine);
+          const hasIngredient = cleanLine.startsWith('- ') && 
                  cleanLine.includes('₽') &&
                  !cleanLine.includes('ингредиентам:') &&
                  !cleanLine.includes('Себестоимость') &&
                  !cleanLine.includes('Рекомендуемая цена') &&
                  !cleanLine.includes('Ужарка');
+          if (hasIngredient) console.log('Found ingredient line:', cleanLine);
+          return hasIngredient;
         });
         
         console.log('Real ingredient lines found:', ingredientLines);
         
         // Parse real ingredients with correct long dash (—)
         ingredientLines.forEach(ingLine => {
+          console.log('Processing ingredient line:', ingLine);
           // Try both regular dash and em dash
           if (ingLine.includes(' — ') || ingLine.includes(' - ')) {
             const parts = ingLine.replace('- ', '').split(' — ').length > 1 ? 
                          ingLine.replace('- ', '').split(' — ') : 
                          ingLine.replace('- ', '').split(' - ');
+            console.log('Split parts:', parts);
             if (parts.length >= 3) {
               realIngredients.push({
                 name: parts[0].trim(),
