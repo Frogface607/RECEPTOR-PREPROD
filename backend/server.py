@@ -516,32 +516,41 @@ async def update_kitchen_equipment(user_id: str, equipment_data: KitchenEquipmen
 # Routes
 @api_router.post("/register", response_model=User)
 async def register_user(user_data: UserCreate):
-    # Check if user already exists
-    existing_user = await db.users.find_one({"email": user_data.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already registered")
-    
-    user_dict = user_data.dict()
-    
-    # Initialize subscription fields
-    current_date = datetime.utcnow()
-    next_reset = current_date.replace(day=1)
-    if next_reset.month == 12:
-        next_reset = next_reset.replace(year=next_reset.year + 1, month=1)
-    else:
-        next_reset = next_reset.replace(month=next_reset.month + 1)
-    
-    user_dict.update({
-        "subscription_plan": "free",
-        "subscription_start_date": current_date,
-        "monthly_tech_cards_used": 0,
-        "monthly_reset_date": next_reset,
-        "kitchen_equipment": []
-    })
-    
-    user_obj = User(**user_dict)
-    await db.users.insert_one(user_obj.dict())
-    return user_obj
+    try:
+        print(f"Received registration data: {user_data}")
+        
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": user_data.email})
+        if existing_user:
+            print(f"User already exists: {user_data.email}")
+            raise HTTPException(status_code=400, detail="User already registered")
+        
+        user_dict = user_data.dict()
+        print(f"User dict: {user_dict}")
+        
+        # Initialize subscription fields
+        current_date = datetime.utcnow()
+        next_reset = current_date.replace(day=1)
+        if next_reset.month == 12:
+            next_reset = next_reset.replace(year=next_reset.year + 1, month=1)
+        else:
+            next_reset = next_reset.replace(month=next_reset.month + 1)
+        
+        user_dict.update({
+            "subscription_plan": "free",
+            "subscription_start_date": current_date,
+            "monthly_tech_cards_used": 0,
+            "monthly_reset_date": next_reset,
+            "kitchen_equipment": []
+        })
+        
+        user_obj = User(**user_dict)
+        await db.users.insert_one(user_obj.dict())
+        return user_obj
+        
+    except Exception as e:
+        logger.error(f"Error registering user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error registering user: {str(e)}")
 
 @api_router.get("/user/{email}")
 async def get_user(email: str):
