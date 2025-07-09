@@ -249,11 +249,11 @@ frontend:
         
   - task: "Fix Ingredients Table Display"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -261,6 +261,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "The ingredients table display has been fixed. Ingredients are now properly displayed in a table format with gradient styling (lines 573-592). The parseIngredients function (lines 325-358) correctly extracts ingredients from the tech card content, and the formatTechCard function (lines 735-922) renders them in a table."
+      - working: false
+        agent: "user"
+        comment: "User reports: Ingredients are not displaying properly. No ingredients showing in tech card display. Core functionality broken."
 
   - task: "Fix Header Formatting"
     implemented: true
