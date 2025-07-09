@@ -787,6 +787,124 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Ingredients Editor Modal */}
+      {isEditingIngredients && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <h3 className="text-2xl font-bold text-purple-300 mb-6">РЕДАКТОР ИНГРЕДИЕНТОВ</h3>
+            
+            {editableIngredients.map((ingredient, index) => (
+              <div key={index} className="grid grid-cols-4 gap-4 mb-4">
+                <input
+                  type="text"
+                  value={ingredient.name}
+                  onChange={(e) => {
+                    const newIngredients = [...editableIngredients];
+                    newIngredients[index].name = e.target.value;
+                    setEditableIngredients(newIngredients);
+                  }}
+                  className="col-span-2 bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
+                  placeholder="Ингредиент"
+                />
+                <input
+                  type="text"
+                  value={ingredient.quantity}
+                  onChange={(e) => {
+                    const newIngredients = [...editableIngredients];
+                    newIngredients[index].quantity = e.target.value;
+                    setEditableIngredients(newIngredients);
+                  }}
+                  className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
+                  placeholder="Количество"
+                />
+                <input
+                  type="text"
+                  value={ingredient.price}
+                  onChange={(e) => {
+                    const newIngredients = [...editableIngredients];
+                    newIngredients[index].price = e.target.value;
+                    setEditableIngredients(newIngredients);
+                  }}
+                  className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
+                  placeholder="Цена"
+                />
+              </div>
+            ))}
+            
+            <div className="flex space-x-4 mt-6">
+              <button
+                onClick={() => {
+                  setEditableIngredients([...editableIngredients, { name: '', quantity: '', price: '' }]);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+              >
+                ДОБАВИТЬ
+              </button>
+              <button
+                onClick={() => setIsEditingIngredients(false)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+              >
+                СОХРАНИТЬ
+              </button>
+              <button
+                onClick={() => setIsEditingIngredients(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
+              >
+                ОТМЕНА
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Steps Editor Modal */}
+      {isEditingSteps && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <h3 className="text-2xl font-bold text-purple-300 mb-6">РЕДАКТОР ЭТАПОВ</h3>
+            
+            {editableSteps.map((step, index) => (
+              <div key={index} className="mb-4">
+                <textarea
+                  value={step}
+                  onChange={(e) => {
+                    const newSteps = [...editableSteps];
+                    newSteps[index] = e.target.value;
+                    setEditableSteps(newSteps);
+                  }}
+                  className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
+                  placeholder={`Этап ${index + 1}`}
+                  rows={3}
+                />
+              </div>
+            ))}
+            
+            <div className="flex space-x-4 mt-6">
+              <button
+                onClick={() => {
+                  setEditableSteps([...editableSteps, '']);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+              >
+                ДОБАВИТЬ ЭТАП
+              </button>
+              <button
+                onClick={() => setIsEditingSteps(false)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+              >
+                СОХРАНИТЬ
+              </button>
+              <button
+                onClick={() => setIsEditingSteps(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
+              >
+                ОТМЕНА
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
