@@ -713,7 +713,7 @@ async def edit_tech_card(request: EditRequest):
                 {"role": "system", "content": "Ты профессиональный AI-помощник для шеф-поваров. Редактируешь технологические карты согласно запросам пользователей."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=3000,
+            max_tokens=max_tokens,
             temperature=0.7
         )
         
