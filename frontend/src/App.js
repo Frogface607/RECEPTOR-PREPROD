@@ -243,14 +243,36 @@ function App() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!registrationData.email || !registrationData.name || !registrationData.city) {
+      alert('Пожалуйста, заполните все поля');
+      return;
+    }
+    
     try {
+      console.log('Attempting registration with data:', registrationData);
       const response = await axios.post(`${API}/register`, registrationData);
+      console.log('Registration successful:', response.data);
+      
+      // Update state immediately
       setCurrentUser(response.data);
       localStorage.setItem('receptor_user', JSON.stringify(response.data));
+      
+      // Reset form
       setShowRegistration(false);
       setRegistrationData({ email: '', name: '', city: '' });
+      
+      // Force re-render by setting a flag
+      console.log('User set to:', response.data);
+      
     } catch (error) {
-      alert('Ошибка регистрации. Попробуйте еще раз.');
+      console.error('Registration error:', error);
+      if (error.response?.data?.detail) {
+        alert(`Ошибка: ${error.response.data.detail}`);
+      } else {
+        alert('Ошибка регистрации. Попробуйте еще раз.');
+      }
     }
   };
 
