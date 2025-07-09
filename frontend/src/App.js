@@ -128,10 +128,14 @@ function App() {
         console.log('CREATING INGREDIENTS TABLE');
         console.log('All tech card lines:', lines);
         
-        // Find all ingredient lines (same logic as PDF)
-        const ingredientLines = lines.filter(l => 
-          l.startsWith('- ') && (l.includes('₽') || l.includes('руб'))
-        );
+        // Find all ingredient lines (improved logic)
+        const ingredientLines = lines.filter(l => {
+          const line = l.trim();
+          return line.startsWith('- ') && 
+                 (line.includes('₽') || line.includes('руб')) && 
+                 !line.includes('отходы') &&
+                 !line.includes('не учитывается');
+        });
         
         console.log('Found ingredient lines:', ingredientLines);
         
