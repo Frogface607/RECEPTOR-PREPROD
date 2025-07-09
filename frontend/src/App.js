@@ -1140,6 +1140,88 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* History Modal */}
+      {showHistory && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-purple-300">ИСТОРИЯ ТЕХКАРТ</h3>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {userHistory.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">История пуста</p>
+            ) : (
+              <div className="space-y-4">
+                {userHistory.map((item, index) => (
+                  <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="text-lg font-bold text-purple-300">
+                        {item.content.split('\n')[0].replace('**Название:**', '').trim()}
+                      </h4>
+                      <span className="text-sm text-gray-400">
+                        {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-3">
+                      {item.content.split('\n').find(line => line.includes('**Описание:**'))?.replace('**Описание:**', '').trim() || 'Без описания'}
+                    </p>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setTechCard(item.content);
+                          setCurrentTechCardId(item.id);
+                          setShowHistory(false);
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm"
+                      >
+                        ОТКРЫТЬ
+                      </button>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(item.content)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                      >
+                        КОПИРОВАТЬ
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Voice Recognition Modal */}
+      {showVoiceModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-purple-500/30">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center animate-pulse">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-purple-300 mb-4">ГОЛОСОВОЙ ВВОД</h3>
+              <p className="text-gray-300 mb-6">
+                {voiceStatus}
+              </p>
+              <button
+                onClick={() => setShowVoiceModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ОТМЕНА
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
