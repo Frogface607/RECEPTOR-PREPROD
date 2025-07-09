@@ -29,6 +29,7 @@ function App() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
+  const [showTwistModal, setShowTwistModal] = useState(false);
   const [editableIngredients, setEditableIngredients] = useState([]);
   const [isEditingIngredients, setIsEditingIngredients] = useState(false);
   const [editableSteps, setEditableSteps] = useState([]);
