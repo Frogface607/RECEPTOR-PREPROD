@@ -1286,6 +1286,113 @@ function App() {
         </div>
       )}
 
+      {/* Price Management Modal - PRO only */}
+      {showPriceModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-green-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-green-300">💰 УПРАВЛЕНИЕ ПРАЙСАМИ</h3>
+              <button
+                onClick={() => setShowPriceModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* File Upload */}
+            <div className="mb-6">
+              <h4 className="text-lg font-bold text-green-300 mb-3">ЗАГРУЗИТЬ ПРАЙС</h4>
+              <div className="border-2 border-dashed border-green-500/30 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handlePriceFileUpload}
+                  className="hidden"
+                  id="price-file-upload"
+                />
+                <label
+                  htmlFor="price-file-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <span className="text-green-300 font-bold">
+                    {uploadingPrices ? 'ЗАГРУЖАЮ...' : 'ЗАГРУЗИТЬ EXCEL/CSV'}
+                  </span>
+                  <span className="text-gray-400 text-sm mt-1">
+                    Поддерживаются форматы: .xlsx, .xls, .csv
+                  </span>
+                </label>
+              </div>
+            </div>
+            
+            {/* Current Prices */}
+            {userPrices.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-green-300 mb-3">ТЕКУЩИЕ ПРАЙСЫ</h4>
+                <div className="bg-gray-800/50 rounded-lg max-h-60 overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="bg-green-600 text-white">
+                      <tr>
+                        <th className="px-4 py-2 text-left">Продукт</th>
+                        <th className="px-4 py-2 text-right">Цена</th>
+                        <th className="px-4 py-2 text-center">Единица</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userPrices.slice(0, 10).map((price, index) => (
+                        <tr key={index} className="border-b border-gray-700">
+                          <td className="px-4 py-2 text-gray-300">{price.name}</td>
+                          <td className="px-4 py-2 text-right text-green-400">{price.price}₽</td>
+                          <td className="px-4 py-2 text-center text-gray-400">{price.unit}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {userPrices.length > 10 && (
+                    <div className="text-center py-2 text-gray-400 text-sm">
+                      ... и еще {userPrices.length - 10} позиций
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Instructions */}
+            <div className="bg-blue-600/20 rounded-lg p-4 mb-6">
+              <h4 className="text-blue-300 font-bold mb-2">💡 ИНСТРУКЦИЯ:</h4>
+              <ul className="text-blue-200 text-sm space-y-1">
+                <li>• Колонка A: Название продукта</li>
+                <li>• Колонка B: Цена за единицу</li>
+                <li>• Колонка C: Единица измерения (кг, л, шт)</li>
+                <li>• Первая строка - заголовки</li>
+                <li>• Расчет будет до копейки!</li>
+              </ul>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setUserPrices([])}
+                disabled={userPrices.length === 0}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                ОЧИСТИТЬ ВСЕ
+              </button>
+              <button
+                onClick={() => setShowPriceModal(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                ГОТОВО
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Twist Modal */}
       {showTwistModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
