@@ -744,8 +744,22 @@ function App() {
       const parsedUser = JSON.parse(savedUser);
       console.log('Setting currentUser from localStorage:', parsedUser);
       setCurrentUser(parsedUser);
+      
+      // Load user prices for PRO users
+      if (parsedUser.subscription_plan === 'pro' || parsedUser.subscription_plan === 'business') {
+        loadUserPrices(parsedUser.id);
+      }
     }
   }, []);
+
+  const loadUserPrices = async (userId) => {
+    try {
+      const response = await axios.get(`${API}/user-prices/${userId}`);
+      setUserPrices(response.data.prices || []);
+    } catch (error) {
+      console.error('Error loading user prices:', error);
+    }
+  };
 
   if (!currentUser) {
     return (
