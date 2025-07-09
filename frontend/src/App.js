@@ -818,7 +818,12 @@ function App() {
           <h1 className="text-3xl font-bold text-purple-300">RECEPTOR PRO</h1>
           <div className="flex items-center space-x-6">
             <button
-              onClick={() => setShowHistory(!showHistory)}
+              onClick={() => {
+                setShowHistory(!showHistory);
+                if (!showHistory) {
+                  fetchUserHistory();
+                }
+              }}
               className="text-purple-300 hover:text-purple-200 font-semibold"
             >
               ИСТОРИЯ
