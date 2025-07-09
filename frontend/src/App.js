@@ -699,13 +699,13 @@ function App() {
                   </h3>
                   <div className="space-y-4">
                     <button
-                      onClick={() => alert('Интерактивный редактор ингредиентов скоро')}
+                      onClick={() => setIsEditingIngredients(true)}
                       className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
                     >
                       РЕДАКТИРОВАТЬ ИНГРЕДИЕНТЫ
                     </button>
                     <button
-                      onClick={() => alert('Редактор этапов скоро')}
+                      onClick={() => setIsEditingSteps(true)}
                       className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
                     >
                       РЕДАКТИРОВАТЬ ЭТАПЫ
