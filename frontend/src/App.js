@@ -90,62 +90,16 @@ function App() {
         continue;
       }
       
-      // FORCED INGREDIENTS TABLE - will always show
+      // INGREDIENTS TABLE - simple approach like PDF
       if (line.includes('Ингредиенты')) {
-        console.log('FORCE CREATING INGREDIENTS TABLE');
-        console.log('All lines from tech card:', lines);
+        console.log('CREATING INGREDIENTS TABLE');
         
-        // Simplified ingredient parsing - look for any line with dashes and price symbols
-        const realIngredients = [];
-        const ingredientLines = lines.filter(l => {
-          const cleanLine = l.trim();
-          console.log('Checking line:', cleanLine);
-          
-          // More flexible ingredient detection
-          const hasIngredient = cleanLine.startsWith('- ') && 
-                 (cleanLine.includes('₽') || cleanLine.includes('руб'));
-          
-          if (hasIngredient) console.log('Found ingredient line:', cleanLine);
-          return hasIngredient;
-        });
+        // Find all ingredient lines (same logic as PDF)
+        const ingredientLines = lines.filter(l => 
+          l.startsWith('- ') && (l.includes('₽') || l.includes('руб'))
+        );
         
-        console.log('Real ingredient lines found:', ingredientLines);
-        
-        // Parse ingredients with multiple dash types
-        ingredientLines.forEach(ingLine => {
-          console.log('Processing ingredient line:', ingLine);
-          
-          // Try multiple separator patterns
-          let parts = [];
-          const cleanLine = ingLine.replace('- ', '');
-          
-          if (cleanLine.includes(' — ')) {
-            parts = cleanLine.split(' — ');
-          } else if (cleanLine.includes(' - ')) {
-            parts = cleanLine.split(' - ');
-          } else if (cleanLine.includes(' – ')) {
-            parts = cleanLine.split(' – ');
-          }
-          
-          console.log('Split parts:', parts);
-          
-          if (parts.length >= 2) {
-            realIngredients.push({
-              name: parts[0] ? parts[0].trim() : 'Ингредиент',
-              quantity: parts[1] ? parts[1].trim() : '',
-              price: parts[2] ? parts[2].trim() : parts[parts.length - 1].trim()
-            });
-          }
-        });
-        
-        console.log('Final ingredients for table:', realIngredients);
-        
-        // Use real ingredients if found, otherwise show placeholder
-        const finalIngredients = realIngredients.length > 0 ? realIngredients : [
-          { name: 'Ингредиенты загружаются...', quantity: '...', price: '...' }
-        ];
-        
-        console.log('Final ingredients for table:', finalIngredients);
+        console.log('Found ingredient lines:', ingredientLines);
         
         result.push(
           <div key={index} className="my-8">
@@ -162,25 +116,72 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {finalIngredients.map((ing, ingIndex) => (
-                    <tr key={`forced-ing-${ingIndex}`} className="hover:bg-gray-700/50 transition-colors">
-                      <td className="font-semibold text-purple-200 py-3 px-4 border-b border-purple-400/30">
-                        {ing.name}
-                      </td>
-                      <td className="text-center text-gray-300 py-3 px-4 border-b border-purple-400/30">
-                        {ing.quantity}
-                      </td>
-                      <td className="text-right font-bold text-green-300 py-3 px-4 border-b border-purple-400/30">
-                        {ing.price}
-                      </td>
-                    </tr>
-                  ))}
+                  {ingredientLines.map((ingLine, ingIndex) => {
+                    // Simple parsing: just remove "- " and split by em dash or regular dash
+                    const cleanLine = ingLine.replace('- ', '');
+                    let parts = [];
+                    
+                    if (cleanLine.includes(' — ')) {
+                      parts = cleanLine.split(' — ');
+                    } else if (cleanLine.includes(' - ')) {
+                      parts = cleanLine.split(' - ');
+                    } else {
+                      // If no clear separator, just show the whole line as name
+                      parts = [cleanLine, '', ''];
+                    }
+                    
+                    return (
+                      <tr key={ingIndex} className={ingIndex % 2 === 0 ? 'bg-gray-700/30' : 'bg-gray-600/30'}>
+                        <td className="py-3 px-4 text-gray-200 border-r border-gray-600">
+                          {parts[0] ? parts[0].trim() : 'Ингредиент'}
+                        </td>
+                        <td className="py-3 px-4 text-gray-200 text-center border-r border-gray-600">
+                          {parts[1] ? parts[1].trim() : ''}
+                        </td>
+                        <td className="py-3 px-4 text-gray-200 text-right">
+                          {parts[2] ? parts[2].trim() : parts[parts.length - 1].trim()}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+            
+            {/* Manual editing button */}
+            <div className="mt-4">
+              <button
+                onClick={() => {
+                  // Parse ingredients for editing
+                  const editIngredients = ingredientLines.map(line => {
+                    const cleanLine = line.replace('- ', '');
+                    let parts = [];
+                    
+                    if (cleanLine.includes(' — ')) {
+                      parts = cleanLine.split(' — ');
+                    } else if (cleanLine.includes(' - ')) {
+                      parts = cleanLine.split(' - ');
+                    } else {
+                      parts = [cleanLine, '', ''];
+                    }
+                    
+                    return {
+                      name: parts[0] ? parts[0].trim() : '',
+                      quantity: parts[1] ? parts[1].trim() : '',
+                      price: parts[2] ? parts[2].trim() : parts[parts.length - 1].trim()
+                    };
+                  });
+                  
+                  setEditableIngredients(editIngredients);
+                  setIsEditingIngredients(true);
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+              >
+                РЕДАКТИРОВАТЬ
+              </button>
+            </div>
           </div>
         );
-        
         continue;
       }
       
