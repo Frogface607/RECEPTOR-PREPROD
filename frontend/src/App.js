@@ -249,6 +249,55 @@ function App() {
     }
   };
 
+  const handleEditTechCard = async () => {
+    if (!editInstruction.trim() || !currentTechCardId) return;
+
+    setIsEditingAI(true);
+    try {
+      const response = await axios.post(`${API}/edit-tech-card`, {
+        tech_card_id: currentTechCardId,
+        edit_instruction: editInstruction,
+        user_id: currentUser.id
+      });
+      
+      setTechCard(response.data.tech_card);
+      setEditInstruction('');
+      
+      // Re-parse ingredients and steps for editing
+      const lines = response.data.tech_card.split('\n');
+      const ingredients = [];
+      const steps = [];
+      
+      lines.forEach(line => {
+        // Parse ingredients
+        if (line.startsWith('- ') && line.includes('₽')) {
+          const parts = line.replace('- ', '').split(' — ');
+          if (parts.length >= 3) {
+            ingredients.push({
+              name: parts[0].trim(),
+              quantity: parts[1].trim(),
+              price: parts[2].trim()
+            });
+          }
+        }
+        
+        // Parse numbered steps
+        if (line.match(/^\d+\./)) {
+          steps.push(line);
+        }
+      });
+      
+      setEditableIngredients(ingredients);
+      setEditableSteps(steps);
+      
+    } catch (error) {
+      console.error('Error editing tech card:', error);
+      alert('Ошибка при редактировании техкарты');
+    } finally {
+      setIsEditingAI(false);
+    }
+  };
+
   const saveIngredientsChanges = () => {
     // Rebuild tech card with new ingredients
     const lines = techCard.split('\n');
