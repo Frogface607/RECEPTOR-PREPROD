@@ -249,6 +249,83 @@ function App() {
     }
   };
 
+  const saveIngredientsChanges = () => {
+    // Rebuild tech card with new ingredients
+    const lines = techCard.split('\n');
+    const newLines = [];
+    let inIngredientsSection = false;
+    let ingredientIndex = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.includes('**Ингредиенты:**')) {
+        inIngredientsSection = true;
+        newLines.push(line);
+        
+        // Add updated ingredients
+        editableIngredients.forEach(ing => {
+          newLines.push(`- ${ing.name} — ${ing.quantity} — ${ing.price}`);
+        });
+        
+        // Skip original ingredients
+        continue;
+      }
+      
+      if (inIngredientsSection && line.startsWith('- ') && line.includes('₽')) {
+        // Skip original ingredient lines
+        continue;
+      }
+      
+      if (inIngredientsSection && line.startsWith('**') && line !== '**Ингредиенты:**') {
+        inIngredientsSection = false;
+      }
+      
+      newLines.push(line);
+    }
+    
+    setTechCard(newLines.join('\n'));
+    setIsEditingIngredients(false);
+  };
+
+  const saveStepsChanges = () => {
+    // Rebuild tech card with new steps
+    const lines = techCard.split('\n');
+    const newLines = [];
+    let inStepsSection = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.includes('**Пошаговый рецепт:**')) {
+        inStepsSection = true;
+        newLines.push(line);
+        newLines.push('');
+        
+        // Add updated steps
+        editableSteps.forEach((step, index) => {
+          newLines.push(`${index + 1}. ${step}`);
+        });
+        
+        continue;
+      }
+      
+      if (inStepsSection && line.match(/^\d+\./)) {
+        // Skip original step lines
+        continue;
+      }
+      
+      if (inStepsSection && line.startsWith('**') && !line.includes('Пошаговый рецепт')) {
+        inStepsSection = false;
+      }
+      
+      newLines.push(line);
+    }
+    
+    setTechCard(newLines.join('\n'));
+    setIsEditingSteps(false);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     
