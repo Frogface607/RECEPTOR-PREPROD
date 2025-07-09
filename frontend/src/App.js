@@ -500,7 +500,7 @@ function App() {
             <p className="text-gray-400">AI для создания техкарт</p>
           </div>
 
-          {!showRegistration ? (
+          {!showRegistration && !showLogin ? (
             <div className="space-y-6">
               <button
                 onClick={() => setShowRegistration(true)}
@@ -508,7 +508,37 @@ function App() {
               >
                 НАЧАТЬ РАБОТУ
               </button>
+              <button
+                onClick={() => setShowLogin(true)}
+                className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all"
+              >
+                ВОЙТИ
+              </button>
             </div>
+          ) : showLogin ? (
+            <form onSubmit={handleLogin} className="space-y-6">
+              <input
+                type="email"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-800 transition-all"
+              >
+                ВОЙТИ
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLogin(false)}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
+              >
+                НАЗАД
+              </button>
+            </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-6">
               <input
