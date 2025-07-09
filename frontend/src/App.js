@@ -74,7 +74,6 @@ function App() {
             </div>
           );
         }
-      }
         continue;
       }
       
