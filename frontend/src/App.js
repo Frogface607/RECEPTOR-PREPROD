@@ -453,8 +453,11 @@ function App() {
     fetchCities();
     initVoiceRecognition();
     const savedUser = localStorage.getItem('receptor_user');
+    console.log('Checking for saved user:', savedUser);
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      console.log('Setting currentUser from localStorage:', parsedUser);
+      setCurrentUser(parsedUser);
     }
   }, []);
 
