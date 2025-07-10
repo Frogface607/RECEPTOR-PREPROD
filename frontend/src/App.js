@@ -1095,6 +1095,12 @@ function App() {
                     >
                       ЭКСПОРТ В PDF
                     </button>
+                    <button 
+                      onClick={() => setShowTwistModal(true)}
+                      className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                    >
+                      🎲 ТВИСТ
+                    </button>
                   </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
