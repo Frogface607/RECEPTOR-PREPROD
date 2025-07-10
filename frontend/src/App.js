@@ -584,7 +584,10 @@ function App() {
       });
       
       setUserPrices(response.data.prices);
-      alert(`Успешно загружено ${response.data.prices.length} позиций!`);
+      
+      // Show success message with statistics
+      const stats = response.data;
+      alert(`Успешно загружено ${stats.count} позиций!\nНайдено категорий: ${stats.categories_found}\nДанные очищены и категоризированы.`);
       
     } catch (error) {
       console.error('Error uploading prices:', error);
