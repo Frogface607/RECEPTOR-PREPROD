@@ -818,27 +818,85 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
         # Parse Excel/CSV file
         import pandas as pd
         import io
+        import re
         
         if file.filename.endswith('.csv'):
             df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         else:
             df = pd.read_excel(io.BytesIO(contents))
         
-        # Clean and process data
+        # Smart cleaning and processing
         prices = []
+        
+        # Категории продуктов для автоматической категоризации
+        categories = {
+            "мясо": ["мясо", "говядина", "свинина", "баранина", "телятина", "курица", "утка", "индейка", "фарш"],
+            "рыба": ["рыба", "лосось", "семга", "форель", "треска", "судак", "карп", "тунец", "скумбрия"],
+            "овощи": ["картофель", "лук", "морковь", "капуста", "помидор", "огурец", "перец", "свекла", "чеснок"],
+            "фрукты": ["яблоко", "банан", "апельсин", "лимон", "груша", "виноград", "киви", "ананас"],
+            "молочные": ["молоко", "сметана", "творог", "сыр", "масло", "йогурт", "кефир", "ряженка"],
+            "крупы": ["рис", "гречка", "овсянка", "пшено", "перловка", "манка", "булгур"],
+            "специи": ["соль", "перец", "сахар", "мука", "крахмал", "ваниль", "корица", "куркума"],
+        }
+        
+        # Сокращения и их расшифровки
+        abbreviations = {
+            "кг": "кг", "килограмм": "кг", "kg": "кг",
+            "г": "г", "грамм": "г", "гр": "г", "gr": "г",
+            "л": "л", "литр": "л", "lit": "л",
+            "мл": "мл", "миллилитр": "мл", "ml": "мл",
+            "шт": "шт", "штука": "шт", "pieces": "шт", "pcs": "шт",
+            "упак": "шт", "уп": "шт", "pack": "шт"
+        }
+        
         for _, row in df.iterrows():
             try:
+                # Получаем данные из строки
                 name = str(row.iloc[0]).strip()
-                price = float(str(row.iloc[1]).replace(',', '.').replace('₽', '').strip())
-                unit = str(row.iloc[2]).strip() if len(row) > 2 else 'кг'
+                price_raw = str(row.iloc[1]).replace(',', '.').replace('₽', '').replace('руб', '').strip()
+                unit_raw = str(row.iloc[2]).strip() if len(row) > 2 else 'кг'
                 
-                if name and name.lower() not in ['название', 'продукт', 'наименование']:
-                    prices.append({
-                        "name": name,
-                        "price": round(price, 2),
-                        "unit": unit
-                    })
-            except:
+                # Пропускаем заголовки и пустые строки
+                if not name or name.lower() in ['название', 'продукт', 'наименование', 'товар', 'nan']:
+                    continue
+                
+                # Очищаем название продукта
+                name_clean = re.sub(r'[^\w\s]', ' ', name.lower())  # убираем спецсимволы
+                name_clean = re.sub(r'\s+', ' ', name_clean).strip()  # убираем лишние пробелы
+                
+                # Извлекаем цену
+                price_match = re.search(r'[\d.]+', price_raw)
+                if not price_match:
+                    continue
+                price = float(price_match.group())
+                
+                # Нормализуем единицу измерения
+                unit_clean = unit_raw.lower().strip()
+                unit = abbreviations.get(unit_clean, unit_clean)
+                if not unit or unit == 'nan':
+                    unit = 'кг'
+                
+                # Автоматическая категоризация
+                category = "прочее"
+                for cat_name, keywords in categories.items():
+                    if any(keyword in name_clean for keyword in keywords):
+                        category = cat_name
+                        break
+                
+                # Capitalize first letter for display
+                name_display = name.strip().capitalize()
+                
+                prices.append({
+                    "name": name_display,
+                    "name_clean": name_clean,
+                    "price": round(price, 2),
+                    "unit": unit,
+                    "category": category,
+                    "original_name": name
+                })
+                
+            except Exception as e:
+                print(f"Error processing row: {e}")
                 continue
         
         # Save to database
