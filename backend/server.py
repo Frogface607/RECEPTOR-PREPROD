@@ -899,13 +899,27 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
                 print(f"Error processing row: {e}")
                 continue
         
-        # Save to database
+        # Save to database with categories
         await db.user_prices.delete_many({"user_id": user_id})
         if prices:
             price_docs = [{"user_id": user_id, **price, "created_at": datetime.utcnow()} for price in prices]
             await db.user_prices.insert_many(price_docs)
         
-        return {"success": True, "prices": prices, "count": len(prices)}
+        # Group by categories for response
+        categorized_prices = {}
+        for price in prices:
+            cat = price["category"]
+            if cat not in categorized_prices:
+                categorized_prices[cat] = []
+            categorized_prices[cat].append(price)
+        
+        return {
+            "success": True, 
+            "prices": prices, 
+            "categorized": categorized_prices,
+            "count": len(prices),
+            "categories_found": len(categorized_prices)
+        }
         
     except Exception as e:
         logger.error(f"Error uploading prices: {str(e)}")
