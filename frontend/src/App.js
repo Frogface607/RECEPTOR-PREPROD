@@ -1480,13 +1480,22 @@ function App() {
                 <button
                   onClick={() => {
                     const twists = [
-                      'азиатский стиль', 'здоровое питание', 'веганская версия',
-                      'премиум вариант', 'быстрое приготовление', 'молекулярная кухня',
-                      'сезонные ингредиенты', 'безглютеновый вариант'
+                      'адаптируй под азиатскую кухню',
+                      'сделай более здоровым и диетическим', 
+                      'адаптируй для веганов, замени животные продукты',
+                      'сделай премиум версию с дорогими ингредиентами',
+                      'упрости рецепт для быстрого приготовления',
+                      'адаптируй под молекулярную кухню',
+                      'используй сезонные ингредиенты',
+                      'сделай безглютеновую версию'
                     ];
                     const randomTwist = twists[Math.floor(Math.random() * twists.length)];
-                    setDishName(dishName + ` в стиле ${randomTwist}`);
+                    setEditInstruction(`${randomTwist}, сохрани структуру и стиль техкарты`);
                     setShowTwistModal(false);
+                    // Auto-apply the random twist
+                    setTimeout(() => {
+                      handleEditTechCard();
+                    }, 100);
                   }}
                   className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
                 >
