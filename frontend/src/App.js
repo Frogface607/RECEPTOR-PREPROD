@@ -1398,29 +1398,41 @@ function App() {
             {/* Current Prices */}
             {userPrices.length > 0 && (
               <div className="mb-6">
-                <h4 className="text-lg font-bold text-green-300 mb-3">ТЕКУЩИЕ ПРАЙСЫ</h4>
+                <h4 className="text-lg font-bold text-green-300 mb-3">ЗАГРУЖЕННЫЕ ПРАЙСЫ</h4>
                 <div className="bg-gray-800/50 rounded-lg max-h-60 overflow-y-auto">
                   <table className="w-full">
-                    <thead className="bg-green-600 text-white">
+                    <thead className="bg-green-600 text-white sticky top-0">
                       <tr>
                         <th className="px-4 py-2 text-left">Продукт</th>
+                        <th className="px-4 py-2 text-center">Категория</th>
                         <th className="px-4 py-2 text-right">Цена</th>
                         <th className="px-4 py-2 text-center">Единица</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {userPrices.slice(0, 10).map((price, index) => (
+                      {userPrices.slice(0, 15).map((price, index) => (
                         <tr key={index} className="border-b border-gray-700">
                           <td className="px-4 py-2 text-gray-300">{price.name}</td>
+                          <td className="px-4 py-2 text-center">
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                              price.category === 'мясо' ? 'bg-red-600 text-white' :
+                              price.category === 'овощи' ? 'bg-green-600 text-white' :
+                              price.category === 'молочные' ? 'bg-blue-600 text-white' :
+                              price.category === 'рыба' ? 'bg-cyan-600 text-white' :
+                              'bg-gray-600 text-white'
+                            }`}>
+                              {price.category || 'прочее'}
+                            </span>
+                          </td>
                           <td className="px-4 py-2 text-right text-green-400">{price.price}₽</td>
                           <td className="px-4 py-2 text-center text-gray-400">{price.unit}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {userPrices.length > 10 && (
+                  {userPrices.length > 15 && (
                     <div className="text-center py-2 text-gray-400 text-sm">
-                      ... и еще {userPrices.length - 10} позиций
+                      ... и еще {userPrices.length - 15} позиций
                     </div>
                   )}
                 </div>
