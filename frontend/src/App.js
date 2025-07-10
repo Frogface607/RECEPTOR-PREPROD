@@ -132,9 +132,9 @@ function App() {
       if (line.includes('Ингредиенты') || line.includes('**Ингредиенты:**')) {
         console.log('CREATING INGREDIENTS TABLE');
         
-        // Найти все строки ингредиентов из всей техкарты
+        // Найти все строки ингредиентов из всей техкарты - РАСШИРЕННЫЙ ПОИСК
         const allIngredientLines = lines.filter(l => 
-          l.startsWith('- ') && (l.includes('₽') || l.includes('руб'))
+          l.startsWith('- ') && (l.includes('₽') || l.includes('руб') || l.includes('—') || l.includes('~'))
         );
         
         console.log('Found ingredient lines:', allIngredientLines);
