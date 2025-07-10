@@ -943,7 +943,19 @@ function App() {
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
-                <form onSubmit={handleGenerateTechCard} className="space-y-6">
+                    
+                    {/* Tips for better results */}
+                    <div className="bg-blue-600/20 rounded-lg p-4 mb-6">
+                      <h3 className="text-blue-300 font-bold mb-2">💡 ДЛЯ ЛУЧШЕГО РЕЗУЛЬТАТА:</h3>
+                      <ul className="text-blue-200 text-sm space-y-1">
+                        <li>• Укажите конкретное название блюда</li>
+                        <li>• Добавьте особенности приготовления</li>
+                        <li>• Упомяните тип кухни или стиль</li>
+                        <li>• Например: "Ризотто с белыми грибами и трюфелем"</li>
+                      </ul>
+                    </div>
+
+                    <form onSubmit={handleGenerateTechCard} className="space-y-6">
                   <div>
                     <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
                       НАЗВАНИЕ БЛЮДА
