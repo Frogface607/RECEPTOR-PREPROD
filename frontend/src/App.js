@@ -1449,20 +1449,24 @@ function App() {
               
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {[
-                  { emoji: '🍜', text: 'Азиатский стиль' },
-                  { emoji: '🥗', text: 'Здоровое питание' },
-                  { emoji: '🌱', text: 'Веганская версия' },
-                  { emoji: '💎', text: 'Премиум вариант' },
-                  { emoji: '⚡', text: 'Быстрое приготовление' },
-                  { emoji: '🔬', text: 'Молекулярная кухня' },
-                  { emoji: '🍂', text: 'Сезонные ингредиенты' },
-                  { emoji: '🚫', text: 'Безглютеновый' }
+                  { emoji: '🍜', text: 'Азиатский стиль', action: 'адаптируй под азиатскую кухню' },
+                  { emoji: '🥗', text: 'Здоровое питание', action: 'сделай более здоровым и диетическим' },
+                  { emoji: '🌱', text: 'Веганская версия', action: 'адаптируй для веганов, замени животные продукты' },
+                  { emoji: '💎', text: 'Премиум вариант', action: 'сделай премиум версию с дорогими ингредиентами' },
+                  { emoji: '⚡', text: 'Быстрое приготовление', action: 'упрости рецепт для быстрого приготовления' },
+                  { emoji: '🔬', text: 'Молекулярная кухня', action: 'адаптируй под молекулярную кухню' },
+                  { emoji: '🍂', text: 'Сезонные ингредиенты', action: 'используй сезонные ингредиенты' },
+                  { emoji: '🚫', text: 'Безглютеновый', action: 'сделай безглютеновую версию' }
                 ].map((twist, index) => (
                   <button
                     key={index}
                     onClick={() => {
-                      setDishName(dishName + ` в стиле ${twist.text.toLowerCase()}`);
+                      setEditInstruction(`${twist.action}, сохрани структуру и стиль техкарты`);
                       setShowTwistModal(false);
+                      // Auto-apply the twist
+                      setTimeout(() => {
+                        handleEditTechCard();
+                      }, 100);
                     }}
                     className="bg-gray-700 hover:bg-orange-600 text-white p-3 rounded-lg transition-colors text-sm flex flex-col items-center"
                   >
