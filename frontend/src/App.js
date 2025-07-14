@@ -141,6 +141,45 @@ function App() {
                       <span>ДОБАВИТЬ</span>
                     </button>
                     <button 
+                      onClick={() => {
+                        // Логика сохранения изменений в техкарту
+                        console.log('Сохраняем изменения ингредиентов:', currentIngredients);
+                        
+                        // Обновляем техкарту с новыми ингредиентами
+                        const lines = techCard.split('\n');
+                        const newLines = [];
+                        let inIngredientsSection = false;
+                        
+                        for (let i = 0; i < lines.length; i++) {
+                          const line = lines[i];
+                          
+                          if (line.includes('**Ингредиенты:**')) {
+                            inIngredientsSection = true;
+                            newLines.push(line);
+                            newLines.push('');
+                            
+                            // Добавляем обновленные ингредиенты
+                            currentIngredients.forEach(ing => {
+                              newLines.push(`- ${ing.name} — ${ing.quantity} ${ing.unit} — ~${Math.round(parseFloat(ing.totalPrice) || 0)} ₽`);
+                            });
+                            continue;
+                          }
+                          
+                          if (inIngredientsSection && line.startsWith('- ') && line.includes('₽')) {
+                            // Пропускаем старые строки ингредиентов
+                            continue;
+                          }
+                          
+                          if (inIngredientsSection && line.startsWith('**') && !line.includes('Ингредиенты')) {
+                            inIngredientsSection = false;
+                          }
+                          
+                          newLines.push(line);
+                        }
+                        
+                        setTechCard(newLines.join('\n'));
+                        alert('Изменения ингредиентов сохранены!');
+                      }}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-2"
                     >
                       <span>💾</span>
