@@ -153,28 +153,15 @@ function App() {
                   {currentIngredients.length === 0 ? (
                     <div className="text-center py-8 text-gray-400">
                       <p className="mb-4">Ингредиенты из техкарты появятся здесь автоматически</p>
-                      <button 
-                        onClick={() => {
-                          setCurrentIngredients([
-                            { name: 'Говядина (вырезка)', quantity: '250', unit: 'г', pricePerUnit: '3.2', totalPrice: '800', id: 1 },
-                            { name: 'Картофель молодой', quantity: '300', unit: 'г', pricePerUnit: '0.2', totalPrice: '60', id: 2 },
-                            { name: 'Масло сливочное 82%', quantity: '50', unit: 'г', pricePerUnit: '0.6', totalPrice: '30', id: 3 }
-                          ]);
-                        }}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
-                      >
-                        ЗАГРУЗИТЬ ПРИМЕР
-                      </button>
                     </div>
                   ) : (
                     <>
                       <div className="grid grid-cols-12 gap-3 text-sm font-bold text-purple-300 border-b border-purple-400/30 pb-2">
                         <span className="col-span-1">#</span>
-                        <span className="col-span-4">ИНГРЕДИЕНТ</span>
-                        <span className="col-span-2">КОЛИЧЕСТВО</span>
-                        <span className="col-span-2">ЦЕНА/ЕДИНИЦА</span>
-                        <span className="col-span-2">СТОИМОСТЬ</span>
-                        <span className="col-span-1">УДАЛИТЬ</span>
+                        <span className="col-span-6">ИНГРЕДИЕНТ</span>
+                        <span className="col-span-3">КОЛИЧЕСТВО</span>
+                        <span className="col-span-1">СТОИМОСТЬ</span>
+                        <span className="col-span-1">✕</span>
                       </div>
                       {currentIngredients.map((ingredient, index) => (
                         <div key={ingredient.id || index} className="grid grid-cols-12 gap-3 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
@@ -190,59 +177,28 @@ function App() {
                               setCurrentIngredients(newIngredients);
                             }}
                             placeholder="Название ингредиента"
-                            className="col-span-4 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                            className="col-span-6 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
                           />
-                          <div className="col-span-2 flex space-x-1">
-                            <input
-                              type="number"
-                              value={ingredient.quantity}
-                              onChange={(e) => {
-                                const newIngredients = [...currentIngredients];
-                                newIngredients[index].quantity = e.target.value;
-                                // Пересчитаем стоимость
-                                const qty = parseFloat(e.target.value) || 0;
-                                const pricePerUnit = parseFloat(newIngredients[index].pricePerUnit) || 0;
-                                newIngredients[index].totalPrice = (qty * pricePerUnit).toFixed(1);
-                                setCurrentIngredients(newIngredients);
-                              }}
-                              placeholder="250"
-                              className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                            />
-                            <select 
-                              value={ingredient.unit || 'г'}
-                              onChange={(e) => {
-                                const newIngredients = [...currentIngredients];
-                                newIngredients[index].unit = e.target.value;
-                                setCurrentIngredients(newIngredients);
-                              }}
-                              className="bg-gray-700 border border-gray-600 rounded px-2 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                            >
-                              <option value="г">г</option>
-                              <option value="кг">кг</option>
-                              <option value="мл">мл</option>
-                              <option value="л">л</option>
-                              <option value="шт">шт</option>
-                            </select>
-                          </div>
                           <input
-                            type="number"
-                            step="0.1"
-                            value={ingredient.pricePerUnit}
+                            type="text"
+                            value={`${ingredient.quantity || ''} ${ingredient.unit || 'г'}`}
                             onChange={(e) => {
                               const newIngredients = [...currentIngredients];
-                              newIngredients[index].pricePerUnit = e.target.value;
-                              // Пересчитаем стоимость
-                              const qty = parseFloat(newIngredients[index].quantity) || 0;
-                              const pricePerUnit = parseFloat(e.target.value) || 0;
-                              newIngredients[index].totalPrice = (qty * pricePerUnit).toFixed(1);
+                              const value = e.target.value;
+                              // Парсим количество и единицу
+                              const match = value.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт|штук)?/);
+                              if (match) {
+                                newIngredients[index].quantity = match[1];
+                                newIngredients[index].unit = match[2] || 'г';
+                              }
                               setCurrentIngredients(newIngredients);
                             }}
-                            placeholder="3.2"
-                            className="col-span-2 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                            placeholder="250 г"
+                            className="col-span-3 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
                           />
-                          <div className="col-span-2 flex items-center">
-                            <span className="text-green-400 font-bold">
-                              {ingredient.totalPrice || '0'} ₽
+                          <div className="col-span-1 flex items-center justify-center">
+                            <span className="text-green-400 font-bold text-sm">
+                              {Math.round(parseFloat(ingredient.totalPrice) || 0)} ₽
                             </span>
                           </div>
                           <button 
