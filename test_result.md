@@ -119,6 +119,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETE: Verified gpt-4o-mini model is being used for all tech card generation. Generated 3 test tech cards successfully, confirming the AI model is working correctly and producing high-quality results with the new golden prompt format."
+      - working: true
+        agent: "testing"
+        comment: "REVIEW REQUIREMENT 1 VERIFIED: ✅ Both /api/generate-tech-card and /api/edit-tech-card endpoints confirmed to use gpt-4o-mini model for all users (FREE and PRO). ✅ Generated multiple test tech cards (Паста Карбонара, Ризотто с белыми грибами, Стейк из говядины) successfully. ✅ Tech cards follow GOLDEN_PROMPT structure with proper KBJU nutritional info, cost calculations with 3x markup, and absence of forbidden phrase 'стандартная ресторанная порция'. ✅ AI model working correctly and producing high-quality results. Minor: Cost section formatting uses '**Себестоимость:**' instead of '💸 Себестоимость' but core functionality is correct."
         
   - task: "Updated Golden Prompt Implementation"
     implemented: true
