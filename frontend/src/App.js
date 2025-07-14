@@ -141,63 +141,114 @@ function App() {
         continue;
       }
       
-      // ПРОСТАЯ ЗАМЕНА СЕКЦИИ ИНГРЕДИЕНТОВ НА РЕДАКТОР
+      // ВСТРОЕННЫЙ КРАСИВЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ
       if (line.includes('Ингредиенты') || line.includes('**Ингредиенты:**')) {
         
         result.push(
           <div key="ingredients-editor" className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6 mb-6">
-            <h3 className="text-xl font-bold text-purple-300 mb-4">ИНГРЕДИЕНТЫ</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-purple-300">🥘 ИНГРЕДИЕНТЫ</h3>
+              <button 
+                onClick={() => {
+                  setCurrentIngredients([...currentIngredients, { 
+                    name: '', 
+                    quantity: '', 
+                    price: '',
+                    id: Date.now() 
+                  }]);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-2"
+              >
+                <span>+</span>
+                <span>ДОБАВИТЬ</span>
+              </button>
+            </div>
             
             <div className="space-y-3">
-              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
-                <span className="text-purple-400 font-bold w-8">1.</span>
-                <input
-                  type="text"
-                  defaultValue="Тунец (филе) — 250 г — ~1000 ₽"
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                />
-                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
+              {currentIngredients.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <p className="mb-4">Ингредиенты будут отображены здесь</p>
+                  <button 
+                    onClick={() => {
+                      setCurrentIngredients([
+                        { name: 'Тунец (филе)', quantity: '250 г', price: '~1000 ₽', id: 1 },
+                        { name: 'Оливковое масло', quantity: '20 мл', price: '~30 ₽', id: 2 },
+                        { name: 'Соевый соус', quantity: '20 мл', price: '~8 ₽', id: 3 },
+                        { name: 'Лимонный сок', quantity: '10 мл', price: '~2 ₽', id: 4 },
+                        { name: 'Соль', quantity: '2 г', price: '~0.1 ₽', id: 5 }
+                      ]);
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                  >
+                    ЗАГРУЗИТЬ ПРИМЕР
+                  </button>
+                </div>
+              ) : (
+                currentIngredients.map((ingredient, index) => (
+                  <div key={ingredient.id || index} className="grid grid-cols-12 gap-3 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
+                    <span className="col-span-1 text-purple-400 font-bold flex items-center justify-center">
+                      {index + 1}.
+                    </span>
+                    <input
+                      type="text"
+                      value={ingredient.name}
+                      onChange={(e) => {
+                        const newIngredients = [...currentIngredients];
+                        newIngredients[index].name = e.target.value;
+                        setCurrentIngredients(newIngredients);
+                      }}
+                      placeholder="Название ингредиента"
+                      className="col-span-5 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={ingredient.quantity}
+                      onChange={(e) => {
+                        const newIngredients = [...currentIngredients];
+                        newIngredients[index].quantity = e.target.value;
+                        setCurrentIngredients(newIngredients);
+                      }}
+                      placeholder="Количество"
+                      className="col-span-3 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={ingredient.price}
+                      onChange={(e) => {
+                        const newIngredients = [...currentIngredients];
+                        newIngredients[index].price = e.target.value;
+                        setCurrentIngredients(newIngredients);
+                      }}
+                      placeholder="Цена"
+                      className="col-span-2 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                    />
+                    <button 
+                      onClick={() => {
+                        const newIngredients = currentIngredients.filter((_, i) => i !== index);
+                        setCurrentIngredients(newIngredients);
+                      }}
+                      className="col-span-1 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            {currentIngredients.length > 0 && (
+              <div className="mt-6 p-4 bg-gray-800/30 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="text-purple-300 font-bold">ОБЩАЯ СТОИМОСТЬ:</span>
+                  <span className="text-green-400 font-bold text-xl">
+                    {currentIngredients.reduce((total, ing) => {
+                      const priceNum = parseFloat(ing.price.replace(/[^\d.]/g, '')) || 0;
+                      return total + priceNum;
+                    }, 0).toFixed(1)} ₽
+                  </span>
+                </div>
               </div>
-              
-              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
-                <span className="text-purple-400 font-bold w-8">2.</span>
-                <input
-                  type="text"
-                  defaultValue="Оливковое масло — 20 мл — ~30 ₽"
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                />
-                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
-              </div>
-              
-              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
-                <span className="text-purple-400 font-bold w-8">3.</span>
-                <input
-                  type="text"
-                  defaultValue="Соевый соус — 20 мл (покупной) — ~8 ₽"
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                />
-                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
-              </div>
-              
-              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
-                <span className="text-purple-400 font-bold w-8">4.</span>
-                <input
-                  type="text"
-                  defaultValue="Лимонный сок — 10 мл — ~2 ₽"
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                />
-                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
-              </div>
-              
-              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
-                <span className="text-purple-400 font-bold w-8">5.</span>
-                <input
-                  type="text"
-                  defaultValue="Соль — 2 г — ~0.1 ₽"
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                />
-                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
-              </div>
+            )}
               
               <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
                 <span className="text-purple-400 font-bold w-8">6.</span>
