@@ -1131,11 +1131,29 @@ function App() {
         if (line.startsWith('- ') && line.includes('₽')) {
           const parts = line.replace('- ', '').split(' — ');
           if (parts.length >= 3) {
+            const name = parts[0].trim();
+            const quantityStr = parts[1].trim(); // "250 г" или "300 мл"
+            const priceStr = parts[2].trim(); // "~800 ₽"
+            
+            // Парсим количество и единицы измерения
+            const quantityMatch = quantityStr.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт)/);
+            const quantity = quantityMatch ? quantityMatch[1] : '100';
+            const unit = quantityMatch ? quantityMatch[2] : 'г';
+            
+            // Парсим цену
+            const priceMatch = priceStr.match(/(\d+(?:\.\d+)?)/);
+            const totalPrice = priceMatch ? priceMatch[1] : '0';
+            
+            // Рассчитываем цену за единицу
+            const pricePerUnit = parseFloat(totalPrice) / parseFloat(quantity);
+            
             ingredients.push({
-              name: parts[0].trim(),
-              quantity: parts[1].trim(),
-              price: parts[2].trim(),
-              id: Date.now() + Math.random() // Уникальный ID
+              name: name,
+              quantity: quantity,
+              unit: unit,
+              pricePerUnit: pricePerUnit.toFixed(2),
+              totalPrice: totalPrice,
+              id: Date.now() + Math.random() + ingredients.length
             });
           }
         }
