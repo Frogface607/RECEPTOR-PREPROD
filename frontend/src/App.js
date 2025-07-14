@@ -1904,18 +1904,32 @@ function App() {
                   </div>
                   
                   {currentIngredients.length > 0 && (
-                    <div className="mt-6 p-4 bg-gray-800/30 rounded-lg">
+                    <div className="mt-6 p-4 bg-gray-800/30 rounded-lg border border-green-400/30">
                       <div className="flex justify-between items-center">
-                        <span className="text-purple-300 font-bold">ОБЩАЯ СТОИМОСТЬ:</span>
-                        <span className="text-green-400 font-bold text-xl">
+                        <span className="text-purple-300 font-bold text-lg">ОБЩАЯ СЕБЕСТОИМОСТЬ:</span>
+                        <span className="text-green-400 font-bold text-2xl">
                           {currentIngredients.reduce((total, ing) => {
-                            const priceNum = parseFloat(ing.price.replace(/[^\d.]/g, '')) || 0;
-                            return total + priceNum;
+                            return total + (parseFloat(ing.totalPrice) || 0);
                           }, 0).toFixed(1)} ₽
                         </span>
                       </div>
-                      <div className="mt-2 text-sm text-gray-400">
-                        *Редактируйте ингредиенты для точного расчета себестоимости
+                      <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
+                        <div className="text-center">
+                          <div className="text-gray-400">Себестоимость порции</div>
+                          <div className="text-yellow-400 font-bold">
+                            {(currentIngredients.reduce((total, ing) => total + (parseFloat(ing.totalPrice) || 0), 0) / 2).toFixed(1)} ₽
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-gray-400">Рекомендуемая цена (×3)</div>
+                          <div className="text-green-400 font-bold">
+                            {(currentIngredients.reduce((total, ing) => total + (parseFloat(ing.totalPrice) || 0), 0) * 1.5).toFixed(0)} ₽
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-gray-400">Маржа</div>
+                          <div className="text-purple-400 font-bold">200%</div>
+                        </div>
                       </div>
                     </div>
                   )}
