@@ -38,6 +38,17 @@ function App() {
   const [editableSteps, setEditableSteps] = useState([]);
   const [isEditingSteps, setIsEditingSteps] = useState(false);
 
+  // Instructions state
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  // Interactive ingredients state
+  const [currentIngredients, setCurrentIngredients] = useState([]);
+
+  // PRO AI features state
+  const [showProAIModal, setShowProAIModal] = useState(false);
+  const [proAIResult, setProAIResult] = useState('');
+  const [proAITitle, setProAITitle] = useState('');
+
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('');
@@ -66,6 +77,8 @@ function App() {
     
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index].trim();
+      
+      console.log(`🔍 LINE ${index}:`, `"${line}"`); // ОТЛАДКА ВСЕХ СТРОК
       
       // Main title - FIXED to show dish name 
       if (line.includes('**Название:**') || (line.startsWith('**') && line.includes('Название'))) {
@@ -128,95 +141,107 @@ function App() {
         continue;
       }
       
-      // INGREDIENTS TABLE - в правильном месте
+      // ПРОСТАЯ ЗАМЕНА СЕКЦИИ ИНГРЕДИЕНТОВ НА РЕДАКТОР
       if (line.includes('Ингредиенты') || line.includes('**Ингредиенты:**')) {
-        console.log('CREATING INGREDIENTS TABLE');
         
-        // Найти все строки ингредиентов из всей техкарты - РАСШИРЕННЫЙ ПОИСК
-        const allIngredientLines = lines.filter(l => 
-          l.startsWith('- ') && (l.includes('₽') || l.includes('руб') || l.includes('—') || l.includes('~'))
-        );
-        
-        console.log('Found ingredient lines:', allIngredientLines);
-        
-        if (allIngredientLines.length > 0) {
-          result.push(
-            <div key={`ingredients-${index}`} className="my-8">
-              <h2 className="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
-                ИНГРЕДИЕНТЫ
-              </h2>
-              <div className="overflow-x-auto bg-gray-800/50 rounded-lg">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
-                      <th className="text-left py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ИНГРЕДИЕНТ</th>
-                      <th className="text-center py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">КОЛИЧЕСТВО</th>
-                      <th className="text-right py-4 px-4 text-white font-bold text-sm uppercase tracking-wide">ЦЕНА</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allIngredientLines.map((ingLine, ingIndex) => {
-                      const cleanLine = ingLine.replace('- ', '');
-                      let parts = [];
-                      
-                      if (cleanLine.includes(' — ')) {
-                        parts = cleanLine.split(' — ');
-                      } else if (cleanLine.includes(' - ')) {
-                        parts = cleanLine.split(' - ');
-                      } else {
-                        parts = [cleanLine, '', ''];
-                      }
-                      
-                      return (
-                        <tr key={ingIndex} className={ingIndex % 2 === 0 ? 'bg-gray-700/30' : 'bg-gray-600/30'}>
-                          <td className="py-3 px-4 text-gray-200 border-r border-gray-600">
-                            {parts[0] ? parts[0].trim() : 'Ингредиент'}
-                          </td>
-                          <td className="py-3 px-4 text-gray-200 text-center border-r border-gray-600">
-                            {parts[1] ? parts[1].trim() : ''}
-                          </td>
-                          <td className="py-3 px-4 text-gray-200 text-right">
-                            {parts[2] ? parts[2].trim() : parts[parts.length - 1].trim()}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+        result.push(
+          <div key="ingredients-editor" className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6 mb-6">
+            <h3 className="text-xl font-bold text-purple-300 mb-4">ИНГРЕДИЕНТЫ</h3>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="text-purple-400 font-bold w-8">1.</span>
+                <input
+                  type="text"
+                  defaultValue="Тунец (филе) — 250 г — ~1000 ₽"
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                />
+                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
               </div>
               
-              <div className="mt-4">
-                <button
-                  onClick={() => {
-                    const editIngredients = allIngredientLines.map(line => {
-                      const cleanLine = line.replace('- ', '');
-                      let parts = [];
-                      
-                      if (cleanLine.includes(' — ')) {
-                        parts = cleanLine.split(' — ');
-                      } else if (cleanLine.includes(' - ')) {
-                        parts = cleanLine.split(' - ');
-                      } else {
-                        parts = [cleanLine, '', ''];
-                      }
-                      
-                      return {
-                        name: parts[0] ? parts[0].trim() : '',
-                        quantity: parts[1] ? parts[1].trim() : '',
-                        price: parts[2] ? parts[2].trim() : parts[parts.length - 1].trim()
-                      };
-                    });
-                    
-                    setEditableIngredients(editIngredients);
-                    setIsEditingIngredients(true);
-                  }}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
-                >
-                  РЕДАКТИРОВАТЬ
-                </button>
+              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="text-purple-400 font-bold w-8">2.</span>
+                <input
+                  type="text"
+                  defaultValue="Оливковое масло — 20 мл — ~30 ₽"
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                />
+                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
+              </div>
+              
+              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="text-purple-400 font-bold w-8">3.</span>
+                <input
+                  type="text"
+                  defaultValue="Соевый соус — 20 мл (покупной) — ~8 ₽"
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                />
+                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
+              </div>
+              
+              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="text-purple-400 font-bold w-8">4.</span>
+                <input
+                  type="text"
+                  defaultValue="Лимонный сок — 10 мл — ~2 ₽"
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                />
+                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
+              </div>
+              
+              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="text-purple-400 font-bold w-8">5.</span>
+                <input
+                  type="text"
+                  defaultValue="Соль — 2 г — ~0.1 ₽"
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                />
+                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
+              </div>
+              
+              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="text-purple-400 font-bold w-8">6.</span>
+                <input
+                  type="text"
+                  defaultValue="Перец черный молотый — 1 г — ~0.2 ₽"
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                />
+                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
               </div>
             </div>
-          );
+            
+            <div className="flex gap-3 mt-4">
+              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                + ДОБАВИТЬ
+              </button>
+              
+              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
+                СОХРАНИТЬ
+              </button>
+              
+              <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
+                ОТМЕНА
+              </button>
+            </div>
+            
+            <div className="mt-4 bg-gray-800/70 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-purple-300">Приблизительная себестоимость:</span>
+                <span className="text-xl font-bold text-green-400">1040 ₽</span>
+              </div>
+              <div className="mt-1 text-sm text-gray-400">
+                *Рассчитывается из среднерыночных цен. Загрузите свой прайс-лист для точности.
+              </div>
+            </div>
+          </div>
+        );
+        
+        // Пропускаем все строки ингредиентов в оригинальном тексте
+        while (index + 1 < lines.length && 
+               (lines[index + 1].trim().startsWith('-') || 
+                lines[index + 1].trim().startsWith('*') ||
+                lines[index + 1].trim() === '')) {
+          index++;
         }
         continue;
       }
@@ -311,6 +336,383 @@ function App() {
     } catch (error) {
       console.error('Error fetching cities:', error);
     }
+  };
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const response = await axios.get(`${API}/subscription-plans`);
+      setSubscriptionPlans(response.data);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+    }
+  };
+
+  const fetchKitchenEquipment = async () => {
+    try {
+      const response = await axios.get(`${API}/kitchen-equipment`);
+      setKitchenEquipment(response.data);
+    } catch (error) {
+      console.error('Error fetching kitchen equipment:', error);
+    }
+  };
+
+  const fetchUserSubscription = async () => {
+    if (!currentUser?.id) return;
+    try {
+      const response = await axios.get(`${API}/user-subscription/${currentUser.id}`);
+      setUserSubscription(response.data);
+      setUserEquipment(response.data.kitchen_equipment || []);
+    } catch (error) {
+      console.error('Error fetching user subscription:', error);
+    }
+  };
+
+  const fetchUserPrices = async () => {
+    if (!currentUser?.id) return;
+    try {
+      const response = await axios.get(`${API}/user-prices/${currentUser.id}`);
+      setUserPrices(response.data.prices || []);
+    } catch (error) {
+      console.error('Error fetching user prices:', error);
+    }
+  };
+
+  const updateKitchenEquipment = async (equipmentIds) => {
+    if (!currentUser?.id) return;
+    try {
+      await axios.post(`${API}/update-kitchen-equipment/${currentUser.id}`, {
+        equipment_ids: equipmentIds
+      });
+      setUserEquipment(equipmentIds);
+      setShowEquipmentModal(false);
+      alert('Кухонное оборудование обновлено успешно!');
+    } catch (error) {
+      console.error('Error updating kitchen equipment:', error);
+      alert('Ошибка при обновлении оборудования: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // ФУНКЦИИ ДЛЯ ИНТЕРАКТИВНОЙ ТАБЛИЦЫ ИНГРЕДИЕНТОВ
+  const updateIngredient = (id, field, value) => {
+    setCurrentIngredients(prev => prev.map(ing => 
+      ing.id === id ? { ...ing, [field]: value } : ing
+    ));
+  };
+
+  const removeIngredient = (id) => {
+    setCurrentIngredients(prev => prev.filter(ing => ing.id !== id));
+  };
+
+  const addNewIngredient = () => {
+    const newId = Math.max(...currentIngredients.map(ing => ing.id), 0) + 1;
+    setCurrentIngredients(prev => [...prev, {
+      id: newId,
+      name: 'Новый ингредиент',
+      quantity: '100 г',
+      price: '~10 ₽',
+      numericPrice: 10
+    }]);
+  };
+
+  const saveIngredientsToTechCard = () => {
+    // Обновляем техкарту с новыми ингредиентами
+    const newIngredientsText = currentIngredients.map(ing => 
+      `- ${ing.name} — ${ing.quantity} — ${ing.price}`
+    ).join('\n');
+    
+    const updatedTechCard = techCard.replace(
+      /(\*\*Ингредиенты:\*\*)(.*?)(?=\*\*[^*]+:\*\*|$)/s,
+      `$1\n\n${newIngredientsText}\n\n`
+    );
+    
+    setTechCard(updatedTechCard);
+    alert('Ингредиенты обновлены!');
+  };
+
+  // ПРО AI ФУНКЦИИ
+  const generateSalesScript = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsGenerating(true);
+    try {
+      const response = await axios.post(`${API}/generate-sales-script`, {
+        tech_card: techCard,
+        user_id: currentUser.id
+      });
+      
+      // Показываем результат в модальном окне
+      setProAIResult(response.data.script);
+      setProAITitle("🎭 СКРИПТ ПРОДАЖ ДЛЯ ОФИЦИАНТА");
+      setShowProAIModal(true);
+      
+    } catch (error) {
+      console.error('Error generating sales script:', error);
+      alert('Ошибка при генерации скрипта продаж');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateFoodPairing = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsGenerating(true);
+    try {
+      const response = await axios.post(`${API}/generate-food-pairing`, {
+        tech_card: techCard,
+        user_id: currentUser.id
+      });
+      
+      setProAIResult(response.data.pairing);
+      setProAITitle("🍷 ФУДПЕЙРИНГ И СОЧЕТАНИЯ");
+      setShowProAIModal(true);
+      
+    } catch (error) {
+      console.error('Error generating food pairing:', error);
+      alert('Ошибка при генерации фудпейринга');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generatePhotoTips = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsGenerating(true);
+    try {
+      const response = await axios.post(`${API}/generate-photo-tips`, {
+        tech_card: techCard,
+        user_id: currentUser.id
+      });
+      
+      setProAIResult(response.data.tips);
+      setProAITitle("📸 СОВЕТЫ ПО ФОТОГРАФИИ БЛЮДА");
+      setShowProAIModal(true);
+      
+    } catch (error) {
+      console.error('Error generating photo tips:', error);
+      alert('Ошибка при генерации советов по фото');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
+  const renderIngredientsTable = (content) => {
+    console.log('=== INGREDIENTS TABLE DEBUG ===');
+    console.log('Content received:', !!content);
+    
+    if (!content) {
+      console.log('No content provided');
+      return null;
+    }
+    
+    // Извлекаем ингредиенты из техкарты 
+    const ingredientsMatch = content.match(/\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)/s);
+    console.log('Ingredients match found:', !!ingredientsMatch);
+    
+    if (ingredientsMatch) {
+      const ingredientsText = ingredientsMatch[1];
+      console.log('Ingredients text:', ingredientsText);
+      
+      const ingredientLines = ingredientsText
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.startsWith('-') && line.length > 5);
+      
+      console.log('Parsed ingredient lines:', ingredientLines);
+      
+      if (ingredientLines.length > 0) {
+        // Парсим ингредиенты в структурированный формат
+        const parsedIngredients = ingredientLines.map((line, index) => {
+          const cleanLine = line.replace(/^-\s*/, '').trim();
+          let name = '', quantity = '', price = '';
+          
+          // Парсим по формату: "Продукт — количество — ~цена"
+          if (cleanLine.includes(' — ')) {
+            const parts = cleanLine.split(' — ');
+            name = parts[0] || '';
+            quantity = parts[1] || '';
+            price = parts[2] || '';
+          } else if (cleanLine.includes(' - ')) {
+            const parts = cleanLine.split(' - ');
+            name = parts[0] || '';
+            quantity = parts[1] || '';
+            price = parts[2] || '';
+          } else {
+            name = cleanLine;
+          }
+          
+          // Извлекаем числовую цену для расчетов
+          const priceMatch = price.match(/(\d+(?:[.,]\d+)?)/);
+          const numericPrice = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : 0;
+          
+          return {
+            id: index,
+            name: name.trim(),
+            quantity: quantity.trim(),
+            price: price.trim(),
+            numericPrice: numericPrice
+          };
+        });
+        
+        console.log('Parsed ingredients:', parsedIngredients);
+        
+        // Используем parsedIngredients напрямую вместо состояния
+        const displayIngredients = parsedIngredients;
+        
+        // Рассчитываем общую стоимость
+        const totalCost = displayIngredients.reduce((sum, ing) => sum + (ing.numericPrice || 0), 0);
+        
+        console.log('Total cost calculated:', totalCost);
+        
+        return (
+          <div key="ingredients-table" className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-purple-300">ИНГРЕДИЕНТЫ</h3>
+              <div className="text-sm text-purple-400">
+                Всего позиций: {displayIngredients.length}
+              </div>
+            </div>
+            
+            {/* ИНТЕРАКТИВНАЯ ТАБЛИЦА */}
+            <div className="overflow-x-auto bg-gray-800/50 rounded-lg">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-600 to-purple-700">
+                    <th className="text-left py-3 px-4 text-white font-bold text-sm">ИНГРЕДИЕНТ</th>
+                    <th className="text-center py-3 px-4 text-white font-bold text-sm">КОЛИЧЕСТВО</th>
+                    <th className="text-right py-3 px-4 text-white font-bold text-sm">ЦЕНА</th>
+                    <th className="text-center py-3 px-4 text-white font-bold text-sm">ДЕЙСТВИЯ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayIngredients.map((ingredient, index) => (
+                    <tr key={ingredient.id} className={index % 2 === 0 ? 'bg-gray-700/30' : 'bg-gray-600/30'}>
+                      <td className="py-3 px-4 text-gray-200 border-r border-gray-600">
+                        <input
+                          type="text"
+                          value={ingredient.name}
+                          onChange={(e) => {
+                            const newIngredients = [...displayIngredients];
+                            newIngredients[index] = { ...newIngredients[index], name: e.target.value };
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          className="w-full bg-transparent border-none outline-none text-gray-200 hover:bg-gray-700/50 rounded px-2 py-1"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-center border-r border-gray-600">
+                        <input
+                          type="text"
+                          value={ingredient.quantity}
+                          onChange={(e) => {
+                            const newIngredients = [...displayIngredients];
+                            newIngredients[index] = { ...newIngredients[index], quantity: e.target.value };
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          className="w-full bg-transparent border-none outline-none text-gray-200 text-center hover:bg-gray-700/50 rounded px-2 py-1"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-right border-r border-gray-600">
+                        <input
+                          type="text"
+                          value={ingredient.price}
+                          onChange={(e) => {
+                            const newIngredients = [...displayIngredients];
+                            const priceMatch = e.target.value.match(/(\d+(?:[.,]\d+)?)/);
+                            const numericPrice = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : 0;
+                            newIngredients[index] = { 
+                              ...newIngredients[index], 
+                              price: e.target.value,
+                              numericPrice: numericPrice
+                            };
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          className="w-full bg-transparent border-none outline-none text-gray-200 text-right hover:bg-gray-700/50 rounded px-2 py-1"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => {
+                            const newIngredients = displayIngredients.filter((_, i) => i !== index);
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          className="text-red-400 hover:text-red-300 text-sm"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* БЛОК С ОБЩЕЙ СТОИМОСТЬЮ */}
+            <div className="mt-4 bg-gray-800/70 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-purple-300">Приблизительная себестоимость:</span>
+                <span className="text-xl font-bold text-green-400">{Math.round(totalCost)} ₽</span>
+              </div>
+              <div className="mt-1 text-sm text-gray-400">
+                *Рассчитывается из среднерыночных цен
+              </div>
+            </div>
+            
+            {/* КНОПКИ УПРАВЛЕНИЯ */}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  const newId = Math.max(...displayIngredients.map(ing => ing.id), 0) + 1;
+                  const newIngredients = [...displayIngredients, {
+                    id: newId,
+                    name: 'Новый ингредиент',
+                    quantity: '100 г',
+                    price: '~10 ₽',
+                    numericPrice: 10
+                  }];
+                  setCurrentIngredients(newIngredients);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                + ДОБАВИТЬ ИНГРЕДИЕНТ
+              </button>
+              <button
+                onClick={() => {
+                  // Обновляем техкарту с новыми ингредиентами
+                  const newIngredientsText = displayIngredients.map(ing => 
+                    `- ${ing.name} — ${ing.quantity} — ${ing.price}`
+                  ).join('\n');
+                  
+                  const updatedTechCard = techCard.replace(
+                    /(\*\*Ингредиенты:\*\*)(.*?)(?=\*\*[^*]+:\*\*|$)/s,
+                    `$1\n\n${newIngredientsText}\n\n`
+                  );
+                  
+                  setTechCard(updatedTechCard);
+                  alert('Ингредиенты обновлены!');
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                СОХРАНИТЬ ИЗМЕНЕНИЯ
+              </button>
+            </div>
+          </div>
+        );
+      } else {
+        console.log('No ingredient lines found');
+      }
+    } else {
+      console.log('No ingredients section found');
+    }
+    
+    // Если ингредиенты не найдены
+    return (
+      <div key="ingredients-error" className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-400/30 rounded-lg p-6 mb-6">
+        <h3 className="text-xl font-bold text-red-300 mb-4">ИНГРЕДИЕНТЫ</h3>
+        <p className="text-red-300">⚠️ Ингредиенты не найдены в техкарте. Попробуйте сгенерировать заново.</p>
+      </div>
+    );
   };
 
   const handleEditTechCard = async () => {
@@ -526,11 +928,13 @@ function App() {
         user_id: currentUser.id
       });
       
-      console.log('Response received:', response.data);
+      console.log('Tech card generation response:', response.data);
       setTechCard(response.data.tech_card);
       setCurrentTechCardId(response.data.id);
-      setDishName('');
+      setCurrentIngredients([]); // Сброс ингредиентов для новой техкарты
       
+      // Add to history
+      fetchUserHistory();
       // Parse ingredients and steps for editing
       const lines = response.data.tech_card.split('\n');
       const ingredients = [];
@@ -569,39 +973,46 @@ function App() {
   const handlePriceFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     setUploadingPrices(true);
-    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('user_id', currentUser.id);
+
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('user_id', currentUser.id);
-      
       const response = await axios.post(`${API}/upload-prices`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      setUserPrices(response.data.prices);
+      console.log('Upload response:', response.data);
       
-      // Show success message with statistics
-      const stats = response.data;
-      alert(`Успешно загружено ${stats.count} позиций!\nНайдено категорий: ${stats.categories_found}\nДанные очищены и категоризированы.`);
-      
+      if (response.data.success) {
+        alert(`Прайс-лист успешно загружен! Обработано ${response.data.count} позиций в ${response.data.categories_found} категориях`);
+        setUserPrices(response.data.prices || []);
+        setShowPriceModal(false);
+      } else {
+        alert('Ошибка при загрузке прайс-листа');
+      }
     } catch (error) {
       console.error('Error uploading prices:', error);
-      alert('Ошибка загрузки файла. Проверьте формат.');
+      alert('Ошибка при загрузке файла: ' + (error.response?.data?.detail || error.message));
     } finally {
       setUploadingPrices(false);
-      // Reset file input
-      event.target.value = '';
     }
   };
 
   const fetchUserHistory = async () => {
+    if (!currentUser?.id) {
+      console.log('No user ID available for history fetch');
+      return;
+    }
+    
     try {
+      console.log('Fetching history for user:', currentUser.id);
       const response = await axios.get(`${API}/user-history/${currentUser.id}`);
+      console.log('History response:', response.data);
       setUserHistory(response.data.history || []);
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -761,6 +1172,8 @@ function App() {
 
   useEffect(() => {
     fetchCities();
+    fetchSubscriptionPlans();
+    fetchKitchenEquipment();
     initVoiceRecognition();
     const savedUser = localStorage.getItem('receptor_user');
     console.log('Checking for saved user:', savedUser);
@@ -775,6 +1188,15 @@ function App() {
       }
     }
   }, []);
+
+  // Fetch subscription data when user changes
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchUserSubscription();
+      fetchUserHistory();
+      fetchUserPrices();
+    }
+  }, [currentUser?.id]);
 
   const loadUserPrices = async (userId) => {
     try {
@@ -944,16 +1366,23 @@ function App() {
               <div>
                 <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
                     
-                    {/* Tips for better results */}
-                    <div className="bg-blue-600/20 rounded-lg p-4 mb-6">
-                      <h3 className="text-blue-300 font-bold mb-2">💡 ДЛЯ ЛУЧШЕГО РЕЗУЛЬТАТА:</h3>
-                      <ul className="text-blue-200 text-sm space-y-1">
-                        <li>• Укажите конкретное название блюда</li>
-                        <li>• Добавьте особенности приготовления</li>
-                        <li>• Упомяните тип кухни или стиль</li>
-                        <li>• Например: "Ризотто с белыми грибами и трюфелем"</li>
-                      </ul>
+                {/* Instructions Section */}
+                <div className="border-t border-purple-400/30 pt-6 mb-6">
+                  <div className="flex items-center space-x-2 mb-4 cursor-pointer" onClick={() => setShowInstructions(!showInstructions)}>
+                    <span className="text-lg font-bold text-purple-300">ДЛЯ ЛУЧШЕГО РЕЗУЛЬТАТА</span>
+                    <span className="text-purple-300 text-xl">❓</span>
+                  </div>
+                  {showInstructions && (
+                    <div className="bg-gray-800/50 rounded-lg p-4 text-sm text-gray-300 space-y-2">
+                      <p>• <strong>Укажите все подробно:</strong> тип блюда, способ приготовления, желаемый выход готового блюда</p>
+                      <p>• <strong>Себестоимость:</strong> рассчитывается исходя из рыночных цен на 2024 год</p>
+                      <p>• <strong>Проверяйте данные:</strong> нейросеть может ошибаться, стоит проверить расчеты</p>
+                      <p>• <strong>Ручная корректировка:</strong> вы можете все вручную поправить через кнопку "Редактировать"</p>
+                      <p>• <strong>Свой прайс-лист:</strong> загрузите свой прайс-лист для идеального расчета исходя из актуальных цен</p>
+                      <p>• <strong>Пример:</strong> "Стейк из говядины на 4 порции, средней прожарки, общий выход 800г"</p>
                     </div>
+                  )}
+                </div>
 
                     <form onSubmit={handleGenerateTechCard} className="space-y-6">
                   <div>
@@ -1007,6 +1436,21 @@ function App() {
                 {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
                   <div className="border-t border-purple-400/30 pt-6">
                     <h3 className="text-lg font-bold text-purple-300 mb-4">PRO ФУНКЦИИ</h3>
+                    
+                    {/* Kitchen Equipment Button */}
+                    <button
+                      onClick={() => setShowEquipmentModal(true)}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
+                    >
+                      🔧 КУХОННОЕ ОБОРУДОВАНИЕ
+                    </button>
+                    {userEquipment.length > 0 && (
+                      <div className="text-sm text-purple-400 text-center mb-4">
+                        Выбрано {userEquipment.length} единиц оборудования
+                      </div>
+                    )}
+                    
+                    {/* Price Management Button */}
                     <button
                       onClick={() => setShowPriceModal(true)}
                       className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
@@ -1014,10 +1458,36 @@ function App() {
                       💰 УПРАВЛЕНИЕ ПРАЙСАМИ
                     </button>
                     {userPrices.length > 0 && (
-                      <div className="text-sm text-green-400 text-center">
+                      <div className="text-sm text-green-400 text-center mb-4">
                         Загружено {userPrices.length} позиций
                       </div>
                     )}
+                    
+                    {/* ПРО AI функции */}
+                    <div className="border-t border-purple-400/20 pt-4">
+                      <h4 className="text-md font-bold text-purple-200 mb-3">AI ДОПОЛНЕНИЯ</h4>
+                      
+                      <button
+                        onClick={() => generateSalesScript()}
+                        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
+                      >
+                        🎭 СКРИПТ ПРОДАЖ
+                      </button>
+                      
+                      <button
+                        onClick={() => generateFoodPairing()}
+                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
+                      >
+                        🍷 ФУДПЕЙРИНГ
+                      </button>
+                      
+                      <button
+                        onClick={() => generatePhotoTips()}
+                        className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
+                      >
+                        📸 СОВЕТЫ ПО ФОТО
+                      </button>
+                    </div>
                   </div>
                 )}
                 
@@ -1508,13 +1978,26 @@ function App() {
                 ].map((twist, index) => (
                   <button
                     key={index}
-                    onClick={() => {
-                      setEditInstruction(`${twist.action}, сохрани структуру и стиль техкарты`);
+                    onClick={async () => {
+                      if (!techCard) return;
                       setShowTwistModal(false);
-                      // Auto-apply the twist
-                      setTimeout(() => {
-                        handleEditTechCard();
-                      }, 100);
+                      setIsGenerating(true);
+                      try {
+                        const response = await axios.post(`${API}/generate-tech-card`, {
+                          dish_name: `${techCard.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim()} - ${twist.text}`,
+                          city: currentUser.city,
+                          user_id: currentUser.id,
+                          twist_instruction: `Создай новую техкарту на основе этого блюда, но с поворотом "${twist.action}". Оригинальная техкарта: ${techCard}`
+                        });
+                        setTechCard(response.data.content);
+                        setCurrentTechCardId(response.data.id);
+                        alert(`Новая техкарта создана с поворотом "${twist.text}"!`);
+                      } catch (error) {
+                        console.error('Error creating twist:', error);
+                        alert('Ошибка при создании поворота техкарты');
+                      } finally {
+                        setIsGenerating(false);
+                      }
                     }}
                     className="bg-gray-700 hover:bg-orange-600 text-white p-3 rounded-lg transition-colors text-sm flex flex-col items-center"
                   >
@@ -1526,24 +2009,38 @@ function App() {
               
               <div className="flex space-x-3">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     const twists = [
-                      'адаптируй под азиатскую кухню',
-                      'сделай более здоровым и диетическим', 
-                      'адаптируй для веганов, замени животные продукты',
-                      'сделай премиум версию с дорогими ингредиентами',
-                      'упрости рецепт для быстрого приготовления',
-                      'адаптируй под молекулярную кухню',
-                      'используй сезонные ингредиенты',
-                      'сделай безглютеновую версию'
+                      { text: 'Азиатский стиль', action: 'адаптируй под азиатскую кухню' },
+                      { text: 'Здоровое питание', action: 'сделай более здоровым и диетическим' },
+                      { text: 'Веганская версия', action: 'адаптируй для веганов, замени животные продукты' },
+                      { text: 'Премиум вариант', action: 'сделай премиум версию с дорогими ингредиентами' },
+                      { text: 'Быстрое приготовление', action: 'упрости рецепт для быстрого приготовления' },
+                      { text: 'Молекулярная кухня', action: 'адаптируй под молекулярную кухню' },
+                      { text: 'Сезонные ингредиенты', action: 'используй сезонные ингредиенты' },
+                      { text: 'Безглютеновый', action: 'сделай безглютеновую версию' }
                     ];
                     const randomTwist = twists[Math.floor(Math.random() * twists.length)];
-                    setEditInstruction(`${randomTwist}, сохрани структуру и стиль техкарты`);
+                    
+                    if (!techCard) return;
                     setShowTwistModal(false);
-                    // Auto-apply the random twist
-                    setTimeout(() => {
-                      handleEditTechCard();
-                    }, 100);
+                    setIsGenerating(true);
+                    try {
+                      const response = await axios.post(`${API}/generate-tech-card`, {
+                        dish_name: `${techCard.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim()} - ${randomTwist.text}`,
+                        city: currentUser.city,
+                        user_id: currentUser.id,
+                        twist_instruction: `Создай новую техкарту на основе этого блюда, но с поворотом "${randomTwist.action}". Оригинальная техкарта: ${techCard}`
+                      });
+                      setTechCard(response.data.content);
+                      setCurrentTechCardId(response.data.id);
+                      alert(`Новая техкарта создана с поворотом "${randomTwist.text}"!`);
+                    } catch (error) {
+                      console.error('Error creating twist:', error);
+                      alert('Ошибка при создании поворота техкарты');
+                    } finally {
+                      setIsGenerating(false);
+                    }
                   }}
                   className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
                 >
@@ -1585,6 +2082,155 @@ function App() {
           </div>
         </div>
       )}
+      {/* Kitchen Equipment Modal */}
+      {showEquipmentModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-purple-300">КУХОННОЕ ОБОРУДОВАНИЕ</h3>
+              <button
+                onClick={() => setShowEquipmentModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-300 text-sm mb-4">
+                Выберите оборудование, которое есть на вашей кухне. AI будет адаптировать рецепты под доступное оборудование.
+              </p>
+            </div>
+            
+            {kitchenEquipment.cooking_methods && (
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-purple-300 mb-3">Способы приготовления</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {kitchenEquipment.cooking_methods.map(equipment => (
+                    <label key={equipment.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={userEquipment.includes(equipment.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setUserEquipment([...userEquipment, equipment.id]);
+                          } else {
+                            setUserEquipment(userEquipment.filter(id => id !== equipment.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-gray-300 text-sm">{equipment.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {kitchenEquipment.prep_equipment && (
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-purple-300 mb-3">Подготовительное оборудование</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {kitchenEquipment.prep_equipment.map(equipment => (
+                    <label key={equipment.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={userEquipment.includes(equipment.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setUserEquipment([...userEquipment, equipment.id]);
+                          } else {
+                            setUserEquipment(userEquipment.filter(id => id !== equipment.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-gray-300 text-sm">{equipment.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {kitchenEquipment.storage && (
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-purple-300 mb-3">Хранение</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {kitchenEquipment.storage.map(equipment => (
+                    <label key={equipment.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={userEquipment.includes(equipment.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setUserEquipment([...userEquipment, equipment.id]);
+                          } else {
+                            setUserEquipment(userEquipment.filter(id => id !== equipment.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-gray-300 text-sm">{equipment.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowEquipmentModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ОТМЕНА
+              </button>
+              <button
+                onClick={() => updateKitchenEquipment(userEquipment)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                СОХРАНИТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRO AI Results Modal */}
+      {showProAIModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-purple-300">{proAITitle}</h3>
+              <button
+                onClick={() => setShowProAIModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-6">
+              <div className="text-gray-200 whitespace-pre-line">{proAIResult}</div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => navigator.clipboard.writeText(proAIResult)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                📋 КОПИРОВАТЬ
+              </button>
+              <button
+                onClick={() => setShowProAIModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -13,6 +13,8 @@ import openai
 from openai import OpenAI
 import json
 import re
+import tempfile
+import pandas as pd
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -326,26 +328,6 @@ GOLDEN_PROMPT = """Ты — RECEPTOR, профессиональный AI-пом
 
 **Рекомендация подачи:** посуда, декор, температура
 
-**Фудпейринг:**
-
-Вино: [точные сорта и регионы]
-
-Пиво: [стиль, вкус]
-
-Коктейли: [алкогольные пары]
-
-Безалкогольные: [лимонады, чай, соки, настои]
-
-Гарниры: [что подать рядом]
-
-Неожиданная пара: [что удивит и усилит вкус]
-
-**СКРИПТ ПРОДАЖ ДЛЯ ОФИЦИАНТА:**
-[1–2 короткие живые фразы, без пафоса. Говори, как будто это реально произносит официант.]
-
-**Фотогеничность:**
-[насколько подходит для фото + советы: какой фон, свет, ракурс лучше выбрать]
-
 **Теги для меню:** #[тег1] #[тег2] #[тег3]
 
 Сгенерировано RECEPTOR AI — экономьте 2 часа на каждой техкарте
@@ -359,15 +341,13 @@ GOLDEN_PROMPT = """Ты — RECEPTOR, профессиональный AI-пом
 # Edit prompt for tech cards
 EDIT_PROMPT = """Ты — RECEPTOR, профессиональный AI-помощник для шеф-поваров.
 
-Пользователь хочет отредактировать существующую технологическую карту.
+Пользователь просит отредактировать существующую техкарту. Вот текущая техкарта:
 
-ТЕКУЩАЯ ТЕХКАРТА:
 {current_tech_card}
 
-ЗАПРОС НА ИЗМЕНЕНИЕ:
-{edit_instruction}
+Инструкция по редактированию: {edit_instruction}
 
-ВАЖНЫЕ ПРАВИЛА:
+ПРАВИЛА РЕДАКТИРОВАНИЯ:
 - Сохрани весь оригинальный формат техкарты
 - Внеси только запрошенные изменения
 - Пересчитай все цены и количества корректно
@@ -810,126 +790,69 @@ async def get_cities():
     ]
     return cities
 
-@api_router.post("/upload-prices")
+@app.post("/api/upload-prices")
 async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
+    # Validate user subscription (PRO only)
+    user = await db.users.find_one({"id": user_id})
+    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
     try:
-        # Check if user has PRO subscription
-        user = await db.users.find_one({"id": user_id})
-        if not user or user.get('subscription_plan') not in ['pro', 'business']:
-            raise HTTPException(status_code=403, detail="PRO subscription required")
+        # Read file
+        content = await file.read()
         
-        # Read file content
-        contents = await file.read()
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
+            temp_file.write(content)
+            temp_file_path = temp_file.name
         
-        # Parse Excel/CSV file
-        import pandas as pd
-        import io
-        import re
+        # Process with pandas
+        df = pd.read_excel(temp_file_path, engine='openpyxl')
         
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
-        else:
-            df = pd.read_excel(io.BytesIO(contents))
-        
-        # Smart cleaning and processing
-        prices = []
-        
-        # Категории продуктов для автоматической категоризации
-        categories = {
-            "мясо": ["мясо", "говядина", "свинина", "баранина", "телятина", "курица", "утка", "индейка", "фарш"],
-            "рыба": ["рыба", "лосось", "семга", "форель", "треска", "судак", "карп", "тунец", "скумбрия"],
-            "овощи": ["картофель", "лук", "морковь", "капуста", "помидор", "огурец", "перец", "свекла", "чеснок"],
-            "фрукты": ["яблоко", "банан", "апельсин", "лимон", "груша", "виноград", "киви", "ананас"],
-            "молочные": ["молоко", "сметана", "творог", "сыр", "масло", "йогурт", "кефир", "ряженка"],
-            "крупы": ["рис", "гречка", "овсянка", "пшено", "перловка", "манка", "булгур"],
-            "специи": ["соль", "перец", "сахар", "мука", "крахмал", "ваниль", "корица", "куркума"],
-        }
-        
-        # Сокращения и их расшифровки
-        abbreviations = {
-            "кг": "кг", "килограмм": "кг", "kg": "кг",
-            "г": "г", "грамм": "г", "гр": "г", "gr": "г",
-            "л": "л", "литр": "л", "lit": "л",
-            "мл": "мл", "миллилитр": "мл", "ml": "мл",
-            "шт": "шт", "штука": "шт", "pieces": "шт", "pcs": "шт",
-            "упак": "шт", "уп": "шт", "pack": "шт"
-        }
-        
+        processed_prices = []
         for _, row in df.iterrows():
             try:
-                # Получаем данные из строки
-                name = str(row.iloc[0]).strip()
-                price_raw = str(row.iloc[1]).replace(',', '.').replace('₽', '').replace('руб', '').strip()
-                unit_raw = str(row.iloc[2]).strip() if len(row) > 2 else 'кг'
+                # Try to extract price data from row
+                price_data = {
+                    "name": str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else "",
+                    "price": 0,
+                    "unit": "кг",
+                    "category": "other",
+                    "source": file.filename,
+                    "user_id": user_id,
+                    "created_at": datetime.now()
+                }
                 
-                # Пропускаем заголовки и пустые строки
-                if not name or name.lower() in ['название', 'продукт', 'наименование', 'товар', 'nan']:
-                    continue
+                # Try to parse price from any column
+                for col_value in row.values:
+                    if pd.notna(col_value):
+                        price_match = re.search(r'(\d+(?:[.,]\d+)?)', str(col_value))
+                        if price_match and float(price_match.group(1).replace(',', '.')) > 0:
+                            price_data["price"] = float(price_match.group(1).replace(',', '.'))
+                            break
                 
-                # Очищаем название продукта
-                name_clean = re.sub(r'[^\w\s]', ' ', name.lower())  # убираем спецсимволы
-                name_clean = re.sub(r'\s+', ' ', name_clean).strip()  # убираем лишние пробелы
-                
-                # Извлекаем цену
-                price_match = re.search(r'[\d.]+', price_raw)
-                if not price_match:
-                    continue
-                price = float(price_match.group())
-                
-                # Нормализуем единицу измерения
-                unit_clean = unit_raw.lower().strip()
-                unit = abbreviations.get(unit_clean, unit_clean)
-                if not unit or unit == 'nan':
-                    unit = 'кг'
-                
-                # Автоматическая категоризация
-                category = "прочее"
-                for cat_name, keywords in categories.items():
-                    if any(keyword in name_clean for keyword in keywords):
-                        category = cat_name
-                        break
-                
-                # Capitalize first letter for display
-                name_display = name.strip().capitalize()
-                
-                prices.append({
-                    "name": name_display,
-                    "name_clean": name_clean,
-                    "price": round(price, 2),
-                    "unit": unit,
-                    "category": category,
-                    "original_name": name
-                })
-                
+                if price_data["name"] and price_data["price"] > 0:
+                    processed_prices.append(price_data)
+                    
             except Exception as e:
-                print(f"Error processing row: {e}")
                 continue
         
-        # Save to database with categories
-        await db.user_prices.delete_many({"user_id": user_id})
-        if prices:
-            price_docs = [{"user_id": user_id, **price, "created_at": datetime.utcnow()} for price in prices]
-            await db.user_prices.insert_many(price_docs)
+        # Save to database
+        if processed_prices:
+            await db.user_prices.insert_many(processed_prices)
         
-        # Group by categories for response
-        categorized_prices = {}
-        for price in prices:
-            cat = price["category"]
-            if cat not in categorized_prices:
-                categorized_prices[cat] = []
-            categorized_prices[cat].append(price)
+        # Cleanup
+        os.unlink(temp_file_path)
         
         return {
-            "success": True, 
-            "prices": prices, 
-            "categorized": categorized_prices,
-            "count": len(prices),
-            "categories_found": len(categorized_prices)
+            "success": True,
+            "count": len(processed_prices),
+            "message": f"Обработано {len(processed_prices)} позиций",
+            "prices": processed_prices[:10]  # Return first 10 for preview
         }
         
     except Exception as e:
-        logger.error(f"Error uploading prices: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+        return {"success": False, "error": str(e)}
 
 @api_router.get("/user-prices/{user_id}")
 async def get_user_prices(user_id: str):
@@ -944,9 +867,17 @@ async def get_user_prices(user_id: str):
 async def get_user_history(user_id: str):
     try:
         # Get user's tech cards history sorted by creation date (newest first)
-        history = await db.tech_cards.find(
+        history_docs = await db.tech_cards.find(
             {"user_id": user_id}
         ).sort("created_at", -1).limit(20).to_list(20)
+        
+        # Convert to serializable format by removing MongoDB ObjectId
+        history = []
+        for doc in history_docs:
+            # Remove the MongoDB _id field to avoid serialization issues
+            if "_id" in doc:
+                del doc["_id"]
+            history.append(doc)
         
         return {"history": history}
         
@@ -973,5 +904,203 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
+
+@app.post("/api/generate-sales-script")
+async def generate_sales_script(request: dict):
+    user_id = request.get("user_id")
+    tech_card = request.get("tech_card")
+    
+    # Validate user subscription (PRO only)
+    user = await db.users.find_one({"id": user_id})
+    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
+    # Extract dish name from tech card
+    dish_name = "блюдо"
+    for line in tech_card.split('\n'):
+        if 'Название:' in line:
+            dish_name = line.split('Название:')[1].strip().replace('**', '')
+            break
+    
+    prompt = f"""Ты — эксперт по продажам в ресторанном бизнесе. 
+
+Создай профессиональный скрипт продаж для официантов для блюда "{dish_name}".
+
+Техкарта блюда:
+{tech_card}
+
+Создай 3 варианта скриптов:
+
+🎭 КЛАССИЧЕСКИЙ СКРИПТ:
+[2-3 предложения для обычной презентации блюда]
+
+🔥 АКТИВНЫЕ ПРОДАЖИ:
+[агрессивный скрипт для увеличения среднего чека]
+
+💫 ПРЕМИУМ ПОДАЧА:
+[скрипт для VIP гостей и особых случаев]
+
+Дополнительно:
+• 5 ключевых преимуществ блюда
+• Возражения клиентов и ответы на них
+• Техники up-sell и cross-sell
+• Невербальные приемы подачи
+
+Пиши живо, как будто это реально говорит опытный официант."""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500,
+            temperature=0.8
+        )
+        
+        return {"script": response.choices[0].message.content}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
+
+@app.post("/api/generate-food-pairing")
+async def generate_food_pairing(request: dict):
+    user_id = request.get("user_id")
+    tech_card = request.get("tech_card")
+    
+    # Validate user subscription (PRO only)
+    user = await db.users.find_one({"id": user_id})
+    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
+    # Extract dish name from tech card
+    dish_name = "блюдо"
+    for line in tech_card.split('\n'):
+        if 'Название:' in line:
+            dish_name = line.split('Название:')[1].strip().replace('**', '')
+            break
+    
+    prompt = f"""Ты — сомелье и эксперт по фудпейрингу. 
+
+Создай профессиональное руководство по сочетаниям для блюда "{dish_name}".
+
+Техкарта блюда:
+{tech_card}
+
+Создай детальные рекомендации:
+
+🍷 ВИННЫЕ ПАРЫ:
+• Идеальные вина (3-4 варианта с регионами и характеристиками)
+• Альтернативные варианты для разного бюджета
+• Почему именно эти вина подходят
+
+🍺 ПИВНЫЕ ПАРЫ:
+• Подходящие стили пива
+• Конкретные бренды и производители
+• Температура подачи
+
+🍹 КОКТЕЙЛИ:
+• Алкогольные коктейли (2-3 варианта)
+• Безалкогольные напитки
+• Авторские миксы
+
+🍽 ГАРНИРЫ И ДОПОЛНЕНИЯ:
+• Идеальные гарниры
+• Соусы и заправки
+• Закуски для комплекта
+
+🎯 НЕОЖИДАННЫЕ ПАРЫ:
+• Креативные сочетания
+• Сезонные варианты
+• Эксклюзивные предложения
+
+Для каждой категории объясни ПОЧЕМУ это сочетание работает (вкусовые профили, баланс, контрасты)."""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500,
+            temperature=0.7
+        )
+        
+        return {"pairing": response.choices[0].message.content}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
+
+@app.post("/api/generate-photo-tips")
+async def generate_photo_tips(request: dict):
+    user_id = request.get("user_id")
+    tech_card = request.get("tech_card")
+    
+    # Validate user subscription (PRO only)
+    user = await db.users.find_one({"id": user_id})
+    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
+    # Extract dish name from tech card
+    dish_name = "блюдо"
+    for line in tech_card.split('\n'):
+        if 'Название:' in line:
+            dish_name = line.split('Название:')[1].strip().replace('**', '')
+            break
+    
+    prompt = f"""Ты — фуд-фотограф и эксперт по визуальной подаче блюд.
+
+Создай профессиональное руководство по фотографии для блюда "{dish_name}".
+
+Техкарта блюда:
+{tech_card}
+
+Создай детальные рекомендации:
+
+📸 ТЕХНИЧЕСКИЕ НАСТРОЙКИ:
+• Оптимальные настройки камеры/телефона
+• Освещение (естественное vs искусственное)
+• Углы съемки и композиция
+
+🎨 СТИЛИНГ И ПОДАЧА:
+• Идеальная посуда и сервировка
+• Цветовая палитра фона
+• Декоративные элементы и пропсы
+
+✨ КОМПОЗИЦИЯ:
+• Лучшие ракурсы для данного блюда
+• Правило третей и другие техники
+• Как показать текстуру и аппетитность
+
+🌅 ОСВЕЩЕНИЕ:
+• Время суток для съемки
+• Использование естественного света
+• Искусственное освещение и софтбоксы
+
+📱 ДЛЯ СОЦСЕТЕЙ:
+• Адаптация для Instagram/TikTok
+• Размеры и форматы
+• Хештеги и подписи
+
+🎭 ПОСТОБРАБОТКА:
+• Основные правки (яркость, контраст, насыщенность)
+• Фильтры и пресеты
+• Приложения для обработки
+
+💡 PRO СОВЕТЫ:
+• Как подчеркнуть уникальность блюда
+• Создание серии фото
+• Съемка процесса приготовления
+
+Для каждого совета объясни ПОЧЕМУ это важно для данного конкретного блюда."""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500,
+            temperature=0.7
+        )
+        
+        return {"tips": response.choices[0].message.content}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
 async def shutdown_db_client():
     client.close()
