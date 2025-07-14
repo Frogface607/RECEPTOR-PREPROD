@@ -1165,7 +1165,8 @@ function App() {
               name: name,
               quantity: quantity,
               unit: unit,
-              pricePerUnit: pricePerUnit.toFixed(2),
+              originalQuantity: quantity, // Сохраняем оригинальное количество
+              originalPrice: totalPrice,  // Сохраняем оригинальную цену
               totalPrice: totalPrice,
               id: Date.now() + Math.random() + ingredients.length
             });
