@@ -2130,8 +2130,7 @@ function App() {
                     
                     // Auto-recalculate total cost
                     const totalCost = newIngredients.reduce((sum, ing) => {
-                      const priceNum = parseFloat(ing.price.replace(/[^\d.]/g, '')) || 0;
-                      return sum + priceNum;
+                      return sum + (parseFloat(ing.totalPrice) || 0);
                     }, 0);
                     console.log('New total cost:', totalCost);
                   }}
