@@ -265,31 +265,43 @@ function App() {
                 
                 {currentIngredients.length > 0 && (
                   <div className="mt-6 p-4 bg-gray-800/30 rounded-lg border border-green-400/30">
-                    <div className="flex justify-between items-center">
-                      <span className="text-purple-300 font-bold text-lg">ОБЩАЯ СЕБЕСТОИМОСТЬ:</span>
-                      <span className="text-green-400 font-bold text-2xl">
-                        {currentIngredients.reduce((total, ing) => {
-                          return total + (parseFloat(ing.totalPrice) || 0);
-                        }, 0).toFixed(1)} ₽
-                      </span>
+                    <div className="grid grid-cols-3 gap-6 text-center">
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">ОБЩИЙ ВЫХОД ПОРЦИИ</div>
+                        <div className="text-blue-400 font-bold text-xl">
+                          {currentIngredients.reduce((total, ing) => {
+                            return total + (parseFloat(ing.quantity) || 0);
+                          }, 0).toFixed(0)} г
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">СЕБЕСТОИМОСТЬ ПОРЦИИ</div>
+                        <div className="text-green-400 font-bold text-xl">
+                          {Math.round(currentIngredients.reduce((total, ing) => {
+                            return total + (parseFloat(ing.totalPrice) || 0);
+                          }, 0))} ₽
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1">
+                          *Примерная себестоимость
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-gray-400 text-sm mb-1">РЕКОМЕНДУЕМАЯ ЦЕНА</div>
+                        <div className="text-purple-400 font-bold text-xl">
+                          {Math.round(currentIngredients.reduce((total, ing) => {
+                            return total + (parseFloat(ing.totalPrice) || 0);
+                          }, 0) * 3)} ₽
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1">
+                          Маржа 200%
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
-                      <div className="text-center">
-                        <div className="text-gray-400">Себестоимость порции</div>
-                        <div className="text-yellow-400 font-bold">
-                          {(currentIngredients.reduce((total, ing) => total + (parseFloat(ing.totalPrice) || 0), 0) / 2).toFixed(1)} ₽
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-gray-400">Рекомендуемая цена (×3)</div>
-                        <div className="text-green-400 font-bold">
-                          {(currentIngredients.reduce((total, ing) => total + (parseFloat(ing.totalPrice) || 0), 0) * 1.5).toFixed(0)} ₽
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-gray-400">Маржа</div>
-                        <div className="text-purple-400 font-bold">200%</div>
-                      </div>
+                    
+                    <div className="mt-4 text-xs text-gray-500 text-center">
+                      💡 Стоимость рассчитывается на основе рыночных цен + региональный коэффициент + инфляция
                     </div>
                   </div>
                 )}
