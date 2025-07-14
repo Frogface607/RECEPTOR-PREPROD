@@ -2037,8 +2037,7 @@ function App() {
                         <span className="text-purple-300 font-bold">ОБЩАЯ СТОИМОСТЬ:</span>
                         <span className="text-green-400 font-bold text-xl">
                           {currentIngredients.reduce((total, ing) => {
-                            const priceNum = parseFloat(ing.price.replace(/[^\d.]/g, '')) || 0;
-                            return total + priceNum;
+                            return total + (parseFloat(ing.totalPrice) || 0);
                           }, 0).toFixed(1)} ₽
                         </span>
                       </div>
