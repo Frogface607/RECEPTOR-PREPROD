@@ -248,42 +248,6 @@ function App() {
                   </span>
                 </div>
               </div>
-            )}
-              
-              <div className="flex items-center space-x-3 bg-gray-800/50 rounded-lg p-3">
-                <span className="text-purple-400 font-bold w-8">6.</span>
-                <input
-                  type="text"
-                  defaultValue="Перец черный молотый — 1 г — ~0.2 ₽"
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
-                />
-                <button className="text-red-400 hover:text-red-300 px-2 py-1 rounded">✕</button>
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-4">
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
-                + ДОБАВИТЬ
-              </button>
-              
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
-                СОХРАНИТЬ
-              </button>
-              
-              <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
-                ОТМЕНА
-              </button>
-            </div>
-            
-            <div className="mt-4 bg-gray-800/70 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-purple-300">Приблизительная себестоимость:</span>
-                <span className="text-xl font-bold text-green-400">1040 ₽</span>
-              </div>
-              <div className="mt-1 text-sm text-gray-400">
-                *Рассчитывается из среднерыночных цен. Загрузите свой прайс-лист для точности.
-              </div>
-            </div>
           </div>
         );
         
