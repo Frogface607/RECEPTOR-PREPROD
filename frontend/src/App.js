@@ -229,6 +229,14 @@ function App() {
                               if (match) {
                                 newIngredients[index].quantity = match[1];
                                 newIngredients[index].unit = match[2] || 'г';
+                                
+                                // Пересчитаем стоимость на основе изначальной цены за единицу
+                                const newQty = parseFloat(match[1]) || 0;
+                                const originalQty = parseFloat(ingredient.originalQuantity) || parseFloat(ingredient.quantity) || 1;
+                                const originalPrice = parseFloat(ingredient.originalPrice) || parseFloat(ingredient.totalPrice) || 0;
+                                
+                                // Пропорциональный пересчет
+                                newIngredients[index].totalPrice = ((originalPrice / originalQty) * newQty).toFixed(1);
                               }
                               setCurrentIngredients(newIngredients);
                             }}
