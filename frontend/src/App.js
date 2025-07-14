@@ -947,7 +947,6 @@ function App() {
       console.log('Tech card generation response:', response.data);
       setTechCard(response.data.tech_card);
       setCurrentTechCardId(response.data.id);
-      setCurrentIngredients([]); // Сброс ингредиентов для новой техкарты
       
       // Add to history
       fetchUserHistory();
@@ -964,7 +963,8 @@ function App() {
             ingredients.push({
               name: parts[0].trim(),
               quantity: parts[1].trim(),
-              price: parts[2].trim()
+              price: parts[2].trim(),
+              id: Date.now() + Math.random() // Уникальный ID
             });
           }
         }
@@ -975,6 +975,8 @@ function App() {
         }
       });
       
+      // Загружаем парсированные ингредиенты в редактор
+      setCurrentIngredients(ingredients);
       setEditableIngredients(ingredients);
       setEditableSteps(steps);
       
