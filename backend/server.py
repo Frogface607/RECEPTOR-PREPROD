@@ -1115,5 +1115,3 @@ async def generate_photo_tips(request: dict):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
-async def shutdown_db_client():
-    client.close()
