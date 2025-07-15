@@ -1561,8 +1561,9 @@ function App() {
                       </button>
                       
                       <button
-                        onClick={() => generatePhotoTips()}
-                        className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
+                        onClick={generatePhotoTips}
+                        disabled={isGenerating}
+                        className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm`}
                       >
                         СОВЕТЫ ПО ФОТО
                       </button>
