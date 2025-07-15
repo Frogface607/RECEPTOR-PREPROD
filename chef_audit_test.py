@@ -95,8 +95,12 @@ class ChefAuditSystem:
             response = requests.post(f"{self.base_url}/upgrade-subscription/{self.user_id}", json=upgrade_data)
             if response.status_code == 200:
                 print("✅ Upgraded to PRO subscription")
+            else:
+                print(f"⚠️ Upgrade failed: {response.status_code}")
+                return False
         except Exception as e:
             print(f"⚠️ Upgrade issue: {e}")
+            return False
         
         # Setup kitchen equipment for PRO features
         try:
@@ -112,8 +116,12 @@ class ChefAuditSystem:
                 response = requests.post(f"{self.base_url}/update-kitchen-equipment/{self.user_id}", json=equipment_data)
                 if response.status_code == 200:
                     print(f"✅ Configured {len(equipment_ids)} kitchen equipment items")
+                else:
+                    print(f"⚠️ Equipment setup failed: {response.status_code}")
         except Exception as e:
             print(f"⚠️ Equipment setup issue: {e}")
+        
+        return True
 
     def generate_tech_card(self, dish_name: str) -> Dict:
         """Generate a tech card for evaluation"""
