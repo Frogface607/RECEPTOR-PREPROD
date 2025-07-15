@@ -1202,8 +1202,9 @@ function App() {
           </div>
           <div>${cleanedContent}</div>
           <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid #E5E7EB; padding-top: 20px;">
-            <p><strong>Создано в RECEPTOR PRO</strong></p>
+            <p><strong>Создано в RECEPTOR PRO Beta</strong></p>
             <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
+            <p style="color: #F59E0B; font-size: 10px;">Тестовая версия - пожалуйста, проверяйте все расчеты</p>
           </div>
         </body>
       </html>
