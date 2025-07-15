@@ -428,7 +428,7 @@ function App() {
         setLoadingMessage('');
         setLoadingType('');
         setShowSalesScriptModal(true);
-      }, 1000);
+      }, 2000);
       
     } catch (error) {
       console.error('Error generating sales script:', error);
