@@ -89,11 +89,23 @@ class ProAIFunctionsTest:
         
         response = requests.post(f"{self.base_url}/register", json=user_data)
         if response.status_code == 400:
-            print("   User already exists, continuing...")
+            print("   User already exists, getting user ID...")
+            # Get the existing user
+            response = requests.get(f"{self.base_url}/user/{self.user_id}@example.com")
+            if response.status_code == 200:
+                user_info = response.json()
+                self.user_id = user_info["id"]
+                print(f"   Found existing user with ID: {self.user_id}")
+            else:
+                print(f"   Error getting existing user: {response.status_code}")
+                return False
         elif response.status_code == 200:
-            print("   User registered successfully")
+            user_info = response.json()
+            self.user_id = user_info["id"]
+            print(f"   User registered successfully with ID: {self.user_id}")
         else:
             print(f"   Warning: User registration returned {response.status_code}")
+            return False
         
         # Upgrade to PRO subscription
         upgrade_data = {
