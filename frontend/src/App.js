@@ -1553,8 +1553,9 @@ function App() {
                       </button>
                       
                       <button
-                        onClick={() => generateFoodPairing()}
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
+                        onClick={generateFoodPairing}
+                        disabled={isGenerating}
+                        className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm`}
                       >
                         ФУДПЕЙРИНГ
                       </button>
