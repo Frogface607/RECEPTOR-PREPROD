@@ -1028,7 +1028,7 @@ async def generate_food_pairing(request: dict):
 Для каждой категории объясни ПОЧЕМУ это сочетание работает (вкусовые профили, баланс, контрасты)."""
 
     try:
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1500,
