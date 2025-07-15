@@ -407,7 +407,7 @@ function App() {
     
     setIsGenerating(true);
     setLoadingType('sales');
-    const progressInterval = simulateProgress('sales', 6000);
+    const progressInterval = simulateProgress('sales', 12000);
     
     try {
       const response = await axios.post(`${API}/generate-sales-script`, {
