@@ -123,7 +123,7 @@ function App() {
         )}
 
         {/* ВРЕМЯ И ВЫХОД */}
-        {(time || yield || portion) && (
+        {(time || yieldAmount || portion) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {time && (
               <div className="bg-blue-900/20 rounded-lg p-4 text-center">
@@ -131,10 +131,10 @@ function App() {
                 <p className="text-gray-300">{time}</p>
               </div>
             )}
-            {yield && (
+            {yieldAmount && (
               <div className="bg-green-900/20 rounded-lg p-4 text-center">
                 <h4 className="text-green-300 font-bold mb-2">📏 ВЫХОД</h4>
-                <p className="text-gray-300">{yield}</p>
+                <p className="text-gray-300">{yieldAmount}</p>
               </div>
             )}
             {portion && (
