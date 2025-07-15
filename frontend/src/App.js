@@ -1142,7 +1142,7 @@ function App() {
             <div className="space-y-6">
               <button
                 onClick={() => setShowRegistration(true)}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
               >
                 НАЧАТЬ РАБОТУ
               </button>
