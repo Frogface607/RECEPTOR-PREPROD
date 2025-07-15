@@ -1422,7 +1422,7 @@ function App() {
                     </p>
                     <button
                       onClick={() => alert('Функция обновления подписки скоро будет доступна')}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all hover:from-purple-700 hover:to-pink-700"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
                     >
                       ОБНОВИТЬ ПОДПИСКУ
                     </button>
