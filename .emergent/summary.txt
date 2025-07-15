@@ -1,18 +1,17 @@
 <analysis>
-The previous AI engineer effectively built a comprehensive backend, including subscription tiers, kitchen equipment adaptation, and intricate pricing logic for Receptor Pro. However, the development trajectory is heavily marked by persistent frontend instability, specifically with , which repeatedly suffered from a SyntaxError: import and export may only appear at the top level and associated UI issues. This led to a cyclical pattern where features like ingredient tables, editors, and correct formatting would break or revert, necessitating repeated re-implementation and troubleshooting. The engineer successfully addressed multiple user complaints, ranging from registration flow, button styling, and AI model switching (from  to  and back), to the complex parsing and display of tech card elements (titles, descriptions, ingredients, cost breakdown). Towards the end, the focus shifted to refining AI output structure, pricing accuracy, adding smart price file processing, and integrating a Twist feature for generated tech cards, while still battling the core display of ingredients.
+The previous AI engineer's work on Receptor Pro was significantly challenged by persistent frontend display issues, particularly with the ingredient list in . This led to a cyclical pattern of debugging and refactoring, ultimately pivoting to a direct, interactive ingredient editor. While backend features like subscription tiers, kitchen equipment, and pricing logic were established, the primary struggle was getting the frontend to reliably parse and display data, compounded by an  syntax error. The engineer successfully integrated an interactive editor, implemented real-time cost recalculations, and addressed user feedback on UI and content. The latest focus was on debugging the editor's display and refining AI prompts in  to ensure accurate initial portion sizes, showing a continued iterative approach to resolve core functionality and display.
 </analysis>
 
 <product_requirements>
-The user, a restaurateur, sought to automate and improve the accuracy of recipe card creation, food cost calculation, and operational management with Receptor Pro, an AI-driven SaaS platform. The initial MVP focused on AI-generated tech cards (ingredients, steps, yield, KBJU, allergens, sales script), automatic cost calculation (2024 Russian market prices, 8% inflation, regional coefficients, 3x selling price), a professional UI (graphite/purple/lavender, Montserrat font, enlarged inputs), AI/manual editing, PDF export, user management, and voice input. Subsequent requirements included a tiered subscription system (Free, Starter, PRO, Business), kitchen equipment adaptation for PRO users, and extensive UI/UX refinements such as removal of emojis, correct ingredient table display, proper section headers, KBJU per 100g, hideable/sortable history, copy functionality, and reliable manual editing. Latest work involves refining cost calculations, adding a Twist feature for completed tech cards, and implementing smart Excel price file processing with data cleaning and categorization.
+The Receptor Pro application aims to automate recipe card creation and cost management for restaurateurs using AI. Key features include AI-generated tech cards (ingredients, steps, yield, KBJU, allergens, sales script), automatic cost calculation (2024 Russian market prices, 8% inflation, regional coefficients, 3x selling price), a professional UI (graphite/purple/lavender, Montserrat font, enlarged inputs), AI/manual editing, PDF export, user management, and voice input. Subsequent requirements involved tiered subscriptions, kitchen equipment adaptation for PRO users, and UI/UX refinements like removing emojis, ensuring correct ingredient table display, KBJU per 100g, hideable/sortable history, and a Twist feature. Most recently, the user explicitly requested an interactive ingredient editing table in the main interface, accurate portion sizing from AI, real-time cost recalculation upon manual edits, a Save button, Cost per Portion display with a disclaimer, and modularization of Sales Script, Food Pairing, and Photogenics into separate PRO AI features.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Architecture**: React (frontend), FastAPI (backend), MongoDB (database).
--   **AI Integration**: OpenAI's GPT-4o and GPT-4o-mini for tech card generation and editing.
--   **Dynamic Pricing**: Algorithms based on inflation, regional coefficients, and restaurant margins.
--   **Voice Recognition**: Browser's Web Speech API.
--   **UI/UX**: Tailwind CSS for styling, modals, loaders.
--   **Data Handling**: JSON for API, UUIDs for IDs. Pandas for Excel processing.
+-   **AI Integration**: OpenAI's GPT-4o and GPT-4o-mini for tech card generation/editing, with prompt engineering.
+-   **Dynamic Pricing**: Inflation, regional coefficients, restaurant margins.
+-   **Data Handling**: JSON, UUIDs, Pandas/Openpyxl for Excel processing.
+-   **UI/UX**: Tailwind CSS, Web Speech API, interactive components.
 -   **Deployment**: Supervisor for process management in Kubernetes.
 </key_technical_concepts>
 
@@ -24,34 +23,26 @@ The application uses a standard full-stack setup: React for the frontend, FastAP
 -   **/app/backend/server.py**: Main FastAPI application.
     -   **Importance**: Centralizes all backend logic including API endpoints for user management, tech card generation/editing, pricing, and subscription features. It handles interactions with OpenAI and MongoDB.
     -   **Changes Made**:
-        -   Initial setup for FastAPI, CORS, MongoDB.
-        -   Endpoints: , , , , , , .
-        -    and  extensively modified to include golden prompt logic, regional pricing, inflation, subscription limits, and kitchen equipment adaptation. OpenAI models switched between  and  based on subscription plan.
-        -   Pricing logic within prompts refined for 2024 prices, 8% inflation, regional coefficients, and 3x cost recommendation for restaurant portion sizes.
-        -   Added  and updated registration to initialize user subscription fields.
-        -   New endpoint  and associated logic for processing Excel files (using Pandas and Openpyxl) for custom price lists, including data cleaning, categorization, and normalization.
-        -   AI prompts were continuously adjusted to control output format, prevent ingredient substitution, and ensure accurate cost/portion calculations (e.g., specific examples for butter pricing, desired output structure for KBJU and yield).
+        -   OpenAI model explicitly set to  for tech card generation/editing (lines 609, 698).
+        -   Kitchen equipment feature (21 types) is fully implemented (lines 106-135).
+        -   AI prompts (, ) were extensively modified to enforce standard restaurant portion sizes (target 150-200g for a single portion), ensuring ingredients are scaled accordingly (Chat Message 163, 169).
+        -   Includes  and logic for custom price list uploads ().
 
 -   **/app/frontend/src/App.js**: The primary React component.
     -   **Importance**: Renders the entire user interface, managing authentication, tech card generation, display, editing, PDF export, voice input, and subscription/history features. It makes API calls to the backend.
     -   **Changes Made**:
-        -   Underwent numerous structural and aesthetic changes (color palettes to serious graphite with purple/lavender, Montserrat font, КАПС headings).
-        -   Persistent SyntaxError: import and export may only appear at the top level issues led to multiple refactorings and re-implementations of features.
-        -   Integrated Web Speech API for voice input.
-        -   Implemented dynamic editing interfaces for ingredients and steps, including manual and AI-driven methods. Added auto-recalculation of cost upon ingredient price changes.
-        -   PDF export () functionality, repeatedly fixed for formatting.
-        -   User management UI (login/registration, history modal). Added ВОЙТИ button for existing users.
-        -   Integrated subscription UI (header info, upgrade buttons, limit indicators) and PRO FUNCTIONS section for PRO/Business users.
-        -   Ingredient parsing logic was a continuous point of failure and refinement, with various attempts to correctly display ingredients as a table, handling different dash types and currency symbols. It was temporarily simplified as a stub to ensure display, then refined again to use structured parsing for a table.
-        -   Added Twist feature (modal window with categories) for tech cards, initially in the generation form, then moved to operate on generated tech cards.
-        -   Implemented loading animations/spinners for tech card generation, AI editing, and file uploads.
-        -   Added УПРАВЛЕНИЕ ПРАЙСАМИ button and modal for PRO users for Excel/CSV upload and display of categorized prices.
-        -   Integrated История (History) button and modal to view past tech cards.
-        -   Added instructional ДЛЯ ЛУЧШЕГО РЕЗУЛЬТАТА block for generating tech cards.
+        -   Significant refactoring to directly embed an **interactive ingredient editing table** into the main tech card display. This involved:
+            -   Adding  state, , , and  functions (Chat Message 52).
+            -   Debugging and fixing multiple  errors by correctly using  and adding defensive checks (Chat Message 115, 117, 121, 125, 129).
+            -   Moving the ingredient editor to render immediately after the tech card description, removing the temporary demo version (Chat Message 75, 139).
+            -   Simplifying the table structure by removing Цена/единица and ensuring correct parsing of ingredients into the structured format (name, quantity, unit, unitPrice, totalPrice) upon generation (Chat Message 109, 140).
+            -   Implementing calculation and display of ОБЩИЙ ВЫХОД ПОРЦИИ and СЕБЕСТОИМОСТЬ ПОРЦИИ with an Примерная себестоимость disclaimer (Chat Message 152).
+            -   Adding a functional СОХРАНИТЬ button for the editor (Chat Message 144).
+        -   Features like Web Speech API, PDF export, user management, subscription UI, Twist, УПРАВЛЕНИЕ ПРАЙСАМИ, and История were integrated and refined.
 
 -   **/app/frontend/src/App.css**: Contains global and component-specific CSS styles.
     -   **Importance**: Defines the visual appearance.
-    -   **Changes Made**: Heavily modified for aesthetic updates, gradients, typography, and removal of emojis, aligning with the evolving premium SaaS product vision. Green button colors were replaced with purple/lavender.
+    -   **Changes Made**: Modified for aesthetic updates (gradients, typography) aligning with the premium SaaS product vision.
 
 -   **/app/backend/requirements.txt**: Python dependencies for the backend.
     -   **Importance**: Ensures all necessary Python packages are installed.
@@ -101,34 +92,22 @@ options:
 -   **/app/frontend/.env**: Environment variables for the frontend.
     -   **Importance**: Stores the backend URL.
     -   **Changes Made**:  is configured.
-
 </code_architecture>
 
 <pending_tasks>
--   Revert AI model for tech card generation and editing to  for all users for testing purposes.
--   Re-implement and ensure the kitchen equipment selection and adaptation feature (allowing users to specify available kitchen equipment to influence generated recipes) is fully functional and visible for PRO users.
+-   Troubleshoot and fix the Excel/CSV price list upload ( endpoint and frontend ExcelParser) as it currently processes 0 positions.
+-   Implement backend endpoints and corresponding frontend PRO AI modals for Sales Script, Food Pairing, and Photogenics features, as these were removed from the main tech card output.
+-   Ensure real-time recalculation of total cost and portion yield in the ingredient editor upon changing grammage or price.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer was addressing multiple user-reported issues and enhancement requests, primarily focused on refining the Receptor Pro application to a production-ready light-PRO state.
+Immediately before this summary, the AI engineer was engaged in two primary tasks: stabilizing the interactive ingredient editor in the frontend and ensuring correct portion sizing from the backend AI model.
 
-Key areas of focus included:
-1.  **Tech Card Structure and Content Accuracy**:
-    *   **Ingredient Display**: A long-standing issue where ingredients were not consistently appearing in the frontend UI despite being present in the backend response. This led to multiple iterations of debugging and simplified parsing methods. The last fix involved a super simple solution to always show ingredients at the start, regardless of section parsing, which finally made them visible.
-    *   **Pricing and Portion Calculation**: The user reported absurdly high ingredient costs (e.g., butter at 450₽/100g) and incorrect portion sizes (e.g., 200g for a single dessert), with KBJU appearing in the wrong section. The AI engineer was actively refining the backend AI prompt () to enforce accurate market prices, appropriate restaurant portion sizes (80-120g for dessert, 200-300g for main), and correct tech card structure (KBJU as a separate block, clear yield/portion output).
-2.  **Feature Reintegration and Refinement**: After previous  issues caused features to disappear, the engineer worked on restoring and improving:
-    *   **Twist Feature**: Moved from the generation form to operate on an already generated tech card, enabling AI-driven style variations (e.g., Asian style, vegan).
-    *   **История (History)**: Ensured tech cards are auto-saved upon generation and that the history modal correctly displays past cards.
-    *   **Manual Editing**: Ensured interactive ingredient and step editors were functional, including auto-recalculation of total cost when ingredient prices were manually changed.
-    *   **AI Editing**: Confirmed functionality for  and its integration with  endpoint.
-3.  **PRO-Tier Functionality**:
-    *   **УПРАВЛЕНИЕ ПРАЙСАМИ (Price Management)**: Implemented the frontend UI (modal with drag-and-drop, instructions, table for uploaded prices) and the backend logic () to process user-uploaded Excel/CSV files, including data cleaning, categorization, and unit normalization using Pandas and Openpyxl.
-    *   **Loading Animations**: Added spinners and indicators across the UI for better user feedback during generation and editing processes.
-    *   **User Instructions**: Added a ДЛЯ ЛУЧШЕГО РЕЗУЛЬТАТА block with tips for generating better tech cards.
+The interactive ingredient editor in  was significantly refactored. This involved fixing persistent  issues by correctly handling  and adding null/undefined checks across the component's calculation logic. The editor's display was finalized to appear immediately after the tech card description, adhering to the user's explicit request. Its structure was simplified, removing the Цена/единица column, and it now accurately calculates and displays ОБЩИЙ ВЫХОД ПОРЦИИ and СЕБЕСТОИМОСТЬ ПОРЦИИ with a disclaimer. A СОХРАНИТЬ button was also integrated for future functionality.
 
-The application, according to the AI engineer, had reached a production-ready state for the light-PRO version with all key features working and structural issues resolved, including smart price processing and correct tech card structure. However, the user's very last message (Chat Message 641) indicates that some issues persist (ingredients still not showing) and requests to revert the AI model to  for testing and to re-verify/add the kitchen equipment feature. The AI engineer acknowledged these and was just starting to implement the model revert.
+Concurrently, the AI engineer addressed the user's concern about AI-generated tech cards having excessively large portion sizes. The  within  was modified to include more explicit and strict instructions for the GPT model to generate ingredients and calculate for a стандартная ресторанная порция (standard restaurant portion), targeting 150-200g. The last action in the trajectory was testing the frontend after these prompt changes were made. The user confirmed the editor's visual appearance was шикарно but raised the portion size issue, which was then addressed by prompt engineering.
 </current_work>
 
 <optional_next_step>
-Revert the AI model used for tech card generation and editing back to  for all users, and then proceed with verifying and re-implementing the kitchen equipment selection and adaptation feature.
+Verify that the AI model now consistently generates tech cards with correct, standard restaurant portion sizes.
 </optional_next_step>
