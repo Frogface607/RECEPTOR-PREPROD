@@ -1129,6 +1129,14 @@ function App() {
       // Remove all ** formatting
       let cleanLine = line.replace(/\*\*/g, '');
       
+      // Skip unwanted lines
+      if (cleanLine.includes('Сгенерировано RECEPTOR AI') || 
+          cleanLine.includes('экономьте') || 
+          cleanLine.includes('стандартная ресторанная порция') ||
+          cleanLine.trim() === '') {
+        return '';
+      }
+      
       // Format headers
       if (line.startsWith('**') && line.endsWith('**')) {
         const title = cleanLine.replace(':', '').trim();
@@ -1193,7 +1201,7 @@ function App() {
           </div>
           <div>${cleanedContent}</div>
           <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid #E5E7EB; padding-top: 20px;">
-            <p><strong>Сгенерировано RECEPTOR AI</strong></p>
+            <p><strong>Создано в RECEPTOR PRO</strong></p>
             <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
           </div>
         </body>
