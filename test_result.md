@@ -438,6 +438,9 @@ metadata:
 
 test_plan:
   current_focus:
+    - "PRO AI Functions - Sales Script Generation"
+    - "PRO AI Functions - Food Pairing Generation" 
+    - "PRO AI Functions - Photo Tips Generation"
     - "Fix Ingredients Table Display"
     - "Fix Header Formatting"
     - "Implement Interactive Ingredients Editor"
@@ -479,3 +482,5 @@ agent_communication:
     message: "PENDING TASKS VERIFICATION: Confirmed AI model reversion to gpt-4o-mini already implemented in server.py (lines 609, 698). Kitchen equipment feature backend fully implemented with 21 equipment types (lines 106-135). Frontend kitchen equipment UI implemented but needs testing. Ready to test backend functionality and verify both tasks completed."
   - agent: "testing"
     message: "🎯 REVIEW REQUIREMENTS TESTING COMPLETE: Conducted comprehensive testing of both specific review requirements. ✅ AI MODEL VERIFICATION: Confirmed both /api/generate-tech-card and /api/edit-tech-card endpoints use gpt-4o-mini model for all users (FREE and PRO). Generated multiple test tech cards successfully with proper GOLDEN_PROMPT structure, KBJU nutritional info, and correct cost calculations. Minor: Cost section uses '**Себестоимость:**' instead of '💸 Себестоимость' but functionality is correct. ✅ KITCHEN EQUIPMENT FEATURE: All 21 equipment types properly returned across 3 categories (10 cooking + 7 prep + 4 storage). PRO users can successfully update equipment selections. Free users properly blocked with 403 status. Equipment-aware recipe generation working for PRO users. All backend functionality verified and working as specified."
+  - agent: "testing"
+    message: "🎉 PRO AI FUNCTIONS TESTING COMPLETE: Conducted comprehensive testing of all 3 new PRO AI endpoints as specifically requested. ✅ POST /api/generate-sales-script: Working perfectly, generates professional sales scripts with 3 variants (classic, active, premium) using gpt-4o-mini model. ✅ POST /api/generate-food-pairing: Working perfectly, generates comprehensive pairing guide with wines, beers, cocktails, and explanations using gpt-4o-mini model. ✅ POST /api/generate-photo-tips: Working perfectly, generates detailed photography guide with technical settings, styling, and social media tips using gpt-4o-mini model. ✅ All endpoints use gpt-4o-mini model consistently as specified. ✅ PRO subscription validation working correctly - free users blocked with 403 status. ✅ Tested with sample tech card 'Паста Карбонара' as requested. ✅ Prompt quality excellent with professional expertise. ✅ 100% success rate - all PRO AI functions working correctly. Fixed backend issues during testing (shutdown handler, OpenAI client references). All PRO AI functionality ready for production use."
