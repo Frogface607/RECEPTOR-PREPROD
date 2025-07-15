@@ -1104,7 +1104,7 @@ async def generate_photo_tips(request: dict):
 Для каждого совета объясни ПОЧЕМУ это важно для данного конкретного блюда."""
 
     try:
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1500,
