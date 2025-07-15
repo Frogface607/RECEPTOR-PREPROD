@@ -11,6 +11,9 @@ function App() {
   const [cities, setCities] = useState([]);
   const [dishName, setDishName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
   const [techCard, setTechCard] = useState(null);
   const [userTechCards, setUserTechCards] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
