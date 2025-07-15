@@ -485,7 +485,7 @@ function App() {
     
     setIsGenerating(true);
     setLoadingType('photo');
-    const progressInterval = simulateProgress('photo', 5000);
+    const progressInterval = simulateProgress('photo', 10000);
     
     try {
       const response = await axios.post(`${API}/generate-photo-tips`, {
