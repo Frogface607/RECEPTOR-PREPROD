@@ -221,7 +221,7 @@ function App() {
         {/* РЕКОМЕНДАЦИЯ ПОДАЧИ */}
         {serving && (
           <div className="bg-pink-900/20 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-pink-300 mb-2">🍽️ ПОДАЧА</h3>
+            <h3 className="text-xl font-bold text-pink-300 mb-2">ПОДАЧА</h3>
             <p className="text-gray-300">{serving}</p>
           </div>
         )}
