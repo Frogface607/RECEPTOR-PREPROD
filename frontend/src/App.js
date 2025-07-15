@@ -1381,7 +1381,8 @@ function App() {
               >
                 ВОЙТИ
               </button>
-            </div> : showLogin ? (
+            </div>
+          ) : showLogin ? (
             <form onSubmit={handleLogin} className="space-y-6">
               <input
                 type="email"
