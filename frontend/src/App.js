@@ -1445,24 +1445,6 @@ function App() {
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
-                    
-                {/* Instructions Section */}
-                <div className="border-t border-purple-400/30 pt-6 mb-6">
-                  <div className="flex items-center space-x-2 mb-4 cursor-pointer" onClick={() => setShowInstructions(!showInstructions)}>
-                    <span className="text-lg font-bold text-purple-300">ДЛЯ ЛУЧШЕГО РЕЗУЛЬТАТА</span>
-                    <span className="text-purple-300 text-xl">❓</span>
-                  </div>
-                  {showInstructions && (
-                    <div className="bg-gray-800/50 rounded-lg p-4 text-sm text-gray-300 space-y-2">
-                      <p>• <strong>Укажите все подробно:</strong> тип блюда, способ приготовления, желаемый выход готового блюда</p>
-                      <p>• <strong>Себестоимость:</strong> рассчитывается исходя из рыночных цен на 2024 год</p>
-                      <p>• <strong>Проверяйте данные:</strong> нейросеть может ошибаться, стоит проверить расчеты</p>
-                      <p>• <strong>Ручная корректировка:</strong> вы можете все вручную поправить через кнопку "Редактировать"</p>
-                      <p>• <strong>Свой прайс-лист:</strong> загрузите свой прайс-лист для идеального расчета исходя из актуальных цен</p>
-                      <p>• <strong>Пример:</strong> "Стейк из говядины на 4 порции, средней прожарки, общий выход 800г"</p>
-                    </div>
-                  )}
-                </div>
 
                     <form onSubmit={handleGenerateTechCard} className="space-y-6">
                   <div>
