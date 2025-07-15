@@ -1529,7 +1529,7 @@ function App() {
                 {/* ВСТРОЕННЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ */}
                 <div className="mt-8 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-purple-300">🥘 РЕДАКТОР ИНГРЕДИЕНТОВ</h3>
+                    <h3 className="text-xl font-bold text-purple-300">РЕДАКТОР ИНГРЕДИЕНТОВ</h3>
                     <div className="flex space-x-3">
                       <button 
                         onClick={() => {
