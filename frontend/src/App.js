@@ -2066,7 +2066,7 @@ function App() {
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-orange-500/30">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🎲</span>
+                <span className="text-2xl">🔥</span>
               </div>
               <h3 className="text-xl font-bold text-orange-300 mb-4">ТВИСТ НА БЛЮДО</h3>
               <p className="text-gray-300 mb-6 text-sm">
