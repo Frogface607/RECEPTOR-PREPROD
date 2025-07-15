@@ -1314,26 +1314,58 @@ function App() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
         <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md border border-gray-700">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-purple-300 mb-2">RECEPTOR PRO</h1>
-            <p className="text-gray-400">AI для создания техкарт</p>
-          </div>
-
-          {!showRegistration && !showLogin ? (
-            <div className="space-y-6">
-              <button
-                onClick={() => setShowRegistration(true)}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              RECEPTOR <span className="text-purple-400">PRO</span>
+            </h1>
+            <p className="text-gray-300 text-lg mb-8">
+              Нейросеть для создания техкарт для ресторанов
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-purple-300 text-sm font-bold mb-2">
+                ВЫБЕРИТЕ ВАШ ГОРОД
+              </label>
+              <select 
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-purple-400 focus:outline-none"
               >
-                НАЧАТЬ РАБОТУ
-              </button>
-              <button
-                onClick={() => setShowLogin(true)}
-                className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all"
-              >
-                ВОЙТИ
-              </button>
+                <option value="">Выберите город</option>
+                {cities.map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
             </div>
+            
+            <button
+              onClick={() => {
+                if (!selectedCity) {
+                  alert('Пожалуйста, выберите город');
+                  return;
+                }
+                // Создаем тестового пользователя
+                const testUser = {
+                  id: 'test_user_' + Date.now(),
+                  name: 'Тестовый пользователь',
+                  email: 'test@example.com',
+                  city: selectedCity.toLowerCase(),
+                  subscription_plan: 'pro',
+                  monthly_tech_cards_used: 0,
+                  created_at: new Date().toISOString()
+                };
+                setCurrentUser(testUser);
+                localStorage.setItem('receptor_user', JSON.stringify(testUser));
+              }}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+            >
+              НАЧАТЬ ТЕСТИРОВАНИЕ
+            </button>
+            
+            <p className="text-gray-400 text-sm mt-4">
+              Тестовый режим - все функции PRO доступны
+            </p>
+          </div>
           ) : showLogin ? (
             <form onSubmit={handleLogin} className="space-y-6">
               <input
