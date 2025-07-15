@@ -197,7 +197,7 @@ function App() {
         {/* ЗАГОТОВКИ И ХРАНЕНИЕ */}
         {storage && (
           <div className="bg-gray-800/30 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-purple-300 mb-4">📦 ЗАГОТОВКИ И ХРАНЕНИЕ</h3>
+            <h3 className="text-xl font-bold text-purple-300 mb-4">ЗАГОТОВКИ И ХРАНЕНИЕ</h3>
             <div className="space-y-2">
               {storage.split('\n').filter(line => line.trim()).map((line, idx) => (
                 <p key={idx} className="text-gray-300">{line}</p>
