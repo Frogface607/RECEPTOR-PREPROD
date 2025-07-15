@@ -492,7 +492,9 @@ class ChefAuditSystem:
         print("=" * 70)
         
         # Setup
-        self.setup_test_user()
+        if not self.setup_test_user():
+            print("❌ Failed to setup test user. Aborting audit.")
+            return {}
         
         # Run audits for all dishes
         all_results = {}
