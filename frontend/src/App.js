@@ -1398,7 +1398,7 @@ function App() {
                       
                       <button
                         onClick={() => generateFoodPairing()}
-                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm"
                       >
                         ФУДПЕЙРИНГ
                       </button>
