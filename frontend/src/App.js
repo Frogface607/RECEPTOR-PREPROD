@@ -1495,7 +1495,7 @@ function App() {
                   <button
                     type="submit"
                     disabled={!dishName.trim() || isGenerating}
-                    className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center`}
                   >
                     {isGenerating ? (
                       <>
