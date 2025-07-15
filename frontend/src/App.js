@@ -353,10 +353,9 @@ function App() {
         user_id: currentUser.id
       });
       
-      // Показываем результат в модальном окне
-      setProAIResult(response.data.script);
-      setProAITitle("🎭 СКРИПТ ПРОДАЖ ДЛЯ ОФИЦИАНТА");
-      setShowProAIModal(true);
+      // Показываем результат в отдельном модальном окне
+      setSalesScriptResult(response.data.script);
+      setShowSalesScriptModal(true);
       
     } catch (error) {
       console.error('Error generating sales script:', error);
@@ -376,9 +375,8 @@ function App() {
         user_id: currentUser.id
       });
       
-      setProAIResult(response.data.pairing);
-      setProAITitle("ФУДПЕЙРИНГ И СОЧЕТАНИЯ");
-      setShowProAIModal(true);
+      setFoodPairingResult(response.data.pairing);
+      setShowFoodPairingModal(true);
       
     } catch (error) {
       console.error('Error generating food pairing:', error);
@@ -398,9 +396,8 @@ function App() {
         user_id: currentUser.id
       });
       
-      setProAIResult(response.data.tips);
-      setProAITitle("СОВЕТЫ ПО ФОТОГРАФИИ БЛЮДА");
-      setShowProAIModal(true);
+      setPhotoTipsResult(response.data.tips);
+      setShowPhotoTipsModal(true);
       
     } catch (error) {
       console.error('Error generating photo tips:', error);
