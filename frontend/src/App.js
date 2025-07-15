@@ -1015,6 +1015,15 @@ function App() {
       console.log('Parsed ingredients:', parsedIngredients);
       setCurrentIngredients(parsedIngredients);
       
+      // Инициализируем редактируемые ингредиенты и этапы
+      setEditableIngredients(parsedIngredients);
+      
+      // Парсим этапы для редактирования
+      const stepsLines = data.tech_card.split('\n').filter(line => 
+        line.trim().match(/^\d+\./)
+      );
+      setEditableSteps(stepsLines);
+      
       // Добавляем в историю
       await fetchUserHistory();
       
