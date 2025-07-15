@@ -115,9 +115,13 @@ function App() {
           <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-purple-300 mb-4">ИНГРЕДИЕНТЫ</h3>
             <div className="space-y-2">
-              {ingredients.split('\n').filter(line => line.trim()).map((line, idx) => (
-                <p key={idx} className="text-gray-300">{line}</p>
-              ))}
+              {ingredients.split('\n').filter(line => line.trim()).map((line, idx) => {
+                // Убираем цены из строки ингредиентов (формат: "- Название — количество — ~цена ₽")
+                const cleanLine = line.replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/, '');
+                return (
+                  <p key={idx} className="text-gray-300">{cleanLine}</p>
+                );
+              })}
             </div>
           </div>
         )}
