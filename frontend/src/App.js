@@ -117,7 +117,7 @@ function App() {
     return messages[type] || messages.techcard;
   };
 
-  const simulateProgress = (type, duration = 8000) => {
+  const simulateProgress = (type, duration = 15000) => {
     const messages = getLoadingMessages(type);
     const totalSteps = messages.length;
     const stepDuration = duration / totalSteps;
