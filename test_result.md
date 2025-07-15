@@ -199,6 +199,8 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 COMPREHENSIVE CHEF AUDIT COMPLETED: Conducted professional quality assessment of Receptor Pro system as requested. ✅ TESTED 5 REPRESENTATIVE DISHES: Паста Карбонара (simple), Ризотто с грибами трюфелем (medium), Beef Wellington (complex), Том ям (regional), Тартар из тунца (modern). ✅ OVERALL RATING: 4.3/5 stars - Excellent quality, ready for professional use. ✅ DETAILED EVALUATION: Technical correctness, culinary logic, practicality, and content quality all assessed. ✅ PRO AI FUNCTIONS: All 3 functions (sales scripts, food pairing, photo tips) working perfectly 5/5 success rate. ✅ KEY FINDINGS: System generates high-quality tech cards at Michelin level for complex dishes, professional level for others. ⚠️ MAIN ISSUE IDENTIFIED: Forbidden phrase 'стандартная ресторанная порция' still appears in all generated tech cards despite golden prompt updates. ✅ CULINARY ACCURACY: Good overall, with minor issues like cream in Carbonara and missing authentic ingredients in regional dishes. ✅ PORTION SIZES: Generally correct for main dishes (200-300g), some adjustment needed for appetizers. ✅ PROFESSIONAL ASSESSMENT: System ready for restaurant use with excellent AI model performance using gpt-4o-mini."
+        
+  - task: "Complete Backend API Testing"
     implemented: true
     working: true
     file: "backend/server.py"
@@ -207,13 +209,10 @@ backend:
     needs_retesting: false
     status_history:
       - working: true
-        agent: "main"
-        comment: "Kitchen equipment feature fully implemented on backend with 21 equipment types, PRO user restrictions, and equipment-aware recipe generation. Backend testing confirmed all endpoints working correctly."
-      - working: true
         agent: "testing"
-        comment: "REVIEW REQUIREMENT 2 VERIFIED: ✅ GET /api/kitchen-equipment returns all 21 equipment types correctly across 3 categories (10 cooking methods + 7 prep equipment + 4 storage). ✅ POST /api/update-kitchen-equipment/{user_id} works perfectly for PRO users with proper equipment selection and storage. ✅ Free users are properly blocked from kitchen equipment features with 403 status and appropriate error message. ✅ Equipment-aware tech card generation working for PRO users - equipment context is integrated into recipe generation. ✅ All equipment items properly structured with id, name, and category fields. ✅ PRO subscription restrictions enforced correctly. All backend kitchen equipment functionality verified and working as specified."
+        comment: "🚀 COMPREHENSIVE BACKEND API TESTING COMPLETED: Executed full test suite covering all backend functionality. ✅ USER MANAGEMENT: Registration, authentication, and user retrieval working correctly. ✅ SUBSCRIPTION SYSTEM: All 4 tiers (Free, Starter, PRO, Business) properly configured with correct limits and features. ✅ KITCHEN EQUIPMENT: All 21 equipment types across 3 categories properly returned, PRO user restrictions enforced correctly. ✅ TECH CARD GENERATION: Core functionality working with proper AI model (gpt-4o-mini), regional pricing, and equipment-aware generation for PRO users. ✅ USAGE LIMITS: Free tier (3 cards/month), Starter (25 cards/month), PRO/Business (unlimited) all enforced correctly. ✅ PRO FEATURES: Kitchen equipment updates, sales scripts, food pairing, and photo tips all functional. ✅ DATA PERSISTENCE: Tech cards properly saved and retrieved, history functionality working. ✅ API ENDPOINTS: All endpoints responding correctly with proper status codes and error handling. ✅ SUBSCRIPTION UPGRADES: Users can successfully upgrade between tiers with proper feature access. ✅ EQUIPMENT-AWARE GENERATION: PRO users receive recipes adapted to their selected kitchen equipment. All backend functionality verified and working as specified."
         
-  - task: "Kitchen Equipment Feature Frontend"
+  - task: "Kitchen Equipment Feature Backend"
     implemented: true
     working: "NA"
     file: "frontend/src/App.js"
