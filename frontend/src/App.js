@@ -82,7 +82,7 @@ function App() {
     const ingredients = extractSection(/\*\*Ингредиенты:\*\*.*?\n\n(.*?)(?=\n\n|\*\*)/s);
     const recipe = extractSection(/\*\*Пошаговый рецепт:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
     const time = extractSection(/\*\*Время:\*\*\s*(.*?)(?=\n|$)/);
-    const yield = extractSection(/\*\*Выход:\*\*\s*(.*?)(?=\n|$)/);
+    const yieldAmount = extractSection(/\*\*Выход:\*\*\s*(.*?)(?=\n|$)/);
     const portion = extractSection(/\*\*Порция:\*\*\s*(.*?)(?=\n|$)/);
     const cost = extractSection(/\*\*Себестоимость:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
     const kbzhu1 = extractSection(/\*\*КБЖУ на 1 порцию:\*\*\s*(.*?)(?=\n|$)/);
