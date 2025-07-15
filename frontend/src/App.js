@@ -127,7 +127,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {time && (
               <div className="bg-blue-900/20 rounded-lg p-4 text-center">
-                <h4 className="text-blue-300 font-bold mb-2">⏰ ВРЕМЯ</h4>
+                <h4 className="text-blue-300 font-bold mb-2">ВРЕМЯ</h4>
                 <p className="text-gray-300">{time}</p>
               </div>
             )}
