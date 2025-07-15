@@ -1558,6 +1558,191 @@ function App() {
                   {formatTechCard(techCard)}
                 </div>
                 
+                {/* ВСТРОЕННЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ */}
+                <div className="mt-8 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-purple-300">🥘 РЕДАКТОР ИНГРЕДИЕНТОВ</h3>
+                    <div className="flex space-x-3">
+                      <button 
+                        onClick={() => {
+                          setCurrentIngredients([...currentIngredients, { 
+                            name: '', 
+                            quantity: '', 
+                            price: '',
+                            id: Date.now() 
+                          }]);
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-2"
+                      >
+                        <span>+</span>
+                        <span>ДОБАВИТЬ</span>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          // Логика сохранения изменений в техкарту
+                          console.log('Сохраняем изменения ингредиентов:', currentIngredients);
+                          
+                          // Обновляем техкарту с новыми ингредиентами
+                          const lines = techCard.split('\n');
+                          const newLines = [];
+                          let inIngredientsSection = false;
+                          
+                          for (let i = 0; i < lines.length; i++) {
+                            const line = lines[i];
+                            
+                            if (line.includes('**Ингредиенты:**')) {
+                              inIngredientsSection = true;
+                              newLines.push(line);
+                              newLines.push('');
+                              
+                              // Добавляем обновленные ингредиенты
+                              currentIngredients.forEach(ing => {
+                                newLines.push(`- ${ing.name} — ${ing.quantity} ${ing.unit} — ~${Math.round(parseFloat(ing.totalPrice) || 0)} ₽`);
+                              });
+                              continue;
+                            }
+                            
+                            if (inIngredientsSection && line.startsWith('- ') && line.includes('₽')) {
+                              // Пропускаем старые строки ингредиентов
+                              continue;
+                            }
+                            
+                            if (inIngredientsSection && line.startsWith('**') && !line.includes('Ингредиенты')) {
+                              inIngredientsSection = false;
+                            }
+                            
+                            newLines.push(line);
+                          }
+                          
+                          setTechCard(newLines.join('\n'));
+                          alert('Изменения ингредиентов сохранены!');
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-2"
+                      >
+                        <span>💾</span>
+                        <span>СОХРАНИТЬ</span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {currentIngredients.length === 0 ? (
+                      <div className="text-center py-8 text-gray-400">
+                        <p className="mb-4">Ингредиенты из техкарты появятся здесь автоматически</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-12 gap-3 text-sm font-bold text-purple-300 border-b border-purple-400/30 pb-2">
+                          <span className="col-span-1">#</span>
+                          <span className="col-span-6">ИНГРЕДИЕНТ</span>
+                          <span className="col-span-3">КОЛИЧЕСТВО</span>
+                          <span className="col-span-1">СТОИМОСТЬ</span>
+                          <span className="col-span-1">✕</span>
+                        </div>
+                        {currentIngredients.map((ingredient, index) => (
+                          <div key={ingredient.id || index} className="grid grid-cols-12 gap-3 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
+                            <span className="col-span-1 text-purple-400 font-bold flex items-center justify-center">
+                              {index + 1}.
+                            </span>
+                            <input
+                              type="text"
+                              value={ingredient.name}
+                              onChange={(e) => {
+                                const newIngredients = [...currentIngredients];
+                                newIngredients[index].name = e.target.value;
+                                setCurrentIngredients(newIngredients);
+                              }}
+                              placeholder="Название ингредиента"
+                              className="col-span-6 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                            />
+                            <input
+                              type="text"
+                              value={`${ingredient.quantity || ''} ${ingredient.unit || 'г'}`}
+                              onChange={(e) => {
+                                const newIngredients = [...currentIngredients];
+                                const value = e.target.value;
+                                // Парсим количество и единицу
+                                const match = value.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт|штук)?/);
+                                if (match) {
+                                  newIngredients[index].quantity = match[1];
+                                  newIngredients[index].unit = match[2] || 'г';
+                                  
+                                  // Пересчитаем стоимость на основе изначальной цены за единицу
+                                  const newQty = parseFloat(match[1]) || 0;
+                                  const originalQty = parseFloat(ingredient.originalQuantity) || parseFloat(ingredient.quantity) || 1;
+                                  const originalPrice = parseFloat(ingredient.originalPrice) || parseFloat(ingredient.totalPrice) || 0;
+                                  
+                                  // Пропорциональный пересчет
+                                  newIngredients[index].totalPrice = ((originalPrice / originalQty) * newQty).toFixed(1);
+                                }
+                                setCurrentIngredients(newIngredients);
+                              }}
+                              placeholder="250 г"
+                              className="col-span-3 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                            />
+                            <div className="col-span-1 flex items-center justify-center">
+                              <span className="text-green-400 font-bold text-sm">
+                                {Math.round(parseFloat(ingredient.totalPrice) || 0)} ₽
+                              </span>
+                            </div>
+                            <button 
+                              onClick={() => {
+                                const newIngredients = currentIngredients.filter((_, i) => i !== index);
+                                setCurrentIngredients(newIngredients);
+                              }}
+                              className="col-span-1 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center text-lg"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                  
+                  {currentIngredients.length > 0 && (
+                    <div className="mt-6 p-4 bg-gray-800/30 rounded-lg border border-green-400/30">
+                      <div className="grid grid-cols-3 gap-6 text-center">
+                        <div>
+                          <div className="text-gray-400 text-sm mb-1">ОБЩИЙ ВЫХОД ПОРЦИИ</div>
+                          <div className="text-blue-400 font-bold text-xl">
+                            {currentIngredients.reduce((total, ing) => {
+                              return total + (parseFloat(ing.quantity) || 0);
+                            }, 0).toFixed(0)} г
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-gray-400 text-sm mb-1">СЕБЕСТОИМОСТЬ ПОРЦИИ</div>
+                          <div className="text-green-400 font-bold text-xl">
+                            {Math.round(currentIngredients.reduce((total, ing) => {
+                              return total + (parseFloat(ing.totalPrice) || 0);
+                            }, 0))} ₽
+                          </div>
+                          <div className="text-gray-500 text-xs mt-1">
+                            *Примерная себестоимость
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-gray-400 text-sm mb-1">РЕКОМЕНДУЕМАЯ ЦЕНА</div>
+                          <div className="text-purple-400 font-bold text-xl">
+                            {Math.round(currentIngredients.reduce((total, ing) => {
+                              return total + (parseFloat(ing.totalPrice) || 0);
+                            }, 0) * 3)} ₽
+                          </div>
+                          <div className="text-gray-500 text-xs mt-1">
+                            Маржа 200%
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 text-xs text-gray-500 text-center">
+                        💡 Стоимость рассчитывается на основе рыночных цен + региональный коэффициент + инфляция
+                      </div>
+                    </div>
+                  )}
+                </div>
 
               </div>
             ) : (
