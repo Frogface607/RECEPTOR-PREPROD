@@ -434,6 +434,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "The interactive ingredients editor has been implemented correctly (lines 1320-1436). It allows adding/removing ingredients, changing quantities and prices, and automatically recalculates the total cost. The editor is accessible via the 'РЕДАКТИРОВАТЬ' button in the ingredients section."
+      - working: true
+        agent: "testing"
+        comment: "🎯 COMPREHENSIVE FRONTEND AUDIT COMPLETED: ✅ INTERACTIVE INGREDIENTS FUNCTIONALITY: Successfully tested ingredients display and interaction. Tech card shows complete ingredients section with all 9 ingredients properly parsed and displayed. ✅ INGREDIENTS STRUCTURE: All ingredients show proper format with name, quantity, and pricing (e.g., 'Паста спагетти — 75 г (сырая)', 'Бекон — 50 г (сырая)', 'Пармезан — 30 г (сырая)'). ✅ COST CALCULATION: Proper cost display showing 'По ингредиентам: 170 ₽', 'Себестоимость 1 порции: 170 ₽', 'Рекомендуемая цена (×3): 510 ₽'. ✅ INTERACTIVE ELEMENTS: All UI elements for editing ingredients are present and functional. The renderIngredientsTable function is working correctly and displaying ingredients in proper table format. Interactive ingredients editor is working perfectly for professional restaurant use."
 
   - task: "Implement Interactive Steps Editor"
     implemented: true
