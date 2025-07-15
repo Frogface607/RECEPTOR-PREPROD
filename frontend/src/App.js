@@ -387,7 +387,7 @@ function App() {
       });
       
       setProAIResult(response.data.tips);
-      setProAITitle("📸 СОВЕТЫ ПО ФОТОГРАФИИ БЛЮДА");
+      setProAITitle("СОВЕТЫ ПО ФОТОГРАФИИ БЛЮДА");
       setShowProAIModal(true);
       
     } catch (error) {
