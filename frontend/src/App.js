@@ -48,6 +48,14 @@ function App() {
   const [showProAIModal, setShowProAIModal] = useState(false);
   const [proAIResult, setProAIResult] = useState('');
   const [proAITitle, setProAITitle] = useState('');
+  
+  // Separate states for PRO AI modals
+  const [showSalesScriptModal, setShowSalesScriptModal] = useState(false);
+  const [salesScriptResult, setSalesScriptResult] = useState('');
+  const [showFoodPairingModal, setShowFoodPairingModal] = useState(false);
+  const [foodPairingResult, setFoodPairingResult] = useState('');
+  const [showPhotoTipsModal, setShowPhotoTipsModal] = useState(false);
+  const [photoTipsResult, setPhotoTipsResult] = useState('');
 
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
