@@ -149,7 +149,7 @@ function App() {
         {/* СЕБЕСТОИМОСТЬ */}
         {cost && (
           <div className="bg-green-900/20 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-green-300 mb-4">💰 СЕБЕСТОИМОСТЬ</h3>
+            <h3 className="text-xl font-bold text-green-300 mb-4">СЕБЕСТОИМОСТЬ</h3>
             <div className="space-y-1">
               {cost.split('\n').filter(line => line.trim()).map((line, idx) => (
                 <p key={idx} className="text-gray-300">{line}</p>
