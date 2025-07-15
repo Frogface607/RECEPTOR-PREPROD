@@ -189,7 +189,7 @@ function App() {
         {/* АЛЛЕРГЕНЫ */}
         {allergens && (
           <div className="bg-red-900/20 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-red-300 mb-2">⚠️ АЛЛЕРГЕНЫ</h3>
+            <h3 className="text-xl font-bold text-red-300 mb-2">АЛЛЕРГЕНЫ</h3>
             <p className="text-gray-300">{allergens}</p>
           </div>
         )}
