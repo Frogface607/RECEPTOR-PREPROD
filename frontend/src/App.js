@@ -1316,10 +1316,13 @@ function App() {
         <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md border border-gray-700">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-4">
-              RECEPTOR <span className="text-purple-400">PRO</span>
+              RECEPTOR <span className="text-purple-400">PRO</span> <span className="text-yellow-400 text-2xl">Beta</span>
             </h1>
-            <p className="text-gray-300 text-lg mb-8">
+            <p className="text-gray-300 text-lg mb-2">
               Нейросеть для создания техкарт для ресторанов
+            </p>
+            <p className="text-yellow-400 text-sm mb-8">
+              🧪 Тестовая версия для получения обратной связи
             </p>
             
             <div className="mb-6">
