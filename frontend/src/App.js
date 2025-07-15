@@ -969,7 +969,7 @@ function App() {
       setCurrentIngredients(parsedIngredients);
       
       // Добавляем в историю
-      await refreshUserHistory();
+      await fetchUserHistory();
       
       // Завершаем анимацию
       clearInterval(progressInterval);
