@@ -1037,7 +1037,7 @@ function App() {
         setLoadingProgress(0);
         setLoadingMessage('');
         setLoadingType('');
-      }, 1000);
+      }, 2000);
       
     } catch (error) {
       console.error('Error generating tech card:', error);
