@@ -2346,10 +2346,118 @@ function App() {
                 onClick={() => navigator.clipboard.writeText(proAIResult)}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
               >
-                📋 КОПИРОВАТЬ
+                КОПИРОВАТЬ
               </button>
               <button
                 onClick={() => setShowProAIModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sales Script Modal */}
+      {showSalesScriptModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-purple-300">СКРИПТ ПРОДАЖ ДЛЯ ОФИЦИАНТА</h3>
+              <button
+                onClick={() => setShowSalesScriptModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-6">
+              <div className="text-gray-200 whitespace-pre-line">{salesScriptResult}</div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => navigator.clipboard.writeText(salesScriptResult)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                КОПИРОВАТЬ
+              </button>
+              <button
+                onClick={() => setShowSalesScriptModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Food Pairing Modal */}
+      {showFoodPairingModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-purple-300">ФУДПЕЙРИНГ И СОЧЕТАНИЯ</h3>
+              <button
+                onClick={() => setShowFoodPairingModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-6">
+              <div className="text-gray-200 whitespace-pre-line">{foodPairingResult}</div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => navigator.clipboard.writeText(foodPairingResult)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                КОПИРОВАТЬ
+              </button>
+              <button
+                onClick={() => setShowFoodPairingModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Tips Modal */}
+      {showPhotoTipsModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-purple-300">СОВЕТЫ ПО ФОТОГРАФИИ БЛЮДА</h3>
+              <button
+                onClick={() => setShowPhotoTipsModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-6">
+              <div className="text-gray-200 whitespace-pre-line">{photoTipsResult}</div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => navigator.clipboard.writeText(photoTipsResult)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                КОПИРОВАТЬ
+              </button>
+              <button
+                onClick={() => setShowPhotoTipsModal(false)}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
               >
                 ЗАКРЫТЬ
