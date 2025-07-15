@@ -1367,7 +1367,7 @@ function App() {
             </button>
             
             <p className="text-gray-400 text-sm mt-4">
-              Тестовый режим - все функции PRO доступны
+              🧪 RECEPTOR PRO Beta - тестируйте все функции бесплатно!
             </p>
           </div>
 
