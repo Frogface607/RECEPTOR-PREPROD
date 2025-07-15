@@ -950,7 +950,7 @@ function App() {
     // Запускаем анимированную загрузку
     setIsGenerating(true);
     setLoadingType('techcard');
-    const progressInterval = simulateProgress('techcard', 8000);
+    const progressInterval = simulateProgress('techcard', 15000);
     
     try {
       console.log('Sending request to:', `${API}/generate-tech-card`);
