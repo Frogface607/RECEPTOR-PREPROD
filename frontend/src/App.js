@@ -1464,7 +1464,9 @@ function App() {
       {/* Header */}
       <header className="border-b border-purple-400/30 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-purple-300">RECEPTOR PRO</h1>
+          <h1 className="text-3xl font-bold text-purple-300">
+            RECEPTOR PRO <span className="text-yellow-400 text-xl">Beta</span>
+          </h1>
           
           {/* Subscription Info */}
           <div className="flex items-center space-x-4">
