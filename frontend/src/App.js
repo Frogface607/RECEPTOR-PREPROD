@@ -77,7 +77,69 @@ function App() {
     city: ''
   });
 
-  // Простая функция форматирования техкарты
+  // Animated loading messages
+  const getLoadingMessages = (type) => {
+    const messages = {
+      techcard: [
+        "🛒 Иду на виртуальный рынок за продуктами...",
+        "⚖️ Взвешиваю ингредиенты на точных весах...",
+        "👨‍🍳 Консультируюсь с нейрошефом...",
+        "🧮 Считаю себестоимость и прибыль...",
+        "📋 Пишу пошаговый рецепт...",
+        "🔥 Рассчитываю время приготовления...",
+        "🎨 Добавляю последние штрихи...",
+        "✨ Техкарта почти готова!"
+      ],
+      sales: [
+        "🎭 Изучаю психологию клиента...",
+        "💬 Придумываю убойные фразы...",
+        "🎯 Настраиваю скрипт на целевую аудиторию...",
+        "🔥 Добавляю эмоциональные триггеры...",
+        "💡 Готовлю ответы на возражения...",
+        "✨ Скрипт продаж готов!"
+      ],
+      pairing: [
+        "🍷 Дегустирую вина в виртуальном погребе...",
+        "🧀 Подбираю идеальные сочетания...",
+        "📚 Консультируюсь с сомелье...",
+        "🎨 Создаю баланс вкусов...",
+        "⚗️ Анализирую химию вкуса...",
+        "✨ Фудпейринг готов!"
+      ],
+      photo: [
+        "📸 Настраиваю виртуальную камеру...",
+        "💡 Выбираю идеальное освещение...",
+        "🎨 Подбираю лучший ракурс...",
+        "🍽️ Создаю композицию кадра...",
+        "✨ Советы по фото готовы!"
+      ]
+    };
+    return messages[type] || messages.techcard;
+  };
+
+  const simulateProgress = (type, duration = 8000) => {
+    const messages = getLoadingMessages(type);
+    const totalSteps = messages.length;
+    const stepDuration = duration / totalSteps;
+    
+    setLoadingProgress(0);
+    setLoadingMessage(messages[0]);
+    
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      currentStep++;
+      const progress = (currentStep / totalSteps) * 100;
+      setLoadingProgress(progress);
+      
+      if (currentStep < totalSteps) {
+        setLoadingMessage(messages[currentStep]);
+      } else {
+        clearInterval(interval);
+      }
+    }, stepDuration);
+    
+    return interval;
+  };
   const formatTechCard = (content) => {
     if (!content) return null;
 
