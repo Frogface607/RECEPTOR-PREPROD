@@ -178,7 +178,7 @@ function App() {
         {/* КБЖУ */}
         {(kbzhu1 || kbzhu100) && (
           <div className="bg-yellow-900/20 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-yellow-300 mb-4">📊 КБЖУ</h3>
+            <h3 className="text-xl font-bold text-yellow-300 mb-4">КБЖУ</h3>
             <div className="space-y-2">
               {kbzhu1 && <p className="text-gray-300"><strong>На 1 порцию:</strong> {kbzhu1}</p>}
               {kbzhu100 && <p className="text-gray-300"><strong>На 100 г:</strong> {kbzhu100}</p>}
