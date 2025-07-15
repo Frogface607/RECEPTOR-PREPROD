@@ -365,7 +365,7 @@ function App() {
       });
       
       setProAIResult(response.data.pairing);
-      setProAITitle("🍷 ФУДПЕЙРИНГ И СОЧЕТАНИЯ");
+      setProAITitle("ФУДПЕЙРИНГ И СОЧЕТАНИЯ");
       setShowProAIModal(true);
       
     } catch (error) {
