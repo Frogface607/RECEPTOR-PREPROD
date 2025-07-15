@@ -467,7 +467,7 @@ function App() {
         setLoadingMessage('');
         setLoadingType('');
         setShowFoodPairingModal(true);
-      }, 1000);
+      }, 2000);
       
     } catch (error) {
       console.error('Error generating food pairing:', error);
