@@ -2031,7 +2031,7 @@ function App() {
             
             {/* Instructions */}
             <div className="bg-blue-600/20 rounded-lg p-4 mb-6">
-              <h4 className="text-blue-300 font-bold mb-2">💡 УМНАЯ ОБРАБОТКА:</h4>
+              <h4 className="text-blue-300 font-bold mb-2">УМНАЯ ОБРАБОТКА:</h4>
               <ul className="text-blue-200 text-sm space-y-1">
                 <li>• <strong>Автоочистка:</strong> удаляет спецсимволы, исправляет сокращения</li>
                 <li>• <strong>Категоризация:</strong> автоматически сортирует по типам продуктов</li>
