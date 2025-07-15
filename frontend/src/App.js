@@ -133,7 +133,7 @@ function App() {
             )}
             {yieldAmount && (
               <div className="bg-green-900/20 rounded-lg p-4 text-center">
-                <h4 className="text-green-300 font-bold mb-2">📏 ВЫХОД</h4>
+                <h4 className="text-green-300 font-bold mb-2">ВЫХОД</h4>
                 <p className="text-gray-300">{yieldAmount}</p>
               </div>
             )}
