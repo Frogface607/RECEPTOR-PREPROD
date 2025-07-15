@@ -891,78 +891,106 @@ function App() {
     console.log('Current user:', currentUser);
     
     if (!dishName.trim()) {
-      console.log('No dish name provided');
+      alert('Пожалуйста, введите название блюда');
       return;
     }
-
+    
+    if (!currentUser?.id) {
+      alert('Пожалуйста, войдите в систему');
+      return;
+    }
+    
+    // Запускаем анимированную загрузку
     setIsGenerating(true);
+    setLoadingType('techcard');
+    const progressInterval = simulateProgress('techcard', 8000);
+    
     try {
       console.log('Sending request to:', `${API}/generate-tech-card`);
-      const response = await axios.post(`${API}/generate-tech-card`, {
+      const requestData = {
         dish_name: dishName,
-        user_id: currentUser.id
+        user_id: currentUser.id,
+        city: currentUser.city || 'москва'
+      };
+      
+      const response = await fetch(`${API}/generate-tech-card`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
       });
       
-      console.log('Tech card generation response:', response.data);
-      setTechCard(response.data.tech_card);
-      setCurrentTechCardId(response.data.id);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      // Add to history
-      fetchUserHistory();
-      // Parse ingredients and steps for editing
-      const lines = response.data.tech_card.split('\n');
-      const ingredients = [];
-      const steps = [];
+      const data = await response.json();
+      console.log('Tech card generation response:', data);
       
-      lines.forEach(line => {
-        // Parse ingredients
-        if (line.startsWith('- ') && line.includes('₽')) {
-          const parts = line.replace('- ', '').split(' — ');
-          if (parts.length >= 3) {
-            const name = parts[0].trim();
-            const quantityStr = parts[1].trim(); // "250 г" или "300 мл"
-            const priceStr = parts[2].trim(); // "~800 ₽"
-            
-            // Парсим количество и единицы измерения
-            const quantityMatch = quantityStr.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт)/);
-            const quantity = quantityMatch ? quantityMatch[1] : '100';
-            const unit = quantityMatch ? quantityMatch[2] : 'г';
-            
-            // Парсим цену
-            const priceMatch = priceStr.match(/(\d+(?:\.\d+)?)/);
-            const totalPrice = priceMatch ? priceMatch[1] : '0';
-            
-            // Рассчитываем цену за единицу
-            const pricePerUnit = parseFloat(totalPrice) / parseFloat(quantity);
-            
-            ingredients.push({
-              name: name,
-              quantity: quantity,
-              unit: unit,
-              originalQuantity: quantity, // Сохраняем оригинальное количество
-              originalPrice: totalPrice,  // Сохраняем оригинальную цену
-              totalPrice: totalPrice,
-              id: Date.now() + Math.random() + ingredients.length
-            });
-          }
+      setTechCard(data.tech_card);
+      
+      // Парсим ингредиенты для редактора
+      const ingredientsText = data.tech_card;
+      const ingredientLines = ingredientsText.split('\n').filter(line => 
+        line.trim().startsWith('- ') && line.includes('—') && line.includes('₽')
+      );
+      
+      const parsedIngredients = ingredientLines.map((line, index) => {
+        const parts = line.split('—').map(part => part.trim());
+        if (parts.length >= 3) {
+          const name = parts[0].replace(/^-\s*/, '').trim();
+          const quantityPart = parts[1].trim();
+          const pricePart = parts[2].replace(/[~₽]/g, '').trim();
+          
+          // Парсим количество и единицу
+          const quantityMatch = quantityPart.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]*|г|кг|мл|л|шт|штук)?/);
+          const quantity = quantityMatch ? quantityMatch[1] : '100';
+          const unit = quantityMatch ? (quantityMatch[2] || 'г') : 'г';
+          
+          const totalPrice = parseFloat(pricePart) || 0;
+          const pricePerUnit = parseFloat(totalPrice) / parseFloat(quantity);
+          
+          return {
+            id: index + 1,
+            name,
+            quantity,
+            unit,
+            unitPrice: pricePerUnit.toFixed(2),
+            totalPrice: totalPrice.toFixed(1),
+            originalQuantity: quantity,
+            originalPrice: totalPrice.toFixed(1)
+          };
         }
-        
-        // Parse numbered steps
-        if (line.match(/^\d+\./)) {
-          steps.push(line);
-        }
-      });
+        return null;
+      }).filter(Boolean);
       
-      // Загружаем парсированные ингредиенты в редактор
-      setCurrentIngredients(ingredients);
-      setEditableIngredients(ingredients);
-      setEditableSteps(steps);
+      console.log('Parsed ingredients:', parsedIngredients);
+      setCurrentIngredients(parsedIngredients);
+      
+      // Добавляем в историю
+      await refreshUserHistory();
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('✨ Техкарта готова!');
+      
+      setTimeout(() => {
+        setIsGenerating(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+      }, 1000);
       
     } catch (error) {
       console.error('Error generating tech card:', error);
-      alert('Ошибка при генерации техкарты');
-    } finally {
+      clearInterval(progressInterval);
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при генерации техкарты. Попробуйте еще раз.');
     }
   };
 
