@@ -66,199 +66,167 @@ function App() {
     city: ''
   });
 
-  // Enhanced tech card formatter with debug
+  // Простая функция форматирования техкарты
   const formatTechCard = (content) => {
-    console.log('=== DEBUG: Full content ===');
-    console.log(content);
-    console.log('=== END DEBUG ===');
-    
-    const lines = content.split('\n');
-    const result = [];
-    
-    for (let index = 0; index < lines.length; index++) {
-      const line = lines[index].trim();
-      
-      console.log(`🔍 LINE ${index}:`, `"${line}"`); // ОТЛАДКА ВСЕХ СТРОК
-      
-      // Main title - FIXED to show dish name 
-      if (line.includes('**Название:**') || (line.startsWith('**') && line.includes('Название'))) {
-        let title = line.replace(/\*\*/g, '').replace('Название:', '').replace('Название:', '').trim();
-        console.log('Found title line:', line);
-        console.log('Extracted title:', title);
-        if (title) {
-          result.push(
-            <div key={index} className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-purple-300 mb-4 animate-pulse">{title}</h1>
-            </div>
-          );
-        }
-        continue;
-      }
-      
-      // Section headers - clean format without stars
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const title = line.replace(/\*\*/g, '').replace(':', '').trim();
-        if (title && !title.includes('Название')) {
-          result.push(
-            <h2 key={index} className="text-2xl font-bold text-purple-400 mt-8 mb-4 border-b-2 border-purple-400 pb-2 uppercase tracking-wide">
-              {title}
-            </h2>
-          );
-        }
-        continue;
-      }
-      
-      // Description section
-      if (line.includes('**Описание:**')) {
-        const descriptionLine = line.replace(/\*\*/g, '').replace('Описание:', '').trim();
-        if (descriptionLine) {
-          result.push(
-            <div key={index} className="my-6">
-              <h3 className="text-lg font-bold text-purple-400 mb-3 uppercase tracking-wide">
-                ОПИСАНИЕ
-              </h3>
-              <p className="text-gray-300 leading-relaxed bg-gray-800/30 p-4 rounded-lg">
-                {descriptionLine}
-              </p>
-            </div>
-          );
-        }
-        continue;
-      }
-      
-      // Category section
-      if (line.includes('**Категория:**')) {
-        const categoryLine = line.replace(/\*\*/g, '').replace('Категория:', '').trim();
-        if (categoryLine) {
-          result.push(
-            <div key={index} className="my-4">
-              <span className="inline-block bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold uppercase">
-                {categoryLine}
-              </span>
-            </div>
-          );
-        }
-        continue;
-      }
-      
-      // Ingredients section - now handled by the main ingredients editor
-      if (line.includes('Ингредиенты') || line.includes('**Ингредиенты:**')) {
-        const ingredientLines = [];
-        let currentIndex = index + 1;
-        
-        // Собираем все строки ингредиентов
-        while (currentIndex < lines.length && 
-               (lines[currentIndex].trim().startsWith('-') || 
-                lines[currentIndex].trim().startsWith('*') ||
-                lines[currentIndex].trim() === '')) {
-          if (lines[currentIndex].trim().startsWith('-')) {
-            ingredientLines.push(lines[currentIndex]);
-          }
-          currentIndex++;
-        }
-        
-        // Отображаем секцию ингредиентов как обычный текст
-        result.push(
-          <div key={index} className="my-4">
+    if (!content) return null;
+
+    // Извлекаем основные секции с помощью regex
+    const extractSection = (pattern) => {
+      const match = content.match(pattern);
+      return match ? match[1].trim() : '';
+    };
+
+    const title = extractSection(/\*\*Название:\*\*\s*(.*?)(?=\n|$)/);
+    const category = extractSection(/\*\*Категория:\*\*\s*(.*?)(?=\n|$)/);
+    const description = extractSection(/\*\*Описание:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
+    const ingredients = extractSection(/\*\*Ингредиенты:\*\*.*?\n\n(.*?)(?=\n\n|\*\*)/s);
+    const recipe = extractSection(/\*\*Пошаговый рецепт:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
+    const time = extractSection(/\*\*Время:\*\*\s*(.*?)(?=\n|$)/);
+    const yield = extractSection(/\*\*Выход:\*\*\s*(.*?)(?=\n|$)/);
+    const portion = extractSection(/\*\*Порция:\*\*\s*(.*?)(?=\n|$)/);
+    const cost = extractSection(/\*\*Себестоимость:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
+    const kbzhu1 = extractSection(/\*\*КБЖУ на 1 порцию:\*\*\s*(.*?)(?=\n|$)/);
+    const kbzhu100 = extractSection(/\*\*КБЖУ на 100 г:\*\*\s*(.*?)(?=\n|$)/);
+    const allergens = extractSection(/\*\*Аллергены:\*\*\s*(.*?)(?=\n|$)/);
+    const storage = extractSection(/\*\*Заготовки и хранение:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
+    const tips = extractSection(/\*\*Особенности и советы от шефа:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
+    const serving = extractSection(/\*\*Рекомендация подачи:\*\*\s*(.*?)(?=\n|$)/);
+
+    return (
+      <div className="space-y-6">
+        {/* НАЗВАНИЕ */}
+        {title && (
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-purple-300 mb-2">{title}</h1>
+            {category && <p className="text-gray-400 text-lg">{category}</p>}
+          </div>
+        )}
+
+        {/* ОПИСАНИЕ */}
+        {description && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-purple-400 mb-3 uppercase tracking-wide">ОПИСАНИЕ</h3>
+            <p className="text-gray-300 leading-relaxed">{description}</p>
+          </div>
+        )}
+
+        {/* ИНГРЕДИЕНТЫ */}
+        {ingredients && (
+          <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-purple-300 mb-4">🥘 ИНГРЕДИЕНТЫ</h3>
-            <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/20 rounded-lg p-4">
-              {ingredientLines.map((ingLine, idx) => (
-                <p key={idx} className="text-gray-300 mb-2">{ingLine}</p>
+            <div className="space-y-2">
+              {ingredients.split('\n').filter(line => line.trim()).map((line, idx) => (
+                <p key={idx} className="text-gray-300">{line}</p>
               ))}
             </div>
           </div>
-        );
-        
-        // Пропускаем все строки ингредиентов в оригинальном тексте
-        while (index + 1 < lines.length && 
-               (lines[index + 1].trim().startsWith('-') || 
-                lines[index + 1].trim().startsWith('*') ||
-                lines[index + 1].trim() === '')) {
-          index++;
-        }
-        continue;
-      }
-      
-      // Skip ingredient lines that are already rendered
-      if (line.startsWith('- ') && 
-          (line.includes('₽') || line.includes('руб') || 
-           line.includes(' г ') || line.includes(' мл '))) {
-        continue;
-      }
-      
-      // Portion section - показываем размер порции четко
-      if (line.includes('**Порция:**')) {
-        const portionLine = line.replace(/\*\*/g, '').replace('Порция:', '').trim();
-        if (portionLine) {
-          result.push(
-            <div key={index} className="my-6">
-              <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-lg p-4">
-                <h3 className="text-lg font-bold text-green-300 mb-2 uppercase tracking-wide">
-                  РАЗМЕР ПОРЦИИ
-                </h3>
-                <p className="text-green-200 text-xl font-bold">
-                  {portionLine}
-                </p>
+        )}
+
+        {/* ВРЕМЯ И ВЫХОД */}
+        {(time || yield || portion) && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {time && (
+              <div className="bg-blue-900/20 rounded-lg p-4 text-center">
+                <h4 className="text-blue-300 font-bold mb-2">⏰ ВРЕМЯ</h4>
+                <p className="text-gray-300">{time}</p>
               </div>
+            )}
+            {yield && (
+              <div className="bg-green-900/20 rounded-lg p-4 text-center">
+                <h4 className="text-green-300 font-bold mb-2">📏 ВЫХОД</h4>
+                <p className="text-gray-300">{yield}</p>
+              </div>
+            )}
+            {portion && (
+              <div className="bg-purple-900/20 rounded-lg p-4 text-center">
+                <h4 className="text-purple-300 font-bold mb-2">🍽️ ПОРЦИЯ</h4>
+                <p className="text-gray-300">{portion}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* СЕБЕСТОИМОСТЬ */}
+        {cost && (
+          <div className="bg-green-900/20 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-green-300 mb-4">💰 СЕБЕСТОИМОСТЬ</h3>
+            <div className="space-y-1">
+              {cost.split('\n').filter(line => line.trim()).map((line, idx) => (
+                <p key={idx} className="text-gray-300">{line}</p>
+              ))}
             </div>
-          );
-        }
-        continue;
-      }
-      
-      // Cost information with better formatting
-      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена') || line.includes('По ингредиентам')) {
-        result.push(
-          <div key={index} className="my-6 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
-            <div className="font-bold text-lg text-green-200">{line}</div>
           </div>
-        );
-        continue;
-      }
-      
-      // КБЖУ information
-      if (line.includes('КБЖУ') || line.includes('Калории')) {
-        result.push(
-          <div key={index} className="my-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-            <div className="font-bold text-blue-200">{line}</div>
+        )}
+
+        {/* ПОШАГОВЫЙ РЕЦЕПТ */}
+        {recipe && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-purple-300 mb-4">👨‍🍳 ПОШАГОВЫЙ РЕЦЕПТ</h3>
+            <div className="space-y-3">
+              {recipe.split('\n').filter(line => line.trim()).map((line, idx) => (
+                <div key={idx} className="flex items-start space-x-3">
+                  <span className="text-purple-400 font-bold min-w-[2rem]">
+                    {line.match(/^\d+\./) ? line.match(/^\d+/)[0] : '•'}
+                  </span>
+                  <p className="text-gray-300 flex-1">{line.replace(/^\d+\.\s*/, '')}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        );
-        continue;
-      }
-      
-      // List items - improved styling
-      if (line.startsWith('- ')) {
-        result.push(
-          <div key={index} className="ml-6 mb-2 text-gray-300 flex items-start">
-            <span className="text-purple-400 mr-3 mt-1 text-lg">•</span>
-            <span>{line.replace('- ', '')}</span>
+        )}
+
+        {/* КБЖУ */}
+        {(kbzhu1 || kbzhu100) && (
+          <div className="bg-yellow-900/20 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-yellow-300 mb-4">📊 КБЖУ</h3>
+            <div className="space-y-2">
+              {kbzhu1 && <p className="text-gray-300"><strong>На 1 порцию:</strong> {kbzhu1}</p>}
+              {kbzhu100 && <p className="text-gray-300"><strong>На 100 г:</strong> {kbzhu100}</p>}
+            </div>
           </div>
-        );
-        continue;
-      }
-      
-      // Numbered steps with better styling
-      if (line.match(/^\d+\./)) {
-        result.push(
-          <div key={index} className="bg-gray-800/50 p-4 rounded-lg mb-4 border-l-4 border-purple-500 hover:bg-gray-800/70 transition-colors">
-            <div className="font-medium text-gray-200 leading-relaxed">{line}</div>
+        )}
+
+        {/* АЛЛЕРГЕНЫ */}
+        {allergens && (
+          <div className="bg-red-900/20 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-red-300 mb-2">⚠️ АЛЛЕРГЕНЫ</h3>
+            <p className="text-gray-300">{allergens}</p>
           </div>
-        );
-        continue;
-      }
-      
-      // Regular paragraphs
-      if (line && !line.startsWith('─') && !line.startsWith('*')) {
-        result.push(
-          <p key={index} className="mb-3 text-gray-300 leading-relaxed">
-            {line}
-          </p>
-        );
-        continue;
-      }
-    }
-    
-    return result;
+        )}
+
+        {/* ЗАГОТОВКИ И ХРАНЕНИЕ */}
+        {storage && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-purple-300 mb-4">📦 ЗАГОТОВКИ И ХРАНЕНИЕ</h3>
+            <div className="space-y-2">
+              {storage.split('\n').filter(line => line.trim()).map((line, idx) => (
+                <p key={idx} className="text-gray-300">{line}</p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* СОВЕТЫ ОТ ШЕФА */}
+        {tips && (
+          <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-orange-300 mb-4">💡 СОВЕТЫ ОТ ШЕФА</h3>
+            <div className="space-y-2">
+              {tips.split('\n').filter(line => line.trim()).map((line, idx) => (
+                <p key={idx} className="text-gray-300">{line}</p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* РЕКОМЕНДАЦИЯ ПОДАЧИ */}
+        {serving && (
+          <div className="bg-pink-900/20 rounded-lg p-4">
+            <h3 className="text-xl font-bold text-pink-300 mb-2">🍽️ ПОДАЧА</h3>
+            <p className="text-gray-300">{serving}</p>
+          </div>
+        )}
+      </div>
+    );
   };
 
   // Basic functions
