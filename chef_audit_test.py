@@ -66,9 +66,12 @@ class ChefAuditSystem:
         """Setup PRO user for comprehensive testing"""
         print("🔧 Setting up chef audit user...")
         
+        # Use a unique email for this test run
+        test_email = f"chef_audit_{int(time.time())}@test.com"
+        
         # Register user
         user_data = {
-            "email": f"{self.user_id}@chef-audit.com",
+            "email": test_email,
             "name": "Chef Audit System",
             "city": "moskva"
         }
@@ -79,16 +82,12 @@ class ChefAuditSystem:
                 user_info = response.json()
                 self.user_id = user_info["id"]
                 print(f"✅ User registered with ID: {self.user_id}")
-            elif response.status_code == 400:
-                # User already exists, get user info
-                response = requests.get(f"{self.base_url}/user/{user_data['email']}")
-                if response.status_code == 200:
-                    user_info = response.json()
-                    self.user_id = user_info["id"]
-                    print(f"✅ Using existing user ID: {self.user_id}")
+            else:
+                print(f"❌ Registration failed: {response.status_code} - {response.text}")
+                return False
         except Exception as e:
             print(f"⚠️ User setup issue: {e}")
-            self.user_id = "chef_audit_2025"  # Fallback
+            return False
         
         # Upgrade to PRO for full feature access
         try:
