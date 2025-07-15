@@ -412,21 +412,38 @@ function App() {
     if (!techCard || !currentUser?.id) return;
     
     setIsGenerating(true);
+    setLoadingType('sales');
+    const progressInterval = simulateProgress('sales', 6000);
+    
     try {
       const response = await axios.post(`${API}/generate-sales-script`, {
         tech_card: techCard,
         user_id: currentUser.id
       });
       
-      // Показываем результат в отдельном модальном окне
       setSalesScriptResult(response.data.script);
-      setShowSalesScriptModal(true);
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('✨ Скрипт продаж готов!');
+      
+      setTimeout(() => {
+        setIsGenerating(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        setShowSalesScriptModal(true);
+      }, 1000);
       
     } catch (error) {
       console.error('Error generating sales script:', error);
-      alert('Ошибка при генерации скрипта продаж');
-    } finally {
+      clearInterval(progressInterval);
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при генерации скрипта продаж');
     }
   };
 
@@ -434,6 +451,9 @@ function App() {
     if (!techCard || !currentUser?.id) return;
     
     setIsGenerating(true);
+    setLoadingType('pairing');
+    const progressInterval = simulateProgress('pairing', 6000);
+    
     try {
       const response = await axios.post(`${API}/generate-food-pairing`, {
         tech_card: techCard,
@@ -441,13 +461,28 @@ function App() {
       });
       
       setFoodPairingResult(response.data.pairing);
-      setShowFoodPairingModal(true);
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('✨ Фудпейринг готов!');
+      
+      setTimeout(() => {
+        setIsGenerating(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        setShowFoodPairingModal(true);
+      }, 1000);
       
     } catch (error) {
       console.error('Error generating food pairing:', error);
-      alert('Ошибка при генерации фудпейринга');
-    } finally {
+      clearInterval(progressInterval);
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при генерации фудпейринга');
     }
   };
 
@@ -455,6 +490,9 @@ function App() {
     if (!techCard || !currentUser?.id) return;
     
     setIsGenerating(true);
+    setLoadingType('photo');
+    const progressInterval = simulateProgress('photo', 5000);
+    
     try {
       const response = await axios.post(`${API}/generate-photo-tips`, {
         tech_card: techCard,
@@ -462,13 +500,28 @@ function App() {
       });
       
       setPhotoTipsResult(response.data.tips);
-      setShowPhotoTipsModal(true);
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('✨ Советы по фото готовы!');
+      
+      setTimeout(() => {
+        setIsGenerating(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        setShowPhotoTipsModal(true);
+      }, 1000);
       
     } catch (error) {
       console.error('Error generating photo tips:', error);
-      alert('Ошибка при генерации советов по фото');
-    } finally {
+      clearInterval(progressInterval);
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при генерации советов по фото');
     }
   };
 
