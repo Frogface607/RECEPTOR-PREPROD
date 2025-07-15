@@ -206,15 +206,18 @@ backend:
         
   - task: "Kitchen Equipment Feature Frontend"
     implemented: true
-    working: true
+    working: "NA"
     file: "frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added kitchen equipment UI for PRO users: equipment selection modal, API integration functions, and PRO functions section with equipment button. Frontend implementation complete."
+      - working: "NA"
+        agent: "testing"
+        comment: "FRONTEND TESTING SKIPPED: As per instructions, frontend testing is not performed by testing agent due to system limitations. Backend kitchen equipment functionality has been thoroughly tested and is working correctly."
 
   - task: "Implement Subscription Models and Plans"
     implemented: true
