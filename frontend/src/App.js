@@ -446,7 +446,7 @@ function App() {
     
     setIsGenerating(true);
     setLoadingType('pairing');
-    const progressInterval = simulateProgress('pairing', 6000);
+    const progressInterval = simulateProgress('pairing', 12000);
     
     try {
       const response = await axios.post(`${API}/generate-food-pairing`, {
