@@ -2658,7 +2658,7 @@ function App() {
             </div>
             
             <div className="bg-gray-800/50 rounded-lg p-6">
-              <div className="text-gray-200 whitespace-pre-line">{photoTipsResult}</div>
+              <div className="text-gray-200" dangerouslySetInnerHTML={{__html: formatProAIContent(photoTipsResult)}}></div>
             </div>
             
             <div className="flex justify-end space-x-4 mt-6">
