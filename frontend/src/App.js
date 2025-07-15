@@ -9,6 +9,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [cities, setCities] = useState([]);
+  const [selectedCity, setSelectedCity] = useState('');
   const [dishName, setDishName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
