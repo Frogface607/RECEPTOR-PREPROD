@@ -80,32 +80,28 @@ class ProAIFunctionsTest:
         """Create and upgrade a test user to PRO subscription"""
         print("🔧 Setting up PRO user for testing...")
         
-        # First, try to register the user
-        user_data = {
-            "email": f"{self.user_id}@example.com",
-            "name": "PRO Test User",
-            "city": "moskva"
-        }
-        
-        response = requests.post(f"{self.base_url}/register", json=user_data)
-        if response.status_code == 400:
-            print("   User already exists, getting user ID...")
-            # Get the existing user
-            response = requests.get(f"{self.base_url}/user/{self.user_id}@example.com")
+        # First, try to get the existing user
+        response = requests.get(f"{self.base_url}/user/{self.user_id}@example.com")
+        if response.status_code == 200:
+            user_info = response.json()
+            self.user_id = user_info["id"]
+            print(f"   Found existing user with ID: {self.user_id}")
+        else:
+            # User doesn't exist, try to register
+            user_data = {
+                "email": f"{self.user_id}@example.com",
+                "name": "PRO Test User",
+                "city": "moskva"
+            }
+            
+            response = requests.post(f"{self.base_url}/register", json=user_data)
             if response.status_code == 200:
                 user_info = response.json()
                 self.user_id = user_info["id"]
-                print(f"   Found existing user with ID: {self.user_id}")
+                print(f"   User registered successfully with ID: {self.user_id}")
             else:
-                print(f"   Error getting existing user: {response.status_code}")
+                print(f"   Error registering user: {response.status_code} - {response.text}")
                 return False
-        elif response.status_code == 200:
-            user_info = response.json()
-            self.user_id = user_info["id"]
-            print(f"   User registered successfully with ID: {self.user_id}")
-        else:
-            print(f"   Warning: User registration returned {response.status_code}")
-            return False
         
         # Upgrade to PRO subscription
         upgrade_data = {
