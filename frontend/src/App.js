@@ -140,6 +140,20 @@ function App() {
     
     return interval;
   };
+  
+  // Format PRO AI content for better display
+  const formatProAIContent = (content) => {
+    if (!content) return '';
+    
+    return content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold text
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')              // Italic text
+      .replace(/#{1,6}\s*(.*)/g, '<h3 class="text-lg font-bold text-purple-300 mt-4 mb-2">$1</h3>')  // Headers
+      .replace(/^\s*-\s+(.*)/gm, '<li class="ml-4 mb-1">• $1</li>')  // List items
+      .replace(/^\s*\d+\.\s+(.*)/gm, '<li class="ml-4 mb-1">$1</li>')  // Numbered lists
+      .replace(/\n\n/g, '<br><br>')  // Double line breaks
+      .replace(/\n/g, '<br>');       // Single line breaks
+  };
   const formatTechCard = (content) => {
     if (!content) return null;
 
