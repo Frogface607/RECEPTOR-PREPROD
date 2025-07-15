@@ -1337,7 +1337,7 @@ function App() {
               >
                 <option value="">Выберите город</option>
                 {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
+                  <option key={city.code} value={city.code}>{city.name}</option>
                 ))}
               </select>
             </div>
