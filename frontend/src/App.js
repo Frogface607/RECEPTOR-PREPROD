@@ -1946,7 +1946,7 @@ function App() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-green-500/30">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-green-300">💰 УПРАВЛЕНИЕ ПРАЙСАМИ</h3>
+              <h3 className="text-2xl font-bold text-green-300">УПРАВЛЕНИЕ ПРАЙСАМИ</h3>
               <button
                 onClick={() => setShowPriceModal(false)}
                 className="text-gray-400 hover:text-white text-2xl"
