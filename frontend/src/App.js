@@ -1445,6 +1445,49 @@ function App() {
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
+                
+                {/* Beautiful Step-by-Step Instructions */}
+                <div className="mb-6">
+                  <div className="flex items-center space-x-2 mb-4 cursor-pointer" onClick={() => setShowInstructions(!showInstructions)}>
+                    <span className="text-lg font-bold text-purple-300">КАК ПОЛЬЗОВАТЬСЯ</span>
+                    <span className="text-purple-300 text-xl">{showInstructions ? '▼' : '▶'}</span>
+                  </div>
+                  {showInstructions && (
+                    <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-400/30 space-y-4">
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="text-purple-300 font-bold mb-3">📝 ОПИСАНИЕ БЛЮДА</h4>
+                          <div className="space-y-2 text-sm text-gray-300">
+                            <p>• <strong>Пишите максимально подробно</strong> - чем точнее опишете, тем лучше результат</p>
+                            <p>• <strong>Укажите количество порций</strong> - например "на 4 порции"</p>
+                            <p>• <strong>Добавьте особенности</strong> - "средней прожарки", "с хрустящей корочкой"</p>
+                            <p className="text-purple-200">💡 <em>Пример: "Стейк из говядины на 4 порции, средней прожарки, общий выход 800г"</em></p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-purple-300 font-bold mb-3">🎯 СОВЕТЫ ПО ИСПОЛЬЗОВАНИЮ</h4>
+                          <div className="space-y-2 text-sm text-gray-300">
+                            <p>• <strong>Редактируйте ингредиенты</strong> - можно менять количество и цены</p>
+                            <p>• <strong>Используйте кнопку "РЕДАКТИРОВАТЬ"</strong> для ручной корректировки</p>
+                            <p>• <strong>Сохраняйте в PDF</strong> - для печати в кухню</p>
+                            <p>• <strong>PRO функции</strong> - скрипты продаж, фудпейринг, советы фото</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 pt-4 border-t border-purple-400/30">
+                        <h4 className="text-yellow-300 font-bold mb-2">💰 О СЕБЕСТОИМОСТИ</h4>
+                        <p className="text-sm text-gray-300">
+                          Себестоимость рассчитывается по среднерыночным ценам с учетом вашего региона. 
+                          Нейросеть может ошибаться - всегда проверяйте расчеты! 
+                          <strong className="text-purple-300"> Детальный калькулятор на основе прайсов ваших поставщиков в разработке.</strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                     <form onSubmit={handleGenerateTechCard} className="space-y-6">
                   <div>
