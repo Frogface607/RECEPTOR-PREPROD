@@ -1676,11 +1676,22 @@ function App() {
                     <div className="mt-6 p-4 bg-gray-800/30 rounded-lg border border-green-400/30">
                       <div className="grid grid-cols-3 gap-6 text-center">
                         <div>
-                          <div className="text-gray-400 text-sm mb-1">ОБЩИЙ ВЫХОД ПОРЦИИ</div>
+                          <div className="text-gray-400 text-sm mb-1">ВЫХОД ПОРЦИИ</div>
                           <div className="text-blue-400 font-bold text-xl">
-                            {currentIngredients.reduce((total, ing) => {
-                              return total + (parseFloat(ing.quantity) || 0);
-                            }, 0).toFixed(0)} г
+                            {(() => {
+                              // Пытаемся извлечь выход из техкарты
+                              const yieldMatch = techCard?.match(/\*\*Выход:\*\*\s*(\d+)\s*г/);
+                              if (yieldMatch) {
+                                return yieldMatch[1] + ' г';
+                              }
+                              
+                              // Если не найден, считаем по ингредиентам
+                              const totalWeight = currentIngredients.reduce((total, ing) => {
+                                return total + (parseFloat(ing.quantity) || 0);
+                              }, 0);
+                              
+                              return totalWeight.toFixed(0) + ' г';
+                            })()}
                           </div>
                         </div>
                         
