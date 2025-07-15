@@ -344,14 +344,16 @@ function App() {
   };
 
   const fetchUserSubscription = async () => {
+    // В Beta версии все пользователи имеют PRO подписку
     if (!currentUser?.id) return;
-    try {
-      const response = await axios.get(`${API}/user-subscription/${currentUser.id}`);
-      setUserSubscription(response.data);
-      setUserEquipment(response.data.kitchen_equipment || []);
-    } catch (error) {
-      console.error('Error fetching user subscription:', error);
-    }
+    
+    setUserSubscription({
+      subscription_plan: 'pro',
+      subscription_status: 'active',
+      monthly_tech_cards_used: 0,
+      kitchen_equipment: []
+    });
+    setUserEquipment([]);
   };
 
   const fetchUserPrices = async () => {
