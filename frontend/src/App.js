@@ -139,7 +139,7 @@ function App() {
             )}
             {portion && (
               <div className="bg-purple-900/20 rounded-lg p-4 text-center">
-                <h4 className="text-purple-300 font-bold mb-2">🍽️ ПОРЦИЯ</h4>
+                <h4 className="text-purple-300 font-bold mb-2">ПОРЦИЯ</h4>
                 <p className="text-gray-300">{portion}</p>
               </div>
             )}
