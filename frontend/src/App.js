@@ -2510,7 +2510,14 @@ function App() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-purple-300">СКРИПТ ПРОДАЖ ДЛЯ ОФИЦИАНТА</h3>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">🎭</span>
+                </div>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                  СКРИПТ ПРОДАЖ ДЛЯ ОФИЦИАНТА
+                </h3>
+              </div>
               <button
                 onClick={() => setShowSalesScriptModal(false)}
                 className="text-gray-400 hover:text-white text-2xl"
