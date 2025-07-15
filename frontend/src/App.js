@@ -161,7 +161,7 @@ function App() {
         {/* ПОШАГОВЫЙ РЕЦЕПТ */}
         {recipe && (
           <div className="bg-gray-800/30 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-purple-300 mb-4">👨‍🍳 ПОШАГОВЫЙ РЕЦЕПТ</h3>
+            <h3 className="text-xl font-bold text-purple-300 mb-4">ПОШАГОВЫЙ РЕЦЕПТ</h3>
             <div className="space-y-3">
               {recipe.split('\n').filter(line => line.trim()).map((line, idx) => (
                 <div key={idx} className="flex items-start space-x-3">
