@@ -1840,16 +1840,19 @@ function App() {
                                 // Парсим количество и единицу
                                 const match = value.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт|штук)?/);
                                 if (match) {
-                                  newIngredients[index].quantity = match[1];
-                                  newIngredients[index].unit = match[2] || 'г';
+                                  const newQty = parseFloat(match[1]) || 0;
+                                  const newUnit = match[2] || ingredient.unit || 'г';
+                                  
+                                  newIngredients[index].quantity = newQty.toString();
+                                  newIngredients[index].unit = newUnit;
                                   
                                   // Пересчитаем стоимость на основе изначальной цены за единицу
-                                  const newQty = parseFloat(match[1]) || 0;
-                                  const originalQty = parseFloat(ingredient.originalQuantity) || parseFloat(ingredient.quantity) || 1;
-                                  const originalPrice = parseFloat(ingredient.originalPrice) || parseFloat(ingredient.totalPrice) || 0;
+                                  const originalQty = parseFloat(ingredient.originalQuantity) || 1;
+                                  const originalPrice = parseFloat(ingredient.originalPrice) || 0;
                                   
-                                  // Пропорциональный пересчет
-                                  newIngredients[index].totalPrice = ((originalPrice / originalQty) * newQty).toFixed(1);
+                                  // Пропорциональный пересчет: (новое количество / старое количество) * старая цена
+                                  const newPrice = (newQty / originalQty) * originalPrice;
+                                  newIngredients[index].totalPrice = newPrice.toFixed(1);
                                 }
                                 setCurrentIngredients(newIngredients);
                               }}
