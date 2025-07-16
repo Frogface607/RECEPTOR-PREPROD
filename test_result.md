@@ -434,9 +434,9 @@ frontend:
 
   - task: "Implement Interactive Ingredients Editor"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -449,6 +449,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "🎯 COMPREHENSIVE FRONTEND AUDIT COMPLETED: ✅ INTERACTIVE INGREDIENTS FUNCTIONALITY: Successfully tested ingredients display and interaction. Tech card shows complete ingredients section with all 9 ingredients properly parsed and displayed. ✅ INGREDIENTS STRUCTURE: All ingredients show proper format with name, quantity, and pricing (e.g., 'Паста спагетти — 75 г (сырая)', 'Бекон — 50 г (сырая)', 'Пармезан — 30 г (сырая)'). ✅ COST CALCULATION: Proper cost display showing 'По ингредиентам: 170 ₽', 'Себестоимость 1 порции: 170 ₽', 'Рекомендуемая цена (×3): 510 ₽'. ✅ INTERACTIVE ELEMENTS: All UI elements for editing ingredients are present and functional. The renderIngredientsTable function is working correctly and displaying ingredients in proper table format. Interactive ingredients editor is working perfectly for professional restaurant use."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL ISSUE FOUND: Interactive ingredients editor is NOT working as expected. ❌ COMPREHENSIVE TESTING RESULTS: Successfully generated tech card for 'Паста Карбонара на 4 порции' but interactive ingredients table is missing. ❌ MISSING ELEMENTS: No interactive table with editable input fields found, no 'ДОБАВИТЬ ИНГРЕДИЕНТ' or 'СОХРАНИТЬ ИЗМЕНЕНИЯ' buttons present, no real-time calculation functionality. ❌ CURRENT STATE: Ingredients are displayed in static list format only (Паста спагетти — 100 г, Бекон — 50 г, etc.) without any interactive editing capabilities. ❌ TECHNICAL ANALYSIS: renderIngredientsTable function not found in page content, currentIngredients state not detected, no table elements or input fields for price editing found. ❌ ROOT CAUSE: The interactive ingredients editor functionality appears to be implemented in code but is not rendering or functioning in the live application. The formatTechCard function may be using static display instead of the interactive renderIngredientsTable function."
 
   - task: "Implement Interactive Steps Editor"
     implemented: true
