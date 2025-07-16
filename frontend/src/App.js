@@ -1862,6 +1862,14 @@ function App() {
                         </button>
                         
                         <button
+                          onClick={generateInspiration}
+                          disabled={isGenerating}
+                          className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                        >
+                          🌟 ВДОХНОВЕНИЕ
+                        </button>
+                        
+                        <button
                           onClick={generatePhotoTips}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
