@@ -1519,27 +1519,27 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Left Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 space-y-8">
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700 space-y-6 sm:space-y-8">
               <div>
-                <h2 className="text-2xl font-bold text-purple-300 mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-purple-300 mb-4 sm:mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
                 
                 {/* Beautiful Step-by-Step Instructions */}
-                <div className="mb-6">
-                  <div className="flex items-center space-x-2 mb-4 cursor-pointer" onClick={() => setShowInstructions(!showInstructions)}>
-                    <span className="text-lg font-bold text-purple-300">КАК ПОЛЬЗОВАТЬСЯ</span>
-                    <span className="text-purple-300 text-xl">{showInstructions ? '▼' : '▶'}</span>
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex items-center space-x-2 mb-3 sm:mb-4 cursor-pointer" onClick={() => setShowInstructions(!showInstructions)}>
+                    <span className="text-base sm:text-lg font-bold text-purple-300">КАК ПОЛЬЗОВАТЬСЯ</span>
+                    <span className="text-purple-300 text-lg sm:text-xl">{showInstructions ? '▼' : '▶'}</span>
                   </div>
                   {showInstructions && (
-                    <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-400/30 space-y-4">
+                    <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl p-4 sm:p-6 border border-purple-400/30 space-y-3 sm:space-y-4">
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-4 sm:gap-6">
                         <div>
-                          <h4 className="text-purple-300 font-bold mb-3">📝 ОПИСАНИЕ БЛЮДА</h4>
-                          <div className="space-y-2 text-sm text-gray-300">
+                          <h4 className="text-purple-300 font-bold mb-3 text-sm sm:text-base">📝 ОПИСАНИЕ БЛЮДА</h4>
+                          <div className="space-y-2 text-xs sm:text-sm text-gray-300">
                             <p>• <strong>Пишите максимально подробно</strong> - чем точнее опишете, тем лучше результат</p>
                             <p>• <strong>Укажите количество порций</strong> - например "на 4 порции"</p>
                             <p>• <strong>Добавьте особенности</strong> - "средней прожарки", "с хрустящей корочкой"</p>
@@ -1548,8 +1548,8 @@ function App() {
                         </div>
                         
                         <div>
-                          <h4 className="text-purple-300 font-bold mb-3">🎯 СОВЕТЫ ПО ИСПОЛЬЗОВАНИЮ</h4>
-                          <div className="space-y-2 text-sm text-gray-300">
+                          <h4 className="text-purple-300 font-bold mb-3 text-sm sm:text-base">🎯 СОВЕТЫ ПО ИСПОЛЬЗОВАНИЮ</h4>
+                          <div className="space-y-2 text-xs sm:text-sm text-gray-300">
                             <p>• <strong>Редактируйте ингредиенты</strong> - можно менять количество и цены</p>
                             <p>• <strong>Используйте кнопку "РЕДАКТИРОВАТЬ"</strong> для ручной корректировки</p>
                             <p>• <strong>Сохраняйте в PDF</strong> - для печати в кухню</p>
@@ -1558,9 +1558,9 @@ function App() {
                         </div>
                       </div>
                       
-                      <div className="mt-6 pt-4 border-t border-purple-400/30">
-                        <h4 className="text-yellow-300 font-bold mb-2">💰 О СЕБЕСТОИМОСТИ</h4>
-                        <p className="text-sm text-gray-300">
+                      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-purple-400/30">
+                        <h4 className="text-yellow-300 font-bold mb-2 text-sm sm:text-base">💰 О СЕБЕСТОИМОСТИ</h4>
+                        <p className="text-xs sm:text-sm text-gray-300">
                           Себестоимость рассчитывается по среднерыночным ценам с учетом вашего региона. 
                           Нейросеть может ошибаться - всегда проверяйте расчеты! 
                           <strong className="text-purple-300"> Детальный калькулятор на основе прайсов ваших поставщиков в разработке.</strong>
