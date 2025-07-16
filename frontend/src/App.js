@@ -1592,7 +1592,7 @@ function App() {
                           isListening 
                             ? 'bg-red-600 animate-pulse' 
                             : 'bg-purple-600 hover:bg-purple-700'
-                        } text-white`}
+                        } text-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center`}
                         title="Голосовой ввод"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
