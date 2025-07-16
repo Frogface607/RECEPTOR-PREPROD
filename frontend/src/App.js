@@ -1854,7 +1854,7 @@ function App() {
                           setTechCard(newLines.join('\n'));
                           alert('Изменения ингредиентов сохранены!');
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-2"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base min-h-[40px] sm:min-h-[44px] flex-1 sm:flex-none justify-center"
                       >
                         <span>💾</span>
                         <span>СОХРАНИТЬ</span>
@@ -1864,12 +1864,12 @@ function App() {
                   
                   <div className="space-y-3">
                     {currentIngredients.length === 0 ? (
-                      <div className="text-center py-8 text-gray-400">
-                        <p className="mb-4">Ингредиенты из техкарты появятся здесь автоматически</p>
+                      <div className="text-center py-6 sm:py-8 text-gray-400">
+                        <p className="mb-4 text-sm sm:text-base">Ингредиенты из техкарты появятся здесь автоматически</p>
                       </div>
                     ) : (
                       <>
-                        <div className="grid grid-cols-12 gap-3 text-sm font-bold text-purple-300 border-b border-purple-400/30 pb-2">
+                        <div className="hidden sm:grid grid-cols-12 gap-3 text-sm font-bold text-purple-300 border-b border-purple-400/30 pb-2">
                           <span className="col-span-1">#</span>
                           <span className="col-span-6">ИНГРЕДИЕНТ</span>
                           <span className="col-span-3">КОЛИЧЕСТВО</span>
@@ -1877,8 +1877,12 @@ function App() {
                           <span className="col-span-1">✕</span>
                         </div>
                         {currentIngredients.map((ingredient, index) => (
-                          <div key={ingredient.id || index} className="grid grid-cols-12 gap-3 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
-                            <span className="col-span-1 text-purple-400 font-bold flex items-center justify-center">
+                          <div key={ingredient.id || index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-3 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
+                            <div className="flex items-center sm:hidden mb-2">
+                              <span className="text-purple-400 font-bold mr-2">#{index + 1}</span>
+                              <span className="text-purple-300 font-bold">ИНГРЕДИЕНТ</span>
+                            </div>
+                            <span className="hidden sm:flex col-span-1 text-purple-400 font-bold items-center justify-center">
                               {index + 1}.
                             </span>
                             <input
