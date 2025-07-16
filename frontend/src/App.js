@@ -1572,7 +1572,7 @@ function App() {
 
                     <form onSubmit={handleGenerateTechCard} className="space-y-4 sm:space-y-6">
                   <div>
-                    <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+                    <label className="block text-purple-300 text-sm font-bold mb-2 sm:mb-3 uppercase tracking-wide">
                       НАЗВАНИЕ БЛЮДА
                     </label>
                     <div className="relative">
