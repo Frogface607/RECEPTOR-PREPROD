@@ -315,8 +315,14 @@ function App() {
         {/* НАЗВАНИЕ */}
         {title && (
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-purple-300 mb-2">{title}</h1>
-            {category && <p className="text-gray-400 text-lg">{category}</p>}
+            <h1 className="text-3xl font-bold text-purple-300 mb-2">
+              <EditableText field="title" value={title} className="text-3xl font-bold text-purple-300" />
+            </h1>
+            {category && (
+              <p className="text-gray-400 text-lg">
+                <EditableText field="category" value={category} className="text-gray-400 text-lg" />
+              </p>
+            )}
           </div>
         )}
 
@@ -324,7 +330,9 @@ function App() {
         {description && (
           <div className="bg-gray-800/30 rounded-lg p-4">
             <h3 className="text-lg font-bold text-purple-400 mb-3 uppercase tracking-wide">ОПИСАНИЕ</h3>
-            <p className="text-gray-300 leading-relaxed">{description}</p>
+            <div className="text-gray-300 leading-relaxed">
+              <EditableText field="description" value={description} className="text-gray-300 leading-relaxed" multiline={true} />
+            </div>
           </div>
         )}
 
