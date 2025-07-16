@@ -2937,7 +2937,7 @@ function App() {
                   <div 
                     className="text-gray-300 leading-relaxed"
                     dangerouslySetInnerHTML={{ 
-                      __html: inspirationResult.replace(/\n/g, '<br>') 
+                      __html: formatText(inspirationResult)
                     }}
                   />
                 </div>
