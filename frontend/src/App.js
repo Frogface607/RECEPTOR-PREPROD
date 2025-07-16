@@ -60,6 +60,9 @@ function App() {
   const [foodPairingResult, setFoodPairingResult] = useState('');
   const [showPhotoTipsModal, setShowPhotoTipsModal] = useState(false);
   const [photoTipsResult, setPhotoTipsResult] = useState('');
+  const [showInspirationModal, setShowInspirationModal] = useState(false);
+  const [inspirationResult, setInspirationResult] = useState('');
+  const [inspirationPrompt, setInspirationPrompt] = useState('');
 
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
