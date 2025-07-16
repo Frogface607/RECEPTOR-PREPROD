@@ -495,6 +495,7 @@ test_plan:
     - "Fix Header Formatting"
     - "Implement Interactive Ingredients Editor"
     - "Implement Interactive Steps Editor"
+    - "Upload Prices Endpoint - Excel/CSV Price Upload"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
