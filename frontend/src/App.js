@@ -2949,37 +2949,83 @@ function App() {
             
             <div className="flex justify-end space-x-4 mt-8">
               <button
-                onClick={() => {
-                  // Создаем новую техкарту из вдохновения
-                  setTechCard(inspirationResult);
-                  setShowInspirationModal(false);
-                  
-                  // Парсим новые ингредиенты
-                  const lines = inspirationResult.split('\n');
-                  const ingredients = [];
-                  
-                  lines.forEach(line => {
-                    if (line.startsWith('- ') && line.includes('₽')) {
-                      const parts = line.replace('- ', '').split(' — ');
-                      if (parts.length >= 2) {
-                        const name = parts[0].trim();
-                        const quantity = parts[1].trim();
-                        const priceMatch = line.match(/~(\d+(?:\.\d+)?)\s*₽/);
-                        const price = priceMatch ? priceMatch[1] : '10';
-                        
-                        ingredients.push({
-                          id: Date.now() + Math.random(),
-                          name: name,
-                          quantity: quantity.replace(/\s*г.*/, ''),
-                          unit: 'г',
-                          totalPrice: price
-                        });
+                onClick={async () => {
+                  // Создаем новую техкарту из вдохновения и СОХРАНЯЕМ в базу
+                  try {
+                    // Отправляем запрос на сохранение техкарты
+                    const response = await axios.post(`${API}/save-tech-card`, {
+                      user_id: currentUser.id,
+                      content: inspirationResult,
+                      dish_name: inspirationResult.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Техкарта из вдохновения',
+                      city: currentUser.city,
+                      is_inspiration: true
+                    });
+                    
+                    // Устанавливаем техкарту и её ID
+                    setTechCard(inspirationResult);
+                    setCurrentTechCardId(response.data.id);
+                    setShowInspirationModal(false);
+                    
+                    // Парсим новые ингредиенты
+                    const lines = inspirationResult.split('\n');
+                    const ingredients = [];
+                    
+                    lines.forEach(line => {
+                      if (line.startsWith('- ') && line.includes('₽')) {
+                        const parts = line.replace('- ', '').split(' — ');
+                        if (parts.length >= 2) {
+                          const name = parts[0].trim();
+                          const quantity = parts[1].trim();
+                          const priceMatch = line.match(/~(\d+(?:\.\d+)?)\s*₽/);
+                          const price = priceMatch ? priceMatch[1] : '10';
+                          
+                          ingredients.push({
+                            id: Date.now() + Math.random(),
+                            name: name,
+                            quantity: quantity.replace(/\s*г.*/, ''),
+                            unit: 'г',
+                            totalPrice: price
+                          });
+                        }
                       }
-                    }
-                  });
-                  
-                  setCurrentIngredients(ingredients);
-                  alert('Новая техкарта создана на основе вдохновения! 🌟');
+                    });
+                    
+                    setCurrentIngredients(ingredients);
+                    alert('Новая техкарта создана на основе вдохновения и сохранена в историю! 🌟');
+                    
+                  } catch (error) {
+                    console.error('Error saving inspiration tech card:', error);
+                    // Fallback - просто устанавливаем техкарту без сохранения
+                    setTechCard(inspirationResult);
+                    setShowInspirationModal(false);
+                    
+                    // Парсим ингредиенты
+                    const lines = inspirationResult.split('\n');
+                    const ingredients = [];
+                    
+                    lines.forEach(line => {
+                      if (line.startsWith('- ') && line.includes('₽')) {
+                        const parts = line.replace('- ', '').split(' — ');
+                        if (parts.length >= 2) {
+                          const name = parts[0].trim();
+                          const quantity = parts[1].trim();
+                          const priceMatch = line.match(/~(\d+(?:\.\d+)?)\s*₽/);
+                          const price = priceMatch ? priceMatch[1] : '10';
+                          
+                          ingredients.push({
+                            id: Date.now() + Math.random(),
+                            name: name,
+                            quantity: quantity.replace(/\s*г.*/, ''),
+                            unit: 'г',
+                            totalPrice: price
+                          });
+                        }
+                      }
+                    });
+                    
+                    setCurrentIngredients(ingredients);
+                    alert('Новая техкарта создана на основе вдохновения! 🌟');
+                  }
                 }}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg"
               >
