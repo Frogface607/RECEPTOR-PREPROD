@@ -2120,7 +2120,12 @@ function App() {
             {techCard ? (
               <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-4">
-                  <h2 className="text-xl sm:text-2xl font-bold text-purple-300">ТЕХНОЛОГИЧЕСКАЯ КАРТА</h2>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-purple-300">ТЕХНОЛОГИЧЕСКАЯ КАРТА</h2>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                      💡 Кликните на любой текст для редактирования
+                    </p>
+                  </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                     <button 
                       onClick={() => navigator.clipboard.writeText(techCard)}
