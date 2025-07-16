@@ -33,7 +33,6 @@ function App() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
-  const [showTwistModal, setShowTwistModal] = useState(false);
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [userPrices, setUserPrices] = useState([]);
   const [uploadingPrices, setUploadingPrices] = useState(false);
