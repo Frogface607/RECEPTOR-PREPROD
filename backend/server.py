@@ -866,11 +866,22 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
         # Cleanup
         os.unlink(temp_file_path)
         
+        # Create serializable version for response (remove datetime and other non-serializable fields)
+        preview_prices = []
+        for price in processed_prices[:10]:
+            preview_prices.append({
+                "name": price["name"],
+                "price": price["price"],
+                "unit": price["unit"],
+                "category": price["category"],
+                "source": price["source"]
+            })
+        
         return {
             "success": True,
             "count": len(processed_prices),
             "message": f"Обработано {len(processed_prices)} позиций",
-            "prices": processed_prices[:10]  # Return first 10 for preview
+            "prices": preview_prices
         }
         
     except Exception as e:
