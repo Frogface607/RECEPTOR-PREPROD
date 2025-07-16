@@ -202,15 +202,167 @@ function App() {
         {ingredients && (
           <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-purple-300 mb-4">ИНГРЕДИЕНТЫ</h3>
-            <div className="space-y-2">
-              {ingredients.split('\n').filter(line => line.trim()).map((line, idx) => {
-                // Убираем цены из строки ингредиентов (формат: "- Название — количество — ~цена ₽")
-                const cleanLine = line.replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/, '');
-                return (
-                  <p key={idx} className="text-gray-300">{cleanLine}</p>
-                );
-              })}
-            </div>
+            
+            {/* Показать интерактивную таблицу, если ингредиенты загружены */}
+            {currentIngredients.length > 0 ? (
+              <div className="space-y-4">
+                {/* Интерактивная таблица ингредиентов */}
+                <div className="bg-gray-800/30 rounded-lg p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <h4 className="text-base font-bold text-purple-300">РЕДАКТИРУЕМЫЕ ИНГРЕДИЕНТЫ</h4>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => {
+                          setCurrentIngredients([...currentIngredients, { 
+                            name: 'Новый ингредиент', 
+                            quantity: '100', 
+                            unit: 'г',
+                            totalPrice: '10',
+                            id: Date.now() 
+                          }]);
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-bold transition-colors"
+                      >
+                        + ДОБАВИТЬ
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Заголовки таблицы для десктопа */}
+                  <div className="hidden sm:grid grid-cols-12 gap-2 text-sm font-bold text-purple-300 border-b border-purple-400/30 pb-2 mb-3">
+                    <span className="col-span-1">#</span>
+                    <span className="col-span-6">ИНГРЕДИЕНТ</span>
+                    <span className="col-span-3">КОЛИЧЕСТВО</span>
+                    <span className="col-span-1">ЦЕНА</span>
+                    <span className="col-span-1">✕</span>
+                  </div>
+                  
+                  {/* Строки ингредиентов */}
+                  <div className="space-y-2">
+                    {currentIngredients.map((ingredient, index) => (
+                      <div key={ingredient.id || index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
+                        
+                        {/* Мобильный заголовок */}
+                        <div className="flex items-center sm:hidden mb-2">
+                          <span className="text-purple-400 font-bold mr-2">#{index + 1}</span>
+                          <span className="text-purple-300 font-bold">ИНГРЕДИЕНТ</span>
+                        </div>
+                        
+                        {/* Номер для десктопа */}
+                        <span className="hidden sm:flex col-span-1 text-purple-400 font-bold items-center justify-center">
+                          {index + 1}.
+                        </span>
+                        
+                        {/* Название ингредиента */}
+                        <input
+                          type="text"
+                          value={ingredient.name || ''}
+                          onChange={(e) => {
+                            const newIngredients = [...currentIngredients];
+                            newIngredients[index].name = e.target.value;
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          placeholder="Название ингредиента"
+                          className="col-span-12 sm:col-span-6 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none text-sm"
+                        />
+                        
+                        {/* Количество */}
+                        <input
+                          type="text"
+                          value={`${ingredient.quantity || ''}${ingredient.unit ? ' ' + ingredient.unit : ''}`}
+                          onChange={(e) => {
+                            const newIngredients = [...currentIngredients];
+                            const value = e.target.value;
+                            // Парсим количество и единицу
+                            const match = value.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт|штук)?/);
+                            if (match) {
+                              const newQty = parseFloat(match[1]) || 0;
+                              const newUnit = match[2] || 'г';
+                              
+                              newIngredients[index].quantity = newQty.toString();
+                              newIngredients[index].unit = newUnit;
+                              
+                              // Простой пересчет цены пропорционально количеству
+                              const originalQty = parseFloat(ingredient.quantity) || 100;
+                              const originalPrice = parseFloat(ingredient.totalPrice) || 10;
+                              const newPrice = (newQty / originalQty) * originalPrice;
+                              newIngredients[index].totalPrice = newPrice.toFixed(1);
+                            }
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          placeholder="100 г"
+                          className="col-span-12 sm:col-span-3 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none text-sm"
+                        />
+                        
+                        {/* Цена */}
+                        <div className="col-span-12 sm:col-span-1 flex items-center justify-center text-sm">
+                          <span className="text-green-400 font-bold">
+                            {Math.round(parseFloat(ingredient.totalPrice) || 0)} ₽
+                          </span>
+                        </div>
+                        
+                        {/* Кнопка удаления */}
+                        <button 
+                          onClick={() => {
+                            const newIngredients = currentIngredients.filter((_, i) => i !== index);
+                            setCurrentIngredients(newIngredients);
+                          }}
+                          className="col-span-12 sm:col-span-1 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center text-lg py-1"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Общая информация */}
+                  <div className="mt-4 p-3 bg-gray-800/30 rounded-lg border border-green-400/30">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-gray-400 text-xs mb-1">ОБЩАЯ СТОИМОСТЬ</div>
+                        <div className="text-green-400 font-bold text-lg">
+                          {Math.round(currentIngredients.reduce((total, ing) => {
+                            return total + (parseFloat(ing.totalPrice) || 0);
+                          }, 0))} ₽
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-xs mb-1">ОБЩИЙ ВЕС</div>
+                        <div className="text-blue-400 font-bold text-lg">
+                          {Math.round(currentIngredients.reduce((total, ing) => {
+                            return total + (parseFloat(ing.quantity) || 0);
+                          }, 0))} г
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 text-xs mb-1">РЕКОМЕНДУЕМАЯ ЦЕНА</div>
+                        <div className="text-purple-400 font-bold text-lg">
+                          {Math.round(currentIngredients.reduce((total, ing) => {
+                            return total + (parseFloat(ing.totalPrice) || 0);
+                          }, 0) * 3)} ₽
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Статическое отображение ингредиентов */
+              <div className="space-y-2">
+                {ingredients.split('\n').filter(line => line.trim()).map((line, idx) => {
+                  // Убираем цены из строки ингредиентов (формат: "- Название — количество — ~цена ₽")
+                  const cleanLine = line.replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/, '');
+                  return (
+                    <p key={idx} className="text-gray-300">{cleanLine}</p>
+                  );
+                })}
+                <div className="mt-4 p-3 bg-gray-700/30 rounded-lg">
+                  <p className="text-sm text-gray-400 text-center">
+                    Интерактивный редактор ингредиентов загружается...
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
