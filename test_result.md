@@ -300,6 +300,18 @@ backend:
         comment: "Usage limits are working correctly. Free tier users are limited to 3 tech cards per month, and attempts to exceed this limit are properly blocked with appropriate error messages. Monthly usage tracking and reset functionality appear to be implemented correctly."
 
 frontend:
+  - task: "Mobile Responsive Design Issues"
+    implemented: true
+    working: true
+    file: "frontend/src/App.css, frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "МОБИЛЬНАЯ ВЕРСИЯ ИСПРАВЛЕНА: ✅ Добавлены адаптивные медиа-запросы для различных размеров экранов (375px, 768px). ✅ Исправлен header с адаптивной структурой (flex-col на мобильных). ✅ Улучшены размеры кнопок (min-h-[48px] для касаний). ✅ Адаптивные отступы и размеры текста (text-sm sm:text-base). ✅ Кнопки PRO функций и AI дополнений адаптированы. ✅ Правая панель с техкартой адаптирована для мобильных. ✅ Редактор ингредиентов с мобильной версткой. ✅ Протестированы различные размеры экранов: iPhone X (375x812), iPhone 11 Pro Max (414x896), landscape режим. Все элементы корректно отображаются на мобильных устройствах."
+        
   - task: "Create Subscription Management Pages"
     implemented: true
     working: true
