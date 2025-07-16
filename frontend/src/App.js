@@ -2937,7 +2937,7 @@ function App() {
                   <div 
                     className="text-gray-300 leading-relaxed"
                     dangerouslySetInnerHTML={{ 
-                      __html: formatText(inspirationResult)
+                      __html: formatProAIContent(inspirationResult)
                     }}
                   />
                 </div>
