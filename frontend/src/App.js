@@ -510,13 +510,17 @@ function App() {
             {time && (
               <div className="bg-blue-900/20 rounded-lg p-4 text-center">
                 <h4 className="text-blue-300 font-bold mb-2">ВРЕМЯ</h4>
-                <p className="text-gray-300">{time}</p>
+                <p className="text-gray-300">
+                  <EditableText field="time" value={time} className="text-gray-300" />
+                </p>
               </div>
             )}
             {yieldAmount && (
               <div className="bg-green-900/20 rounded-lg p-4 text-center">
                 <h4 className="text-green-300 font-bold mb-2">ВЫХОД</h4>
-                <p className="text-gray-300">{yieldAmount}</p>
+                <p className="text-gray-300">
+                  <EditableText field="yield" value={yieldAmount} className="text-gray-300" />
+                </p>
               </div>
             )}
           </div>
@@ -527,9 +531,7 @@ function App() {
           <div className="bg-green-900/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-green-300 mb-4">СЕБЕСТОИМОСТЬ</h3>
             <div className="space-y-1">
-              {cost.split('\n').filter(line => line.trim()).map((line, idx) => (
-                <p key={idx} className="text-gray-300">{line}</p>
-              ))}
+              <EditableText field="cost" value={cost} className="text-gray-300" multiline={true} />
             </div>
           </div>
         )}
@@ -544,7 +546,14 @@ function App() {
                   <span className="text-purple-400 font-bold min-w-[2rem]">
                     {line.match(/^\d+\./) ? line.match(/^\d+/)[0] : '•'}
                   </span>
-                  <p className="text-gray-300 flex-1">{line.replace(/^\d+\.\s*/, '')}</p>
+                  <div className="text-gray-300 flex-1">
+                    <EditableText 
+                      field={`step_${idx}`} 
+                      value={line.replace(/^\d+\.\s*/, '')} 
+                      className="text-gray-300" 
+                      multiline={true}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -556,8 +565,16 @@ function App() {
           <div className="bg-yellow-900/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-yellow-300 mb-4">КБЖУ</h3>
             <div className="space-y-2">
-              {kbzhu1 && <p className="text-gray-300"><strong>На 1 порцию:</strong> {kbzhu1}</p>}
-              {kbzhu100 && <p className="text-gray-300"><strong>На 100 г:</strong> {kbzhu100}</p>}
+              {kbzhu1 && (
+                <p className="text-gray-300">
+                  <strong>На 1 порцию:</strong> <EditableText field="kbju" value={kbzhu1} className="text-gray-300" />
+                </p>
+              )}
+              {kbzhu100 && (
+                <p className="text-gray-300">
+                  <strong>На 100 г:</strong> {kbzhu100}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -566,7 +583,9 @@ function App() {
         {allergens && (
           <div className="bg-red-900/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-red-300 mb-2">АЛЛЕРГЕНЫ</h3>
-            <p className="text-gray-300">{allergens}</p>
+            <p className="text-gray-300">
+              <EditableText field="allergens" value={allergens} className="text-gray-300" />
+            </p>
           </div>
         )}
 
@@ -575,9 +594,7 @@ function App() {
           <div className="bg-gray-800/30 rounded-lg p-4">
             <h3 className="text-xl font-bold text-purple-300 mb-4">ЗАГОТОВКИ И ХРАНЕНИЕ</h3>
             <div className="space-y-2">
-              {storage.split('\n').filter(line => line.trim()).map((line, idx) => (
-                <p key={idx} className="text-gray-300">{line}</p>
-              ))}
+              <EditableText field="storage" value={storage} className="text-gray-300" multiline={true} />
             </div>
           </div>
         )}
