@@ -2983,6 +2983,7 @@ function App() {
                   {loadingType === 'sales' && 'Создаю скрипт продаж...'}
                   {loadingType === 'pairing' && 'Подбираю сочетания...'}
                   {loadingType === 'photo' && 'Готовлю советы по фото...'}
+                  {loadingType === 'inspiration' && 'Создаю вдохновение...'}
                 </h3>
                 <p className="text-purple-300 text-sm animate-pulse">
                   {loadingMessage}
