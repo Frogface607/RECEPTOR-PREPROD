@@ -661,22 +661,20 @@ function App() {
     
     try {
       const response = await axios.post(`${API}/generate-photo-tips`, {
-        tech_card: techCard,
-        user_id: currentUser.id
+        user_id: currentUser.id,
+        tech_card: techCard
       });
+      
+      clearInterval(progressInterval);
+      setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
       
       setPhotoTipsResult(response.data.tips);
       
-      // Завершаем анимацию
-      clearInterval(progressInterval);
-      setLoadingProgress(100);
-      setLoadingMessage('✨ Советы по фото готовы!');
-      
+      // Показываем модальное окно с небольшой задержкой
       setTimeout(() => {
-        setIsGenerating(false);
-        setLoadingProgress(0);
-        setLoadingMessage('');
-        setLoadingType('');
         setShowPhotoTipsModal(true);
       }, 2000);
       
@@ -688,6 +686,44 @@ function App() {
       setLoadingMessage('');
       setLoadingType('');
       alert('Ошибка при генерации советов по фото');
+    }
+  };
+
+  const generateInspiration = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsGenerating(true);
+    setLoadingType('inspiration');
+    const progressInterval = simulateProgress('inspiration', 15000);
+    
+    try {
+      const response = await axios.post(`${API}/generate-inspiration`, {
+        user_id: currentUser.id,
+        tech_card: techCard,
+        inspiration_prompt: inspirationPrompt || 'Создай креативный и жизнеспособный твист на это блюдо'
+      });
+      
+      clearInterval(progressInterval);
+      setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      
+      setInspirationResult(response.data.inspiration);
+      
+      // Показываем модальное окно с небольшой задержкой
+      setTimeout(() => {
+        setShowInspirationModal(true);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error generating inspiration:', error);
+      clearInterval(progressInterval);
+      setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при генерации вдохновения');
     }
   };
 
