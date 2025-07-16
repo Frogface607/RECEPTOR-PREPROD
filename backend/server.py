@@ -200,8 +200,10 @@ class TechCard(BaseModel):
     user_id: str
     dish_name: str
     content: str
+    city: Optional[str] = None
+    is_inspiration: Optional[bool] = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
 
 class TechCardCreate(BaseModel):
     user_id: str
