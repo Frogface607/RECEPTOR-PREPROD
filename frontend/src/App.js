@@ -64,6 +64,11 @@ function App() {
   const [inspirationResult, setInspirationResult] = useState('');
   const [inspirationPrompt, setInspirationPrompt] = useState('');
 
+  // Inline editing states
+  const [isInlineEditing, setIsInlineEditing] = useState(false);
+  const [editingField, setEditingField] = useState(null);
+  const [editingValue, setEditingValue] = useState('');
+
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('');
