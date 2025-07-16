@@ -1847,6 +1847,9 @@ function App() {
                         Загружено {userPrices.length} позиций
                       </div>
                     )}
+                    <div className="text-xs sm:text-sm text-yellow-400 text-center mb-3 sm:mb-4 p-2 bg-yellow-900/20 rounded">
+                      🔧 Функция в разработке
+                    </div>
                     
                     {/* ПРО AI функции */}
                     <div className="border-t border-purple-400/20 pt-3 sm:pt-4">
