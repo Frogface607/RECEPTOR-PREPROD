@@ -1620,18 +1620,18 @@ function App() {
                 
                 {/* PRO Price Management */}
                 {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
-                  <div className="border-t border-purple-400/30 pt-6">
-                    <h3 className="text-lg font-bold text-purple-300 mb-4">PRO ФУНКЦИИ</h3>
+                  <div className="border-t border-purple-400/30 pt-4 sm:pt-6">
+                    <h3 className="text-base sm:text-lg font-bold text-purple-300 mb-3 sm:mb-4">PRO ФУНКЦИИ</h3>
                     
                     {/* Kitchen Equipment Button */}
                     <button
                       onClick={() => setShowEquipmentModal(true)}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-colors mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px]"
                     >
                       КУХОННОЕ ОБОРУДОВАНИЕ
                     </button>
                     {userEquipment.length > 0 && (
-                      <div className="text-sm text-purple-400 text-center mb-4">
+                      <div className="text-xs sm:text-sm text-purple-400 text-center mb-3 sm:mb-4">
                         Выбрано {userEquipment.length} единиц оборудования
                       </div>
                     )}
@@ -1639,43 +1639,45 @@ function App() {
                     {/* Price Management Button */}
                     <button
                       onClick={() => setShowPriceModal(true)}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-colors mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px]"
                     >
                       УПРАВЛЕНИЕ ПРАЙСАМИ
                     </button>
                     {userPrices.length > 0 && (
-                      <div className="text-sm text-green-400 text-center mb-4">
+                      <div className="text-xs sm:text-sm text-green-400 text-center mb-3 sm:mb-4">
                         Загружено {userPrices.length} позиций
                       </div>
                     )}
                     
                     {/* ПРО AI функции */}
-                    <div className="border-t border-purple-400/20 pt-4">
-                      <h4 className="text-md font-bold text-purple-200 mb-3">AI ДОПОЛНЕНИЯ</h4>
+                    <div className="border-t border-purple-400/20 pt-3 sm:pt-4">
+                      <h4 className="text-sm sm:text-base font-bold text-purple-200 mb-3">AI ДОПОЛНЕНИЯ</h4>
                       
-                      <button
-                        onClick={() => generateSalesScript()}
-                        disabled={isGenerating}
-                        className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm`}
-                      >
-                        СКРИПТ ПРОДАЖ
-                      </button>
-                      
-                      <button
-                        onClick={generateFoodPairing}
-                        disabled={isGenerating}
-                        className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm`}
-                      >
-                        ФУДПЕЙРИНГ
-                      </button>
-                      
-                      <button
-                        onClick={generatePhotoTips}
-                        disabled={isGenerating}
-                        className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2 px-4 rounded-lg transition-colors mb-3 text-sm`}
-                      >
-                        СОВЕТЫ ПО ФОТО
-                      </button>
+                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                        <button
+                          onClick={() => generateSalesScript()}
+                          disabled={isGenerating}
+                          className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                        >
+                          СКРИПТ ПРОДАЖ
+                        </button>
+                        
+                        <button
+                          onClick={generateFoodPairing}
+                          disabled={isGenerating}
+                          className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                        >
+                          ФУДПЕЙРИНГ
+                        </button>
+                        
+                        <button
+                          onClick={generatePhotoTips}
+                          disabled={isGenerating}
+                          className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                        >
+                          СОВЕТЫ ПО ФОТО
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
