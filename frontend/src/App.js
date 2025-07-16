@@ -1779,13 +1779,13 @@ function App() {
                     </button>
                     <button 
                       onClick={handlePrintTechCard}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
                     >
                       ЭКСПОРТ В PDF
                     </button>
                     <button 
                       onClick={() => setShowTwistModal(true)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
                     >
                       ТВИСТ
                     </button>
@@ -1796,10 +1796,10 @@ function App() {
                 </div>
                 
                 {/* ВСТРОЕННЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ */}
-                <div className="mt-8 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-purple-300">РЕДАКТОР ИНГРЕДИЕНТОВ</h3>
-                    <div className="flex space-x-3">
+                <div className="mt-6 sm:mt-8 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+                    <h3 className="text-lg sm:text-xl font-bold text-purple-300">РЕДАКТОР ИНГРЕДИЕНТОВ</h3>
+                    <div className="flex space-x-2 sm:space-x-3 w-full sm:w-auto">
                       <button 
                         onClick={() => {
                           setCurrentIngredients([...currentIngredients, { 
@@ -1809,7 +1809,7 @@ function App() {
                             id: Date.now() 
                           }]);
                         }}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-2"
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base min-h-[40px] sm:min-h-[44px] flex-1 sm:flex-none justify-center"
                       >
                         <span>+</span>
                         <span>ДОБАВИТЬ</span>
