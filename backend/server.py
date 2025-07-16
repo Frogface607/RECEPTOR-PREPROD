@@ -828,8 +828,39 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
             temp_file.write(content)
             temp_file_path = temp_file.name
         
-        # Process with pandas
-        df = pd.read_excel(temp_file_path, engine='openpyxl')
+        # Process with pandas - support both Excel and CSV
+        try:
+            # Try Excel first
+            if file.filename.lower().endswith(('.xlsx', '.xls')):
+                df = pd.read_excel(temp_file_path, engine='openpyxl')
+            elif file.filename.lower().endswith('.csv'):
+                # For CSV, recreate temp file with .csv extension
+                os.unlink(temp_file_path)
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_csv:
+                    temp_csv.write(content)
+                    temp_csv_path = temp_csv.name
+                df = pd.read_csv(temp_csv_path, encoding='utf-8')
+                temp_file_path = temp_csv_path
+            else:
+                # Try reading as CSV as fallback
+                os.unlink(temp_file_path)
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_csv:
+                    temp_csv.write(content)
+                    temp_csv_path = temp_csv.name
+                df = pd.read_csv(temp_csv_path, encoding='utf-8')
+                temp_file_path = temp_csv_path
+        except Exception as e:
+            # If all fails, try different encodings for CSV
+            try:
+                os.unlink(temp_file_path)
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_csv:
+                    temp_csv.write(content)
+                    temp_csv_path = temp_csv.name
+                df = pd.read_csv(temp_csv_path, encoding='windows-1251')
+                temp_file_path = temp_csv_path
+            except Exception as e2:
+                raise HTTPException(status_code=400, detail=f"Не удалось прочитать файл: {str(e2)}")
+        
         
         processed_prices = []
         for _, row in df.iterrows():
