@@ -341,7 +341,7 @@ function App() {
           <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-purple-300 mb-4">ИНГРЕДИЕНТЫ</h3>
             
-            {/* Показать интерактивную таблицу, если ингредиенты загружены */}
+            {/* Показать интерактивную таблицу, если ингредиенты загружены, иначе статический список */}
             {currentIngredients.length > 0 ? (
               <div className="space-y-4">
                 {/* Интерактивная таблица ингредиентов */}
