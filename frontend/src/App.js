@@ -1685,13 +1685,13 @@ function App() {
                 {/* Upgrade prompt for Free users */}
                 {currentUser.subscription_plan === 'free' && currentUser.monthly_tech_cards_used >= 3 && (
                   <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-4 mt-4">
-                    <h3 className="text-lg font-bold text-purple-300 mb-2">ЛИМИТ ИСЧЕРПАН</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-purple-300 mb-2">ЛИМИТ ИСЧЕРПАН</h3>
                     <p className="text-gray-300 text-sm mb-3">
                       Вы использовали все 3 техкарты в месяце. Обновите подписку для неограниченного доступа!
                     </p>
                     <button
                       onClick={() => alert('Функция обновления подписки скоро будет доступна')}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm sm:text-base min-h-[44px]"
                     >
                       ОБНОВИТЬ ПОДПИСКУ
                     </button>
@@ -1701,8 +1701,8 @@ function App() {
 
               {/* AI Editing */}
               {techCard && (
-                <div className="border-t border-purple-400/30 pt-8">
-                  <h3 className="text-xl font-bold text-purple-300 mb-6">
+                <div className="border-t border-purple-400/30 pt-6 sm:pt-8">
+                  <h3 className="text-lg sm:text-xl font-bold text-purple-300 mb-4 sm:mb-6">
                     РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
                   </h3>
                   <div className="space-y-4">
