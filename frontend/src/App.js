@@ -604,9 +604,7 @@ function App() {
           <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-orange-300 mb-4">СОВЕТЫ ОТ ШЕФА</h3>
             <div className="space-y-2">
-              {tips.split('\n').filter(line => line.trim()).map((line, idx) => (
-                <p key={idx} className="text-gray-300">{line}</p>
-              ))}
+              <EditableText field="tips" value={tips} className="text-gray-300" multiline={true} />
             </div>
           </div>
         )}
@@ -615,7 +613,9 @@ function App() {
         {serving && (
           <div className="bg-pink-900/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-pink-300 mb-2">ПОДАЧА</h3>
-            <p className="text-gray-300">{serving}</p>
+            <p className="text-gray-300">
+              <EditableText field="serving" value={serving} className="text-gray-300" />
+            </p>
           </div>
         )}
       </div>
