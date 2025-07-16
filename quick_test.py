@@ -8,7 +8,7 @@ import json
 import time
 
 def test_basic_generation():
-    base_url = "https://19a9b39d-75c4-486b-9115-f9a91188584f.preview.emergentagent.com/api"
+    base_url = "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com/api"
     
     # Create unique user
     test_email = f"test_user_{int(time.time())}@test.com"

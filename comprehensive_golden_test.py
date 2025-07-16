@@ -10,7 +10,7 @@ def test_golden_prompt_requirements():
     and related functionality as requested in the review.
     """
     
-    base_url = "https://19a9b39d-75c4-486b-9115-f9a91188584f.preview.emergentagent.com/api"
+    base_url = "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com/api"
     
     print("🚀 RECEPTOR PRO GOLDEN PROMPT TESTING")
     print("=" * 60)
