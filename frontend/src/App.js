@@ -172,6 +172,119 @@ function App() {
       .replace(/\n\n/g, '<br><br>')  // Double line breaks
       .replace(/\n/g, '<br>');       // Single line breaks
   };
+  // Inline editing functions
+  const startInlineEdit = (field, value) => {
+    setEditingField(field);
+    setEditingValue(value);
+    setIsInlineEditing(true);
+  };
+
+  const saveInlineEdit = () => {
+    if (!editingField || !techCard) return;
+    
+    let updatedTechCard = techCard;
+    
+    // Обновляем соответствующее поле в техкарте
+    if (editingField.startsWith('ingredient_')) {
+      // Обновляем ингредиент
+      const ingredientIndex = parseInt(editingField.split('_')[1]);
+      const newIngredients = [...currentIngredients];
+      if (newIngredients[ingredientIndex]) {
+        newIngredients[ingredientIndex].name = editingValue;
+        setCurrentIngredients(newIngredients);
+      }
+    } else if (editingField.startsWith('step_')) {
+      // Обновляем шаг рецепта
+      const stepPattern = new RegExp(`(\\d+\\. )(.*)`, 'g');
+      updatedTechCard = updatedTechCard.replace(stepPattern, (match, num, text) => {
+        if (num.trim() === editingField.replace('step_', '') + '.') {
+          return num + editingValue;
+        }
+        return match;
+      });
+    } else {
+      // Обновляем другие поля
+      const fieldPatterns = {
+        'title': /(\*\*Название:\*\*\s*)(.*?)(?=\n|\*\*|$)/,
+        'description': /(\*\*Описание:\*\*\s*)(.*?)(?=\n\*\*|$)/,
+        'time': /(\*\*Время:\*\*\s*)(.*?)(?=\n|\*\*|$)/,
+        'yield': /(\*\*Выход:\*\*\s*)(.*?)(?=\n|\*\*|$)/,
+        'cost': /(\*\*💸 Себестоимость:\*\*\s*)(.*?)(?=\n|\*\*|$)/,
+        'kbju': /(\*\*КБЖУ на 1 порцию:\*\*\s*)(.*?)(?=\n|\*\*|$)/,
+        'allergens': /(\*\*Аллергены:\*\*\s*)(.*?)(?=\n|\*\*|$)/,
+        'storage': /(\*\*Заготовки и хранение:\*\*\s*)(.*?)(?=\n\*\*|$)/s
+      };
+      
+      const pattern = fieldPatterns[editingField];
+      if (pattern) {
+        updatedTechCard = updatedTechCard.replace(pattern, `$1${editingValue}`);
+      }
+    }
+    
+    setTechCard(updatedTechCard);
+    setIsInlineEditing(false);
+    setEditingField(null);
+    setEditingValue('');
+  };
+
+  const cancelInlineEdit = () => {
+    setIsInlineEditing(false);
+    setEditingField(null);
+    setEditingValue('');
+  };
+
+  // Компонент для редактируемого текста
+  const EditableText = ({ field, value, className = "", multiline = false }) => {
+    const isEditing = editingField === field;
+    
+    if (isEditing) {
+      return multiline ? (
+        <div className="inline-block w-full">
+          <textarea
+            value={editingValue}
+            onChange={(e) => setEditingValue(e.target.value)}
+            className="w-full bg-gray-700 text-white px-2 py-1 rounded border border-purple-400 focus:outline-none resize-none"
+            rows={3}
+            onBlur={saveInlineEdit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.ctrlKey) {
+                saveInlineEdit();
+              } else if (e.key === 'Escape') {
+                cancelInlineEdit();
+              }
+            }}
+            autoFocus
+          />
+        </div>
+      ) : (
+        <input
+          value={editingValue}
+          onChange={(e) => setEditingValue(e.target.value)}
+          className="inline-block bg-gray-700 text-white px-2 py-1 rounded border border-purple-400 focus:outline-none"
+          onBlur={saveInlineEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              saveInlineEdit();
+            } else if (e.key === 'Escape') {
+              cancelInlineEdit();
+            }
+          }}
+          autoFocus
+        />
+      );
+    }
+    
+    return (
+      <span
+        className={`${className} cursor-pointer hover:bg-gray-700/50 px-1 py-0.5 rounded transition-colors`}
+        onClick={() => startInlineEdit(field, value)}
+        title="Кликните для редактирования"
+      >
+        {value}
+      </span>
+    );
+  };
+
   const formatTechCard = (content) => {
     if (!content) return null;
 
