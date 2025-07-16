@@ -1286,3 +1286,52 @@ async def generate_inspiration(request: dict):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
+
+@app.post("/api/save-tech-card")
+async def save_tech_card(request: dict):
+    user_id = request.get("user_id")
+    content = request.get("content")
+    dish_name = request.get("dish_name", "Техкарта")
+    city = request.get("city", "moscow")
+    is_inspiration = request.get("is_inspiration", False)
+    
+    if not user_id or not content:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    # Auto-create test user if needed
+    if user_id.startswith("test_user_"):
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": city,
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+    
+    try:
+        # Create tech card object
+        tech_card = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "dish_name": dish_name,
+            "content": content,
+            "city": city,
+            "is_inspiration": is_inspiration,
+            "created_at": datetime.now()
+        }
+        
+        # Save to database
+        await db.tech_cards.insert_one(tech_card)
+        
+        return {
+            "id": tech_card["id"],
+            "message": "Техкарта сохранена успешно"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка сохранения: {str(e)}")
