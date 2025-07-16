@@ -814,6 +814,22 @@ async def get_cities():
 
 @app.post("/api/upload-prices")
 async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
+    # Auto-create test user with PRO subscription if needed
+    if user_id.startswith("test_user_"):
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            # Create test user with PRO subscription
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": "moskva",
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+    
     # Validate user subscription (PRO only)
     user = await db.users.find_one({"id": user_id})
     if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
