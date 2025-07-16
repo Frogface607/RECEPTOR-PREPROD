@@ -3017,6 +3017,95 @@ function App() {
         </div>
       )}
 
+      {/* Inspiration Modal */}
+      {showInspirationModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">🌟</span>
+                </div>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                  ВДОХНОВЕНИЕ - ТВИСТ НА БЛЮДО
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowInspirationModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gray-800/50 rounded-xl p-6">
+                <div className="prose prose-invert max-w-none">
+                  <div 
+                    className="text-gray-300 leading-relaxed"
+                    dangerouslySetInnerHTML={{ 
+                      __html: inspirationResult.replace(/\n/g, '<br>') 
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 mt-8">
+              <button
+                onClick={() => {
+                  // Создаем новую техкарту из вдохновения
+                  setTechCard(inspirationResult);
+                  setShowInspirationModal(false);
+                  
+                  // Парсим новые ингредиенты
+                  const lines = inspirationResult.split('\n');
+                  const ingredients = [];
+                  
+                  lines.forEach(line => {
+                    if (line.startsWith('- ') && line.includes('₽')) {
+                      const parts = line.replace('- ', '').split(' — ');
+                      if (parts.length >= 2) {
+                        const name = parts[0].trim();
+                        const quantity = parts[1].trim();
+                        const priceMatch = line.match(/~(\d+(?:\.\d+)?)\s*₽/);
+                        const price = priceMatch ? priceMatch[1] : '10';
+                        
+                        ingredients.push({
+                          id: Date.now() + Math.random(),
+                          name: name,
+                          quantity: quantity.replace(/\s*г.*/, ''),
+                          unit: 'г',
+                          totalPrice: price
+                        });
+                      }
+                    }
+                  });
+                  
+                  setCurrentIngredients(ingredients);
+                  alert('Новая техкарта создана на основе вдохновения! 🌟');
+                }}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg"
+              >
+                СОЗДАТЬ ТЕХКАРТУ
+              </button>
+              <button
+                onClick={() => navigator.clipboard.writeText(inspirationResult)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+              >
+                КОПИРОВАТЬ
+              </button>
+              <button
+                onClick={() => setShowInspirationModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
