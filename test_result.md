@@ -569,3 +569,15 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 REVIEW REQUEST TESTING COMPLETED - ALL 4 TESTS PASSED: Conducted comprehensive testing of corrected /api/upload-prices endpoint with automatic test user creation as specifically requested. ✅ TEST 1 PASSED: Тестовый пользователь с PRO подпиской - user_id 'test_user_12345' automatically creates user with PRO subscription, no 'Требуется PRO подписка' error, upload works perfectly. ✅ TEST 2 PASSED: Загрузка тестового Excel файла - Created Excel file with exact data (Картофель|50, Морковь|60, Лук|40), file processed correctly, count=3 items processed successfully. ✅ TEST 3 PASSED: Проверка ответа API - Returns success: true, count > 0 (not 0 items), message contains correct count 'Обработано 3 позиций'. ✅ TEST 4 PASSED: CSV файл - Created CSV file with same data, CSV files now processed correctly (count=3), all expected items found. ✅ IMPORTANT CHECKS VERIFIED: No 'Требуется PRO подписка' error for test_user_xxx, files are processed (count > 0), correct price extraction from files, CSV files now working. All review requirements successfully met - endpoint fully functional for both Excel and CSV files."
+
+  - task: "Save Tech Card Endpoint - Inspiration Tech Cards"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 SAVE TECH CARD ENDPOINT TESTING COMPLETED - ALL 4 TESTS PASSED: Conducted comprehensive testing of POST /api/save-tech-card endpoint for saving inspiration tech cards as specifically requested in review. ✅ TEST 1 PASSED: Базовая работа endpoint - POST /api/save-tech-card works perfectly with 200 OK status, accepts test data (user_id: test_user_12345, dish_name: Азиатский борщ с кокосовым молоком, is_inspiration: true), returns proper JSON response with tech card ID and success message. ✅ TEST 2 PASSED: Автоматическое создание пользователя - test_user_12345 automatically created with PRO subscription, no access errors, subscription validation working correctly. ✅ TEST 3 PASSED: Сохранение в базу - Tech card saved with is_inspiration: true flag, generates valid UUID for ID (f1e9ffea-b0a1-486b-9d8a-152bfe47cc7a), all fields correctly saved (user_id, dish_name, content, city, created_at). Fixed TechCard Pydantic model to include is_inspiration and city fields for proper serialization. ✅ TEST 4 PASSED: Интеграция с историей - GET /api/user-history/test_user_12345 returns saved tech card in history, is_inspiration: true flag present and correct, dish name matches exactly, tech card appears at top of history (newest first). All review requirements successfully verified - endpoint ready for production use with inspiration tech cards."
