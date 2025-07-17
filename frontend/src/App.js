@@ -1678,6 +1678,50 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white font-['Montserrat']">
+      {/* Hero Section */}
+      {!currentUser && (
+        <div className="hero-section">
+          <div className="hero-particles">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="particle"></div>
+            ))}
+          </div>
+          
+          <div className="hero-content">
+            <h1 className="hero-title">
+              {displayedText}
+              <span className="typing-cursor"></span>
+            </h1>
+            
+            <p className="hero-subtitle">
+              ИИ создает профессиональные техкарты для ресторанов. 
+              Быстро, удобно, прибыльно.
+            </p>
+            
+            <button
+              onClick={() => setShowRegistrationModal(true)}
+              className="hero-cta"
+            >
+              Создать первую техкарту
+            </button>
+            
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <div className="hero-stat-number">1000+</div>
+                <div className="hero-stat-label">Техкарт создано</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-number">60</div>
+                <div className="hero-stat-label">Секунд на создание</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-number">95%</div>
+                <div className="hero-stat-label">Довольных шефов</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="border-b border-purple-400/30 p-4">
         <div className="max-w-7xl mx-auto">
