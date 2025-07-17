@@ -3109,6 +3109,88 @@ function App() {
         </div>
       )}
 
+      {/* Registration Modal */}
+      {showRegistrationModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-purple-500/30">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🚀</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Добро пожаловать в Receptor Pro!</h3>
+              <p className="text-gray-300">Начните создавать профессиональные техкарты прямо сейчас</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-purple-300 text-sm font-bold mb-2">Email</label>
+                <input
+                  type="email"
+                  value={registrationData.email}
+                  onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-purple-500 focus:outline-none"
+                  placeholder="chef@restaurant.com"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-purple-300 text-sm font-bold mb-2">Имя</label>
+                <input
+                  type="text"
+                  value={registrationData.name}
+                  onChange={(e) => setRegistrationData({...registrationData, name: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-purple-500 focus:outline-none"
+                  placeholder="Ваше имя"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-purple-300 text-sm font-bold mb-2">Город</label>
+                <select
+                  value={registrationData.city}
+                  onChange={(e) => setRegistrationData({...registrationData, city: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-purple-500 focus:outline-none"
+                >
+                  <option value="">Выберите город</option>
+                  <option value="moskva">Москва</option>
+                  <option value="spb">Санкт-Петербург</option>
+                  <option value="novosibirsk">Новосибирск</option>
+                  <option value="ekaterinburg">Екатеринбург</option>
+                  <option value="kazan">Казань</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={async () => {
+                  if (registrationData.email && registrationData.name && registrationData.city) {
+                    try {
+                      const response = await axios.post(`${API}/register`, registrationData);
+                      localStorage.setItem('receptor_user', JSON.stringify(response.data));
+                      setCurrentUser(response.data);
+                      setShowRegistrationModal(false);
+                    } catch (error) {
+                      console.error('Registration error:', error);
+                      alert('Ошибка регистрации');
+                    }
+                  }
+                }}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                Начать создавать
+              </button>
+              <button
+                onClick={() => setShowRegistrationModal(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
