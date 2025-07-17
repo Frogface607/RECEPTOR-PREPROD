@@ -488,14 +488,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "PRO AI Functions - Sales Script Generation"
-    - "PRO AI Functions - Food Pairing Generation" 
-    - "PRO AI Functions - Photo Tips Generation"
-    - "Fix Ingredients Table Display"
-    - "Fix Header Formatting"
-    - "Implement Interactive Ingredients Editor"
-    - "Implement Interactive Steps Editor"
-    - "Upload Prices Endpoint - Excel/CSV Price Upload"
+    - "OpenAI API Key Testing - Tech Card Generation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
