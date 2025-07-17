@@ -85,6 +85,22 @@ function App() {
     city: ''
   });
 
+  // Typing animation states
+  const [displayedText, setDisplayedText] = useState('');
+  const [typingIndex, setTypingIndex] = useState(0);
+  const fullText = "От идеи до техкарты за 60 секунд";
+
+  // Typing animation effect
+  useEffect(() => {
+    if (typingIndex < fullText.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText(fullText.slice(0, typingIndex + 1));
+        setTypingIndex(typingIndex + 1);
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [typingIndex, fullText]);
+
   // Animated loading messages
   const getLoadingMessages = (type) => {
     const messages = {
