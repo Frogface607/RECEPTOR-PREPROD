@@ -73,6 +73,7 @@ function App() {
   const [voiceStatus, setVoiceStatus] = useState('');
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [recognition, setRecognition] = useState(null);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
   // Login states
   const [showLogin, setShowLogin] = useState(false);
