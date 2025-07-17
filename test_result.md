@@ -585,3 +585,15 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 SAVE TECH CARD ENDPOINT TESTING COMPLETED - ALL 4 TESTS PASSED: Conducted comprehensive testing of POST /api/save-tech-card endpoint for saving inspiration tech cards as specifically requested in review. ✅ TEST 1 PASSED: Базовая работа endpoint - POST /api/save-tech-card works perfectly with 200 OK status, accepts test data (user_id: test_user_12345, dish_name: Азиатский борщ с кокосовым молоком, is_inspiration: true), returns proper JSON response with tech card ID and success message. ✅ TEST 2 PASSED: Автоматическое создание пользователя - test_user_12345 automatically created with PRO subscription, no access errors, subscription validation working correctly. ✅ TEST 3 PASSED: Сохранение в базу - Tech card saved with is_inspiration: true flag, generates valid UUID for ID (f1e9ffea-b0a1-486b-9d8a-152bfe47cc7a), all fields correctly saved (user_id, dish_name, content, city, created_at). Fixed TechCard Pydantic model to include is_inspiration and city fields for proper serialization. ✅ TEST 4 PASSED: Интеграция с историей - GET /api/user-history/test_user_12345 returns saved tech card in history, is_inspiration: true flag present and correct, dish name matches exactly, tech card appears at top of history (newest first). All review requirements successfully verified - endpoint ready for production use with inspiration tech cards."
+
+  - task: "Deployment Verification Test"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🚀 DEPLOYMENT VERIFICATION TEST COMPLETED: Conducted quick deployment test as specifically requested for backend API availability. ✅ CORE INFRASTRUCTURE WORKING: All core backend endpoints operational and responding correctly. ✅ GET /api/cities: 200 OK (0.09s) - 21 cities available including Moscow. ✅ POST /api/register: 200 OK (0.08s) - User registration working perfectly with proper subscription initialization. ✅ GET /api/subscription-plans: 200 OK (0.02s) - All 4 subscription tiers (free, starter, pro, business) available. ✅ GET /api/kitchen-equipment: 200 OK (0.02s) - 21 equipment items across 3 categories working. ⚠️ POST /api/generate-tech-card: OpenAI API key invalid (401 error) - This is a configuration issue, not deployment failure. ✅ DEPLOYMENT STATUS: Backend infrastructure is fully operational and ready for user access. The OpenAI API key needs to be updated for tech card generation to work, but all other functionality is working perfectly. Backend URL https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com/api is accessible and responding to requests."
