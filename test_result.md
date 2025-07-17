@@ -597,3 +597,15 @@ backend:
       - working: true
         agent: "testing"
         comment: "🚀 DEPLOYMENT VERIFICATION TEST COMPLETED: Conducted quick deployment test as specifically requested for backend API availability. ✅ CORE INFRASTRUCTURE WORKING: All core backend endpoints operational and responding correctly. ✅ GET /api/cities: 200 OK (0.09s) - 21 cities available including Moscow. ✅ POST /api/register: 200 OK (0.08s) - User registration working perfectly with proper subscription initialization. ✅ GET /api/subscription-plans: 200 OK (0.02s) - All 4 subscription tiers (free, starter, pro, business) available. ✅ GET /api/kitchen-equipment: 200 OK (0.02s) - 21 equipment items across 3 categories working. ⚠️ POST /api/generate-tech-card: OpenAI API key invalid (401 error) - This is a configuration issue, not deployment failure. ✅ DEPLOYMENT STATUS: Backend infrastructure is fully operational and ready for user access. The OpenAI API key needs to be updated for tech card generation to work, but all other functionality is working perfectly. Backend URL https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com/api is accessible and responding to requests."
+
+  - task: "OpenAI API Key Testing - Tech Card Generation"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🔑 OPENAI API KEY TESTING COMPLETED: Conducted specific test for review request 'Паста Карбонара на 4 порции' with user_id 'test_user_12345' and city 'moskva'. ❌ CRITICAL ISSUE IDENTIFIED: OpenAI API key is invalid (401 Unauthorized error). ✅ INFRASTRUCTURE FIXES APPLIED: Fixed MongoDB connection issue by updating MONGO_URL from 'mongodb://mongo:27017' to 'mongodb://localhost:27017' - MongoDB now connects successfully. ✅ BACKEND FUNCTIONALITY: All other backend systems working correctly - user creation, subscription handling, database operations all functional. ❌ ROOT CAUSE: Current OpenAI API key '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' returns 401 error from OpenAI API. ✅ TESTING METHODOLOGY: Created focused test script that validates all 4 review requirements (status 200, tech_card content, ID presence, key sections). ⚠️ IMPACT: Tech card generation fails with 500 error due to invalid OpenAI API key, but this is a configuration issue not a code problem. 🔧 SOLUTION NEEDED: Main agent must provide valid OpenAI API key to resolve the issue."
