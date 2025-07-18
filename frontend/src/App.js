@@ -72,6 +72,12 @@ function App() {
   const [showImproveDishModal, setShowImproveDishModal] = useState(false);
   const [improveDishResult, setImproveDishResult] = useState('');
   const [isImprovingDish, setIsImprovingDish] = useState(false);
+  
+  // Laboratory modal state
+  const [showLaboratoryModal, setShowLaboratoryModal] = useState(false);
+  const [laboratoryResult, setLaboratoryResult] = useState(null);
+  const [isExperimenting, setIsExperimenting] = useState(false);
+  const [experimentType, setExperimentType] = useState('random');
 
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
