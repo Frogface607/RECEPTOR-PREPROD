@@ -1393,7 +1393,7 @@ async def analyze_finances(request: dict):
 
 {{
     "dish_name": "{dish_name}",
-    "total_cost": [точная себестоимость в рублях],
+    "total_cost": [точная себестоимость с копейками],
     "recommended_price": [рекомендуемая цена продажи],
     "margin_percent": [маржинальность в процентах],
     "profitability_rating": [рейтинг от 1 до 5],
