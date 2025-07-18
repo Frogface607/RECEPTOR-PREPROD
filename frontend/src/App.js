@@ -919,6 +919,28 @@ function App() {
     }
   };
 
+  const analyzeFinances = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsAnalyzingFinances(true);
+    
+    try {
+      const response = await axios.post(`${API}/analyze-finances`, {
+        user_id: currentUser.id,
+        tech_card: techCard
+      });
+      
+      setFinancesResult(response.data.analysis);
+      setShowFinancesModal(true);
+      
+    } catch (error) {
+      console.error('Error analyzing finances:', error);
+      alert('Ошибка при анализе финансов: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsAnalyzingFinances(false);
+    }
+  };
+
   // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
   const renderIngredientsTable = (content) => {
     console.log('=== INGREDIENTS TABLE DEBUG ===');
