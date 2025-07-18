@@ -550,6 +550,30 @@ agent_communication:
   - agent: "testing"
     message: "🎯 SAVE TECH CARD ENDPOINT TESTING COMPLETED - ALL 4 TESTS PASSED: Conducted comprehensive testing of POST /api/save-tech-card endpoint for saving inspiration tech cards as specifically requested in review. ✅ TEST 1 PASSED: Базовая работа endpoint - POST /api/save-tech-card works perfectly with 200 OK status, accepts test data (user_id: test_user_12345, dish_name: Азиатский борщ с кокосовым молоком, is_inspiration: true), returns proper JSON response with tech card ID and success message. ✅ TEST 2 PASSED: Автоматическое создание пользователя - test_user_12345 automatically created with PRO subscription, no access errors, subscription validation working correctly. ✅ TEST 3 PASSED: Сохранение в базу - Tech card saved with is_inspiration: true flag, generates valid UUID for ID, all fields correctly saved (user_id, dish_name, content, city, created_at). Fixed TechCard Pydantic model to include is_inspiration and city fields for proper serialization. ✅ TEST 4 PASSED: Интеграция с историей - GET /api/user-history/test_user_12345 returns saved tech card in history, is_inspiration: true flag present and correct, dish name matches exactly, tech card appears at top of history (newest first). All review requirements successfully verified - endpoint ready for production use with inspiration tech cards."
   - agent: "testing"
+frontend:
+  - task: "PDF Export Issues Fix"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "PHASE 1 COMPLETE: Fixed PDF export issues in handlePrintTechCard function. Changes made: 1) Added filter to remove 'УКАЗЫВАЙ НА ОДНУ ПОРЦИЮ' text from PDF output 2) Enhanced price removal logic to completely clean ingredient prices from PDF 3) Removed all cost sections (Себестоимость, Рекомендуемая цена, 💸) from PDF export. PDF now exports clean tech cards without prices and unwanted text."
+        
+  - task: "Interactive Ingredients Editor Fix"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "PHASE 2 COMPLETE: Fixed interactive ingredients editor functionality. Changes made: 1) Added parseIngredientsFromTechCard function to properly parse ingredients from tech card content 2) Created renderIngredientsSection function to replace static ingredient display with interactive editor 3) Added setCurrentIngredients call to all tech card loading operations (generation, editing, history loading) 4) Interactive editor now shows automatically when tech card is loaded with proper ingredient parsing and state management."
     message: "🔑 OPENAI API KEY TESTING COMPLETED: Conducted specific test for review request 'Паста Карбонара на 4 порции' with exact parameters (user_id: test_user_12345, city: moskva). ❌ CRITICAL FINDING: OpenAI API key is invalid (401 Unauthorized). ✅ INFRASTRUCTURE FIXED: Resolved MongoDB connection issue by updating MONGO_URL to localhost. ✅ BACKEND SYSTEMS: All other functionality working correctly (user management, subscriptions, database). ❌ ROOT CAUSE: Current OpenAI API key returns 401 error from OpenAI API. The backend correctly uses gpt-4o-mini model as specified. 🔧 URGENT ACTION REQUIRED: Main agent must provide valid OpenAI API key to resolve tech card generation failures. All review test requirements (status 200, content, ID, sections) cannot be verified until API key is fixed."
 
 backend:
