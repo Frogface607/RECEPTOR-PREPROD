@@ -1458,6 +1458,22 @@ async def analyze_finances(request: dict):
         {{"category": "Закупки", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}},
         {{"category": "Меню", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}}
     ],
+    "risk_analysis": {{
+        "price_volatility": [
+            {{"ingredient": "ингредиент", "volatility_level": "уровень волатильности", "risk_factor": "фактор риска", "mitigation": "способ снижения риска"}}
+        ],
+        "supply_chain_risks": ["риски цепочки поставок"],
+        "market_risks": ["рыночные риски"],
+        "recommendations": ["рекомендации по снижению рисков"]
+    }},
+    "kpi_dashboard": {{
+        "food_cost_percentage": [процент фудкоста],
+        "labor_cost_estimate": [оценка затрат на труд],
+        "total_variable_cost": [общие переменные затраты],
+        "contribution_to_fixed_costs": [вклад в покрытие постоянных затрат],
+        "menu_mix_impact": [влияние на menu mix],
+        "velocity_score": [скорость продаж от 1 до 10]
+    }},
 }}
 
 ВАЖНО: 
