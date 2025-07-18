@@ -1427,9 +1427,13 @@ async def analyze_finances(request: dict):
         "recommendation": "детальная рекомендация по ценообразованию"
     }},
     "seasonal_analysis": {{
-        "current_season": "весна/лето/осень/зима",
-        "price_impact": "повышение/понижение/стабильно",
-        "seasonal_tips": "советы по сезонности"
+        "current_season": "текущий сезон",
+        "seasonal_ingredients": [
+            {{"ingredient": "ингредиент", "season_impact": "влияние сезона", "price_change": "изменение цены", "recommendation": "рекомендация"}}
+        ],
+        "best_seasons": ["лучшие сезоны для блюда"],
+        "worst_seasons": ["худшие сезоны для блюда"],
+        "seasonal_tips": "детальные советы по сезонности"
     }},
     "financial_metrics": {{
         "break_even_portions": [количество порций для окупаемости],
