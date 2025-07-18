@@ -3410,14 +3410,29 @@ function App() {
               </button>
             </div>
             
-            {/* Информация об анализе */}
-            {financesResult.analysis_date && financesResult.region && (
-              <div className="mb-6 text-center">
+            {/* Информация об анализе с проверкой расчетов */}
+            <div className="mb-6">
+              <div className="text-center mb-4">
                 <p className="text-gray-400 text-sm">
                   📅 {financesResult.analysis_date} • 📍 {financesResult.region} • 🔄 Актуальные цены из интернета
                 </p>
               </div>
-            )}
+              
+              {/* Проверка расчетов */}
+              {financesResult.cost_verification && (
+                <div className={`p-4 rounded-lg border ${financesResult.cost_verification.calculation_correct ? 'bg-green-900/20 border-green-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
+                  <div className="flex items-center justify-center space-x-4">
+                    <span className={`text-sm font-bold ${financesResult.cost_verification.calculation_correct ? 'text-green-300' : 'text-red-300'}`}>
+                      {financesResult.cost_verification.calculation_correct ? '✅ Расчеты проверены' : '❌ Ошибка в расчетах'}
+                    </span>
+                    <span className="text-gray-400 text-xs">
+                      Сумма ингредиентов: {financesResult.cost_verification.ingredients_sum}₽ 
+                      | Общая стоимость: {financesResult.cost_verification.total_cost_check}₽
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
             
             {/* Краткая сводка */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
