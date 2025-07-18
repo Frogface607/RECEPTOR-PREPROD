@@ -1385,9 +1385,9 @@ function App() {
         return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanLine.replace('- ', '')}</p>`;
       }
       
-      // Cost information
-      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена')) {
-        return `<div style="background: #F0FDF4; border: 2px solid #10B981; border-radius: 8px; padding: 15px; margin: 15px 0; font-weight: 700;">${cleanLine}</div>`;
+      // Cost information - remove all cost sections from PDF
+      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена') || line.includes('💸')) {
+        return '';  // Skip cost information completely
       }
       
       // Regular paragraphs
