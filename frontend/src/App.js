@@ -1352,6 +1352,8 @@ function App() {
       if (cleanLine.includes('Сгенерировано RECEPTOR AI') || 
           cleanLine.includes('экономьте') || 
           cleanLine.includes('стандартная ресторанная порция') ||
+          cleanLine.includes('УКАЗЫВАЙ НА ОДНУ ПОРЦИЮ') ||
+          cleanLine.includes('указывай на одну порцию') ||
           cleanLine.trim() === '') {
         return '';
       }
