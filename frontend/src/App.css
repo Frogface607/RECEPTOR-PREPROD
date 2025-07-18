@@ -586,6 +586,43 @@ body {
   animation: loading-shimmer 1.5s infinite;
 }
 
+/* Laboratory button effects */
+.laboratory-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.laboratory-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s;
+}
+
+.laboratory-button:hover::before {
+  left: 100%;
+}
+
+.laboratory-modal {
+  backdrop-filter: blur(10px);
+  animation: labFadeIn 0.3s ease-out;
+}
+
+@keyframes labFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes loading-shimmer {
   0% { left: -100%; }
   100% { left: 100%; }
