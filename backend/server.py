@@ -1454,10 +1454,10 @@ async def analyze_finances(request: dict):
         "profitability_rank": "ранг прибыльности от 1 до 10"
     }},
     "strategic_recommendations": [
-        "Стратегическая рекомендация 1",
-        "Стратегическая рекомендация 2",
-        "Стратегическая рекомендация 3"
-    ]
+        {{"category": "Ценообразование", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}},
+        {{"category": "Закупки", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}},
+        {{"category": "Меню", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}}
+    ],
 }}
 
 ВАЖНО: 
