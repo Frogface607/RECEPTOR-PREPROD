@@ -3396,6 +3396,157 @@ function App() {
         </div>
       )}
 
+      {/* Finances Modal */}
+      {showFinancesModal && financesResult && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-green-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-green-300">💼 ФИНАНСЫ: {financesResult.dish_name}</h2>
+              <button
+                onClick={() => setShowFinancesModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Краткая сводка */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg p-4 text-center border border-green-500/30">
+                <div className="text-green-300 text-sm font-bold">СЕБЕСТОИМОСТЬ</div>
+                <div className="text-2xl font-bold text-white">{financesResult.total_cost}₽</div>
+              </div>
+              <div className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg p-4 text-center border border-blue-500/30">
+                <div className="text-blue-300 text-sm font-bold">РЕКОМЕНДУЕМАЯ ЦЕНА</div>
+                <div className="text-2xl font-bold text-white">{financesResult.recommended_price}₽</div>
+              </div>
+              <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-4 text-center border border-purple-500/30">
+                <div className="text-purple-300 text-sm font-bold">МАРЖА</div>
+                <div className="text-2xl font-bold text-white">{financesResult.margin_percent}%</div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-lg p-4 text-center border border-yellow-500/30">
+                <div className="text-yellow-300 text-sm font-bold">РЕНТАБЕЛЬНОСТЬ</div>
+                <div className="text-2xl font-bold text-white">
+                  {'★'.repeat(financesResult.profitability_rating)}{'☆'.repeat(5 - financesResult.profitability_rating)}
+                </div>
+              </div>
+            </div>
+            
+            {/* Структура затрат */}
+            {financesResult.cost_breakdown && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-green-300 mb-4">📊 СТРУКТУРА ЗАТРАТ</h3>
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <div className="space-y-3">
+                    {financesResult.cost_breakdown.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <span className="text-gray-300">{item.category}</span>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-32 bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" 
+                              style={{ width: `${item.percent}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-white font-bold min-w-[60px]">{item.amount}₽</span>
+                          <span className="text-gray-400 text-sm min-w-[40px]">({item.percent}%)</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Советы по оптимизации */}
+            {financesResult.optimization_tips && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-green-300 mb-4">💡 СОВЕТЫ ПО ОПТИМИЗАЦИИ</h3>
+                <div className="space-y-3">
+                  {financesResult.optimization_tips.map((tip, index) => (
+                    <div key={index} className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-4 border border-yellow-500/30">
+                      <div className="flex justify-between items-start">
+                        <span className="text-gray-300 flex-1">{tip.tip}</span>
+                        <span className="text-green-400 font-bold ml-4">-{tip.savings}₽</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Финансовые метрики */}
+            {financesResult.financial_metrics && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-green-300 mb-4">📈 ФИНАНСОВЫЕ МЕТРИКИ</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-gray-400 text-sm">Прибыль с порции</div>
+                    <div className="text-2xl font-bold text-green-400">{financesResult.financial_metrics.profit_per_portion}₽</div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-gray-400 text-sm">Точка безубыточности</div>
+                    <div className="text-2xl font-bold text-blue-400">{financesResult.financial_metrics.break_even_portions} порций</div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-gray-400 text-sm">Себестоимость на 100г</div>
+                    <div className="text-2xl font-bold text-purple-400">{financesResult.financial_metrics.cost_per_100g}₽</div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-gray-400 text-sm">ROI</div>
+                    <div className="text-2xl font-bold text-yellow-400">{financesResult.financial_metrics.roi_percent}%</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Стратегические рекомендации */}
+            {financesResult.strategic_recommendations && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-green-300 mb-4">🎯 СТРАТЕГИЧЕСКИЕ РЕКОМЕНДАЦИИ</h3>
+                <div className="space-y-3">
+                  {financesResult.strategic_recommendations.map((rec, index) => (
+                    <div key={index} className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-4 border border-blue-500/30">
+                      <span className="text-gray-300">{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Анализ рынка */}
+            {financesResult.price_comparison && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-green-300 mb-4">📊 АНАЛИЗ РЫНКА</h3>
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-gray-400 text-sm">Средняя цена конкурентов</div>
+                      <div className="text-xl font-bold text-white">{financesResult.price_comparison.competitor_average}₽</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-sm">Позиция на рынке</div>
+                      <div className="text-xl font-bold text-white">{financesResult.price_comparison.market_position}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 text-gray-300">{financesResult.price_comparison.recommendation}</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Кнопка закрытия */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowFinancesModal(false)}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-lg font-bold transition-colors"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
