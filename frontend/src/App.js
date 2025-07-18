@@ -736,9 +736,12 @@ function App() {
     setCurrentIngredients(prev => [...prev, {
       id: newId,
       name: 'Новый ингредиент',
-      quantity: '100 г',
-      price: '~10 ₽',
-      numericPrice: 10
+      quantity: '100',
+      unit: 'г',
+      price: '10',
+      totalPrice: '10',
+      originalQuantity: '100',
+      originalPrice: '10'
     }]);
   };
 
