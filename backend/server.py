@@ -30,6 +30,15 @@ openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 # Create the main app without a prefix
 app = FastAPI()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins - use specific domains in production
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
