@@ -946,6 +946,28 @@ function App() {
     }
   };
 
+  const improveDish = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsImprovingDish(true);
+    
+    try {
+      const response = await axios.post(`${API}/improve-dish`, {
+        user_id: currentUser.id,
+        tech_card: techCard
+      });
+      
+      setImproveDishResult(response.data.improved_dish);
+      setShowImproveDishModal(true);
+      
+    } catch (error) {
+      console.error('Error improving dish:', error);
+      alert('Ошибка при улучшении блюда: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsImprovingDish(false);
+    }
+  };
+
   // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
   const renderIngredientsTable = (content) => {
     console.log('=== INGREDIENTS TABLE DEBUG ===');
