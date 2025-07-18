@@ -1428,7 +1428,7 @@ async def analyze_finances(request: dict):
 ЦЕНЫ КОНКУРЕНТОВ:
 {competitor_search_result}
 
-Создай МАКСИМАЛЬНО ПОДРОБНЫЙ финансовый анализ в формате JSON с КОНКРЕТНЫМИ ЦИФРАМИ:
+Создай ПРАКТИЧНЫЙ финансовый анализ в формате JSON:
 
 {{
     "dish_name": "{dish_name}",
