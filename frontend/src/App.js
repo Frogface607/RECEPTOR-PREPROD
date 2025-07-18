@@ -686,9 +686,26 @@ function App() {
     );
   };
   const updateIngredient = (id, field, value) => {
-    setCurrentIngredients(prev => prev.map(ing => 
-      ing.id === id ? { ...ing, [field]: value } : ing
-    ));
+    setCurrentIngredients(prev => prev.map(ing => {
+      if (ing.id === id) {
+        const updatedIng = { ...ing, [field]: value };
+        
+        // Если изменилось количество, пересчитаем цену
+        if (field === 'quantity' && ing.originalQuantity && ing.originalPrice) {
+          const originalQty = parseFloat(ing.originalQuantity) || 1;
+          const originalPrice = parseFloat(ing.originalPrice) || 0;
+          const newQty = parseFloat(value) || 0;
+          
+          // Пропорциональный пересчет цены
+          const newPrice = (newQty / originalQty) * originalPrice;
+          updatedIng.totalPrice = newPrice.toFixed(1);
+          updatedIng.price = newPrice.toFixed(1);
+        }
+        
+        return updatedIng;
+      }
+      return ing;
+    }));
   };
 
   const removeIngredient = (id) => {
