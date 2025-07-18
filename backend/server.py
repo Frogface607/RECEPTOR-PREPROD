@@ -1457,64 +1457,21 @@ async def analyze_finances(request: dict):
         {{"action": "Конкретное действие", "savings": "экономия в рублях", "impact": "влияние на качество", "urgency": "срочность: высокая/средняя/низкая"}},
         {{"action": "Другое действие", "savings": "экономия в рублях", "impact": "влияние на качество", "urgency": "срочность"}}
     ],
-    "price_comparison": {{
-        "competitor_analysis": [
-            {{"competitor": "Конкурент 1", "price": "цена", "position": "позиция"}},
-            {{"competitor": "Конкурент 2", "price": "цена", "position": "позиция"}}
-        ],
-        "market_average": [средняя цена],
-        "market_position": "выше/ниже/в среднем",
-        "price_positioning": "премиум/средний/эконом",
-        "recommendation": "детальная рекомендация по ценообразованию"
-    }},
-    "seasonal_analysis": {{
-        "current_season": "текущий сезон",
-        "seasonal_ingredients": [
-            {{"ingredient": "ингредиент", "season_impact": "влияние сезона", "price_change": "изменение цены", "recommendation": "рекомендация"}}
-        ],
-        "best_seasons": ["лучшие сезоны для блюда"],
-        "worst_seasons": ["худшие сезоны для блюда"],
-        "seasonal_tips": "детальные советы по сезонности"
-    }},
-    "financial_metrics": {{
+    
+    "financial_summary": {{
         "break_even_portions": [количество порций для окупаемости],
-        "daily_break_even": [сколько порций в день нужно продать],
-        "monthly_potential": [потенциал в месяц],
-        "profit_per_portion": [прибыль с одной порции],
-        "cost_per_100g": [себестоимость на 100г],
+        "daily_target": [порций в день для прибыли],
+        "monthly_potential": [потенциал в месяц при продаже X порций в день],
         "roi_percent": [ROI в процентах],
-        "payback_period": [срок окупаемости в днях],
-        "gross_margin": [валовая маржа],
-        "contribution_margin": [маржинальная прибыль]
+        "price_elasticity": "рекомендация по цене: можно поднять/снизить/оставить"
     }},
-    "business_intelligence": {{
-        "target_customers": ["целевая аудитория"],
-        "optimal_pricing_strategy": "стратегия ценообразования",
-        "upsell_opportunities": ["возможности для допродаж"],
-        "menu_positioning": "позиционирование в меню",
-        "profitability_rank": "ранг прибыльности от 1 до 10"
-    }},
-    "strategic_recommendations": [
-        {{"category": "Ценообразование", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}},
-        {{"category": "Закупки", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}},
-        {{"category": "Меню", "recommendation": "конкретная рекомендация", "expected_impact": "ожидаемый эффект"}}
-    ],
-    "risk_analysis": {{
-        "price_volatility": [
-            {{"ingredient": "ингредиент", "volatility_level": "уровень волатильности", "risk_factor": "фактор риска", "mitigation": "способ снижения риска"}}
-        ],
-        "supply_chain_risks": ["риски цепочки поставок"],
-        "market_risks": ["рыночные риски"],
-        "recommendations": ["рекомендации по снижению рисков"]
-    }},
-    "kpi_dashboard": {{
-        "food_cost_percentage": [процент фудкоста],
-        "labor_cost_estimate": [оценка затрат на труд],
-        "total_variable_cost": [общие переменные затраты],
-        "contribution_to_fixed_costs": [вклад в покрытие постоянных затрат],
-        "menu_mix_impact": [влияние на menu mix],
-        "velocity_score": [скорость продаж от 1 до 10]
-    }},
+    
+    "market_insights": {{
+        "seasonal_impact": "влияние сезона на себестоимость",
+        "price_trends": "тренды цен на ингредиенты",
+        "competitive_advantage": "конкурентное преимущество",
+        "risk_factors": ["основные риски по ценам"]
+    }}
 }}
 
 ВАЖНО: 
