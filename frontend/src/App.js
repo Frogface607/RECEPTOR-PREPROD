@@ -1368,9 +1368,11 @@ function App() {
         return `<h2 style="color: #1A1B23; font-size: 18px; font-weight: 800; text-transform: uppercase; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #C084FC; padding-bottom: 8px;">${title}</h2>`;
       }
       
-      // Format ingredients
+      // Format ingredients - remove all price information
       if (line.startsWith('- ') && (line.includes('₽') || line.includes('руб'))) {
-        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanLine.replace('- ', '')}</p>`;
+        // Remove price information completely from ingredient lines
+        const cleanIngredient = cleanLine.replace('- ', '').replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/, '').replace(/\s*—\s*\d+(?:\.\d+)?\s*₽\s*$/, '').trim();
+        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanIngredient}</p>`;
       }
       
       // Format numbered steps
