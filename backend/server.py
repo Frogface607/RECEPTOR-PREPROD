@@ -33,10 +33,15 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins - use specific domains in production
+    allow_origins=[
+        "http://localhost:3000",  # Development
+        "https://www.receptorai.pro",  # Production
+        "https://receptorai.pro",  # Production without www
+        "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com"  # Current preview
+    ],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # Create a router with the /api prefix
