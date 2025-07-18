@@ -3824,6 +3824,197 @@ function App() {
         </div>
       )}
 
+      {/* Laboratory Modal */}
+      {showLaboratoryModal && laboratoryResult && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto border border-cyan-500/30 laboratory-modal">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-cyan-300">🧪 ЛАБОРАТОРИЯ: ЭКСПЕРИМЕНТ ЗАВЕРШЕН!</h2>
+              <button
+                onClick={() => setShowLaboratoryModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Тип эксперимента */}
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-xl p-4 border border-cyan-500/30">
+                <h3 className="text-lg font-bold text-cyan-300 mb-2">
+                  ⚗️ ТИП ЭКСПЕРИМЕНТА: {laboratoryResult.experiment_type?.toUpperCase()}
+                </h3>
+                <p className="text-gray-300 text-sm">
+                  {laboratoryResult.experiment_type === 'random' && '🎲 Случайное сочетание ингредиентов и техник'}
+                  {laboratoryResult.experiment_type === 'fusion' && '🌍 Фьюжн кухонь разных стран'}
+                  {laboratoryResult.experiment_type === 'molecular' && '⚗️ Молекулярная гастрономия'}
+                  {laboratoryResult.experiment_type === 'extreme' && '🔥 Экстремальные кулинарные эксперименты'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Сгенерированное изображение */}
+            {laboratoryResult.image_url && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-cyan-300 mb-4">📸 ВИЗУАЛИЗАЦИЯ ЭКСПЕРИМЕНТА</h3>
+                <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-4 border border-cyan-500/30">
+                  <img 
+                    src={laboratoryResult.image_url} 
+                    alt="Экспериментальное блюдо" 
+                    className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<p class="text-gray-400 text-center">Изображение недоступно</p>';
+                    }}
+                  />
+                  <div className="mt-4 flex justify-center space-x-4">
+                    <button
+                      onClick={() => window.open(laboratoryResult.image_url, '_blank')}
+                      className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm"
+                    >
+                      📱 ОТКРЫТЬ В ПОЛНОМ РАЗМЕРЕ
+                    </button>
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = laboratoryResult.image_url;
+                        link.download = 'receptor-experiment.jpg';
+                        link.click();
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+                    >
+                      💾 СКАЧАТЬ ИЗОБРАЖЕНИЕ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Результат эксперимента */}
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-cyan-300 mb-4">🔬 РЕЗУЛЬТАТ ЭКСПЕРИМЕНТА</h3>
+              <div className="bg-gray-800/50 rounded-xl p-6 border border-cyan-500/30">
+                <div className="prose prose-invert max-w-none">
+                  <div 
+                    className="text-gray-300 leading-relaxed"
+                    dangerouslySetInnerHTML={{ 
+                      __html: formatProAIContent(laboratoryResult.experiment)
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Выбор типа эксперимента для следующего раза */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-cyan-300 mb-4">🎯 ПРОВЕСТИ ДРУГОЙ ЭКСПЕРИМЕНТ</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button
+                  onClick={() => {
+                    setExperimentType('random');
+                    setShowLaboratoryModal(false);
+                    setTimeout(() => conductExperiment(), 500);
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
+                >
+                  🎲 СЛУЧАЙНЫЙ
+                </button>
+                <button
+                  onClick={() => {
+                    setExperimentType('fusion');
+                    setShowLaboratoryModal(false);
+                    setTimeout(() => conductExperiment(), 500);
+                  }}
+                  className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
+                >
+                  🌍 ФЬЮЖН
+                </button>
+                <button
+                  onClick={() => {
+                    setExperimentType('molecular');
+                    setShowLaboratoryModal(false);
+                    setTimeout(() => conductExperiment(), 500);
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
+                >
+                  ⚗️ МОЛЕКУЛЯРНАЯ
+                </button>
+                <button
+                  onClick={() => {
+                    setExperimentType('extreme');
+                    setShowLaboratoryModal(false);
+                    setTimeout(() => conductExperiment(), 500);
+                  }}
+                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
+                >
+                  🔥 ЭКСТРЕМАЛЬНЫЙ
+                </button>
+              </div>
+            </div>
+            
+            {/* Действия */}
+            <div className="flex justify-between space-x-4 mt-8">
+              <button
+                onClick={async () => {
+                  // Сохраняем экспериментальное блюдо как новую техкарту
+                  try {
+                    const response = await axios.post(`${API}/save-tech-card`, {
+                      user_id: currentUser.id,
+                      content: laboratoryResult.experiment,
+                      dish_name: laboratoryResult.experiment.split('\n')[0]?.replace(/\*\*/g, '').replace('🧪 НАЗВАНИЕ ЭКСПЕРИМЕНТА:', '').trim() || 'Экспериментальное блюдо',
+                      city: currentUser.city,
+                      is_experiment: true
+                    });
+                    
+                    // Устанавливаем новую техкарту
+                    setTechCard(laboratoryResult.experiment);
+                    setCurrentIngredients(parseIngredientsFromTechCard(laboratoryResult.experiment));
+                    setCurrentTechCardId(response.data.id);
+                    setShowLaboratoryModal(false);
+                    
+                    alert('Экспериментальное блюдо сохранено!');
+                  } catch (error) {
+                    console.error('Error saving experiment:', error);
+                    alert('Ошибка при сохранении эксперимента');
+                  }
+                }}
+                className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                💾 СОХРАНИТЬ ЭКСПЕРИМЕНТ
+              </button>
+              
+              <button
+                onClick={() => {
+                  // Поделиться в соцсетях
+                  const shareText = `🧪 Провел кулинарный эксперимент в RECEPTOR PRO! Смотрите что получилось 😱\n\n#экспериментальнаякулинария #receptorpro #кулинарныйэксперимент`;
+                  
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Кулинарный эксперимент',
+                      text: shareText,
+                      url: window.location.href
+                    });
+                  } else {
+                    navigator.clipboard.writeText(shareText + '\n\n' + window.location.href);
+                    alert('Текст скопирован в буфер обмена!');
+                  }
+                }}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                📱 ПОДЕЛИТЬСЯ
+              </button>
+              
+              <button
+                onClick={() => setShowLaboratoryModal(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
