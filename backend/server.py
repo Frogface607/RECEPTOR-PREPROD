@@ -1402,11 +1402,11 @@ async def analyze_finances(request: dict):
         {{"ingredient": "Другой ингредиент", "quantity": "количество", "unit_price": "цена за единицу", "total_cost": "общая стоимость", "percent_of_total": "процент"}}
     ],
     "cost_breakdown": [
-        {{"category": "Белки", "amount": [сумма], "percent": [процент от общей стоимости]}},
-        {{"category": "Углеводы", "amount": [сумма], "percent": [процент]}},
-        {{"category": "Жиры", "amount": [сумма], "percent": [процент]}},
-        {{"category": "Овощи", "amount": [сумма], "percent": [процент]}},
-        {{"category": "Специи/Соусы", "amount": [сумма], "percent": [процент]}}
+        {{"category": "Белки", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
+        {{"category": "Углеводы", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
+        {{"category": "Жиры", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
+        {{"category": "Овощи", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
+        {{"category": "Специи/Соусы", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}}
     ],
     "optimization_tips": [
         {{"tip": "Конкретный совет по снижению затрат", "savings": [экономия в рублях]}},
