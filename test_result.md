@@ -488,8 +488,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "PDF Export Issues Fix"
-    - "Interactive Ingredients Editor Fix"
+    - "PRACTICAL FINANCES PRO Feature - Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
