@@ -623,7 +623,7 @@ backend:
 
   - task: "OpenAI API Key Testing - Tech Card Generation"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -632,3 +632,6 @@ backend:
       - working: false
         agent: "testing"
         comment: "🔑 OPENAI API KEY TESTING COMPLETED: Conducted specific test for review request 'Паста Карбонара на 4 порции' with user_id 'test_user_12345' and city 'moskva'. ❌ CRITICAL ISSUE IDENTIFIED: OpenAI API key is invalid (401 Unauthorized error). ✅ INFRASTRUCTURE FIXES APPLIED: Fixed MongoDB connection issue by updating MONGO_URL from 'mongodb://mongo:27017' to 'mongodb://localhost:27017' - MongoDB now connects successfully. ✅ BACKEND FUNCTIONALITY: All other backend systems working correctly - user creation, subscription handling, database operations all functional. ❌ ROOT CAUSE: Current OpenAI API key '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' returns 401 error from OpenAI API. ✅ TESTING METHODOLOGY: Created focused test script that validates all 4 review requirements (status 200, tech_card content, ID presence, key sections). ⚠️ IMPACT: Tech card generation fails with 500 error due to invalid OpenAI API key, but this is a configuration issue not a code problem. 🔧 SOLUTION NEEDED: Main agent must provide valid OpenAI API key to resolve the issue."
+      - working: true
+        agent: "testing"
+        comment: "🎉 OPENAI API KEY ISSUE RESOLVED: OpenAI API key has been updated and is now working correctly. ✅ GOLDEN_PROMPT TESTING COMPLETED: Conducted comprehensive test of updated backend with GOLDEN_PROMPT changes as requested in review. ✅ TEST RESULTS (4/4 PASSED): 1) API Response 200 OK ✅ 2) No complex French sauces like demi-glace found ✅ 3) Simple appropriate ingredients for pasta dish confirmed ✅ 4) Reasonable portion sizes and pricing ✅. ✅ SPECIFIC TEST: Generated 'Паста Болоньезе на 4 порции' for user 'test_user_12345' in city 'moskva' - response time 13.16s, content length 2560 chars. ✅ INGREDIENTS ANALYSIS: Found 16 simple appropriate ingredients (фарш, говядина, лук, морковь, чеснок, томат, томатная паста, паста, etc.) with no complex French sauces detected. ✅ PRICING VERIFICATION: Max ingredient price 417₽, total estimated 841₽ - reasonable for pasta dish. ✅ TECH CARD PERSISTENCE: Confirmed tech card saved to database and retrievable via user history endpoint. 🎯 CONCLUSION: GOLDEN_PROMPT changes are working effectively - AI is successfully avoiding complex ingredients and using simple, appropriate ingredients for pasta dishes."
