@@ -37,6 +37,7 @@ app.add_middleware(
         "http://localhost:3000",  # Development
         "https://www.receptorai.pro",  # Production
         "https://receptorai.pro",  # Production without www
+        "https://receptor-ai-thte.vercel.app",  # New Vercel domain
         "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com"  # Current preview
     ],
     allow_credentials=True,
