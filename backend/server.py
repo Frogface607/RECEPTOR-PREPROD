@@ -1698,3 +1698,187 @@ async def improve_dish(request: dict):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка улучшения блюда: {str(e)}")
+
+@app.post("/api/laboratory-experiment")
+async def laboratory_experiment(request: dict):
+    """Кулинарные эксперименты в лаборатории для PRO пользователей"""
+    user_id = request.get("user_id")
+    experiment_type = request.get("experiment_type", "random")  # random, fusion, molecular, extreme
+    base_dish = request.get("base_dish", "")
+    
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    # Проверяем подписку пользователя (пока бесплатно для всех)
+    user = await db.users.find_one({"id": user_id})
+    
+    # Автоматически создаем тестового пользователя
+    if not user and user_id.startswith("test_user_"):
+        user = {
+            "id": user_id,
+            "email": "test@example.com",
+            "name": "Test User",
+            "city": "moscow",
+            "subscription_plan": "pro",
+            "subscription_status": "active",
+            "created_at": datetime.now()
+        }
+    elif not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    
+    # Случайные ингредиенты для экспериментов
+    random_ingredients = [
+        "авокадо", "икра", "трюфели", "молекулярная сфера", "жидкий азот", 
+        "съедобные цветы", "пенка из пармезана", "карамелизированный лук",
+        "копченая соль", "юзу", "васаби", "мисо паста", "кокосовое молоко",
+        "черный чеснок", "сушеные томаты", "кедровые орехи", "бальзамик",
+        "розовая соль", "лимонграсс", "имбирь", "кинза", "базилик"
+    ]
+    
+    # Экстремальные техники
+    extreme_techniques = [
+        "сферификация", "жидкий азот", "су-вид", "дегидратация", 
+        "ферментация", "копчение", "карамелизация", "эмульсификация",
+        "желирование", "пенообразование", "декантация", "инфузия"
+    ]
+    
+    # Безумные сочетания
+    fusion_combinations = [
+        "Русская кухня + Японская", "Итальянская + Мексиканская", 
+        "Французская + Корейская", "Индийская + Скандинавская",
+        "Средиземноморская + Тайская", "Американская + Марокканская"
+    ]
+    
+    import random
+    
+    # Создаем промпт в зависимости от типа эксперимента
+    if experiment_type == "random":
+        rand_ingredients = random.sample(random_ingredients, 3)
+        rand_technique = random.choice(extreme_techniques)
+        experiment_prompt = f"""
+        🧪 СЛУЧАЙНЫЙ ЭКСПЕРИМЕНТ:
+        Создай блюдо, используя: {', '.join(rand_ingredients)}
+        Техника: {rand_technique}
+        Базовое блюдо: {base_dish if base_dish else 'любое на твой выбор'}
+        """
+    elif experiment_type == "fusion":
+        fusion = random.choice(fusion_combinations)
+        experiment_prompt = f"""
+        🌍 ФЬЮЖН ЭКСПЕРИМЕНТ:
+        Объедини кухни: {fusion}
+        Базовое блюдо: {base_dish if base_dish else 'классическое блюдо'}
+        """
+    elif experiment_type == "molecular":
+        techniques = random.sample(extreme_techniques[:8], 2)
+        experiment_prompt = f"""
+        ⚗️ МОЛЕКУЛЯРНЫЙ ЭКСПЕРИМЕНТ:
+        Техники: {', '.join(techniques)}
+        Базовое блюдо: {base_dish if base_dish else 'простое домашнее блюдо'}
+        """
+    else:
+        experiment_prompt = f"""
+        🔥 ЭКСТРЕМАЛЬНЫЙ ЭКСПЕРИМЕНТ:
+        Нарушь все правила кулинарии!
+        Базовое блюдо: {base_dish if base_dish else 'традиционное блюдо'}
+        """
+
+    # Основной промпт для лаборатории
+    prompt = f"""Ты — доктор Гастрономус, безумный ученый от кулинарии! 🧪
+
+Твоя лаборатория — место, где рождаются самые дерзкие кулинарные эксперименты. 
+Создай блюдо, которое ШОКИРУЕТ, УДИВИТ, но при этом будет НЕВЕРОЯТНО ВКУСНЫМ!
+
+{experiment_prompt}
+
+Создай ЭКСПЕРИМЕНТАЛЬНОЕ БЛЮДО:
+
+**🧪 НАЗВАНИЕ ЭКСПЕРИМЕНТА:** [Креативное научное название]
+
+**🔬 ГИПОТЕЗА:** [Почему этот эксперимент будет вкусным]
+
+**⚗️ ИНГРЕДИЕНТЫ ДЛЯ ЭКСПЕРИМЕНТА:**
+[Список с указанием роли каждого ингредиента в эксперименте]
+
+**🧬 ЛАБОРАТОРНЫЙ ПРОЦЕСС:**
+[Пошаговый процесс как научный эксперимент]
+
+**🌈 ВИЗУАЛЬНЫЙ ЭФФЕКТ:**
+[Как будет выглядеть блюдо - цвета, текстуры, эффекты]
+
+**🎭 ЭКСПЕРИМЕНТАЛЬНАЯ ПОДАЧА:**
+[Креативная, шокирующая подача]
+
+**🎪 WOW-ЭФФЕКТ:**
+[Что удивит гостей больше всего]
+
+**📸 ОПИСАНИЕ ДЛЯ ФОТО:**
+[Детальное описание внешнего вида для AI-генерации изображения]
+
+**🔬 НАУЧНОЕ ОБОСНОВАНИЕ:**
+[Почему это работает с точки зрения науки о вкусе]
+
+**⚠️ ПРЕДУПРЕЖДЕНИЕ:**
+[Что может пойти не так в эксперименте]
+
+**🎯 ЦЕЛЕВАЯ АУДИТОРИЯ:**
+[Кто оценит этот эксперимент]
+
+**📱 ХЕШТЕГИ ДЛЯ СОЦСЕТЕЙ:**
+[#экспериментальнаякулинария #гастрономия #шокирующееблюдо и т.д.]
+
+Создано в ЛАБОРАТОРИИ RECEPTOR PRO - место для кулинарных экспериментов! 🧪✨"""
+
+    try:
+        # Генерируем экспериментальное блюдо
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Ты доктор Гастрономус - безумный ученый от кулинарии. Создаешь шокирующие, но вкусные блюда. Будь креативным, дерзким, но научным в подходе."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2000,
+            temperature=0.9  # Высокая креативность
+        )
+        
+        experiment_result = response.choices[0].message.content
+        
+        # Извлекаем описание для генерации изображения
+        photo_description = ""
+        lines = experiment_result.split('\n')
+        for i, line in enumerate(lines):
+            if "**📸 ОПИСАНИЕ ДЛЯ ФОТО:**" in line:
+                # Берем следующую строку после заголовка
+                if i + 1 < len(lines):
+                    photo_description = lines[i + 1].strip()
+                break
+        
+        # Генерируем изображение через DALL-E 3
+        image_url = None
+        try:
+            if photo_description:
+                # Создаем промпт для DALL-E
+                dalle_prompt = f"A stunning, experimental culinary dish: {photo_description}. Professional food photography, high-end restaurant presentation, dramatic lighting, artistic plating, molecular gastronomy elements, ultra-realistic, 8K quality."
+                
+                image_response = openai_client.images.generate(
+                    model="dall-e-3",
+                    prompt=dalle_prompt,
+                    size="1024x1024",
+                    quality="standard",
+                    n=1,
+                )
+                
+                image_url = image_response.data[0].url
+        except Exception as img_error:
+            print(f"Image generation failed: {img_error}")
+            # Продолжаем без изображения
+        
+        return {
+            "success": True,
+            "experiment": experiment_result,
+            "experiment_type": experiment_type,
+            "image_url": image_url,
+            "photo_description": photo_description
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка проведения эксперимента: {str(e)}")
