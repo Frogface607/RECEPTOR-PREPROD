@@ -1446,6 +1446,13 @@ async def analyze_finances(request: dict):
         "gross_margin": [валовая маржа],
         "contribution_margin": [маржинальная прибыль]
     }},
+    "business_intelligence": {{
+        "target_customers": ["целевая аудитория"],
+        "optimal_pricing_strategy": "стратегия ценообразования",
+        "upsell_opportunities": ["возможности для допродаж"],
+        "menu_positioning": "позиционирование в меню",
+        "profitability_rank": "ранг прибыльности от 1 до 10"
+    }},
     "strategic_recommendations": [
         "Стратегическая рекомендация 1",
         "Стратегическая рекомендация 2",
