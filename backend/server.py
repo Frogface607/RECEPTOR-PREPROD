@@ -1505,7 +1505,15 @@ async def analyze_finances(request: dict):
         # Пробуем распарсить JSON
         try:
             import json
-            analysis_data = json.loads(analysis_text)
+            # Clean markdown formatting if present
+            clean_text = analysis_text.strip()
+            if clean_text.startswith("```json"):
+                clean_text = clean_text[7:]  # Remove ```json
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3]  # Remove ```
+            clean_text = clean_text.strip()
+            
+            analysis_data = json.loads(clean_text)
         except json.JSONDecodeError:
             # Если JSON некорректный, возвращаем базовый анализ
             analysis_data = {
