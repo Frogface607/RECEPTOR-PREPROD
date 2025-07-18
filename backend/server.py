@@ -1412,6 +1412,10 @@ async def analyze_finances(request: dict):
         {{"tip": "Конкретный совет с цифрами", "current_cost": "текущая стоимость", "optimized_cost": "оптимизированная стоимость", "savings": "экономия в рублях", "impact": "влияние на качество: минимальное/среднее/высокое"}},
         {{"tip": "Другой детальный совет", "current_cost": "текущая стоимость", "optimized_cost": "оптимизированная стоимость", "savings": "экономия в рублях", "impact": "влияние на качество"}}
     ],
+    "supplier_recommendations": [
+        {{"category": "Категория продуктов", "current_supplier": "текущий поставщик", "recommended_supplier": "рекомендуемый поставщик", "savings_percent": "процент экономии", "quality_impact": "влияние на качество"}},
+        {{"category": "Другая категория", "current_supplier": "текущий поставщик", "recommended_supplier": "рекомендуемый поставщик", "savings_percent": "процент экономии", "quality_impact": "влияние на качество"}}
+    ],
     "price_comparison": {{
         "competitor_average": [средняя цена у конкурентов],
         "market_position": "выше/ниже/в среднем",
