@@ -1389,7 +1389,7 @@ async def analyze_finances(request: dict):
 
 РЕГИОНАЛЬНЫЙ КОЭФФИЦИЕНТ: {regional_coefficient}x
 
-Создай ПОДРОБНЫЙ финансовый анализ в формате JSON:
+Создай МАКСИМАЛЬНО ПОДРОБНЫЙ финансовый анализ в формате JSON с КОНКРЕТНЫМИ ЦИФРАМИ:
 
 {{
     "dish_name": "{dish_name}",
