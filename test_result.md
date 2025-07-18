@@ -488,7 +488,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OpenAI API Key Testing - Tech Card Generation"
+    - "PDF Export Issues Fix"
+    - "Interactive Ingredients Editor Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
