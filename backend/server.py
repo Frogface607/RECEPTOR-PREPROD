@@ -1443,20 +1443,19 @@ async def analyze_finances(request: dict):
     "ingredient_costs": [
         {{"ingredient": "Конкретный ингредиент", "quantity": "количество", "current_price": "цена за единицу", "total_cost": "общая стоимость", "market_price": "рыночная цена из поиска", "savings_potential": "потенциальная экономия"}}
     ],
-    "cost_breakdown": [
-        {{"category": "Белки", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
-        {{"category": "Углеводы", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
-        {{"category": "Жиры", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
-        {{"category": "Овощи", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
-        {{"category": "Специи/Соусы", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}}
-    ],
-    "optimization_tips": [
-        {{"tip": "Конкретный совет с цифрами", "current_cost": "текущая стоимость", "optimized_cost": "оптимизированная стоимость", "savings": "экономия в рублях", "impact": "влияние на качество: минимальное/среднее/высокое"}},
-        {{"tip": "Другой детальный совет", "current_cost": "текущая стоимость", "optimized_cost": "оптимизированная стоимость", "savings": "экономия в рублях", "impact": "влияние на качество"}}
-    ],
-    "supplier_recommendations": [
-        {{"category": "Категория продуктов", "current_supplier": "текущий поставщик", "recommended_supplier": "рекомендуемый поставщик", "savings_percent": "процент экономии", "quality_impact": "влияние на качество"}},
-        {{"category": "Другая категория", "current_supplier": "текущий поставщик", "recommended_supplier": "рекомендуемый поставщик", "savings_percent": "процент экономии", "quality_impact": "влияние на качество"}}
+    
+    "competitor_analysis": {{
+        "average_price": [средняя цена у конкурентов],
+        "price_range": [диапазон цен],
+        "market_position": "дороже на X₽/дешевле на Y₽/в среднем",
+        "competitors": [
+            {{"name": "Название ресторана", "price": "цена", "source": "откуда данные"}}
+        ]
+    }},
+    
+    "practical_recommendations": [
+        {{"action": "Конкретное действие", "savings": "экономия в рублях", "impact": "влияние на качество", "urgency": "срочность: высокая/средняя/низкая"}},
+        {{"action": "Другое действие", "savings": "экономия в рублях", "impact": "влияние на качество", "urgency": "срочность"}}
     ],
     "price_comparison": {{
         "competitor_analysis": [
