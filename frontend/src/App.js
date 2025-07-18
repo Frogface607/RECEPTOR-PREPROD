@@ -62,6 +62,11 @@ function App() {
   const [showInspirationModal, setShowInspirationModal] = useState(false);
   const [inspirationResult, setInspirationResult] = useState('');
   const [inspirationPrompt, setInspirationPrompt] = useState('');
+  
+  // Finances modal state
+  const [showFinancesModal, setShowFinancesModal] = useState(false);
+  const [financesResult, setFinancesResult] = useState(null);
+  const [isAnalyzingFinances, setIsAnalyzingFinances] = useState(false);
 
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
