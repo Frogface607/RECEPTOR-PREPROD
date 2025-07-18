@@ -2203,6 +2203,14 @@ function App() {
                         </button>
                         
                         <button
+                          onClick={conductExperiment}
+                          disabled={isExperimenting}
+                          className={`w-full ${isExperimenting ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px] laboratory-button`}
+                        >
+                          {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 ЛАБОРАТОРИЯ'}
+                        </button>
+                        
+                        <button
                           onClick={generatePhotoTips}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
