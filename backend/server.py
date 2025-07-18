@@ -598,6 +598,23 @@ async def generate_tech_card(request: DishRequest):
         # Get regional coefficient
         regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
         
+        # Поиск актуальных цен в интернете
+        search_query = f"цены на продукты {user.get('city', 'москва')} 2025 мясо овощи крупы молочные продукты"
+        
+        try:
+            from emergentintegrations.tools import web_search
+            price_search_result = web_search(search_query, search_context_size="medium")
+        except Exception:
+            price_search_result = "Данные по ценам недоступны"
+        
+        # Поиск цен конкурентов
+        competitor_search_query = f"цены меню {request.dish_name} рестораны {user.get('city', 'москва')} 2025"
+        
+        try:
+            competitor_search_result = web_search(competitor_search_query, search_context_size="medium")
+        except Exception:
+            competitor_search_result = "Данные по конкурентам недоступны"
+        
         # Get user's kitchen equipment if PRO user
         subscription_plan = user.get("subscription_plan", "free")
         plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
