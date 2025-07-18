@@ -1787,30 +1787,43 @@ async def laboratory_experiment(request: dict):
         rand_ingredients = random.sample(random_ingredients, 3)
         rand_technique = random.choice(extreme_techniques)
         experiment_prompt = f"""
-        🧪 СЛУЧАЙНЫЙ ЭКСПЕРИМЕНТ:
+        🎲 ДОМАШНИЙ ЭКСПЕРИМЕНТ:
         Создай блюдо, используя: {', '.join(rand_ingredients)}
         Техника: {rand_technique}
-        Базовое блюдо: {base_dish if base_dish else 'любое на твой выбор'}
+        Базовое блюдо: {base_dish if base_dish else 'любое домашнее блюдо'}
+        ВАЖНО: Используй только доступные продукты и техники! Блюдо должно быть реально выполнимым дома.
         """
     elif experiment_type == "fusion":
         fusion = random.choice(fusion_combinations)
         experiment_prompt = f"""
-        🌍 ФЬЮЖН ЭКСПЕРИМЕНТ:
+        🌍 ДОМАШНИЙ ФЬЮЖН:
         Объедини кухни: {fusion}
-        Базовое блюдо: {base_dish if base_dish else 'классическое блюдо'}
+        Базовое блюдо: {base_dish if base_dish else 'простое домашнее блюдо'}
+        ВАЖНО: Используй продукты из обычного магазина! Никаких экзотических ингредиентов.
         """
     elif experiment_type == "molecular":
-        techniques = random.sample(extreme_techniques[:8], 2)
+        techniques = random.sample(extreme_techniques[:10], 2)
         experiment_prompt = f"""
-        ⚗️ МОЛЕКУЛЯРНЫЙ ЭКСПЕРИМЕНТ:
+        🧪 ДОМАШНЯЯ МОЛЕКУЛЯРКА:
         Техники: {', '.join(techniques)}
         Базовое блюдо: {base_dish if base_dish else 'простое домашнее блюдо'}
+        ВАЖНО: Используй только домашние методы! Никакого жидкого азота - только то, что есть дома.
+        """
+    elif experiment_type == "snack":
+        snack_ingredients = [ing for ing in random_ingredients if any(snack in ing for snack in ["чипсы", "скиттлс", "печенье", "мармелад", "попкорн", "крекеры"])]
+        selected_snacks = random.sample(snack_ingredients, 2)
+        experiment_prompt = f"""
+        🍿 СНЕКОВЫЙ ЭКСПЕРИМЕНТ:
+        Создай полноценное блюдо из снеков: {', '.join(selected_snacks)}
+        Базовое блюдо: {base_dish if base_dish else 'основное блюдо'}
+        ВАЖНО: Покажи, как из детских снеков сделать взрослое блюдо!
         """
     else:
         experiment_prompt = f"""
-        🔥 ЭКСТРЕМАЛЬНЫЙ ЭКСПЕРИМЕНТ:
-        Нарушь все правила кулинарии!
-        Базовое блюдо: {base_dish if base_dish else 'традиционное блюдо'}
+        🔥 ДОМАШНИЙ ЭКСТРИМ:
+        Нарушь все правила домашней кулинарии, но используй только доступные продукты!
+        Базовое блюдо: {base_dish if base_dish else 'традиционное домашнее блюдо'}
+        ВАЖНО: Все должно быть выполнимо на обычной кухне с обычными продуктами!
         """
 
     # Основной промпт для лаборатории
