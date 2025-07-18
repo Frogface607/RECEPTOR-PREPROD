@@ -3699,6 +3699,85 @@ function App() {
         </div>
       )}
 
+      {/* Improve Dish Modal */}
+      {showImproveDishModal && improveDishResult && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-orange-500/30">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-orange-300">⚡ БЛЮДО ПРОКАЧАНО!</h2>
+              <button
+                onClick={() => setShowImproveDishModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 rounded-xl p-6 border border-orange-500/30">
+                <h3 className="text-lg font-bold text-orange-300 mb-3">
+                  🔥 ПРОФЕССИОНАЛЬНАЯ ВЕРСИЯ ВАШЕГО БЛЮДА
+                </h3>
+                <p className="text-gray-300 text-sm">
+                  Мишленовский шеф-повар улучшил ваш рецепт с помощью профессиональных техник и секретов.
+                  Суть блюда сохранена, но качество выведено на ресторанный уровень!
+                </p>
+              </div>
+              
+              <div className="bg-gray-800/50 rounded-xl p-6">
+                <div className="prose prose-invert max-w-none">
+                  <div 
+                    className="text-gray-300 leading-relaxed"
+                    dangerouslySetInnerHTML={{ 
+                      __html: formatProAIContent(improveDishResult)
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between space-x-4 mt-8">
+              <button
+                onClick={async () => {
+                  // Заменяем текущую техкарту на улучшенную
+                  try {
+                    // Сохраняем улучшенную техкарту в базу
+                    const response = await axios.post(`${API}/save-tech-card`, {
+                      user_id: currentUser.id,
+                      content: improveDishResult,
+                      dish_name: improveDishResult.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Улучшенное блюдо',
+                      city: currentUser.city,
+                      is_improved: true
+                    });
+                    
+                    // Устанавливаем новую техкарту
+                    setTechCard(improveDishResult);
+                    setCurrentIngredients(parseIngredientsFromTechCard(improveDishResult));
+                    setCurrentTechCardId(response.data.id);
+                    setShowImproveDishModal(false);
+                    
+                    alert('Улучшенная техкарта сохранена и установлена как активная!');
+                  } catch (error) {
+                    console.error('Error saving improved dish:', error);
+                    alert('Ошибка при сохранении улучшенной техкарты');
+                  }
+                }}
+                className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                💾 ИСПОЛЬЗОВАТЬ УЛУЧШЕННУЮ ВЕРСИЮ
+              </button>
+              
+              <button
+                onClick={() => setShowImproveDishModal(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                ЗАКРЫТЬ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
