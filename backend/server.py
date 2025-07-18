@@ -1397,6 +1397,10 @@ async def analyze_finances(request: dict):
     "recommended_price": [рекомендуемая цена продажи],
     "margin_percent": [маржинальность в процентах],
     "profitability_rating": [рейтинг от 1 до 5],
+    "detailed_cost_breakdown": [
+        {{"ingredient": "Конкретный ингредиент", "quantity": "количество", "unit_price": "цена за единицу", "total_cost": "общая стоимость", "percent_of_total": "процент от общей себестоимости"}},
+        {{"ingredient": "Другой ингредиент", "quantity": "количество", "unit_price": "цена за единицу", "total_cost": "общая стоимость", "percent_of_total": "процент"}}
+    ],
     "cost_breakdown": [
         {{"category": "Белки", "amount": [сумма], "percent": [процент от общей стоимости]}},
         {{"category": "Углеводы", "amount": [сумма], "percent": [процент]}},
