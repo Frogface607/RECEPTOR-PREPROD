@@ -561,7 +561,152 @@ function App() {
     }
   };
 
-  // ФУНКЦИИ ДЛЯ ИНТЕРАКТИВНОЙ ТАБЛИЦЫ ИНГРЕДИЕНТОВ
+  const parseIngredientsFromTechCard = (techCardContent) => {
+    if (!techCardContent) return [];
+    
+    const ingredientsMatch = techCardContent.match(/\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)/s);
+    if (!ingredientsMatch) return [];
+    
+    const ingredientsText = ingredientsMatch[1];
+    const ingredientLines = ingredientsText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('-') && line.length > 5);
+    
+    const parsedIngredients = ingredientLines.map((line, index) => {
+      const cleanLine = line.replace(/^-\s*/, '').trim();
+      let name = '', quantity = '', unit = 'г', price = '', totalPrice = '0';
+      
+      // Парсим по формату: "Продукт — количество — ~цена"
+      if (cleanLine.includes(' — ')) {
+        const parts = cleanLine.split(' — ');
+        name = parts[0] || '';
+        
+        // Парсим количество и единицу
+        if (parts[1]) {
+          const qtyMatch = parts[1].match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт|штук?)?/);
+          if (qtyMatch) {
+            quantity = qtyMatch[1];
+            unit = qtyMatch[2] || 'г';
+          }
+        }
+        
+        // Парсим цену
+        if (parts[2]) {
+          const priceMatch = parts[2].match(/~?(\d+(?:\.\d+)?)/);
+          if (priceMatch) {
+            totalPrice = priceMatch[1];
+            price = priceMatch[1];
+          }
+        }
+      } else {
+        name = cleanLine;
+      }
+      
+      return {
+        id: index + 1,
+        name: name.trim(),
+        quantity: quantity,
+        unit: unit,
+        price: price,
+        totalPrice: totalPrice,
+        originalQuantity: quantity,
+        originalPrice: price
+      };
+    });
+    
+    return parsedIngredients;
+  };
+
+  // Заменим статический список на интерактивную таблицу
+  const renderIngredientsSection = (content) => {
+    if (!content) return null;
+    
+    const ingredientsMatch = content.match(/\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)/s);
+    if (!ingredientsMatch) return null;
+    
+    return (
+      <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/20 rounded-lg p-4">
+        <h3 className="text-xl font-bold text-purple-300 mb-4">ИНГРЕДИЕНТЫ</h3>
+        
+        {/* Отображаем интерактивный редактор */}
+        {currentIngredients.length > 0 ? (
+          <div className="space-y-3">
+            {/* Заголовки таблицы */}
+            <div className="hidden sm:grid grid-cols-12 gap-3 text-sm font-bold text-purple-300 border-b border-purple-400/30 pb-2">
+              <span className="col-span-1">#</span>
+              <span className="col-span-6">ИНГРЕДИЕНТ</span>
+              <span className="col-span-3">КОЛИЧЕСТВО</span>
+              <span className="col-span-2">ЦЕНА</span>
+            </div>
+            
+            {/* Строки ингредиентов */}
+            {currentIngredients.map((ingredient, index) => (
+              <div key={ingredient.id || index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-3 bg-gray-800/50 rounded-lg p-3">
+                <span className="hidden sm:flex col-span-1 text-purple-400 font-bold items-center justify-center">
+                  {index + 1}.
+                </span>
+                <input
+                  type="text"
+                  value={ingredient.name}
+                  onChange={(e) => updateIngredient(ingredient.id, 'name', e.target.value)}
+                  className="col-span-6 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="Название ингредиента"
+                />
+                <input
+                  type="text"
+                  value={`${ingredient.quantity || ''} ${ingredient.unit || 'г'}`}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const match = value.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]+|г|кг|мл|л|шт|штук?)?/);
+                    if (match) {
+                      const newQty = match[1];
+                      const newUnit = match[2] || ingredient.unit || 'г';
+                      updateIngredient(ingredient.id, 'quantity', newQty);
+                      updateIngredient(ingredient.id, 'unit', newUnit);
+                    }
+                  }}
+                  className="col-span-3 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="250 г"
+                />
+                <div className="col-span-2 flex items-center space-x-2">
+                  <span className="text-green-400 font-bold text-sm">
+                    {Math.round(parseFloat(ingredient.totalPrice) || 0)} ₽
+                  </span>
+                  <button 
+                    onClick={() => removeIngredient(ingredient.id)}
+                    className="text-red-400 hover:text-red-300 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {/* Кнопки управления */}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={addNewIngredient}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                + ДОБАВИТЬ ИНГРЕДИЕНТ
+              </button>
+              <button
+                onClick={saveIngredientsToTechCard}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                💾 СОХРАНИТЬ ИЗМЕНЕНИЯ
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-400">
+            <p>Ингредиенты не найдены</p>
+          </div>
+        )}
+      </div>
+    );
+  };
   const updateIngredient = (id, field, value) => {
     setCurrentIngredients(prev => prev.map(ing => 
       ing.id === id ? { ...ing, [field]: value } : ing
