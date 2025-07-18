@@ -1332,6 +1332,7 @@ function App() {
       console.log('Tech card generation response:', data);
       
       setTechCard(data.tech_card);
+      setCurrentIngredients(parseIngredientsFromTechCard(data.tech_card));
       
       // Парсим ингредиенты для редактора
       const ingredientsText = data.tech_card;
