@@ -2603,6 +2603,7 @@ function App() {
                       <button
                         onClick={() => {
                           setTechCard(item.content);
+                          setCurrentIngredients(parseIngredientsFromTechCard(item.content));
                           setCurrentTechCardId(item.id);
                           setShowHistory(false);
                         }}
