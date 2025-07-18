@@ -640,8 +640,27 @@ function App() {
                     if (match) {
                       const newQty = match[1];
                       const newUnit = match[2] || ingredient.unit || 'г';
-                      updateIngredient(ingredient.id, 'quantity', newQty);
-                      updateIngredient(ingredient.id, 'unit', newUnit);
+                      
+                      // Обновляем количество и единицу одновременно
+                      setCurrentIngredients(prev => prev.map(ing => {
+                        if (ing.id === ingredient.id) {
+                          const updatedIng = { ...ing, quantity: newQty, unit: newUnit };
+                          
+                          // Пересчитываем цену пропорционально
+                          if (ing.originalQuantity && ing.originalPrice) {
+                            const originalQty = parseFloat(ing.originalQuantity) || 1;
+                            const originalPrice = parseFloat(ing.originalPrice) || 0;
+                            const newQtyFloat = parseFloat(newQty) || 0;
+                            
+                            const newPrice = (newQtyFloat / originalQty) * originalPrice;
+                            updatedIng.totalPrice = newPrice.toFixed(1);
+                            updatedIng.price = newPrice.toFixed(1);
+                          }
+                          
+                          return updatedIng;
+                        }
+                        return ing;
+                      }));
                     }
                   }}
                   className="col-span-3 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 focus:border-purple-400 focus:outline-none"
