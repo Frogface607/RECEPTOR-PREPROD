@@ -1432,13 +1432,16 @@ async def analyze_finances(request: dict):
 
 {{
     "dish_name": "{dish_name}",
+    "analysis_date": "Июль 2025",
+    "region": "{user.get('city', 'москва')}",
     "total_cost": [точная себестоимость с копейками],
     "recommended_price": [рекомендуемая цена продажи],
     "margin_percent": [маржинальность в процентах],
+    "profit_per_portion": [прибыль с одной порции],
     "profitability_rating": [рейтинг от 1 до 5],
-    "detailed_cost_breakdown": [
-        {{"ingredient": "Конкретный ингредиент", "quantity": "количество", "unit_price": "цена за единицу", "total_cost": "общая стоимость", "percent_of_total": "процент от общей себестоимости"}},
-        {{"ingredient": "Другой ингредиент", "quantity": "количество", "unit_price": "цена за единицу", "total_cost": "общая стоимость", "percent_of_total": "процент"}}
+    
+    "ingredient_costs": [
+        {{"ingredient": "Конкретный ингредиент", "quantity": "количество", "current_price": "цена за единицу", "total_cost": "общая стоимость", "market_price": "рыночная цена из поиска", "savings_potential": "потенциальная экономия"}}
     ],
     "cost_breakdown": [
         {{"category": "Белки", "amount": [сумма], "percent": [процент], "items": ["список ингредиентов"]}},
