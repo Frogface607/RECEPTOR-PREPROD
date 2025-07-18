@@ -748,7 +748,7 @@ function App() {
   const saveIngredientsToTechCard = () => {
     // Обновляем техкарту с новыми ингредиентами
     const newIngredientsText = currentIngredients.map(ing => 
-      `- ${ing.name} — ${ing.quantity} — ${ing.price}`
+      `- ${ing.name} — ${ing.quantity} ${ing.unit} — ~${Math.round(parseFloat(ing.totalPrice) || 0)} ₽`
     ).join('\n');
     
     const updatedTechCard = techCard.replace(
