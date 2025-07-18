@@ -67,6 +67,11 @@ function App() {
   const [showFinancesModal, setShowFinancesModal] = useState(false);
   const [financesResult, setFinancesResult] = useState(null);
   const [isAnalyzingFinances, setIsAnalyzingFinances] = useState(false);
+  
+  // Improve dish modal state
+  const [showImproveDishModal, setShowImproveDishModal] = useState(false);
+  const [improveDishResult, setImproveDishResult] = useState('');
+  const [isImprovingDish, setIsImprovingDish] = useState(false);
 
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
