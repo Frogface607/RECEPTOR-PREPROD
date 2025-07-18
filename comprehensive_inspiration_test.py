@@ -12,7 +12,7 @@ import time
 def comprehensive_inspiration_test():
     """Comprehensive test covering all review requirements"""
     
-    base_url = "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com/api"
+    base_url = "https://d32e5366-e0c7-4feb-8306-fa16bc144d64.preview.emergentagent.com/api"
     
     print("🎯 COMPREHENSIVE INSPIRATION ENDPOINT TEST")
     print("Testing all requirements from review request")
@@ -161,7 +161,7 @@ def comprehensive_inspiration_test():
 def test_additional_scenarios():
     """Test additional edge cases and scenarios"""
     
-    base_url = "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com/api"
+    base_url = "https://d32e5366-e0c7-4feb-8306-fa16bc144d64.preview.emergentagent.com/api"
     
     print("\n🔍 ADDITIONAL TESTING SCENARIOS")
     print("=" * 40)
