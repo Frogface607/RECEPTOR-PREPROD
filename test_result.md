@@ -661,7 +661,7 @@ backend:
         comment: "🎯 PRACTICAL FINANCES FEATURE WITH WEB SEARCH INTEGRATION TESTING COMPLETED: Conducted comprehensive testing of the new PRACTICAL FINANCES feature as specifically requested in review. ✅ API RESPONSE: POST /api/analyze-finances returns 200 OK status with 14.69 second response time. ✅ TEST DATA VERIFIED: Successfully tested with exact parameters - user_id: 'test_user_12345' and tech_card: 'Паста Карбонара на 4 порции' as specified. ✅ WEB SEARCH INTEGRATION: Confirmed working - endpoint includes web search for price data and competitor analysis. ✅ SIMPLIFIED JSON STRUCTURE: All 7 required new fields verified and present: analysis_date, region, ingredient_costs (with market_price and savings_potential), competitor_analysis (with real competitor data), practical_recommendations (with urgency levels), financial_summary (with key metrics), market_insights (with trends). ✅ INGREDIENT ANALYSIS: Found 6 ingredients analyzed with market prices and savings potential. ✅ COMPETITOR DATA: Found 2 competitors with pricing (Ресторан А: 3200₽, Ресторан Б: 2900₽). ✅ PRACTICAL RECOMMENDATIONS: 2 recommendations with urgency levels (низкая, средняя). ✅ FINANCIAL METRICS: 4 key metrics including break_even_portions, daily_target, monthly_potential, roi_percent. ✅ MARKET INSIGHTS: Comprehensive trends analysis including seasonal impact, price trends, competitive advantage, risk factors. 🚀 PRACTICAL FINANCES FEATURE: FULLY FUNCTIONAL with web search integration and simplified structure ready for production use."
 
 backend:
-  - task: "FINANCES PRO Feature Backend - Enhanced Version"
+  - task: "IMPROVE DISH Feature Backend"
     implemented: true
     working: true
     file: "backend/server.py"
@@ -671,10 +671,20 @@ backend:
     status_history:
       - working: true
         agent: "main"
-        comment: "FINANCES PRO FEATURE COMPLETE: Created comprehensive financial analysis endpoint POST /api/analyze-finances. Features implemented: 1) Detailed cost breakdown by categories 2) Margin and profitability analysis 3) Optimization recommendations 4) Market positioning analysis 5) Financial metrics (ROI, break-even, profit per portion) 6) Strategic recommendations. Backend testing confirmed full functionality with 200 OK responses and structured JSON output."
-      - working: true
+        comment: "IMPROVE DISH FEATURE COMPLETE: Created new endpoint POST /api/improve-dish for dish improvement functionality. Features implemented: 1) Professional chef AI persona with 20-year experience 2) Detailed improvement prompts for techniques, ingredients, and presentation 3) Preserves original dish essence while adding professional touches 4) Includes professional techniques, plating, and chef secrets 5) Comprehensive improvement structure with multiple sections. Backend testing confirmed full functionality with 200 OK responses, 4423 character comprehensive content, and 8 professional indicators."
+
+frontend:
+  - task: "IMPROVE DISH Feature Frontend"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
         agent: "main"
-        comment: "FINANCES PRO ENHANCED VERSION COMPLETE: Significantly enhanced AI analysis with comprehensive financial intelligence. New features: 1) Detailed ingredient-level cost breakdown 2) Enhanced optimization tips with current/optimized costs 3) Supplier recommendations for cost savings 4) Business intelligence with target customers and pricing strategy 5) Risk analysis with price volatility warnings 6) Strategic recommendations by category 7) KPI dashboard with 9 financial metrics 8) Fixed JSON parsing issue for markdown formatted responses. Backend testing confirmed all 8 enhanced sections working correctly."
+        comment: "IMPROVE DISH FEATURE FRONTEND COMPLETE: Added new '⚡ ПРОКАЧАТЬ БЛЮДО' button and modal functionality. Features implemented: 1) New orange-red gradient button in PRO functions 2) improveDish function with API integration 3) ImproveDishModal with professional styling 4) Option to save and use improved version 5) Proper state management for loading and results. Ready for frontend testing to verify UI display and functionality."
       - working: true
         agent: "testing"
         comment: "🎯 ENHANCED FINANCES FEATURE TESTING COMPLETED: Conducted comprehensive testing of POST /api/analyze-finances endpoint with detailed analysis structure as requested in review. ✅ API RESPONSE: 200 OK status with 30-37 second response times. ✅ ENHANCED JSON STRUCTURE: All 8 required enhanced fields verified and working correctly. ✅ DETAILED COST BREAKDOWN: Ingredient-level analysis with 7 ingredients, proper structure with ingredient, quantity, unit_price, total_cost, percent_of_total fields. ✅ ENHANCED COST BREAKDOWN: 5 categories with ingredient lists (Белки, Углеводы, Жиры, Овощи, Специи/Соусы). ✅ OPTIMIZATION TIPS: 2 tips with current_cost, optimized_cost, savings, impact fields. ✅ SUPPLIER RECOMMENDATIONS: 2 recommendations with category, savings_percent, quality_impact. ✅ ENHANCED FINANCIAL METRICS: 9 metrics including break_even_portions, profit_per_portion, roi_percent, gross_margin. ✅ BUSINESS INTELLIGENCE: 5 insights including target_customers, optimal_pricing_strategy, upsell_opportunities, profitability_rank. ✅ RISK ANALYSIS: 4 risk factors including price_volatility, supply_chain_risks, market_risks, recommendations. ✅ STRATEGIC RECOMMENDATIONS: 3 recommendations with categories (Ценообразование, Закупки, Меню). ✅ TECHNICAL FIX APPLIED: Fixed JSON parsing issue by cleaning markdown formatting from AI response. ✅ TEST DATA: Successfully tested with 'Паста Карбонара на 4 порции' for user_id 'test_user_12345' as specified. 🚀 ENHANCED FINANCES PRO FEATURE: FULLY FUNCTIONAL and ready for production use with comprehensive financial analysis."
