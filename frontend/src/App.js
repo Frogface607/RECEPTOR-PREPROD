@@ -1105,6 +1105,7 @@ function App() {
       });
       
       setTechCard(response.data.tech_card);
+      setCurrentIngredients(parseIngredientsFromTechCard(response.data.tech_card));
       setEditInstruction('');
       
       // Re-parse ingredients and steps for editing
