@@ -3845,10 +3845,11 @@ function App() {
                   ⚗️ ТИП ЭКСПЕРИМЕНТА: {laboratoryResult.experiment_type?.toUpperCase()}
                 </h3>
                 <p className="text-gray-300 text-sm">
-                  {laboratoryResult.experiment_type === 'random' && '🎲 Случайное сочетание ингредиентов и техник'}
-                  {laboratoryResult.experiment_type === 'fusion' && '🌍 Фьюжн кухонь разных стран'}
-                  {laboratoryResult.experiment_type === 'molecular' && '⚗️ Молекулярная гастрономия'}
-                  {laboratoryResult.experiment_type === 'extreme' && '🔥 Экстремальные кулинарные эксперименты'}
+                  {laboratoryResult.experiment_type === 'random' && '🎲 Случайное сочетание домашних ингредиентов'}
+                  {laboratoryResult.experiment_type === 'snack' && '🍿 Полноценное блюдо из снеков и сладостей'}
+                  {laboratoryResult.experiment_type === 'fusion' && '🌍 Фьюжн кухонь с домашними продуктами'}
+                  {laboratoryResult.experiment_type === 'molecular' && '🧪 Домашняя молекулярная гастрономия'}
+                  {laboratoryResult.experiment_type === 'extreme' && '🔥 Экстремальные домашние эксперименты'}
                 </p>
               </div>
             </div>
