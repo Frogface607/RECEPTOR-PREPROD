@@ -3399,9 +3399,9 @@ function App() {
       {/* Finances Modal */}
       {showFinancesModal && financesResult && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-green-500/30">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto border border-green-500/30">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-green-300">💼 ФИНАНСЫ: {financesResult.dish_name}</h2>
+              <h2 className="text-3xl font-bold text-green-300">💼 ФИНАНСОВЫЙ АНАЛИЗ: {financesResult.dish_name}</h2>
               <button
                 onClick={() => setShowFinancesModal(false)}
                 className="text-gray-400 hover:text-white text-2xl"
@@ -3411,46 +3411,102 @@ function App() {
             </div>
             
             {/* Краткая сводка */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg p-4 text-center border border-green-500/30">
-                <div className="text-green-300 text-sm font-bold">СЕБЕСТОИМОСТЬ</div>
-                <div className="text-2xl font-bold text-white">{financesResult.total_cost}₽</div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-xl p-6 text-center border border-green-500/30 shadow-lg">
+                <div className="text-green-300 text-sm font-bold uppercase tracking-wider">Себестоимость</div>
+                <div className="text-3xl font-bold text-white mt-2">{financesResult.total_cost}₽</div>
+                <div className="text-green-400 text-xs mt-1">на 1 порцию</div>
               </div>
-              <div className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg p-4 text-center border border-blue-500/30">
-                <div className="text-blue-300 text-sm font-bold">РЕКОМЕНДУЕМАЯ ЦЕНА</div>
-                <div className="text-2xl font-bold text-white">{financesResult.recommended_price}₽</div>
+              <div className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-xl p-6 text-center border border-blue-500/30 shadow-lg">
+                <div className="text-blue-300 text-sm font-bold uppercase tracking-wider">Рекомендуемая цена</div>
+                <div className="text-3xl font-bold text-white mt-2">{financesResult.recommended_price}₽</div>
+                <div className="text-blue-400 text-xs mt-1">× {((financesResult.recommended_price / financesResult.total_cost) || 3).toFixed(1)} коэффициент</div>
               </div>
-              <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-4 text-center border border-purple-500/30">
-                <div className="text-purple-300 text-sm font-bold">МАРЖА</div>
-                <div className="text-2xl font-bold text-white">{financesResult.margin_percent}%</div>
+              <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl p-6 text-center border border-purple-500/30 shadow-lg">
+                <div className="text-purple-300 text-sm font-bold uppercase tracking-wider">Маржа</div>
+                <div className="text-3xl font-bold text-white mt-2">{financesResult.margin_percent}%</div>
+                <div className="text-purple-400 text-xs mt-1">прибыль {((financesResult.recommended_price - financesResult.total_cost) || 0).toFixed(0)}₽</div>
               </div>
-              <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-lg p-4 text-center border border-yellow-500/30">
-                <div className="text-yellow-300 text-sm font-bold">РЕНТАБЕЛЬНОСТЬ</div>
-                <div className="text-2xl font-bold text-white">
+              <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-xl p-6 text-center border border-yellow-500/30 shadow-lg">
+                <div className="text-yellow-300 text-sm font-bold uppercase tracking-wider">Рентабельность</div>
+                <div className="text-3xl font-bold text-white mt-2">
                   {'★'.repeat(financesResult.profitability_rating)}{'☆'.repeat(5 - financesResult.profitability_rating)}
                 </div>
+                <div className="text-yellow-400 text-xs mt-1">{financesResult.profitability_rating}/5 баллов</div>
               </div>
             </div>
             
-            {/* Структура затрат */}
+            {/* Детальный разбор по ингредиентам */}
+            {financesResult.detailed_cost_breakdown && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  🔍 ДЕТАЛЬНЫЙ РАЗБОР ИНГРЕДИЕНТОВ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">полная стоимость каждого компонента</span>
+                </h3>
+                <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-600">
+                          <th className="text-left py-3 px-4 text-green-300 font-bold">ИНГРЕДИЕНТ</th>
+                          <th className="text-center py-3 px-4 text-blue-300 font-bold">КОЛИЧЕСТВО</th>
+                          <th className="text-center py-3 px-4 text-purple-300 font-bold">ЦЕНА/ЕД</th>
+                          <th className="text-center py-3 px-4 text-yellow-300 font-bold">ВСЕГО</th>
+                          <th className="text-center py-3 px-4 text-orange-300 font-bold">% ДОЛЯ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {financesResult.detailed_cost_breakdown.map((item, index) => (
+                          <tr key={index} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                            <td className="py-3 px-4 text-white font-medium">{item.ingredient}</td>
+                            <td className="py-3 px-4 text-center text-blue-200">{item.quantity}</td>
+                            <td className="py-3 px-4 text-center text-purple-200">{item.unit_price}₽</td>
+                            <td className="py-3 px-4 text-center text-yellow-200 font-bold">{item.total_cost}₽</td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="bg-orange-600/20 text-orange-200 px-2 py-1 rounded text-xs font-bold">
+                                {item.percent_of_total}%
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Структура затрат по категориям */}
             {financesResult.cost_breakdown && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-green-300 mb-4">📊 СТРУКТУРА ЗАТРАТ</h3>
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  <div className="space-y-3">
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  📊 СТРУКТУРА ЗАТРАТ ПО КАТЕГОРИЯМ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">распределение по группам продуктов</span>
+                </h3>
+                <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                  <div className="space-y-4">
                     {financesResult.cost_breakdown.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="text-gray-300">{item.category}</span>
-                        <div className="flex items-center space-x-3">
-                          <div className="w-32 bg-gray-700 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" 
-                              style={{ width: `${item.percent}%` }}
-                            ></div>
+                      <div key={index} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/30">
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-lg font-bold text-white">{item.category}</span>
+                          <div className="flex items-center space-x-4">
+                            <span className="text-2xl font-bold text-green-400">{item.amount}₽</span>
+                            <span className="bg-green-600/20 text-green-300 px-3 py-1 rounded-full text-sm font-bold">
+                              {item.percent}%
+                            </span>
                           </div>
-                          <span className="text-white font-bold min-w-[60px]">{item.amount}₽</span>
-                          <span className="text-gray-400 text-sm min-w-[40px]">({item.percent}%)</span>
                         </div>
+                        <div className="w-full bg-gray-600 rounded-full h-3 mb-3">
+                          <div 
+                            className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500" 
+                            style={{ width: `${item.percent}%` }}
+                          ></div>
+                        </div>
+                        {item.items && (
+                          <div className="text-sm text-gray-300">
+                            <span className="font-medium">Включает:</span> {item.items.join(', ')}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -3458,16 +3514,39 @@ function App() {
               </div>
             )}
             
-            {/* Советы по оптимизации */}
+            {/* Советы по оптимизации с деталями */}
             {financesResult.optimization_tips && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-green-300 mb-4">💡 СОВЕТЫ ПО ОПТИМИЗАЦИИ</h3>
-                <div className="space-y-3">
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  💡 ПРОФЕССИОНАЛЬНЫЕ СОВЕТЫ ПО ОПТИМИЗАЦИИ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">конкретные рекомендации с цифрами</span>
+                </h3>
+                <div className="space-y-4">
                   {financesResult.optimization_tips.map((tip, index) => (
-                    <div key={index} className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-4 border border-yellow-500/30">
-                      <div className="flex justify-between items-start">
-                        <span className="text-gray-300 flex-1">{tip.tip}</span>
-                        <span className="text-green-400 font-bold ml-4">-{tip.savings}₽</span>
+                    <div key={index} className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-xl p-6 border border-yellow-500/30 shadow-lg">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-yellow-300 mb-2">💡 СОВЕТ #{index + 1}</h4>
+                          <p className="text-gray-300 leading-relaxed">{tip.tip}</p>
+                        </div>
+                        <div className="ml-6 text-right">
+                          <div className="text-2xl font-bold text-green-400">-{tip.savings}₽</div>
+                          <div className="text-sm text-gray-400">экономия</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div className="bg-red-900/20 rounded-lg p-3 border border-red-500/30">
+                          <div className="text-red-300 text-sm font-bold">Текущая стоимость</div>
+                          <div className="text-xl font-bold text-white">{tip.current_cost}₽</div>
+                        </div>
+                        <div className="bg-green-900/20 rounded-lg p-3 border border-green-500/30">
+                          <div className="text-green-300 text-sm font-bold">После оптимизации</div>
+                          <div className="text-xl font-bold text-white">{tip.optimized_cost}₽</div>
+                        </div>
+                        <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-500/30">
+                          <div className="text-blue-300 text-sm font-bold">Влияние на качество</div>
+                          <div className="text-lg font-bold text-white">{tip.impact}</div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -3475,72 +3554,116 @@ function App() {
               </div>
             )}
             
-            {/* Финансовые метрики */}
+            {/* Расширенные финансовые метрики */}
             {financesResult.financial_metrics && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-green-300 mb-4">📈 ФИНАНСОВЫЕ МЕТРИКИ</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="text-gray-400 text-sm">Прибыль с порции</div>
-                    <div className="text-2xl font-bold text-green-400">{financesResult.financial_metrics.profit_per_portion}₽</div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  📈 КЛЮЧЕВЫЕ ФИНАНСОВЫЕ ПОКАЗАТЕЛИ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">полная картина прибыльности</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                    <div className="text-gray-400 text-sm uppercase tracking-wider">Прибыль с порции</div>
+                    <div className="text-3xl font-bold text-green-400 mt-2">{financesResult.financial_metrics.profit_per_portion}₽</div>
+                    <div className="text-green-300 text-xs mt-1">чистая прибыль</div>
                   </div>
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="text-gray-400 text-sm">Точка безубыточности</div>
-                    <div className="text-2xl font-bold text-blue-400">{financesResult.financial_metrics.break_even_portions} порций</div>
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                    <div className="text-gray-400 text-sm uppercase tracking-wider">Точка безубыточности</div>
+                    <div className="text-3xl font-bold text-blue-400 mt-2">{financesResult.financial_metrics.break_even_portions}</div>
+                    <div className="text-blue-300 text-xs mt-1">порций в день</div>
                   </div>
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="text-gray-400 text-sm">Себестоимость на 100г</div>
-                    <div className="text-2xl font-bold text-purple-400">{financesResult.financial_metrics.cost_per_100g}₽</div>
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                    <div className="text-gray-400 text-sm uppercase tracking-wider">Дневная цель</div>
+                    <div className="text-3xl font-bold text-purple-400 mt-2">{financesResult.financial_metrics.daily_break_even || 'N/A'}</div>
+                    <div className="text-purple-300 text-xs mt-1">для прибыли</div>
                   </div>
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="text-gray-400 text-sm">ROI</div>
-                    <div className="text-2xl font-bold text-yellow-400">{financesResult.financial_metrics.roi_percent}%</div>
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                    <div className="text-gray-400 text-sm uppercase tracking-wider">Себестоимость 100г</div>
+                    <div className="text-3xl font-bold text-yellow-400 mt-2">{financesResult.financial_metrics.cost_per_100g}₽</div>
+                    <div className="text-yellow-300 text-xs mt-1">базовая метрика</div>
                   </div>
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                    <div className="text-gray-400 text-sm uppercase tracking-wider">ROI</div>
+                    <div className="text-3xl font-bold text-orange-400 mt-2">{financesResult.financial_metrics.roi_percent}%</div>
+                    <div className="text-orange-300 text-xs mt-1">возврат инвестиций</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                    <div className="text-gray-400 text-sm uppercase tracking-wider">Месячный потенциал</div>
+                    <div className="text-3xl font-bold text-pink-400 mt-2">{financesResult.financial_metrics.monthly_potential || 'N/A'}</div>
+                    <div className="text-pink-300 text-xs mt-1">рублей в месяц</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Анализ рисков */}
+            {financesResult.risk_analysis && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  ⚠️ АНАЛИЗ РИСКОВ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">управление финансовыми рисками</span>
+                </h3>
+                <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                  {financesResult.risk_analysis.price_volatility && (
+                    <div className="mb-6">
+                      <h4 className="text-lg font-bold text-red-300 mb-4">🔴 Волатильность цен</h4>
+                      <div className="space-y-3">
+                        {financesResult.risk_analysis.price_volatility.map((risk, index) => (
+                          <div key={index} className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="font-bold text-white">{risk.ingredient}</div>
+                                <div className="text-red-300 text-sm mt-1">Риск: {risk.risk_factor}</div>
+                                <div className="text-gray-300 text-sm mt-1">Решение: {risk.mitigation}</div>
+                              </div>
+                              <div className="ml-4 text-right">
+                                <div className="text-red-400 font-bold">{risk.volatility_level}</div>
+                                <div className="text-xs text-gray-400">уровень риска</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
             
             {/* Стратегические рекомендации */}
             {financesResult.strategic_recommendations && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-green-300 mb-4">🎯 СТРАТЕГИЧЕСКИЕ РЕКОМЕНДАЦИИ</h3>
-                <div className="space-y-3">
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  🎯 СТРАТЕГИЧЕСКИЕ РЕКОМЕНДАЦИИ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">долгосрочные решения</span>
+                </h3>
+                <div className="space-y-4">
                   {financesResult.strategic_recommendations.map((rec, index) => (
-                    <div key={index} className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-4 border border-blue-500/30">
-                      <span className="text-gray-300">{rec}</span>
+                    <div key={index} className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl p-6 border border-blue-500/30 shadow-lg">
+                      <div className="flex items-center mb-3">
+                        <div className="bg-blue-600/20 rounded-lg p-2 mr-4">
+                          <span className="text-blue-300 font-bold text-sm">{rec.category}</span>
+                        </div>
+                        <h4 className="text-lg font-bold text-white">РЕКОМЕНДАЦИЯ #{index + 1}</h4>
+                      </div>
+                      <p className="text-gray-300 leading-relaxed mb-3">{rec.recommendation}</p>
+                      <div className="bg-green-900/20 rounded-lg p-3 border border-green-500/30">
+                        <div className="text-green-300 text-sm font-bold">Ожидаемый эффект:</div>
+                        <div className="text-white">{rec.expected_impact}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
             
-            {/* Анализ рынка */}
-            {financesResult.price_comparison && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-green-300 mb-4">📊 АНАЛИЗ РЫНКА</h3>
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-gray-400 text-sm">Средняя цена конкурентов</div>
-                      <div className="text-xl font-bold text-white">{financesResult.price_comparison.competitor_average}₽</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-400 text-sm">Позиция на рынке</div>
-                      <div className="text-xl font-bold text-white">{financesResult.price_comparison.market_position}</div>
-                    </div>
-                  </div>
-                  <div className="mt-4 text-gray-300">{financesResult.price_comparison.recommendation}</div>
-                </div>
-              </div>
-            )}
-            
             {/* Кнопка закрытия */}
-            <div className="flex justify-end">
+            <div className="flex justify-center mt-8">
               <button
                 onClick={() => setShowFinancesModal(false)}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-lg font-bold transition-colors"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-12 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
-                ЗАКРЫТЬ
+                💼 ЗАКРЫТЬ АНАЛИЗ
               </button>
             </div>
           </div>
