@@ -621,6 +621,18 @@ backend:
         agent: "testing"
         comment: "🚀 DEPLOYMENT VERIFICATION TEST COMPLETED: Conducted quick deployment test as specifically requested for backend API availability. ✅ CORE INFRASTRUCTURE WORKING: All core backend endpoints operational and responding correctly. ✅ GET /api/cities: 200 OK (0.09s) - 21 cities available including Moscow. ✅ POST /api/register: 200 OK (0.08s) - User registration working perfectly with proper subscription initialization. ✅ GET /api/subscription-plans: 200 OK (0.02s) - All 4 subscription tiers (free, starter, pro, business) available. ✅ GET /api/kitchen-equipment: 200 OK (0.02s) - 21 equipment items across 3 categories working. ⚠️ POST /api/generate-tech-card: OpenAI API key invalid (401 error) - This is a configuration issue, not deployment failure. ✅ DEPLOYMENT STATUS: Backend infrastructure is fully operational and ready for user access. The OpenAI API key needs to be updated for tech card generation to work, but all other functionality is working perfectly. Backend URL https://d32e5366-e0c7-4feb-8306-fa16bc144d64.preview.emergentagent.com/api is accessible and responding to requests."
 
+  - task: "GOLDEN_PROMPT Changes Verification - Complex Ingredients Avoidance"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 GOLDEN_PROMPT CHANGES VERIFICATION COMPLETED: Conducted comprehensive testing of updated backend after GOLDEN_PROMPT changes as specifically requested in review. ✅ TEST SCENARIO: Generated tech card for 'Паста Болоньезе на 4 порции' with user 'test_user_12345' in city 'moskva' as specified. ✅ PERFORMANCE: API responded with 200 OK status in 13.16 seconds, generated 2560 character tech card successfully. ✅ COMPLEX INGREDIENTS TEST: NO complex French sauces found (tested for demi-glace, espagnole, velouté, hollandaise, béarnaise, beurre blanc) - GOLDEN_PROMPT changes working effectively. ✅ SIMPLE INGREDIENTS TEST: Found 16 appropriate simple ingredients including фарш, говядина, лук, морковь, чеснок, томат, томатная паста, паста, масло, соль, перец, специи, пармезан, сыр, базилик, вино. ✅ PRICING VERIFICATION: Reasonable pricing detected - max ingredient 417₽, total estimated 841₽, appropriate for pasta dish without expensive complex ingredients. ✅ PORTION SIZES: Proper portion information included in tech card. ✅ DATA PERSISTENCE: Tech card successfully saved to database and retrievable via user history endpoint (ID: e7e38dec-e2bb-48ec-97a3-349926c3dc53). 🎉 CONCLUSION: GOLDEN_PROMPT changes are working perfectly - AI is successfully avoiding unnecessarily complex ingredients like demi-glace and using simple, appropriate ingredients for pasta dishes as intended."
+
   - task: "OpenAI API Key Testing - Tech Card Generation"
     implemented: true
     working: true
