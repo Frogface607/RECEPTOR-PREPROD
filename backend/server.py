@@ -1437,9 +1437,14 @@ async def analyze_finances(request: dict):
     }},
     "financial_metrics": {{
         "break_even_portions": [количество порций для окупаемости],
+        "daily_break_even": [сколько порций в день нужно продать],
+        "monthly_potential": [потенциал в месяц],
         "profit_per_portion": [прибыль с одной порции],
         "cost_per_100g": [себестоимость на 100г],
-        "roi_percent": [ROI в процентах]
+        "roi_percent": [ROI в процентах],
+        "payback_period": [срок окупаемости в днях],
+        "gross_margin": [валовая маржа],
+        "contribution_margin": [маржинальная прибыль]
     }},
     "strategic_recommendations": [
         "Стратегическая рекомендация 1",
