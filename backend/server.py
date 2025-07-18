@@ -1417,9 +1417,14 @@ async def analyze_finances(request: dict):
         {{"category": "Другая категория", "current_supplier": "текущий поставщик", "recommended_supplier": "рекомендуемый поставщик", "savings_percent": "процент экономии", "quality_impact": "влияние на качество"}}
     ],
     "price_comparison": {{
-        "competitor_average": [средняя цена у конкурентов],
+        "competitor_analysis": [
+            {{"competitor": "Конкурент 1", "price": "цена", "position": "позиция"}},
+            {{"competitor": "Конкурент 2", "price": "цена", "position": "позиция"}}
+        ],
+        "market_average": [средняя цена],
         "market_position": "выше/ниже/в среднем",
-        "recommendation": "рекомендация по ценообразованию"
+        "price_positioning": "премиум/средний/эконом",
+        "recommendation": "детальная рекомендация по ценообразованию"
     }},
     "seasonal_analysis": {{
         "current_season": "весна/лето/осень/зима",
