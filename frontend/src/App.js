@@ -2173,6 +2173,14 @@ function App() {
                         </button>
                         
                         <button
+                          onClick={improveDish}
+                          disabled={isImprovingDish || !techCard}
+                          className={`w-full ${isImprovingDish || !techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                        >
+                          {isImprovingDish ? 'УЛУЧШАЮ...' : '⚡ ПРОКАЧАТЬ БЛЮДО'}
+                        </button>
+                        
+                        <button
                           onClick={analyzeFinances}
                           disabled={isAnalyzingFinances || !techCard}
                           className={`w-full ${isAnalyzingFinances || !techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
