@@ -974,6 +974,38 @@ function App() {
     }
   };
 
+  const conductExperiment = async () => {
+    if (!currentUser?.id) return;
+    
+    setIsExperimenting(true);
+    
+    // Извлекаем название блюда из текущей техкарты (если есть)
+    let baseDish = '';
+    if (techCard) {
+      const titleMatch = techCard.match(/\*\*Название:\*\*\s*(.*?)(?=\n|$)/);
+      if (titleMatch) {
+        baseDish = titleMatch[1].trim();
+      }
+    }
+    
+    try {
+      const response = await axios.post(`${API}/laboratory-experiment`, {
+        user_id: currentUser.id,
+        experiment_type: experimentType,
+        base_dish: baseDish
+      });
+      
+      setLaboratoryResult(response.data);
+      setShowLaboratoryModal(true);
+      
+    } catch (error) {
+      console.error('Error conducting experiment:', error);
+      alert('Ошибка при проведении эксперимента: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsExperimenting(false);
+    }
+  };
+
   // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
   const renderIngredientsTable = (content) => {
     console.log('=== INGREDIENTS TABLE DEBUG ===');
