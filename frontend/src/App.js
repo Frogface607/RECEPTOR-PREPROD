@@ -3921,6 +3921,16 @@ function App() {
                 </button>
                 <button
                   onClick={() => {
+                    setExperimentType('snack');
+                    setShowLaboratoryModal(false);
+                    setTimeout(() => conductExperiment(), 500);
+                  }}
+                  className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
+                >
+                  🍿 СНЕКОВЫЙ
+                </button>
+                <button
+                  onClick={() => {
                     setExperimentType('fusion');
                     setShowLaboratoryModal(false);
                     setTimeout(() => conductExperiment(), 500);
@@ -3937,17 +3947,7 @@ function App() {
                   }}
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
                 >
-                  ⚗️ МОЛЕКУЛЯРНАЯ
-                </button>
-                <button
-                  onClick={() => {
-                    setExperimentType('extreme');
-                    setShowLaboratoryModal(false);
-                    setTimeout(() => conductExperiment(), 500);
-                  }}
-                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg text-sm font-bold transition-colors"
-                >
-                  🔥 ЭКСТРЕМАЛЬНЫЙ
+                  🧪 ДОМАШНЯЯ МОЛЕКУЛЯРКА
                 </button>
               </div>
             </div>
