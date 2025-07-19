@@ -30,19 +30,36 @@ openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 # Create the main app without a prefix
 app = FastAPI()
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Development
+# Add CORS middleware with dynamic origins
+def get_cors_origins():
+    """Get CORS origins based on environment"""
+    base_origins = [
+        "http://localhost:3000",  # Local development
         "https://www.receptorai.pro",  # Production
         "https://receptorai.pro",  # Production without www
-        "https://receptor-ai-thte.vercel.app",  # New Vercel domain
-        "https://cd8482c9-11b5-4e9d-b78d-b2b6c455762c.preview.emergentagent.com"  # Current preview
-    ],
+    ]
+    
+    # Add all possible preview and deployment domains
+    preview_patterns = [
+        "https://*.preview.emergentagent.com",  # All preview URLs
+        "https://*.vercel.app",  # All Vercel deployments
+        "https://*.netlify.app",  # All Netlify deployments
+        "https://receptor-ai-thte.vercel.app",  # Specific Vercel domain
+    ]
+    
+    # For development, allow all origins
+    if os.environ.get("ENVIRONMENT") == "development":
+        return ["*"]
+    
+    return base_origins
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all for development
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Create a router with the /api prefix
