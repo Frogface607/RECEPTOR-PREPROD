@@ -1017,6 +1017,11 @@ async def get_user_history(user_id: str):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Add a catch-all OPTIONS handler for CORS preflight
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str):
+    return {"message": "OK"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
