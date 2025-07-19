@@ -55,7 +55,11 @@ def get_cors_origins():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all for development
+    allow_origins=[
+        "*",  # Allow all for development
+        "https://www.receptorai.pro",  # Production domain
+        "https://receptorai.pro",      # Production without www
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
