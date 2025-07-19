@@ -57,8 +57,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "*",  # Allow all for development
-        "https://www.receptorai.pro",  # Production domain
-        "https://receptorai.pro",      # Production without www
+        "https://receptor-ai.vercel.app",    # New Vercel domain
+        "https://receptorai.pro",            # Custom domain
+        "https://www.receptorai.pro",        # Custom domain with www
+        "http://localhost:3000",             # Local development
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
