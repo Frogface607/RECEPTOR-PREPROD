@@ -60,6 +60,7 @@ app.add_middleware(
         "https://receptor-ai.vercel.app",    # New Vercel domain
         "https://receptorai.pro",            # Custom domain
         "https://www.receptorai.pro",        # Custom domain with www
+        "https://kitchen-ai.emergent.host",  # New backend domain
         "http://localhost:3000",             # Local development
     ],
     allow_credentials=True,
