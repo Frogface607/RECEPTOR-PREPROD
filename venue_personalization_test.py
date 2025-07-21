@@ -275,7 +275,7 @@ def test_venue_aware_pro_functions():
                 scenario_results["tests"]["photo_tips"] = {
                     "status": "success",
                     "response_time": round(response_time, 2),
-                    "content_length": len(photo_data.get("photo_tips", "")),
+                    "content_length": len(photo_data.get("tips", "")),
                     "found_keywords": found_keywords,
                     "keyword_match_rate": len(found_keywords) / len(scenario["expected_keywords"]["photo"])
                 }
