@@ -854,6 +854,66 @@ def generate_sales_script_context(venue_type, venue_info, average_check, cuisine
     
     return "\n".join(context_parts) if context_parts else ""
 
+def generate_food_pairing_context(venue_type, venue_info, average_check, cuisine_focus):
+    """Generate venue-specific food pairing context"""
+    context_parts = []
+    
+    # Venue-specific pairing approach
+    if venue_type == "fine_dining":
+        context_parts.append("Изысканные винные пары и премиум напитки")
+        context_parts.append("Акцент на редкие и эксклюзивные позиции")
+    elif venue_type == "food_truck":
+        context_parts.append("Простые и доступные напитки")
+        context_parts.append("Упор на освежающие и быстрые варианты")
+    elif venue_type == "bar_pub":
+        context_parts.append("Широкий выбор пива и крепких напитков")
+        context_parts.append("Классические барные сочетания")
+    elif venue_type == "night_club":
+        context_parts.append("Яркие коктейли и энергетические напитки")
+        context_parts.append("Акцент на визуальную подачу")
+    elif venue_type == "family_restaurant":
+        context_parts.append("Семейные напитки и безалкогольные варианты")
+        context_parts.append("Традиционные и понятные сочетания")
+    
+    # Average check considerations for drinks
+    if average_check:
+        if average_check < 500:
+            context_parts.append("Бюджетные напитки и простые сочетания")
+        elif average_check > 2000:
+            context_parts.append("Премиум алкоголь и авторские коктейли")
+        else:
+            context_parts.append("Качественные напитки средней ценовой категории")
+    
+    return "\n".join(context_parts) if context_parts else ""
+
+def generate_alcohol_recommendations(venue_type):
+    """Generate alcohol recommendations based on venue type"""
+    if venue_type == "fine_dining":
+        return """• Премиум вина (Бордо, Бургундия, Тоскана)
+• Выдержанные крепкие напитки
+• Авторские коктейли от шеф-бармена
+• Шампанское и игристые вина"""
+    elif venue_type == "food_truck":
+        return """• Пиво в банках и бутылках
+• Простые коктейли
+• Лимонады и морсы
+• Энергетические напитки"""
+    elif venue_type == "bar_pub":
+        return """• Широкий выбор разливного пива
+• Классические коктейли (Мохито, Маргарита)
+• Виски и другие крепкие напитки
+• Винная карта средней ценовой категории"""
+    elif venue_type == "night_club":
+        return """• Яркие коктейли с декором
+• Шампанское и игристые вина
+• Премиум водка и джин
+• Энергетические коктейли"""
+    else:
+        return """• Домашние вина и пиво
+• Классические коктейли
+• Безалкогольные альтернативы
+• Сезонные напитки"""
+
 def reset_monthly_usage_if_needed(user_data):
     """Reset monthly usage if a month has passed"""
     current_date = datetime.utcnow()
