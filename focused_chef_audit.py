@@ -11,7 +11,7 @@ from datetime import datetime
 
 class FocusedChefAudit:
     def __init__(self):
-        self.base_url = "https://d32e5366-e0c7-4feb-8306-fa16bc144d64.preview.emergentagent.com/api"
+        self.base_url = "https://4c812d8a-9ae1-4ca3-a869-39e1c5ceb8c4.preview.emergentagent.com/api"
         self.user_id = None
         
         # Focus on 5 representative dishes
