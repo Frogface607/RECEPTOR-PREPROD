@@ -564,6 +564,66 @@ function App() {
     }
   };
 
+  // Venue Profile API functions
+  const fetchVenueTypes = async () => {
+    try {
+      const response = await axios.get(`${API}/venue-types`);
+      setVenueTypes(response.data);
+    } catch (error) {
+      console.error('Error fetching venue types:', error);
+    }
+  };
+
+  const fetchCuisineTypes = async () => {
+    try {
+      const response = await axios.get(`${API}/cuisine-types`);
+      setCuisineTypes(response.data);
+    } catch (error) {
+      console.error('Error fetching cuisine types:', error);
+    }
+  };
+
+  const fetchAverageCheckCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/average-check-categories`);
+      setAverageCheckCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching average check categories:', error);
+    }
+  };
+
+  const fetchVenueProfile = async () => {
+    if (!currentUser?.id) return;
+    try {
+      const response = await axios.get(`${API}/venue-profile/${currentUser.id}`);
+      setVenueProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching venue profile:', error);
+    }
+  };
+
+  const updateVenueProfile = async (profileData) => {
+    if (!currentUser?.id) return;
+    
+    setIsUpdatingProfile(true);
+    try {
+      const response = await axios.post(`${API}/update-venue-profile/${currentUser.id}`, profileData);
+      
+      if (response.data.success) {
+        setVenueProfile(prev => ({ ...prev, ...profileData }));
+        alert('Профиль заведения обновлен успешно!');
+        return true;
+      }
+    } catch (error) {
+      console.error('Error updating venue profile:', error);
+      alert('Ошибка при обновлении профиля: ' + (error.response?.data?.detail || error.message));
+      return false;
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+    return false;
+  };
+
   const parseIngredientsFromTechCard = (techCardContent) => {
     if (!techCardContent) return [];
     
