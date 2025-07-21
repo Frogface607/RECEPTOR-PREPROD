@@ -1238,7 +1238,7 @@ async def generate_tech_card(request: DishRequest):
         
         # Temporarily use GPT-4o-mini for all users to test
         ai_model = "gpt-4o-mini"  # was: "gpt-4o" if user['subscription_plan'] in ['pro', 'business'] else "gpt-4o-mini"
-        max_tokens = 3000  # was: 4000 if user['subscription_plan'] in ['pro', 'business'] else 3000
+        max_tokens = 4000  # Increased for better tech cards, was: 3000
         
         print(f"Using AI model: {ai_model} for user subscription: {user['subscription_plan']}")
         
