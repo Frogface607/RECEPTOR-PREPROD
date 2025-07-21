@@ -469,8 +469,32 @@ function App() {
         {storage && (
           <div className="bg-gray-800/30 rounded-lg p-4">
             <h3 className="text-xl font-bold text-purple-300 mb-4">ЗАГОТОВКИ И ХРАНЕНИЕ</h3>
-            <div className="space-y-2">
-              <EditableText field="storage" value={storage} className="text-gray-300" multiline={true} />
+            <div className="space-y-3">
+              {storage.split('\n').filter(line => line.trim()).map((line, index) => {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('- ')) {
+                  return (
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-purple-400 mt-1">•</span>
+                      <EditableText 
+                        field={`storage_item_${index}`} 
+                        value={trimmedLine.substring(2)} 
+                        className="text-gray-300 leading-relaxed flex-1" 
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={index}>
+                      <EditableText 
+                        field={`storage_line_${index}`} 
+                        value={trimmedLine} 
+                        className="text-gray-300 leading-relaxed block" 
+                      />
+                    </div>
+                  );
+                }
+              })}
             </div>
           </div>
         )}
@@ -479,8 +503,42 @@ function App() {
         {tips && (
           <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-lg p-4">
             <h3 className="text-xl font-bold text-orange-300 mb-4">СОВЕТЫ ОТ ШЕФА</h3>
-            <div className="space-y-2">
-              <EditableText field="tips" value={tips} className="text-gray-300" multiline={true} />
+            <div className="space-y-3">
+              {tips.split('\n').filter(line => line.trim()).map((line, index) => {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('- ')) {
+                  return (
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-orange-400 mt-1">💡</span>
+                      <EditableText 
+                        field={`tips_item_${index}`} 
+                        value={trimmedLine.substring(2)} 
+                        className="text-gray-300 leading-relaxed flex-1" 
+                      />
+                    </div>
+                  );
+                } else if (trimmedLine.startsWith('*') && trimmedLine.endsWith('*')) {
+                  return (
+                    <div key={index} className="bg-orange-900/30 rounded-lg p-3 border-l-4 border-orange-400">
+                      <EditableText 
+                        field={`tips_highlight_${index}`} 
+                        value={trimmedLine.slice(1, -1)} 
+                        className="text-orange-200 font-semibold leading-relaxed" 
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={index}>
+                      <EditableText 
+                        field={`tips_line_${index}`} 
+                        value={trimmedLine} 
+                        className="text-gray-300 leading-relaxed block" 
+                      />
+                    </div>
+                  );
+                }
+              })}
             </div>
           </div>
         )}
