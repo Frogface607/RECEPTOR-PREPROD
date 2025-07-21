@@ -2674,40 +2674,45 @@ async def laboratory_experiment(request: dict):
         rand_ingredients = random.sample(random_ingredients, 3)
         rand_technique = random.choice(extreme_techniques)
         experiment_prompt = f"""
-        🎲 ДОМАШНИЙ ЭКСПЕРИМЕНТ:
+        {venue_context}
+        🎲 ЭКСПЕРИМЕНТ ДЛЯ {venue_info['name'].upper()}:
         Создай блюдо, используя: {', '.join(rand_ingredients)}
         Техника: {rand_technique}
-        Базовое блюдо: {base_dish if base_dish else 'любое домашнее блюдо'}
-        ВАЖНО: Используй только доступные продукты и техники! Блюдо должно быть реально выполнимым дома.
+        Базовое блюдо: {base_dish if base_dish else 'блюдо подходящее для данного заведения'}
+        ВАЖНО: Адаптируй под концепцию {venue_info['name'].lower()}! Учти стиль заведения и целевую аудиторию.
         """
     elif experiment_type == "fusion":
         fusion = random.choice(fusion_combinations)
         experiment_prompt = f"""
-        🌍 ДОМАШНИЙ ФЬЮЖН:
+        {venue_context}
+        🌍 ФЬЮЖН ДЛЯ {venue_info['name'].upper()}:
         Объедини кухни: {fusion}
-        Базовое блюдо: {base_dish if base_dish else 'простое домашнее блюдо'}
-        ВАЖНО: Используй продукты из обычного магазина! Никаких экзотических ингредиентов.
+        Базовое блюдо: {base_dish if base_dish else 'блюдо подходящее для заведения'}
+        ВАЖНО: Создай сочетание подходящее для {venue_info['name'].lower()} и его аудитории.
         """
     elif experiment_type == "molecular":
         techniques = random.sample(extreme_techniques[:10], 2)
         experiment_prompt = f"""
-        🧪 ДОМАШНЯЯ МОЛЕКУЛЯРКА:
+        {venue_context}
+        🧪 МОЛЕКУЛЯРКА ДЛЯ {venue_info['name'].upper()}:
         Техники: {', '.join(techniques)}
-        Базовое блюдо: {base_dish if base_dish else 'простое домашнее блюдо'}
-        ВАЖНО: Используй только домашние методы! Никакого жидкого азота - только то, что есть дома.
+        Базовое блюдо: {base_dish if base_dish else 'подходящее для заведения блюдо'}
+        ВАЖНО: Адаптируй под уровень {venue_info['name'].lower()}! Учти оборудование и концепцию места.
         """
     elif experiment_type == "snack":
         snack_ingredients = [ing for ing in random_ingredients if any(snack in ing for snack in ["чипсы", "скиттлс", "печенье", "мармелад", "попкорн", "крекеры"])]
         selected_snacks = random.sample(snack_ingredients, 2)
         experiment_prompt = f"""
-        🍿 СНЕКОВЫЙ ЭКСПЕРИМЕНТ:
-        Создай полноценное блюдо из снеков: {', '.join(selected_snacks)}
-        Базовое блюдо: {base_dish if base_dish else 'основное блюдо'}
-        ВАЖНО: Покажи, как из детских снеков сделать взрослое блюдо!
+        {venue_context}
+        🍿 СНЕКИ ДЛЯ {venue_info['name'].upper()}:
+        Создай блюдо из снеков: {', '.join(selected_snacks)}
+        Базовое блюдо: {base_dish if base_dish else 'блюдо для заведения'}
+        ВАЖНО: Покажи как адаптировать под стиль {venue_info['name'].lower()}!
         """
     else:
         experiment_prompt = f"""
-        🔥 ДОМАШНИЙ ЭКСТРИМ:
+        {venue_context}
+        🔥 ЭКСТРИМ ДЛЯ {venue_info['name'].upper()}:
         Нарушь все правила домашней кулинарии, но используй только доступные продукты!
         Базовое блюдо: {base_dish if base_dish else 'традиционное домашнее блюдо'}
         ВАЖНО: Все должно быть выполнимо на обычной кухне с обычными продуктами!
