@@ -603,6 +603,124 @@ def check_tech_card_limit(user_data):
     return True, ""
 
 # Routes
+@api_router.get("/venue-types")
+async def get_venue_types():
+    """Get all available venue types and their characteristics"""
+    return VENUE_TYPES
+
+@api_router.get("/cuisine-types")  
+async def get_cuisine_types():
+    """Get all available cuisine types and their characteristics"""
+    return CUISINE_TYPES
+
+@api_router.get("/average-check-categories")
+async def get_average_check_categories():
+    """Get all available average check categories"""
+    return AVERAGE_CHECK_CATEGORIES
+
+@api_router.get("/venue-profile/{user_id}")
+async def get_venue_profile(user_id: str):
+    """Get user's venue profile"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user has PRO subscription for advanced features
+    subscription_plan = user.get("subscription_plan", "free")
+    plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+    
+    profile = {
+        "venue_type": user.get("venue_type"),
+        "cuisine_focus": user.get("cuisine_focus", []),
+        "average_check": user.get("average_check"),
+        "venue_name": user.get("venue_name"),
+        "venue_concept": user.get("venue_concept"),
+        "target_audience": user.get("target_audience"),
+        "special_features": user.get("special_features", []),
+        "kitchen_equipment": user.get("kitchen_equipment", []),
+        "has_pro_features": plan_info.get("kitchen_equipment", False)
+    }
+    
+    return profile
+
+@api_router.post("/update-venue-profile/{user_id}")
+async def update_venue_profile(user_id: str, profile_data: VenueProfileUpdate):
+    """Update user's venue profile (PRO feature for advanced customization)"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        # Auto-create test user with PRO subscription if needed
+        if user_id.startswith("test_user_"):
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": "moskva",
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+            user = test_user
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check subscription for advanced features
+    subscription_plan = user.get("subscription_plan", "free")
+    plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+    
+    # Basic venue customization available to all users
+    update_data = {}
+    
+    if profile_data.venue_type:
+        if profile_data.venue_type not in VENUE_TYPES:
+            raise HTTPException(status_code=400, detail="Invalid venue type")
+        update_data["venue_type"] = profile_data.venue_type
+    
+    if profile_data.cuisine_focus:
+        invalid_cuisines = [c for c in profile_data.cuisine_focus if c not in CUISINE_TYPES]
+        if invalid_cuisines:
+            raise HTTPException(status_code=400, detail=f"Invalid cuisine types: {invalid_cuisines}")
+        update_data["cuisine_focus"] = profile_data.cuisine_focus
+    
+    if profile_data.average_check is not None:
+        update_data["average_check"] = profile_data.average_check
+    
+    # Advanced features require PRO subscription
+    if plan_info.get("kitchen_equipment", False):
+        if profile_data.venue_name is not None:
+            update_data["venue_name"] = profile_data.venue_name
+        
+        if profile_data.venue_concept is not None:
+            update_data["venue_concept"] = profile_data.venue_concept
+        
+        if profile_data.target_audience is not None:
+            update_data["target_audience"] = profile_data.target_audience
+        
+        if profile_data.special_features:
+            update_data["special_features"] = profile_data.special_features
+        
+        if profile_data.kitchen_equipment:
+            # Validate equipment IDs
+            all_equipment_ids = []
+            for category in KITCHEN_EQUIPMENT.values():
+                all_equipment_ids.extend([eq["id"] for eq in category])
+            
+            invalid_ids = [eq_id for eq_id in profile_data.kitchen_equipment if eq_id not in all_equipment_ids]
+            if invalid_ids:
+                raise HTTPException(status_code=400, detail=f"Invalid equipment IDs: {invalid_ids}")
+            
+            update_data["kitchen_equipment"] = profile_data.kitchen_equipment
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid profile data provided")
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": update_data}
+    )
+    
+    return {"success": True, "message": "Venue profile updated successfully", "updated_fields": list(update_data.keys())}
+
 @api_router.get("/subscription-plans")
 async def get_subscription_plans():
     """Get all available subscription plans"""
