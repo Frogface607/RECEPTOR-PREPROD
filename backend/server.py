@@ -368,6 +368,16 @@ class UserSubscription(BaseModel):
 class KitchenEquipmentUpdate(BaseModel):
     equipment_ids: List[str]
 
+class VenueProfileUpdate(BaseModel):
+    venue_type: Optional[str] = None
+    cuisine_focus: List[str] = []
+    average_check: Optional[int] = None
+    venue_name: Optional[str] = None
+    venue_concept: Optional[str] = None
+    target_audience: Optional[str] = None
+    special_features: List[str] = []
+    kitchen_equipment: List[str] = []  # Combined with equipment update
+
 class DishRequest(BaseModel):
     dish_name: str
     user_id: str
