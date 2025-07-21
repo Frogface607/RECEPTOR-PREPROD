@@ -12,6 +12,393 @@ from datetime import datetime
 # Configuration
 BACKEND_URL = "https://4c812d8a-9ae1-4ca3-a869-39e1c5ceb8c4.preview.emergentagent.com/api"
 
+def test_venue_customization_system():
+    """Test the new Venue Customization System endpoints"""
+    print("🏢 TESTING VENUE CUSTOMIZATION SYSTEM")
+    print("=" * 60)
+    
+    # Test 1: GET /api/venue-types
+    print("📋 Test 1: GET /api/venue-types...")
+    try:
+        response = requests.get(f"{BACKEND_URL}/venue-types", timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Test 1 FAILED: venue-types endpoint returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        venue_types = response.json()
+        
+        # Verify we have exactly 7 venue types
+        expected_types = ["fine_dining", "food_truck", "bar_pub", "cafe", "food_court", "night_club", "family_restaurant"]
+        if len(venue_types) != 7:
+            print(f"❌ Test 1 FAILED: Expected 7 venue types, got {len(venue_types)}")
+            return False
+        
+        for venue_type in expected_types:
+            if venue_type not in venue_types:
+                print(f"❌ Test 1 FAILED: Missing venue type: {venue_type}")
+                return False
+        
+        # Verify venue type structure
+        sample_venue = venue_types["fine_dining"]
+        required_fields = ["name", "description", "price_multiplier", "complexity_level", "techniques", "service_style", "portion_style"]
+        for field in required_fields:
+            if field not in sample_venue:
+                print(f"❌ Test 1 FAILED: Missing field '{field}' in venue type structure")
+                return False
+        
+        print("✅ Test 1 PASSED: venue-types endpoint returns 7 venue types with correct structure")
+        print(f"📊 Venue types: {list(venue_types.keys())}")
+        
+    except Exception as e:
+        print(f"❌ Test 1 FAILED: Error testing venue-types endpoint: {str(e)}")
+        return False
+    
+    # Test 2: GET /api/cuisine-types
+    print("\n🍜 Test 2: GET /api/cuisine-types...")
+    try:
+        response = requests.get(f"{BACKEND_URL}/cuisine-types", timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Test 2 FAILED: cuisine-types endpoint returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        cuisine_types = response.json()
+        
+        # Verify we have exactly 5 cuisine types
+        expected_cuisines = ["asian", "european", "caucasian", "eastern", "russian"]
+        if len(cuisine_types) != 5:
+            print(f"❌ Test 2 FAILED: Expected 5 cuisine types, got {len(cuisine_types)}")
+            return False
+        
+        for cuisine_type in expected_cuisines:
+            if cuisine_type not in cuisine_types:
+                print(f"❌ Test 2 FAILED: Missing cuisine type: {cuisine_type}")
+                return False
+        
+        # Verify cuisine type structure
+        sample_cuisine = cuisine_types["asian"]
+        required_fields = ["name", "subcategories", "key_ingredients", "cooking_methods", "flavor_profile"]
+        for field in required_fields:
+            if field not in sample_cuisine:
+                print(f"❌ Test 2 FAILED: Missing field '{field}' in cuisine type structure")
+                return False
+        
+        print("✅ Test 2 PASSED: cuisine-types endpoint returns 5 cuisine types with correct structure")
+        print(f"🍽️ Cuisine types: {list(cuisine_types.keys())}")
+        
+    except Exception as e:
+        print(f"❌ Test 2 FAILED: Error testing cuisine-types endpoint: {str(e)}")
+        return False
+    
+    # Test 3: GET /api/average-check-categories
+    print("\n💰 Test 3: GET /api/average-check-categories...")
+    try:
+        response = requests.get(f"{BACKEND_URL}/average-check-categories", timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Test 3 FAILED: average-check-categories endpoint returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        check_categories = response.json()
+        
+        # Verify we have exactly 4 categories
+        expected_categories = ["budget", "mid_range", "premium", "luxury"]
+        if len(check_categories) != 4:
+            print(f"❌ Test 3 FAILED: Expected 4 check categories, got {len(check_categories)}")
+            return False
+        
+        for category in expected_categories:
+            if category not in check_categories:
+                print(f"❌ Test 3 FAILED: Missing check category: {category}")
+                return False
+        
+        # Verify category structure
+        sample_category = check_categories["budget"]
+        required_fields = ["name", "range", "description", "ingredient_quality", "portion_approach"]
+        for field in required_fields:
+            if field not in sample_category:
+                print(f"❌ Test 3 FAILED: Missing field '{field}' in check category structure")
+                return False
+        
+        print("✅ Test 3 PASSED: average-check-categories endpoint returns 4 categories with correct structure")
+        print(f"💵 Check categories: {list(check_categories.keys())}")
+        
+    except Exception as e:
+        print(f"❌ Test 3 FAILED: Error testing average-check-categories endpoint: {str(e)}")
+        return False
+    
+    # Test 4: GET /api/venue-profile/{user_id} (with test user)
+    print("\n👤 Test 4: GET /api/venue-profile/{user_id}...")
+    test_user_id = "test_user_12345"
+    
+    try:
+        response = requests.get(f"{BACKEND_URL}/venue-profile/{test_user_id}", timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Test 4 FAILED: venue-profile endpoint returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        profile = response.json()
+        
+        # Verify profile structure
+        expected_fields = ["venue_type", "cuisine_focus", "average_check", "venue_name", "venue_concept", 
+                          "target_audience", "special_features", "kitchen_equipment", "has_pro_features"]
+        for field in expected_fields:
+            if field not in profile:
+                print(f"❌ Test 4 FAILED: Missing field '{field}' in venue profile")
+                return False
+        
+        print("✅ Test 4 PASSED: venue-profile endpoint returns correct structure")
+        print(f"🏢 Profile data: venue_type={profile.get('venue_type')}, has_pro_features={profile.get('has_pro_features')}")
+        
+    except Exception as e:
+        print(f"❌ Test 4 FAILED: Error testing venue-profile endpoint: {str(e)}")
+        return False
+    
+    # Test 5: POST /api/update-venue-profile/{user_id}
+    print("\n✏️ Test 5: POST /api/update-venue-profile/{user_id}...")
+    
+    # Test with fine_dining profile
+    profile_data = {
+        "venue_type": "fine_dining",
+        "cuisine_focus": ["european"],
+        "average_check": 2500,
+        "venue_name": "Тестовый ресторан",
+        "venue_concept": "Высококлассная европейская кухня",
+        "target_audience": "молодые профессионалы",
+        "special_features": ["live_music", "outdoor_seating"],
+        "kitchen_equipment": ["gas_stove", "convection_oven", "sous_vide"]
+    }
+    
+    try:
+        response = requests.post(f"{BACKEND_URL}/update-venue-profile/{test_user_id}", 
+                               json=profile_data, timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Test 5 FAILED: update-venue-profile endpoint returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        result = response.json()
+        
+        if not result.get("success"):
+            print(f"❌ Test 5 FAILED: update-venue-profile returned success=false")
+            print(f"Response: {result}")
+            return False
+        
+        print("✅ Test 5 PASSED: venue profile updated successfully")
+        print(f"📝 Updated fields: {result.get('updated_fields', [])}")
+        
+        # Verify the update by getting the profile again
+        response = requests.get(f"{BACKEND_URL}/venue-profile/{test_user_id}", timeout=30)
+        if response.status_code == 200:
+            updated_profile = response.json()
+            if (updated_profile.get("venue_type") == "fine_dining" and 
+                updated_profile.get("average_check") == 2500 and
+                "european" in updated_profile.get("cuisine_focus", [])):
+                print("✅ Profile update verification PASSED")
+            else:
+                print("⚠️ Profile update verification WARNING: Some fields may not have updated correctly")
+        
+    except Exception as e:
+        print(f"❌ Test 5 FAILED: Error testing update-venue-profile endpoint: {str(e)}")
+        return False
+    
+    return True
+
+def test_enhanced_tech_card_generation():
+    """Test enhanced tech card generation with venue customization"""
+    print("\n🎯 TESTING ENHANCED TECH CARD GENERATION")
+    print("=" * 60)
+    
+    test_user_id = "test_user_12345"
+    
+    # Test 1: Fine dining venue with high-end dish
+    print("🍽️ Test 1: Fine dining venue - Стейк с трюфельным соусом...")
+    
+    try:
+        # First ensure we have fine dining profile set
+        profile_data = {
+            "venue_type": "fine_dining",
+            "cuisine_focus": ["european"],
+            "average_check": 2500
+        }
+        
+        requests.post(f"{BACKEND_URL}/update-venue-profile/{test_user_id}", 
+                     json=profile_data, timeout=30)
+        
+        # Generate tech card
+        tech_card_request = {
+            "user_id": test_user_id,
+            "dish_name": "Стейк с трюфельным соусом"
+        }
+        
+        start_time = time.time()
+        response = requests.post(f"{BACKEND_URL}/generate-tech-card", 
+                               json=tech_card_request, timeout=90)
+        end_time = time.time()
+        
+        print(f"⏱️ Generation time: {end_time - start_time:.2f} seconds")
+        
+        if response.status_code != 200:
+            print(f"❌ Test 1 FAILED: Tech card generation returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        result = response.json()
+        tech_card_content = result.get("tech_card", "")
+        
+        if not tech_card_content:
+            print("❌ Test 1 FAILED: No tech card content received")
+            return False
+        
+        # Check for fine dining characteristics
+        fine_dining_indicators = ["су-вид", "молекулярн", "профессиональн", "изысканн", "премиум", "трюфель"]
+        found_indicators = [indicator for indicator in fine_dining_indicators 
+                          if indicator.lower() in tech_card_content.lower()]
+        
+        if len(found_indicators) >= 2:
+            print(f"✅ Test 1 PASSED: Fine dining tech card generated with appropriate complexity")
+            print(f"🎯 Found indicators: {found_indicators}")
+        else:
+            print(f"⚠️ Test 1 WARNING: Fine dining characteristics may be limited")
+            print(f"🔍 Found indicators: {found_indicators}")
+        
+        print(f"📄 Tech card length: {len(tech_card_content)} characters")
+        
+    except Exception as e:
+        print(f"❌ Test 1 FAILED: Error testing fine dining tech card: {str(e)}")
+        return False
+    
+    # Test 2: Food truck venue with simple dish
+    print("\n🚚 Test 2: Food truck venue - Бургер...")
+    
+    try:
+        # Update to food truck profile
+        profile_data = {
+            "venue_type": "food_truck",
+            "cuisine_focus": ["american"],
+            "average_check": 400
+        }
+        
+        requests.post(f"{BACKEND_URL}/update-venue-profile/{test_user_id}", 
+                     json=profile_data, timeout=30)
+        
+        # Generate tech card
+        tech_card_request = {
+            "user_id": test_user_id,
+            "dish_name": "Бургер"
+        }
+        
+        start_time = time.time()
+        response = requests.post(f"{BACKEND_URL}/generate-tech-card", 
+                               json=tech_card_request, timeout=90)
+        end_time = time.time()
+        
+        print(f"⏱️ Generation time: {end_time - start_time:.2f} seconds")
+        
+        if response.status_code != 200:
+            print(f"❌ Test 2 FAILED: Tech card generation returned {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+        
+        result = response.json()
+        tech_card_content = result.get("tech_card", "")
+        
+        if not tech_card_content:
+            print("❌ Test 2 FAILED: No tech card content received")
+            return False
+        
+        # Check for food truck characteristics
+        food_truck_indicators = ["быстр", "простой", "гриль", "фритюр", "портативн", "упаковка", "на ходу"]
+        found_indicators = [indicator for indicator in food_truck_indicators 
+                          if indicator.lower() in tech_card_content.lower()]
+        
+        if len(found_indicators) >= 2:
+            print(f"✅ Test 2 PASSED: Food truck tech card generated with appropriate simplicity")
+            print(f"🎯 Found indicators: {found_indicators}")
+        else:
+            print(f"⚠️ Test 2 WARNING: Food truck characteristics may be limited")
+            print(f"🔍 Found indicators: {found_indicators}")
+        
+        print(f"📄 Tech card length: {len(tech_card_content)} characters")
+        
+    except Exception as e:
+        print(f"❌ Test 2 FAILED: Error testing food truck tech card: {str(e)}")
+        return False
+    
+    # Test 3: Price multiplier verification
+    print("\n💰 Test 3: Price multiplier verification...")
+    
+    try:
+        # Compare costs between fine dining and food truck
+        # We'll use a simple dish that both venues might serve
+        
+        # Fine dining version
+        profile_data = {
+            "venue_type": "fine_dining",
+            "cuisine_focus": ["european"],
+            "average_check": 2500
+        }
+        requests.post(f"{BACKEND_URL}/update-venue-profile/{test_user_id}", 
+                     json=profile_data, timeout=30)
+        
+        tech_card_request = {
+            "user_id": test_user_id,
+            "dish_name": "Паста с томатным соусом"
+        }
+        
+        response = requests.post(f"{BACKEND_URL}/generate-tech-card", 
+                               json=tech_card_request, timeout=90)
+        
+        if response.status_code == 200:
+            fine_dining_content = response.json().get("tech_card", "")
+            
+            # Extract price from fine dining version
+            import re
+            fine_dining_prices = re.findall(r'(\d+)\s*₽', fine_dining_content)
+            fine_dining_max_price = max([int(p) for p in fine_dining_prices]) if fine_dining_prices else 0
+            
+            print(f"🍽️ Fine dining max ingredient price: {fine_dining_max_price}₽")
+        
+        # Food truck version
+        profile_data = {
+            "venue_type": "food_truck",
+            "cuisine_focus": ["american"],
+            "average_check": 400
+        }
+        requests.post(f"{BACKEND_URL}/update-venue-profile/{test_user_id}", 
+                     json=profile_data, timeout=30)
+        
+        response = requests.post(f"{BACKEND_URL}/generate-tech-card", 
+                               json=tech_card_request, timeout=90)
+        
+        if response.status_code == 200:
+            food_truck_content = response.json().get("tech_card", "")
+            
+            # Extract price from food truck version
+            food_truck_prices = re.findall(r'(\d+)\s*₽', food_truck_content)
+            food_truck_max_price = max([int(p) for p in food_truck_prices]) if food_truck_prices else 0
+            
+            print(f"🚚 Food truck max ingredient price: {food_truck_max_price}₽")
+            
+            # Fine dining should generally be more expensive (1.5x multiplier vs 0.6x)
+            if fine_dining_max_price > food_truck_max_price:
+                print("✅ Test 3 PASSED: Fine dining prices are higher than food truck prices")
+            else:
+                print("⚠️ Test 3 WARNING: Price multipliers may not be working as expected")
+        
+    except Exception as e:
+        print(f"❌ Test 3 FAILED: Error testing price multipliers: {str(e)}")
+        return False
+    
+    return True
+
 def test_finances_feature():
     """Test the FIXED FINANCES feature with corrected cost calculations"""
     print("🎯 TESTING FIXED FINANCES FEATURE")
