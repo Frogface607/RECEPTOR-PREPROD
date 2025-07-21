@@ -280,7 +280,7 @@ def test_venue_aware_pro_functions():
                     "keyword_match_rate": len(found_keywords) / len(scenario["expected_keywords"]["photo"])
                 }
                 
-                print(f"✅ Photo tips generated ({response_time:.2f}s, {len(photo_data.get('photo_tips', ''))} chars)")
+                print(f"✅ Photo tips generated ({response_time:.2f}s, {len(photo_data.get('tips', ''))} chars)")
                 print(f"🎯 Keywords found: {found_keywords}")
                 
             else:
