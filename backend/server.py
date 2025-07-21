@@ -812,6 +812,48 @@ def generate_chef_tips(user_data):
     
     return " / ".join(tips) if tips else ""
 
+def generate_sales_script_context(venue_type, venue_info, average_check, cuisine_focus):
+    """Generate venue-specific sales script context"""
+    context_parts = []
+    
+    # Venue-specific sales approach
+    if venue_type == "fine_dining":
+        context_parts.append("Акцент на эксклюзивности и мастерстве шефа")
+        context_parts.append("Подчеркивай уникальность ингредиентов и техник")
+    elif venue_type == "food_truck":
+        context_parts.append("Быстрая подача, акцент на свежесть и удобство")
+        context_parts.append("Подчеркивай мобильность и street-food атмосферу")
+    elif venue_type == "bar_pub":
+        context_parts.append("Идеальное сочетание с напитками")
+        context_parts.append("Акцент на sharing и компанейскую атмосферу")
+    elif venue_type == "night_club":
+        context_parts.append("Удобство для еды руками, яркая подача")
+        context_parts.append("Акцент на энергию и party-атмосферу")
+    elif venue_type == "family_restaurant":
+        context_parts.append("Семейные ценности, домашняя атмосфера")
+        context_parts.append("Акцент на сытность и традиционные вкусы")
+    
+    # Average check considerations
+    if average_check:
+        if average_check < 500:
+            context_parts.append("Подчеркивай выгодность и сытность")
+        elif average_check > 2000:
+            context_parts.append("Акцент на премиум качество и эксклюзивность")
+        else:
+            context_parts.append("Баланс цены и качества")
+    
+    # Cuisine-specific sales points
+    if cuisine_focus:
+        for cuisine in cuisine_focus:
+            if cuisine == "asian":
+                context_parts.append("Экзотические вкусы и аутентичность")
+            elif cuisine == "european":
+                context_parts.append("Классические традиции и проверенные сочетания")
+            elif cuisine == "caucasian":
+                context_parts.append("Щедрые порции и яркие специи")
+    
+    return "\n".join(context_parts) if context_parts else ""
+
 def reset_monthly_usage_if_needed(user_data):
     """Reset monthly usage if a month has passed"""
     current_date = datetime.utcnow()
