@@ -1,0 +1,118 @@
+[
+  {
+    "scenario": "Fine Dining Restaurant",
+    "venue_type": "fine_dining",
+    "average_check": 3000,
+    "tests": {
+      "sales_script": {
+        "status": "success",
+        "response_time": 18.88,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      },
+      "food_pairing": {
+        "status": "success",
+        "response_time": 19.15,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0,
+        "alcohol_appropriate": true
+      },
+      "photo_tips": {
+        "status": "success",
+        "response_time": 27.76,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      }
+    }
+  },
+  {
+    "scenario": "Food Truck",
+    "venue_type": "food_truck",
+    "average_check": 400,
+    "tests": {
+      "sales_script": {
+        "status": "success",
+        "response_time": 19.21,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      },
+      "food_pairing": {
+        "status": "success",
+        "response_time": 27.39,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0,
+        "alcohol_appropriate": true
+      },
+      "photo_tips": {
+        "status": "success",
+        "response_time": 26.81,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      }
+    }
+  },
+  {
+    "scenario": "Coffee Shop",
+    "venue_type": "coffee_shop",
+    "average_check": 300,
+    "tests": {
+      "sales_script": {
+        "status": "success",
+        "response_time": 20.71,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      },
+      "food_pairing": {
+        "status": "success",
+        "response_time": 30.89,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0,
+        "alcohol_appropriate": true
+      },
+      "photo_tips": {
+        "status": "success",
+        "response_time": 43.69,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      }
+    }
+  },
+  {
+    "scenario": "Kids Cafe",
+    "venue_type": "kids_cafe",
+    "average_check": 500,
+    "tests": {
+      "sales_script": {
+        "status": "success",
+        "response_time": 15.61,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      },
+      "food_pairing": {
+        "status": "success",
+        "response_time": 42.53,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0,
+        "alcohol_appropriate": true
+      },
+      "photo_tips": {
+        "status": "success",
+        "response_time": 30.5,
+        "content_length": 0,
+        "found_keywords": [],
+        "keyword_match_rate": 0.0
+      }
+    }
+  }
+]
