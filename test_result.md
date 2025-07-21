@@ -680,6 +680,18 @@ frontend:
         comment: "PHASE 2 ENHANCEMENT: Fixed real-time recalculation in interactive ingredients editor. Changes made: 1) Enhanced updateIngredient function with proportional price recalculation logic 2) Fixed onChange handler for quantity changes to properly recalculate prices 3) Updated addNewIngredient to create ingredients with correct structure 4) Enhanced saveIngredientsToTechCard to properly format ingredients with units and prices. Now quantity changes automatically recalculate prices proportionally."
     message: "🔑 OPENAI API KEY TESTING COMPLETED: Conducted specific test for review request 'Паста Карбонара на 4 порции' with exact parameters (user_id: test_user_12345, city: moskva). ❌ CRITICAL FINDING: OpenAI API key is invalid (401 Unauthorized). ✅ INFRASTRUCTURE FIXED: Resolved MongoDB connection issue by updating MONGO_URL to localhost. ✅ BACKEND SYSTEMS: All other functionality working correctly (user management, subscriptions, database). ❌ ROOT CAUSE: Current OpenAI API key returns 401 error from OpenAI API. The backend correctly uses gpt-4o-mini model as specified. 🔧 URGENT ACTION REQUIRED: Main agent must provide valid OpenAI API key to resolve tech card generation failures. All review test requirements (status 200, content, ID, sections) cannot be verified until API key is fixed."
 
+  - task: "VENUE CUSTOMIZATION SYSTEM Backend"
+    implemented: false
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Starting implementation of comprehensive venue customization system - expanding kitchen equipment into full restaurant profiling with venue type, cuisine focus, average check, and personalized tech card generation."
+
 backend:
   - task: "PRACTICAL FINANCES PRO Feature - Complete"
     implemented: true
