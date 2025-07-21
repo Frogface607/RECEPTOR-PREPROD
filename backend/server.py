@@ -569,6 +569,186 @@ EDIT_PROMPT = """Ты — RECEPTOR, профессиональный AI-помо
 Верни отредактированную техкарту в том же формате."""
 
 # Utility functions
+def generate_venue_context(user_data):
+    """Generate venue context for tech card generation"""
+    venue_type = user_data.get("venue_type")
+    cuisine_focus = user_data.get("cuisine_focus", [])
+    average_check = user_data.get("average_check")
+    venue_name = user_data.get("venue_name", "заведение")
+    
+    context_parts = []
+    
+    if venue_type and venue_type in VENUE_TYPES:
+        venue_info = VENUE_TYPES[venue_type]
+        context_parts.append(f"Тип заведения: {venue_info['name']} - {venue_info['description']}")
+    
+    if cuisine_focus:
+        cuisine_names = []
+        for cuisine in cuisine_focus:
+            if cuisine in CUISINE_TYPES:
+                cuisine_names.append(CUISINE_TYPES[cuisine]['name'])
+        if cuisine_names:
+            context_parts.append(f"Кухня: {', '.join(cuisine_names)}")
+    
+    if average_check:
+        context_parts.append(f"Средний чек: {average_check} ₽")
+    
+    if venue_name != "заведение":
+        context_parts.append(f"Название заведения: {venue_name}")
+    
+    return "\n".join(context_parts) if context_parts else "Стандартное заведение"
+
+def generate_venue_specific_rules(user_data):
+    """Generate venue-specific rules for tech card generation"""
+    venue_type = user_data.get("venue_type")
+    cuisine_focus = user_data.get("cuisine_focus", [])
+    average_check = user_data.get("average_check")
+    
+    rules = []
+    
+    # Venue type specific rules
+    if venue_type and venue_type in VENUE_TYPES:
+        venue_info = VENUE_TYPES[venue_type]
+        
+        if venue_info["complexity_level"] == "high":
+            rules.append("• Используй продвинутые кулинарные техники и презентацию на уровне высокой кухни")
+            rules.append("• Применяй сложные соусы и изысканные ингредиенты")
+        elif venue_info["complexity_level"] == "low":
+            rules.append("• Фокусируйся на простых, быстрых в приготовлении блюдах")
+            rules.append("• Избегай сложных техник, приоритет - скорость и удобство")
+        
+        if venue_info["portion_style"] == "finger_food":
+            rules.append("• Все блюда должны быть удобны для еды руками, без столовых приборов")
+        elif venue_info["portion_style"] == "handheld":
+            rules.append("• Блюда должны быть портативными и удобными для еды на ходу")
+        elif venue_info["portion_style"] == "artistic":
+            rules.append("• Делай акцент на художественной подаче и визуальном впечатлении")
+        
+        # Add venue-specific techniques
+        if venue_info["techniques"]:
+            techniques_str = ", ".join(venue_info["techniques"])
+            rules.append(f"• Приоритетные техники для этого типа заведения: {techniques_str}")
+    
+    # Cuisine-specific rules
+    if cuisine_focus:
+        for cuisine in cuisine_focus:
+            if cuisine in CUISINE_TYPES:
+                cuisine_info = CUISINE_TYPES[cuisine]
+                ingredients = ", ".join(cuisine_info["key_ingredients"][:5])  # First 5 ingredients
+                methods = ", ".join(cuisine_info["cooking_methods"])
+                rules.append(f"• Для {cuisine_info['name']} кухни используй: {ingredients}")
+                rules.append(f"• Применяй методы готовки: {methods}")
+    
+    # Average check rules
+    if average_check:
+        if average_check < 500:
+            rules.append("• Используй доступные ингредиенты, оптимизируй себестоимость")
+        elif average_check > 2000:
+            rules.append("• Применяй премиум ингредиенты и изысканные техники")
+        elif average_check > 1000:
+            rules.append("• Баланс между качеством и доступностью, хорошие ингредиенты")
+    
+    return "\n".join(rules) if rules else "• Следуй стандартным правилам приготовления"
+
+def generate_cooking_instructions(user_data):
+    """Generate cooking instructions format based on venue type"""
+    venue_type = user_data.get("venue_type")
+    
+    if venue_type == "fine_dining":
+        return """1. … (точные температуры, профессиональные техники)
+2. … (контроль времени до секунды, идеальная текстура)
+3. … (художественная подача, детали презентации)"""
+    elif venue_type == "food_truck":
+        return """1. … (быстрое приготовление, оптимизация времени)
+2. … (практичные методы, минимум оборудования) 
+3. … (удобная упаковка для выноса)"""
+    elif venue_type == "bar_pub":
+        return """1. … (простые техники, подходит для бара)
+2. … (легко делить на компанию)
+3. … (хорошо сочетается с напитками)"""
+    else:
+        return """1. … (темпы, время, лайфхаки)
+2. …
+3. …"""
+
+def generate_description_style(user_data):
+    """Generate description style based on venue type"""
+    venue_type = user_data.get("venue_type")
+    
+    if venue_type == "fine_dining":
+        return "Используй изысканные эпитеты и подчеркивай сложность вкуса."
+    elif venue_type == "food_truck":
+        return "Акцент на сытность, удобство и быстроту."
+    elif venue_type == "bar_pub":
+        return "Подчеркивай, как блюдо сочетается с напитками."
+    else:
+        return ""
+
+def generate_serving_recommendations(user_data):
+    """Generate serving recommendations based on venue type"""
+    venue_type = user_data.get("venue_type")
+    
+    if venue_type == "fine_dining":
+        return "Элегантная посуда, художественная подача, оптимальная температура, внимание к деталям"
+    elif venue_type == "food_truck":
+        return "Удобная упаковка, портативность, защита от остывания"
+    elif venue_type == "bar_pub":
+        return "Посуда для sharing, подача на общих тарелках, комнатная температура"
+    elif venue_type == "night_club":
+        return "Finger-food подача, без столовых приборов, красивая презентация"
+    else:
+        return "посуда, декор, температура"
+
+def generate_menu_tags(user_data):
+    """Generate menu tags based on venue profile"""
+    venue_type = user_data.get("venue_type")
+    cuisine_focus = user_data.get("cuisine_focus", [])
+    
+    tags = []
+    
+    if venue_type:
+        venue_info = VENUE_TYPES.get(venue_type, {})
+        if venue_info.get("service_style") == "fast_casual":
+            tags.extend(["#быстро", "#находу"])
+        elif venue_info.get("service_style") == "table_service":
+            tags.extend(["#ресторан", "#сервис"])
+        elif venue_info.get("portion_style") == "finger_food":
+            tags.extend(["#фингерфуд", "#безприборов"])
+    
+    for cuisine in cuisine_focus:
+        if cuisine == "asian":
+            tags.extend(["#азиатская", "#экзотика"])
+        elif cuisine == "european":
+            tags.extend(["#европейская", "#классика"])
+        elif cuisine == "caucasian":
+            tags.extend(["#кавказская", "#мангал"])
+    
+    if not tags:
+        tags = ["#вкусно", "#качественно", "#свежее"]
+    
+    return " ".join(tags[:4])  # Limit to 4 tags
+
+def generate_chef_tips(user_data):
+    """Generate chef tips based on venue type and cuisine"""
+    venue_type = user_data.get("venue_type")
+    cuisine_focus = user_data.get("cuisine_focus", [])
+    
+    tips = []
+    
+    if venue_type == "fine_dining":
+        tips.append("Температурные контрасты и идеальный баланс")
+    elif venue_type == "food_truck":
+        tips.append("Максимальная эффективность и скорость")
+    elif venue_type == "bar_pub":
+        tips.append("Идеальное сочетание с напитками")
+    
+    if "asian" in cuisine_focus:
+        tips.append("Баланс умами и свежести")
+    elif "european" in cuisine_focus:
+        tips.append("Классические сочетания и техники")
+    
+    return " / ".join(tips) if tips else ""
+
 def reset_monthly_usage_if_needed(user_data):
     """Reset monthly usage if a month has passed"""
     current_date = datetime.utcnow()
