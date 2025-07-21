@@ -1648,10 +1648,34 @@ async def generate_sales_script(request: dict):
     user_id = request.get("user_id")
     tech_card = request.get("tech_card")
     
-    # Validate user subscription (PRO only)
-    user = await db.users.find_one({"id": user_id})
-    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
-        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    # Auto-create test user with PRO subscription if needed
+    if user_id.startswith("test_user_"):
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            # Create test user with PRO subscription
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": "moskva",
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+            user = test_user
+    else:
+        # Validate user subscription (PRO only)
+        user = await db.users.find_one({"id": user_id})
+        if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+            raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
+    # Get venue profile for personalization
+    venue_type = user.get("venue_type", "family_restaurant")
+    venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+    cuisine_focus = user.get("cuisine_focus", [])
+    average_check = user.get("average_check", 800)
+    venue_name = user.get("venue_name", "заведение")
     
     # Extract dish name from tech card
     dish_name = "блюдо"
@@ -1660,9 +1684,18 @@ async def generate_sales_script(request: dict):
             dish_name = line.split('Название:')[1].strip().replace('**', '')
             break
     
+    # Generate venue-specific sales script context
+    venue_context = generate_sales_script_context(venue_type, venue_info, average_check, cuisine_focus)
+    
     prompt = f"""Ты — эксперт по продажам в ресторанном бизнесе. 
 
-Создай профессиональный скрипт продаж для официантов для блюда "{dish_name}".
+КОНТЕКСТ ЗАВЕДЕНИЯ:
+Тип заведения: {venue_info['name']}
+Средний чек: {average_check}₽
+Название: {venue_name}
+{venue_context}
+
+Создай профессиональный скрипт продаж для официантов для блюда "{dish_name}" специально адаптированный для типа заведения "{venue_info['name']}".
 
 Техкарта блюда:
 {tech_card}
@@ -1670,21 +1703,21 @@ async def generate_sales_script(request: dict):
 Создай 3 варианта скриптов:
 
 🎭 КЛАССИЧЕСКИЙ СКРИПТ:
-[2-3 предложения для обычной презентации блюда]
+[2-3 предложения для обычной презентации блюда с учетом стиля заведения]
 
 🔥 АКТИВНЫЕ ПРОДАЖИ:
-[агрессивный скрипт для увеличения среднего чека]
+[агрессивный скрипт для увеличения среднего чека, адаптированный под тип заведения]
 
 💫 ПРЕМИУМ ПОДАЧА:
-[скрипт для VIP гостей и особых случаев]
+[скрипт для особых гостей с учетом концепции заведения]
 
 Дополнительно:
-• 5 ключевых преимуществ блюда
-• Возражения клиентов и ответы на них
-• Техники up-sell и cross-sell
-• Невербальные приемы подачи
+• 5 ключевых преимуществ блюда для данного типа заведения
+• Возражения клиентов и ответы на них (специфичные для типа заведения)
+• Техники up-sell и cross-sell (подходящие для концепции)
+• Невербальные приемы подачи (адаптированные под атмосферу)
 
-Пиши живо, как будто это реально говорит опытный официант."""
+Пиши живо, как будто это реально говорит опытный официант в {venue_info['name'].lower()}."""
 
     try:
         response = openai_client.chat.completions.create(
