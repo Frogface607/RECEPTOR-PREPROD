@@ -142,6 +142,144 @@ SUBSCRIPTION_PLANS = {
     }
 }
 
+# Venue Types Configuration
+VENUE_TYPES = {
+    "fine_dining": {
+        "name": "Fine Dining",
+        "description": "Высококлассный ресторан с изысканной кухней",
+        "price_multiplier": 1.5,
+        "complexity_level": "high",
+        "techniques": ["су-вид", "молекулярная гастрономия", "профессиональная подача", "сложные соусы"],
+        "service_style": "table_service",
+        "portion_style": "artistic"
+    },
+    "food_truck": {
+        "name": "Food Truck",
+        "description": "Мобильная точка питания быстрого обслуживания",
+        "price_multiplier": 0.6,
+        "complexity_level": "low",
+        "techniques": ["гриль", "фритюр", "быстрая жарка", "простая сборка"],
+        "service_style": "fast_casual",
+        "portion_style": "handheld"
+    },
+    "bar_pub": {
+        "name": "Бар/Паб",
+        "description": "Бар с закусками и напитками",
+        "price_multiplier": 0.9,
+        "complexity_level": "medium",
+        "techniques": ["гриль", "фритюр", "снеки", "закуски под алкоголь"],
+        "service_style": "bar_service", 
+        "portion_style": "sharing"
+    },
+    "cafe": {
+        "name": "Кафе",
+        "description": "Уютное кафе с домашней атмосферой",
+        "price_multiplier": 0.8,
+        "complexity_level": "medium",
+        "techniques": ["выпечка", "кофейные напитки", "легкие блюда", "десерты"],
+        "service_style": "counter_service",
+        "portion_style": "comfort"
+    },
+    "food_court": {
+        "name": "Фуд-корт",
+        "description": "Точка в торговом центре или фуд-корте",
+        "price_multiplier": 0.7,
+        "complexity_level": "low",
+        "techniques": ["быстрое приготовление", "стандартизация", "разогрев", "сборка"],
+        "service_style": "quick_service",
+        "portion_style": "standard"
+    },
+    "night_club": {
+        "name": "Ночной клуб",
+        "description": "Заведение с ночными развлечениями",
+        "price_multiplier": 1.2,
+        "complexity_level": "low", 
+        "techniques": ["фингер-фуд", "простые закуски", "без столовых приборов"],
+        "service_style": "standing",
+        "portion_style": "finger_food"
+    },
+    "family_restaurant": {
+        "name": "Семейный ресторан",
+        "description": "Ресторан для семей с детьми",
+        "price_multiplier": 1.0,
+        "complexity_level": "medium",
+        "techniques": ["домашняя кухня", "большие порции", "простые рецепты"],
+        "service_style": "family_friendly",
+        "portion_style": "generous"
+    }
+}
+
+# Cuisine Focus Configuration
+CUISINE_TYPES = {
+    "asian": {
+        "name": "Азиатская",
+        "subcategories": ["japanese", "korean", "thai", "chinese", "indian"],
+        "key_ingredients": ["рис", "соевый соус", "имбирь", "чеснок", "перец чили", "кокосовое молоко", "рыбный соус"],
+        "cooking_methods": ["вок", "пар", "тушение", "маринование"],
+        "flavor_profile": ["умами", "острый", "сладко-соленый", "ароматные специи"]
+    },
+    "european": {
+        "name": "Европейская", 
+        "subcategories": ["italian", "french", "german", "spanish", "greek"],
+        "key_ingredients": ["оливковое масло", "томаты", "сыр", "травы", "вино", "сливки"],
+        "cooking_methods": ["жарка", "тушение", "запекание", "соусы"],
+        "flavor_profile": ["сбалансированный", "травяной", "винный", "сырный"]
+    },
+    "caucasian": {
+        "name": "Кавказская",
+        "subcategories": ["georgian", "armenian", "azerbaijani"],
+        "key_ingredients": ["баранина", "говядина", "зелень", "специи", "орехи", "гранат"],
+        "cooking_methods": ["мангал", "тандыр", "долгое тушение", "маринование"],
+        "flavor_profile": ["пряный", "ароматный", "мясной", "с кислинкой"]
+    },
+    "eastern": {
+        "name": "Восточная",
+        "subcategories": ["uzbek", "turkish", "arabic"],
+        "key_ingredients": ["рис", "баранина", "специи", "сухофрукты", "орехи", "йогурт"],
+        "cooking_methods": ["плов", "долгое тушение", "запекание", "специи"],
+        "flavor_profile": ["пряный", "ароматный", "насыщенный", "экзотический"]
+    },
+    "russian": {
+        "name": "Русская",
+        "subcategories": ["traditional", "modern_russian", "siberian"],
+        "key_ingredients": ["картофель", "капуста", "свекла", "мясо", "рыба", "грибы"],
+        "cooking_methods": ["варка", "тушение", "засолка", "копчение"],
+        "flavor_profile": ["сытный", "традиционный", "домашний", "согревающий"]
+    }
+}
+
+# Average Check Categories
+AVERAGE_CHECK_CATEGORIES = {
+    "budget": {
+        "name": "Бюджетное",
+        "range": [200, 500],
+        "description": "Доступные цены для массового потребителя",
+        "ingredient_quality": "standard",
+        "portion_approach": "generous"
+    },
+    "mid_range": {
+        "name": "Средний сегмент", 
+        "range": [500, 1500],
+        "description": "Качественная еда по разумным ценам",
+        "ingredient_quality": "good",
+        "portion_approach": "balanced"
+    },
+    "premium": {
+        "name": "Премиум",
+        "range": [1500, 3000],
+        "description": "Высококачественные ингредиенты и сервис",
+        "ingredient_quality": "premium",
+        "portion_approach": "refined"
+    },
+    "luxury": {
+        "name": "Люкс",
+        "range": [3000, 10000],
+        "description": "Эксклюзивные ингредиенты и опыт",
+        "ingredient_quality": "luxury",
+        "portion_approach": "artistic"
+    }
+}
+
 # Kitchen Equipment Types
 KITCHEN_EQUIPMENT = {
     "cooking_methods": [
