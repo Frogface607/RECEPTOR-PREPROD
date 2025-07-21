@@ -812,6 +812,98 @@ def generate_chef_tips(user_data):
     
     return " / ".join(tips) if tips else ""
 
+def generate_photo_tips_context(venue_type, venue_info, average_check, cuisine_focus):
+    """Generate venue-specific photo tips context"""
+    context_parts = []
+    
+    # Venue-specific photo approach
+    if venue_type == "fine_dining":
+        context_parts.append("Акцент на элегантность и изысканность подачи")
+        context_parts.append("Использование премиум посуды и декора")
+    elif venue_type == "food_truck":
+        context_parts.append("Подчеркивание street-food атмосферы")
+        context_parts.append("Акцент на портативность и удобство")
+    elif venue_type == "bar_pub":
+        context_parts.append("Создание атмосферы компанейского отдыха")
+        context_parts.append("Подача в контексте напитков")
+    elif venue_type == "night_club":
+        context_parts.append("Яркая, энергичная подача")
+        context_parts.append("Акцент на визуальный эффект")
+    elif venue_type == "family_restaurant":
+        context_parts.append("Домашняя, уютная атмосфера")
+        context_parts.append("Подчеркивание семейных ценностей")
+    
+    # Average check considerations
+    if average_check:
+        if average_check < 500:
+            context_parts.append("Простая, но аппетитная подача")
+        elif average_check > 2000:
+            context_parts.append("Роскошная презентация и детали")
+        else:
+            context_parts.append("Баланс красоты и практичности")
+    
+    return "\n".join(context_parts) if context_parts else ""
+
+def generate_photo_tech_settings(venue_type):
+    """Generate technical photo settings based on venue type"""
+    if venue_type == "fine_dining":
+        return """• Профессиональная камера или топовый смартфон
+• Диафрагма f/2.8-f/4 для мягкого боке
+• ISO 100-400 для минимального шума
+• Штатив для стабильности
+• Макро-объектив для деталей"""
+    elif venue_type == "food_truck":
+        return """• Смартфон с хорошей камерой
+• Быстрая съемка, f/1.8-f/2.4
+• Автофокус для скорости
+• Портретный режим для размытия фона
+• Естественное освещение"""
+    elif venue_type == "bar_pub":
+        return """• Камера с хорошей работой при слабом свете
+• Широкая диафрагма f/1.4-f/2.0
+• ISO 800-1600 для атмосферного освещения
+• Теплый баланс белого
+• Ручная фокусировка"""
+    else:
+        return """• Универсальные настройки камеры
+• Диафрагма f/2.8-f/5.6
+• ISO 200-800
+• Автоматический баланс белого
+• Стабилизация изображения"""
+
+def generate_photo_styling_tips(venue_type):
+    """Generate styling tips based on venue type"""
+    if venue_type == "fine_dining":
+        return """• Элегантная фарфоровая посуда
+• Минималистичный декор
+• Нейтральные тона фона
+• Акцент на геометрии подачи
+• Использование текстур (лен, мрамор)"""
+    elif venue_type == "food_truck":
+        return """• Яркая, практичная посуда
+• Городской фон или текстуры
+• Контрастные цвета
+• Упаковка как элемент стиля
+• Динамичная композиция"""
+    elif venue_type == "bar_pub":
+        return """• Темная посуда и фон
+• Деревянные текстуры
+• Теплое освещение
+• Напитки в кадре
+• Атмосфера расслабленности"""
+    elif venue_type == "night_club":
+        return """• Яркие, неоновые акценты
+• Темный фон с подсветкой
+• Глянцевые поверхности
+• Динамичные углы
+• Эффектная подача"""
+    else:
+        return """• Уютная домашняя посуда
+• Теплые тона
+• Естественные материалы
+• Семейная атмосфера
+• Комфортная подача"""
+
 def generate_sales_script_context(venue_type, venue_info, average_check, cuisine_focus):
     """Generate venue-specific sales script context"""
     context_parts = []
