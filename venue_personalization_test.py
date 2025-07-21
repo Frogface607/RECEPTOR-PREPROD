@@ -264,7 +264,7 @@ def test_venue_aware_pro_functions():
             
             if photo_response.status_code == 200:
                 photo_data = photo_response.json()
-                photo_content = photo_data.get("photo_tips", "").lower()
+                photo_content = photo_data.get("tips", "").lower()
                 
                 # Check for venue-specific keywords
                 found_keywords = []
