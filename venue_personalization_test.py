@@ -229,7 +229,7 @@ def test_venue_aware_pro_functions():
                     "alcohol_appropriate": alcohol_check
                 }
                 
-                print(f"✅ Food pairing generated ({response_time:.2f}s, {len(pairing_data.get('food_pairing', ''))} chars)")
+                print(f"✅ Food pairing generated ({response_time:.2f}s, {len(pairing_data.get('pairing', ''))} chars)")
                 print(f"🎯 Keywords found: {found_keywords}")
                 if scenario["venue_profile"]["venue_type"] == "kids_cafe":
                     print(f"👶 Alcohol-free check: {'✅' if alcohol_check else '❌'}")
