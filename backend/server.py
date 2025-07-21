@@ -1099,6 +1099,23 @@ async def generate_tech_card(request: DishRequest):
         # Get regional coefficient
         regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
         
+        # Generate venue context and customization
+        venue_context = generate_venue_context(user)
+        venue_specific_rules = generate_venue_specific_rules(user)
+        
+        # Get venue-specific variables
+        venue_type = user.get("venue_type", "family_restaurant")
+        venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+        venue_price_multiplier = venue_info.get("price_multiplier", 1.0)
+        venue_type_name = venue_info.get("name", "Семейный ресторан")
+        
+        average_check = user.get("average_check", 800)
+        description_style = generate_description_style(user)
+        cooking_instructions = generate_cooking_instructions(user)
+        chef_tips = generate_chef_tips(user)
+        serving_recommendations = generate_serving_recommendations(user)
+        menu_tags = generate_menu_tags(user)
+        
         # Поиск актуальных цен в интернете
         search_query = f"цены на продукты {user.get('city', 'москва')} 2025 мясо овощи крупы молочные продукты"
         
@@ -1133,17 +1150,28 @@ async def generate_tech_card(request: DishRequest):
                 
                 if equipment_names:
                     equipment_context = f"""
-                    
+
 ДОСТУПНОЕ ОБОРУДОВАНИЕ:
 {', '.join(equipment_names)}
 
 ВАЖНО: Адаптируй рецепт под указанное оборудование. Если есть более эффективные способы приготовления с этим оборудованием, предложи их. Укажи оптимальные температуры и время для каждого вида оборудования."""
         
-        # Prepare the prompt with equipment context
+        # Prepare the prompt with venue customization
         prompt = GOLDEN_PROMPT.format(
             dish_name=request.dish_name,
-            regional_coefficient=regional_coefficient
-        ) + equipment_context
+            regional_coefficient=regional_coefficient,
+            venue_context=venue_context,
+            venue_specific_rules=venue_specific_rules,
+            venue_price_multiplier=venue_price_multiplier,
+            venue_type_name=venue_type_name,
+            average_check=average_check,
+            description_style=description_style,
+            cooking_instructions=cooking_instructions,
+            chef_tips=chef_tips,
+            serving_recommendations=serving_recommendations,
+            menu_tags=menu_tags,
+            equipment_context=equipment_context
+        )
         
         # Temporarily use GPT-4o-mini for all users to test
         ai_model = "gpt-4o-mini"  # was: "gpt-4o" if user['subscription_plan'] in ['pro', 'business'] else "gpt-4o-mini"
