@@ -693,6 +693,18 @@ frontend:
         comment: "PHASE 2 ENHANCEMENT: Fixed real-time recalculation in interactive ingredients editor. Changes made: 1) Enhanced updateIngredient function with proportional price recalculation logic 2) Fixed onChange handler for quantity changes to properly recalculate prices 3) Updated addNewIngredient to create ingredients with correct structure 4) Enhanced saveIngredientsToTechCard to properly format ingredients with units and prices. Now quantity changes automatically recalculate prices proportionally."
     message: "🔑 OPENAI API KEY TESTING COMPLETED: Conducted specific test for review request 'Паста Карбонара на 4 порции' with exact parameters (user_id: test_user_12345, city: moskva). ❌ CRITICAL FINDING: OpenAI API key is invalid (401 Unauthorized). ✅ INFRASTRUCTURE FIXED: Resolved MongoDB connection issue by updating MONGO_URL to localhost. ✅ BACKEND SYSTEMS: All other functionality working correctly (user management, subscriptions, database). ❌ ROOT CAUSE: Current OpenAI API key returns 401 error from OpenAI API. The backend correctly uses gpt-4o-mini model as specified. 🔧 URGENT ACTION REQUIRED: Main agent must provide valid OpenAI API key to resolve tech card generation failures. All review test requirements (status 200, content, ID, sections) cannot be verified until API key is fixed."
 
+  - task: "VENUE CUSTOMIZATION SYSTEM Frontend"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "FRONTEND IMPLEMENTATION COMPLETED: ✅ Added venue profile states and API functions (fetchVenueTypes, fetchCuisineTypes, fetchAverageCheckCategories, fetchVenueProfile, updateVenueProfile). ✅ Created beautiful gradient button '🏢 ПРОФИЛЬ ЗАВЕДЕНИЯ' in PRO functions section with venue profile summary display. ✅ Built comprehensive 4-step wizard modal with venue type selection (7 types), cuisine focus selection (5 types), average check & details input, and kitchen equipment selection. ✅ Integrated venue profile loading in useEffect hooks. ✅ Added profile step navigation and update functionality. ✅ UI shows venue profile summary when configured. Ready for frontend testing."
+
   - task: "VENUE CUSTOMIZATION SYSTEM Backend"
     implemented: true
     working: false
