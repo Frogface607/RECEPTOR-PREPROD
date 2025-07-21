@@ -167,7 +167,7 @@ def test_venue_aware_pro_functions():
                 scenario_results["tests"]["sales_script"] = {
                     "status": "success",
                     "response_time": round(response_time, 2),
-                    "content_length": len(sales_data.get("sales_script", "")),
+                    "content_length": len(sales_data.get("script", "")),
                     "found_keywords": found_keywords,
                     "keyword_match_rate": len(found_keywords) / len(scenario["expected_keywords"]["sales"])
                 }
