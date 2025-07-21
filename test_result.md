@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement comprehensive subscription system for Receptor Pro with 4 tiers (Free, Starter, PRO, Business) including Kitchen Equipment killer feature for PRO users, usage limits, premium UI elements, and subscription management functionality."
+user_problem_statement: "Expand Kitchen Equipment feature into comprehensive VENUE CUSTOMIZATION system allowing restaurants to specify venue type (Fine Dining, Food Truck, Bar/Pub, etc.), cuisine focus (Asian, European, Caucasian, etc.), average check price, and equipment to generate highly personalized tech cards adapted to specific restaurant concepts and business models."
 
   - task: "PRACTICAL FINANCES PRO Feature - Complete"
     implemented: true
