@@ -156,7 +156,7 @@ def test_venue_aware_pro_functions():
             
             if sales_response.status_code == 200:
                 sales_data = sales_response.json()
-                sales_content = sales_data.get("sales_script", "").lower()
+                sales_content = sales_data.get("script", "").lower()
                 
                 # Check for venue-specific keywords
                 found_keywords = []
