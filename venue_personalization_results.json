@@ -6,23 +6,28 @@
     "tests": {
       "sales_script": {
         "status": "success",
-        "response_time": 18.88,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 23.71,
+        "content_length": 3577,
+        "found_keywords": [
+          "премиум"
+        ],
+        "keyword_match_rate": 0.2
       },
       "food_pairing": {
         "status": "success",
-        "response_time": 19.15,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0,
+        "response_time": 41.31,
+        "content_length": 4474,
+        "found_keywords": [
+          "премиум",
+          "вино"
+        ],
+        "keyword_match_rate": 0.5,
         "alcohol_appropriate": true
       },
       "photo_tips": {
         "status": "success",
-        "response_time": 27.76,
-        "content_length": 0,
+        "response_time": 35.2,
+        "content_length": 4317,
         "found_keywords": [],
         "keyword_match_rate": 0.0
       }
@@ -35,25 +40,35 @@
     "tests": {
       "sales_script": {
         "status": "success",
-        "response_time": 19.21,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 44.74,
+        "content_length": 2966,
+        "found_keywords": [
+          "на ходу"
+        ],
+        "keyword_match_rate": 0.2
       },
       "food_pairing": {
         "status": "success",
-        "response_time": 27.39,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0,
+        "response_time": 17.21,
+        "content_length": 3719,
+        "found_keywords": [
+          "простые",
+          "быстрые",
+          "освежающие"
+        ],
+        "keyword_match_rate": 0.75,
         "alcohol_appropriate": true
       },
       "photo_tips": {
         "status": "success",
-        "response_time": 26.81,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 25.07,
+        "content_length": 4496,
+        "found_keywords": [
+          "street",
+          "мобильн",
+          "быстр"
+        ],
+        "keyword_match_rate": 0.6
       }
     }
   },
@@ -64,25 +79,36 @@
     "tests": {
       "sales_script": {
         "status": "success",
-        "response_time": 20.71,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 16.46,
+        "content_length": 3183,
+        "found_keywords": [
+          "кофе",
+          "уютн",
+          "атмосфер",
+          "легк"
+        ],
+        "keyword_match_rate": 1.0
       },
       "food_pairing": {
         "status": "success",
-        "response_time": 30.89,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0,
+        "response_time": 17.85,
+        "content_length": 3429,
+        "found_keywords": [
+          "кофе",
+          "эспрессо"
+        ],
+        "keyword_match_rate": 0.5,
         "alcohol_appropriate": true
       },
       "photo_tips": {
         "status": "success",
-        "response_time": 43.69,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 24.67,
+        "content_length": 5034,
+        "found_keywords": [
+          "кофе",
+          "уютн"
+        ],
+        "keyword_match_rate": 0.5
       }
     }
   },
@@ -93,25 +119,36 @@
     "tests": {
       "sales_script": {
         "status": "success",
-        "response_time": 15.61,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 15.48,
+        "content_length": 3304,
+        "found_keywords": [
+          "детск",
+          "безопасн",
+          "домашн"
+        ],
+        "keyword_match_rate": 0.75
       },
       "food_pairing": {
         "status": "success",
-        "response_time": 42.53,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0,
-        "alcohol_appropriate": true
+        "response_time": 16.98,
+        "content_length": 3146,
+        "found_keywords": [
+          "безалкогольн",
+          "сок",
+          "молоко"
+        ],
+        "keyword_match_rate": 0.75,
+        "alcohol_appropriate": false
       },
       "photo_tips": {
         "status": "success",
-        "response_time": 30.5,
-        "content_length": 0,
-        "found_keywords": [],
-        "keyword_match_rate": 0.0
+        "response_time": 38.43,
+        "content_length": 5036,
+        "found_keywords": [
+          "семейн",
+          "детск"
+        ],
+        "keyword_match_rate": 0.5
       }
     }
   }
