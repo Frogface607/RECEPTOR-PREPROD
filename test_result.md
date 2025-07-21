@@ -533,7 +533,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "VENUE CUSTOMIZATION SYSTEM Backend - New"
+    - "VENUE CUSTOMIZATION SYSTEM Frontend"
+    - "VENUE CUSTOMIZATION SYSTEM Backend"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
