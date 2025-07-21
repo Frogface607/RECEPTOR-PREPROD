@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Receptor Pro - FINANCES Feature Focus
-Testing the FIXED FINANCES feature with corrected cost calculations
+Backend Testing Suite for Receptor Pro - VENUE CUSTOMIZATION SYSTEM
+Testing the new Venue Customization System backend implementation
 """
 
 import requests
