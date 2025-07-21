@@ -533,7 +533,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "LABORATORY Feature - New with Image Generation"
+    - "VENUE CUSTOMIZATION SYSTEM Backend - New"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
