@@ -205,7 +205,7 @@ def test_venue_aware_pro_functions():
             
             if pairing_response.status_code == 200:
                 pairing_data = pairing_response.json()
-                pairing_content = pairing_data.get("food_pairing", "").lower()
+                pairing_content = pairing_data.get("pairing", "").lower()
                 
                 # Check for venue-specific keywords
                 found_keywords = []
