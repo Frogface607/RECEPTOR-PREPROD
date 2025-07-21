@@ -2213,6 +2213,19 @@ function App() {
                   <div className="border-t border-purple-400/30 pt-4 sm:pt-6">
                     <h3 className="text-base sm:text-lg font-bold text-purple-300 mb-3 sm:mb-4">PRO ФУНКЦИИ</h3>
                     
+                    {/* Venue Profile Button */}
+                    <button
+                      onClick={() => setShowVenueProfileModal(true)}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all transform hover:scale-105 mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px] shadow-lg"
+                    >
+                      🏢 ПРОФИЛЬ ЗАВЕДЕНИЯ
+                    </button>
+                    {venueProfile.venue_type && (
+                      <div className="text-xs sm:text-sm text-purple-300 text-center mb-3 sm:mb-4 p-2 bg-purple-900/20 rounded">
+                        {venueTypes[venueProfile.venue_type]?.name} • {venueProfile.cuisine_focus?.map(c => cuisineTypes[c]?.name).join(', ')} • {venueProfile.average_check}₽
+                      </div>
+                    )}
+                    
                     {/* Kitchen Equipment Button */}
                     <button
                       onClick={() => setShowEquipmentModal(true)}
