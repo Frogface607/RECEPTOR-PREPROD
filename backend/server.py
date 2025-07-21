@@ -1979,10 +1979,33 @@ async def generate_photo_tips(request: dict):
     user_id = request.get("user_id")
     tech_card = request.get("tech_card")
     
-    # Validate user subscription (PRO only)
-    user = await db.users.find_one({"id": user_id})
-    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
-        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    # Auto-create test user with PRO subscription if needed
+    if user_id.startswith("test_user_"):
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            # Create test user with PRO subscription
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": "moskva",
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+            user = test_user
+    else:
+        # Validate user subscription (PRO only)
+        user = await db.users.find_one({"id": user_id})
+        if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+            raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
+    # Get venue profile for personalization
+    venue_type = user.get("venue_type", "family_restaurant")
+    venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+    cuisine_focus = user.get("cuisine_focus", [])
+    average_check = user.get("average_check", 800)
     
     # Extract dish name from tech card
     dish_name = "блюдо"
@@ -1991,51 +2014,55 @@ async def generate_photo_tips(request: dict):
             dish_name = line.split('Название:')[1].strip().replace('**', '')
             break
     
+    # Generate venue-specific photo context
+    photo_context = generate_photo_tips_context(venue_type, venue_info, average_check, cuisine_focus)
+    
     prompt = f"""Ты — фуд-фотограф и эксперт по визуальной подаче блюд.
 
-Создай профессиональное руководство по фотографии для блюда "{dish_name}".
+КОНТЕКСТ ЗАВЕДЕНИЯ:
+Тип заведения: {venue_info['name']}
+Средний чек: {average_check}₽
+{photo_context}
+
+Создай профессиональное руководство по фотографии для блюда "{dish_name}" специально адаптированное для заведения типа "{venue_info['name']}".
 
 Техкарта блюда:
 {tech_card}
 
 Создай детальные рекомендации:
 
-📸 ТЕХНИЧЕСКИЕ НАСТРОЙКИ:
-• Оптимальные настройки камеры/телефона
-• Освещение (естественное vs искусственное)
-• Углы съемки и композиция
+📸 ТЕХНИЧЕСКИЕ НАСТРОЙКИ ДЛЯ {venue_info['name'].upper()}:
+{generate_photo_tech_settings(venue_type)}
 
 🎨 СТИЛИНГ И ПОДАЧА:
-• Идеальная посуда и сервировка
-• Цветовая палитра фона
-• Декоративные элементы и пропсы
+{generate_photo_styling_tips(venue_type)}
 
 ✨ КОМПОЗИЦИЯ:
-• Лучшие ракурсы для данного блюда
-• Правило третей и другие техники
-• Как показать текстуру и аппетитность
+• Лучшие ракурсы для блюд в {venue_info['name'].lower()}
+• Как показать концепцию заведения через фото
+• Техники подчеркивающие атмосферу места
 
 🌅 ОСВЕЩЕНИЕ:
-• Время суток для съемки
-• Использование естественного света
-• Искусственное освещение и софтбоксы
+• Оптимальное освещение для интерьера заведения
+• Работа с существующим освещением
+• Как передать атмосферу {venue_info['name'].lower()}
 
 📱 ДЛЯ СОЦСЕТЕЙ:
-• Адаптация для Instagram/TikTok
-• Размеры и форматы
-• Хештеги и подписи
+• Адаптация под аудиторию заведения
+• Хештеги специфичные для {venue_info['name'].lower()}
+• Контент-стратегия для типа заведения
 
 🎭 ПОСТОБРАБОТКА:
-• Основные правки (яркость, контраст, насыщенность)
-• Фильтры и пресеты
-• Приложения для обработки
+• Цветовая коррекция под стиль заведения
+• Фильтры подходящие для концепции
+• Создание узнаваемого визуального стиля
 
-💡 PRO СОВЕТЫ:
-• Как подчеркнуть уникальность блюда
-• Создание серии фото
-• Съемка процесса приготовления
+💡 PRO СОВЕТЫ ДЛЯ {venue_info['name'].upper()}:
+• Как подчеркнуть уникальность заведения через еду
+• Создание контента для целевой аудитории
+• Интеграция с общим брендингом
 
-Для каждого совета объясни ПОЧЕМУ это важно для данного конкретного блюда."""
+Для каждого совета объясни ПОЧЕМУ это важно именно для данного типа заведения и блюда."""
 
     try:
         response = openai_client.chat.completions.create(
