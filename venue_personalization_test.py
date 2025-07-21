@@ -172,7 +172,7 @@ def test_venue_aware_pro_functions():
                     "keyword_match_rate": len(found_keywords) / len(scenario["expected_keywords"]["sales"])
                 }
                 
-                print(f"✅ Sales script generated ({response_time:.2f}s, {len(sales_data.get('sales_script', ''))} chars)")
+                print(f"✅ Sales script generated ({response_time:.2f}s, {len(sales_data.get('script', ''))} chars)")
                 print(f"🎯 Keywords found: {found_keywords}")
                 
             else:
