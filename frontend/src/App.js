@@ -78,6 +78,15 @@ function App() {
   const [laboratoryResult, setLaboratoryResult] = useState(null);
   const [isExperimenting, setIsExperimenting] = useState(false);
   const [experimentType, setExperimentType] = useState('random');
+  
+  // Venue Profile states
+  const [showVenueProfileModal, setShowVenueProfileModal] = useState(false);
+  const [venueProfile, setVenueProfile] = useState({});
+  const [venueTypes, setVenueTypes] = useState({});
+  const [cuisineTypes, setCuisineTypes] = useState({});
+  const [averageCheckCategories, setAverageCheckCategories] = useState({});
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [profileStep, setProfileStep] = useState(1); // For wizard steps
 
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
