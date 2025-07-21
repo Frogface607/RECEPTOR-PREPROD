@@ -223,7 +223,7 @@ def test_venue_aware_pro_functions():
                 scenario_results["tests"]["food_pairing"] = {
                     "status": "success",
                     "response_time": round(response_time, 2),
-                    "content_length": len(pairing_data.get("food_pairing", "")),
+                    "content_length": len(pairing_data.get("pairing", "")),
                     "found_keywords": found_keywords,
                     "keyword_match_rate": len(found_keywords) / len(scenario["expected_keywords"]["pairing"]),
                     "alcohol_appropriate": alcohol_check
