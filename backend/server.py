@@ -347,6 +347,14 @@ class User(BaseModel):
     monthly_tech_cards_used: int = 0
     monthly_reset_date: datetime = Field(default_factory=datetime.utcnow)
     kitchen_equipment: List[str] = []  # List of equipment IDs
+    # NEW: Venue Profile fields
+    venue_type: Optional[str] = None  # fine_dining, food_truck, bar_pub, etc.
+    cuisine_focus: List[str] = []  # asian, european, caucasian, etc.
+    average_check: Optional[int] = None  # target average check in rubles
+    venue_name: Optional[str] = None  # restaurant/venue name
+    venue_concept: Optional[str] = None  # brief concept description
+    target_audience: Optional[str] = None  # families, young professionals, etc.
+    special_features: List[str] = []  # live_music, outdoor_seating, etc.
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class UserCreate(BaseModel):
