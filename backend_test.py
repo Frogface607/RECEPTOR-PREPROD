@@ -587,32 +587,56 @@ def test_finances_feature():
 
 def main():
     """Main test execution"""
-    print("🚀 RECEPTOR PRO - FINANCES FEATURE TESTING")
-    print("Testing FIXED cost calculations as requested in review")
+    print("🚀 RECEPTOR PRO - VENUE CUSTOMIZATION SYSTEM TESTING")
+    print("Testing new Venue Customization System backend implementation")
     print("=" * 60)
     print(f"🌐 Backend URL: {BACKEND_URL}")
     print(f"⏰ Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
     
-    # Test the FINANCES feature
+    # Test the Venue Customization System
+    venue_success = test_venue_customization_system()
+    
+    # Test enhanced tech card generation
+    enhanced_success = test_enhanced_tech_card_generation()
+    
+    # Test the FINANCES feature (legacy test)
     finances_success = test_finances_feature()
     
     print("\n" + "=" * 60)
     print("🎯 FINAL TEST RESULTS:")
     print("=" * 60)
     
+    if venue_success:
+        print("✅ VENUE CUSTOMIZATION SYSTEM: ALL TESTS PASSED")
+        print("✅ All 5 new endpoints working correctly")
+        print("✅ Venue types, cuisine types, and check categories available")
+        print("✅ Venue profile management functional")
+    else:
+        print("❌ VENUE CUSTOMIZATION SYSTEM: TESTS FAILED")
+        print("🚨 The venue customization system needs fixes")
+    
+    if enhanced_success:
+        print("✅ ENHANCED TECH CARD GENERATION: ALL TESTS PASSED")
+        print("✅ Tech cards adapt to venue profiles")
+        print("✅ Price multipliers working correctly")
+        print("✅ Venue-specific techniques and complexity levels applied")
+    else:
+        print("❌ ENHANCED TECH CARD GENERATION: TESTS FAILED")
+        print("🚨 Tech card adaptation needs improvements")
+    
     if finances_success:
         print("✅ FINANCES FEATURE: ALL TESTS PASSED")
-        print("🎉 The FIXED FINANCES feature is working correctly!")
         print("✅ Cost calculations are accurate")
         print("✅ cost_verification section is present and working")
-        print("✅ total_cost equals sum of ingredient_costs")
-        print("✅ calculation_correct flag shows true")
     else:
         print("❌ FINANCES FEATURE: TESTS FAILED")
         print("🚨 The FINANCES feature needs further fixes")
     
     print(f"⏰ Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Return overall success
+    return venue_success and enhanced_success
 
 if __name__ == "__main__":
     main()
