@@ -180,6 +180,15 @@ VENUE_TYPES = {
         "service_style": "counter_service",
         "portion_style": "comfort"
     },
+    "coffee_shop": {
+        "name": "Кофейня",
+        "description": "Специализированная кофейня с авторскими напитками",
+        "price_multiplier": 0.7,
+        "complexity_level": "medium",
+        "techniques": ["альтернативное заваривание", "латте-арт", "выпечка", "десерты"],
+        "service_style": "counter_service",
+        "portion_style": "grab_and_go"
+    },
     "food_court": {
         "name": "Фуд-корт",
         "description": "Точка в торговом центре или фуд-корте",
@@ -188,6 +197,24 @@ VENUE_TYPES = {
         "techniques": ["быстрое приготовление", "стандартизация", "разогрев", "сборка"],
         "service_style": "quick_service",
         "portion_style": "standard"
+    },
+    "canteen": {
+        "name": "Столовая",
+        "description": "Массовое питание для офисов, школ, предприятий",
+        "price_multiplier": 0.5,
+        "complexity_level": "low",
+        "techniques": ["массовое приготовление", "простые техники", "большие объемы"],
+        "service_style": "cafeteria",
+        "portion_style": "generous"
+    },
+    "kids_cafe": {
+        "name": "Детское кафе",
+        "description": "Семейное кафе с детским меню и развлечениями",
+        "price_multiplier": 0.8,
+        "complexity_level": "low",
+        "techniques": ["безопасное приготовление", "яркая подача", "простые вкусы"],
+        "service_style": "family_friendly",
+        "portion_style": "kid_friendly"
     },
     "night_club": {
         "name": "Ночной клуб",
@@ -206,6 +233,42 @@ VENUE_TYPES = {
         "techniques": ["домашняя кухня", "большие порции", "простые рецепты"],
         "service_style": "family_friendly",
         "portion_style": "generous"
+    },
+    "fast_food": {
+        "name": "Фаст-фуд",
+        "description": "Быстрое питание с стандартизированным меню",
+        "price_multiplier": 0.6,
+        "complexity_level": "low",
+        "techniques": ["фритюр", "гриль", "стандартизация", "быстрая сборка"],
+        "service_style": "quick_service",
+        "portion_style": "standard"
+    },
+    "bakery_cafe": {
+        "name": "Пекарня-кафе",
+        "description": "Пекарня с кафе и свежей выпечкой",
+        "price_multiplier": 0.8,
+        "complexity_level": "medium",
+        "techniques": ["выпечка", "хлебопечение", "кондитерское искусство"],
+        "service_style": "counter_service",
+        "portion_style": "artisan"
+    },
+    "buffet": {
+        "name": "Буфет/Шведский стол",
+        "description": "Самообслуживание с широким выбором блюд",
+        "price_multiplier": 0.9,
+        "complexity_level": "medium",
+        "techniques": ["массовое приготовление", "длительное хранение", "разнообразие"],
+        "service_style": "self_service",
+        "portion_style": "variety"
+    },
+    "street_food": {
+        "name": "Уличная еда",
+        "description": "Торговые точки с уличной едой",
+        "price_multiplier": 0.5,
+        "complexity_level": "low",
+        "techniques": ["простое приготовление", "мобильность", "быстрая подача"],
+        "service_style": "street_vendor",
+        "portion_style": "portable"
     }
 }
 
