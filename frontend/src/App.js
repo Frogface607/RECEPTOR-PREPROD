@@ -4103,6 +4103,289 @@ function App() {
         </div>
       )}
 
+      {/* Venue Profile Modal */}
+      {showVenueProfileModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-purple-400/30">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-purple-300 flex items-center gap-3">
+                🏢 ПРОФИЛЬ ЗАВЕДЕНИЯ
+                {profileStep > 1 && (
+                  <span className="text-sm bg-purple-600 text-white px-3 py-1 rounded-full">
+                    Шаг {profileStep}/4
+                  </span>
+                )}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowVenueProfileModal(false);
+                  setProfileStep(1);
+                }}
+                className="text-gray-400 hover:text-white transition-colors text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Wizard Step 1: Venue Type */}
+            {profileStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-purple-200 mb-2">Выберите тип заведения</h3>
+                  <p className="text-gray-300">Это влияет на сложность рецептов и стиль подачи</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(venueTypes).map(([key, venue]) => (
+                    <div
+                      key={key}
+                      className={`cursor-pointer p-4 rounded-lg border-2 transition-all hover:scale-105 ${
+                        venueProfile.venue_type === key
+                          ? 'border-purple-400 bg-purple-900/50'
+                          : 'border-gray-600 hover:border-purple-500'
+                      }`}
+                      onClick={() => setVenueProfile(prev => ({ ...prev, venue_type: key }))}
+                    >
+                      <h4 className="text-lg font-bold text-purple-200 mb-2">{venue.name}</h4>
+                      <p className="text-sm text-gray-300 mb-3">{venue.description}</p>
+                      <div className="text-xs text-gray-400">
+                        <div>Сложность: {venue.complexity_level === 'high' ? '🔴 Высокая' : venue.complexity_level === 'medium' ? '🟡 Средняя' : '🟢 Низкая'}</div>
+                        <div>Ценовой коэффициент: {venue.price_multiplier}x</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => venueProfile.venue_type && setProfileStep(2)}
+                    disabled={!venueProfile.venue_type}
+                    className={`px-6 py-3 rounded-lg font-bold transition-colors ${
+                      venueProfile.venue_type
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    ДАЛЕЕ →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Wizard Step 2: Cuisine Focus */}
+            {profileStep === 2 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-purple-200 mb-2">Выберите направления кухни</h3>
+                  <p className="text-gray-300">Можно выбрать несколько направлений</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(cuisineTypes).map(([key, cuisine]) => (
+                    <div
+                      key={key}
+                      className={`cursor-pointer p-4 rounded-lg border-2 transition-all hover:scale-105 ${
+                        venueProfile.cuisine_focus?.includes(key)
+                          ? 'border-purple-400 bg-purple-900/50'
+                          : 'border-gray-600 hover:border-purple-500'
+                      }`}
+                      onClick={() => setVenueProfile(prev => ({
+                        ...prev,
+                        cuisine_focus: prev.cuisine_focus?.includes(key)
+                          ? prev.cuisine_focus.filter(c => c !== key)
+                          : [...(prev.cuisine_focus || []), key]
+                      }))}
+                    >
+                      <h4 className="text-lg font-bold text-purple-200 mb-2">{cuisine.name}</h4>
+                      <div className="text-xs text-gray-300 mb-2">
+                        <div><strong>Ключевые ингредиенты:</strong> {cuisine.key_ingredients?.slice(0, 3).join(', ')}</div>
+                        <div><strong>Методы:</strong> {cuisine.cooking_methods?.slice(0, 2).join(', ')}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => setProfileStep(1)}
+                    className="px-6 py-3 rounded-lg font-bold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                  >
+                    ← НАЗАД
+                  </button>
+                  <button
+                    onClick={() => setProfileStep(3)}
+                    className="px-6 py-3 rounded-lg font-bold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                  >
+                    ДАЛЕЕ →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Wizard Step 3: Average Check & Details */}
+            {profileStep === 3 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-purple-200 mb-2">Детали заведения</h3>
+                  <p className="text-gray-300">Расскажите подробнее о вашем заведении</p>
+                </div>
+                
+                {/* Average Check */}
+                <div>
+                  <label className="block text-purple-200 font-bold mb-3">Средний чек (₽)</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    {Object.entries(averageCheckCategories).map(([key, category]) => (
+                      <div
+                        key={key}
+                        className={`cursor-pointer p-3 rounded-lg border-2 text-center transition-all hover:scale-105 ${
+                          venueProfile.average_check >= category.range[0] && venueProfile.average_check <= category.range[1]
+                            ? 'border-purple-400 bg-purple-900/50'
+                            : 'border-gray-600 hover:border-purple-500'
+                        }`}
+                        onClick={() => setVenueProfile(prev => ({ ...prev, average_check: category.range[1] }))}
+                      >
+                        <div className="text-sm font-bold text-purple-200">{category.name}</div>
+                        <div className="text-xs text-gray-400">{category.range[0]}-{category.range[1]}₽</div>
+                      </div>
+                    ))}
+                  </div>
+                  <input
+                    type="number"
+                    value={venueProfile.average_check || ''}
+                    onChange={(e) => setVenueProfile(prev => ({ ...prev, average_check: parseInt(e.target.value) || 0 }))}
+                    placeholder="Введите точную сумму"
+                    className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                  />
+                </div>
+
+                {/* Venue Name */}
+                <div>
+                  <label className="block text-purple-200 font-bold mb-2">Название заведения</label>
+                  <input
+                    type="text"
+                    value={venueProfile.venue_name || ''}
+                    onChange={(e) => setVenueProfile(prev => ({ ...prev, venue_name: e.target.value }))}
+                    placeholder="Например: Ресторан 'Уют'"
+                    className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                  />
+                </div>
+
+                {/* Venue Concept */}
+                <div>
+                  <label className="block text-purple-200 font-bold mb-2">Концепция заведения</label>
+                  <textarea
+                    value={venueProfile.venue_concept || ''}
+                    onChange={(e) => setVenueProfile(prev => ({ ...prev, venue_concept: e.target.value }))}
+                    placeholder="Опишите концепцию вашего заведения..."
+                    rows={3}
+                    className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white resize-none"
+                  />
+                </div>
+
+                {/* Target Audience */}
+                <div>
+                  <label className="block text-purple-200 font-bold mb-2">Целевая аудитория</label>
+                  <input
+                    type="text"
+                    value={venueProfile.target_audience || ''}
+                    onChange={(e) => setVenueProfile(prev => ({ ...prev, target_audience: e.target.value }))}
+                    placeholder="Например: молодые семьи, бизнес-клиенты"
+                    className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                  />
+                </div>
+                
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => setProfileStep(2)}
+                    className="px-6 py-3 rounded-lg font-bold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                  >
+                    ← НАЗАД
+                  </button>
+                  <button
+                    onClick={() => setProfileStep(4)}
+                    className="px-6 py-3 rounded-lg font-bold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                  >
+                    ДАЛЕЕ →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Wizard Step 4: Kitchen Equipment & Save */}
+            {profileStep === 4 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-purple-200 mb-2">Кухонное оборудование</h3>
+                  <p className="text-gray-300">Выберите доступное оборудование</p>
+                </div>
+                
+                {/* Kitchen Equipment */}
+                {Object.entries(kitchenEquipment).map(([category, items]) => (
+                  <div key={category} className="space-y-3">
+                    <h4 className="text-lg font-bold text-purple-200 capitalize">
+                      {category === 'cooking_methods' ? 'Методы готовки' : 
+                       category === 'prep_equipment' ? 'Подготовка' : 'Хранение'}
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {items.map((equipment) => (
+                        <label key={equipment.id} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={venueProfile.kitchen_equipment?.includes(equipment.id) || false}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setVenueProfile(prev => ({
+                                  ...prev,
+                                  kitchen_equipment: [...(prev.kitchen_equipment || []), equipment.id]
+                                }));
+                              } else {
+                                setVenueProfile(prev => ({
+                                  ...prev,
+                                  kitchen_equipment: (prev.kitchen_equipment || []).filter(id => id !== equipment.id)
+                                }));
+                              }
+                            }}
+                            className="text-purple-600"
+                          />
+                          <span className="text-gray-300 text-sm">{equipment.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex justify-between pt-6 border-t border-purple-400/30">
+                  <button
+                    onClick={() => setProfileStep(3)}
+                    className="px-6 py-3 rounded-lg font-bold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                  >
+                    ← НАЗАД
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const success = await updateVenueProfile(venueProfile);
+                      if (success) {
+                        setShowVenueProfileModal(false);
+                        setProfileStep(1);
+                      }
+                    }}
+                    disabled={isUpdatingProfile}
+                    className={`px-6 py-3 rounded-lg font-bold transition-colors ${
+                      isUpdatingProfile
+                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+                    }`}
+                  >
+                    {isUpdatingProfile ? 'СОХРАНЕНИЕ...' : '💾 СОХРАНИТЬ ПРОФИЛЬ'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
