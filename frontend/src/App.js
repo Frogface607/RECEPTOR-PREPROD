@@ -1826,6 +1826,10 @@ function App() {
     fetchCities();
     fetchSubscriptionPlans();
     fetchKitchenEquipment();
+    // Load venue profile data
+    fetchVenueTypes();
+    fetchCuisineTypes();
+    fetchAverageCheckCategories();
     initVoiceRecognition();
     const savedUser = localStorage.getItem('receptor_user');
     console.log('Checking for saved user:', savedUser);
@@ -1847,6 +1851,7 @@ function App() {
       fetchUserSubscription();
       fetchUserHistory();
       fetchUserPrices();
+      fetchVenueProfile();
     }
   }, [currentUser?.id]);
 
