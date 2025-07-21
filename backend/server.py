@@ -2643,6 +2643,33 @@ async def laboratory_experiment(request: dict):
     import random
     
     # Создаем промпт в зависимости от типа эксперимента
+    # Get venue profile for personalization
+    venue_type = user.get("venue_type", "family_restaurant")
+    venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+    cuisine_focus = user.get("cuisine_focus", [])
+    
+    # Adapt experiment types to venue
+    if venue_type == "fine_dining":
+        adapted_types = ["Fusion", "Molecular", "Extreme"]
+    elif venue_type == "food_truck":
+        adapted_types = ["Random", "Snack"]  
+    elif venue_type == "coffee_shop":
+        adapted_types = ["Random", "Snack", "Fusion"]
+    elif venue_type == "kids_cafe":
+        adapted_types = ["Random", "Snack"]
+    else:
+        adapted_types = ["Random", "Fusion", "Snack"]
+    
+    # Override experiment_type if not suitable for venue
+    if experiment_type not in adapted_types:
+        experiment_type = adapted_types[0]
+    
+    venue_context = f"""
+КОНТЕКСТ ЗАВЕДЕНИЯ: {venue_info['name']}
+Кухня: {', '.join([CUISINE_TYPES.get(c, {}).get('name', c) for c in cuisine_focus]) if cuisine_focus else 'Любая'}
+Адаптировано для: {venue_info['description']}
+"""
+    
     if experiment_type == "random":
         rand_ingredients = random.sample(random_ingredients, 3)
         rand_technique = random.choice(extreme_techniques)
