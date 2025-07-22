@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Receptor Pro - VENUE CUSTOMIZATION SYSTEM
-Testing the new Venue Customization System backend implementation
+Backend Testing Suite for Receptor Pro - COMPREHENSIVE REVIEW TESTING
+Testing all systems as requested in the review: pricing fix, improved dishes naming,
+venue customization, PRO functions personalization, laboratory save, and financial analysis
 """
 
 import requests
 import json
 import time
+import re
 from datetime import datetime
 
 # Configuration
