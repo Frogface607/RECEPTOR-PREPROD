@@ -348,7 +348,9 @@ function App() {
     const kbzhu100 = extractSection(/\*\*КБЖУ на 100 г:\*\*\s*(.*?)(?=\n|$)/);
     const allergens = extractSection(/\*\*Аллергены:\*\*\s*(.*?)(?=\n|$)/);
     const storage = extractSection(/\*\*Заготовки и хранение:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
-    const tips = extractSection(/\*\*Особенности и советы от шефа:\*\*\s*(.*?)(?=\n\n|\*\*)/s);
+    const tips = extractSection(/\*\*Особенности и советы от шефа:\*\*\s*(.*?)(?=\n\n|\*\*|$)/s) || 
+                 extractSection(/\*\*СОВЕТЫ ОТ ШЕФА\*\*\s*(.*?)(?=\n\n|\*\*|$)/s) ||
+                 extractSection(/\*\*Советы от шефа:\*\*\s*(.*?)(?=\n\n|\*\*|$)/s);
     const serving = extractSection(/\*\*Рекомендация подачи:\*\*\s*(.*?)(?=\n|$)/);
 
     return (
