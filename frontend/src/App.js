@@ -642,6 +642,25 @@ function App() {
     }
   };
 
+  const getServingIcon = (venueType) => {
+    const icons = {
+      'fine_dining': '🍽️',
+      'food_truck': '📦',
+      'street_food': '🥡',
+      'bar_pub': '🍺',
+      'night_club': '🍸',
+      'kids_cafe': '🧸',
+      'coffee_shop': '☕',
+      'canteen': '🍽️',
+      'fast_food': '🍟',
+      'bakery_cafe': '🥐',
+      'buffet': '🍛',
+      'cafe': '☕',
+      'family_restaurant': '🍽️'
+    };
+    return icons[venueType] || '🍽️';
+  };
+
   const fetchCuisineTypes = async () => {
     try {
       const response = await axios.get(`${API}/cuisine-types`);
