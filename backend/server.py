@@ -2891,3 +2891,77 @@ async def laboratory_experiment(request: dict):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка проведения эксперимента: {str(e)}")
+
+@app.post("/api/save-laboratory-experiment")
+async def save_laboratory_experiment(request: dict):
+    """Сохранение эксперимента из лаборатории в историю техкарт"""
+    user_id = request.get("user_id")
+    experiment_content = request.get("experiment")
+    experiment_type = request.get("experiment_type", "experiment")
+    image_url = request.get("image_url")
+    
+    if not user_id or not experiment_content:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    # Извлекаем название эксперимента
+    dish_name = "🧪 ЛАБОРАТОРНЫЙ ЭКСПЕРИМЕНТ"
+    lines = experiment_content.split('\n')
+    for line in lines:
+        if "**НАЗВАНИЕ ЭКСПЕРИМЕНТА:**" in line or "**Название:**" in line:
+            # Извлекаем название
+            name_part = line.split('**')[-1].strip()
+            if name_part:
+                dish_name = f"🧪 {name_part}"
+            break
+        # Ищем первую строку с экспериментом
+        elif line.strip() and not line.startswith('**') and len(line.strip()) > 10:
+            # Берем первые 50 символов как название
+            dish_name = f"🧪 {line.strip()[:50]}..."
+            break
+    
+    # Auto-create test user if needed
+    if user_id.startswith("test_user_"):
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": "moscow",
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+    
+    try:
+        # Добавляем информацию об изображении в контент
+        final_content = experiment_content
+        if image_url:
+            final_content += f"\n\n**🖼️ ИЗОБРАЖЕНИЕ ЭКСПЕРИМЕНТА:**\n{image_url}"
+        
+        # Create tech card object for laboratory experiment
+        tech_card = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "dish_name": dish_name,
+            "content": final_content,
+            "city": "moscow",
+            "is_inspiration": False,
+            "is_laboratory": True,  # Помечаем как лабораторный эксперимент
+            "experiment_type": experiment_type,
+            "image_url": image_url,
+            "created_at": datetime.now()
+        }
+        
+        # Save to database
+        await db.tech_cards.insert_one(tech_card)
+        
+        return {
+            "success": True,
+            "id": tech_card["id"],
+            "message": "Эксперимент сохранен в историю техкарт"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка сохранения эксперимента: {str(e)}")
