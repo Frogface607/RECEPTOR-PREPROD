@@ -548,10 +548,18 @@ function App() {
         {/* РЕКОМЕНДАЦИЯ ПОДАЧИ */}
         {serving && (
           <div className="bg-pink-900/20 rounded-lg p-4">
-            <h3 className="text-xl font-bold text-pink-300 mb-2">ПОДАЧА</h3>
-            <p className="text-gray-300">
-              <EditableText field="serving" value={serving} className="text-gray-300" />
-            </p>
+            <h3 className="text-xl font-bold text-pink-300 mb-2 flex items-center gap-2">
+              {getServingIcon(venueProfile.venue_type)}
+              ПОДАЧА
+            </h3>
+            <div className="text-gray-300 leading-relaxed">
+              <EditableText field="serving" value={serving} className="text-gray-300 leading-relaxed" multiline={true} />
+            </div>
+            {venueProfile.venue_type && (
+              <div className="mt-3 text-xs text-pink-200 bg-pink-900/30 rounded px-3 py-1">
+                Адаптировано для: {venueTypes[venueProfile.venue_type]?.name}
+              </div>
+            )}
           </div>
         )}
       </div>
