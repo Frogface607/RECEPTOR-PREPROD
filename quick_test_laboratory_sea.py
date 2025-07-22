@@ -133,7 +133,8 @@ def test_experiment_in_history(user_id, expected_tech_card_id):
         print(f"📊 Status Code: {response.status_code}")
         
         if response.status_code == 200:
-            history = response.json()
+            response_data = response.json()
+            history = response_data.get("history", [])
             print(f"📋 Found {len(history)} tech cards in history")
             
             # Look for our saved experiment
