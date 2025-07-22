@@ -4125,12 +4125,11 @@ function App() {
                 onClick={async () => {
                   // Сохраняем экспериментальное блюдо как новую техкарту
                   try {
-                    const response = await axios.post(`${API}/save-tech-card`, {
+                    const response = await axios.post(`${API}/save-laboratory-experiment`, {
                       user_id: currentUser.id,
-                      content: laboratoryResult.experiment,
-                      dish_name: laboratoryResult.experiment.split('\n')[0]?.replace(/\*\*/g, '').replace('🧪 НАЗВАНИЕ ЭКСПЕРИМЕНТА:', '').trim() || 'Экспериментальное блюдо',
-                      city: currentUser.city,
-                      is_experiment: true
+                      experiment: laboratoryResult.experiment,
+                      experiment_type: laboratoryResult.experiment_type,
+                      image_url: laboratoryResult.image_url
                     });
                     
                     // Устанавливаем новую техкарту
@@ -4139,7 +4138,7 @@ function App() {
                     setCurrentTechCardId(response.data.id);
                     setShowLaboratoryModal(false);
                     
-                    alert('Экспериментальное блюдо сохранено!');
+                    alert('Экспериментальное блюдо сохранено в истории техкарт!');
                   } catch (error) {
                     console.error('Error saving experiment:', error);
                     alert('Ошибка при сохранении эксперимента');
@@ -4147,7 +4146,7 @@ function App() {
                 }}
                 className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
               >
-                💾 СОХРАНИТЬ ЭКСПЕРИМЕНТ
+                💾 СОХРАНИТЬ В ИСТОРИЮ
               </button>
               
               <button
