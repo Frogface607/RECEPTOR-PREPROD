@@ -2288,14 +2288,6 @@ function App() {
                         {venueTypes[venueProfile.venue_type]?.name} • {venueProfile.cuisine_focus?.map(c => cuisineTypes[c]?.name).join(', ')} • {venueProfile.average_check}₽
                       </div>
                     )}
-                    
-                    {/* Kitchen Equipment Button */}
-                    <button
-                      onClick={() => setShowEquipmentModal(true)}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-colors mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px]"
-                    >
-                      КУХОННОЕ ОБОРУДОВАНИЕ
-                    </button>
                     {userEquipment.length > 0 && (
                       <div className="text-xs sm:text-sm text-purple-400 text-center mb-3 sm:mb-4">
                         Выбрано {userEquipment.length} единиц оборудования
