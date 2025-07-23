@@ -1174,13 +1174,28 @@ function App() {
       });
       
       setFinancesResult(response.data.analysis);
-      setShowFinancesModal(true);
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('💼 Финансовый анализ готов!');
+      
+      setTimeout(() => {
+        setIsAnalyzingFinances(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        setShowFinancesModal(true);
+      }, 2000);
       
     } catch (error) {
       console.error('Error analyzing finances:', error);
-      alert('Ошибка при анализе финансов: ' + (error.response?.data?.detail || error.message));
-    } finally {
+      clearInterval(progressInterval);
       setIsAnalyzingFinances(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при анализе финансов: ' + (error.response?.data?.detail || error.message));
     }
   };
 
