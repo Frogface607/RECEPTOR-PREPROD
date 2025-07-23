@@ -1191,13 +1191,28 @@ function App() {
       });
       
       setImproveDishResult(response.data.improved_dish);
-      setShowImproveDishModal(true);
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('✨ Улучшение блюда готово!');
+      
+      setTimeout(() => {
+        setIsImprovingDish(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        setShowImproveDishModal(true);
+      }, 2000);
       
     } catch (error) {
       console.error('Error improving dish:', error);
-      alert('Ошибка при улучшении блюда: ' + (error.response?.data?.detail || error.message));
-    } finally {
+      clearInterval(progressInterval);
       setIsImprovingDish(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при улучшении блюда: ' + (error.response?.data?.detail || error.message));
     }
   };
 
