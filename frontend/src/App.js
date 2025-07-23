@@ -1178,6 +1178,11 @@ function App() {
     if (!techCard || !currentUser?.id) return;
     
     setIsImprovingDish(true);
+    setLoadingType('improve');
+    setLoadingMessage(getImproveDishLoadingMessage());
+    setLoadingProgress(0);
+    
+    const progressInterval = simulateProgress('improve', 6000); // 6 секунд загрузки
     
     try {
       const response = await axios.post(`${API}/improve-dish`, {
