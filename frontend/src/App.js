@@ -1198,8 +1198,13 @@ function App() {
 
   const conductExperiment = async () => {
     if (!currentUser?.id) return;
-    
+
     setIsExperimenting(true);
+    setLoadingType('laboratory');
+    setLoadingMessage(getLaboratoryLoadingMessage());
+    setLoadingProgress(0);
+    
+    const progressInterval = simulateProgress('laboratory', 8000);
     
     // Извлекаем название блюда из текущей техкарты (если есть)
     let baseDish = '';
