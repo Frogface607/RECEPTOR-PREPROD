@@ -1156,6 +1156,16 @@ function App() {
     if (!techCard || !currentUser?.id) return;
     
     setIsAnalyzingFinances(true);
+    setLoadingType('finances');
+    setLoadingMessage(getFinancesLoadingMessage());
+    setLoadingProgress(0);
+    
+    const progressInterval = simulateProgress((progress, message) => {
+      setLoadingProgress(progress);
+      if (progress % 15 === 0) { // Меняем сообщение каждые 15%
+        setLoadingMessage(getFinancesLoadingMessage());
+      }
+    }, 10000); // 10 секунд для детального анализа
     
     try {
       const response = await axios.post(`${API}/analyze-finances`, {
