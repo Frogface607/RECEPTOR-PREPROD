@@ -200,6 +200,9 @@ function App() {
     return interval;
   };
   
+  // Loading message states
+  const [currentLoadingMessage, setCurrentLoadingMessage] = useState('');
+
   // Laboratory loading messages
   const getLaboratoryLoadingMessage = () => {
     const messages = [
@@ -265,6 +268,29 @@ function App() {
     ];
     return messages[Math.floor(Math.random() * messages.length)];
   };
+
+  // Update loading message every 2 seconds
+  React.useEffect(() => {
+    let interval;
+    if (isAnalyzingFinances || isExperimenting || isImprovingDish) {
+      const updateMessage = () => {
+        if (isAnalyzingFinances) {
+          setCurrentLoadingMessage(getFinancesLoadingMessage());
+        } else if (isExperimenting) {
+          setCurrentLoadingMessage(getLaboratoryLoadingMessage());
+        } else if (isImprovingDish) {
+          setCurrentLoadingMessage(getImproveDishLoadingMessage());
+        }
+      };
+      
+      updateMessage(); // Set initial message
+      interval = setInterval(updateMessage, 2000); // Update every 2 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAnalyzingFinances, isExperimenting, isImprovingDish]);
 
   // Format PRO AI content for better display
   const formatProAIContent = (content) => {
