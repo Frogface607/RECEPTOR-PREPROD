@@ -88,11 +88,6 @@ function App() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileStep, setProfileStep] = useState(1); // For wizard steps
 
-  // Finances states
-  const [showFinancesModal, setShowFinancesModal] = useState(false);
-  const [financesResult, setFinancesResult] = useState(null);
-  const [isAnalyzingFinances, setIsAnalyzingFinances] = useState(false);
-
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editingField, setEditingField] = useState(null);
