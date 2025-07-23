@@ -1268,13 +1268,28 @@ function App() {
       });
       
       setLaboratoryResult(response.data);
-      setShowLaboratoryModal(true);
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('🧪 Эксперимент завершен!');
+      
+      setTimeout(() => {
+        setIsExperimenting(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        setShowLaboratoryModal(true);
+      }, 2000);
       
     } catch (error) {
       console.error('Error conducting experiment:', error);
-      alert('Ошибка при проведении эксперимента: ' + (error.response?.data?.detail || error.message));
-    } finally {
+      clearInterval(progressInterval);
       setIsExperimenting(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка при проведении эксперимента: ' + (error.response?.data?.detail || error.message));
     }
   };
 
