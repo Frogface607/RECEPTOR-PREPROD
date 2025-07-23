@@ -4595,6 +4595,51 @@ function App() {
         </div>
       )}
 
+      {/* Loading Modal */}
+      {(isAnalyzingFinances || isExperimenting || isImprovingDish) && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 rounded-xl p-8 w-full max-w-md border border-purple-400/30">
+            <div className="text-center">
+              {/* Icon based on loading type */}
+              <div className="text-6xl mb-4">
+                {isAnalyzingFinances && '💰'}
+                {isExperimenting && '🧪'}
+                {isImprovingDish && '⚡'}
+              </div>
+              
+              {/* Loading message */}
+              <h3 className="text-xl font-bold text-purple-300 mb-4">
+                {isAnalyzingFinances && getFinancesLoadingMessage()}
+                {isExperimenting && getLaboratoryLoadingMessage()}
+                {isImprovingDish && getImproveDishLoadingMessage()}
+              </h3>
+              
+              {/* Progress bar */}
+              <div className="w-full bg-gray-700 rounded-full h-3 mb-4">
+                <div 
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300 animate-pulse"
+                  style={{ width: '75%' }}
+                ></div>
+              </div>
+              
+              {/* Animated dots */}
+              <div className="flex justify-center space-x-2">
+                <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce"></div>
+                <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              </div>
+              
+              {/* Processing text */}
+              <p className="text-gray-300 text-sm mt-4">
+                {isAnalyzingFinances && 'Анализируем рентабельность и составляем рекомендации...'}
+                {isExperimenting && 'Создаем кулинарный шедевр и генерируем изображение...'}
+                {isImprovingDish && 'Применяем секретные техники шеф-поваров...'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Finances Analysis Modal */}
       {showFinancesModal && financesResult && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
