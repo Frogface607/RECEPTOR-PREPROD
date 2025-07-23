@@ -4595,6 +4595,232 @@ function App() {
         </div>
       )}
 
+      {/* Finances Analysis Modal */}
+      {showFinancesModal && financesResult && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-gray-900 via-green-900 to-gray-900 rounded-xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto border border-green-400/30">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-green-300 flex items-center gap-3">
+                💼 ФИНАНСОВЫЙ АНАЛИЗ ЗАВЕРШЕН
+              </h2>
+              <button
+                onClick={() => setShowFinancesModal(false)}
+                className="text-gray-400 hover:text-white transition-colors text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Financial Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 rounded-xl p-4 border border-green-500/30">
+                <div className="text-green-400 text-sm font-bold mb-1">СЕБЕСТОИМОСТЬ</div>
+                <div className="text-2xl font-bold text-white">{financesResult.total_cost || 'N/A'}₽</div>
+              </div>
+              <div className="bg-gradient-to-r from-blue-900/50 to-cyan-900/50 rounded-xl p-4 border border-blue-500/30">
+                <div className="text-blue-400 text-sm font-bold mb-1">РЕК. ЦЕНА</div>
+                <div className="text-2xl font-bold text-white">{financesResult.recommended_price || 'N/A'}₽</div>
+              </div>
+              <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-4 border border-purple-500/30">
+                <div className="text-purple-400 text-sm font-bold mb-1">МАРЖА</div>
+                <div className="text-2xl font-bold text-white">{financesResult.margin_percent || 'N/A'}%</div>
+              </div>
+              <div className="bg-gradient-to-r from-orange-900/50 to-red-900/50 rounded-xl p-4 border border-orange-500/30">
+                <div className="text-orange-400 text-sm font-bold mb-1">РЕНТАБЕЛЬНОСТЬ</div>
+                <div className="text-2xl font-bold text-white">{financesResult.profitability_rating || 'N/A'}/5 ⭐</div>
+              </div>
+            </div>
+
+            {/* Smart Cost Cuts */}
+            {financesResult.smart_cost_cuts && financesResult.smart_cost_cuts.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-2">
+                  💡 УМНАЯ ОПТИМИЗАЦИЯ ЗАТРАТ
+                </h3>
+                <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-500/30">
+                  <div className="space-y-4">
+                    {financesResult.smart_cost_cuts.map((cut, index) => (
+                      <div key={index} className="flex items-start space-x-4 p-4 bg-gray-800/50 rounded-lg">
+                        <div className="bg-green-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold">{index + 1}</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-green-200 font-bold text-lg mb-2">{cut.change}</div>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-300">Было: {cut.current_cost}</span>
+                            <span className="text-gray-300">Станет: {cut.new_cost}</span>
+                            <span className="bg-green-600 text-white px-3 py-1 rounded-full font-bold">
+                              Экономия: {cut.savings}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-400 mt-2">
+                            Влияние на качество: {cut.quality_impact}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Revenue Hacks */}
+            {financesResult.revenue_hacks && financesResult.revenue_hacks.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-blue-300 mb-4 flex items-center gap-2">
+                  🚀 СТРАТЕГИИ РОСТА ВЫРУЧКИ
+                </h3>
+                <div className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-xl p-6 border border-blue-500/30">
+                  <div className="space-y-4">
+                    {financesResult.revenue_hacks.map((hack, index) => (
+                      <div key={index} className="p-4 bg-gray-800/50 rounded-lg">
+                        <div className="text-blue-200 font-bold text-lg mb-2">{hack.strategy}</div>
+                        <div className="text-gray-300 mb-3">{hack.implementation}</div>
+                        <div className="text-blue-400 font-bold">Потенциальная прибыль: {hack.potential_gain}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Plan */}
+            {financesResult.action_plan && financesResult.action_plan.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-purple-300 mb-4 flex items-center gap-2">
+                  📋 ПЛАН ДЕЙСТВИЙ
+                </h3>
+                <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-500/30">
+                  <div className="space-y-4">
+                    {financesResult.action_plan.map((action, index) => (
+                      <div key={index} className="flex items-start space-x-4 p-4 bg-gray-800/50 rounded-lg">
+                        <div className={`rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 ${
+                          action.priority === 'высокий' ? 'bg-red-600' :
+                          action.priority === 'средний' ? 'bg-yellow-600' : 'bg-green-600'
+                        }`}>
+                          <span className="text-white font-bold text-xs">
+                            {action.priority === 'высокий' ? '🔥' :
+                             action.priority === 'средний' ? '⚡' : '💡'}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              action.priority === 'высокий' ? 'bg-red-600 text-white' :
+                              action.priority === 'средний' ? 'bg-yellow-600 text-white' : 'bg-green-600 text-white'
+                            }`}>
+                              {action.priority.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="text-purple-200 font-bold mb-2">{action.action}</div>
+                          <div className="text-gray-300 text-sm">{action.expected_result}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Financial Forecast */}
+            {financesResult.financial_forecast && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-orange-300 mb-4 flex items-center gap-2">
+                  📈 ФИНАНСОВЫЙ ПРОГНОЗ
+                </h3>
+                <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-xl p-6 border border-orange-500/30">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-orange-200 font-bold">Точка безубыточности</div>
+                        <div className="text-2xl font-bold text-white">{financesResult.financial_forecast.daily_breakeven} порций/день</div>
+                      </div>
+                      <div>
+                        <div className="text-orange-200 font-bold">Целевые продажи</div>
+                        <div className="text-2xl font-bold text-white">{financesResult.financial_forecast.target_daily} порций/день</div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-orange-200 font-bold">Месячный потенциал</div>
+                        <div className="text-2xl font-bold text-white">{financesResult.financial_forecast.monthly_revenue_potential}</div>
+                      </div>
+                      <div>
+                        <div className="text-orange-200 font-bold">Прибыль с порции</div>
+                        <div className="text-2xl font-bold text-white">{financesResult.financial_forecast.profit_margin_realistic}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Red Flags & Golden Opportunities */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Red Flags */}
+              {financesResult.red_flags && financesResult.red_flags.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-red-300 mb-4 flex items-center gap-2">
+                    ⚠️ КРИТИЧЕСКИЕ ТОЧКИ
+                  </h3>
+                  <div className="bg-gradient-to-r from-red-900/20 to-pink-900/20 rounded-xl p-4 border border-red-500/30">
+                    <div className="space-y-3">
+                      {financesResult.red_flags.map((flag, index) => (
+                        <div key={index} className="flex items-start space-x-3">
+                          <div className="text-red-400 mt-1">🚨</div>
+                          <div className="text-red-200">{flag}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Golden Opportunities */}
+              {financesResult.golden_opportunities && financesResult.golden_opportunities.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
+                    💎 ЗОЛОТЫЕ ВОЗМОЖНОСТИ
+                  </h3>
+                  <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-xl p-4 border border-yellow-500/30">
+                    <div className="space-y-3">
+                      {financesResult.golden_opportunities.map((opportunity, index) => (
+                        <div key={index} className="flex items-start space-x-3">
+                          <div className="text-yellow-400 mt-1">💎</div>
+                          <div className="text-yellow-200">{opportunity}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-between space-x-4 pt-6 border-t border-green-400/30">
+              <button
+                onClick={() => {
+                  const analysisText = `ФИНАНСОВЫЙ АНАЛИЗ БЛЮДА\n\nСебестоимость: ${financesResult.total_cost}₽\nРекомендуемая цена: ${financesResult.recommended_price}₽\nМаржа: ${financesResult.margin_percent}%\n\n📊 Анализ создан в RECEPTOR PRO`;
+                  navigator.clipboard.writeText(analysisText);
+                  alert('Анализ скопирован в буфер обмена!');
+                }}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                📋 КОПИРОВАТЬ АНАЛИЗ
+              </button>
+              
+              <button
+                onClick={() => setShowFinancesModal(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                ЗАКРЫТЬ АНАЛИЗ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
