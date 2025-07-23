@@ -4634,10 +4634,8 @@ function App() {
               </div>
               
               {/* Loading message */}
-              <h3 className="text-xl font-bold text-purple-300 mb-4">
-                {isAnalyzingFinances && getFinancesLoadingMessage()}
-                {isExperimenting && getLaboratoryLoadingMessage()}
-                {isImprovingDish && getImproveDishLoadingMessage()}
+              <h3 className="text-xl font-bold text-purple-300 mb-4 min-h-[3rem] flex items-center justify-center">
+                {currentLoadingMessage}
               </h3>
               
               {/* Progress bar */}
