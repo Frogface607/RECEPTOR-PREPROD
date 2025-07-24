@@ -202,7 +202,6 @@ function App() {
   
   // Loading message states
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('');
-  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Laboratory loading messages
   const getLaboratoryLoadingMessage = () => {
