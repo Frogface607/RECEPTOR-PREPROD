@@ -4665,9 +4665,14 @@ function App() {
               {/* Progress bar */}
               <div className="w-full bg-gray-700 rounded-full h-3 mb-4">
                 <div 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300 animate-pulse"
-                  style={{ width: '75%' }}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${loadingProgress}%` }}
                 ></div>
+              </div>
+              
+              {/* Progress percentage */}
+              <div className="text-purple-200 text-sm mb-4 font-bold">
+                {loadingProgress}%
               </div>
               
               {/* Animated dots */}
