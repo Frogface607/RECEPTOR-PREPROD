@@ -2545,6 +2545,7 @@ function App() {
                           onClick={generateInspiration}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'btn-inspiration'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          title="🌟 ВДОХНОВЕНИЕ: Создает креативный твист на ваше блюдо, используя техники и ингредиенты кухонь других стран"
                         >
                           🌟 ВДОХНОВЕНИЕ
                         </button>
@@ -2553,6 +2554,7 @@ function App() {
                           onClick={conductExperiment}
                           disabled={isExperimenting}
                           className={`w-full ${isExperimenting ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px] laboratory-button`}
+                          title="🧪 ЛАБОРАТОРИЯ: Создает экспериментальные блюда с неожиданными сочетаниями ингредиентов и генерирует изображение результата"
                         >
                           {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 ЛАБОРАТОРИЯ'}
                         </button>
@@ -2561,6 +2563,7 @@ function App() {
                           onClick={generatePhotoTips}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          title="📸 СОВЕТЫ ПО ФОТО: Профессиональные рекомендации по фотографии блюд для социальных сетей и меню"
                         >
                           СОВЕТЫ ПО ФОТО
                         </button>
@@ -2569,6 +2572,7 @@ function App() {
                           onClick={improveDish}
                           disabled={isImprovingDish || !techCard}
                           className={`w-full ${isImprovingDish || !techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          title="⚡ ПРОКАЧАТЬ БЛЮДО: Улучшает ваш рецепт профессиональными техниками и секретами шеф-поваров до версии 2.0"
                         >
                           {isImprovingDish ? 'УЛУЧШАЮ...' : '⚡ ПРОКАЧАТЬ БЛЮДО'}
                         </button>
@@ -2577,6 +2581,7 @@ function App() {
                           onClick={analyzeFinances}
                           disabled={isAnalyzingFinances || !techCard}
                           className={`w-full ${isAnalyzingFinances || !techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          title="💼 ФИНАНСОВЫЙ АНАЛИЗ: Анализирует рентабельность блюда и дает конкретные советы по оптимизации затрат и увеличению прибыли"
                         >
                           {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ФИНАНСЫ'}
                         </button>
