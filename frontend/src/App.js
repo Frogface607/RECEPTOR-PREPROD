@@ -270,10 +270,29 @@ function App() {
     return messages[Math.floor(Math.random() * messages.length)];
   };
 
-  // Update loading message every 2 seconds
+  // Update loading message and progress
   React.useEffect(() => {
-    let interval;
+    let messageInterval, progressInterval;
+    
     if (isAnalyzingFinances || isExperimenting || isImprovingDish) {
+      // Determine loading time
+      const loadingTime = isAnalyzingFinances ? 10000 : isExperimenting ? 8000 : 6000; // ms
+      const progressStep = 100 / (loadingTime / 100); // Progress per 100ms
+      
+      let currentProgress = 0;
+      setLoadingProgress(0);
+      
+      // Update progress every 100ms
+      progressInterval = setInterval(() => {
+        currentProgress += progressStep;
+        if (currentProgress >= 100) {
+          currentProgress = 100;
+          clearInterval(progressInterval);
+        }
+        setLoadingProgress(Math.round(currentProgress));
+      }, 100);
+      
+      // Update message every 2 seconds
       const updateMessage = () => {
         if (isAnalyzingFinances) {
           setCurrentLoadingMessage(getFinancesLoadingMessage());
@@ -285,11 +304,16 @@ function App() {
       };
       
       updateMessage(); // Set initial message
-      interval = setInterval(updateMessage, 2000); // Update every 2 seconds
+      messageInterval = setInterval(updateMessage, 2000);
+    } else {
+      // Reset when not loading
+      setLoadingProgress(0);
+      setCurrentLoadingMessage('');
     }
     
     return () => {
-      if (interval) clearInterval(interval);
+      if (messageInterval) clearInterval(messageInterval);
+      if (progressInterval) clearInterval(progressInterval);
     };
   }, [isAnalyzingFinances, isExperimenting, isImprovingDish]);
 
