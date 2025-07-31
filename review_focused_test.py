@@ -15,7 +15,7 @@ from datetime import datetime
 class ReviewFocusedTest(unittest.TestCase):
     def setUp(self):
         # Use the public endpoint for testing
-        self.base_url = "https://4c812d8a-9ae1-4ca3-a869-39e1c5ceb8c4.preview.emergentagent.com/api"
+        self.base_url = "https://873f04ec-f2bd-4171-a6a9-6b8e246b3ab2.preview.emergentagent.com/api"
         self.user_id = None
         self.pro_user_id = None
         self.free_user_id = None

@@ -10,7 +10,7 @@ import re
 def test_golden_prompt_changes():
     """Test the specific requirements from the review request"""
     
-    base_url = "https://4c812d8a-9ae1-4ca3-a869-39e1c5ceb8c4.preview.emergentagent.com/api"
+    base_url = "https://873f04ec-f2bd-4171-a6a9-6b8e246b3ab2.preview.emergentagent.com/api"
     
     print("🧪 GOLDEN_PROMPT CHANGES TEST")
     print("=" * 50)
