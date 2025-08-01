@@ -2112,14 +2112,8 @@ function App() {
       setIsGenerating(false);
     }
   };
-    if (recognition) {
-      recognition.start();
-    } else {
-      console.log('Speech recognition not initialized');
-    }
-  };
 
-  const stopVoiceRecognition = () => {
+  const startVoiceRecognition = () => {
     if (recognition && isListening) {
       recognition.stop();
       setIsListening(false);
