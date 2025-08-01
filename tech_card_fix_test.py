@@ -265,16 +265,22 @@ def analyze_tech_card_content(content, card_type):
     # Check it's not just emoji
     chef_detailed = False
     if chef_found:
-        chef_section = re.search(r"советы от шефа:.*?(?=\*\*|$)", content, re.IGNORECASE | re.DOTALL)
+        # Look for chef section more broadly
+        chef_section = re.search(r"советы.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
         if not chef_section:
-            chef_section = re.search(r"особенности и советы.*?:.*?(?=\*\*|$)", content, re.IGNORECASE | re.DOTALL)
+            chef_section = re.search(r"особенности.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
         
         if chef_section:
             chef_text = chef_section.group(0)
+            print(f"🔍 Chef section found: {chef_text[:100]}...")
             # Check if it contains meaningful content (not just emojis)
             meaningful_content = re.sub(r'[^\w\s]', '', chef_text)
             if len(meaningful_content.strip()) > 30:  # More than just basic symbols
                 chef_detailed = True
+        else:
+            print("🔍 Chef pattern found but no section extracted")
+    else:
+        print("🔍 No chef patterns found in content")
     
     if chef_detailed:
         analysis["chef_tips"] = True
