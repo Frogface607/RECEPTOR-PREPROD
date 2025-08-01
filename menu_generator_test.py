@@ -66,7 +66,7 @@ def test_menu_generator_feature():
             else:
                 print_error(f"Failed to upgrade subscription: {upgrade_response.status_code} - {upgrade_response.text}")
                 
-        elif response.status_code == 400 and "already registered" in response.text:
+        elif response.status_code == 400 or (response.status_code == 500 and "already registered" in response.text):
             print_info("User already exists, getting user ID...")
             # Get existing user
             get_response = requests.get(f"{BACKEND_URL}/user/menu_test@example.com", timeout=30)
