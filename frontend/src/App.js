@@ -2570,8 +2570,8 @@ function App() {
                         Загружено {userPrices.length} позиций
                       </div>
                     )}
-                    <div className="text-xs sm:text-sm text-yellow-400 text-center mb-3 sm:mb-4 p-2 bg-yellow-900/20 rounded">
-                      🔧 Функция в разработке
+                    <div className="text-xs sm:text-sm text-green-400 text-center mb-3 sm:mb-4 p-2 bg-green-900/20 rounded">
+                      ✅ Загрузка Excel/CSV прайс-листов полностью готова!
                     </div>
                     
                     {/* ПРО AI функции */}
