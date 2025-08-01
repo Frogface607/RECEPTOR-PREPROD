@@ -2848,7 +2848,130 @@ function App() {
                   </div>
                 )}
 
-                {/* Step 2: Cuisine Style */}
+                {/* Step 3: Special Requirements */}
+                {menuWizardStep === 3 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">⚙️ Особые требования</h3>
+                    
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        { value: 'vegetarian', label: '🌱 Вегетарианское', desc: 'Без мяса' },
+                        { value: 'vegan', label: '🥬 Веганское', desc: 'Только растительное' },
+                        { value: 'halal', label: '☪️ Халяль', desc: 'Исламские требования' },
+                        { value: 'glutenfree', label: '🌾 Без глютена', desc: 'Безглютеновые блюда' },
+                        { value: 'local', label: '🏞️ Локальные продукты', desc: 'Местные ингредиенты' },
+                        { value: 'seasonal', label: '🍂 Сезонное', desc: 'По сезону' },
+                        { value: 'healthy', label: '💪 ПП', desc: 'Правильное питание' },
+                        { value: 'premium', label: '💎 Премиум', desc: 'Дорогие ингредиенты' },
+                        { value: 'budget', label: '💰 Бюджетное', desc: 'Низкая себестоимость' }
+                      ].map((req) => (
+                        <button
+                          key={req.value}
+                          onClick={() => {
+                            const current = menuProfile.specialRequirements || [];
+                            const updated = current.includes(req.value)
+                              ? current.filter(r => r !== req.value)
+                              : [...current, req.value];
+                            setMenuProfile(prev => ({ ...prev, specialRequirements: updated }));
+                          }}
+                          className={`p-4 rounded-lg border text-left transition-all ${
+                            (menuProfile.specialRequirements || []).includes(req.value)
+                              ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                              : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                          }`}
+                        >
+                          <div className="font-semibold">{req.label}</div>
+                          <div className="text-xs text-gray-400 mt-1">{req.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="text-sm text-gray-400 text-center">
+                      💡 Выберите несколько требований или оставьте пустым для стандартного меню
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: Final Review */}
+                {menuWizardStep === 4 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🎯 Финальная проверка</h3>
+                    
+                    <div className="bg-gray-700/50 rounded-xl p-6 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-sm text-gray-400">Тип заведения:</div>
+                          <div className="font-semibold text-cyan-300">
+                            {menuProfile.menuType === 'restaurant' && '🍽️ Ресторан'}
+                            {menuProfile.menuType === 'cafe' && '☕ Кофейня'}
+                            {menuProfile.menuType === 'fastfood' && '🍔 Фаст-фуд'}
+                            {menuProfile.menuType === 'bar' && '🍷 Бар'}
+                            {menuProfile.menuType === 'bistro' && '🥘 Бистро'}
+                            {menuProfile.menuType === 'pizzeria' && '🍕 Пиццерия'}
+                            {menuProfile.menuType === 'sushi' && '🍣 Суши-бар'}
+                            {menuProfile.menuType === 'bakery' && '🥐 Пекарня'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-400">Количество блюд:</div>
+                          <div className="font-semibold text-cyan-300">{menuProfile.dishCount} блюд</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-400">Средний чек:</div>
+                          <div className="font-semibold text-cyan-300">
+                            {menuProfile.averageCheck === 'budget' && '💰 До 500₽'}
+                            {menuProfile.averageCheck === 'medium' && '💰💰 500-1500₽'}
+                            {menuProfile.averageCheck === 'premium' && '💰💰💰 1500-3000₽'}
+                            {menuProfile.averageCheck === 'luxury' && '💰💰💰💰 3000₽+'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-400">Стиль кухни:</div>
+                          <div className="font-semibold text-cyan-300">
+                            {menuProfile.cuisineStyle === 'european' && '🇪🇺 Европейская'}
+                            {menuProfile.cuisineStyle === 'italian' && '🇮🇹 Итальянская'}
+                            {menuProfile.cuisineStyle === 'asian' && '🥢 Азиатская'}
+                            {menuProfile.cuisineStyle === 'american' && '🇺🇸 Американская'}
+                            {menuProfile.cuisineStyle === 'fusion' && '🎭 Фьюжн'}
+                            {menuProfile.cuisineStyle === 'russian' && '🇷🇺 Русская'}
+                            {menuProfile.cuisineStyle === 'georgian' && '🇬🇪 Грузинская'}
+                            {menuProfile.cuisineStyle === 'mexican' && '🇲🇽 Мексиканская'}
+                            {menuProfile.cuisineStyle === 'indian' && '🇮🇳 Индийская'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {menuProfile.specialRequirements && menuProfile.specialRequirements.length > 0 && (
+                        <div>
+                          <div className="text-sm text-gray-400 mb-2">Особые требования:</div>
+                          <div className="flex flex-wrap gap-2">
+                            {menuProfile.specialRequirements.map(req => (
+                              <span key={req} className="px-3 py-1 bg-cyan-600/20 text-cyan-300 rounded-full text-sm">
+                                {req === 'vegetarian' && '🌱 Вегетарианское'}
+                                {req === 'vegan' && '🥬 Веганское'}
+                                {req === 'halal' && '☪️ Халяль'}
+                                {req === 'glutenfree' && '🌾 Без глютена'}
+                                {req === 'local' && '🏞️ Локальные продукты'}
+                                {req === 'seasonal' && '🍂 Сезонное'}
+                                {req === 'healthy' && '💪 ПП'}
+                                {req === 'premium' && '💎 Премиум'}
+                                {req === 'budget' && '💰 Бюджетное'}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 text-center">
+                      <div className="text-4xl mb-4">🚀</div>
+                      <h4 className="text-xl font-bold text-cyan-300 mb-2">Готово к генерации!</h4>
+                      <p className="text-gray-300">
+                        ИИ создаст {menuProfile.dishCount} блюд с умной оптимизацией ингредиентов для максимальной экономии закупок
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {menuWizardStep === 2 && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-cyan-300 mb-6">🌍 Стиль кухни</h3>
