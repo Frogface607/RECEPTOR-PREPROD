@@ -32,15 +32,28 @@ def test_mass_tech_card_generation():
         "city": "moskva"
     }
     
+    # Try to register user
     try:
-        # Try to register user (will fail if exists, which is fine)
         response = requests.post(f"{BACKEND_URL}/register", json=user_data, timeout=30)
         if response.status_code == 200:
             print("✅ Created new PRO user")
-        else:
+            user_response = response.json()
+            user_id = user_response.get("id", user_id)
+        elif response.status_code == 400 and "already registered" in response.text:
             print("✅ Using existing PRO user")
+            # Try to get user by email
+            try:
+                get_user_response = requests.get(f"{BACKEND_URL}/user/{user_data['email']}", timeout=30)
+                if get_user_response.status_code == 200:
+                    user_response = get_user_response.json()
+                    user_id = user_response.get("id", user_id)
+                    print(f"✅ Found existing user with ID: {user_id}")
+            except Exception as e:
+                print(f"⚠️ Could not get existing user: {e}")
+        else:
+            print(f"⚠️ User registration issue: {response.status_code} - {response.text}")
     except Exception as e:
-        print("✅ Using existing PRO user (registration failed as expected)")
+        print(f"⚠️ User registration failed: {e}")
     
     # Upgrade to PRO subscription
     try:
@@ -51,6 +64,8 @@ def test_mass_tech_card_generation():
         )
         if upgrade_response.status_code == 200:
             print("✅ User upgraded to PRO subscription")
+        elif upgrade_response.status_code == 404:
+            print("⚠️ User not found for subscription upgrade")
         else:
             print("✅ User already has PRO subscription")
     except Exception as e:
