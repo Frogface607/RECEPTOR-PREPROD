@@ -896,10 +896,22 @@ def main():
         print("❌ FINANCES FEATURE: TESTS FAILED")
         print("🚨 The FINANCES feature needs further fixes")
     
+    if menu_success:
+        print("✅ MENU GENERATOR FEATURE: ALL TESTS PASSED")
+        print("✅ PRO user creation and subscription upgrade working")
+        print("✅ Menu generation endpoint functional")
+        print("✅ Response structure with menu categories verified")
+        print("✅ Ingredient optimization suggestions present")
+        print("✅ Subscription validation working (FREE users blocked)")
+        print("✅ Database storage with is_menu flag confirmed")
+    else:
+        print("❌ MENU GENERATOR FEATURE: TESTS FAILED")
+        print("🚨 The Menu Generator feature needs fixes")
+    
     print(f"⏰ Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Return overall success
-    return venue_success and enhanced_success
+    return venue_success and enhanced_success and menu_success
 
 if __name__ == "__main__":
     main()
