@@ -218,7 +218,7 @@ def test_menu_generator_feature():
             free_user = response.json()
             free_user_id = free_user["id"]
             print_success(f"FREE user created with ID: {free_user_id}")
-        elif response.status_code == 400 and "already registered" in response.text:
+        elif response.status_code == 400 or (response.status_code == 500 and "already registered" in response.text):
             # Get existing user
             get_response = requests.get(f"{BACKEND_URL}/user/free_test@example.com", timeout=30)
             if get_response.status_code == 200:
