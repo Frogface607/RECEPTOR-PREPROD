@@ -1515,9 +1515,30 @@ async def generate_tech_card(request: DishRequest):
 
 ВАЖНО: Адаптируй рецепт под указанное оборудование. Если есть более эффективные способы приготовления с этим оборудованием, предложи их. Укажи оптимальные температуры и время для каждого вида оборудования."""
         
-        # Prepare the prompt with venue customization
+        # Prepare enhanced dish context for menu-generated dishes
+        dish_context = ""
+        if hasattr(request, 'dish_description') and request.dish_description:
+            dish_context += f"\n\nКОНТЕКСТ ИЗ МЕНЮ:\n"
+            if request.dish_description:
+                dish_context += f"- Описание блюда: {request.dish_description}\n"
+            if request.main_ingredients:
+                dish_context += f"- Основные ингредиенты: {', '.join(request.main_ingredients)}\n"
+            if request.category:
+                dish_context += f"- Категория меню: {request.category}\n"
+            if request.estimated_cost:
+                dish_context += f"- Ориентировочная себестоимость: {request.estimated_cost}₽\n"
+            if request.cook_time:
+                dish_context += f"- Рекомендуемое время готовки: {request.cook_time} мин\n"
+            if request.difficulty:
+                dish_context += f"- Ожидаемая сложность: {request.difficulty}\n"
+            
+            dish_context += f"\nВАЖНО: Используй эту информацию как основу, но создай ПОЛНУЮ детальную техкарту с точными расчетами, рецептом и всеми разделами."
+
+        # Prepare the prompt with venue customization and enhanced context
+        enhanced_dish_name = request.dish_name + dish_context
+        
         prompt = GOLDEN_PROMPT.format(
-            dish_name=request.dish_name,
+            dish_name=enhanced_dish_name,
             regional_coefficient=regional_coefficient,
             venue_context=venue_context,
             venue_specific_rules=venue_specific_rules,
