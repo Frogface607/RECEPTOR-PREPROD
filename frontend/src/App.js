@@ -3180,44 +3180,9 @@ function App() {
                           </div>
                         </div>
                       </div>
-                      </label>
-                      <div className="px-4">
-                        <input
-                          type="range"
-                          min="5"
-                          max="50"
-                          value={menuProfile.dishCount}
-                          onChange={(e) => setMenuProfile(prev => ({ ...prev, dishCount: parseInt(e.target.value) }))}
-                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                          style={{
-                            background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${((menuProfile.dishCount - 5) / 45) * 100}%, #374151 ${((menuProfile.dishCount - 5) / 45) * 100}%, #374151 100%)`
-                          }}
-                        />
-                        <div className="flex justify-between text-xs text-gray-400 mt-1">
-                          <span>5 блюд</span>
-                          <span>25 блюд</span>
-                          <span>50 блюд</span>
-                        </div>
-                      </div>
                     </div>
-
-                    {/* Average Check Range Slider */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">
-                        Средний чек: <span className="text-cyan-400">{menuProfile.averageCheckMin}₽ - {menuProfile.averageCheckMax}₽</span>
-                      </label>
-                      <div className="px-4 space-y-2">
-                        <div>
-                          <span className="text-xs text-gray-400">Минимальный чек:</span>
-                          <input
-                            type="range"
-                            min="200"
-                            max="3000"
-                            step="50"
-                            value={menuProfile.averageCheckMin}
-                            onChange={(e) => {
-                              const newMin = parseInt(e.target.value);
-                              setMenuProfile(prev => ({ 
+                  </div>
+                )} 
                                 ...prev, 
                                 averageCheckMin: newMin,
                                 averageCheckMax: Math.max(newMin + 200, prev.averageCheckMax)
