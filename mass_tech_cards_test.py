@@ -20,56 +20,13 @@ def test_mass_tech_card_generation():
     
     # Step 1: Use existing PRO user or create new one
     print("📋 Step 1: Setting up PRO user...")
-    user_id = "menu_test_phase3"
+    user_id = "test_user_mass_tech_cards"  # Use test_user_ prefix for auto-creation
     
-    # First, let's check if the user exists and create menu if needed
-    print("📋 Step 1a: Checking existing user and creating menu...")
+    print("📋 Step 1a: Using test user (auto-created by backend)...")
     
-    # Create/verify PRO user
-    user_data = {
-        "email": "menu_test_phase3@example.com",
-        "name": "Menu Test Phase 3 User", 
-        "city": "moskva"
-    }
-    
-    # Try to register user
-    try:
-        response = requests.post(f"{BACKEND_URL}/register", json=user_data, timeout=30)
-        if response.status_code == 200:
-            print("✅ Created new PRO user")
-            user_response = response.json()
-            user_id = user_response.get("id", user_id)
-        elif response.status_code == 400 and "already registered" in response.text:
-            print("✅ Using existing PRO user")
-            # Try to get user by email
-            try:
-                get_user_response = requests.get(f"{BACKEND_URL}/user/{user_data['email']}", timeout=30)
-                if get_user_response.status_code == 200:
-                    user_response = get_user_response.json()
-                    user_id = user_response.get("id", user_id)
-                    print(f"✅ Found existing user with ID: {user_id}")
-            except Exception as e:
-                print(f"⚠️ Could not get existing user: {e}")
-        else:
-            print(f"⚠️ User registration issue: {response.status_code} - {response.text}")
-    except Exception as e:
-        print(f"⚠️ User registration failed: {e}")
-    
-    # Upgrade to PRO subscription
-    try:
-        upgrade_response = requests.post(
-            f"{BACKEND_URL}/upgrade-subscription/{user_id}",
-            json={"subscription_plan": "pro"},
-            timeout=30
-        )
-        if upgrade_response.status_code == 200:
-            print("✅ User upgraded to PRO subscription")
-        elif upgrade_response.status_code == 404:
-            print("⚠️ User not found for subscription upgrade")
-        else:
-            print("✅ User already has PRO subscription")
-    except Exception as e:
-        print(f"⚠️ Subscription upgrade issue: {e}")
+    # The backend will auto-create test users with test_user_ prefix
+    print(f"✅ Using test user ID: {user_id}")
+    print("✅ Backend will auto-create PRO user as needed")
     
     # Step 2: Generate a menu first (required for mass tech card generation)
     print("\n📋 Step 2: Generating menu for mass tech card generation...")
