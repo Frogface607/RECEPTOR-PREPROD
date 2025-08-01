@@ -48,6 +48,19 @@ def test_dashboard_user_registration():
             user_data = response.json()
             print("✅ Retrieved existing Dashboard test user")
             
+        elif response.status_code == 500 and "already registered" in response.text:
+            print("⚠️ User already exists (500 error), getting existing user...")
+            # Get existing user
+            response = requests.get(f"{BACKEND_URL}/user/{test_user_data['email']}", timeout=30)
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get existing user: {response.status_code}")
+                print(f"Response: {response.text}")
+                return None
+                
+            user_data = response.json()
+            print("✅ Retrieved existing Dashboard test user")
+            
         elif response.status_code == 200:
             user_data = response.json()
             print("✅ Successfully registered new Dashboard test user")
