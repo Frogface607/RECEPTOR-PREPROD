@@ -1929,6 +1929,24 @@ function App() {
       const response = await axios.get(`${API}/user-history/${currentUser.id}`);
       console.log('History response:', response.data);
       setUserHistory(response.data.history || []);
+      
+      // Update dashboard stats
+      const historyData = response.data.history || [];
+      const totalTechCards = historyData.length;
+      const totalMenus = historyData.filter(item => item.is_menu).length;
+      const thisMonth = new Date();
+      const thisMonthCards = historyData.filter(item => {
+        const itemDate = new Date(item.created_at);
+        return itemDate.getMonth() === thisMonth.getMonth() && 
+               itemDate.getFullYear() === thisMonth.getFullYear();
+      }).length;
+      
+      setDashboardStats({
+        totalTechCards,
+        totalMenus,
+        tokensUsed: currentUser.monthly_tech_cards_used || 0,
+        thisMonthCards
+      });
     } catch (error) {
       console.error('Error fetching history:', error);
     }
