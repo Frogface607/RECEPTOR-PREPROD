@@ -2753,12 +2753,14 @@ function App() {
                     <button 
                       onClick={() => navigator.clipboard.writeText(techCard)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="📋 Скопировать техкарту в буфер обмена для вставки в другие приложения"
                     >
                       КОПИРОВАТЬ
                     </button>
                     <button 
                       onClick={handlePrintTechCard}
                       className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="📄 Экспортировать техкарту в PDF без цен для печати на кухне"
                     >
                       ЭКСПОРТ В PDF
                     </button>
