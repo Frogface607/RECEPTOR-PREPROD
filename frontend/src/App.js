@@ -4476,6 +4476,7 @@ function App() {
                   }
                 }}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                title="📱 Поделиться результатом эксперимента в социальных сетях"
               >
                 📱 ПОДЕЛИТЬСЯ
               </button>
@@ -4483,6 +4484,7 @@ function App() {
               <button
                 onClick={() => setShowLaboratoryModal(false)}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                title="❌ Закрыть окно лаборатории без сохранения"
               >
                 ЗАКРЫТЬ
               </button>
