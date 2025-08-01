@@ -2593,6 +2593,7 @@ function App() {
                           onClick={() => generateSalesScript()}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          title="💬 СКРИПТ ПРОДАЖ: Генерирует профессиональные тексты для официантов с аргументами и техниками продаж"
                         >
                           СКРИПТ ПРОДАЖ
                         </button>
@@ -2601,6 +2602,7 @@ function App() {
                           onClick={generateFoodPairing}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          title="🍷 ФУДПЕЙРИНГ: Подбирает идеальные напитки, гарниры и закуски к вашему блюду с объяснением сочетаний"
                         >
                           ФУДПЕЙРИНГ
                         </button>
