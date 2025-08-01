@@ -2887,7 +2887,7 @@ function App() {
                     </h2>
                   </div>
                   <div className="text-sm text-gray-400">
-                    Шаг {menuWizardStep} из 4
+                    Шаг {menuWizardStep} из 5
                   </div>
                 </div>
 
