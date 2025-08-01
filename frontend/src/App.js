@@ -3360,12 +3360,14 @@ function App() {
                 onClick={() => setUserPrices([])}
                 disabled={userPrices.length === 0}
                 className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors"
+                title="🗑️ Удалить все загруженные прайс-листы из памяти"
               >
                 ОЧИСТИТЬ ВСЕ
               </button>
               <button
                 onClick={() => setShowPriceModal(false)}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+                title="✅ Закрыть окно управления прайсами"
               >
                 ГОТОВО
               </button>
