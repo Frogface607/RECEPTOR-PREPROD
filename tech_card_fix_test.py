@@ -218,27 +218,18 @@ def analyze_tech_card_content(content, card_type):
         r"заготовки и хранение",
         r"заготовки:",
         r"хранение:",
-        r"температур.*режим",
-        r"срок.*годности",
-        r"заморозк",
-        r"контейнер"
     ]
     
     storage_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in storage_patterns)
-    # Check it's not just "-" or emoji
     storage_detailed = False
     if storage_found:
-        # Look for the storage section more broadly
-        storage_section = re.search(r"заготовки.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
-        if not storage_section:
-            storage_section = re.search(r"хранение.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
-        
+        # Look for the storage section with proper markdown formatting
+        storage_section = re.search(r"\*\*заготовки и хранение:\*\*(.*?)(?=\*\*[^*]|$)", content, re.IGNORECASE | re.DOTALL)
         if storage_section:
-            storage_text = storage_section.group(0)
+            storage_text = storage_section.group(1).strip()
             print(f"🔍 Storage section found: {storage_text[:100]}...")
-            # Check if it contains meaningful content (not just "-" or emojis)
-            meaningful_content = re.sub(r'[^\w\s]', '', storage_text)
-            if len(meaningful_content.strip()) > 20:  # More than just basic symbols
+            # Check if it contains meaningful content (more than just basic symbols)
+            if len(storage_text.strip()) > 50:  # Reasonable threshold for detailed content
                 storage_detailed = True
         else:
             print("🔍 Storage pattern found but no section extracted")
