@@ -2703,7 +2703,7 @@ function App() {
                                 // Generate tech card for this dish
                                 setDishName(dish.name + ' - ' + dish.description);
                                 setCurrentView('create');
-                                handleTechCardGeneration();
+                                generateTechCard();
                               }}
                               className="text-cyan-400 hover:text-cyan-300 text-sm"
                               title="📋 Создать техкарту"
