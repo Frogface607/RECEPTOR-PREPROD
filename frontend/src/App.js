@@ -3310,45 +3310,178 @@ function App() {
                     </div>
                   </div>
                 )}
-                {menuWizardStep === 3 && (
+                {/* Step 4: Kitchen Capabilities & Technical Details */}
+                {menuWizardStep === 4 && (
                   <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-cyan-300 mb-6">⚙️ Особые требования</h3>
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🔧 Возможности кухни и технические детали</h3>
                     
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[
-                        { value: 'vegetarian', label: '🌱 Вегетарианское', desc: 'Без мяса' },
-                        { value: 'vegan', label: '🥬 Веганское', desc: 'Только растительное' },
-                        { value: 'halal', label: '☪️ Халяль', desc: 'Исламские требования' },
-                        { value: 'glutenfree', label: '🌾 Без глютена', desc: 'Безглютеновые блюда' },
-                        { value: 'local', label: '🏞️ Локальные продукты', desc: 'Местные ингредиенты' },
-                        { value: 'seasonal', label: '🍂 Сезонное', desc: 'По сезону' },
-                        { value: 'healthy', label: '💪 ПП', desc: 'Правильное питание' },
-                        { value: 'premium', label: '💎 Премиум', desc: 'Дорогие ингредиенты' },
-                        { value: 'budget', label: '💰 Бюджетное', desc: 'Низкая себестоимость' }
-                      ].map((req) => (
+                    {/* Kitchen Equipment Integration */}
+                    {venueProfile.kitchen_equipment && venueProfile.kitchen_equipment.length > 0 ? (
+                      <div className="bg-green-900/20 border border-green-400/30 rounded-xl p-4 mb-6">
+                        <h4 className="font-bold text-green-300 mb-2">✅ Оборудование из профиля заведения:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {venueProfile.kitchen_equipment.map((equipment, index) => (
+                            <span key={index} className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm">
+                              {equipment}
+                            </span>
+                          ))}
+                        </div>
                         <button
-                          key={req.value}
-                          onClick={() => {
-                            const current = menuProfile.specialRequirements || [];
-                            const updated = current.includes(req.value)
-                              ? current.filter(r => r !== req.value)
-                              : [...current, req.value];
-                            setMenuProfile(prev => ({ ...prev, specialRequirements: updated }));
-                          }}
-                          className={`p-4 rounded-lg border text-left transition-all ${
-                            (menuProfile.specialRequirements || []).includes(req.value)
-                              ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
-                              : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
-                          }`}
+                          onClick={() => setShowVenueProfileModal(true)}
+                          className="text-green-400 hover:text-green-300 text-sm mt-2"
                         >
-                          <div className="font-semibold">{req.label}</div>
-                          <div className="text-xs text-gray-400 mt-1">{req.desc}</div>
+                          ⚙️ Изменить оборудование
                         </button>
-                      ))}
+                      </div>
+                    ) : (
+                      <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-xl p-4 mb-6">
+                        <h4 className="font-bold text-yellow-300">⚠️ Оборудование не указано в профиле</h4>
+                        <p className="text-sm text-gray-400 mb-2">Укажите доступное оборудование для более точной генерации меню</p>
+                        <button
+                          onClick={() => setShowVenueProfileModal(true)}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm"
+                        >
+                          🔧 Настроить оборудование
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Staff Skill Level */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Уровень навыков персонала: <span className="text-cyan-400">{
+                          menuProfile.staffSkillLevel === 'beginner' ? 'Начинающий' :
+                          menuProfile.staffSkillLevel === 'medium' ? 'Средний' : 
+                          menuProfile.staffSkillLevel === 'advanced' ? 'Продвинутый' : 'Профессиональный'
+                        }</span>
+                      </label>
+                      <div className="px-4">
+                        <input
+                          type="range"
+                          min="1"
+                          max="4"
+                          value={
+                            menuProfile.staffSkillLevel === 'beginner' ? 1 :
+                            menuProfile.staffSkillLevel === 'medium' ? 2 :
+                            menuProfile.staffSkillLevel === 'advanced' ? 3 : 4
+                          }
+                          onChange={(e) => {
+                            const levels = ['beginner', 'medium', 'advanced', 'professional'];
+                            setMenuProfile(prev => ({ ...prev, staffSkillLevel: levels[parseInt(e.target.value) - 1] }));
+                          }}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          style={{
+                            background: `linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #22c55e 75%, #22c55e 100%)`
+                          }}
+                        />
+                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                          <span>🔰 Начинающий</span>
+                          <span>⭐ Средний</span>
+                          <span>🎯 Продвинутый</span>
+                          <span>👨‍🍳 Профи</span>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="text-sm text-gray-400 text-center">
-                      💡 Выберите несколько требований или оставьте пустым для стандартного меню
+
+                    {/* Preparation Time Constraints */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Ограничения по времени приготовления: <span className="text-cyan-400">{
+                          menuProfile.preparationTime === 'fast' ? 'Быстро (до 15 мин)' :
+                          menuProfile.preparationTime === 'medium' ? 'Средне (15-45 мин)' : 'Медленно (45+ мин)'
+                        }</span>
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {[
+                          { value: 'fast', label: '⚡ Быстро', desc: 'До 15 минут', time: '⏱️ <15 мин' },
+                          { value: 'medium', label: '⏳ Средне', desc: '15-45 минут', time: '⏱️ 15-45 мин' },
+                          { value: 'slow', label: '🐌 Медленно', desc: 'Более 45 минут', time: '⏱️ 45+ мин' }
+                        ].map((time) => (
+                          <button
+                            key={time.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, preparationTime: time.value }))}
+                            className={`p-4 rounded-lg border text-center transition-all ${
+                              menuProfile.preparationTime === time.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-bold">{time.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{time.desc}</div>
+                            <div className="text-xs text-cyan-400 mt-1">{time.time}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ingredient Budget Level */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Бюджет на ингредиенты: <span className="text-cyan-400">{
+                          menuProfile.ingredientBudget === 'low' ? 'Ограниченный' :
+                          menuProfile.ingredientBudget === 'medium' ? 'Средний' : 'Высокий'
+                        }</span>
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {[
+                          { value: 'low', label: '💰 Ограниченный', desc: 'Доступные продукты', range: 'до 30% от выручки' },
+                          { value: 'medium', label: '💰💰 Средний', desc: 'Качественные продукты', range: '30-40% от выручки' },
+                          { value: 'high', label: '💰💰💰 Высокий', desc: 'Премиум ингредиенты', range: '40%+ от выручки' }
+                        ].map((budget) => (
+                          <button
+                            key={budget.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, ingredientBudget: budget.value }))}
+                            className={`p-4 rounded-lg border text-center transition-all ${
+                              menuProfile.ingredientBudget === budget.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-bold">{budget.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{budget.desc}</div>
+                            <div className="text-xs text-yellow-400 mt-1">{budget.range}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Additional Kitchen Capabilities */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Дополнительные возможности (отметьте доступные):
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          { value: 'delivery', label: '🚚 Доставка', desc: 'Упаковка, сохранность' },
+                          { value: 'takeaway', label: '🥡 Навынос', desc: 'Быстрое приготовление' },
+                          { value: 'catering', label: '🎪 Кейтеринг', desc: 'Массовое производство' },
+                          { value: 'prep_kitchen', label: '🏭 Заготовочная', desc: 'Заготовки заранее' },
+                          { value: 'pastry_section', label: '🧁 Кондитерский цех', desc: 'Выпечка, десерты' },
+                          { value: 'wine_program', label: '🍷 Винная программа', desc: 'Сочетание с винами' },
+                          { value: 'breakfast_service', label: '🌅 Завтраки', desc: 'Утреннее меню' },
+                          { value: 'late_night', label: '🌙 Ночное меню', desc: 'Поздние часы' },
+                          { value: 'banquet_hall', label: '🎉 Банкетный зал', desc: 'Мероприятия' }
+                        ].map((capability) => (
+                          <button
+                            key={capability.value}
+                            onClick={() => {
+                              const current = menuProfile.kitchenCapabilities || [];
+                              const updated = current.includes(capability.value)
+                                ? current.filter(c => c !== capability.value)
+                                : [...current, capability.value];
+                              setMenuProfile(prev => ({ ...prev, kitchenCapabilities: updated }));
+                            }}
+                            className={`p-3 rounded-lg border text-left transition-all ${
+                              (menuProfile.kitchenCapabilities || []).includes(capability.value)
+                                ? 'border-blue-400 bg-blue-600/20 text-blue-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-blue-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-xs">{capability.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{capability.desc}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
