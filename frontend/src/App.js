@@ -2168,6 +2168,12 @@ function App() {
     }
   }, [currentUser?.id]);
 
+  useEffect(() => {
+    if (currentUser && currentView === 'dashboard') {
+      fetchUserHistory();
+    }
+  }, [currentView, currentUser]);
+
   const loadUserPrices = async (userId) => {
     try {
       const response = await axios.get(`${API}/user-prices/${userId}`);
