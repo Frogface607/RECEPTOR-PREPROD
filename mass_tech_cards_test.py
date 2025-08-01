@@ -138,6 +138,16 @@ def test_mass_tech_card_generation():
         print(f"✅ tech_cards array length: {len(tech_cards)}")
         print(f"✅ failed_generations array length: {len(failed_generations)}")
         
+        # Show failure details if any
+        if failed_count > 0:
+            print(f"\n⚠️ FAILURE DETAILS:")
+            for i, failure in enumerate(failed_generations[:3]):  # Show first 3 failures
+                dish_name = failure.get("dish_name", "Unknown")
+                error = failure.get("error", "Unknown error")
+                print(f"   {i+1}. {dish_name}: {error}")
+            if len(failed_generations) > 3:
+                print(f"   ... and {len(failed_generations) - 3} more failures")
+        
         if not success:
             print("❌ Response indicates failure")
             return False
