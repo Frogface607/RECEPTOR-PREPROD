@@ -2801,8 +2801,27 @@ function App() {
                             </button>
                             <button
                               onClick={() => {
-                                // Generate tech card for this dish
-                                setDishName(dish.name);
+                                // Generate tech card with full dish context
+                                const fullDishContext = {
+                                  name: dish.name,
+                                  description: dish.description,
+                                  main_ingredients: dish.main_ingredients || [],
+                                  category: category.category_name,
+                                  estimated_cost: dish.estimated_cost,
+                                  estimated_price: dish.estimated_price,
+                                  difficulty: dish.difficulty,
+                                  cook_time: dish.cook_time
+                                };
+                                
+                                setDishContext(fullDishContext);
+                                setDishName(`${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")
+                                
+Категория: ${category.category_name}
+Описание: ${dish.description}
+Основные ингредиенты: ${(dish.main_ingredients || []).join(', ')}
+Ориентировочная себестоимость: ${dish.estimated_cost}₽
+Время готовки: ${dish.cook_time} мин
+Сложность: ${dish.difficulty}`);
                                 setCurrentView('create');
                               }}
                               className="text-cyan-400 hover:text-cyan-300 text-sm"
