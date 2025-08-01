@@ -133,6 +133,16 @@ function App() {
     additionalNotes: ''
   });
 
+  // Mass Tech Card Generation states
+  const [isGeneratingMassCards, setIsGeneratingMassCards] = useState(false);
+  const [massGenerationProgress, setMassGenerationProgress] = useState({
+    total: 0,
+    completed: 0,
+    current: '',
+    results: []
+  });
+  const [showMassGenerationModal, setShowMassGenerationModal] = useState(false);
+
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editingField, setEditingField] = useState(null);
