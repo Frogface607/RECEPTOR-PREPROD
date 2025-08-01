@@ -4454,6 +4454,7 @@ function App() {
                   }
                 }}
                 className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                title="💾 Сохранить экспериментальное блюдо как полноценную техкарту в историю"
               >
                 💾 СОХРАНИТЬ В ИСТОРИЮ
               </button>
