@@ -1842,6 +1842,20 @@ function App() {
         user_id: currentUser.id,
         city: currentUser.city || 'москва'
       };
+
+      // Add enhanced context if available (from menu dishes)
+      if (dishContext) {
+        requestData.dish_description = dishContext.description;
+        requestData.main_ingredients = dishContext.main_ingredients;
+        requestData.category = dishContext.category;
+        requestData.estimated_cost = dishContext.estimated_cost;
+        requestData.estimated_price = dishContext.estimated_price;
+        requestData.difficulty = dishContext.difficulty;
+        requestData.cook_time = dishContext.cook_time;
+        
+        // Clear context after use
+        setDishContext(null);
+      }
       
       const response = await fetch(`${API}/generate-tech-card`, {
         method: 'POST',
