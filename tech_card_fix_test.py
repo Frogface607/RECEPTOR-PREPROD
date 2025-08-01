@@ -228,13 +228,22 @@ def analyze_tech_card_content(content, card_type):
     # Check it's not just "-" or emoji
     storage_detailed = False
     if storage_found:
-        storage_section = re.search(r"заготовки и хранение:.*?(?=\*\*|$)", content, re.IGNORECASE | re.DOTALL)
+        # Look for the storage section more broadly
+        storage_section = re.search(r"заготовки.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
+        if not storage_section:
+            storage_section = re.search(r"хранение.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
+        
         if storage_section:
             storage_text = storage_section.group(0)
+            print(f"🔍 Storage section found: {storage_text[:100]}...")
             # Check if it contains meaningful content (not just "-" or emojis)
             meaningful_content = re.sub(r'[^\w\s]', '', storage_text)
             if len(meaningful_content.strip()) > 20:  # More than just basic symbols
                 storage_detailed = True
+        else:
+            print("🔍 Storage pattern found but no section extracted")
+    else:
+        print("🔍 No storage patterns found in content")
     
     if storage_detailed:
         analysis["storage_tips"] = True
