@@ -2123,6 +2123,7 @@ async def generate_mass_tech_cards(request: dict):
                     regional_coefficient=regional_coefficient,
                     venue_context=venue_context,
                     venue_specific_rules=venue_specific_rules,
+                    venue_price_multiplier=venue_price_multiplier,
                     venue_type_name=venue_type_name,
                     average_check=average_check,
                     description_style=description_style,
