@@ -1516,29 +1516,25 @@ async def generate_tech_card(request: DishRequest):
 ВАЖНО: Адаптируй рецепт под указанное оборудование. Если есть более эффективные способы приготовления с этим оборудованием, предложи их. Укажи оптимальные температуры и время для каждого вида оборудования."""
         
         # Prepare enhanced dish context for menu-generated dishes
-        dish_context = ""
+        additional_context = ""
         if hasattr(request, 'dish_description') and request.dish_description:
-            dish_context += f"\n\nКОНТЕКСТ ИЗ МЕНЮ:\n"
-            if request.dish_description:
-                dish_context += f"- Описание блюда: {request.dish_description}\n"
-            if request.main_ingredients:
-                dish_context += f"- Основные ингредиенты: {', '.join(request.main_ingredients)}\n"
-            if request.category:
-                dish_context += f"- Категория меню: {request.category}\n"
-            if request.estimated_cost:
-                dish_context += f"- Ориентировочная себестоимость: {request.estimated_cost}₽\n"
-            if request.cook_time:
-                dish_context += f"- Рекомендуемое время готовки: {request.cook_time} мин\n"
-            if request.difficulty:
-                dish_context += f"- Ожидаемая сложность: {request.difficulty}\n"
-            
-            dish_context += f"\nВАЖНО: Используй эту информацию как основу, но создай ПОЛНУЮ детальную техкарту с точными расчетами, рецептом и всеми разделами."
+            additional_context = f"""
+
+ДОПОЛНИТЕЛЬНЫЙ КОНТЕКСТ ИЗ МЕНЮ:
+- Описание блюда: {request.dish_description}
+- Основные ингредиенты: {', '.join(request.main_ingredients) if request.main_ingredients else 'Не указаны'}
+- Категория меню: {request.category}
+- Ориентировочная себестоимость: {request.estimated_cost}₽
+- Рекомендуемое время готовки: {request.cook_time} мин
+- Ожидаемая сложность: {request.difficulty}
+
+ВАЖНО: Используй эту информацию как основу, но создай ПОЛНУЮ детальную техкарту с точными расчетами, пошаговым рецептом и всеми разделами (заготовки, советы от шефа, особенности)."""
 
         # Prepare the prompt with venue customization and enhanced context
-        enhanced_dish_name = request.dish_name + dish_context
+        enhanced_equipment_context = equipment_context + additional_context
         
         prompt = GOLDEN_PROMPT.format(
-            dish_name=enhanced_dish_name,
+            dish_name=request.dish_name,  # Только название блюда
             regional_coefficient=regional_coefficient,
             venue_context=venue_context,
             venue_specific_rules=venue_specific_rules,
@@ -1550,7 +1546,7 @@ async def generate_tech_card(request: DishRequest):
             chef_tips=chef_tips,
             serving_recommendations=serving_recommendations,
             menu_tags=menu_tags,
-            equipment_context=equipment_context
+            equipment_context=enhanced_equipment_context  # Контекст передается через equipment_context
         )
         
         # Temporarily use GPT-4o-mini for all users to test
