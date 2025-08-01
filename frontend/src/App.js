@@ -2129,7 +2129,7 @@ function App() {
       const response = await axios.post(`${API}/generate-menu`, menuRequest);
       
       if (response.data.success) {
-        setGeneratedMenu(response.data.menu);
+        setGeneratedMenu({...response.data.menu, menu_id: response.data.menu_id});
         setShowMenuWizard(false);
         alert('Меню успешно создано!');
       } else {
@@ -2140,6 +2140,74 @@ function App() {
       alert('Ошибка при создании меню. Попробуйте еще раз.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Mass Tech Card Generation function
+  const generateMassTechCards = async () => {
+    if (!generatedMenu?.menu_id) {
+      alert('Сначала создайте меню!');
+      return;
+    }
+
+    const totalDishes = (generatedMenu.categories || []).reduce((total, cat) => total + (cat.dishes?.length || 0), 0);
+    
+    if (totalDishes === 0) {
+      alert('Нет блюд для генерации техкарт!');
+      return;
+    }
+
+    if (!window.confirm(`Создать техкарты для всех ${totalDishes} блюд из меню? Это может занять несколько минут.`)) {
+      return;
+    }
+
+    try {
+      setIsGeneratingMassCards(true);
+      setShowMassGenerationModal(true);
+      setMassGenerationProgress({
+        total: totalDishes,
+        completed: 0,
+        current: 'Подготовка к генерации...',
+        results: []
+      });
+
+      const massRequest = {
+        user_id: currentUser.id,
+        menu_id: generatedMenu.menu_id
+      };
+
+      console.log('Starting mass tech card generation:', massRequest);
+      
+      const response = await axios.post(`${API}/generate-mass-tech-cards`, massRequest);
+      
+      if (response.data.success) {
+        setMassGenerationProgress({
+          total: totalDishes,
+          completed: response.data.generated_count,
+          current: 'Генерация завершена!',
+          results: response.data.tech_cards
+        });
+
+        // Update user history to refresh counts
+        await fetchUserHistory();
+        
+        setTimeout(() => {
+          setShowMassGenerationModal(false);
+          alert(`Массовая генерация завершена! Создано ${response.data.generated_count} из ${totalDishes} техкарт.`);
+          
+          if (response.data.failed_count > 0) {
+            console.log('Failed generations:', response.data.failed_generations);
+          }
+        }, 2000);
+      } else {
+        throw new Error(response.data.error || 'Failed to generate mass tech cards');
+      }
+    } catch (error) {
+      console.error('Error generating mass tech cards:', error);
+      alert('Ошибка при массовой генерации техкарт: ' + (error.response?.data?.detail || error.message));
+      setShowMassGenerationModal(false);
+    } finally {
+      setIsGeneratingMassCards(false);
     }
   };
 
