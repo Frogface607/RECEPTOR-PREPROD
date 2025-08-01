@@ -249,24 +249,21 @@ def analyze_tech_card_content(content, card_type):
         r"совет от receptor",
         r"фишка для продвинутых",
         r"вариации:",
-        r"техника.*текстура.*баланс"
     ]
     
     chef_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in chef_patterns)
-    # Check it's not just emoji
     chef_detailed = False
     if chef_found:
-        # Look for chef section more broadly
-        chef_section = re.search(r"советы.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
+        # Look for chef section with proper markdown formatting
+        chef_section = re.search(r"\*\*особенности и советы от шефа:\*\*(.*?)(?=\*\*[^*]|$)", content, re.IGNORECASE | re.DOTALL)
         if not chef_section:
-            chef_section = re.search(r"особенности.*?(?=\*\*[^*]|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
+            chef_section = re.search(r"\*\*советы от шефа:\*\*(.*?)(?=\*\*[^*]|$)", content, re.IGNORECASE | re.DOTALL)
         
         if chef_section:
-            chef_text = chef_section.group(0)
+            chef_text = chef_section.group(1).strip()
             print(f"🔍 Chef section found: {chef_text[:100]}...")
-            # Check if it contains meaningful content (not just emojis)
-            meaningful_content = re.sub(r'[^\w\s]', '', chef_text)
-            if len(meaningful_content.strip()) > 30:  # More than just basic symbols
+            # Check if it contains meaningful content (more than just basic symbols)
+            if len(chef_text.strip()) > 50:  # Reasonable threshold for detailed content
                 chef_detailed = True
         else:
             print("🔍 Chef pattern found but no section extracted")
