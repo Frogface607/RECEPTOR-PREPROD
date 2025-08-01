@@ -2896,7 +2896,7 @@ function App() {
                   <div className="bg-gray-700 rounded-full h-2">
                     <div 
                       className="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full h-2 transition-all duration-500"
-                      style={{ width: `${(menuWizardStep / 4) * 100}%` }}
+                      style={{ width: `${(menuWizardStep / 5) * 100}%` }}
                     ></div>
                   </div>
                 </div>
