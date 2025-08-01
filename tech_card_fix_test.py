@@ -72,7 +72,7 @@ def test_tech_card_generation_fix():
     
     enhanced_request = {
         "dish_name": "Брускетта с помидорами и базиликом",
-        "user_id": "fix_test_user",
+        "user_id": test_user_id,
         "dish_description": "Традиционная итальянская закуска с сочными помидорами и свежим базиликом",
         "main_ingredients": ["хлеб", "помидоры", "базилик", "оливковое масло"],
         "category": "Антипасти",
