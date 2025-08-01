@@ -2384,7 +2384,40 @@ function App() {
                 )}
               </div>
               
-              <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="flex items-center space-x-3 sm:space-x-6">
+                <button
+                  onClick={() => setCurrentView('dashboard')}
+                  className={`font-semibold text-sm sm:text-base transition-colors ${
+                    currentView === 'dashboard' 
+                      ? 'text-purple-200 border-b border-purple-300' 
+                      : 'text-purple-300 hover:text-purple-200'
+                  }`}
+                  title="📊 Главная панель управления"
+                >
+                  ГЛАВНАЯ
+                </button>
+                <button
+                  onClick={() => setCurrentView('create')}
+                  className={`font-semibold text-sm sm:text-base transition-colors ${
+                    currentView === 'create' 
+                      ? 'text-purple-200 border-b border-purple-300' 
+                      : 'text-purple-300 hover:text-purple-200'
+                  }`}
+                  title="🍽️ Создать техкарту"
+                >
+                  ТЕХКАРТЫ
+                </button>
+                <button
+                  onClick={() => setCurrentView('menu-generator')}
+                  className={`font-semibold text-sm sm:text-base transition-colors ${
+                    currentView === 'menu-generator' 
+                      ? 'text-purple-200 border-b border-purple-300' 
+                      : 'text-purple-300 hover:text-purple-200'
+                  }`}
+                  title="🎯 Генератор готовых меню"
+                >
+                  МЕНЮ
+                </button>
                 <button
                   onClick={() => {
                     setShowHistory(!showHistory);
