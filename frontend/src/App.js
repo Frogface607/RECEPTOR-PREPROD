@@ -3486,7 +3486,214 @@ function App() {
                   </div>
                 )}
 
-                {/* Step 4: Final Review */}
+                {/* Step 5: Free Form Description & Expectations */}
+                {menuWizardStep === 5 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">✍️ Опишите ваши ожидания от меню</h3>
+                    
+                    {/* Menu Description */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Краткое описание заведения и его концепции:
+                      </label>
+                      <textarea
+                        value={menuProfile.menuDescription}
+                        onChange={(e) => setMenuProfile(prev => ({ ...prev, menuDescription: e.target.value }))}
+                        placeholder="Расскажите о своем заведении: какая атмосфера, кто ваши клиенты, какие особенности интерьера, расположения... Например: 'Уютная семейная пиццерия в центре города с открытой кухней и игровой зоной для детей. Ориентируемся на семьи с детьми и студентов.'"
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-cyan-400 focus:outline-none resize-none"
+                        rows="4"
+                      />
+                      <div className="text-xs text-gray-400 mt-1">
+                        {menuProfile.menuDescription.length}/500 символов
+                      </div>
+                    </div>
+
+                    {/* Expectations */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Что вы ожидаете от нового меню?
+                      </label>
+                      <textarea
+                        value={menuProfile.expectations}
+                        onChange={(e) => setMenuProfile(prev => ({ ...prev, expectations: e.target.value }))}
+                        placeholder="Опишите свои ожидания подробно: какие блюда хотели бы видеть, какой стиль подачи, особые требования к ингредиентам, проблемы которые хотите решить... Например: 'Хочу добавить больше вегетарианских блюд, уменьшить время приготовления, использовать сезонные продукты, сделать меню более Instagram-френдли для привлечения молодежи.'"
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-cyan-400 focus:outline-none resize-none"
+                        rows="5"
+                      />
+                      <div className="text-xs text-gray-400 mt-1">
+                        {menuProfile.expectations.length}/1000 символов
+                      </div>
+                    </div>
+
+                    {/* Additional Notes */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Дополнительные пожелания и особенности:
+                      </label>
+                      <textarea
+                        value={menuProfile.additionalNotes}
+                        onChange={(e) => setMenuProfile(prev => ({ ...prev, additionalNotes: e.target.value }))}
+                        placeholder="Любые дополнительные детали: сезонные ограничения, предпочтения поставщиков, аллергии которые нужно учесть, планируемые акции, особенности подачи... Например: 'У нас нет фритюрницы, работаем только с локальными поставщиками, планируем запустить доставку, нужны блюда которые не теряют вид при транспортировке.'"
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-cyan-400 focus:outline-none resize-none"
+                        rows="4"
+                      />
+                      <div className="text-xs text-gray-400 mt-1">
+                        {menuProfile.additionalNotes.length}/500 символов
+                      </div>
+                    </div>
+
+                    {/* Summary Preview */}
+                    <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6">
+                      <h4 className="text-xl font-bold text-cyan-300 mb-4">📋 Итоговый профиль меню</h4>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm">
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-gray-400">Тип меню:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.menuType === 'full_menu' && '🍽️ Полное меню'}
+                              {menuProfile.menuType === 'seasonal' && '🍂 Сезонное меню'}
+                              {menuProfile.menuType === 'business_lunch' && '💼 Бизнес-ланч'}
+                              {menuProfile.menuType === 'evening_menu' && '🌙 Вечернее меню'}
+                              {menuProfile.menuType === 'breakfast' && '☀️ Завтраки'}
+                              {menuProfile.menuType === 'bar_menu' && '🍷 Барная карта'}
+                              {menuProfile.menuType === 'dessert_menu' && '🍰 Десертная карта'}
+                              {menuProfile.menuType === 'banquet' && '🎉 Банкетное меню'}
+                              {menuProfile.menuType === 'street_food' && '🚚 Стрит-фуд'}
+                            </span>
+                          </div>
+                          
+                          <div>
+                            <span className="text-gray-400">Количество блюд:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">{menuProfile.dishCount}</span>
+                          </div>
+                          
+                          <div>
+                            <span className="text-gray-400">Средний чек:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.averageCheckMin}₽ - {menuProfile.averageCheckMax}₽
+                            </span>
+                          </div>
+                          
+                          <div>
+                            <span className="text-gray-400">Кухня:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.cuisineStyle === 'european' && '🇪🇺 Европейская'}
+                              {menuProfile.cuisineStyle === 'italian' && '🇮🇹 Итальянская'}
+                              {menuProfile.cuisineStyle === 'french' && '🇫🇷 Французская'}
+                              {menuProfile.cuisineStyle === 'asian' && '🥢 Азиатская'}
+                              {menuProfile.cuisineStyle === 'japanese' && '🇯🇵 Японская'}
+                              {menuProfile.cuisineStyle === 'chinese' && '🇨🇳 Китайская'}
+                              {menuProfile.cuisineStyle === 'american' && '🇺🇸 Американская'}
+                              {menuProfile.cuisineStyle === 'mexican' && '🇲🇽 Мексиканская'}
+                              {menuProfile.cuisineStyle === 'russian' && '🇷🇺 Русская'}
+                              {menuProfile.cuisineStyle === 'georgian' && '🇬🇪 Грузинская'}
+                              {menuProfile.cuisineStyle === 'uzbek' && '🇺🇿 Узбекская'}
+                              {menuProfile.cuisineStyle === 'fusion' && '🎭 Фьюжн'}
+                            </span>
+                          </div>
+                          
+                          <div>
+                            <span className="text-gray-400">Целевая аудитория:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.targetAudience === 'families' && '👨‍👩‍👧‍👦 Семьи с детьми'}
+                              {menuProfile.targetAudience === 'business' && '💼 Бизнес-аудитория'}
+                              {menuProfile.targetAudience === 'students' && '🎓 Студенты'}
+                              {menuProfile.targetAudience === 'young_professionals' && '💻 Молодые специалисты'}
+                              {menuProfile.targetAudience === 'seniors' && '👴👵 Пожилые люди'}
+                              {menuProfile.targetAudience === 'tourists' && '📸 Туристы'}
+                              {menuProfile.targetAudience === 'hipsters' && '🎨 Творческая молодежь'}
+                              {menuProfile.targetAudience === 'athletes' && '💪 Спортсмены'}
+                              {menuProfile.targetAudience === 'gourmets' && '🍷 Гурманы'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-gray-400">Регион:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.region === 'moskva' && '🏛️ Москва'}
+                              {menuProfile.region === 'spb' && '🏰 СПб'}
+                              {menuProfile.region === 'kazan' && '🕌 Казань'}
+                              {menuProfile.region === 'ekaterinburg' && '🏔️ Екатеринбург'}
+                              {menuProfile.region === 'novosibirsk' && '❄️ Новосибирск'}
+                              {menuProfile.region === 'krasnodar' && '🌻 Краснодар'}
+                              {menuProfile.region === 'rostov' && '🌾 Ростов-на-Дону'}
+                              {menuProfile.region === 'volgograd' && '🏞️ Волгоград'}
+                              {menuProfile.region === 'other' && '🌍 Другой регион'}
+                            </span>
+                          </div>
+                          
+                          {(menuProfile.cuisineInfluences || []).length > 0 && (
+                            <div>
+                              <span className="text-gray-400">Влияния кухонь:</span>
+                              <div className="mt-1">
+                                {(menuProfile.cuisineInfluences || []).map(influence => (
+                                  <span key={influence} className="inline-block px-2 py-1 bg-purple-600/20 text-purple-300 rounded text-xs mr-1 mb-1">
+                                    {influence}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {(menuProfile.menuGoals || []).length > 0 && (
+                            <div>
+                              <span className="text-gray-400">Цели меню:</span>
+                              <div className="mt-1">
+                                {(menuProfile.menuGoals || []).slice(0, 3).map(goal => (
+                                  <span key={goal} className="inline-block px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs mr-1 mb-1">
+                                    {goal}
+                                  </span>
+                                ))}
+                                {(menuProfile.menuGoals || []).length > 3 && (
+                                  <span className="text-gray-400 text-xs">+{(menuProfile.menuGoals || []).length - 3} еще</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div>
+                            <span className="text-gray-400">Уровень персонала:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.staffSkillLevel === 'beginner' && '🔰 Начинающий'}
+                              {menuProfile.staffSkillLevel === 'medium' && '⭐ Средний'}
+                              {menuProfile.staffSkillLevel === 'advanced' && '🎯 Продвинутый'}
+                              {menuProfile.staffSkillLevel === 'professional' && '👨‍🍳 Профессиональный'}
+                            </span>
+                          </div>
+                          
+                          <div>
+                            <span className="text-gray-400">Время приготовления:</span>
+                            <span className="text-cyan-300 font-semibold ml-2">
+                              {menuProfile.preparationTime === 'fast' && '⚡ Быстро'}
+                              {menuProfile.preparationTime === 'medium' && '⏳ Средне'}
+                              {menuProfile.preparationTime === 'slow' && '🐌 Медленно'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {(menuProfile.menuDescription || menuProfile.expectations) && (
+                        <div className="mt-4 pt-4 border-t border-cyan-400/30">
+                          {menuProfile.menuDescription && (
+                            <div className="mb-3">
+                              <span className="text-gray-400 font-semibold">Описание заведения:</span>
+                              <p className="text-cyan-300 text-sm mt-1 italic">"{menuProfile.menuDescription}"</p>
+                            </div>
+                          )}
+                          {menuProfile.expectations && (
+                            <div>
+                              <span className="text-gray-400 font-semibold">Ожидания от меню:</span>
+                              <p className="text-cyan-300 text-sm mt-1 italic">"{menuProfile.expectations}"</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {menuWizardStep === 4 && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-cyan-300 mb-6">🎯 Финальная проверка</h3>
