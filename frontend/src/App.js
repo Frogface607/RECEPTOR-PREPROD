@@ -3126,18 +3126,21 @@ function App() {
                   setEditableIngredients([...editableIngredients, { name: '', quantity: '', price: '' }]);
                 }}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                title="➕ Добавить новую строку ингредиента в редактор"
               >
                 ДОБАВИТЬ
               </button>
               <button
                 onClick={saveIngredientsChanges}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+                title="💾 Применить изменения ингредиентов к техкарте"
               >
                 СОХРАНИТЬ
               </button>
               <button
                 onClick={() => setIsEditingIngredients(false)}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
+                title="❌ Закрыть редактор без сохранения изменений"
               >
                 ОТМЕНА
               </button>
