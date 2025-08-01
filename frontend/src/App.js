@@ -2401,22 +2401,47 @@ function App() {
                       
                       <div className="grid grid-cols-1 gap-4 sm:gap-6">
                         <div>
-                          <h4 className="text-purple-300 font-bold mb-3 text-sm sm:text-base">📝 ОПИСАНИЕ БЛЮДА</h4>
+                          <h4 className="text-purple-300 font-bold mb-3 text-sm sm:text-base">📝 СОЗДАНИЕ ТЕХКАРТЫ</h4>
                           <div className="space-y-2 text-xs sm:text-sm text-gray-300">
                             <p>• <strong>Пишите максимально подробно</strong> - чем точнее опишете, тем лучше результат</p>
                             <p>• <strong>Укажите количество порций</strong> - например "на 4 порции"</p>
                             <p>• <strong>Добавьте особенности</strong> - "средней прожарки", "с хрустящей корочкой"</p>
+                            <p>• <strong>Голосовой ввод 🎤</strong> - нажмите кнопку микрофона для диктовки блюда</p>
                             <p className="text-purple-200">💡 <em>Пример: "Стейк из говядины на 4 порции, средней прожарки, общий выход 800г"</em></p>
                           </div>
                         </div>
                         
                         <div>
-                          <h4 className="text-purple-300 font-bold mb-3 text-sm sm:text-base">🎯 СОВЕТЫ ПО ИСПОЛЬЗОВАНИЮ</h4>
+                          <h4 className="text-purple-300 font-bold mb-3 text-sm sm:text-base">✏️ РЕДАКТИРОВАНИЕ</h4>
                           <div className="space-y-2 text-xs sm:text-sm text-gray-300">
-                            <p>• <strong>Редактируйте ингредиенты</strong> - можно менять количество и цены</p>
-                            <p>• <strong>Используйте кнопку "РЕДАКТИРОВАТЬ"</strong> для ручной корректировки</p>
-                            <p>• <strong>Сохраняйте в PDF</strong> - для печати в кухню</p>
-                            <p>• <strong>PRO функции</strong> - скрипты продаж, фудпейринг, советы фото</p>
+                            <p>• <strong>Редактируйте ингредиенты</strong> - можно менять количество и цены интерактивно</p>
+                            <p>• <strong>AI редактирование</strong> - опишите что изменить, ИИ переделает техкарту</p>
+                            <p>• <strong>Ручная правка</strong> - кликайте на любой текст для быстрого редактирования</p>
+                            <p>• <strong>Сохранение в PDF</strong> - техкарта без цен для печати в кухню</p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-yellow-300 font-bold mb-3 text-sm sm:text-base">⭐ PRO ФУНКЦИИ</h4>
+                          <div className="space-y-2 text-xs sm:text-sm text-gray-300">
+                            <p>• <strong>🏢 ПРОФИЛЬ ЗАВЕДЕНИЯ</strong> - настройка типа заведения, кухни, среднего чека</p>
+                            <p>• <strong>🌟 ВДОХНОВЕНИЕ</strong> - креативные твисты на блюда из других кухонь</p>
+                            <p>• <strong>🧪 ЛАБОРАТОРИЯ</strong> - экспериментальные блюда с изображениями от ИИ</p>
+                            <p>• <strong>⚡ ПРОКАЧАТЬ БЛЮДО</strong> - улучшение рецептов до профессионального уровня</p>
+                            <p>• <strong>💼 ФИНАНСОВЫЙ АНАЛИЗ</strong> - детальный анализ рентабельности с советами</p>
+                            <p>• <strong>💬 СКРИПТ ПРОДАЖ</strong> - тексты для официантов и продвижения блюд</p>
+                            <p>• <strong>🍷 ФУДПЕЙРИНГ</strong> - рекомендации напитков и гарниров к блюду</p>
+                            <p>• <strong>📸 СОВЕТЫ ПО ФОТО</strong> - профессиональные советы по фотосъемке блюд</p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-cyan-300 font-bold mb-3 text-sm sm:text-base">🔧 ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ</h4>
+                          <div className="space-y-2 text-xs sm:text-sm text-gray-300">
+                            <p>• <strong>📋 ИСТОРИЯ</strong> - все созданные техкарты сохраняются автоматически</p>
+                            <p>• <strong>🔄 ПЕРСОНАЛИЗАЦИЯ</strong> - PRO функции адаптируются под ваш профиль заведения</p>
+                            <p>• <strong>💾 СОХРАНЕНИЕ ЭКСПЕРИМЕНТОВ</strong> - результаты лаборатории можно сохранить</p>
+                            <p>• <strong>🎯 УМНЫЕ РЕКОМЕНДАЦИИ</strong> - все функции учитывают тип вашего заведения</p>
                           </div>
                         </div>
                       </div>
@@ -2424,10 +2449,20 @@ function App() {
                       <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-purple-400/30">
                         <h4 className="text-yellow-300 font-bold mb-2 text-sm sm:text-base">💰 О СЕБЕСТОИМОСТИ</h4>
                         <p className="text-xs sm:text-sm text-gray-300">
-                          Себестоимость рассчитывается по среднерыночным ценам с учетом вашего региона. 
+                          Себестоимость рассчитывается по среднерыночным ценам 2025 года с учетом вашего региона и инфляции. 
                           Нейросеть может ошибаться - всегда проверяйте расчеты! 
                           <strong className="text-purple-300"> Детальный калькулятор на основе прайсов ваших поставщиков в разработке.</strong>
                         </p>
+                      </div>
+
+                      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-purple-400/30">
+                        <h4 className="text-green-300 font-bold mb-2 text-sm sm:text-base">🚀 СОВЕТЫ ДЛЯ МАКСИМАЛЬНОЙ ЭФФЕКТИВНОСТИ</h4>
+                        <div className="space-y-1 text-xs sm:text-sm text-gray-300">
+                          <p>• <strong>Настройте профиль заведения</strong> - все функции станут более точными</p>
+                          <p>• <strong>Используйте функции последовательно</strong> - сначала создайте техкарту, затем PRO функции</p>
+                          <p>• <strong>Экспериментируйте в Лаборатории</strong> - создавайте уникальные блюда для меню</p>
+                          <p>• <strong>Анализируйте финансы</strong> - оптимизируйте затраты и увеличивайте прибыль</p>
+                        </div>
                       </div>
                     </div>
                   )}
