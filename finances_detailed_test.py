@@ -8,7 +8,7 @@ import json
 import time
 
 def test_finances_detailed():
-    base_url = "https://873f04ec-f2bd-4171-a6a9-6b8e246b3ab2.preview.emergentagent.com/api"
+    base_url = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com/api"
     test_user_id = "test_user_12345"
     
     sample_tech_card = """**Название:** Паста Карбонара на 4 порции

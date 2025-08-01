@@ -1,35 +1,22 @@
 <analysis>
-The previous AI engineer's trajectory for Receptor Pro demonstrates an iterative, user-feedback-driven development process. Initial efforts focused on debugging a persistent frontend issue with duplicate ingredient editors in , leading to a complex refactoring of display logic. A key architectural decision was simplifying  from a line-by-line parser to a regex-based extractor. Significant work was done on AI prompt engineering in  to refine ingredient parsing, ensure standard portion sizes, improve Заготовки и хранение details, and critically, move from hardcoded ingredient prices to dynamic AI-driven pricing based on market data. UI/UX was continually refined by removing emojis, unifying button styles, and implementing an animated loading modal with humorous messages. Challenges included resolving  and  runtime errors in the frontend, and critical deployment issues due to API endpoint mismatches and user authentication in beta. The engineer successfully transitioned the app to a Beta state with simplified testing access and dynamic pricing, concluding with a comprehensive audit and future development roadmap.
+The previous AI engineer successfully transitioned Receptor Pro from an MVP tech card generator to a more comprehensive culinary application. Initial work involved implementing core features like AI tech card generation with real-time costing, PDF export, and a suite of PRO features (Inspiration, Finances, Improve Dish, Laboratory, Venue Customization). A significant portion of early effort was dedicated to resolving persistent deployment issues, particularly CORS and API routing.
+
+More recently, the focus shifted to refining existing frontend UX, including implementing dynamic loading screens, ensuring accurate pricing display, and recreating missing UI components. A major new direction, AI-Menu-Designer, was proposed by the user and embraced as a killer feature. The engineer then systematically addressed previously outlined pending tasks such as updating the How-to guide, implementing voice input controls, fixing Excel/CSV price list upload, and resolving PDF export issues for unit-based ingredients. Concurrently, a significant effort was made to add tooltips across all interactive UI elements. The current work stream initiated the development of the AI-Menu-Designer feature, starting with a Dashboard and then a highly detailed 5-step menu generation wizard, which is currently being debugged.
 </analysis>
 
 <product_requirements>
-The Receptor Pro application is designed to automate recipe card (tech card) creation and cost management for restaurateurs using AI. The core problem it solves is streamlining the tedious process of manual recipe and cost calculation.
+Receptor Pro is an AI-powered platform for the HoReCa industry, initially designed for automated tech card creation and cost management. Key features include AI-generated tech cards with detailed components, real-time cost calculation (2025 Russian market data, inflation, regional coefficients), interactive editing, and clean PDF export without prices. PRO features like Inspiration (recipe twists), Finances PRO (financial analysis with web prices), Improve Dish (recipe enhancement), and Laboratory (experimental ideas with DALL-E 3, saving capability) were implemented. Venue Customization allows detailed establishment profiles for personalized outputs. The application includes dynamic loading screens and tooltips for improved UX.
 
-Key features include:
-- AI-generated tech cards (ingredients, steps, yield, KBJU, allergens, sales script, food pairing, photo tips).
-- Automatic cost calculation based on AI's knowledge of 2025 Russian market prices, including inflation, regional coefficients, and a 3x selling price markup.
-- A professional UI/UX: graphite/purple/lavender color scheme, Montserrat font, enlarged inputs, and absence of excessive emojis.
-- Interactive AI/manual editing of tech cards, specifically an in-line ingredient editing table with real-time cost recalculation and a Save button.
-- PDF export of tech cards.
-- User management and tiered subscription system (Free, Starter, PRO, Business), with PRO features like kitchen equipment adaptation, sales script, food pairing, and photo tips.
-- Voice input for dish generation.
-- History of generated tech cards.
-
-Recent implementations focused on:
-- Stabilizing the interactive ingredient editor to ensure single, functional display with correct calculations and portion yield.
-- Refactoring the frontend display of tech cards for clarity and a professional appearance.
-- Enhancing AI prompts for accurate portion sizes, detailed Заготовки и хранение, and dynamic, market-aware price calculation.
-- Implementing dedicated modal windows for PRO AI features (Sales Script, Food Pairing, Photo Tips).
-- Adding animated, informative loading screens.
-- Preparing a Beta version with simplified access for testing.
+The product vision significantly evolved towards an AI-Menu-Designer, aiming to generate entire, optimized menus based on detailed venue profiles, with features like intelligent ingredient optimization, single-click dish replacement, and mass tech card generation. This МЕНЮ ЗА 15 МИНУТ feature positions Receptor Pro as a platform for launching restaurant businesses, targeting entrepreneurs, investors, and chefs by drastically reducing menu development time and cost.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Architecture**: React.js (frontend), FastAPI (backend), MongoDB (database).
--   **AI Integration**: OpenAI's GPT-4o and GPT-4o-mini, heavily reliant on prompt engineering for content generation and dynamic pricing.
--   **UI/UX**: Tailwind CSS for styling, Web Speech API for voice input, interactive React components for data editing.
--   **Data Management**: JSON for API communication, UUIDs for unique identifiers, Pandas/Openpyxl for Excel processing (though upload fix pending).
--   **Deployment**: Supervisor for process management within a Kubernetes container environment.
+-   **AI Integration**: OpenAI (GPT-4o-mini, DALL-E 3) with extensive prompt engineering for culinary tasks.
+-   **UI/UX**: Tailwind CSS, Web Speech API, interactive components, modals, tooltips, dynamic loading screens.
+-   **Data Management**: JSON, UUIDs, Pandas/Openpyxl for price list processing.
+-   **Deployment**: Supervisor, Kubernetes, Vercel (for frontend).
+-   **Monetization Strategy**: Token-based system for AI features, tiered PRO subscriptions.
 </key_technical_concepts>
 
 <code_architecture>
@@ -37,43 +24,18 @@ The application uses a standard full-stack setup: React for the frontend, FastAP
 
 
 
--   **/app/backend/server.py**: Main FastAPI application.
-    -   **Importance**: Handles all backend logic, including API endpoints for user authentication, tech card generation/editing, pricing, and subscription features. It orchestrates interactions with OpenAI and MongoDB.
-    -   **Changes Made**:
-        -   OpenAI model explicitly set to  by default (lines 609, 698).
-        -   AI prompts (, ) were extensively modified to:
-            -   Enforce standard restaurant portion sizes (150-200g).
-            -   Provide detailed Заготовки и хранение advice (temperatures, shelf life, tips).
-            -   **Crucially, shifted from hardcoded ingredient prices to instructing the AI model to dynamically calculate prices based on its knowledge of the 2025 Russian market, including inflation, regional coefficients, and seasonality.**
-            -   Removed explicit examples of соус биск to prevent unwanted generation.
-            -   Modified  endpoint to automatically create a test_user if  starts with test_user_, bypassing DB lookup for beta testing and granting PRO access (lines 560-580).
-        -    and  data and logic are present.
-
--   **/app/frontend/src/App.js**: The primary React component.
-    -   **Importance**: Renders the entire user interface, managing state for authentication, tech card generation, display, editing, PDF export, voice input, and subscription/history features. It makes API calls to the backend.
-    -   **Changes Made**:
-        -   **Ingredient Editor Refactoring**: Drastically simplified the rendering of the interactive ingredient editor. Previously, there were multiple conflicting instances. The code was refactored to ensure only *one* primary interactive editor appears (lines 124-308 in the original context of working editor).  was simplified to avoid embedding the editor, and the editor component was placed separately in the main render.
-        -   **Error Handling/Fixes**: Addressed  related to ,  due to  keyword (renamed to ), and a React  error related to rendering city objects (fixed by accessing ).
-        -   **UI/UX Improvements**:
-            -   Removed emojis from UI elements (buttons, headers) for a professional look.
-            -   Standardized button styles to a consistent purple/pink gradient.
-            -   Modified ingredient list display to *remove* individual ingredient prices, showing only total cost.
-            -   Implemented animated  with dynamic, humorous messages and progress bar for tech card and PRO AI feature generation (lines 2611-2790).
-            -   Added  states to buttons during loading.
-            -   Adjusted loading animation durations.
-            -   Improved manual editing functionality by correctly initializing  and  states.
-            -   Refactored main instructions and PRO AI feature content formatting ( function, lines 2445-2470) to remove raw markdown and display cleaner HTML.
-        -   **PDF Export**: Modified  to remove specific AI-generated disclaimers and add Created in RECEPTOR PRO Beta footer.
-        -   **Beta Branding**: Integrated RECEPTOR PRO Beta text and a test version disclaimer into the main UI and PDF output.
-        -   **Simplified Registration**: Modified the initial login/registration flow to allow immediate Start Testing with city selection and automatic PRO access for beta users (lines 1374-1420).
-
+-   **/app/backend/server.py**: Main FastAPI application orchestrating backend logic, AI interactions, and database operations.
+    -   **Importance**: Handles all API endpoints for tech card generation, editing, pricing, subscriptions, and new PRO features.
+    -   **Changes Made**: Configured , refined  for pricing and ingredient detail, increased . Added new endpoints for Inspiration, Finances, Improve Dish, Laboratory, Venue Customization, and crucially,  for the new AI-Menu-Designer feature. Implemented . AI prompts for PRO features were adapted to leverage venue profiles.
+-   **/app/frontend/src/App.js**: Primary React component managing UI, state, and API calls.
+    -   **Importance**: Renders all application features and handles user interaction.
+    -   **Changes Made**: Refactored for mobile responsiveness, implemented , integrated and refined PRO features, enhanced PDF export (removed disclaimers, improved filtering/formatting), added  and , and implemented tooltips for PRO buttons. Corrected frontend API call paths (e.g., removed double /api/). Implemented the new Dashboard/Personal Account area with navigation and statistics. Most recently, a highly detailed 5-step Menu Wizard UI was built for the AI-Menu-Designer, integrating venue profile data, sliders, and free-text inputs for detailed menu generation criteria. Extensive additions for voice input control (stop button, active indicator).
 -   **/app/frontend/src/App.css**: Contains global and component-specific CSS styles.
-    -   **Importance**: Defines the visual appearance.
-    -   **Changes Made**: Modified for aesthetic updates (gradients, typography) aligning with the premium SaaS product vision, specifically button styles and overall layout.
-
--   **/app/backend/requirements.txt**: Python dependencies for the backend.
+    -   **Importance**: Defines the visual appearance and responsive design of the application.
+    -   **Changes Made**: Significant modifications for mobile responsiveness, button styles, and new modal/loading indicator styles to support new features and the updated UI.
+-   **/app/backend/requirements.txt**: Lists Python dependencies for the backend.
     -   **Importance**: Ensures all necessary Python packages are installed.
-    -   **Changes Made**: usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+    -   **Changes Made**: Added usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
               [-o ORGANIZATION] [-t {openai,azure}]
               [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
               [--azure-ad-token AZURE_AD_TOKEN] [-V]
@@ -110,35 +72,40 @@ options:
                         https://www.microsoft.com/en-
                         us/security/business/identity-access/microsoft-entra-
                         id
-  -V, --version         show program's version number and exit, , and  were added.
-
+  -V, --version         show program's version number and exit, , , .
 -   **/app/backend/.env**: Environment variables for the backend.
-    -   **Importance**: Stores sensitive information like MongoDB connection URL and API keys.
-    -   **Changes Made**:  was added.
-
+    -   **Importance**: Stores sensitive configuration like API keys.
+    -   **Changes Made**:  updates,  variable added.
 -   **/app/frontend/.env**: Environment variables for the frontend.
     -   **Importance**: Stores the backend URL.
-    -   **Changes Made**:  is configured.
+    -   **Changes Made**:  adjusted for correct API routing,  added.
+-   **/app/frontend/public/index.html**: Main HTML file.
+    -   **Importance**: Basic page structure and metadata.
+    -   **Changes Made**: Updated title and meta description.
 </code_architecture>
 
 <pending_tasks>
--   Troubleshoot and fix the Excel/CSV price list upload ( endpoint and frontend ExcelParser) as it currently processes 0 positions.
--   Ensure real-time recalculation of total cost and portion yield in the ingredient editor upon changing grammage or price (already partially addressed in current work, but might need re-verification after other changes).
--   Check mobile responsiveness (explicitly requested by user in the last message).
+-   **AI-Menu-Designer - Phase 3 (Mass Tech Card Generation):** Implement the functionality to generate tech cards for an entire menu in a batch.
+-   **AI-Menu-Designer - Phase 4 (Modularity & Monetization):** Develop specialized menu modules (e.g., banquet, bar, fast-food) and integrate the updated token/subscription system.
+-   **AI-Menu-Designer - UI/UX Refinement:** Further enhance the beauty and detailed interface of the menu generation flow post-functional implementation, as explicitly requested by the user.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer was engaged in resolving critical deployment and pricing issues that arose after implementing several UI/UX improvements and simplifying the user onboarding for beta testing.
+Immediately before this summary request, the AI engineer was actively developing the core AI-Menu-Designer feature, specifically focusing on its highly detailed user interface and underlying logic.
 
-The primary issue was a frontend crash reported by the user, showing  (Chat Message 451, 470). This was traced to the  object being rendered directly in the UI instead of its  property during the simplified city selection flow for beta users. The engineer had initially fixed this in the  tags of the city dropdown (Chat Message 455) but a similar issue persisted, implying other locations where  was rendered as an object, not a string (Chat Message 471).
+The work stream included:
+1.  **Dashboard Implementation:** A new Dashboard was created as the user's personal account hub. This involved adding new navigation (Главная, Техкарты, Меню, История), a welcome block, and displaying user statistics (tech cards created, menus, plan type). Quick action buttons (Create Tech Card, Menu Generator, My Venue) and a Last Activity section showing real tech cards were integrated. This Dashboard is fully functional and displays user-specific data.
+2.  **Menu Generator Wizard (Detailed 5-Step):** A placeholder for the Menu Generator was replaced with an advanced, multi-step wizard to capture comprehensive details for menu generation. This wizard, implemented primarily in , features:
+    *   **Step 1 (Main Parameters):** Integration with existing venue profile, selection of 9 menu types, sliders for dish count and average check, and region selection with price coefficients.
+    *   **Step 2 (Cuisine Style):** Selection from 12 main cuisines, 10 additional influences, and 8 serving styles.
+    *   **Step 3 (Business Goals):** Options for 9 target audience types, 9 business goals, and 10 dietary options.
+    *   **Step 4 (Technical Details):** Integration of existing equipment, a slider for staff skills, cooking time limits, ingredient budget, and 9 additional capabilities.
+    *   **Step 5 (Free Description):** Three free-text fields for detailed descriptions, with a final preview of all selections.
+    The UI includes a progress bar, hover effects, gradient backgrounds, and emoji icons, designed for visual appeal and adaptiveness.
 
-Concurrently, a major problem with AI-generated ingredient prices was identified. The prices for ingredients, particularly fish, were astronomically high (e.g., 720₽ for 180g of trout, implying 4000₽/kg) (Chat Message 479). The AI engineer initially attempted to fix this by adding specific price ranges for various fish types to the  prompt (Chat Message 481). However, the user correctly challenged this approach, stating that the AI should inherently calculate prices dynamically based on its internal knowledge of the Russian market (2025, inflation, regional coefficients, seasonality), rather than being fed hardcoded values (Chat Message 485). The AI engineer agreed with this, realizing the smarter approach, and subsequently updated the  in  to instruct the AI model to dynamically determine prices based on these factors, removing the previously hardcoded price lists from the prompt (Chat Message 489).
-
-Finally, the user reported deployment issues (404/500 errors) with the live preview, indicating problems with API calls to  and  (Chat Message 493). The engineer determined that  was being called from the frontend but did not exist in the backend. For , the issue was a lack of a database user in the beta testing scenario. To fix these, the engineer removed the frontend call to the non-existent subscription endpoint (Chat Message 505) and modified the  endpoint in  to automatically create a test_user in the database with PRO subscription status if the incoming  starts with test_user_ (Chat Message 511). This allowed the beta version to function without requiring actual registration.
-
-The application was declared ready for beta deployment after these fixes, with stable AI generation, correct pricing logic, and a fully functional simplified testing flow. The very last message from the user was a request to check mobile responsiveness.
+The immediate task was debugging a critical issue where the Далее (Next) button on Step 4 of the menu generation wizard was not clickable, preventing users from progressing. The engineer identified this as a validation problem and has just applied a fix, preparing to re-test the entire wizard flow.
 </current_work>
 
 <optional_next_step>
-Check the mobile responsiveness of the application, addressing issues like buttons overflowing and general layout problems.
+Test the newly fixed 5-step menu generation wizard to ensure it is fully functional and the Далее button proceeds correctly.
 </optional_next_step>

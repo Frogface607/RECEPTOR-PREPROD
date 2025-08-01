@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://873f04ec-f2bd-4171-a6a9-6b8e246b3ab2.preview.emergentagent.com/api"
+BACKEND_URL = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com/api"
 
 def main():
     """Test the FIXED FINANCES feature"""

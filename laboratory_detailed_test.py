@@ -10,7 +10,7 @@ def test_laboratory_experiment_detailed():
     """Test the new LABORATORY feature with detailed analysis"""
     
     # Get backend URL from environment
-    backend_url = "https://873f04ec-f2bd-4171-a6a9-6b8e246b3ab2.preview.emergentagent.com"
+    backend_url = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com"
     
     print("🧪 DETAILED LABORATORY EXPERIMENT TESTING")
     print("=" * 60)
