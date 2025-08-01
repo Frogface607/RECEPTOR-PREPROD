@@ -2578,29 +2578,99 @@ function App() {
 
         {/* Menu Generator View */}
         {currentView === 'menu-generator' && (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700">
-              <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300 mb-6 text-center">
-                🎯 ГЕНЕРАТОР МЕНЮ
-              </h2>
-              
-              <div className="text-center py-12">
-                <div className="text-6xl mb-6">🚧</div>
-                <h3 className="text-xl font-bold text-cyan-300 mb-4">Скоро запуск!</h3>
-                <p className="text-gray-400 mb-6">
-                  Революционная функция создания полного меню за 15 минут находится в разработке.
-                </p>
-                <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-lg p-4">
-                  <p className="text-cyan-300 font-semibold">Что будет доступно:</p>
-                  <ul className="text-gray-300 text-sm mt-2 space-y-1">
-                    <li>• Генерация сбалансированного меню под ваше заведение</li>
-                    <li>• Оптимизация ингредиентов для экономии закупок</li>
-                    <li>• Создание техкарт для всего меню одним кликом</li>
-                    <li>• Специальные модули: бизнес-ланч, банкет, бар</li>
-                  </ul>
+          <div className="max-w-6xl mx-auto">
+            {!showMenuWizard ? (
+              // Menu Generator Landing
+              <div className="text-center space-y-8">
+                {/* Hero Section */}
+                <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-2xl p-8 sm:p-12">
+                  <div className="text-6xl sm:text-8xl mb-6">🎯</div>
+                  <h2 className="text-3xl sm:text-5xl font-bold text-cyan-300 mb-6">
+                    ГЕНЕРАТОР МЕНЮ
+                  </h2>
+                  <p className="text-xl sm:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
+                    Создайте <span className="text-cyan-400 font-bold">сбалансированное меню</span> за 15 минут вместо месяца работы!
+                  </p>
+                  
+                  {/* Key Benefits */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-cyan-900/30 rounded-xl p-4">
+                      <div className="text-3xl mb-2">⚡</div>
+                      <div className="font-bold text-cyan-300">15 минут</div>
+                      <div className="text-sm text-gray-400">вместо месяца</div>
+                    </div>
+                    <div className="bg-blue-900/30 rounded-xl p-4">
+                      <div className="text-3xl mb-2">🧠</div>
+                      <div className="font-bold text-blue-300">AI оптимизация</div>
+                      <div className="text-sm text-gray-400">умные ингредиенты</div>
+                    </div>
+                    <div className="bg-purple-900/30 rounded-xl p-4">
+                      <div className="text-3xl mb-2">💰</div>
+                      <div className="font-bold text-purple-300">Экономия</div>
+                      <div className="text-sm text-gray-400">до 100.000₽</div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => setShowMenuWizard(true)}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl text-xl transform hover:scale-105 transition-all shadow-lg"
+                    title="🎯 Запустить мастер создания меню"
+                  >
+                    🚀 СОЗДАТЬ МЕНЮ ЗА 15 МИНУТ
+                  </button>
+                </div>
+
+                {/* Menu Types */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    { emoji: '🍽️', title: 'Ресторан', desc: 'Полное меню для ресторана', color: 'purple' },
+                    { emoji: '☕', title: 'Кофейня', desc: 'Завтраки и напитки', color: 'orange' },
+                    { emoji: '🍔', title: 'Фаст-фуд', desc: 'Быстрое питание', color: 'red' },
+                    { emoji: '🍷', title: 'Бар', desc: 'Барная карта + закуски', color: 'green' },
+                  ].map((type, index) => (
+                    <div 
+                      key={index}
+                      className={`bg-gradient-to-br from-${type.color}-600/20 to-${type.color}-800/20 border border-${type.color}-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => {
+                        setMenuType(type.title.toLowerCase());
+                        setShowMenuWizard(true);
+                      }}
+                    >
+                      <div className="text-4xl mb-4">{type.emoji}</div>
+                      <h3 className={`text-xl font-bold text-${type.color}-300 mb-2`}>{type.title}</h3>
+                      <p className="text-gray-400 text-sm">{type.desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Success Stories */}
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-cyan-300 mb-4">💎 Что получают владельцы заведений:</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                    <div className="space-y-2 text-gray-300">
+                      <p>✅ Сбалансированное меню под тип заведения</p>
+                      <p>✅ Оптимизация ингредиентов для экономии</p>
+                      <p>✅ Готовые техкарты с себестоимостью</p>
+                    </div>
+                    <div className="space-y-2 text-gray-300">
+                      <p>✅ Персонализация под оборудование</p>
+                      <p>✅ Учет среднего чека и стиля кухни</p>
+                      <p>✅ PDF для печати и внедрения</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // Menu Wizard
+              <MenuWizard 
+                onBack={() => setShowMenuWizard(false)}
+                menuType={menuType}
+                onMenuGenerated={(menu) => {
+                  setGeneratedMenu(menu);
+                  setShowMenuWizard(false);
+                }}
+              />
+            )}
           </div>
         )}
 
