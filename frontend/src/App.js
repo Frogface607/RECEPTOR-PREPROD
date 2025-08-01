@@ -3078,36 +3078,115 @@ function App() {
                   </div>
                 )}
 
-                {/* Step 2: Cuisine Style */}
+                {/* Step 2: Cuisine Style & Menu Character */}
                 {menuWizardStep === 2 && (
                   <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🌍 Стиль кухни</h3>
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🌍 Стиль кухни и характер меню</h3>
                     
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[
-                        { value: 'european', label: '🇪🇺 Европейская', desc: 'Классика' },
-                        { value: 'italian', label: '🇮🇹 Итальянская', desc: 'Паста, пицца' },
-                        { value: 'asian', label: '🥢 Азиатская', desc: 'Вок, суши' },
-                        { value: 'american', label: '🇺🇸 Американская', desc: 'Бургеры, стейки' },
-                        { value: 'fusion', label: '🎭 Фьюжн', desc: 'Микс стилей' },
-                        { value: 'russian', label: '🇷🇺 Русская', desc: 'Традиционная' },
-                        { value: 'georgian', label: '🇬🇪 Грузинская', desc: 'Хачапури, хинкали' },
-                        { value: 'mexican', label: '🇲🇽 Мексиканская', desc: 'Тако, буррито' },
-                        { value: 'indian', label: '🇮🇳 Индийская', desc: 'Карри, специи' }
-                      ].map((cuisine) => (
-                        <button
-                          key={cuisine.value}
-                          onClick={() => setMenuProfile(prev => ({ ...prev, cuisineStyle: cuisine.value }))}
-                          className={`p-4 rounded-lg border text-left transition-all ${
-                            menuProfile.cuisineStyle === cuisine.value
-                              ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
-                              : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
-                          }`}
-                        >
-                          <div className="font-semibold">{cuisine.label}</div>
-                          <div className="text-xs text-gray-400 mt-1">{cuisine.desc}</div>
-                        </button>
-                      ))}
+                    {/* Primary Cuisine Style */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Основной стиль кухни:</label>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { value: 'european', label: '🇪🇺 Европейская', desc: 'Классические рецепты', flag: '🇪🇺' },
+                          { value: 'italian', label: '🇮🇹 Итальянская', desc: 'Паста, пицца, ризотто', flag: '🇮🇹' },
+                          { value: 'french', label: '🇫🇷 Французская', desc: 'Высокая кухня, соусы', flag: '🇫🇷' },
+                          { value: 'asian', label: '🥢 Азиатская', desc: 'Вок, димсамы, суши', flag: '🥢' },
+                          { value: 'japanese', label: '🇯🇵 Японская', desc: 'Суши, роллы, супы', flag: '🇯🇵' },
+                          { value: 'chinese', label: '🇨🇳 Китайская', desc: 'Вок, димсамы, утка', flag: '🇨🇳' },
+                          { value: 'american', label: '🇺🇸 Американская', desc: 'Бургеры, стейки, BBQ', flag: '🇺🇸' },
+                          { value: 'mexican', label: '🇲🇽 Мексиканская', desc: 'Тако, буррито, гуакамоле', flag: '🇲🇽' },
+                          { value: 'russian', label: '🇷🇺 Русская', desc: 'Борщ, блины, котлеты', flag: '🇷🇺' },
+                          { value: 'georgian', label: '🇬🇪 Грузинская', desc: 'Хачапури, хинкали, шашлык', flag: '🇬🇪' },
+                          { value: 'uzbek', label: '🇺🇿 Узбекская', desc: 'Плов, манты, лагман', flag: '🇺🇿' },
+                          { value: 'fusion', label: '🎭 Фьюжн', desc: 'Микс различных кухонь', flag: '🎭' }
+                        ].map((cuisine) => (
+                          <button
+                            key={cuisine.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, cuisineStyle: cuisine.value }))}
+                            className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${
+                              menuProfile.cuisineStyle === cuisine.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300 scale-105'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 font-semibold">{cuisine.flag} <span>{cuisine.label.replace(cuisine.flag, '').trim()}</span></div>
+                            <div className="text-xs text-gray-400 mt-1">{cuisine.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cuisine Influences (Multi-select) */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Дополнительные влияния кухонь (можно выбрать несколько):
+                      </label>
+                      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
+                        {[
+                          { value: 'mediterranean', label: '🌊 Средиземноморская' },
+                          { value: 'indian', label: '🇮🇳 Индийская' },
+                          { value: 'thai', label: '🇹🇭 Тайская' },
+                          { value: 'korean', label: '🇰🇷 Корейская' },
+                          { value: 'turkish', label: '🇹🇷 Турецкая' },
+                          { value: 'scandinavian', label: '❄️ Скандинавская' },
+                          { value: 'middle_eastern', label: '🕌 Ближневосточная' },
+                          { value: 'brazilian', label: '🇧🇷 Бразильская' },
+                          { value: 'peruvian', label: '🇵🇪 Перуанская' },
+                          { value: 'african', label: '🌍 Африканская' }
+                        ].map((influence) => (
+                          <button
+                            key={influence.value}
+                            onClick={() => {
+                              const current = menuProfile.cuisineInfluences || [];
+                              const updated = current.includes(influence.value)
+                                ? current.filter(c => c !== influence.value)
+                                : [...current, influence.value];
+                              setMenuProfile(prev => ({ ...prev, cuisineInfluences: updated }));
+                            }}
+                            className={`p-2 rounded-lg border text-center transition-all text-xs ${
+                              (menuProfile.cuisineInfluences || []).includes(influence.value)
+                                ? 'border-purple-400 bg-purple-600/20 text-purple-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-purple-600'
+                            }`}
+                          >
+                            {influence.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="text-xs text-gray-400 text-center mt-2">
+                        💡 Выбрано: {(menuProfile.cuisineInfluences || []).length} влияний
+                      </div>
+                    </div>
+
+                    {/* Menu Style */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Стиль подачи и презентации:</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                          { value: 'classic', label: '👨‍🍳 Классический', desc: 'Традиционная подача' },
+                          { value: 'modern', label: '✨ Современный', desc: 'Молекулярная гастрономия' },
+                          { value: 'rustic', label: '🏠 Деревенский', desc: 'Домашний стиль' },
+                          { value: 'street', label: '🚚 Стрит-фуд', desc: 'Уличная еда' },
+                          { value: 'fine_dining', label: '🌟 Высокая кухня', desc: 'Изысканная подача' },
+                          { value: 'comfort', label: '🤗 Комфорт-фуд', desc: 'Сытно и уютно' },
+                          { value: 'health', label: '💪 Здоровое питание', desc: 'ПП и фитнес' },
+                          { value: 'innovative', label: '🔬 Инновационный', desc: 'Авторские техники' }
+                        ].map((style) => (
+                          <button
+                            key={style.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, menuStyle: style.value }))}
+                            className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${
+                              menuProfile.menuStyle === style.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300 scale-105'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-sm">{style.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{style.desc}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
