@@ -2021,6 +2021,194 @@ async def generate_menu(request: dict):
         logger.error(f"Error generating menu: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating menu: {str(e)}")
 
+@api_router.post("/generate-mass-tech-cards")
+async def generate_mass_tech_cards(request: dict):
+    """
+    Generate tech cards for all dishes in a menu (Phase 3 - Mass Tech Card Generation)
+    """
+    user_id = request.get("user_id")
+    menu_id = request.get("menu_id")
+    
+    if not user_id or not menu_id:
+        raise HTTPException(status_code=400, detail="User ID and Menu ID are required")
+    
+    # Get user to check subscription
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check subscription for mass tech card generation (PRO feature)
+    subscription_plan = user.get("subscription_plan", "free")
+    if subscription_plan == "free":
+        raise HTTPException(status_code=403, detail="Mass tech card generation requires PRO subscription")
+    
+    # Get the menu from database
+    menu_record = await db.user_history.find_one({"id": menu_id, "user_id": user_id, "is_menu": True})
+    if not menu_record:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    menu_data = menu_record.get("menu_data", {})
+    venue_profile = menu_record.get("venue_profile", {})
+    categories = menu_data.get("categories", [])
+    
+    try:
+        # Extract all dishes from all categories
+        all_dishes = []
+        for category in categories:
+            for dish in category.get("dishes", []):
+                all_dishes.append({
+                    "name": dish.get("name"),
+                    "description": dish.get("description"),
+                    "category": category.get("category_name"),
+                    "estimated_cost": dish.get("estimated_cost"),
+                    "estimated_price": dish.get("estimated_price"),
+                    "main_ingredients": dish.get("main_ingredients", [])
+                })
+        
+        if not all_dishes:
+            raise HTTPException(status_code=400, detail="No dishes found in menu")
+        
+        logger.info(f"Starting mass tech card generation for {len(all_dishes)} dishes")
+        
+        generated_tech_cards = []
+        failed_generations = []
+        
+        # Get user settings for tech card generation
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        venue_context = generate_venue_context(user)
+        venue_specific_rules = generate_venue_specific_rules(user)
+        
+        # Get venue-specific variables
+        venue_type = user.get("venue_type", "family_restaurant")
+        venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+        venue_price_multiplier = venue_info.get("price_multiplier", 1.0)
+        venue_type_name = venue_info.get("name", "Семейный ресторан")
+        
+        average_check = user.get("average_check", 800)
+        description_style = generate_description_style(user)
+        cooking_instructions = generate_cooking_instructions(user)
+        chef_tips = generate_chef_tips(user)
+        serving_recommendations = generate_serving_recommendations(user)
+        menu_tags = generate_menu_tags(user)
+        
+        # Equipment context for PRO users
+        equipment_context = ""
+        plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+        if plan_info.get("kitchen_equipment", False):
+            user_equipment = user.get("kitchen_equipment", [])
+            if user_equipment:
+                equipment_names = []
+                for category in KITCHEN_EQUIPMENT.values():
+                    for equipment in category:
+                        if equipment["id"] in user_equipment:
+                            equipment_names.append(equipment["name"])
+                
+                if equipment_names:
+                    equipment_context = f"\nОБОРУДОВАНИЕ НА КУХНЕ: {', '.join(equipment_names)}\nИспользуй доступное оборудование в рецептах!"
+        
+        # Generate tech card for each dish
+        for i, dish in enumerate(all_dishes):
+            try:
+                dish_name = dish["name"]
+                logger.info(f"Generating tech card {i+1}/{len(all_dishes)}: {dish_name}")
+                
+                # Create enhanced prompt using dish context from menu
+                enhanced_dish_name = f"{dish_name} (для {venue_type_name}, категория: {dish['category']})"
+                if dish.get("main_ingredients"):
+                    enhanced_dish_name += f", основные ингредиенты: {', '.join(dish['main_ingredients'][:3])}"
+                
+                # Use the same GOLDEN_PROMPT as single tech card generation
+                prompt = GOLDEN_PROMPT.format(
+                    dish_name=enhanced_dish_name,
+                    regional_coefficient=regional_coefficient,
+                    venue_context=venue_context,
+                    venue_specific_rules=venue_specific_rules,
+                    venue_type_name=venue_type_name,
+                    average_check=average_check,
+                    description_style=description_style,
+                    cooking_instructions=cooking_instructions,
+                    chef_tips=chef_tips,
+                    serving_recommendations=serving_recommendations,
+                    menu_tags=menu_tags,
+                    equipment_context=equipment_context
+                )
+                
+                # Generate tech card using OpenAI
+                client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+                
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are RECEPTOR, a professional AI assistant for chefs. Always respond in Russian."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=4000,
+                    temperature=0.7
+                )
+                
+                tech_card_content = response.choices[0].message.content.strip()
+                
+                # Save generated tech card to database
+                tech_card_record = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "dish_name": dish_name,
+                    "content": tech_card_content,
+                    "city": user.get("city", "moscow"),
+                    "created_at": datetime.utcnow().isoformat(),
+                    "is_menu": False,
+                    "from_menu_id": menu_id,
+                    "menu_category": dish["category"]
+                }
+                
+                await db.user_history.insert_one(tech_card_record)
+                
+                generated_tech_cards.append({
+                    "dish_name": dish_name,
+                    "tech_card_id": tech_card_record["id"],
+                    "content": tech_card_content,
+                    "category": dish["category"],
+                    "status": "success"
+                })
+                
+                logger.info(f"Successfully generated tech card for: {dish_name}")
+                
+            except Exception as e:
+                error_msg = f"Failed to generate tech card for {dish['name']}: {str(e)}"
+                logger.error(error_msg)
+                
+                failed_generations.append({
+                    "dish_name": dish["name"],
+                    "error": str(e),
+                    "category": dish["category"],
+                    "status": "failed"
+                })
+        
+        # Update user's monthly tech card usage
+        current_usage = user.get("monthly_tech_cards_used", 0)
+        new_usage = current_usage + len(generated_tech_cards)
+        
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"monthly_tech_cards_used": new_usage}}
+        )
+        
+        logger.info(f"Mass tech card generation completed: {len(generated_tech_cards)} success, {len(failed_generations)} failed")
+        
+        return {
+            "success": True,
+            "generated_count": len(generated_tech_cards),
+            "failed_count": len(failed_generations),
+            "tech_cards": generated_tech_cards,
+            "failed_generations": failed_generations,
+            "menu_id": menu_id,
+            "message": f"Массовая генерация завершена! Создано {len(generated_tech_cards)} из {len(all_dishes)} техкарт."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in mass tech card generation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating tech cards: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
