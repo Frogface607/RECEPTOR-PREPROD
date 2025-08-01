@@ -2495,18 +2495,26 @@ function App() {
                       />
                       <button
                         type="button"
-                        onClick={startVoiceRecognition}
-                        disabled={isListening}
-                        className={`absolute right-2 bottom-2 p-2 rounded-lg transition-colors ${
+                        onClick={isListening ? stopVoiceRecognition : startVoiceRecognition}
+                        disabled={false}
+                        className={`absolute right-2 bottom-2 p-2 rounded-lg transition-all duration-300 ${
                           isListening 
-                            ? 'bg-red-600 animate-pulse' 
+                            ? 'bg-red-600 hover:bg-red-700 animate-pulse shadow-lg shadow-red-500/50' 
                             : 'bg-purple-600 hover:bg-purple-700'
                         } text-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center`}
-                        title="Голосовой ввод"
+                        title={isListening ? "Остановить запись" : "Голосовой ввод"}
                       >
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-                        </svg>
+                        {isListening ? (
+                          // Stop icon when recording
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          // Microphone icon when not recording
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>
