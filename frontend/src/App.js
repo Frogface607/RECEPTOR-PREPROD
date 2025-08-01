@@ -2992,34 +2992,74 @@ function App() {
                 </div>
               </div>
             ) : (
-              // Full Functional Wizard
-              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700">
-                {/* Wizard Header */}
+              // 5-Step Menu Creation Wizard with Enhanced UI/UX
+              <div className="wizard-container max-w-4xl mx-auto">
+                {/* Enhanced Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-4">
                     <button
                       onClick={() => setShowMenuWizard(false)}
-                      className="text-gray-400 hover:text-white text-2xl"
+                      className="text-gray-400 hover:text-white text-2xl transition-all duration-300 hover:scale-110"
                       title="← Назад к выбору типа меню"
                     >
                       ←
                     </button>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300">
-                      🧙‍♂️ МАСТЕР СОЗДАНИЯ МЕНЮ
-                    </h2>
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300">
+                        🧙‍♂️ МАСТЕР СОЗДАНИЯ МЕНЮ
+                      </h2>
+                      <p className="text-sm text-gray-400 mt-1">Создаем идеальное меню за 5 простых шагов</p>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-400">
-                    Шаг {menuWizardStep} из 5
+                  <div className="text-right">
+                    <div className="text-sm text-gray-400">
+                      Шаг {menuWizardStep} из 5
+                    </div>
+                    <div className="text-xs text-purple-400 mt-1">
+                      {['Основы', 'Кухня', 'Цели', 'Техника', 'Финиш'][menuWizardStep - 1]}
+                    </div>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mb-8">
-                  <div className="bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full h-2 transition-all duration-500"
-                      style={{ width: `${(menuWizardStep / 5) * 100}%` }}
-                    ></div>
+                {/* Enhanced Progress Bar with Step Indicators */}
+                <div className="mb-12">
+                  <div className="relative">
+                    {/* Progress Track */}
+                    <div className="bg-gray-700/50 rounded-full h-3 relative overflow-hidden">
+                      <div 
+                        className="wizard-progress-bar h-full transition-all duration-700 ease-out"
+                        style={{ width: `${(menuWizardStep / 5) * 100}%` }}
+                      ></div>
+                    </div>
+                    
+                    {/* Step Indicators */}
+                    <div className="flex justify-between absolute -top-2 left-0 right-0">
+                      {[1, 2, 3, 4, 5].map((step) => (
+                        <div
+                          key={step}
+                          className={`wizard-step-indicator w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                            step < menuWizardStep 
+                              ? 'completed bg-green-500 border-green-400 text-white' 
+                              : step === menuWizardStep
+                                ? 'active bg-purple-500 border-purple-400 text-white'
+                                : 'bg-gray-600 border-gray-500 text-gray-300'
+                          }`}
+                        >
+                          {step < menuWizardStep ? '✓' : step}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Step Labels */}
+                    <div className="flex justify-between mt-8 text-xs text-gray-400">
+                      {['🏢 Основы', '🍳 Кухня', '🎯 Цели', '⚙️ Техника', '🚀 Финиш'].map((label, index) => (
+                        <div key={index} className="text-center">
+                          <div className={`transition-colors ${index + 1 <= menuWizardStep ? 'text-purple-300' : 'text-gray-500'}`}>
+                            {label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
