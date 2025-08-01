@@ -2901,31 +2901,67 @@ function App() {
                   </div>
                 </div>
 
-                {/* Step 1: Menu Type & Size */}
+                {/* Step 1: Basic Menu Parameters */}
                 {menuWizardStep === 1 && (
                   <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-cyan-300 mb-6">📋 Тип меню и размер</h3>
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🏢 Основные параметры меню</h3>
                     
-                    {/* Menu Type Selection */}
+                    {/* Venue Profile Integration */}
+                    {venueProfile.venue_name ? (
+                      <div className="bg-purple-900/20 border border-purple-400/30 rounded-xl p-4 mb-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-purple-300">{venueProfile.venue_name}</h4>
+                            <p className="text-sm text-gray-400">
+                              {venueProfile.venue_type} • {venueProfile.cuisine_type} • {venueProfile.average_check}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setShowVenueProfileModal(true)}
+                            className="text-purple-400 hover:text-purple-300 text-sm"
+                          >
+                            ⚙️ Изменить
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-xl p-4 mb-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-yellow-300">Профиль заведения не настроен</h4>
+                            <p className="text-sm text-gray-400">Настройте профиль для более точной генерации меню</p>
+                          </div>
+                          <button
+                            onClick={() => setShowVenueProfileModal(true)}
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm"
+                          >
+                            🏢 Настроить
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Menu Type (more detailed) */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Тип заведения:</label>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Тип меню для генерации:</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {[
-                          { value: 'restaurant', label: '🍽️ Ресторан', desc: 'Полное меню' },
-                          { value: 'cafe', label: '☕ Кофейня', desc: 'Завтраки + напитки' },
-                          { value: 'fastfood', label: '🍔 Фаст-фуд', desc: 'Быстрое питание' },
-                          { value: 'bar', label: '🍷 Бар', desc: 'Алкоголь + закуски' },
-                          { value: 'bistro', label: '🥘 Бистро', desc: 'Простая кухня' },
-                          { value: 'pizzeria', label: '🍕 Пиццерия', desc: 'Пицца + паста' },
-                          { value: 'sushi', label: '🍣 Суши-бар', desc: 'Японская кухня' },
-                          { value: 'bakery', label: '🥐 Пекарня', desc: 'Выпечка + кофе' }
+                          { value: 'full_menu', label: '🍽️ Полное меню', desc: 'Все категории блюд' },
+                          { value: 'seasonal', label: '🍂 Сезонное меню', desc: 'С учетом сезона' },
+                          { value: 'business_lunch', label: '💼 Бизнес-ланч', desc: 'Комплексные обеды' },
+                          { value: 'evening_menu', label: '🌙 Вечернее меню', desc: 'Ужины и алкоголь' },
+                          { value: 'breakfast', label: '☀️ Завтраки', desc: 'Утреннее меню' },
+                          { value: 'bar_menu', label: '🍷 Барная карта', desc: 'Напитки + закуски' },
+                          { value: 'dessert_menu', label: '🍰 Десертная карта', desc: 'Сладости и десерты' },
+                          { value: 'banquet', label: '🎉 Банкетное меню', desc: 'Для мероприятий' },
+                          { value: 'street_food', label: '🚚 Стрит-фуд', desc: 'Быстрое питание' }
                         ].map((type) => (
                           <button
                             key={type.value}
                             onClick={() => setMenuProfile(prev => ({ ...prev, menuType: type.value }))}
-                            className={`p-4 rounded-lg border text-left transition-all ${
+                            className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${
                               menuProfile.menuType === type.value
-                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300 scale-105'
                                 : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
                             }`}
                           >
@@ -2936,51 +2972,108 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Dish Count */}
+                    {/* Dish Count with Slider */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Количество блюд:</label>
-                      <div className="grid grid-cols-5 gap-3">
-                        {[5, 10, 15, 20, 30].map((count) => (
-                          <button
-                            key={count}
-                            onClick={() => setMenuProfile(prev => ({ ...prev, dishCount: count }))}
-                            className={`p-3 rounded-lg border text-center transition-all ${
-                              menuProfile.dishCount === count
-                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
-                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
-                            }`}
-                          >
-                            <div className="font-bold">{count}</div>
-                            <div className="text-xs text-gray-400">блюд</div>
-                          </button>
-                        ))}
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Количество блюд: <span className="text-cyan-400">{menuProfile.dishCount}</span>
+                      </label>
+                      <div className="px-4">
+                        <input
+                          type="range"
+                          min="5"
+                          max="50"
+                          value={menuProfile.dishCount}
+                          onChange={(e) => setMenuProfile(prev => ({ ...prev, dishCount: parseInt(e.target.value) }))}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                          style={{
+                            background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${((menuProfile.dishCount - 5) / 45) * 100}%, #374151 ${((menuProfile.dishCount - 5) / 45) * 100}%, #374151 100%)`
+                          }}
+                        />
+                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                          <span>5 блюд</span>
+                          <span>25 блюд</span>
+                          <span>50 блюд</span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Average Check */}
+                    {/* Average Check Range Slider */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Средний чек:</label>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        {[
-                          { value: 'budget', label: '💰 До 500₽', desc: 'Бюджетно' },
-                          { value: 'medium', label: '💰💰 500-1500₽', desc: 'Средний' },
-                          { value: 'premium', label: '💰💰💰 1500-3000₽', desc: 'Премиум' },
-                          { value: 'luxury', label: '💰💰💰💰 3000₽+', desc: 'Люкс' }
-                        ].map((check) => (
-                          <button
-                            key={check.value}
-                            onClick={() => setMenuProfile(prev => ({ ...prev, averageCheck: check.value }))}
-                            className={`p-3 rounded-lg border text-left transition-all ${
-                              menuProfile.averageCheck === check.value
-                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
-                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
-                            }`}
-                          >
-                            <div className="font-semibold text-sm">{check.label}</div>
-                            <div className="text-xs text-gray-400">{check.desc}</div>
-                          </button>
-                        ))}
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Средний чек: <span className="text-cyan-400">{menuProfile.averageCheckMin}₽ - {menuProfile.averageCheckMax}₽</span>
+                      </label>
+                      <div className="px-4 space-y-2">
+                        <div>
+                          <span className="text-xs text-gray-400">Минимальный чек:</span>
+                          <input
+                            type="range"
+                            min="200"
+                            max="3000"
+                            step="50"
+                            value={menuProfile.averageCheckMin}
+                            onChange={(e) => {
+                              const newMin = parseInt(e.target.value);
+                              setMenuProfile(prev => ({ 
+                                ...prev, 
+                                averageCheckMin: newMin,
+                                averageCheckMax: Math.max(newMin + 200, prev.averageCheckMax)
+                              }));
+                            }}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                            style={{
+                              background: `linear-gradient(to right, #10b981 0%, #10b981 ${((menuProfile.averageCheckMin - 200) / 2800) * 100}%, #374151 ${((menuProfile.averageCheckMin - 200) / 2800) * 100}%, #374151 100%)`
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-400">Максимальный чек:</span>
+                          <input
+                            type="range"
+                            min="400"
+                            max="5000"
+                            step="50"
+                            value={menuProfile.averageCheckMax}
+                            onChange={(e) => {
+                              const newMax = parseInt(e.target.value);
+                              setMenuProfile(prev => ({ 
+                                ...prev, 
+                                averageCheckMax: newMax,
+                                averageCheckMin: Math.min(newMax - 200, prev.averageCheckMin)
+                              }));
+                            }}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                            style={{
+                              background: `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((menuProfile.averageCheckMax - 400) / 4600) * 100}%, #374151 ${((menuProfile.averageCheckMax - 400) / 4600) * 100}%, #374151 100%)`
+                            }}
+                          />
+                        </div>
                       </div>
+                      <div className="flex justify-between text-xs text-gray-400 mt-2">
+                        <span>Бюджетно</span>
+                        <span>Средний</span>
+                        <span>Премиум</span>
+                        <span>Люкс</span>
+                      </div>
+                    </div>
+
+                    {/* Region Selection */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Регион (влияет на цены продуктов):</label>
+                      <select
+                        value={menuProfile.region}
+                        onChange={(e) => setMenuProfile(prev => ({ ...prev, region: e.target.value }))}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                      >
+                        <option value="moskva">🏛️ Москва (коэффициент 1.3)</option>
+                        <option value="spb">🏰 Санкт-Петербург (коэффициент 1.2)</option>
+                        <option value="kazan">🕌 Казань (коэффициент 1.0)</option>
+                        <option value="ekaterinburg">🏔️ Екатеринбург (коэффициент 0.9)</option>
+                        <option value="novosibirsk">❄️ Новосибирск (коэффициент 0.8)</option>
+                        <option value="krasnodar">🌻 Краснодар (коэффициент 0.9)</option>
+                        <option value="rostov">🌾 Ростов-на-Дону (коэффициент 0.8)</option>
+                        <option value="volgograd">🏞️ Волгоград (коэффициент 0.7)</option>
+                        <option value="other">🌍 Другой регион (коэффициент 0.8)</option>
+                      </select>
                     </div>
                   </div>
                 )}
