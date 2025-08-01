@@ -3065,79 +3065,121 @@ function App() {
 
                 {/* Step 1: Basic Menu Parameters */}
                 {menuWizardStep === 1 && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🏢 Основные параметры меню</h3>
-                    
-                    {/* Venue Profile Integration */}
-                    {venueProfile.venue_name ? (
-                      <div className="bg-purple-900/20 border border-purple-400/30 rounded-xl p-4 mb-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-bold text-purple-300">{venueProfile.venue_name}</h4>
-                            <p className="text-sm text-gray-400">
-                              {venueProfile.venue_type} • {venueProfile.cuisine_type} • {venueProfile.average_check}
-                            </p>
+                  <div className="wizard-step-content bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700/50">
+                    <div className="space-y-8">
+                      <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300 mb-2">
+                          🏢 Основные параметры меню
+                        </h3>
+                        <p className="text-sm text-gray-400">Определяем базовые характеристики будущего меню</p>
+                      </div>
+                      
+                      {/* Venue Profile Integration */}
+                      {venueProfile.venue_name ? (
+                        <div className="bg-gradient-to-r from-purple-900/30 to-purple-800/20 border border-purple-400/30 rounded-xl p-6 mb-6 hover:border-purple-400/50 transition-all duration-300">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-bold text-purple-300 text-lg">{venueProfile.venue_name}</h4>
+                              <p className="text-sm text-gray-400 mt-1">
+                                {venueProfile.venue_type} • {venueProfile.cuisine_type} • {venueProfile.average_check}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => setShowVenueProfileModal(true)}
+                              className="text-purple-400 hover:text-purple-300 text-sm bg-purple-800/30 px-3 py-1 rounded-lg transition-all duration-300 hover:bg-purple-700/40"
+                            >
+                              ⚙️ Изменить
+                            </button>
                           </div>
-                          <button
-                            onClick={() => setShowVenueProfileModal(true)}
-                            className="text-purple-400 hover:text-purple-300 text-sm"
-                          >
-                            ⚙️ Изменить
-                          </button>
+                        </div>
+                      ) : (
+                        <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/20 border border-yellow-400/30 rounded-xl p-6 mb-6 hover:border-yellow-400/50 transition-all duration-300">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-bold text-yellow-300 text-lg">Профиль заведения не настроен</h4>
+                              <p className="text-sm text-gray-400 mt-1">Настройте профиль для более точной генерации меню</p>
+                            </div>
+                            <button
+                              onClick={() => setShowVenueProfileModal(true)}
+                              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-sm transition-all duration-300 font-semibold"
+                            >
+                              🏢 Настроить
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Menu Type Selection with Enhanced Cards */}
+                      <div>
+                        <label className="block text-lg font-bold text-gray-300 mb-4">
+                          <span className="text-cyan-400">🎯</span> Тип меню для генерации:
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {[
+                            { value: 'full_menu', label: '🍽️ Полное меню', desc: 'Все категории блюд', popular: true },
+                            { value: 'seasonal', label: '🍂 Сезонное меню', desc: 'С учетом сезона' },
+                            { value: 'business_lunch', label: '💼 Бизнес-ланч', desc: 'Комплексные обеды' },
+                            { value: 'evening_menu', label: '🌙 Вечернее меню', desc: 'Ужины и алкоголь' },
+                            { value: 'breakfast', label: '☀️ Завтраки', desc: 'Утреннее меню' },
+                            { value: 'bar_menu', label: '🍷 Барная карта', desc: 'Напитки + закуски' },
+                            { value: 'dessert_menu', label: '🍰 Десертная карта', desc: 'Сладости и десерты' },
+                            { value: 'banquet', label: '🎉 Банкетное меню', desc: 'Для мероприятий' },
+                            { value: 'street_food', label: '🚚 Стрит-фуд', desc: 'Быстрое питание' }
+                          ].map((type) => (
+                            <button
+                              key={type.value}
+                              onClick={() => setMenuProfile(prev => ({ ...prev, menuType: type.value }))}
+                              className={`wizard-option-card relative p-5 rounded-xl border text-left ${
+                                menuProfile.menuType === type.value
+                                  ? 'selected'
+                                  : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-purple-600'
+                              }`}
+                            >
+                              {type.popular && (
+                                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                  ★ Популярно
+                                </div>
+                              )}
+                              <div className="font-semibold text-base mb-1">{type.label}</div>
+                              <div className="text-xs text-gray-400">{type.desc}</div>
+                            </button>
+                          ))}
                         </div>
                       </div>
-                    ) : (
-                      <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-xl p-4 mb-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-bold text-yellow-300">Профиль заведения не настроен</h4>
-                            <p className="text-sm text-gray-400">Настройте профиль для более точной генерации меню</p>
+
+                      {/* Enhanced Dish Count Slider */}
+                      <div className="bg-gray-700/30 rounded-xl p-6">
+                        <label className="block text-lg font-bold text-gray-300 mb-4">
+                          <span className="text-purple-400">📊</span> Количество блюд: 
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 ml-2 text-xl">
+                            {menuProfile.dishCount}
+                          </span>
+                        </label>
+                        <div className="px-2">
+                          <input
+                            type="range"
+                            min="5"
+                            max="50"
+                            value={menuProfile.dishCount}
+                            onChange={(e) => setMenuProfile(prev => ({ ...prev, dishCount: parseInt(e.target.value) }))}
+                            className="wizard-slider w-full h-3 rounded-lg appearance-none cursor-pointer"
+                          />
+                          <div className="flex justify-between text-sm text-gray-400 mt-3">
+                            <span className="flex flex-col items-center">
+                              <span className="text-xs">🥗</span>
+                              <span>5 блюд</span>
+                            </span>
+                            <span className="flex flex-col items-center">
+                              <span className="text-xs">🍽️</span>
+                              <span>25 блюд</span>
+                            </span>
+                            <span className="flex flex-col items-center">
+                              <span className="text-xs">🏪</span>
+                              <span>50 блюд</span>
+                            </span>
                           </div>
-                          <button
-                            onClick={() => setShowVenueProfileModal(true)}
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm"
-                          >
-                            🏢 Настроить
-                          </button>
                         </div>
                       </div>
-                    )}
-
-                    {/* Menu Type (more detailed) */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Тип меню для генерации:</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {[
-                          { value: 'full_menu', label: '🍽️ Полное меню', desc: 'Все категории блюд' },
-                          { value: 'seasonal', label: '🍂 Сезонное меню', desc: 'С учетом сезона' },
-                          { value: 'business_lunch', label: '💼 Бизнес-ланч', desc: 'Комплексные обеды' },
-                          { value: 'evening_menu', label: '🌙 Вечернее меню', desc: 'Ужины и алкоголь' },
-                          { value: 'breakfast', label: '☀️ Завтраки', desc: 'Утреннее меню' },
-                          { value: 'bar_menu', label: '🍷 Барная карта', desc: 'Напитки + закуски' },
-                          { value: 'dessert_menu', label: '🍰 Десертная карта', desc: 'Сладости и десерты' },
-                          { value: 'banquet', label: '🎉 Банкетное меню', desc: 'Для мероприятий' },
-                          { value: 'street_food', label: '🚚 Стрит-фуд', desc: 'Быстрое питание' }
-                        ].map((type) => (
-                          <button
-                            key={type.value}
-                            onClick={() => setMenuProfile(prev => ({ ...prev, menuType: type.value }))}
-                            className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${
-                              menuProfile.menuType === type.value
-                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300 scale-105'
-                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
-                            }`}
-                          >
-                            <div className="font-semibold text-sm">{type.label}</div>
-                            <div className="text-xs text-gray-400 mt-1">{type.desc}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Dish Count with Slider */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">
-                        Количество блюд: <span className="text-cyan-400">{menuProfile.dishCount}</span>
                       </label>
                       <div className="px-4">
                         <input
