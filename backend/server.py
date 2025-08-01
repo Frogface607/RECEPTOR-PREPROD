@@ -1867,23 +1867,24 @@ async def generate_menu(request: dict):
     """
     Generate a complete menu based on user preferences and venue profile
     """
+    user_id = request.get("user_id")
+    menu_profile = request.get("menu_profile", {})
+    venue_profile = request.get("venue_profile", {})
+    
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID is required")
+    
+    # Get user to check subscription
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check subscription for menu generation (PRO feature)
+    subscription_plan = user.get("subscription_plan", "free")
+    if subscription_plan == "free":
+        raise HTTPException(status_code=403, detail="Menu generation requires PRO subscription")
+    
     try:
-        user_id = request.get("user_id")
-        menu_profile = request.get("menu_profile", {})
-        venue_profile = request.get("venue_profile", {})
-        
-        if not user_id:
-            raise HTTPException(status_code=400, detail="User ID is required")
-        
-        # Get user to check subscription
-        user = await db.users.find_one({"id": user_id})
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        
-        # Check subscription for menu generation (PRO feature)
-        subscription_plan = user.get("subscription_plan", "free")
-        if subscription_plan == "free":
-            raise HTTPException(status_code=403, detail="Menu generation requires PRO subscription")
         
         # Extract menu parameters
         menu_type = menu_profile.get("menuType", "restaurant")
