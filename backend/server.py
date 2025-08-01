@@ -1893,55 +1893,92 @@ async def generate_menu(request: dict):
         cuisine_style = menu_profile.get("cuisineStyle", "european")
         special_requirements = menu_profile.get("specialRequirements", [])
         
-        # Create comprehensive prompt for menu generation
-        menu_prompt = f"""
-Ты - эксперт шеф-повар и ресторанный консультант. Создай сбалансированное меню для заведения со следующими параметрами:
+        # Extract additional parameters from menu_profile for enhanced prompt
+        target_audience = menu_profile.get("targetAudience", "")
+        menu_goals = menu_profile.get("menuGoals", [])
+        special_requirements = menu_profile.get("specialRequirements", [])
+        dietary_options = menu_profile.get("dietaryOptions", [])
+        staff_skill_level = menu_profile.get("staffSkillLevel", "medium")
+        preparation_time = menu_profile.get("preparationTime", "medium")
+        ingredient_budget = menu_profile.get("ingredientBudget", "medium")
+        menu_description = menu_profile.get("menuDescription", "")
+        expectations = menu_profile.get("expectations", "")
+        additional_notes = menu_profile.get("additionalNotes", "")
 
+        # Create comprehensive enhanced prompt for GPT-4o
+        menu_prompt = f"""
+Ты - эксперт шеф-повар и ресторанный консультант с 20+ летним стажем. Создай ТОЧНОЕ меню по следующим критериям:
+
+=== ОСНОВНЫЕ ПАРАМЕТРЫ ===
 ТИП ЗАВЕДЕНИЯ: {menu_type}
-КОЛИЧЕСТВО БЛЮД: {dish_count}
+ТОЧНОЕ КОЛИЧЕСТВО БЛЮД: {dish_count} (СТРОГО соблюдай это число!)
 СРЕДНИЙ ЧЕК: {average_check}
 СТИЛЬ КУХНИ: {cuisine_style}
-ОСОБЫЕ ТРЕБОВАНИЯ: {', '.join(special_requirements) if special_requirements else 'нет'}
 
-Профиль заведения:
+=== ПРОФИЛЬ ЗАВЕДЕНИЯ ===
 - Название: {venue_profile.get('venue_name', 'Не указано')}
 - Тип: {venue_profile.get('venue_type', 'Не указано')}
 - Кухня: {venue_profile.get('cuisine_type', 'Не указано')}
 - Средний чек: {venue_profile.get('average_check', 'Не указано')}
 
-ВАЖНЫЕ ТРЕБОВАНИЯ:
-1. ОПТИМИЗАЦИЯ ИНГРЕДИЕНТОВ: Используй одни и те же ингредиенты в разных блюдах для экономии закупок
-2. СБАЛАНСИРОВАННОСТЬ: Включи разные категории блюд (салаты, супы, горячее, десерты)
-3. ПРАКТИЧНОСТЬ: Учитывай сложность приготовления и наличие оборудования
-4. РЕНТАБЕЛЬНОСТЬ: Блюда должны соответствовать указанному среднему чеку
+=== ДЕТАЛЬНЫЕ ТРЕБОВАНИЯ ===
+Целевая аудитория: {target_audience or 'Не указана'}
+Бизнес-цели: {', '.join(menu_goals) if menu_goals else 'Не указаны'}
+Специальные требования: {', '.join(special_requirements) if special_requirements else 'Нет'}
+Диетические опции: {', '.join(dietary_options) if dietary_options else 'Нет'}
 
-Верни результат в JSON формате:
+=== ТЕХНИЧЕСКИЕ ОГРАНИЧЕНИЯ ===
+Уровень навыков персонала: {staff_skill_level}
+Ограничения по времени готовки: {preparation_time}
+Бюджет на ингредиенты: {ingredient_budget}
+
+=== ПОЖЕЛАНИЯ ЗАКАЗЧИКА ===
+Описание меню: {menu_description or 'Не указано'}
+Ожидания: {expectations or 'Не указаны'}
+Дополнительные пожелания: {additional_notes or 'Нет'}
+
+=== КРИТИЧЕСКИ ВАЖНЫЕ ТРЕБОВАНИЯ ===
+🎯 ТОЧНОЕ КОЛИЧЕСТВО: Создай РОВНО {dish_count} блюд - ни больше, ни меньше!
+🏗️ СТРУКТУРА: Распредели блюда по 3-5 логичным категориям
+🔄 ОПТИМИЗАЦИЯ: Используй общие ингредиенты для экономии
+💰 ЦЕНООБРАЗОВАНИЕ: Соответствие среднему чеку {average_check}
+👨‍🍳 УЧЕТ НАВЫКОВ: Адаптируй сложность под уровень персонала ({staff_skill_level})
+⏰ ВРЕМЯ ГОТОВКИ: Учитывай ограничения по времени ({preparation_time})
+
+=== JSON ФОРМАТ (СТРОГО СОБЛЮДАЙ) ===
 {{
-  "menu_name": "Название меню",
-  "description": "Краткое описание концепции меню",
+  "menu_name": "Профессиональное название меню",
+  "description": "Детальное описание концепции с учетом всех требований",
   "categories": [
     {{
       "category_name": "Название категории",
       "dishes": [
         {{
-          "name": "Название блюда",
-          "description": "Описание блюда 1-2 предложения",
-          "estimated_cost": "примерная себестоимость в рублях",
-          "estimated_price": "рекомендуемая цена в рублях",
-          "difficulty": "легко/средне/сложно",
-          "cook_time": "время приготовления в минутах",
-          "main_ingredients": ["список основных ингредиентов"]
+          "name": "Точное название блюда",
+          "description": "Подробное описание с акцентом на уникальность и соответствие целевой аудитории",
+          "estimated_cost": "150",
+          "estimated_price": "450",
+          "difficulty": "легко/средне/сложно (с учетом уровня персонала)",
+          "cook_time": "15",
+          "main_ingredients": ["детальный список основных ингредиентов"]
         }}
       ]
     }}
   ],
   "ingredient_optimization": {{
-    "shared_ingredients": ["список ингредиентов, используемых в нескольких блюдах"],
-    "cost_savings": "примерная экономия в процентах от использования общих ингредиентов"
+    "shared_ingredients": ["ингредиенты, используемые в 3+ блюдах"],
+    "cost_savings": "точный процент экономии от оптимизации"
   }}
 }}
 
-Создай {dish_count} блюд, равномерно распределив их по категориям. Сделай меню максимально практичным и рентабельным!
+⚠️ ОБЯЗАТЕЛЬНО ПРОВЕРЬ:
+- Общее количество блюд = {dish_count}
+- Все требования учтены в описаниях блюд
+- Ценообразование соответствует среднему чеку
+- Сложность блюд адаптирована под персонал
+- Использованы общие ингредиенты для экономии
+
+Создай меню мечты, которое полностью соответствует ВСЕМ указанным требованиям!
 """
 
         # Generate menu using OpenAI (Premium model for PRO feature)
