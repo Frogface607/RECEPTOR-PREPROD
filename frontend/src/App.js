@@ -2384,6 +2384,7 @@ function App() {
                     }
                   }}
                   className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
+                  title="📋 Просмотреть все созданные техкарты и сохраненные эксперименты"
                 >
                   ИСТОРИЯ
                 </button>
@@ -2391,6 +2392,7 @@ function App() {
                 <button
                   onClick={handleLogout}
                   className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
+                  title="🚪 Выйти из аккаунта и очистить данные сессии"
                 >
                   ВЫЙТИ
                 </button>
