@@ -143,6 +143,9 @@ function App() {
   });
   const [showMassGenerationModal, setShowMassGenerationModal] = useState(false);
 
+  // Enhanced tech card context for menu dishes
+  const [dishContext, setDishContext] = useState(null);
+
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editingField, setEditingField] = useState(null);
