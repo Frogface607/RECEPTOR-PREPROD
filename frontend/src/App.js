@@ -3265,6 +3265,7 @@ function App() {
               <button
                 onClick={() => setShowPriceModal(false)}
                 className="text-gray-400 hover:text-white text-2xl"
+                title="❌ Закрыть окно управления прайсами"
               >
                 ×
               </button>
