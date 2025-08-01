@@ -160,6 +160,10 @@ def test_tech_card_generation_fix():
         regular_analysis = analyze_tech_card_content(regular_content, "Regular")
         test_results["regular_tech_card"] = True
         
+        # Print sample of regular content for debugging
+        print(f"\n📝 Regular Content Sample (first 500 chars):")
+        print(regular_content[:500] + "...")
+        
         # Check if both tech cards have sufficient content
         if len(enhanced_content) >= 2500 and len(regular_content) >= 2500:
             test_results["sufficient_content_length"] = True
