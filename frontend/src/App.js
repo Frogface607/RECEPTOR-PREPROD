@@ -103,14 +103,34 @@ function App() {
   const [generatedMenu, setGeneratedMenu] = useState(null);
   const [menuWizardStep, setMenuWizardStep] = useState(1);
   const [menuProfile, setMenuProfile] = useState({
+    // Basic Info (Step 1)
     menuType: '',
-    dishCount: 10,
-    averageCheck: '',
+    dishCount: 12,
+    averageCheckMin: 500,
+    averageCheckMax: 1500,
+    region: 'moskva',
+    
+    // Cuisine & Style (Step 2)
     cuisineStyle: '',
-    specialRequirements: [],
+    cuisineInfluences: [],
+    menuStyle: 'classic', // classic, modern, fusion, street
+    
+    // Business Details (Step 3)
     targetAudience: '',
-    kitchenEquipment: [],
-    budgetLevel: 'medium'
+    menuGoals: [],
+    specialRequirements: [],
+    dietaryOptions: [],
+    
+    // Technical Details (Step 4)
+    kitchenCapabilities: [],
+    staffSkillLevel: 'medium',
+    preparationTime: 'medium',
+    ingredientBudget: 'medium',
+    
+    // Free Form (Step 5)
+    menuDescription: '',
+    expectations: '',
+    additionalNotes: ''
   });
 
   // Inline editing states
