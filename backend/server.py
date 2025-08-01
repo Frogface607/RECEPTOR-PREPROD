@@ -1944,17 +1944,17 @@ async def generate_menu(request: dict):
 Создай {dish_count} блюд, равномерно распределив их по категориям. Сделай меню максимально практичным и рентабельным!
 """
 
-        # Generate menu using OpenAI
+        # Generate menu using OpenAI (Premium model for PRO feature)
         client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",  # Premium model for high-quality menu generation
             messages=[
-                {"role": "system", "content": "You are an expert chef and restaurant consultant. Always respond in Russian with valid JSON format."},
+                {"role": "system", "content": "You are an expert chef and restaurant consultant with 20+ years of experience. Always respond in Russian with valid JSON format. Create detailed, professional menus that exactly match user requirements."},
                 {"role": "user", "content": menu_prompt}
             ],
-            max_tokens=4000,
-            temperature=0.8
+            max_tokens=8000,  # Increased tokens for detailed menu generation
+            temperature=0.7  # Slightly lower temperature for more consistent results
         )
         
         menu_content = response.choices[0].message.content.strip()
