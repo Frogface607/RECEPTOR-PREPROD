@@ -3182,67 +3182,6 @@ function App() {
                       </div>
                     </div>
                   </div>
-                )} 
-                                ...prev, 
-                                averageCheckMin: newMin,
-                                averageCheckMax: Math.max(newMin + 200, prev.averageCheckMax)
-                              }));
-                            }}
-                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                            style={{
-                              background: `linear-gradient(to right, #10b981 0%, #10b981 ${((menuProfile.averageCheckMin - 200) / 2800) * 100}%, #374151 ${((menuProfile.averageCheckMin - 200) / 2800) * 100}%, #374151 100%)`
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-400">Максимальный чек:</span>
-                          <input
-                            type="range"
-                            min="400"
-                            max="5000"
-                            step="50"
-                            value={menuProfile.averageCheckMax}
-                            onChange={(e) => {
-                              const newMax = parseInt(e.target.value);
-                              setMenuProfile(prev => ({ 
-                                ...prev, 
-                                averageCheckMax: newMax,
-                                averageCheckMin: Math.min(newMax - 200, prev.averageCheckMin)
-                              }));
-                            }}
-                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                            style={{
-                              background: `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((menuProfile.averageCheckMax - 400) / 4600) * 100}%, #374151 ${((menuProfile.averageCheckMax - 400) / 4600) * 100}%, #374151 100%)`
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-400 mt-2">
-                        <span>Бюджетно</span>
-                        <span>Средний</span>
-                        <span>Премиум</span>
-                        <span>Люкс</span>
-                      </div>
-                    </div>
-
-                    {/* Region Selection */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Регион (влияет на цены продуктов):</label>
-                      <select
-                        value={menuProfile.region}
-                        onChange={(e) => setMenuProfile(prev => ({ ...prev, region: e.target.value }))}
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
-                      >
-                        <option value="moskva">🏛️ Москва (коэффициент 1.3)</option>
-                        <option value="spb">🏰 Санкт-Петербург (коэффициент 1.2)</option>
-                        <option value="kazan">🕌 Казань (коэффициент 1.0)</option>
-                        <option value="ekaterinburg">🏔️ Екатеринбург (коэффициент 0.9)</option>
-                        <option value="novosibirsk">❄️ Новосибирск (коэффициент 0.8)</option>
-                        <option value="krasnodar">🌻 Краснодар (коэффициент 0.9)</option>
-                        <option value="rostov">🌾 Ростов-на-Дону (коэффициент 0.8)</option>
-                        <option value="volgograd">🏞️ Волгоград (коэффициент 0.7)</option>
-                        <option value="other">🌍 Другой регион (коэффициент 0.8)</option>
-                      </select>
                     </div>
                   </div>
                 )}
