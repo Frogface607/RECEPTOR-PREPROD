@@ -97,6 +97,22 @@ function App() {
     thisMonthCards: 0
   });
 
+  // Menu Generator states
+  const [showMenuWizard, setShowMenuWizard] = useState(false);
+  const [menuType, setMenuType] = useState('');
+  const [generatedMenu, setGeneratedMenu] = useState(null);
+  const [menuWizardStep, setMenuWizardStep] = useState(1);
+  const [menuProfile, setMenuProfile] = useState({
+    menuType: '',
+    dishCount: 10,
+    averageCheck: '',
+    cuisineStyle: '',
+    specialRequirements: [],
+    targetAudience: '',
+    kitchenEquipment: [],
+    budgetLevel: 'medium'
+  });
+
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editingField, setEditingField] = useState(null);
