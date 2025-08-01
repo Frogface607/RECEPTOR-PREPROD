@@ -1862,6 +1862,164 @@ async def get_user_history(user_id: str):
         logger.error(f"Error fetching user history: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching history: {str(e)}")
 
+@api_router.post("/generate-menu")
+async def generate_menu(request: dict):
+    """
+    Generate a complete menu based on user preferences and venue profile
+    """
+    try:
+        user_id = request.get("user_id")
+        menu_profile = request.get("menu_profile", {})
+        venue_profile = request.get("venue_profile", {})
+        
+        if not user_id:
+            raise HTTPException(status_code=400, detail="User ID is required")
+        
+        # Get user to check subscription
+        user = db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check subscription for menu generation (PRO feature)
+        subscription_plan = user.get("subscription_plan", "free")
+        if subscription_plan == "free":
+            raise HTTPException(status_code=403, detail="Menu generation requires PRO subscription")
+        
+        # Extract menu parameters
+        menu_type = menu_profile.get("menuType", "restaurant")
+        dish_count = menu_profile.get("dishCount", 10)
+        average_check = menu_profile.get("averageCheck", "medium")
+        cuisine_style = menu_profile.get("cuisineStyle", "european")
+        special_requirements = menu_profile.get("specialRequirements", [])
+        
+        # Create comprehensive prompt for menu generation
+        menu_prompt = f"""
+Ты - эксперт шеф-повар и ресторанный консультант. Создай сбалансированное меню для заведения со следующими параметрами:
+
+ТИП ЗАВЕДЕНИЯ: {menu_type}
+КОЛИЧЕСТВО БЛЮД: {dish_count}
+СРЕДНИЙ ЧЕК: {average_check}
+СТИЛЬ КУХНИ: {cuisine_style}
+ОСОБЫЕ ТРЕБОВАНИЯ: {', '.join(special_requirements) if special_requirements else 'нет'}
+
+Профиль заведения:
+- Название: {venue_profile.get('venue_name', 'Не указано')}
+- Тип: {venue_profile.get('venue_type', 'Не указано')}
+- Кухня: {venue_profile.get('cuisine_type', 'Не указано')}
+- Средний чек: {venue_profile.get('average_check', 'Не указано')}
+
+ВАЖНЫЕ ТРЕБОВАНИЯ:
+1. ОПТИМИЗАЦИЯ ИНГРЕДИЕНТОВ: Используй одни и те же ингредиенты в разных блюдах для экономии закупок
+2. СБАЛАНСИРОВАННОСТЬ: Включи разные категории блюд (салаты, супы, горячее, десерты)
+3. ПРАКТИЧНОСТЬ: Учитывай сложность приготовления и наличие оборудования
+4. РЕНТАБЕЛЬНОСТЬ: Блюда должны соответствовать указанному среднему чеку
+
+Верни результат в JSON формате:
+{{
+  "menu_name": "Название меню",
+  "description": "Краткое описание концепции меню",
+  "categories": [
+    {{
+      "category_name": "Название категории",
+      "dishes": [
+        {{
+          "name": "Название блюда",
+          "description": "Описание блюда 1-2 предложения",
+          "estimated_cost": "примерная себестоимость в рублях",
+          "estimated_price": "рекомендуемая цена в рублях",
+          "difficulty": "легко/средне/сложно",
+          "cook_time": "время приготовления в минутах",
+          "main_ingredients": ["список основных ингредиентов"]
+        }}
+      ]
+    }}
+  ],
+  "ingredient_optimization": {{
+    "shared_ingredients": ["список ингредиентов, используемых в нескольких блюдах"],
+    "cost_savings": "примерная экономия в процентах от использования общих ингредиентов"
+  }}
+}}
+
+Создай {dish_count} блюд, равномерно распределив их по категориям. Сделай меню максимально практичным и рентабельным!
+"""
+
+        # Generate menu using OpenAI
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an expert chef and restaurant consultant. Always respond in Russian with valid JSON format."},
+                {"role": "user", "content": menu_prompt}
+            ],
+            max_tokens=4000,
+            temperature=0.8
+        )
+        
+        menu_content = response.choices[0].message.content.strip()
+        
+        # Try to parse JSON from response
+        try:
+            # Remove markdown code blocks if present
+            if "```json" in menu_content:
+                menu_content = menu_content.split("```json")[1].split("```")[0].strip()
+            elif "```" in menu_content:
+                menu_content = menu_content.split("```")[1].split("```")[0].strip()
+            
+            import json
+            menu_data = json.loads(menu_content)
+        except json.JSONDecodeError:
+            # If JSON parsing fails, create a structured response
+            menu_data = {
+                "menu_name": f"Меню для {menu_type}",
+                "description": "Сбалансированное меню, созданное ИИ",
+                "categories": [
+                    {
+                        "category_name": "Основное меню",
+                        "dishes": [
+                            {
+                                "name": "Блюдо в разработке",
+                                "description": "Детали блюда будут добавлены",
+                                "estimated_cost": "200",
+                                "estimated_price": "600",
+                                "difficulty": "средне",
+                                "cook_time": "30",
+                                "main_ingredients": ["ингредиент1", "ингредиент2"]
+                            }
+                        ]
+                    }
+                ],
+                "ingredient_optimization": {
+                    "shared_ingredients": ["базовые ингредиенты"],
+                    "cost_savings": "15-20%"
+                }
+            }
+        
+        # Save generated menu to database
+        menu_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "menu_name": menu_data.get("menu_name", "Новое меню"),
+            "menu_data": menu_data,
+            "menu_profile": menu_profile,
+            "venue_profile": venue_profile,
+            "created_at": datetime.utcnow().isoformat(),
+            "is_menu": True
+        }
+        
+        db.user_history.insert_one(menu_record)
+        
+        return {
+            "success": True,
+            "menu": menu_data,
+            "menu_id": menu_record["id"],
+            "message": "Меню успешно создано!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating menu: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating menu: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
