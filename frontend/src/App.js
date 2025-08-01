@@ -1965,7 +1965,14 @@ function App() {
       // Format ingredients - remove all price information
       if (line.startsWith('- ') && (line.includes('₽') || line.includes('руб'))) {
         // Remove price information completely from ingredient lines
-        const cleanIngredient = cleanLine.replace('- ', '').replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/, '').replace(/\s*—\s*\d+(?:\.\d+)?\s*₽\s*$/, '').trim();
+        // Улучшенная логика для удаления цен с учетом различных форматов (граммы, штуки и т.д.)
+        let cleanIngredient = cleanLine.replace('- ', '')
+          .replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/g, '') // ~цена₽ в конце
+          .replace(/\s*—\s*\d+(?:\.\d+)?\s*₽\s*$/g, '') // цена₽ в конце
+          .replace(/\s*\(\d+(?:\.\d+)?\s*₽[^)]*\)/g, '') // (цена₽) в скобках
+          .replace(/\s*\d+(?:\.\d+)?\s*₽(?:\s*за\s*[^,\n]*)?/g, '') // цена₽ за единицу
+          .replace(/\s*\d+(?:\.\d+)?\s*руб\.?(?:\s*за\s*[^,\n]*)?/g, '') // цена руб за единицу
+          .trim();
         return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanIngredient}</p>`;
       }
       
