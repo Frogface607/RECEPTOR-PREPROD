@@ -2918,9 +2918,37 @@ function App() {
                                 return yieldMatch[1] + ' г';
                               }
                               
-                              // Если не найден, считаем по ингредиентам
+                              // Если не найден, считаем по ингредиентам с учетом единиц измерения
                               const totalWeight = currentIngredients.reduce((total, ing) => {
-                                return total + (parseFloat(ing.quantity) || 0);
+                                const quantity = parseFloat(ing.quantity) || 0;
+                                const unit = (ing.unit || 'г').toLowerCase();
+                                
+                                // Конвертируем в граммы с учетом единиц измерения
+                                if (unit.includes('кг')) {
+                                  return total + (quantity * 1000); // кг в граммы
+                                } else if (unit.includes('л')) {
+                                  return total + (quantity * 1000); // литры принимаем как граммы (плотность ~1)
+                                } else if (unit.includes('мл')) {
+                                  return total + quantity; // мл = граммы (плотность ~1)
+                                } else if (unit.includes('шт') || unit.includes('штук')) {
+                                  // Для штучных товаров используем примерные веса
+                                  const name = (ing.name || '').toLowerCase();
+                                  if (name.includes('булочка') || name.includes('булка')) {
+                                    return total + (quantity * 80); // булочка ~80г
+                                  } else if (name.includes('яйц')) {
+                                    return total + (quantity * 50); // яйцо ~50г
+                                  } else if (name.includes('картофел')) {
+                                    return total + (quantity * 150); // средняя картофелина ~150г
+                                  } else if (name.includes('лук')) {
+                                    return total + (quantity * 100); // средняя луковица ~100г
+                                  } else if (name.includes('помидор') || name.includes('томат')) {
+                                    return total + (quantity * 120); // средний помидор ~120г
+                                  } else {
+                                    return total + (quantity * 50); // средний вес штучного продукта
+                                  }
+                                } else {
+                                  return total + quantity; // по умолчанию считаем граммы
+                                }
                               }, 0);
                               
                               return totalWeight.toFixed(0) + ' г';
