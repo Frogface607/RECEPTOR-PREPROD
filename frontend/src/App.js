@@ -6555,6 +6555,87 @@ function App() {
         </div>
       )}
 
+      {/* Mass Tech Card Generation Progress Modal */}
+      {showMassGenerationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-cyan-400/30">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-cyan-300 mb-4">
+                ⚡ МАССОВАЯ ГЕНЕРАЦИЯ ТЕХКАРТ
+              </h2>
+              
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <div className="bg-gray-700 rounded-full h-4 mb-2">
+                  <div 
+                    className="bg-gradient-to-r from-cyan-500 to-blue-500 h-4 rounded-full transition-all duration-500"
+                    style={{ width: `${massGenerationProgress.total > 0 ? (massGenerationProgress.completed / massGenerationProgress.total) * 100 : 0}%` }}
+                  ></div>
+                </div>
+                <p className="text-gray-300">
+                  {massGenerationProgress.completed} из {massGenerationProgress.total} техкарт
+                </p>
+              </div>
+
+              {/* Current Status */}
+              <div className="mb-6 p-4 bg-gray-700/50 rounded-lg">
+                <p className="text-cyan-300 font-semibold">
+                  {massGenerationProgress.current}
+                </p>
+              </div>
+
+              {/* Results List */}
+              {massGenerationProgress.results.length > 0 && (
+                <div className="max-h-60 overflow-y-auto mb-4">
+                  <h3 className="text-lg font-bold text-green-300 mb-3">✅ Созданные техкарты:</h3>
+                  <div className="space-y-2">
+                    {massGenerationProgress.results.map((result, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+                        <span className="text-gray-300">{result.dish_name}</span>
+                        <span className="text-sm text-gray-400">{result.category}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                {massGenerationProgress.completed === massGenerationProgress.total && massGenerationProgress.total > 0 ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowMassGenerationModal(false);
+                        setCurrentView('history');
+                      }}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      📋 ПРОСМОТРЕТЬ ТЕХКАРТЫ
+                    </button>
+                    <button
+                      onClick={() => setShowMassGenerationModal(false)}
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      ЗАКРЫТЬ
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full bg-gray-600 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg"
+                  >
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      ГЕНЕРАЦИЯ В ПРОЦЕССЕ...
+                    </div>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
