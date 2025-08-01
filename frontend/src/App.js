@@ -2831,6 +2831,7 @@ function App() {
                           alert('Изменения ингредиентов сохранены!');
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base min-h-[40px] sm:min-h-[44px] flex-1 sm:flex-none justify-center"
+                        title="💾 Сохранить изменения ингредиентов в техкарте с пересчетом стоимости"
                       >
                         <span>💾</span>
                         <span>СОХРАНИТЬ</span>
