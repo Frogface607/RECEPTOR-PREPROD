@@ -2042,6 +2042,17 @@ function App() {
     }
   };
 
+  const stopVoiceRecognition = () => {
+    if (recognition && isListening) {
+      recognition.stop();
+      setIsListening(false);
+      setVoiceStatus('Запись остановлена');
+      setTimeout(() => {
+        setShowVoiceModal(false);
+      }, 1000);
+    }
+  };
+
   const initVoiceRecognition = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
