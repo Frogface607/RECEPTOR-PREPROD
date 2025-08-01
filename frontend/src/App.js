@@ -2785,6 +2785,7 @@ function App() {
                           }]);
                         }}
                         className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg font-bold transition-colors flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base min-h-[40px] sm:min-h-[44px] flex-1 sm:flex-none justify-center"
+                        title="➕ Добавить новый ингредиент в список для редактирования"
                       >
                         <span>+</span>
                         <span>ДОБАВИТЬ</span>
