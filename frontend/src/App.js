@@ -2445,6 +2445,143 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        {/* Dashboard View */}
+        {currentView === 'dashboard' && (
+          <div className="space-y-8">
+            {/* Welcome Section */}
+            <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 sm:p-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-purple-300 mb-4">
+                Добро пожаловать, {currentUser.name}! 👋
+              </h2>
+              <p className="text-gray-300 text-base sm:text-lg mb-6">
+                {venueProfile.venue_name ? 
+                  `Управляйте ${venueProfile.venue_name} с помощью AI` : 
+                  'Создавайте профессиональные техкарты и меню за минуты'
+                }
+              </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-purple-800/30 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-300">{dashboardStats.totalTechCards}</div>
+                  <div className="text-sm text-gray-400">Техкарт создано</div>
+                </div>
+                <div className="bg-blue-800/30 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-300">{dashboardStats.totalMenus}</div>
+                  <div className="text-sm text-gray-400">Готовых меню</div>
+                </div>
+                <div className="bg-green-800/30 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-300">{dashboardStats.thisMonthCards}</div>
+                  <div className="text-sm text-gray-400">За этот месяц</div>
+                </div>
+                <div className="bg-yellow-800/30 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-300">
+                    {currentUser.subscription_plan?.toUpperCase() || 'FREE'}
+                  </div>
+                  <div className="text-sm text-gray-400">Ваш план</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div 
+                className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => setCurrentView('create')}
+              >
+                <div className="text-4xl mb-4">🍽️</div>
+                <h3 className="text-xl font-bold text-purple-300 mb-2">Создать техкарту</h3>
+                <p className="text-gray-400 text-sm">Сгенерируйте детальную техкарту для любого блюда</p>
+              </div>
+
+              <div 
+                className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => setCurrentView('menu-generator')}
+              >
+                <div className="text-4xl mb-4">🎯</div>
+                <h3 className="text-xl font-bold text-cyan-300 mb-2">Генератор меню</h3>
+                <p className="text-gray-400 text-sm">Создайте полное меню за 15 минут</p>
+              </div>
+
+              <div 
+                className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => setShowVenueProfileModal(true)}
+              >
+                <div className="text-4xl mb-4">🏢</div>
+                <h3 className="text-xl font-bold text-orange-300 mb-2">Мое заведение</h3>
+                <p className="text-gray-400 text-sm">Настройте профиль для персонализации</p>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700">
+              <h3 className="text-xl font-bold text-purple-300 mb-4">Последняя активность</h3>
+              {userHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {userHistory.slice(0, 5).map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-2xl">
+                          {item.is_laboratory ? '🧪' : '🍽️'}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-200">{item.dish_name}</div>
+                          <div className="text-xs text-gray-400">
+                            {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setTechCard(item.content);
+                          setCurrentView('create');
+                        }}
+                        className="text-purple-400 hover:text-purple-300 text-sm"
+                      >
+                        Открыть
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  Пока нет созданных техкарт. Начните с создания первой!
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Menu Generator View */}
+        {currentView === 'menu-generator' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700">
+              <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300 mb-6 text-center">
+                🎯 ГЕНЕРАТОР МЕНЮ
+              </h2>
+              
+              <div className="text-center py-12">
+                <div className="text-6xl mb-6">🚧</div>
+                <h3 className="text-xl font-bold text-cyan-300 mb-4">Скоро запуск!</h3>
+                <p className="text-gray-400 mb-6">
+                  Революционная функция создания полного меню за 15 минут находится в разработке.
+                </p>
+                <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-lg p-4">
+                  <p className="text-cyan-300 font-semibold">Что будет доступно:</p>
+                  <ul className="text-gray-300 text-sm mt-2 space-y-1">
+                    <li>• Генерация сбалансированного меню под ваше заведение</li>
+                    <li>• Оптимизация ингредиентов для экономии закупок</li>
+                    <li>• Создание техкарт для всего меню одним кликом</li>
+                    <li>• Специальные модули: бизнес-ланч, банкет, бар</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Tech Card View (existing content) */}
+        {currentView === 'create' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Left Panel */}
           <div className="lg:col-span-1">
