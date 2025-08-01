@@ -493,6 +493,14 @@ class VenueProfileUpdate(BaseModel):
 class DishRequest(BaseModel):
     dish_name: str
     user_id: str
+    # Enhanced context for menu-generated dishes
+    dish_description: Optional[str] = None
+    main_ingredients: Optional[List[str]] = None
+    category: Optional[str] = None
+    estimated_cost: Optional[str] = None
+    estimated_price: Optional[str] = None
+    difficulty: Optional[str] = None
+    cook_time: Optional[str] = None
 
 class EditRequest(BaseModel):
     tech_card_id: str
