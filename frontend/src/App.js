@@ -2552,6 +2552,7 @@ function App() {
                     <button
                       onClick={() => setShowVenueProfileModal(true)}
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all transform hover:scale-105 mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px] shadow-lg"
+                      title="🏢 Настройте тип заведения, кухню и средний чек для персонализации всех функций"
                     >
                       🏢 ПРОФИЛЬ ЗАВЕДЕНИЯ
                     </button>
