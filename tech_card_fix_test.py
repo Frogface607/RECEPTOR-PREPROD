@@ -13,6 +13,42 @@ from datetime import datetime
 # Configuration
 BACKEND_URL = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com/api"
 
+def create_test_user():
+    """Create a test user for testing"""
+    print("👤 Creating test user...")
+    
+    user_data = {
+        "email": "fix_test_user@example.com",
+        "name": "Fix Test User",
+        "city": "moskva"
+    }
+    
+    try:
+        response = requests.post(
+            f"{BACKEND_URL}/register",
+            json=user_data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            user = response.json()
+            print(f"✅ Test user created successfully: {user['id']}")
+            return user['id']
+        elif response.status_code == 400 and "already registered" in response.text:
+            print("✅ Test user already exists")
+            # Get user by email
+            response = requests.get(f"{BACKEND_URL}/user/{user_data['email']}", timeout=30)
+            if response.status_code == 200:
+                user = response.json()
+                return user['id']
+        
+        print(f"⚠️ Could not create test user: {response.status_code} - {response.text}")
+        return "test_user_fix_12345"  # Fallback to auto-created test user
+        
+    except Exception as e:
+        print(f"⚠️ Exception creating test user: {str(e)}")
+        return "test_user_fix_12345"  # Fallback to auto-created test user
+
 def test_tech_card_generation_fix():
     """
     КРИТИЧЕСКИЙ ТЕСТ: Проверить исправление бага с техкартами после апгрейда
@@ -20,6 +56,9 @@ def test_tech_card_generation_fix():
     """
     print("🎯 КРИТИЧЕСКИЙ ТЕСТ: ИСПРАВЛЕНИЕ БАГА С ТЕХКАРТАМИ")
     print("=" * 70)
+    
+    # Create test user first
+    test_user_id = create_test_user()
     
     test_results = {
         "enhanced_tech_card": False,
