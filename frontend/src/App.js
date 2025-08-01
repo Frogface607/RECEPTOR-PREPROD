@@ -2858,14 +2858,22 @@ function App() {
             {/* Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => {
-                  // Generate all tech cards
-                  alert('Массовая генерация техкарт скоро будет доступна!');
-                }}
-                className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all"
+                onClick={generateMassTechCards}
+                disabled={isGeneratingMassCards}
+                className={`flex-1 ${isGeneratingMassCards 
+                  ? 'bg-gray-600 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600'
+                } text-white font-bold py-3 px-6 rounded-lg transition-all`}
                 title="⚡ Создать техкарты для всего меню"
               >
-                ⚡ СОЗДАТЬ ВСЕ ТЕХКАРТЫ ({(generatedMenu.categories || []).reduce((total, cat) => total + (cat.dishes?.length || 0), 0)} блюд)
+                {isGeneratingMassCards ? (
+                  <>
+                    <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Генерирую техкарты...
+                  </>
+                ) : (
+                  `⚡ СОЗДАТЬ ВСЕ ТЕХКАРТЫ (${(generatedMenu.categories || []).reduce((total, cat) => total + (cat.dishes?.length || 0), 0)} блюд)`
+                )}
               </button>
               
               <button
