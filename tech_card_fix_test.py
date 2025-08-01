@@ -113,6 +113,10 @@ def test_tech_card_generation_fix():
         enhanced_analysis = analyze_tech_card_content(enhanced_content, "Enhanced")
         test_results["enhanced_tech_card"] = True
         
+        # Print sample of enhanced content for debugging
+        print(f"\n📝 Enhanced Content Sample (first 500 chars):")
+        print(enhanced_content[:500] + "...")
+        
     except Exception as e:
         print(f"❌ Enhanced Tech Card FAILED with exception: {str(e)}")
         return test_results
