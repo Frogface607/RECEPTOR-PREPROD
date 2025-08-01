@@ -3182,7 +3182,6 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  </div>
                 )}
 
                 {/* Step 2: Cuisine Style & Menu Character */}
