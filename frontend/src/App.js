@@ -2916,6 +2916,7 @@ function App() {
                                 setCurrentIngredients(newIngredients);
                               }}
                               className="col-span-1 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors flex items-center justify-center text-lg"
+                              title="🗑️ Удалить ингредиент из списка"
                             >
                               ✕
                             </button>
