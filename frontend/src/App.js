@@ -3797,8 +3797,6 @@ function App() {
                       (menuWizardStep === 1 && (!menuProfile.menuType || !menuProfile.region)) ||
                       (menuWizardStep === 2 && !menuProfile.cuisineStyle) ||
                       (menuWizardStep === 3 && !menuProfile.targetAudience) ||
-                      (menuWizardStep === 4) || // No required fields on step 4
-                      (menuWizardStep === 5) || // No required fields on step 5
                       isGenerating
                     }
                     className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-all"
