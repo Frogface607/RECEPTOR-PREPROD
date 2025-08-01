@@ -2007,7 +2007,7 @@ async def generate_menu(request: dict):
             "is_menu": True
         }
         
-        db.user_history.insert_one(menu_record)
+        await db.user_history.insert_one(menu_record)
         
         return {
             "success": True,
