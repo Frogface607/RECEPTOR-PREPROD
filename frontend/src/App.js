@@ -4749,6 +4749,7 @@ function App() {
                   <button
                     onClick={() => setProfileStep(3)}
                     className="px-6 py-3 rounded-lg font-bold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                    title="← Вернуться к предыдущему шагу настройки профиля"
                   >
                     ← НАЗАД
                   </button>
@@ -4766,6 +4767,7 @@ function App() {
                         ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                         : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
                     }`}
+                    title="💾 Сохранить профиль заведения для персонализации всех функций"
                   >
                     {isUpdatingProfile ? 'СОХРАНЕНИЕ...' : '💾 СОХРАНИТЬ ПРОФИЛЬ'}
                   </button>
