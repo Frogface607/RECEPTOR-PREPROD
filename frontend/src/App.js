@@ -2692,32 +2692,13 @@ function App() {
                   </button>
                 </div>
 
-                {/* Menu Types */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[
-                    { emoji: '🍽️', title: 'Ресторан', desc: 'Полное меню для ресторана', color: 'purple' },
-                    { emoji: '☕', title: 'Кофейня', desc: 'Завтраки и напитки', color: 'orange' },
-                    { emoji: '🍔', title: 'Фаст-фуд', desc: 'Быстрое питание', color: 'red' },
-                    { emoji: '🍷', title: 'Бар', desc: 'Барная карта + закуски', color: 'green' },
-                  ].map((type, index) => (
-                    <div 
-                      key={index}
-                      className={`bg-gradient-to-br from-${type.color}-600/20 to-${type.color}-800/20 border border-${type.color}-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => {
-                        setMenuType(type.title.toLowerCase());
-                        setShowMenuWizard(true);
-                      }}
-                    >
-                      <div className="text-4xl mb-4">{type.emoji}</div>
-                      <h3 className={`text-xl font-bold text-${type.color}-300 mb-2`}>{type.title}</h3>
-                      <p className="text-gray-400 text-sm">{type.desc}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Success Stories */}
+                {/* Coming Soon Message */}
                 <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700">
-                  <h3 className="text-xl font-bold text-cyan-300 mb-4">💎 Что получают владельцы заведений:</h3>
+                  <div className="text-4xl mb-4">🚧</div>
+                  <h3 className="text-xl font-bold text-cyan-300 mb-4">Мастер создания меню в разработке!</h3>
+                  <p className="text-gray-400 mb-6">
+                    Революционная функция создания полного меню за 15 минут будет доступна очень скоро.
+                  </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     <div className="space-y-2 text-gray-300">
                       <p>✅ Сбалансированное меню под тип заведения</p>
