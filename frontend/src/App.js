@@ -3191,7 +3191,125 @@ function App() {
                   </div>
                 )}
 
-                {/* Step 3: Special Requirements */}
+                {/* Step 3: Business Goals & Target Audience */}
+                {menuWizardStep === 3 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🎯 Бизнес-цели и целевая аудитория</h3>
+                    
+                    {/* Target Audience */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Основная целевая аудитория:</label>  
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { value: 'families', label: '👨‍👩‍👧‍👦 Семьи с детьми', desc: 'Семейные посиделки' },
+                          { value: 'business', label: '💼 Бизнес-аудитория', desc: 'Деловые обеды' },
+                          { value: 'students', label: '🎓 Студенты', desc: 'Доступные цены' },
+                          { value: 'young_professionals', label: '💻 Молодые специалисты', desc: '25-35 лет' },
+                          { value: 'seniors', label: '👴👵 Пожилые люди', desc: 'Комфорт и традиции' },
+                          { value: 'tourists', label: '📸 Туристы', desc: 'Локальная кухня' },
+                          { value: 'hipsters', label: '🎨 Творческая молодежь', desc: 'Тренды и Instagram' },
+                          { value: 'athletes', label: '💪 Спортсмены', desc: 'Здоровое питание' },
+                          { value: 'gourmets', label: '🍷 Гурманы', desc: 'Изысканная кухня' }
+                        ].map((audience) => (
+                          <button
+                            key={audience.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, targetAudience: audience.value }))}
+                            className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${
+                              menuProfile.targetAudience === audience.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300 scale-105'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-sm">{audience.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{audience.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Menu Goals (Multi-select) */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Цели меню (можно выбрать несколько):
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          { value: 'increase_check', label: '💰 Увеличить средний чек', desc: 'Дорогие позиции' },
+                          { value: 'reduce_costs', label: '📉 Снизить себестоимость', desc: 'Оптимизация закупок' },
+                          { value: 'speed_service', label: '⚡ Ускорить обслуживание', desc: 'Быстрые блюда' },
+                          { value: 'expand_audience', label: '🎯 Расширить аудиторию', desc: 'Разнообразие блюд' },
+                          { value: 'seasonal_update', label: '🍂 Сезонное обновление', desc: 'Актуальные продукты' },
+                          { value: 'brand_positioning', label: '🏆 Позиционирование бренда', desc: 'Уникальность' },
+                          { value: 'reduce_waste', label: '♻️ Сократить отходы', desc: 'Эко-подход' },
+                          { value: 'staff_training', label: '👨‍🍳 Обучение персонала', desc: 'Простые рецепты' },
+                          { value: 'instagram_friendly', label: '📱 Instagram-френдли', desc: 'Красивая подача' }
+                        ].map((goal) => (
+                          <button
+                            key={goal.value}
+                            onClick={() => {
+                              const current = menuProfile.menuGoals || [];
+                              const updated = current.includes(goal.value)
+                                ? current.filter(g => g !== goal.value)
+                                : [...current, goal.value];
+                              setMenuProfile(prev => ({ ...prev, menuGoals: updated }));
+                            }}
+                            className={`p-3 rounded-lg border text-left transition-all ${
+                              (menuProfile.menuGoals || []).includes(goal.value)
+                                ? 'border-green-400 bg-green-600/20 text-green-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-sm">{goal.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{goal.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="text-xs text-gray-400 text-center mt-2">
+                        💡 Выбрано целей: {(menuProfile.menuGoals || []).length}
+                      </div>
+                    </div>
+
+                    {/* Dietary Options */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">
+                        Диетические опции (отметьте нужные):
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        {[
+                          { value: 'vegetarian', label: '🌱 Вегетарианские', desc: 'Без мяса' },
+                          { value: 'vegan', label: '🥬 Веганские', desc: 'Только растительное' },
+                          { value: 'gluten_free', label: '🌾 Без глютена', desc: 'Для целиакии' },
+                          { value: 'keto', label: '🥩 Кето-диета', desc: 'Низкоуглеводные' },
+                          { value: 'paleo', label: '🦴 Палео-диета', desc: 'Древний рацион' },
+                          { value: 'halal', label: '☪️ Халяль', desc: 'Исламские требования' },
+                          { value: 'kosher', label: '✡️ Кошерные', desc: 'Иудейские требования' },
+                          { value: 'diabetic', label: '🩺 Диабетические', desc: 'Для диабетиков' },
+                          { value: 'low_calorie', label: '📏 Низкокалорийные', desc: 'Для похудения' },
+                          { value: 'raw_food', label: '🥗 Сыроедение', desc: 'Без термообработки' }
+                        ].map((diet) => (
+                          <button
+                            key={diet.value}
+                            onClick={() => {
+                              const current = menuProfile.dietaryOptions || [];
+                              const updated = current.includes(diet.value)
+                                ? current.filter(d => d !== diet.value)
+                                : [...current, diet.value];
+                              setMenuProfile(prev => ({ ...prev, dietaryOptions: updated }));
+                            }}
+                            className={`p-3 rounded-lg border text-left transition-all ${
+                              (menuProfile.dietaryOptions || []).includes(diet.value)
+                                ? 'border-purple-400 bg-purple-600/20 text-purple-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-purple-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-xs">{diet.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{diet.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {menuWizardStep === 3 && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-cyan-300 mb-6">⚙️ Особые требования</h3>
