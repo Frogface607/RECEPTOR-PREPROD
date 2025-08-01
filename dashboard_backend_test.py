@@ -175,11 +175,19 @@ def test_dashboard_user_history(user_id):
             print(f"Response: {response.text}")
             return False
         
-        history_data = response.json()
+        response_data = response.json()
         
-        if not isinstance(history_data, list):
-            print("❌ History data is not a list")
-            print(f"Response type: {type(history_data)}")
+        # Check if response has 'history' key (new format) or is direct list (old format)
+        if isinstance(response_data, dict) and 'history' in response_data:
+            history_data = response_data['history']
+            print("✅ History data found in 'history' key")
+        elif isinstance(response_data, list):
+            history_data = response_data
+            print("✅ History data is direct list")
+        else:
+            print("❌ History data format not recognized")
+            print(f"Response type: {type(response_data)}")
+            print(f"Response keys: {list(response_data.keys()) if isinstance(response_data, dict) else 'Not a dict'}")
             return False
         
         print(f"✅ User history retrieved successfully")
