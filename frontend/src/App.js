@@ -2084,7 +2084,34 @@ function App() {
     }, 500);
   };
 
-  const startVoiceRecognition = () => {
+  const generateMenu = async () => {
+    try {
+      setIsGenerating(true);
+      
+      const menuRequest = {
+        user_id: currentUser.id,
+        menu_profile: menuProfile,
+        venue_profile: venueProfile
+      };
+
+      console.log('Generating menu with profile:', menuRequest);
+      
+      const response = await axios.post(`${API}/generate-menu`, menuRequest);
+      
+      if (response.data.success) {
+        setGeneratedMenu(response.data.menu);
+        setShowMenuWizard(false);
+        alert('Меню успешно создано!');
+      } else {
+        throw new Error(response.data.error || 'Failed to generate menu');
+      }
+    } catch (error) {
+      console.error('Error generating menu:', error);
+      alert('Ошибка при создании меню. Попробуйте еще раз.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
     if (recognition) {
       recognition.start();
     } else {
