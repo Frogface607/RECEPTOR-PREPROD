@@ -3197,6 +3197,7 @@ function App() {
             )}
           </div>
         </div>
+        )}
       </main>
 
       {/* Voice Recognition Modal */}
