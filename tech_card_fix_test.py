@@ -122,7 +122,7 @@ def test_tech_card_generation_fix():
     
     regular_request = {
         "dish_name": "Паста карбонара",
-        "user_id": "fix_test_user"
+        "user_id": test_user_id
     }
     
     try:
