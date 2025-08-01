@@ -2678,14 +2678,183 @@ function App() {
               </div>
             ) : (
               // Menu Wizard
-              <MenuWizard 
-                onBack={() => setShowMenuWizard(false)}
-                menuType={menuType}
-                onMenuGenerated={(menu) => {
-                  setGeneratedMenu(menu);
-                  setShowMenuWizard(false);
-                }}
-              />
+              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700">
+                {/* Wizard Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setShowMenuWizard(false)}
+                      className="text-gray-400 hover:text-white text-2xl"
+                      title="← Назад к выбору типа меню"
+                    >
+                      ←
+                    </button>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300">
+                      🧙‍♂️ МАСТЕР СОЗДАНИЯ МЕНЮ
+                    </h2>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Шаг {menuWizardStep} из 4
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mb-8">
+                  <div className="bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full h-2 transition-all duration-500"
+                      style={{ width: `${(menuWizardStep / 4) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Step 1: Menu Type & Size */}
+                {menuWizardStep === 1 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">📋 Тип меню и размер</h3>
+                    
+                    {/* Menu Type Selection */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Тип заведения:</label>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        {[
+                          { value: 'restaurant', label: '🍽️ Ресторан', desc: 'Полное меню' },
+                          { value: 'cafe', label: '☕ Кофейня', desc: 'Завтраки + напитки' },
+                          { value: 'fastfood', label: '🍔 Фаст-фуд', desc: 'Быстрое питание' },
+                          { value: 'bar', label: '🍷 Бар', desc: 'Алкоголь + закуски' },
+                          { value: 'bistro', label: '🥘 Бистро', desc: 'Простая кухня' },
+                          { value: 'pizzeria', label: '🍕 Пиццерия', desc: 'Пицца + паста' },
+                          { value: 'sushi', label: '🍣 Суши-бар', desc: 'Японская кухня' },
+                          { value: 'bakery', label: '🥐 Пекарня', desc: 'Выпечка + кофе' }
+                        ].map((type) => (
+                          <button
+                            key={type.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, menuType: type.value }))}
+                            className={`p-4 rounded-lg border text-left transition-all ${
+                              menuProfile.menuType === type.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-sm">{type.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{type.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dish Count */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Количество блюд:</label>
+                      <div className="grid grid-cols-5 gap-3">
+                        {[5, 10, 15, 20, 30].map((count) => (
+                          <button
+                            key={count}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, dishCount: count }))}
+                            className={`p-3 rounded-lg border text-center transition-all ${
+                              menuProfile.dishCount === count
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-bold">{count}</div>
+                            <div className="text-xs text-gray-400">блюд</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Average Check */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-300 mb-3">Средний чек:</label>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        {[
+                          { value: 'budget', label: '💰 До 500₽', desc: 'Бюджетно' },
+                          { value: 'medium', label: '💰💰 500-1500₽', desc: 'Средний' },
+                          { value: 'premium', label: '💰💰💰 1500-3000₽', desc: 'Премиум' },
+                          { value: 'luxury', label: '💰💰💰💰 3000₽+', desc: 'Люкс' }
+                        ].map((check) => (
+                          <button
+                            key={check.value}
+                            onClick={() => setMenuProfile(prev => ({ ...prev, averageCheck: check.value }))}
+                            className={`p-3 rounded-lg border text-left transition-all ${
+                              menuProfile.averageCheck === check.value
+                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            }`}
+                          >
+                            <div className="font-semibold text-sm">{check.label}</div>
+                            <div className="text-xs text-gray-400">{check.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Cuisine Style */}
+                {menuWizardStep === 2 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🌍 Стиль кухни</h3>
+                    
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        { value: 'european', label: '🇪🇺 Европейская', desc: 'Классика' },
+                        { value: 'italian', label: '🇮🇹 Итальянская', desc: 'Паста, пицца' },
+                        { value: 'asian', label: '🥢 Азиатская', desc: 'Вок, суши' },
+                        { value: 'american', label: '🇺🇸 Американская', desc: 'Бургеры, стейки' },
+                        { value: 'fusion', label: '🎭 Фьюжн', desc: 'Микс стилей' },
+                        { value: 'russian', label: '🇷🇺 Русская', desc: 'Традиционная' },
+                        { value: 'georgian', label: '🇬🇪 Грузинская', desc: 'Хачапури, хинкали' },
+                        { value: 'mexican', label: '🇲🇽 Мексиканская', desc: 'Тако, буррито' },
+                        { value: 'indian', label: '🇮🇳 Индийская', desc: 'Карри, специи' }
+                      ].map((cuisine) => (
+                        <button
+                          key={cuisine.value}
+                          onClick={() => setMenuProfile(prev => ({ ...prev, cuisineStyle: cuisine.value }))}
+                          className={`p-4 rounded-lg border text-left transition-all ${
+                            menuProfile.cuisineStyle === cuisine.value
+                              ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300'
+                              : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                          }`}
+                        >
+                          <div className="font-semibold">{cuisine.label}</div>
+                          <div className="text-xs text-gray-400 mt-1">{cuisine.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between mt-8 pt-6 border-t border-gray-700">
+                  <button
+                    onClick={() => setMenuWizardStep(Math.max(1, menuWizardStep - 1))}
+                    disabled={menuWizardStep === 1}
+                    className="px-6 py-3 rounded-lg bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-colors"
+                  >
+                    ← Назад
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      if (menuWizardStep < 4) {
+                        setMenuWizardStep(menuWizardStep + 1);
+                      } else {
+                        // Generate menu
+                        generateMenu();
+                      }
+                    }}
+                    disabled={
+                      (menuWizardStep === 1 && (!menuProfile.menuType || !menuProfile.averageCheck)) ||
+                      (menuWizardStep === 2 && !menuProfile.cuisineStyle)
+                    }
+                    className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-all"
+                  >
+                    {menuWizardStep === 4 ? '🚀 Создать меню' : 'Далее →'}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
