@@ -34,10 +34,12 @@ def test_mass_tech_card_generation_critical_bug():
         user_response = requests.get(f"{BACKEND_URL}/user-subscription/{test_user_id}", timeout=30)
         
         if user_response.status_code == 404:
-            # Create test user
-            print("Creating new test user...")
+            # Create test user with unique email
+            import random
+            unique_id = random.randint(1000, 9999)
+            print(f"Creating new test user with ID: {test_user_id}_{unique_id}...")
             register_data = {
-                "email": f"{test_user_id}@example.com",
+                "email": f"{test_user_id}_{unique_id}@example.com",
                 "name": "Constructor Test User",
                 "city": "moskva"
             }
@@ -46,22 +48,38 @@ def test_mass_tech_card_generation_critical_bug():
             if register_response.status_code != 200:
                 print(f"❌ Failed to create user: {register_response.status_code}")
                 print(f"Response: {register_response.text}")
-                return False
+                # Try to use existing user instead
+                print("🔄 Trying to use existing test user...")
+            else:
+                # Update test_user_id to the new one
+                user_data = register_response.json()
+                test_user_id = user_data.get("id", test_user_id)
+                print(f"✅ Test user created with ID: {test_user_id}")
             
             # Upgrade to PRO
             upgrade_data = {"subscription_plan": "pro"}
             upgrade_response = requests.post(f"{BACKEND_URL}/upgrade-subscription/{test_user_id}", json=upgrade_data, timeout=30)
             if upgrade_response.status_code != 200:
                 print(f"❌ Failed to upgrade to PRO: {upgrade_response.status_code}")
-                return False
-            
-            print("✅ Test user created and upgraded to PRO")
+                print(f"Response: {upgrade_response.text}")
+                # Continue anyway - might already be PRO
+            else:
+                print("✅ User upgraded to PRO")
         else:
             print("✅ Test user already exists")
+            # Check if already PRO
+            user_data = user_response.json()
+            if user_data.get("subscription_plan") != "pro":
+                # Upgrade to PRO
+                upgrade_data = {"subscription_plan": "pro"}
+                upgrade_response = requests.post(f"{BACKEND_URL}/upgrade-subscription/{test_user_id}", json=upgrade_data, timeout=30)
+                if upgrade_response.status_code == 200:
+                    print("✅ User upgraded to PRO")
             
     except Exception as e:
         print(f"❌ Error setting up test user: {str(e)}")
-        return False
+        print("🔄 Continuing with existing test user...")
+        # Continue anyway
     
     # Step 2: Generate a test menu first
     print("\n🍽️ STEP 2: Generating test menu...")
