@@ -854,10 +854,14 @@ function App() {
   // Venue Profile API functions
   const fetchVenueTypes = async () => {
     try {
+      console.log('Fetching venue types from:', `${API}/venue-types`);
       const response = await axios.get(`${API}/venue-types`);
+      console.log('Venue types response:', response.data);
       setVenueTypes(response.data);
     } catch (error) {
       console.error('Error fetching venue types:', error);
+      console.error('Failed URL:', `${API}/venue-types`);
+      console.error('Error details:', error.response?.data || error.message);
     }
   };
 
