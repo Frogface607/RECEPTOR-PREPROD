@@ -3880,14 +3880,15 @@ function App() {
                   </div>
                 )}
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8 pt-6 border-t border-gray-700">
+                {/* Enhanced Navigation Buttons */}
+                <div className="flex justify-between mt-12 pt-8 border-t border-gray-600/50">
                   <button
                     onClick={() => setMenuWizardStep(Math.max(1, menuWizardStep - 1))}
                     disabled={menuWizardStep === 1}
-                    className="px-6 py-3 rounded-lg bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-colors"
+                    className="group flex items-center px-6 py-3 rounded-xl bg-gray-600/80 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
-                    ← Назад
+                    <span className="mr-2 group-hover:-translate-x-1 transition-transform duration-300">←</span>
+                    Назад
                   </button>
                   
                   <button
@@ -3900,12 +3901,12 @@ function App() {
                       }
                     }}
                     disabled={
-                      (menuWizardStep === 1 && (!menuProfile.menuType || !menuProfile.region)) ||
+                      (menuWizardStep === 1 && (!menuProfile.menuType)) ||
                       (menuWizardStep === 2 && !menuProfile.cuisineStyle) ||
                       (menuWizardStep === 3 && !menuProfile.targetAudience) ||
                       isGenerating
                     }
-                    className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-all"
+                    className="wizard-next-button group flex items-center px-8 py-3 rounded-xl text-white font-bold transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden"
                   >
                     {isGenerating ? (
                       <>
@@ -3915,7 +3916,18 @@ function App() {
                         </svg>
                         Создаю меню...
                       </>
-                    ) : menuWizardStep === 5 ? '🚀 Создать меню' : 'Далее →'}
+                    ) : menuWizardStep === 5 ? (
+                      <>
+                        <span className="mr-2">🚀</span>
+                        Создать меню
+                        <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">✨</span>
+                      </>
+                    ) : (
+                      <>
+                        Далее
+                        <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
