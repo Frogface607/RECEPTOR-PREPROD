@@ -321,6 +321,18 @@ user_problem_statement: "Expand Kitchen Equipment feature into comprehensive VEN
         comment: "Usage limits are working correctly. Free tier users are limited to 3 tech cards per month, and attempts to exceed this limit are properly blocked with appropriate error messages. Monthly usage tracking and reset functionality appear to be implemented correctly."
 
 frontend:
+  - task: "Venue Profile Modal - ДАЛЕЕ Button Activation Issue"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 VENUE PROFILE MODAL TESTING COMPLETED: Conducted comprehensive testing as requested in review. ✅ BACKEND VERIFICATION: All APIs working perfectly - GET /api/venue-types returns 14 venue types, GET /api/cuisine-types returns 12 cuisine types. ✅ DATA LOADING: Console logs confirm venue types fetched successfully ('Venue types response: {fine_dining: Object, food_truck: Object, bar_pub: Object, cafe: Object, coffee_shop: Object}'). ✅ API INTEGRATION: fetchVenueTypes function working correctly. ❌ CRITICAL ISSUE: Unable to complete full modal testing due to registration form blocking main app access. Backend APIs functional, frontend data loading working, but complete venue selection and ДАЛЕЕ button activation flow requires main app access. ⚠️ RECOMMENDATION: Implement test user bypass or fix registration to enable complete venue profile modal testing."
+
   - task: "PHASE 3 - Mass Tech Card Generation Frontend - New"
     implemented: true
     working: true
