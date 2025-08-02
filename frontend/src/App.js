@@ -2427,6 +2427,8 @@ function App() {
       return;
     }
 
+    let tipInterval = null; // Declare outside try block
+
     try {
       setIsGeneratingMassCards(true);
       setShowMassGenerationModal(true);
@@ -2441,7 +2443,7 @@ function App() {
       });
 
       // Start tips cycling
-      const tipInterval = setInterval(() => {
+      tipInterval = setInterval(() => {
         setCurrentTipIndex(prev => (prev + 1) % receptionTips.length);
       }, 4000); // Change tip every 4 seconds
 
@@ -2459,7 +2461,7 @@ function App() {
       });
       
       // Clear tips interval
-      clearInterval(tipInterval);
+      if (tipInterval) clearInterval(tipInterval);
       
       if (response.data.success) {
         setMassGenerationProgress({
@@ -2481,7 +2483,7 @@ function App() {
           }
         }, 2000);
       } else {
-        clearInterval(tipInterval);
+        if (tipInterval) clearInterval(tipInterval);
         throw new Error(response.data.error || 'Failed to generate mass tech cards');
       }
     } catch (error) {
@@ -2490,7 +2492,7 @@ function App() {
       console.error('Error status:', error.response?.status);
       
       // Clear tips interval
-      clearInterval(tipInterval);
+      if (tipInterval) clearInterval(tipInterval);
       setShowMassGenerationModal(false);
       
       // More detailed error message with timeout handling
