@@ -155,6 +155,14 @@ def test_exact_dish_count_generation():
         
         print(f"✅ Меню сгенерировано успешно, menu_id: {menu_id}")
         
+        # DEBUG: Показать структуру меню
+        print(f"🔍 DEBUG: Структура меню:")
+        for key, value in menu.items():
+            if isinstance(value, list):
+                print(f"   {key}: {len(value)} элементов")
+            else:
+                print(f"   {key}: {type(value).__name__}")
+        
         # КРИТИЧНАЯ ПРОВЕРКА: Подсчет ВСЕХ блюд
         print("\n🔍 КРИТИЧНАЯ ПРОВЕРКА: Подсчет всех блюд по категориям")
         print("-" * 50)
@@ -168,12 +176,24 @@ def test_exact_dish_count_generation():
                 total_dishes += category_count
                 print(f"📋 {category}: {category_count} блюд")
                 
-                # Собираем названия блюд для проверки уникальности
-                for dish in dishes:
-                    if isinstance(dish, dict) and "name" in dish:
-                        dish_names.append(dish["name"])
+                # Показать первые несколько блюд для отладки
+                for i, dish in enumerate(dishes[:3]):  # Показать первые 3 блюда
+                    if isinstance(dish, dict):
+                        dish_name = dish.get("name", "Без названия")
+                        print(f"   {i+1}. {dish_name}")
+                        dish_names.append(dish_name)
                     elif isinstance(dish, str):
+                        print(f"   {i+1}. {dish}")
                         dish_names.append(dish)
+                
+                if len(dishes) > 3:
+                    print(f"   ... и еще {len(dishes) - 3} блюд")
+                    # Добавить остальные названия для проверки уникальности
+                    for dish in dishes[3:]:
+                        if isinstance(dish, dict) and "name" in dish:
+                            dish_names.append(dish["name"])
+                        elif isinstance(dish, str):
+                            dish_names.append(dish)
         
         print(f"\n🎯 ИТОГО БЛЮД: {total_dishes}")
         print(f"🎯 ОЖИДАЛОСЬ: 28")
