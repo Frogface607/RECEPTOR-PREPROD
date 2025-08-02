@@ -2488,11 +2488,21 @@ function App() {
       console.error('Error generating mass tech cards:', error);
       console.error('Error response:', error.response?.data);
       console.error('Error status:', error.response?.status);
+      
+      // Clear tips interval
+      clearInterval(tipInterval);
       setShowMassGenerationModal(false);
       
-      // More detailed error message
+      // More detailed error message with timeout handling
       let errorMessage = 'Ошибка при массовой генерации техкарт';
-      if (error.response?.data?.detail) {
+      
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        errorMessage = 'Превышено время ожидания. Массовая генерация техкарт занимает много времени (до 5 минут). Попробуйте еще раз или обратитесь в поддержку.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Массовая генерация техкарт доступна только для PRO пользователей. Обновите подписку.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Меню не найдено. Попробуйте создать новое меню.';
+      } else if (error.response?.data?.detail) {
         errorMessage += ': ' + error.response.data.detail;
       } else if (error.message) {
         errorMessage += ': ' + error.message;
