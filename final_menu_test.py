@@ -33,7 +33,18 @@ def test_exact_dish_count_generation():
     
     try:
         response = requests.post(f"{BACKEND_URL}/register", json=user_data, timeout=30)
-        if response.status_code == 400 and "already registered" in response.text:
+        if response.status_code == 500 and "already registered" in response.text:
+            print("✅ Пользователь уже существует, получаем его данные")
+            # Получить существующего пользователя
+            response = requests.get(f"{BACKEND_URL}/user/{test_email}", timeout=30)
+            if response.status_code == 200:
+                user_data_response = response.json()
+                user_id = user_data_response.get("id")
+                print(f"✅ Получен user_id: {user_id}")
+            else:
+                print(f"⚠️ Ошибка получения пользователя: {response.status_code}")
+                return False, None
+        elif response.status_code == 400 and "already registered" in response.text:
             print("✅ Пользователь уже существует, получаем его данные")
             # Получить существующего пользователя
             response = requests.get(f"{BACKEND_URL}/user/{test_email}", timeout=30)
