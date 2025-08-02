@@ -2348,6 +2348,18 @@ function App() {
   const generateMenu = async () => {
     try {
       setIsGenerating(true);
+      setShowMenuGenerationModal(true);
+      setCurrentMenuTipIndex(0);
+      setMenuGenerationProgress(0);
+      
+      // Start progress simulation and tips cycling
+      const progressInterval = setInterval(() => {
+        setMenuGenerationProgress(prev => Math.min(prev + Math.random() * 15, 90));
+      }, 2000);
+      
+      const tipInterval = setInterval(() => {
+        setCurrentMenuTipIndex(prev => (prev + 1) % menuGenerationTips.length);
+      }, 4000); // Change tip every 4 seconds
       
       const menuRequest = {
         user_id: currentUser.id,
@@ -2359,15 +2371,25 @@ function App() {
       
       const response = await axios.post(`${API}/generate-menu`, menuRequest);
       
+      // Clear intervals
+      clearInterval(progressInterval);
+      clearInterval(tipInterval);
+      
       if (response.data.success) {
-        setGeneratedMenu({...response.data.menu, menu_id: response.data.menu_id});
-        setShowMenuWizard(false);
-        alert('Меню успешно создано!');
+        setMenuGenerationProgress(100);
+        setTimeout(() => {
+          setGeneratedMenu({...response.data.menu, menu_id: response.data.menu_id});
+          setShowMenuWizard(false);
+          setShowMenuGenerationModal(false);
+          alert('Меню успешно создано!');
+        }, 1000);
       } else {
+        setShowMenuGenerationModal(false);
         throw new Error(response.data.error || 'Failed to generate menu');
       }
     } catch (error) {
       console.error('Error generating menu:', error);
+      setShowMenuGenerationModal(false);
       alert('Ошибка при создании меню. Попробуйте еще раз.');
     } finally {
       setIsGenerating(false);
