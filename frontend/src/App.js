@@ -2970,6 +2970,32 @@ function App() {
               </button>
               
               <button
+                onClick={async () => {
+                  try {
+                    const response = await axios.get(`${API}/menu/${generatedMenu.menu_id}/tech-cards`);
+                    if (response.data.success) {
+                      if (response.data.total_cards > 0) {
+                        // Show tech cards organized by category
+                        const cardsList = Object.entries(response.data.tech_cards_by_category)
+                          .map(([category, cards]) => `${category}: ${cards.length} техкарт`)
+                          .join('\n');
+                        alert(`📋 ТЕХКАРТЫ ИЗ МЕНЮ:\n\n${cardsList}\n\nВсего: ${response.data.total_cards} техкарт\n\nОни доступны в разделе "История"`);
+                      } else {
+                        alert('Техкарты из этого меню ещё не созданы. Используйте кнопку "СОЗДАТЬ ВСЕ ТЕХКАРТЫ"');
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error fetching menu tech cards:', error);
+                    alert('Ошибка при загрузке техкарт меню');
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                title="📋 Посмотреть созданные техкарты из этого меню"
+              >
+                📋 МОЕ МЕНЮ
+              </button>
+              
+              <button
                 onClick={() => {
                   // Export menu to PDF
                   alert('Экспорт меню в PDF скоро будет доступен!');
