@@ -170,11 +170,20 @@ def test_exact_dish_count_generation():
         total_dishes = 0
         dish_names = []
         
-        for category, dishes in menu.items():
-            if isinstance(dishes, list):
+        # Правильная структура: menu.categories[].dishes[]
+        categories = menu.get("categories", [])
+        
+        if not categories:
+            print("❌ ОШИБКА: Нет категорий в меню")
+            return False, menu_id
+        
+        for category in categories:
+            if isinstance(category, dict):
+                category_name = category.get("category_name", "Без названия")
+                dishes = category.get("dishes", [])
                 category_count = len(dishes)
                 total_dishes += category_count
-                print(f"📋 {category}: {category_count} блюд")
+                print(f"📋 {category_name}: {category_count} блюд")
                 
                 # Показать первые несколько блюд для отладки
                 for i, dish in enumerate(dishes[:3]):  # Показать первые 3 блюда
