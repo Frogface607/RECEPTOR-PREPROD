@@ -1929,6 +1929,32 @@ async def generate_menu(request: dict):
         menu_description = menu_profile.get("menuDescription", "")
         expectations = menu_profile.get("expectations", "")
         additional_notes = menu_profile.get("additionalNotes", "")
+        
+        # NEW: Menu Constructor support
+        use_constructor = menu_profile.get("useConstructor", False)
+        categories = menu_profile.get("categories", {})
+        
+        # Calculate dish count and create structure instruction
+        if use_constructor and categories:
+            dish_count = sum(categories.values())
+            structure_instruction = f"""
+=== КОНСТРУКТОР МЕНЮ - ТОЧНАЯ СТРУКТУРА ===
+КРИТИЧЕСКИ ВАЖНО: Используй ТОЧНУЮ структуру по категориям:
+- Закуски/Салаты: {categories.get('appetizers', 0)} блюд
+- Супы: {categories.get('soups', 0)} блюд  
+- Горячие блюда: {categories.get('main_dishes', 0)} блюд
+- Десерты: {categories.get('desserts', 0)} блюд
+- Напитки: {categories.get('beverages', 0)} блюд
+- Закуски к напиткам: {categories.get('snacks', 0)} блюд
+
+ОБЯЗАТЕЛЬНО: Создай категории только с указанным количеством блюд!
+Если категория = 0, НЕ создавай её вообще!
+            """
+        else:
+            structure_instruction = f"""
+=== АВТОМАТИЧЕСКАЯ СТРУКТУРА ===
+Создай {dish_count} блюд, распределив их логично по 3-5 категориям
+            """
 
         # Create comprehensive enhanced prompt for GPT-4o
         menu_prompt = f"""
