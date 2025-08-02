@@ -3874,13 +3874,6 @@ function App() {
                         </div>
                       </div>
                     </div>
-                          >
-                            <div className="font-semibold text-sm">{audience.label}</div>
-                            <div className="text-xs text-gray-400 mt-1">{audience.desc}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
 
                     {/* Menu Goals (Multi-select) */}
                     <div>
