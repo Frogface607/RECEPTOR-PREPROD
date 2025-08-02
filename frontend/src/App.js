@@ -2226,12 +2226,20 @@ function App() {
     try {
       setIsGeneratingMassCards(true);
       setShowMassGenerationModal(true);
+      setCurrentTipIndex(0);
+      
+      // Initialize progress with tips cycling
       setMassGenerationProgress({
         total: totalDishes,
         completed: 0,
         current: 'Подготовка к генерации...',
         results: []
       });
+
+      // Start tips cycling
+      const tipInterval = setInterval(() => {
+        setCurrentTipIndex(prev => (prev + 1) % receptionTips.length);
+      }, 4000); // Change tip every 4 seconds
 
       const massRequest = {
         user_id: currentUser.id,
@@ -2241,6 +2249,9 @@ function App() {
       console.log('Starting mass tech card generation:', massRequest);
       
       const response = await axios.post(`${API}/generate-mass-tech-cards`, massRequest);
+      
+      // Clear tips interval
+      clearInterval(tipInterval);
       
       if (response.data.success) {
         setMassGenerationProgress({
@@ -2262,6 +2273,7 @@ function App() {
           }
         }, 2000);
       } else {
+        clearInterval(tipInterval);
         throw new Error(response.data.error || 'Failed to generate mass tech cards');
       }
     } catch (error) {
