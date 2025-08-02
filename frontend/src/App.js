@@ -3262,7 +3262,17 @@ function App() {
                   </div>
                   
                   <button
-                    onClick={() => setShowMenuWizard(true)}
+                    onClick={() => {
+                      // Auto-fill from venue profile
+                      if (venueProfile.cuisine_type && !menuProfile.cuisineStyle) {
+                        setMenuProfile(prev => ({
+                          ...prev,
+                          cuisineStyle: venueProfile.cuisine_type,
+                          region: currentUser.city || 'moskva'
+                        }));
+                      }
+                      setShowMenuWizard(true);
+                    }}
                     className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl text-xl transform hover:scale-105 transition-all shadow-lg"
                     title="🎯 Запустить мастер создания меню"
                   >
