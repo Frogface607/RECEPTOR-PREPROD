@@ -110,6 +110,17 @@ function App() {
     averageCheckMax: 1500,
     region: 'moskva',
     
+    // Menu Constructor - NEW!
+    useConstructor: false,
+    categories: {
+      salads: 2,
+      appetizers: 3,
+      soups: 2,
+      main_dishes: 4,
+      desserts: 2,
+      beverages: 1
+    },
+    
     // Cuisine & Style (Step 2)
     cuisineStyle: '',
     cuisineInfluences: [],
