@@ -4445,7 +4445,7 @@ function App() {
                     disabled={
                       (menuWizardStep === 1 && (!menuProfile.menuType)) ||
                       (menuWizardStep === 2 && !menuProfile.cuisineStyle) ||
-                      (menuWizardStep === 3 && !menuProfile.targetAudience) ||
+                      (menuWizardStep === 3 && (!menuProfile.audienceOccupations || menuProfile.audienceOccupations.length === 0)) ||
                       isGenerating
                     }
                     className="wizard-next-button group flex items-center px-8 py-3 rounded-xl text-white font-bold transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden"
