@@ -371,9 +371,47 @@ def test_improved_prompt_effectiveness():
     print("\n🎯 TESTING IMPROVED PROMPT EFFECTIVENESS")
     print("=" * 60)
     
-    # Generate multiple tech cards to test prompt improvements
-    test_user_id = "prompt_test"
+    # Create and upgrade user first
+    try:
+        # Create user
+        user_data = {
+            "email": "prompt_test@example.com",
+            "name": "Prompt Test User", 
+            "city": "moskva"
+        }
+        
+        response = requests.post(f"{BACKEND_URL}/register", json=user_data, timeout=30)
+        if response.status_code == 200:
+            user = response.json()
+            test_user_id = user["id"]
+            print(f"✅ Created test user: {test_user_id}")
+        elif response.status_code == 400 and "already registered" in response.text:
+            # Get existing user
+            get_response = requests.get(f"{BACKEND_URL}/user/prompt_test@example.com", timeout=30)
+            if get_response.status_code == 200:
+                user = get_response.json()
+                test_user_id = user["id"]
+                print(f"✅ Using existing user: {test_user_id}")
+            else:
+                print("❌ Failed to get existing user")
+                return False
+        else:
+            print(f"❌ Failed to create user: {response.status_code}")
+            return False
+        
+        # Upgrade to PRO
+        upgrade_data = {"subscription_plan": "pro"}
+        upgrade_response = requests.post(f"{BACKEND_URL}/upgrade-subscription/{test_user_id}", json=upgrade_data, timeout=30)
+        if upgrade_response.status_code == 200:
+            print("✅ Upgraded to PRO subscription")
+        else:
+            print(f"⚠️ Failed to upgrade: {upgrade_response.status_code}")
     
+    except Exception as e:
+        print(f"❌ Error setting up user: {str(e)}")
+        return False
+    
+    # Generate multiple tech cards to test prompt improvements
     test_dishes = [
         "Паста с томатным соусом",
         "Стейк из говядины", 
