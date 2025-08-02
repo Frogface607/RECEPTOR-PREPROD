@@ -19,13 +19,14 @@ def test_exact_dish_count_generation():
     print("=" * 60)
     
     # Создать PRO пользователя для теста
-    user_id = "final_test_user"
+    test_email = "final_test@example.com"
+    user_id = None
     
-    print(f"📝 Создание PRO пользователя: {user_id}")
+    print(f"📝 Создание PRO пользователя: {test_email}")
     
     # Создать пользователя с PRO подпиской
     user_data = {
-        "email": "final_test@example.com",
+        "email": test_email,
         "name": "Final Test User",
         "city": "moskva"
     }
@@ -33,13 +34,31 @@ def test_exact_dish_count_generation():
     try:
         response = requests.post(f"{BACKEND_URL}/register", json=user_data, timeout=30)
         if response.status_code == 400 and "already registered" in response.text:
-            print("✅ Пользователь уже существует, продолжаем тест")
+            print("✅ Пользователь уже существует, получаем его данные")
+            # Получить существующего пользователя
+            response = requests.get(f"{BACKEND_URL}/user/{test_email}", timeout=30)
+            if response.status_code == 200:
+                user_data_response = response.json()
+                user_id = user_data_response.get("id")
+                print(f"✅ Получен user_id: {user_id}")
+            else:
+                print(f"⚠️ Ошибка получения пользователя: {response.status_code}")
+                return False, None
         elif response.status_code == 200:
-            print("✅ Пользователь создан успешно")
+            user_data_response = response.json()
+            user_id = user_data_response.get("id")
+            print(f"✅ Пользователь создан успешно, user_id: {user_id}")
         else:
             print(f"⚠️ Неожиданный ответ при создании пользователя: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False, None
     except Exception as e:
         print(f"⚠️ Ошибка при создании пользователя: {e}")
+        return False, None
+    
+    if not user_id:
+        print("❌ Не удалось получить user_id")
+        return False, None
     
     # Обновить до PRO подписки
     print("🔄 Обновление до PRO подписки...")
@@ -50,6 +69,7 @@ def test_exact_dish_count_generation():
             print("✅ Подписка обновлена до PRO")
         else:
             print(f"⚠️ Ошибка обновления подписки: {response.status_code}")
+            print(f"Response: {response.text}")
     except Exception as e:
         print(f"⚠️ Ошибка при обновлении подписки: {e}")
     
@@ -69,6 +89,7 @@ def test_exact_dish_count_generation():
             print("✅ Venue profile настроен")
         else:
             print(f"⚠️ Ошибка настройки venue profile: {response.status_code}")
+            print(f"Response: {response.text}")
     except Exception as e:
         print(f"⚠️ Ошибка при настройке venue profile: {e}")
     
