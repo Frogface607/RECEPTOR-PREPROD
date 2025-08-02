@@ -2454,7 +2454,9 @@ function App() {
       console.log('Current user:', currentUser);
       console.log('Generated menu:', generatedMenu);
       
-      const response = await axios.post(`${API}/generate-mass-tech-cards`, massRequest);
+      const response = await axios.post(`${API}/generate-mass-tech-cards`, massRequest, {
+        timeout: 300000 // 5 minutes timeout for mass generation
+      });
       
       // Clear tips interval
       clearInterval(tipInterval);
