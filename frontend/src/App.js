@@ -853,58 +853,85 @@ function App() {
 
   // Venue Profile API functions
   const fetchVenueTypes = async () => {
+    // Immediate fallback to prevent loading issues
+    const fallbackVenueTypes = {
+      "fine_dining": {
+        "name": "Fine Dining Ресторан",
+        "description": "Высококлассный ресторан с изысканной кухней",
+        "complexity_level": "high",
+        "price_multiplier": 2.5
+      },
+      "family_restaurant": {
+        "name": "Семейный ресторан",
+        "description": "Уютное заведение для всей семьи",
+        "complexity_level": "medium",
+        "price_multiplier": 1.5
+      },
+      "cafe": {
+        "name": "Кафе",
+        "description": "Непринужденная атмосфера, легкие блюда",
+        "complexity_level": "low",
+        "price_multiplier": 1.2
+      },
+      "bar_pub": {
+        "name": "Бар/Паб",
+        "description": "Барная еда и напитки",
+        "complexity_level": "low", 
+        "price_multiplier": 1.3
+      },
+      "fast_food": {
+        "name": "Фаст-фуд",
+        "description": "Быстрое питание",
+        "complexity_level": "low",
+        "price_multiplier": 1.0
+      },
+      "food_truck": {
+        "name": "Фуд-трак",
+        "description": "Мобильная точка питания",
+        "complexity_level": "low",
+        "price_multiplier": 1.1
+      },
+      "bakery_cafe": {
+        "name": "Кафе-пекарня",
+        "description": "Свежая выпечка и кофе",
+        "complexity_level": "medium",
+        "price_multiplier": 1.3
+      },
+      "buffet": {
+        "name": "Буфет",
+        "description": "Шведский стол",
+        "complexity_level": "medium",
+        "price_multiplier": 1.4
+      }
+    };
+
+    // Set fallback immediately to prevent loading state
+    setVenueTypes(fallbackVenueTypes);
+    
     try {
       console.log('Fetching venue types from:', `${API}/venue-types`);
-      const response = await axios.get(`${API}/venue-types`);
-      console.log('Venue types response:', response.data);
-      setVenueTypes(response.data);
+      
+      // Try to get data from API with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const response = await axios.get(`${API}/venue-types`, {
+        signal: controller.signal,
+        timeout: 5000
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.data && Object.keys(response.data).length > 0) {
+        console.log('Venue types loaded from API:', response.data);
+        setVenueTypes(response.data);
+      } else {
+        console.log('API returned empty data, using fallback');
+      }
     } catch (error) {
       console.error('Error fetching venue types:', error);
-      console.error('Failed URL:', `${API}/venue-types`);
-      console.error('Error details:', error.response?.data || error.message);
-      
-      // Fallback venue types if API fails
-      const fallbackVenueTypes = {
-        "fine_dining": {
-          "name": "Fine Dining Ресторан",
-          "description": "Высококлассный ресторан с изысканной кухней",
-          "complexity_level": "high",
-          "price_multiplier": 2.5
-        },
-        "family_restaurant": {
-          "name": "Семейный ресторан",
-          "description": "Уютное заведение для всей семьи",
-          "complexity_level": "medium",
-          "price_multiplier": 1.5
-        },
-        "cafe": {
-          "name": "Кафе",
-          "description": "Непринужденная атмосфера, легкие блюда",
-          "complexity_level": "low",
-          "price_multiplier": 1.2
-        },
-        "bar_pub": {
-          "name": "Бар/Паб",
-          "description": "Барная еда и напитки",
-          "complexity_level": "low", 
-          "price_multiplier": 1.3
-        },
-        "fast_food": {
-          "name": "Фаст-фуд",
-          "description": "Быстрое питание",
-          "complexity_level": "low",
-          "price_multiplier": 1.0
-        },
-        "food_truck": {
-          "name": "Фуд-трак",
-          "description": "Мобильная точка питания",
-          "complexity_level": "low",
-          "price_multiplier": 1.1
-        }
-      };
-      
-      console.log('Using fallback venue types');
-      setVenueTypes(fallbackVenueTypes);
+      console.log('Using fallback venue types due to API error');
+      // Fallback is already set above
     }
   };
 
