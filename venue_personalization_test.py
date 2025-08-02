@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com/api"
+BACKEND_URL = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
 
 def test_venue_aware_pro_functions():
     """Test venue-aware personalization in PRO functions"""

@@ -9,7 +9,7 @@ import json
 import time
 
 # Configuration
-BACKEND_URL = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com/api"
+BACKEND_URL = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
 
 def quick_test_personalized_pro_functions():
     """Quick test of 2-3 PRO functions with venue personalization"""

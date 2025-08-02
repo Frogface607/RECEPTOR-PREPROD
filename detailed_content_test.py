@@ -7,7 +7,7 @@ import requests
 import json
 import re
 
-BACKEND_URL = "https://fdf58838-b548-48aa-b986-f766bf021f59.preview.emergentagent.com/api"
+BACKEND_URL = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
 
 def test_single_tech_card():
     """Generate a single tech card and analyze its full content"""
