@@ -6146,32 +6146,50 @@ function App() {
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-purple-200 mb-2">Выберите тип заведения</h3>
                   <p className="text-gray-300">Это влияет на сложность рецептов и стиль подачи</p>
+                  {Object.keys(venueTypes).length === 0 && (
+                    <p className="text-yellow-400 text-sm mt-2">⚠️ Загрузка типов заведений...</p>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(venueTypes).map(([key, venue]) => (
-                    <div
-                      key={key}
-                      className={`cursor-pointer p-4 rounded-lg border-2 transition-all hover:scale-105 ${
-                        venueProfile.venue_type === key
-                          ? 'border-purple-400 bg-purple-900/50'
-                          : 'border-gray-600 hover:border-purple-500'
-                      }`}
-                      onClick={() => setVenueProfile(prev => ({ ...prev, venue_type: key }))}
-                    >
-                      <h4 className="text-lg font-bold text-purple-200 mb-2">{venue.name}</h4>
-                      <p className="text-sm text-gray-300 mb-3">{venue.description}</p>
-                      <div className="text-xs text-gray-400">
-                        <div>Сложность: {venue.complexity_level === 'high' ? '🔴 Высокая' : venue.complexity_level === 'medium' ? '🟡 Средняя' : '🟢 Низкая'}</div>
-                        <div>Ценовой коэффициент: {venue.price_multiplier}x</div>
-                      </div>
+                  {Object.keys(venueTypes).length === 0 ? (
+                    <div className="col-span-full text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto mb-4"></div>
+                      <p className="text-gray-400">Загружаем типы заведений...</p>
                     </div>
-                  ))}
+                  ) : (
+                    Object.entries(venueTypes).map(([key, venue]) => (
+                      <div
+                        key={key}
+                        className={`cursor-pointer p-4 rounded-lg border-2 transition-all hover:scale-105 ${
+                          venueProfile.venue_type === key
+                            ? 'border-purple-400 bg-purple-900/50'
+                            : 'border-gray-600 hover:border-purple-500'
+                        }`}
+                        onClick={() => {
+                          console.log('Venue type selected:', key);
+                          setVenueProfile(prev => ({ ...prev, venue_type: key }));
+                        }}
+                      >
+                        <h4 className="text-lg font-bold text-purple-200 mb-2">{venue.name}</h4>
+                        <p className="text-sm text-gray-300 mb-3">{venue.description}</p>
+                        <div className="text-xs text-gray-400">
+                          <div>Сложность: {venue.complexity_level === 'high' ? '🔴 Высокая' : venue.complexity_level === 'medium' ? '🟡 Средняя' : '🟢 Низкая'}</div>
+                          <div>Ценовой коэффициент: {venue.price_multiplier}x</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
                 
                 <div className="flex justify-end">
                   <button
-                    onClick={() => venueProfile.venue_type && setProfileStep(2)}
+                    onClick={() => {
+                      console.log('Next button clicked, venue_type:', venueProfile.venue_type);
+                      if (venueProfile.venue_type) {
+                        setProfileStep(2);
+                      }
+                    }}
                     disabled={!venueProfile.venue_type}
                     className={`px-6 py-3 rounded-lg font-bold transition-colors ${
                       venueProfile.venue_type
@@ -6182,6 +6200,14 @@ function App() {
                     ДАЛЕЕ →
                   </button>
                 </div>
+                
+                {/* Debug info */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-gray-500 mt-4 p-2 bg-gray-800 rounded">
+                    Debug: venueTypes count: {Object.keys(venueTypes).length}, 
+                    selected: {venueProfile.venue_type || 'none'}
+                  </div>
+                )}
               </div>
             )}
 
