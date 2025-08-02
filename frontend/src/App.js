@@ -7134,6 +7134,87 @@ function App() {
         </div>
       )}
 
+      {/* Menu Generation Progress Modal (NEW!) */}
+      {showMenuGenerationModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 w-full max-w-3xl border border-purple-400/30">
+            <div className="text-center">
+              {/* Header */}
+              <div className="mb-8">
+                <div className="text-6xl mb-4 animate-bounce">🧙‍♂️</div>
+                <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300 mb-2">
+                  СОЗДАЕМ ВАШЕ МЕНЮ
+                </h2>
+                <p className="text-gray-400">Анализируем требования и создаем идеальное меню</p>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="mb-8">
+                <div className="bg-gray-700/50 rounded-2xl h-6 overflow-hidden mb-4">
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-cyan-500 h-full transition-all duration-1000 ease-out"
+                    style={{ width: `${menuGenerationProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-purple-300 font-semibold text-lg">
+                  {menuGenerationProgress < 30 ? 'Анализируем ваши требования...' :
+                   menuGenerationProgress < 60 ? 'Создаем структуру меню...' :
+                   menuGenerationProgress < 90 ? 'Генерируем названия блюд...' :
+                   menuGenerationProgress < 100 ? 'Финальная проверка...' : 'Готово!'}
+                </p>
+              </div>
+
+              {/* Lifehacks while waiting */}
+              <div className="p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-2xl border border-purple-400/30">
+                <div className="flex items-start space-x-4">
+                  <div className="text-4xl flex-shrink-0 animate-pulse">
+                    {menuGenerationTips[currentMenuTipIndex]?.icon}
+                  </div>
+                  <div className="text-left">
+                    <h4 className="text-purple-300 font-bold text-lg mb-2">
+                      {menuGenerationTips[currentMenuTipIndex]?.title}
+                    </h4>
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {menuGenerationTips[currentMenuTipIndex]?.text}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-center space-x-2">
+                  {menuGenerationTips.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentMenuTipIndex ? 'bg-purple-400' : 'bg-gray-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              {/* Stats */}
+              <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-cyan-300">
+                    {menuProfile.useConstructor ? 
+                      Object.values(menuProfile.categories).reduce((a, b) => a + b, 0) : 
+                      menuProfile.dishCount}
+                  </div>
+                  <div className="text-xs text-gray-400">Блюд</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-purple-300">{menuProfile.cuisineStyle || 'Не указано'}</div>
+                  <div className="text-xs text-gray-400">Кухня</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-300">{venueProfile.venue_name || 'Заведение'}</div>
+                  <div className="text-xs text-gray-400">Для</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
