@@ -127,7 +127,19 @@ function App() {
     menuStyle: 'classic', // classic, modern, fusion, street
     
     // Business Details (Step 3)
-    targetAudience: '',
+    // Enhanced audience profiling (Step 3)
+    audienceAges: {
+      '18-25': 0,
+      '26-35': 50,
+      '36-50': 30,
+      '50+': 20
+    },
+    audienceOccupations: [],
+    regionDetails: {
+      type: 'capital', // capital, province, resort
+      geography: 'plains', // plains, sea, mountains
+      climate: 'temperate'
+    },
     menuGoals: [],
     specialRequirements: [],
     dietaryOptions: [],
