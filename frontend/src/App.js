@@ -3672,34 +3672,208 @@ function App() {
                   </div>
                 )}
 
-                {/* Step 3: Business Goals & Target Audience */}
+                {/* Step 3: Enhanced Business Goals & Target Audience */}
                 {menuWizardStep === 3 && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-cyan-300 mb-6">🎯 Бизнес-цели и целевая аудитория</h3>
+                  <div className="wizard-step-content bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700/50 space-y-8">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300 mb-2">
+                        🎯 Целевая аудитория и регион
+                      </h3>
+                      <p className="text-sm text-gray-400">Определяем кто и где будет посещать заведение</p>
+                    </div>
                     
-                    {/* Target Audience */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Основная целевая аудитория:</label>  
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Enhanced Age Distribution */}
+                    <div className="bg-gray-700/30 rounded-xl p-6">
+                      <label className="block text-lg font-bold text-gray-300 mb-4">
+                        <span className="text-purple-400">👥</span> Возрастное распределение посетителей
+                      </label>
+                      <div className="space-y-4">
                         {[
-                          { value: 'families', label: '👨‍👩‍👧‍👦 Семьи с детьми', desc: 'Семейные посиделки' },
-                          { value: 'business', label: '💼 Бизнес-аудитория', desc: 'Деловые обеды' },
-                          { value: 'students', label: '🎓 Студенты', desc: 'Доступные цены' },
-                          { value: 'young_professionals', label: '💻 Молодые специалисты', desc: '25-35 лет' },
-                          { value: 'seniors', label: '👴👵 Пожилые люди', desc: 'Комфорт и традиции' },
-                          { value: 'tourists', label: '📸 Туристы', desc: 'Локальная кухня' },
-                          { value: 'hipsters', label: '🎨 Творческая молодежь', desc: 'Тренды и Instagram' },
-                          { value: 'athletes', label: '💪 Спортсмены', desc: 'Здоровое питание' },
-                          { value: 'gourmets', label: '🍷 Гурманы', desc: 'Изысканная кухня' }
-                        ].map((audience) => (
+                          { key: '18-25', label: '👶 18-25 лет', desc: 'Студенты, молодежь', color: 'from-green-500 to-emerald-500' },
+                          { key: '26-35', label: '💼 26-35 лет', desc: 'Молодые профессионалы', color: 'from-blue-500 to-cyan-500' },
+                          { key: '36-50', label: '👨‍💼 36-50 лет', desc: 'Зрелые специалисты', color: 'from-purple-500 to-pink-500' },
+                          { key: '50+', label: '👴 50+ лет', desc: 'Старшее поколение', color: 'from-orange-500 to-red-500' }
+                        ].map((age) => (
+                          <div key={age.key} className="bg-gray-600/30 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-sm font-semibold text-gray-300">
+                                {age.label} - <span className="text-gray-400">{age.desc}</span>
+                              </label>
+                              <span className="text-cyan-400 font-bold text-lg">
+                                {menuProfile.audienceAges[age.key]}%
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={menuProfile.audienceAges[age.key]}
+                              onChange={(e) => setMenuProfile(prev => ({
+                                ...prev,
+                                audienceAges: {
+                                  ...prev.audienceAges,
+                                  [age.key]: parseInt(e.target.value)
+                                }
+                              }))}
+                              className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                              style={{
+                                background: `linear-gradient(to right, var(--tw-gradient-from) 0%, var(--tw-gradient-to) ${menuProfile.audienceAges[age.key]}%, #374151 ${menuProfile.audienceAges[age.key]}%, #374151 100%)`
+                              }}
+                            />
+                          </div>
+                        ))}
+                        <div className="bg-purple-900/20 border border-purple-400/30 rounded-lg p-3">
+                          <p className="text-sm text-purple-300 text-center">
+                            💡 Общий процент: {Object.values(menuProfile.audienceAges).reduce((a, b) => a + b, 0)}% 
+                            (не обязательно должно быть 100%)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Occupations */}
+                    <div>
+                      <label className="block text-lg font-bold text-gray-300 mb-4">
+                        <span className="text-green-400">💼</span> Род занятий посетителей (множественный выбор)
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          { value: 'students', label: '🎓 Студенты', desc: 'Доступные цены, быстро' },
+                          { value: 'office_workers', label: '💻 Офисные сотрудники', desc: 'Деловые обеды' },
+                          { value: 'entrepreneurs', label: '🚀 Предприниматели', desc: 'Качество и статус' },
+                          { value: 'creatives', label: '🎨 Творческие профессии', desc: 'Атмосфера и уникальность' },
+                          { value: 'medical_workers', label: '⚕️ Медработники', desc: 'Здоровое питание' },
+                          { value: 'teachers', label: '👩‍🏫 Педагоги', desc: 'Семейные ценности' },
+                          { value: 'retirees', label: '🏠 Пенсионеры', desc: 'Традиционная кухня' },
+                          { value: 'tourists', label: '📸 Туристы', desc: 'Локальные блюда' },
+                          { value: 'families', label: '👨‍👩‍👧‍👦 Семьи с детьми', desc: 'Детское меню' }
+                        ].map((occupation) => (
                           <button
-                            key={audience.value}
-                            onClick={() => setMenuProfile(prev => ({ ...prev, targetAudience: audience.value }))}
-                            className={`p-4 rounded-lg border text-left transition-all hover:scale-105 ${
-                              menuProfile.targetAudience === audience.value
-                                ? 'border-cyan-400 bg-cyan-600/20 text-cyan-300 scale-105'
-                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-cyan-600'
+                            key={occupation.value}
+                            onClick={() => {
+                              const current = menuProfile.audienceOccupations || [];
+                              const updated = current.includes(occupation.value)
+                                ? current.filter(o => o !== occupation.value)
+                                : [...current, occupation.value];
+                              setMenuProfile(prev => ({ ...prev, audienceOccupations: updated }));
+                            }}
+                            className={`wizard-option-card p-4 rounded-lg border text-left transition-all ${
+                              (menuProfile.audienceOccupations || []).includes(occupation.value)
+                                ? 'selected border-green-400 bg-green-600/20'
+                                : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-green-600'
                             }`}
+                          >
+                            <div className="font-semibold text-sm">{occupation.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{occupation.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="text-sm text-gray-400 text-center mt-3">
+                        ✅ Выбрано: {(menuProfile.audienceOccupations || []).length} категорий
+                      </div>
+                    </div>
+
+                    {/* Enhanced Regional Details */}
+                    <div className="bg-gray-700/30 rounded-xl p-6">
+                      <label className="block text-lg font-bold text-gray-300 mb-4">
+                        <span className="text-yellow-400">🗺️</span> Региональные особенности
+                      </label>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* City Type */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Тип города:</label>
+                          <div className="space-y-2">
+                            {[
+                              { value: 'capital', label: '🏛️ Столица', desc: 'Москва, СПб' },
+                              { value: 'major_city', label: '🏢 Крупный город', desc: 'Миллионник' },
+                              { value: 'province', label: '🏘️ Провинция', desc: 'Малый город' }
+                            ].map((type) => (
+                              <button
+                                key={type.value}
+                                onClick={() => setMenuProfile(prev => ({
+                                  ...prev,
+                                  regionDetails: {
+                                    ...prev.regionDetails,
+                                    type: type.value
+                                  }
+                                }))}
+                                className={`w-full p-3 rounded-lg border text-left transition-all ${
+                                  menuProfile.regionDetails.type === type.value
+                                    ? 'border-yellow-400 bg-yellow-600/20'
+                                    : 'border-gray-600 bg-gray-700/30 hover:border-yellow-600'
+                                }`}
+                              >
+                                <div className="text-sm font-semibold">{type.label}</div>
+                                <div className="text-xs text-gray-400">{type.desc}</div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Geography */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">География:</label>
+                          <div className="space-y-2">
+                            {[
+                              { value: 'sea', label: '🌊 Приморский', desc: 'Морепродукты' },
+                              { value: 'mountains', label: '⛰️ Горный', desc: 'Мясо, дичь' },
+                              { value: 'plains', label: '🌾 Равнинный', desc: 'Овощи, злаки' }
+                            ].map((geo) => (
+                              <button
+                                key={geo.value}
+                                onClick={() => setMenuProfile(prev => ({
+                                  ...prev,
+                                  regionDetails: {
+                                    ...prev.regionDetails,
+                                    geography: geo.value
+                                  }
+                                }))}
+                                className={`w-full p-3 rounded-lg border text-left transition-all ${
+                                  menuProfile.regionDetails.geography === geo.value
+                                    ? 'border-blue-400 bg-blue-600/20'
+                                    : 'border-gray-600 bg-gray-700/30 hover:border-blue-600'
+                                }`}
+                              >
+                                <div className="text-sm font-semibold">{geo.label}</div>
+                                <div className="text-xs text-gray-400">{geo.desc}</div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Climate */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Климат:</label>
+                          <div className="space-y-2">
+                            {[
+                              { value: 'cold', label: '❄️ Холодный', desc: 'Сытная еда' },
+                              { value: 'temperate', label: '🌤️ Умеренный', desc: 'Универсально' },
+                              { value: 'warm', label: '☀️ Теплый', desc: 'Легкие блюда' }
+                            ].map((climate) => (
+                              <button
+                                key={climate.value}
+                                onClick={() => setMenuProfile(prev => ({
+                                  ...prev,
+                                  regionDetails: {
+                                    ...prev.regionDetails,
+                                    climate: climate.value
+                                  }
+                                }))}
+                                className={`w-full p-3 rounded-lg border text-left transition-all ${
+                                  menuProfile.regionDetails.climate === climate.value
+                                    ? 'border-orange-400 bg-orange-600/20'
+                                    : 'border-gray-600 bg-gray-700/30 hover:border-orange-600'
+                                }`}
+                              >
+                                <div className="text-sm font-semibold">{climate.label}</div>
+                                <div className="text-xs text-gray-400">{climate.desc}</div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                           >
                             <div className="font-semibold text-sm">{audience.label}</div>
                             <div className="text-xs text-gray-400 mt-1">{audience.desc}</div>
