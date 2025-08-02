@@ -221,7 +221,10 @@ body {
 .wizard-next-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4);
-  animation: float 2s ease-in-out infinite;
+}
+
+.wizard-next-button:hover:not(:disabled) {
+  animation: none;
 }
 
 .wizard-slider {
