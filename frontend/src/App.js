@@ -6587,44 +6587,92 @@ function App() {
         </div>
       )}
 
-      {/* Mass Tech Card Generation Progress Modal */}
+      {/* Enhanced Mass Tech Card Generation Progress Modal */}
       {showMassGenerationModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-cyan-400/30">
+        <div className="mass-generation-modal fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="mass-progress-container w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-cyan-300 mb-4">
-                ⚡ МАССОВАЯ ГЕНЕРАЦИЯ ТЕХКАРТ
-              </h2>
+              {/* Enhanced Header */}
+              <div className="mb-8">
+                <div className="text-6xl mb-4 animate-pulse">⚡</div>
+                <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300 mb-2">
+                  МАССОВАЯ ГЕНЕРАЦИЯ ТЕХКАРТ
+                </h2>
+                <p className="text-gray-400">Создаем техкарты для всех блюд из меню</p>
+              </div>
               
-              {/* Progress Bar */}
-              <div className="mb-6">
-                <div className="bg-gray-700 rounded-full h-4 mb-2">
-                  <div 
-                    className="bg-gradient-to-r from-cyan-500 to-blue-500 h-4 rounded-full transition-all duration-500"
-                    style={{ width: `${massGenerationProgress.total > 0 ? (massGenerationProgress.completed / massGenerationProgress.total) * 100 : 0}%` }}
-                  ></div>
+              {/* Enhanced Progress Bar */}
+              <div className="mb-8">
+                <div className="relative mb-4">
+                  <div className="bg-gray-700/50 rounded-2xl h-6 overflow-hidden">
+                    <div 
+                      className="mass-progress-bar h-full transition-all duration-1000 ease-out"
+                      style={{ width: `${massGenerationProgress.total > 0 ? (massGenerationProgress.completed / massGenerationProgress.total) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+                  
+                  {/* Progress Statistics */}
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="text-left">
+                      <div className="text-2xl font-bold text-cyan-300">
+                        {massGenerationProgress.completed}
+                      </div>
+                      <div className="text-xs text-gray-400">Готово</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg text-purple-300 font-semibold">
+                        {massGenerationProgress.total > 0 ? Math.round((massGenerationProgress.completed / massGenerationProgress.total) * 100) : 0}%
+                      </div>
+                      <div className="text-xs text-gray-400">Прогресс</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-purple-300">
+                        {massGenerationProgress.total}
+                      </div>
+                      <div className="text-xs text-gray-400">Всего</div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-300">
-                  {massGenerationProgress.completed} из {massGenerationProgress.total} техкарт
+              </div>
+
+              {/* Enhanced Current Status */}
+              <div className="mb-8 p-6 bg-gradient-to-r from-gray-700/30 to-gray-800/30 rounded-2xl border border-cyan-400/20">
+                <div className="flex items-center justify-center mb-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mr-3"></div>
+                  <p className="text-cyan-300 font-bold text-lg">
+                    {massGenerationProgress.current}
+                  </p>
+                </div>
+                <p className="text-gray-400 text-sm">
+                  Каждая техкарта создается с учетом всех параметров меню
                 </p>
               </div>
 
-              {/* Current Status */}
-              <div className="mb-6 p-4 bg-gray-700/50 rounded-lg">
-                <p className="text-cyan-300 font-semibold">
-                  {massGenerationProgress.current}
-                </p>
-              </div>
-
-              {/* Results List */}
+              {/* Enhanced Results List */}
               {massGenerationProgress.results.length > 0 && (
-                <div className="max-h-60 overflow-y-auto mb-4">
-                  <h3 className="text-lg font-bold text-green-300 mb-3">✅ Созданные техкарты:</h3>
-                  <div className="space-y-2">
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center justify-center">
+                    <span className="mr-2">✅</span>
+                    Созданные техкарты
+                    <span className="ml-2 bg-green-500/20 text-green-300 px-2 py-1 rounded-full text-sm">
+                      {massGenerationProgress.results.length}
+                    </span>
+                  </h3>
+                  <div className="max-h-60 overflow-y-auto space-y-2 bg-gray-800/30 rounded-xl p-4">
                     {massGenerationProgress.results.map((result, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                        <span className="text-gray-300">{result.dish_name}</span>
-                        <span className="text-sm text-gray-400">{result.category}</span>
+                      <div key={index} className="tech-card-item">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                              {index + 1}
+                            </div>
+                            <span className="text-gray-200 font-semibold">{result.dish_name}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-purple-300 font-medium">{result.category}</div>
+                            <div className="text-xs text-gray-400">Техкарта готова</div>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
