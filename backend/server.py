@@ -2311,6 +2311,43 @@ async def generate_mass_tech_cards(request: dict):
         logger.error(f"Error in mass tech card generation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating tech cards: {str(e)}")
 
+@api_router.get("/menu/{menu_id}/tech-cards")
+async def get_menu_tech_cards(menu_id: str):
+    """
+    Get all tech cards generated from a specific menu
+    """
+    try:
+        # Get all tech cards that were generated from this menu
+        tech_cards = await db.user_history.find({
+            "from_menu_id": menu_id,
+            "is_menu": False
+        }).to_list(100)
+        
+        # Group by category for better organization
+        cards_by_category = {}
+        for card in tech_cards:
+            category = card.get("menu_category", "Без категории")
+            if category not in cards_by_category:
+                cards_by_category[category] = []
+            
+            cards_by_category[category].append({
+                "id": card["id"],
+                "dish_name": card["dish_name"],
+                "created_at": card["created_at"],
+                "content_preview": card["content"][:200] + "..." if len(card["content"]) > 200 else card["content"]
+            })
+        
+        return {
+            "success": True,
+            "menu_id": menu_id,
+            "tech_cards_by_category": cards_by_category,
+            "total_cards": len(tech_cards)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting menu tech cards: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting menu tech cards: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
