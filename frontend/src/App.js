@@ -154,6 +154,10 @@ function App() {
   });
   const [showMassGenerationModal, setShowMassGenerationModal] = useState(false);
 
+  // Menu Generation Modal states (NEW!)
+  const [showMenuGenerationModal, setShowMenuGenerationModal] = useState(false);
+  const [menuGenerationProgress, setMenuGenerationProgress] = useState(0);
+
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
 
