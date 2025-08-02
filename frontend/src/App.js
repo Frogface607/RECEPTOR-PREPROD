@@ -6679,8 +6679,8 @@ function App() {
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-4">
+              {/* Enhanced Action Buttons */}
+              <div className="flex gap-6">
                 {massGenerationProgress.completed === massGenerationProgress.total && massGenerationProgress.total > 0 ? (
                   <>
                     <button
@@ -6688,13 +6688,17 @@ function App() {
                         setShowMassGenerationModal(false);
                         setCurrentView('history');
                       }}
-                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg group"
                     >
-                      📋 ПРОСМОТРЕТЬ ТЕХКАРТЫ
+                      <span className="flex items-center justify-center">
+                        <span className="mr-2 group-hover:scale-110 transition-transform">📋</span>
+                        ПРОСМОТРЕТЬ ТЕХКАРТЫ
+                        <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                      </span>
                     </button>
                     <button
                       onClick={() => setShowMassGenerationModal(false)}
-                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                      className="flex-1 bg-gray-600/80 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-105"
                     >
                       ЗАКРЫТЬ
                     </button>
@@ -6702,11 +6706,18 @@ function App() {
                 ) : (
                   <button
                     disabled
-                    className="w-full bg-gray-600 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg"
+                    className="w-full bg-gradient-to-r from-purple-600/50 to-cyan-600/50 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl relative overflow-hidden"
                   >
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      ГЕНЕРАЦИЯ В ПРОЦЕССЕ...
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      <span className="text-lg">ГЕНЕРАЦИЯ В ПРОЦЕССЕ</span>
+                      <div className="ml-3">
+                        <div className="flex space-x-1">
+                          <div className="w-1 h-1 bg-white rounded-full animate-ping"></div>
+                          <div className="w-1 h-1 bg-white rounded-full animate-ping" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-1 h-1 bg-white rounded-full animate-ping" style={{animationDelay: '0.2s'}}></div>
+                        </div>
+                      </div>
                     </div>
                   </button>
                 )}
