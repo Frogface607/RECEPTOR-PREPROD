@@ -1966,6 +1966,8 @@ async def generate_menu(request: dict):
 СРЕДНИЙ ЧЕК: {average_check}
 СТИЛЬ КУХНИ: {cuisine_style}
 
+{structure_instruction}
+
 === ПРОФИЛЬ ЗАВЕДЕНИЯ ===
 - Название: {venue_profile.get('venue_name', 'Не указано')}
 - Тип: {venue_profile.get('venue_type', 'Не указано')}
