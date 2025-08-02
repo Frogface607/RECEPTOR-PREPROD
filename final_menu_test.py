@@ -88,7 +88,7 @@ def test_exact_dish_count_generation():
     print("🏢 Настройка venue profile...")
     venue_profile_data = {
         "venue_type": "fine_dining",
-        "cuisine_focus": ["fusion"],
+        "cuisine_focus": ["european", "asian"],  # Fusion effect with valid cuisines
         "average_check": 3000,
         "venue_name": "Fusion Premium",
         "venue_concept": "Премиум ресторан с авторской кухней"
