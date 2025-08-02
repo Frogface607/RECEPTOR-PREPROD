@@ -146,6 +146,51 @@ function App() {
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
 
+  // Tips and lifehacks for mass generation loading
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const receptionTips = [
+    {
+      title: "💡 Редактирование техкарт",
+      text: "После создания вы можете отредактировать любую техкарту - изменить ингредиенты, порции или способ приготовления",
+      icon: "✏️"
+    },
+    {
+      title: "📊 Анализ себестоимости", 
+      text: "Техкарты автоматически рассчитывают себестоимость. Используйте эти данные для установки правильных цен",
+      icon: "💰"
+    },
+    {
+      title: "🔄 Обновление цен",
+      text: "Регулярно обновляйте прайс-листы ингредиентов в настройках для точности расчетов",
+      icon: "📈"
+    },
+    {
+      title: "🏢 Профиль заведения",
+      text: "Настройте профиль заведения для более точных техкарт - тип кухни, средний чек, целевая аудитория",
+      icon: "⚙️"
+    },
+    {
+      title: "📋 Экспорт в PDF",
+      text: "Все техкарты можно экспортировать в PDF без цен - идеально для передачи персоналу",
+      icon: "📄"
+    },
+    {
+      title: "🔍 Поиск по истории",
+      text: "Используйте поиск в разделе 'История' чтобы быстро найти нужные техкарты",
+      icon: "🔎"
+    },
+    {
+      title: "⚡ Горячие клавиши",
+      text: "Ctrl+Enter для быстрой генерации, Ctrl+S для сохранения изменений",
+      icon: "⌨️"
+    },
+    {
+      title: "🎯 Сезонные меню",
+      text: "Создавайте отдельные техкарты для сезонных блюд - это поможет контролировать ротацию меню",
+      icon: "🍂"
+    }
+  ];
+
   // Inline editing states
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editingField, setEditingField] = useState(null);
