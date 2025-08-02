@@ -2248,7 +2248,7 @@ async def generate_mass_tech_cards(request: dict):
                 if equipment_names:
                     equipment_context = f"\nОБОРУДОВАНИЕ НА КУХНЕ: {', '.join(equipment_names)}\nИспользуй доступное оборудование в рецептах!"
         
-        # Generate tech card for each dish
+        # Generate tech card for each dish SEQUENTIALLY (no timeout issues)
         for i, dish in enumerate(all_dishes):
             try:
                 dish_name = dish["name"]
@@ -2276,7 +2276,7 @@ async def generate_mass_tech_cards(request: dict):
                     equipment_context=equipment_context
                 )
                 
-                # Generate tech card using OpenAI
+                # Generate tech card using OpenAI - ONE AT A TIME
                 client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
                 
                 response = client.chat.completions.create(
@@ -2316,6 +2316,9 @@ async def generate_mass_tech_cards(request: dict):
                 
                 logger.info(f"Successfully generated tech card for: {dish_name}")
                 
+                # Small delay between requests to avoid API rate limits
+                await asyncio.sleep(1)
+                
             except Exception as e:
                 error_msg = f"Failed to generate tech card for {dish['name']}: {str(e)}"
                 logger.error(error_msg)
@@ -2326,6 +2329,8 @@ async def generate_mass_tech_cards(request: dict):
                     "category": dish["category"],
                     "status": "failed"
                 })
+                
+                # Continue with next dish even if one fails
         
         # Update user's monthly tech card usage
         current_usage = user.get("monthly_tech_cards_used", 0)
