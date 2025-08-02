@@ -2400,6 +2400,7 @@ function App() {
   const generateMassTechCards = async () => {
     if (!generatedMenu?.menu_id) {
       alert('Сначала создайте меню!');
+      console.error('generatedMenu:', generatedMenu);
       return;
     }
 
@@ -2438,6 +2439,8 @@ function App() {
       };
 
       console.log('Starting mass tech card generation:', massRequest);
+      console.log('Current user:', currentUser);
+      console.log('Generated menu:', generatedMenu);
       
       const response = await axios.post(`${API}/generate-mass-tech-cards`, massRequest);
       
@@ -2469,8 +2472,19 @@ function App() {
       }
     } catch (error) {
       console.error('Error generating mass tech cards:', error);
-      alert('Ошибка при массовой генерации техкарт: ' + (error.response?.data?.detail || error.message));
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       setShowMassGenerationModal(false);
+      
+      // More detailed error message
+      let errorMessage = 'Ошибка при массовой генерации техкарт';
+      if (error.response?.data?.detail) {
+        errorMessage += ': ' + error.response.data.detail;
+      } else if (error.message) {
+        errorMessage += ': ' + error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsGeneratingMassCards(false);
     }
