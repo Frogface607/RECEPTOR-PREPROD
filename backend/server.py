@@ -2031,6 +2031,45 @@ async def generate_menu(request: dict):
             
             import json
             menu_data = json.loads(menu_content)
+            
+            # Validate dish count and fix if necessary
+            total_dishes = sum(len(category.get('dishes', [])) for category in menu_data.get('categories', []))
+            
+            if total_dishes != dish_count:
+                logger.warning(f"Generated {total_dishes} dishes, expected {dish_count}. Adjusting...")
+                
+                if total_dishes < dish_count:
+                    # Need to add more dishes
+                    needed = dish_count - total_dishes
+                    categories = menu_data.get('categories', [])
+                    if categories:
+                        # Add dishes to existing categories
+                        for i in range(needed):
+                            cat_index = i % len(categories)
+                            categories[cat_index]['dishes'].append({
+                                "name": f"Специальное блюдо дня {i+1}",
+                                "description": f"Уникальное авторское блюдо от шеф-повара",
+                                "estimated_cost": "250",
+                                "estimated_price": "750",
+                                "difficulty": "средне",
+                                "cook_time": "25",
+                                "main_ingredients": ["сезонные ингредиенты", "специи"]
+                            })
+                
+                elif total_dishes > dish_count:
+                    # Need to remove excess dishes
+                    excess = total_dishes - dish_count
+                    categories = menu_data.get('categories', [])
+                    for category in categories:
+                        if excess <= 0:
+                            break
+                        dishes = category.get('dishes', [])
+                        while len(dishes) > 1 and excess > 0:  # Keep at least 1 dish per category
+                            dishes.pop()
+                            excess -= 1
+                
+                logger.info(f"Adjusted menu to exactly {dish_count} dishes")
+            
         except json.JSONDecodeError:
             # If JSON parsing fails, create a structured response
             menu_data = {
