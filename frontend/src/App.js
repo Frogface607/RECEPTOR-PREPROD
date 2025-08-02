@@ -862,6 +862,49 @@ function App() {
       console.error('Error fetching venue types:', error);
       console.error('Failed URL:', `${API}/venue-types`);
       console.error('Error details:', error.response?.data || error.message);
+      
+      // Fallback venue types if API fails
+      const fallbackVenueTypes = {
+        "fine_dining": {
+          "name": "Fine Dining Ресторан",
+          "description": "Высококлассный ресторан с изысканной кухней",
+          "complexity_level": "high",
+          "price_multiplier": 2.5
+        },
+        "family_restaurant": {
+          "name": "Семейный ресторан",
+          "description": "Уютное заведение для всей семьи",
+          "complexity_level": "medium",
+          "price_multiplier": 1.5
+        },
+        "cafe": {
+          "name": "Кафе",
+          "description": "Непринужденная атмосфера, легкие блюда",
+          "complexity_level": "low",
+          "price_multiplier": 1.2
+        },
+        "bar_pub": {
+          "name": "Бар/Паб",
+          "description": "Барная еда и напитки",
+          "complexity_level": "low", 
+          "price_multiplier": 1.3
+        },
+        "fast_food": {
+          "name": "Фаст-фуд",
+          "description": "Быстрое питание",
+          "complexity_level": "low",
+          "price_multiplier": 1.0
+        },
+        "food_truck": {
+          "name": "Фуд-трак",
+          "description": "Мобильная точка питания",
+          "complexity_level": "low",
+          "price_multiplier": 1.1
+        }
+      };
+      
+      console.log('Using fallback venue types');
+      setVenueTypes(fallbackVenueTypes);
     }
   };
 
