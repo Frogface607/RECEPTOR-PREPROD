@@ -6692,17 +6692,49 @@ function App() {
                 </div>
               </div>
 
-              {/* Enhanced Current Status */}
-              <div className="mb-8 p-6 bg-gradient-to-r from-gray-700/30 to-gray-800/30 rounded-2xl border border-cyan-400/20">
-                <div className="flex items-center justify-center mb-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mr-3"></div>
-                  <p className="text-cyan-300 font-bold text-lg">
-                    {massGenerationProgress.current}
+              {/* Enhanced Current Status with Tips */}
+              <div className="mb-8 space-y-6">
+                {/* Progress Status */}
+                <div className="p-6 bg-gradient-to-r from-gray-700/30 to-gray-800/30 rounded-2xl border border-cyan-400/20">
+                  <div className="flex items-center justify-center mb-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mr-3"></div>
+                    <p className="text-cyan-300 font-bold text-lg">
+                      {massGenerationProgress.current}
+                    </p>
+                  </div>
+                  <p className="text-gray-400 text-sm">
+                    Каждая техкарта создается с учетом всех параметров меню
                   </p>
                 </div>
-                <p className="text-gray-400 text-sm">
-                  Каждая техкарта создается с учетом всех параметров меню
-                </p>
+
+                {/* Tips and Lifehacks while waiting */}
+                {massGenerationProgress.completed < massGenerationProgress.total && (
+                  <div className="p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-2xl border border-purple-400/30">
+                    <div className="flex items-start space-x-4">
+                      <div className="text-4xl flex-shrink-0 animate-bounce">
+                        {receptionTips[currentTipIndex]?.icon}
+                      </div>
+                      <div className="text-left">
+                        <h4 className="text-purple-300 font-bold text-lg mb-2">
+                          {receptionTips[currentTipIndex]?.title}
+                        </h4>
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                          {receptionTips[currentTipIndex]?.text}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-center space-x-2">
+                      {receptionTips.map((_, index) => (
+                        <div
+                          key={index}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentTipIndex ? 'bg-purple-400' : 'bg-gray-600'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Enhanced Results List */}
