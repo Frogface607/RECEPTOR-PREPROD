@@ -327,12 +327,6 @@ body {
   border-color: var(--accent-purple);
   box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2);
 }
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 @keyframes slideInFromBottom {
