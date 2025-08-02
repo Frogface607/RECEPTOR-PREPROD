@@ -3315,38 +3315,113 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Enhanced Dish Count Slider */}
+                      {/* Enhanced Menu Constructor */}
                       <div className="bg-gray-700/30 rounded-xl p-6">
-                        <label className="block text-lg font-bold text-gray-300 mb-4">
-                          <span className="text-purple-400">📊</span> Количество блюд: 
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 ml-2 text-xl">
-                            {menuProfile.dishCount}
-                          </span>
-                        </label>
-                        <div className="px-2">
-                          <input
-                            type="range"
-                            min="5"
-                            max="50"
-                            value={menuProfile.dishCount}
-                            onChange={(e) => setMenuProfile(prev => ({ ...prev, dishCount: parseInt(e.target.value) }))}
-                            className="wizard-slider w-full h-3 rounded-lg appearance-none cursor-pointer"
-                          />
-                          <div className="flex justify-between text-sm text-gray-400 mt-3">
-                            <span className="flex flex-col items-center">
-                              <span className="text-xs">🥗</span>
-                              <span>5 блюд</span>
-                            </span>
-                            <span className="flex flex-col items-center">
-                              <span className="text-xs">🍽️</span>
-                              <span>25 блюд</span>
-                            </span>
-                            <span className="flex flex-col items-center">
-                              <span className="text-xs">🏪</span>
-                              <span>50 блюд</span>
-                            </span>
-                          </div>
+                        <div className="flex items-center justify-between mb-4">
+                          <label className="text-lg font-bold text-gray-300">
+                            <span className="text-purple-400">📊</span> Структура меню
+                          </label>
+                          <button
+                            onClick={() => setMenuProfile(prev => ({ ...prev, useConstructor: !prev.useConstructor }))}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                              menuProfile.useConstructor
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                            }`}
+                          >
+                            {menuProfile.useConstructor ? '📋 Конструктор' : '📊 Общее количество'}
+                          </button>
                         </div>
+
+                        {!menuProfile.useConstructor ? (
+                          // Simple mode: total dish count
+                          <>
+                            <div className="text-center mb-4">
+                              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-3xl font-bold">
+                                {menuProfile.dishCount}
+                              </span>
+                              <span className="text-gray-400 ml-2">блюд всего</span>
+                            </div>
+                            <div className="px-2">
+                              <input
+                                type="range"
+                                min="5"
+                                max="50"
+                                value={menuProfile.dishCount}
+                                onChange={(e) => setMenuProfile(prev => ({ ...prev, dishCount: parseInt(e.target.value) }))}
+                                className="wizard-slider w-full h-3 rounded-lg appearance-none cursor-pointer"
+                              />
+                              <div className="flex justify-between text-sm text-gray-400 mt-3">
+                                <span className="flex flex-col items-center">
+                                  <span className="text-xs">🥗</span>
+                                  <span>5 блюд</span>
+                                </span>
+                                <span className="flex flex-col items-center">
+                                  <span className="text-xs">🍽️</span>
+                                  <span>25 блюд</span>
+                                </span>
+                                <span className="flex flex-col items-center">
+                                  <span className="text-xs">🏪</span>
+                                  <span>50 блюд</span>
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          // Constructor mode: categories
+                          <div className="space-y-4">
+                            <div className="text-center mb-4">
+                              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-2xl font-bold">
+                                {Object.values(menuProfile.categories).reduce((a, b) => a + b, 0)}
+                              </span>
+                              <span className="text-gray-400 ml-2">блюд всего</span>
+                            </div>
+                            
+                            {[
+                              { key: 'appetizers', label: '🥗 Закуски/Салаты', icon: '🥗', max: 10 },
+                              { key: 'soups', label: '🍲 Супы', icon: '🍲', max: 6 },
+                              { key: 'main_dishes', label: '🍖 Горячие блюда', icon: '🍖', max: 15 },
+                              { key: 'desserts', label: '🍰 Десерты', icon: '🍰', max: 8 },
+                              { key: 'beverages', label: '🥤 Напитки', icon: '🥤', max: 5 },
+                              { key: 'snacks', label: '🍿 Закуски к напиткам', icon: '🍿', max: 5 }
+                            ].map((category, index) => (
+                              <div key={category.key} className="bg-gray-600/30 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-sm font-semibold text-gray-300">
+                                    {category.label}
+                                  </label>
+                                  <span className="text-cyan-400 font-bold text-lg">
+                                    {menuProfile.categories[category.key] || 0}
+                                  </span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max={category.max}
+                                  value={menuProfile.categories[category.key] || 0}
+                                  onChange={(e) => setMenuProfile(prev => ({
+                                    ...prev,
+                                    categories: {
+                                      ...prev.categories,
+                                      [category.key]: parseInt(e.target.value)
+                                    }
+                                  }))}
+                                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                  style={{
+                                    background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${((menuProfile.categories[category.key] || 0) / category.max) * 100}%, #374151 ${((menuProfile.categories[category.key] || 0) / category.max) * 100}%, #374151 100%)`
+                                  }}
+                                />
+                              </div>
+                            ))}
+                            
+                            <div className="bg-purple-900/20 border border-purple-400/30 rounded-lg p-3 text-center">
+                              <p className="text-sm text-purple-300">
+                                💡 <strong>Конструктор меню</strong> дает точный контроль над структурой. 
+                                ИИ создаст именно указанное количество блюд в каждой категории.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
