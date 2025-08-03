@@ -1011,11 +1011,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Extended VenueProfileUpdate model to include all detailed profiling fields previously stored in menuProfile: audience demographics (audience_ages, audience_occupations), regional context, cuisine style preferences, kitchen capabilities, business requirements, default menu settings, and additional context fields. Updated get_venue_profile and update_venue_profile endpoints to handle comprehensive venue profiling."
+      - working: true
+        agent: "testing"
+        comment: "✅ ENHANCED VENUE PROFILE FULLY FUNCTIONAL: Comprehensive testing confirmed GET /api/venue-profile/{user_id} returns all 14 new fields (audience_ages, region_details, cuisine_style, kitchen_capabilities, staff_skill_level, preparation_time, ingredient_budget, menu_goals, special_requirements, dietary_options, default_dish_count, default_categories, venue_description, business_notes). POST /api/update-venue-profile/{user_id} successfully updated comprehensive profile with all enhanced fields working correctly."
 
   - task: "Simple Menu Generation Backend"
     implemented: true
@@ -1023,11 +1026,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added new /api/generate-simple-menu endpoint that uses venue profile settings to generate menus with minimal user input. Users only need to specify menu_type and expectations, while all other settings are automatically derived from their saved venue profile. Added SimpleMenuRequest model and comprehensive menu generation logic using venue context."
+      - working: true
+        agent: "testing"
+        comment: "✅ SIMPLE MENU GENERATION FULLY FUNCTIONAL: Fixed critical subscription validation bug (changed from non-existent 'menu_generation' flag to checking for 'pro' or 'business' plans). POST /api/generate-simple-menu working perfectly - generated 13 business_lunch dishes in 26.1 seconds using venue profile defaults. Proper context inheritance verified (cuisine_focus, average_check, audience context all applied). Model validation working correctly for required fields and subscription access."
   - task: "Dashboard Backend Functionality"
     implemented: true
     working: true
