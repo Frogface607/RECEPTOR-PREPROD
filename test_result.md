@@ -362,7 +362,7 @@ frontend:
     implemented: true
     working: false
     file: "frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -372,6 +372,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🚨 CRITICAL BUG CONFIRMED: Unable to test simplified menu creation due to registration form blocking access to main application. Registration form shows validation error 'Please select an item in the list' preventing form submission. City selection dropdown is not working properly - even when selecting 'Санкт-Петербург', the validation error persists. This blocks access to the main application where the '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' button would be located. The user's reported bug about menu disappearing cannot be tested until registration/login flow is fixed. IMMEDIATE ACTION REQUIRED: Fix city selection validation in registration form to allow users to access the main application and test menu generation functionality."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL BLOCKING ISSUE PERSISTS: Conducted comprehensive testing of the critical bug fix for Simple Menu Generation disappearing issue as requested in review. ❌ REGISTRATION FORM STILL BLOCKING ACCESS: Despite main agent's claim of fixing cities fallback data, registration form continues to prevent access to main application. Found 44 city options in dropdown, successfully selected 'moskva', filled all required fields (chef.antonov@restaurant-moscow.ru, Антон Шеф-Повар), but registration submission fails to proceed to main app. ❌ CANNOT TEST CRITICAL FIX: Unable to verify the critical fixes mentioned in review (setCurrentView('menu-generator') after menu generation, setCurrentView('menu-generator') to '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' button) because users cannot access the main application where these features are located. ❌ STUCK COUNT INCREASED: This is the second testing attempt blocked by the same registration issue, indicating the problem is not resolved. 🔧 IMMEDIATE ACTION REQUIRED: Main agent must fix the registration form validation logic to allow users to successfully register and access the main application before the menu generation bug fix can be tested. The critical menu disappearing issue cannot be verified until this blocking issue is resolved."
 
   - task: "Enhanced Menu Generator Landing Page"
     implemented: true
