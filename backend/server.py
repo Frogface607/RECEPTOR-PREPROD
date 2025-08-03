@@ -2394,6 +2394,159 @@ async def get_menu_tech_cards(menu_id: str):
         logger.error(f"Error getting menu tech cards: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting menu tech cards: {str(e)}")
 
+@api_router.post("/replace-dish")
+async def replace_dish(request: dict):
+    """
+    Replace a specific dish in a menu with a new generated dish
+    """
+    user_id = request.get("user_id")
+    menu_id = request.get("menu_id")
+    dish_name = request.get("dish_name")  # Current dish name to replace
+    replacement_prompt = request.get("replacement_prompt", "")  # Optional prompt for replacement
+    category = request.get("category", "")  # Dish category
+    
+    if not user_id or not menu_id or not dish_name:
+        raise HTTPException(status_code=400, detail="User ID, Menu ID, and dish name are required")
+    
+    # Get user to check subscription and get profile
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check subscription for dish replacement (PRO feature)
+    subscription_plan = user.get("subscription_plan", "free")
+    if subscription_plan == "free":
+        raise HTTPException(status_code=403, detail="Dish replacement requires PRO subscription")
+    
+    # Get the menu from database
+    menu_record = await db.user_history.find_one({"id": menu_id, "user_id": user_id, "is_menu": True})
+    if not menu_record:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    try:
+        # Generate replacement dish using same context as original menu
+        # Get user settings for tech card generation
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        venue_context = generate_venue_context(user)
+        venue_specific_rules = generate_venue_specific_rules(user)
+        
+        # Get venue-specific variables
+        venue_type = user.get("venue_type", "family_restaurant")
+        venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+        venue_price_multiplier = venue_info.get("price_multiplier", 1.0)
+        venue_type_name = venue_info.get("name", "Семейный ресторан")
+        
+        average_check = user.get("average_check", 800)
+        description_style = generate_description_style(user)
+        cooking_instructions = generate_cooking_instructions(user)
+        chef_tips = generate_chef_tips(user)
+        serving_recommendations = generate_serving_recommendations(user)
+        menu_tags = generate_menu_tags(user)
+        
+        # Equipment context for PRO users
+        equipment_context = ""
+        plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+        if plan_info.get("kitchen_equipment", False):
+            user_equipment = user.get("kitchen_equipment", [])
+            if user_equipment:
+                equipment_names = []
+                for equip_category in KITCHEN_EQUIPMENT.values():
+                    for equipment in equip_category:
+                        if equipment["id"] in user_equipment:
+                            equipment_names.append(equipment["name"])
+                
+                if equipment_names:
+                    equipment_context = f"\nОБОРУДОВАНИЕ НА КУХНЕ: {', '.join(equipment_names)}\nИспользуй доступное оборудование в рецептах!"
+        
+        # Create enhanced prompt for replacement dish
+        replacement_context = f"""
+ЗАМЕНА БЛЮДА В МЕНЮ:
+- Заменяемое блюдо: "{dish_name}"
+- Категория: {category}
+- Пожелания по замене: {replacement_prompt if replacement_prompt else "Создай альтернативное блюдо в том же стиле"}
+
+ВАЖНО: Создай блюдо того же уровня сложности и ценовой категории, но с другими ингредиентами или техниками приготовления. Сохрани стиль заведения и целевую аудиторию."""
+        
+        enhanced_dish_name = f"{dish_name} (замена для {venue_type_name}, категория: {category})"
+        if replacement_prompt:
+            enhanced_dish_name += f", пожелания: {replacement_prompt[:100]}"
+        
+        # Use the same GOLDEN_PROMPT as single tech card generation
+        prompt = GOLDEN_PROMPT.format(
+            dish_name=enhanced_dish_name,
+            regional_coefficient=regional_coefficient,
+            venue_context=venue_context,
+            venue_specific_rules=venue_specific_rules,
+            venue_price_multiplier=venue_price_multiplier,
+            venue_type_name=venue_type_name,
+            average_check=average_check,
+            description_style=description_style,
+            cooking_instructions=cooking_instructions,
+            chef_tips=chef_tips,
+            serving_recommendations=serving_recommendations,
+            menu_tags=menu_tags,
+            equipment_context=equipment_context + replacement_context
+        )
+        
+        # Generate replacement dish using OpenAI
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are RECEPTOR, a professional AI assistant for chefs. Always respond in Russian."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=4000,
+            temperature=0.7
+        )
+        
+        tech_card_content = response.choices[0].message.content.strip()
+        
+        # Extract the new dish name from generated content
+        title_match = tech_card_content.match(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)')
+        new_dish_name = title_match[1].strip() if title_match else f"Замена для {dish_name}"
+        
+        # Save new tech card to database
+        tech_card_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "dish_name": new_dish_name,
+            "content": tech_card_content,
+            "city": user.get("city", "moscow"),
+            "created_at": datetime.utcnow().isoformat(),
+            "is_menu": False,
+            "from_menu_id": menu_id,
+            "menu_category": category,
+            "replaced_dish": dish_name,  # Track what was replaced
+            "replacement_prompt": replacement_prompt
+        }
+        
+        await db.user_history.insert_one(tech_card_record)
+        
+        # Update user's monthly tech card usage
+        current_usage = user.get("monthly_tech_cards_used", 0)
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"monthly_tech_cards_used": current_usage + 1}}
+        )
+        
+        logger.info(f"Successfully replaced dish '{dish_name}' with '{new_dish_name}' for user {user_id}")
+        
+        return {
+            "success": True,
+            "original_dish": dish_name,
+            "new_dish": new_dish_name,
+            "tech_card_id": tech_card_record["id"],
+            "content": tech_card_content,
+            "category": category,
+            "message": f"Блюдо '{dish_name}' успешно заменено на '{new_dish_name}'"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error replacing dish: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error replacing dish: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
