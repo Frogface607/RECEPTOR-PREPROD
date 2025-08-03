@@ -2738,10 +2738,10 @@ async def generate_simple_menu(request: SimpleMenuRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Check subscription for menu generation
+    # Check subscription for menu generation (PRO feature)
     subscription_plan = user.get("subscription_plan", "free")
     plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
-    if not plan_info.get("menu_generation", False):
+    if subscription_plan not in ["pro", "business"]:
         raise HTTPException(status_code=403, detail="Menu generation requires PRO subscription")
     
     try:
