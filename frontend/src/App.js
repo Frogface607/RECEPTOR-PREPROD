@@ -3433,6 +3433,9 @@ function App() {
                   
                   <button
                     onClick={() => {
+                      // Ensure we're in the menu-generator view
+                      setCurrentView('menu-generator');
+                      
                       // Initialize simple menu data with venue profile defaults
                       setSimpleMenuData({
                         menuType: '',
