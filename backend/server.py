@@ -594,6 +594,7 @@ class SimpleMenuRequest(BaseModel):
     expectations: str  # Free-form description of what user expects
     dish_count: Optional[int] = None  # If not provided, uses venue profile default
     custom_categories: Optional[dict] = None  # Optional override of default categories
+    project_id: Optional[str] = None  # Optional project assignment
 
 class MenuProject(BaseModel):
     id: str
