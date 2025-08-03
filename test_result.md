@@ -375,15 +375,18 @@ frontend:
 
   - task: "Enhanced Menu Generator Landing Page"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Updated menu generator landing page to promote simple menu creation while still providing access to advanced wizard. Added profile setup section encouraging users to configure venue profile first. Changed main CTA to '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' and added secondary button for advanced wizard access."
+      - working: false
+        agent: "testing"
+        comment: "❌ CANNOT ACCESS MENU GENERATOR LANDING PAGE: Registration form validation error prevents access to main application. The enhanced landing page with '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' button cannot be reached due to city selection dropdown validation failure in registration form. Users cannot proceed past the registration screen to see the improved menu generator interface."
 
   - task: "Venue Profile Integration Enhancement"
     implemented: true
