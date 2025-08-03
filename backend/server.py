@@ -2721,6 +2721,209 @@ async def replace_dish(request: dict):
         logger.error(f"Error replacing dish: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error replacing dish: {str(e)}")
 
+@api_router.post("/generate-simple-menu")
+async def generate_simple_menu(request: SimpleMenuRequest):
+    """
+    Simplified menu generation using venue profile settings
+    User only needs to specify: menu_type, expectations, and optionally dish_count
+    All other settings are taken from the user's venue profile
+    """
+    user_id = request.user_id
+    
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID is required")
+    
+    # Get user and venue profile
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check subscription for menu generation
+    subscription_plan = user.get("subscription_plan", "free")
+    plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
+    if not plan_info.get("menu_generation", False):
+        raise HTTPException(status_code=403, detail="Menu generation requires PRO subscription")
+    
+    try:
+        logger.info(f"Starting simple menu generation for user {user_id}")
+        
+        # Build menu context from venue profile
+        venue_type = user.get("venue_type", "family_restaurant")
+        venue_info = VENUE_TYPES.get(venue_type, VENUE_TYPES["family_restaurant"])
+        venue_type_name = venue_info.get("name", "Семейный ресторан")
+        
+        # Get dish count from request or venue profile default
+        dish_count = request.dish_count or user.get("default_dish_count", 12)
+        
+        # Get categories from request or venue profile default
+        if request.custom_categories:
+            categories = request.custom_categories
+        else:
+            categories = user.get("default_categories", {
+                "salads": 2,
+                "appetizers": 3, 
+                "soups": 2,
+                "main_dishes": 4,
+                "desserts": 2,
+                "beverages": 1
+            })
+        
+        # Build detailed context from venue profile
+        cuisine_focus = user.get("cuisine_focus", ["russian"])
+        cuisine_style = user.get("cuisine_style", "classic")
+        average_check = user.get("average_check", 800)
+        audience_ages = user.get("audience_ages", {})
+        audience_occupations = user.get("audience_occupations", [])
+        region = user.get("region", "moskva")
+        staff_skill_level = user.get("staff_skill_level", "medium")
+        preparation_time = user.get("preparation_time", "medium")
+        ingredient_budget = user.get("ingredient_budget", "medium")
+        menu_goals = user.get("menu_goals", [])
+        special_requirements = user.get("special_requirements", [])
+        dietary_options = user.get("dietary_options", [])
+        kitchen_capabilities = user.get("kitchen_capabilities", [])
+        
+        # Build audience context
+        audience_context = ""
+        if audience_ages:
+            age_distribution = ", ".join([f"{age}: {pct}%" for age, pct in audience_ages.items() if pct > 0])
+            audience_context += f"Возрастное распределение: {age_distribution}. "
+        if audience_occupations:
+            audience_context += f"Основная аудитория: {', '.join(audience_occupations)}. "
+        
+        # Build requirements context  
+        requirements_context = ""
+        if special_requirements:
+            requirements_context += f"Особые требования: {', '.join(special_requirements)}. "
+        if dietary_options:
+            requirements_context += f"Диетические опции: {', '.join(dietary_options)}. "
+            
+        # Build kitchen context
+        kitchen_context = f"Уровень персонала: {staff_skill_level}, время приготовления: {preparation_time}, бюджет ингредиентов: {ingredient_budget}. "
+        if kitchen_capabilities:
+            kitchen_context += f"Кухонные возможности: {', '.join(kitchen_capabilities)}. "
+            
+        # Create simplified menu generation prompt
+        menu_prompt = f"""Создай {request.menu_type} меню для заведения "{venue_type_name}".
+
+ОСНОВНАЯ ИНФОРМАЦИЯ:
+- Тип заведения: {venue_type_name}
+- Кухня: {', '.join(cuisine_focus)}
+- Стиль: {cuisine_style} 
+- Средний чек: {average_check} руб.
+- Регион: {region}
+
+ОЖИДАНИЯ ОТ МЕНЮ:
+{request.expectations}
+
+ЦЕЛЕВАЯ АУДИТОРИЯ:
+{audience_context if audience_context else 'Широкая аудитория'}
+
+ТРЕБОВАНИЯ И ОГРАНИЧЕНИЯ:
+{requirements_context if requirements_context else 'Стандартные требования'}
+
+КУХОННЫЕ ВОЗМОЖНОСТИ:
+{kitchen_context}
+
+СОСТАВ МЕНЮ:
+Создай ровно {dish_count} блюд по следующим категориям:
+{chr(10).join([f'- {category}: {count} блюд' for category, count in categories.items()])}
+
+ВАЖНЫЕ ТРЕБОВАНИЯ:
+1. Каждое блюдо должно соответствовать концепции заведения
+2. Учитывай средний чек при выборе ингредиентов
+3. Блюда должны отвечать ожиданиям: {request.expectations}
+4. Соблюдай баланс по сложности приготовления
+5. Учитывай целевую аудиторию
+
+Отвечай ТОЛЬКО в формате JSON:
+{{
+  "menu_concept": "краткая концепция меню",
+  "dishes": [
+    {{
+      "name": "название блюда",
+      "category": "категория",
+      "description": "краткое описание",
+      "main_ingredients": ["ингредиент1", "ингредиент2"],
+      "estimated_cost": "примерная себестоимость",
+      "estimated_price": "рекомендуемая цена",
+      "difficulty": "easy/medium/hard",
+      "cook_time": "время приготовления"
+    }}
+  ]
+}}"""
+
+        # Generate menu using OpenAI
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Using gpt-4o for better menu generation
+            messages=[
+                {"role": "system", "content": "You are RECEPTOR, a professional AI assistant for chefs and restaurateurs. Always respond in Russian with valid JSON."},
+                {"role": "user", "content": menu_prompt}
+            ],
+            max_tokens=4000,
+            temperature=0.8
+        )
+        
+        menu_content = response.choices[0].message.content.strip()
+        
+        # Clean and parse JSON response
+        if menu_content.startswith('```json'):
+            menu_content = menu_content.replace('```json', '').replace('```', '')
+        
+        try:
+            menu_data = json.loads(menu_content)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse menu JSON: {str(e)}")
+            logger.error(f"Raw content: {menu_content}")
+            raise HTTPException(status_code=500, detail="Failed to generate valid menu format")
+        
+        # Validate menu structure
+        if "dishes" not in menu_data:
+            raise HTTPException(status_code=500, detail="Generated menu missing dishes")
+        
+        if len(menu_data["dishes"]) != dish_count:
+            logger.warning(f"Generated {len(menu_data['dishes'])} dishes, expected {dish_count}")
+            
+        # Create menu record
+        menu_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "menu_type": request.menu_type,
+            "menu_concept": menu_data.get("menu_concept", ""),
+            "expectations": request.expectations,
+            "dish_count_requested": dish_count,
+            "dish_count_generated": len(menu_data["dishes"]),
+            "dishes": menu_data["dishes"],
+            "venue_context": {
+                "venue_type": venue_type,
+                "cuisine_focus": cuisine_focus,
+                "cuisine_style": cuisine_style,
+                "average_check": average_check
+            },
+            "generation_method": "simple",  # Mark as simplified generation
+            "created_at": datetime.utcnow().isoformat(),
+            "is_menu": True
+        }
+        
+        await db.user_history.insert_one(menu_record)
+        logger.info(f"Simple menu generated successfully for user {user_id}: {menu_record['id']}")
+        
+        return {
+            "success": True,
+            "menu_id": menu_record["id"],
+            "menu_concept": menu_data.get("menu_concept", ""),
+            "dish_count": len(menu_data["dishes"]),
+            "dishes": menu_data["dishes"],
+            "generation_method": "simple",
+            "message": f"Простое меню '{request.menu_type}' успешно создано!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating simple menu: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating simple menu: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
