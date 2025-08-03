@@ -482,6 +482,7 @@ class KitchenEquipmentUpdate(BaseModel):
     equipment_ids: List[str]
 
 class VenueProfileUpdate(BaseModel):
+    # Basic venue information
     venue_type: Optional[str] = None
     cuisine_focus: List[str] = []
     average_check: Optional[int] = None
@@ -489,7 +490,40 @@ class VenueProfileUpdate(BaseModel):
     venue_concept: Optional[str] = None
     target_audience: Optional[str] = None
     special_features: List[str] = []
-    kitchen_equipment: List[str] = []  # Combined with equipment update
+    kitchen_equipment: List[str] = []
+    
+    # Enhanced venue profiling - moved from menu generation
+    region: Optional[str] = None  # moskva, spb, etc.
+    
+    # Audience Demographics
+    audience_ages: Optional[dict] = None  # {'18-25': 20, '26-35': 50, etc.}
+    audience_occupations: List[str] = []  # students, professionals, families, etc.
+    
+    # Regional Context
+    region_details: Optional[dict] = None  # {type: 'capital', geography: 'plains', climate: 'temperate'}
+    
+    # Cuisine Style and Influences
+    cuisine_style: Optional[str] = None  # classic, modern, fusion, street
+    cuisine_influences: List[str] = []  # additional cuisine influences
+    
+    # Kitchen Capabilities
+    kitchen_capabilities: List[str] = []  # advanced_equipment, molecular, grill, etc.
+    staff_skill_level: Optional[str] = None  # novice, medium, advanced, expert
+    preparation_time: Optional[str] = None  # quick, medium, extended
+    ingredient_budget: Optional[str] = None  # economy, medium, premium, luxury
+    
+    # Business Requirements
+    menu_goals: List[str] = []  # profit_optimization, customer_retention, etc.
+    special_requirements: List[str] = []  # allergen_free, halal, vegan, etc.
+    dietary_options: List[str] = []  # vegetarian, vegan, gluten_free, etc.
+    
+    # Default Menu Constructor Settings (for quick menu generation)
+    default_dish_count: Optional[int] = None
+    default_categories: Optional[dict] = None  # {salads: 2, appetizers: 3, etc.}
+    
+    # Additional Context
+    venue_description: Optional[str] = None  # Free-form description
+    business_notes: Optional[str] = None  # Additional business context
 
 class DishRequest(BaseModel):
     dish_name: str
