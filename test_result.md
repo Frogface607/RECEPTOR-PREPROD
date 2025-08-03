@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Simplify menu creation process by moving all venue details, audience settings, and configuration to a comprehensive venue profile. Reduce menu generation wizard from 5 complex steps to 3 simple steps: menu type selection, menu expectations description, and dish count. Remove complexity and improve user experience to prevent abandonment."
+user_problem_statement: "Implement Menu Projects System for better organization and user retention. Users should be able to create projects (e.g., 'Summer Menu 2025', 'Banquet Menu', 'Kids Menu') to organize their generated menus and tech cards. This enhances user engagement, time spent in app, and provides clear value demonstration for monetization."
 
 backend:
   - task: "Simplified Menu Generation System and Enhanced Venue Profile - New"
