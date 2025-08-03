@@ -3187,6 +3187,13 @@ function App() {
                   МЕНЮ
                 </button>
                 <button
+                  onClick={() => setShowProjectsModal(true)}
+                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
+                  title="📁 Управление проектами меню"
+                >
+                  ПРОЕКТЫ {menuProjects.length > 0 && `(${menuProjects.length})`}
+                </button>
+                <button
                   onClick={() => {
                     setShowHistory(!showHistory);
                     if (!showHistory) {
