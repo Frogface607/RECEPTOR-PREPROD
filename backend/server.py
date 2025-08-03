@@ -2949,6 +2949,191 @@ async def generate_simple_menu(request: SimpleMenuRequest):
         logger.error(f"Error generating simple menu: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating simple menu: {str(e)}")
 
+@api_router.post("/create-menu-project")
+async def create_menu_project(request: MenuProjectCreate):
+    """Create a new menu project for organizing menus and tech cards"""
+    try:
+        # Verify user exists
+        user = await db.users.find_one({"id": request.user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Create project record
+        project_id = str(uuid.uuid4())
+        project_record = {
+            "id": project_id,
+            "user_id": request.user_id,
+            "project_name": request.project_name,
+            "description": request.description or "",
+            "project_type": request.project_type,
+            "venue_type": request.venue_type,
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat(),
+            "is_active": True
+        }
+        
+        await db.menu_projects.insert_one(project_record)
+        
+        logger.info(f"Menu project created: {project_id} for user {request.user_id}")
+        
+        return {
+            "success": True,
+            "project_id": project_id,
+            "message": f"Проект '{request.project_name}' успешно создан!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating menu project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating menu project: {str(e)}")
+
+@api_router.get("/menu-projects/{user_id}")
+async def get_user_menu_projects(user_id: str):
+    """Get all menu projects for a user"""
+    try:
+        # Verify user exists
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get all projects for user
+        projects_cursor = db.menu_projects.find(
+            {"user_id": user_id, "is_active": True}
+        ).sort("created_at", -1)
+        
+        projects = await projects_cursor.to_list(length=100)
+        
+        # Get counts for each project
+        project_stats = []
+        for project in projects:
+            # Count menus in project
+            menus_count = await db.user_history.count_documents({
+                "user_id": user_id,
+                "is_menu": True,
+                "project_id": project["id"]
+            })
+            
+            # Count tech cards in project
+            tech_cards_count = await db.user_history.count_documents({
+                "user_id": user_id,
+                "is_menu": False,
+                "project_id": project["id"]
+            })
+            
+            project_stats.append({
+                **project,
+                "menus_count": menus_count,
+                "tech_cards_count": tech_cards_count
+            })
+        
+        return {
+            "success": True,
+            "projects": project_stats,
+            "total_projects": len(project_stats)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting menu projects: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting menu projects: {str(e)}")
+
+@api_router.put("/menu-project/{project_id}")
+async def update_menu_project(project_id: str, request: MenuProjectUpdate):
+    """Update a menu project"""
+    try:
+        # Find project
+        project = await db.menu_projects.find_one({"id": project_id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Build update data
+        update_data = {"updated_at": datetime.utcnow().isoformat()}
+        
+        if request.project_name is not None:
+            update_data["project_name"] = request.project_name
+        if request.description is not None:
+            update_data["description"] = request.description
+        if request.project_type is not None:
+            update_data["project_type"] = request.project_type
+        if request.venue_type is not None:
+            update_data["venue_type"] = request.venue_type
+        if request.is_active is not None:
+            update_data["is_active"] = request.is_active
+        
+        await db.menu_projects.update_one(
+            {"id": project_id},
+            {"$set": update_data}
+        )
+        
+        return {
+            "success": True,
+            "message": "Проект успешно обновлен!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating menu project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating menu project: {str(e)}")
+
+@api_router.delete("/menu-project/{project_id}")
+async def delete_menu_project(project_id: str):
+    """Delete (deactivate) a menu project"""
+    try:
+        # Find project
+        project = await db.menu_projects.find_one({"id": project_id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Soft delete - mark as inactive
+        await db.menu_projects.update_one(
+            {"id": project_id},
+            {"$set": {"is_active": False, "updated_at": datetime.utcnow().isoformat()}}
+        )
+        
+        return {
+            "success": True,
+            "message": "Проект успешно удален!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error deleting menu project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting menu project: {str(e)}")
+
+@api_router.get("/menu-project/{project_id}/content")
+async def get_menu_project_content(project_id: str):
+    """Get all menus and tech cards for a specific project"""
+    try:
+        # Find project
+        project = await db.menu_projects.find_one({"id": project_id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get menus in project
+        menus_cursor = db.user_history.find({
+            "project_id": project_id,
+            "is_menu": True
+        }).sort("created_at", -1)
+        
+        menus = await menus_cursor.to_list(length=100)
+        
+        # Get tech cards in project
+        tech_cards_cursor = db.user_history.find({
+            "project_id": project_id,
+            "is_menu": False
+        }).sort("created_at", -1)
+        
+        tech_cards = await tech_cards_cursor.to_list(length=500)
+        
+        return {
+            "success": True,
+            "project": project,
+            "menus": menus,
+            "tech_cards": tech_cards,
+            "menus_count": len(menus),
+            "tech_cards_count": len(tech_cards)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting menu project content: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting menu project content: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
