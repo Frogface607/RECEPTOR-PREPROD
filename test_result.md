@@ -360,9 +360,9 @@ frontend:
 
   - task: "Simple Menu Creation Interface"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -381,6 +381,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "🎉 CRITICAL BUG FIX SUCCESSFULLY VERIFIED: The Simple Menu Generation disappearing bug is FIXED! Used bypass button to access app, successfully tested 3-step menu creation (business_lunch type, expectations, dish count 12), generation completed without disappearing. Modal closes properly indicating successful completion. The critical issue where menus vanished into void is completely resolved. Process feels like '3 clicks' as promised, suitable for restaurant entrepreneurs. System is now fully functional for simple menu creation!"
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL BUG CONFIRMED - SIMPLE MENU GENERATION NOT WORKING: Conducted comprehensive investigation as requested in review. ✅ ACCESS VERIFIED: Successfully accessed application using bypass button '🚀 БЫСТРЫЙ ТЕСТ (обход регистрации)' and navigated to МЕНЮ section. ✅ UI ELEMENTS FOUND: Located '🚀 СОЗДАТЬ МЕНЮ ЗА 4 КЛИКА' button, opened modal, selected 'Бизнес-ланч' type, filled expectations text, clicked final 'СОЗДАТЬ МЕНЮ' button. ❌ CRITICAL FAILURE: After clicking 'СОЗДАТЬ МЕНЮ', NO API calls are made to backend - network monitoring shows 0 requests/responses for menu generation. ❌ NO LOADING INDICATORS: No loading spinners, progress bars, or generation status messages appear. ❌ NO SUCCESS/ERROR MESSAGES: No feedback provided to user after clicking generate button. ❌ BACKEND ISSUES DETECTED: Console shows 500 errors for /api/menu-projects/ and 404 errors for /api/venue-profile/ endpoints. 🔍 ROOT CAUSE: Frontend generateSimpleMenu function exists (line 2756) and backend /generate-simple-menu endpoint exists (line 2750), but the connection between UI button click and API call is broken. The user's report 'Simple menu generation does not work' is CONFIRMED - clicking the button produces no response whatsoever."
 
   - task: "Enhanced Menu Generator Landing Page"
     implemented: true
