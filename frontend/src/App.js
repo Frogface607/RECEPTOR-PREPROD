@@ -2633,6 +2633,86 @@ function App() {
     }
   }, [currentView, currentUser]);
 
+  // Fetch menu tech cards function
+  const fetchMenuTechCards = async (menuId) => {
+    if (!menuId) {
+      alert('ID меню не найден!');
+      return;
+    }
+
+    setIsLoadingMenuTechCards(true);
+    try {
+      const response = await axios.get(`${API}/menu/${menuId}/tech-cards`);
+      
+      if (response.data.success) {
+        setMenuTechCards(response.data);
+        setShowMenuTechCards(true);
+        console.log('Menu tech cards loaded:', response.data);
+      } else {
+        throw new Error('Failed to fetch menu tech cards');
+      }
+    } catch (error) {
+      console.error('Error fetching menu tech cards:', error);
+      alert('Ошибка при загрузке техкарт меню: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsLoadingMenuTechCards(false);
+    }
+  };
+
+  // Replace dish function
+  const replaceDish = async () => {
+    if (!replacingDishData || !currentUser?.id) {
+      alert('Недостаточно данных для замены блюда');
+      return;
+    }
+
+    setIsReplacingDish(true);
+    try {
+      const response = await axios.post(`${API}/replace-dish`, {
+        user_id: currentUser.id,
+        menu_id: replacingDishData.menu_id,
+        dish_name: replacingDishData.dish_name,
+        category: replacingDishData.category,
+        replacement_prompt: replacementPrompt
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+        
+        // Refresh menu tech cards if they are currently displayed
+        if (showMenuTechCards && menuTechCards) {
+          await fetchMenuTechCards(replacingDishData.menu_id);
+        }
+        
+        // Close modal
+        setShowReplaceDishModal(false);
+        setReplacingDishData(null);
+        setReplacementPrompt('');
+        
+        // Update user history
+        await fetchUserHistory();
+      } else {
+        throw new Error(response.data.error || 'Failed to replace dish');
+      }
+    } catch (error) {
+      console.error('Error replacing dish:', error);
+      alert('Ошибка при замене блюда: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsReplacingDish(false);
+    }
+  };
+
+  // Open replace dish modal
+  const openReplaceDishModal = (dishName, category, menuId) => {
+    setReplacingDishData({
+      dish_name: dishName,
+      category: category,
+      menu_id: menuId
+    });
+    setReplacementPrompt(''); // Reset prompt
+    setShowReplaceDishModal(true);
+  };
+
   const loadUserPrices = async (userId) => {
     try {
       const response = await axios.get(`${API}/user-prices/${userId}`);
