@@ -390,15 +390,18 @@ frontend:
 
   - task: "Venue Profile Integration Enhancement"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Enhanced simple menu creation to automatically use venue profile defaults (default_dish_count, default_categories) and display warnings when venue profile is incomplete. Added profile setup prompts and seamless integration between venue profile configuration and menu generation process."
+      - working: false
+        agent: "testing"
+        comment: "❌ VENUE PROFILE INTEGRATION CANNOT BE TESTED: Registration form blocking access to main application prevents testing of venue profile integration with simplified menu creation. The enhanced integration features cannot be verified until users can successfully register and access the main application interface."
   - task: "Venue Profile Modal - ДАЛЕЕ Button Activation Issue"
     implemented: true
     working: false
