@@ -1305,6 +1305,7 @@ async def update_venue_profile(user_id: str, profile_data: VenueProfileUpdate):
     # Basic venue customization available to all users
     update_data = {}
     
+    # Basic venue fields
     if profile_data.venue_type:
         if profile_data.venue_type not in VENUE_TYPES:
             raise HTTPException(status_code=400, detail="Invalid venue type")
@@ -1319,7 +1320,59 @@ async def update_venue_profile(user_id: str, profile_data: VenueProfileUpdate):
     if profile_data.average_check is not None:
         update_data["average_check"] = profile_data.average_check
     
-    # Advanced features require PRO subscription
+    if profile_data.region is not None:
+        update_data["region"] = profile_data.region
+        
+    # Enhanced profiling fields (available to all users now for better UX)
+    if profile_data.audience_ages is not None:
+        update_data["audience_ages"] = profile_data.audience_ages
+        
+    if profile_data.audience_occupations:
+        update_data["audience_occupations"] = profile_data.audience_occupations
+        
+    if profile_data.region_details is not None:
+        update_data["region_details"] = profile_data.region_details
+        
+    if profile_data.cuisine_style is not None:
+        update_data["cuisine_style"] = profile_data.cuisine_style
+        
+    if profile_data.cuisine_influences:
+        update_data["cuisine_influences"] = profile_data.cuisine_influences
+        
+    if profile_data.kitchen_capabilities:
+        update_data["kitchen_capabilities"] = profile_data.kitchen_capabilities
+        
+    if profile_data.staff_skill_level is not None:
+        update_data["staff_skill_level"] = profile_data.staff_skill_level
+        
+    if profile_data.preparation_time is not None:
+        update_data["preparation_time"] = profile_data.preparation_time
+        
+    if profile_data.ingredient_budget is not None:
+        update_data["ingredient_budget"] = profile_data.ingredient_budget
+        
+    if profile_data.menu_goals:
+        update_data["menu_goals"] = profile_data.menu_goals
+        
+    if profile_data.special_requirements:
+        update_data["special_requirements"] = profile_data.special_requirements
+        
+    if profile_data.dietary_options:
+        update_data["dietary_options"] = profile_data.dietary_options
+        
+    if profile_data.default_dish_count is not None:
+        update_data["default_dish_count"] = profile_data.default_dish_count
+        
+    if profile_data.default_categories is not None:
+        update_data["default_categories"] = profile_data.default_categories
+        
+    if profile_data.venue_description is not None:
+        update_data["venue_description"] = profile_data.venue_description
+        
+    if profile_data.business_notes is not None:
+        update_data["business_notes"] = profile_data.business_notes
+
+    # Advanced features still require PRO subscription
     if plan_info.get("kitchen_equipment", False):
         if profile_data.venue_name is not None:
             update_data["venue_name"] = profile_data.venue_name
