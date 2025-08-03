@@ -595,6 +595,31 @@ class SimpleMenuRequest(BaseModel):
     dish_count: Optional[int] = None  # If not provided, uses venue profile default
     custom_categories: Optional[dict] = None  # Optional override of default categories
 
+class MenuProject(BaseModel):
+    id: str
+    user_id: str
+    project_name: str
+    description: Optional[str] = None
+    project_type: str  # restaurant_launch, seasonal_update, special_event, menu_refresh
+    venue_type: Optional[str] = None  # Associated venue type if different from main profile
+    created_at: datetime
+    updated_at: datetime
+    is_active: bool = True
+    
+class MenuProjectCreate(BaseModel):
+    user_id: str
+    project_name: str
+    description: Optional[str] = None
+    project_type: str  # restaurant_launch, seasonal_update, special_event, menu_refresh
+    venue_type: Optional[str] = None
+
+class MenuProjectUpdate(BaseModel):
+    project_name: Optional[str] = None
+    description: Optional[str] = None
+    project_type: Optional[str] = None
+    venue_type: Optional[str] = None
+    is_active: Optional[bool] = None
+
 # Golden prompt for tech cards  
 GOLDEN_PROMPT = """Ты — RECEPTOR, профессиональный AI-помощник для шеф-поваров и рестораторов.
 
