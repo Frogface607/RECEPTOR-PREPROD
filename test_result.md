@@ -959,11 +959,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Mass tech card generation was already implemented as sequential in the backend. The existing /api/generate-mass-tech-cards endpoint processes dishes one by one using a for loop, with a 1-second delay between requests to avoid API rate limits. The generation is not parallel as originally thought."
+      - working: true
+        agent: "testing"
+        comment: "🎯 SEQUENTIAL TECH CARD GENERATION TESTING COMPLETED: Conducted comprehensive testing of POST /api/generate-mass-tech-cards endpoint as specifically requested in review. ✅ SEQUENTIAL PROCESSING VERIFIED: Successfully tested with 4-dish menu, took 97.53 seconds for sequential generation (not parallel). Each dish processed one by one with proper delays. ✅ ENDPOINT FUNCTIONALITY: POST /api/generate-mass-tech-cards working perfectly with 200 OK status. ✅ RESPONSE STRUCTURE: Returns correct JSON with all required fields (success: true, generated_count: 4, failed_count: 0, tech_cards: array, failed_generations: empty). ✅ TECH CARD QUALITY: Sample tech card 2584 characters with all 4/4 required sections (Ингредиенты, Себестоимость, КБЖУ, Пошаговый рецепт). ✅ DATABASE STORAGE: All 4 tech cards properly stored with menu linkage verified via GET /api/menu/{menu_id}/tech-cards. ✅ PRO SUBSCRIPTION: Correctly validates PRO access, test_user_12345 has proper access. ✅ MENU INTEGRATION: Successfully generates menus first, then processes all dishes sequentially. Sequential processing confirmed - endpoint is working correctly and ready for production use."
 
   - task: "Replace Dish Functionality Backend"
     implemented: true
@@ -971,11 +974,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added new /api/replace-dish endpoint that allows PRO users to replace individual dishes in generated menus. The endpoint generates a new tech card with same venue context as the original menu, supports custom replacement prompts, tracks the replaced dish, and saves the new tech card with proper linking to the original menu."
+      - working: true
+        agent: "testing"
+        comment: "🎯 REPLACE DISH FUNCTIONALITY TESTING COMPLETED: Conducted comprehensive testing of POST /api/replace-dish endpoint as specifically requested in review. ✅ CRITICAL BUG FIXED: Fixed regex error in backend code (line 2507) - changed tech_card_content.match() to re.search() for proper dish name extraction. ✅ ENDPOINT FUNCTIONALITY: POST /api/replace-dish working perfectly with 200 OK status (20.56s response time). ✅ TEST PARAMETERS VERIFIED: Successfully tested with exact parameters - user_id: test_user_12345, menu_id: generated menu, dish_name: 'Паста Карбонара', category: 'Основные блюда', replacement_prompt: 'Make it vegetarian and spicier'. ✅ CONTEXT PRESERVATION: New dish properly generated with venue context preserved. Original: 'Паста Карбонара' → New: 'Паста с острым овощным соусом'. ✅ CUSTOMIZATION WORKING: Vegetarian elements found: True, Spicy elements found: True - replacement prompt correctly applied. ✅ RESPONSE STRUCTURE: All required fields present (success, original_dish, new_dish, tech_card_id, content, category). ✅ TECH CARD QUALITY: Generated 2751 character tech card with all 4/4 required sections. ✅ DATABASE INTEGRATION: Replacement dish properly stored and appears in menu tech cards (5 total cards across 4 categories). ✅ ORIGINAL DISH TRACKING: replaced_dish and replacement_prompt fields correctly saved for audit trail. ✅ PRO SUBSCRIPTION: Correctly validates PRO access for dish replacement feature. Replace dish functionality is fully functional and ready for production use."
   - task: "Dashboard Backend Functionality"
     implemented: true
     working: true
