@@ -176,9 +176,24 @@ function App() {
     menuType: '', // full, seasonal, business_lunch, event
     expectations: '', // Free-form user input
     dishCount: 0, // Will be set from venue profile default
-    customCategories: null // Optional override
+    customCategories: null, // Optional override
+    projectId: null // Link to menu project
   });
   const [isGeneratingSimpleMenu, setIsGeneratingSimpleMenu] = useState(false);
+
+  // Menu Projects System states
+  const [showProjectsModal, setShowProjectsModal] = useState(false);
+  const [menuProjects, setMenuProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [newProjectData, setNewProjectData] = useState({
+    projectName: '',
+    description: '',
+    projectType: '',
+    venueType: null
+  });
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
 
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
