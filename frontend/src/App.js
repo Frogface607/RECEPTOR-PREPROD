@@ -2780,17 +2780,30 @@ function App() {
 
       const requestData = {
         user_id: currentUser.id,
-        menu_type: simpleMenuData.menuType,
-        expectations: simpleMenuData.expectations,
-        dish_count: dishCount,
-        custom_categories: simpleMenuData.customCategories,
-        project_id: simpleMenuData.projectId // Include project assignment
+        // Convert simple menu data to complex menu format for existing endpoint
+        menu_profile: {
+          menuType: "restaurant",
+          dishCount: dishCount,
+          averageCheck: "medium",
+          cuisineStyle: venueProfile.cuisine_style || "classic",
+          menuStyle: simpleMenuData.menuType,
+          specialRequirements: [],
+          menuDescription: simpleMenuData.expectations,
+          expectations: simpleMenuData.expectations,
+          additional_notes: `Generated via simple menu creation. Type: ${simpleMenuData.menuType}, Project: ${simpleMenuData.projectId || 'none'}`
+        },
+        venue_profile: {
+          venue_name: venueProfile.venue_name || "Test Restaurant",
+          venue_type: venueProfile.venue_type || "family_restaurant", 
+          cuisine_type: (venueProfile.cuisine_focus && venueProfile.cuisine_focus[0]) || "russian",
+          average_check: venueProfile.average_check || 800
+        }
       };
       
-      console.log('Request data:', requestData);
-      console.log('API URL:', `${API}/generate-simple-menu`);
+      console.log('Request data (adapted for existing endpoint):', requestData);
+      console.log('API URL:', `${API}/generate-menu`);
 
-      const response = await axios.post(`${API}/generate-simple-menu`, requestData);
+      const response = await axios.post(`${API}/generate-menu`, requestData);
       console.log('API Response:', response.data);
 
       if (response.data.success) {
