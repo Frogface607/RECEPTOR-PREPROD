@@ -560,6 +560,41 @@ class TechCardCreate(BaseModel):
     dish_name: str
     content: str
 
+class MenuGenerationRequest(BaseModel):
+    user_id: str
+    # Full menu generation with ALL parameters (original complex version)
+    menu_type: Optional[str] = None  # full, seasonal, banquet, tasting
+    dish_count: int = 12
+    cuisine_style: Optional[str] = None
+    cuisine_influences: List[str] = []
+    menu_style: Optional[str] = None  # classic, modern, fusion, street
+    audience_ages: Optional[dict] = None
+    audience_occupations: List[str] = []
+    region_details: Optional[dict] = None
+    menu_goals: List[str] = []
+    special_requirements: List[str] = []
+    dietary_options: List[str] = []
+    kitchen_capabilities: List[str] = []
+    staff_skill_level: Optional[str] = None
+    preparation_time: Optional[str] = None
+    ingredient_budget: Optional[str] = None
+    menu_description: Optional[str] = ""
+    expectations: Optional[str] = ""
+    additional_notes: Optional[str] = ""
+    categories: Optional[dict] = None  # Menu constructor categories
+    use_constructor: bool = False
+    region: Optional[str] = None  # backwards compatibility
+    average_check_min: Optional[int] = None  # backwards compatibility
+    average_check_max: Optional[int] = None  # backwards compatibility
+
+class SimpleMenuRequest(BaseModel):
+    user_id: str
+    # Simplified menu generation - uses venue profile for everything else
+    menu_type: str  # full, seasonal, business_lunch, event
+    expectations: str  # Free-form description of what user expects
+    dish_count: Optional[int] = None  # If not provided, uses venue profile default
+    custom_categories: Optional[dict] = None  # Optional override of default categories
+
 # Golden prompt for tech cards  
 GOLDEN_PROMPT = """Ты — RECEPTOR, профессиональный AI-помощник для шеф-поваров и рестораторов.
 
