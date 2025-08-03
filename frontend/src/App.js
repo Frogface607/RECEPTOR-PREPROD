@@ -2723,6 +2723,75 @@ function App() {
     setShowReplaceDishModal(true);
   };
 
+  // Generate simple menu function - NEW SIMPLIFIED APPROACH
+  const generateSimpleMenu = async () => {
+    if (!currentUser?.id) {
+      alert('Пользователь не найден!');
+      return;
+    }
+
+    if (!simpleMenuData.menuType || !simpleMenuData.expectations.trim()) {
+      alert('Пожалуйста, выберите тип меню и опишите ваши ожидания!');
+      return;
+    }
+
+    setIsGeneratingSimpleMenu(true);
+    try {
+      // Use venue profile default dish count if not specified
+      const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
+
+      const response = await axios.post(`${API}/generate-simple-menu`, {
+        user_id: currentUser.id,
+        menu_type: simpleMenuData.menuType,
+        expectations: simpleMenuData.expectations,
+        dish_count: dishCount,
+        custom_categories: simpleMenuData.customCategories
+      });
+
+      if (response.data.success) {
+        // Set generated menu
+        setGeneratedMenu({
+          menu_id: response.data.menu_id,
+          menu_concept: response.data.menu_concept,
+          dishes: response.data.dishes,
+          dish_count: response.data.dish_count,
+          generation_method: response.data.generation_method
+        });
+
+        // Close modal and show success
+        setShowSimpleMenuModal(false);
+        setSimpleMenuData({
+          menuType: '',
+          expectations: '',
+          dishCount: 0,
+          customCategories: null
+        });
+
+        alert(`✅ ${response.data.message}\n\n🍽️ Создано ${response.data.dish_count} блюд\n💡 Концепция: ${response.data.menu_concept}`);
+
+        // Update user history
+        await fetchUserHistory();
+      } else {
+        throw new Error(response.data.error || 'Failed to generate simple menu');
+      }
+    } catch (error) {
+      console.error('Error generating simple menu:', error);
+      let errorMessage = 'Ошибка при создании меню';
+      
+      if (error.response?.status === 403) {
+        errorMessage = 'Создание меню доступно только для PRO пользователей!';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setIsGeneratingSimpleMenu(false);
+    }
+  };
+
   const loadUserPrices = async (userId) => {
     try {
       const response = await axios.get(`${API}/user-prices/${userId}`);
