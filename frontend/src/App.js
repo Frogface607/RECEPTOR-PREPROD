@@ -7506,6 +7506,208 @@ function App() {
         </div>
       )}
 
+      {/* Menu Tech Cards Modal */}
+      {showMenuTechCards && menuTechCards && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-purple-300 mb-2">📋 ТЕХКАРТЫ МЕНЮ</h2>
+                  <p className="text-gray-400">Всего создано техкарт: {menuTechCards.total_cards}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowMenuTechCards(false);
+                    setMenuTechCards(null);
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {menuTechCards.total_cards === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📋</div>
+                  <h3 className="text-xl font-bold text-gray-300 mb-2">Техкарты ещё не созданы</h3>
+                  <p className="text-gray-400 mb-6">Используйте кнопку "СОЗДАТЬ ВСЕ ТЕХКАРТЫ" для генерации</p>
+                  <button
+                    onClick={() => {
+                      setShowMenuTechCards(false);
+                      generateMassTechCards();
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    🚀 СОЗДАТЬ ВСЕ ТЕХКАРТЫ
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {Object.entries(menuTechCards.tech_cards_by_category).map(([category, cards]) => (
+                    <div key={category} className="bg-gray-700/30 rounded-lg p-6">
+                      <h3 className="text-2xl font-bold text-purple-300 mb-4 capitalize">
+                        {category} ({cards.length} блюд)
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {cards.map((card, index) => (
+                          <div key={card.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-600/50">
+                            <h4 className="font-bold text-white mb-2 line-clamp-2">{card.dish_name}</h4>
+                            <p className="text-gray-300 text-sm mb-3 line-clamp-3">{card.content_preview}</p>
+                            <div className="text-xs text-gray-400 mb-3">
+                              Создано: {new Date(card.created_at).toLocaleDateString('ru-RU')}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  // View full tech card
+                                  setTechCard(card.content);
+                                  setShowMenuTechCards(false);
+                                  setCurrentTechCardId(card.id);
+                                }}
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-3 rounded transition-colors"
+                              >
+                                👁️ Смотреть
+                              </button>
+                              <button
+                                onClick={() => openReplaceDishModal(card.dish_name, category, menuTechCards.menu_id)}
+                                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-xs py-2 px-3 rounded transition-colors"
+                                title="Заменить это блюдо на другое"
+                              >
+                                🔄 Заменить
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {menuTechCards.total_cards > 0 && (
+              <div className="sticky bottom-0 bg-gray-800/95 backdrop-blur-lg border-t border-purple-400/20 p-6">
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => {
+                      setShowMenuTechCards(false);
+                      // Export all tech cards to PDF
+                      alert('Экспорт всех техкарт в PDF скоро будет доступен!');
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    📄 Экспорт всех в PDF
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMenuTechCards(false);
+                      generateMassTechCards();
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    ➕ Добавить техкарты
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Replace Dish Modal */}
+      {showReplaceDishModal && replacingDishData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-2xl border border-purple-400/20">
+            {/* Header */}
+            <div className="border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">🔄 ЗАМЕНИТЬ БЛЮДО</h2>
+                  <p className="text-gray-400">
+                    Заменяем: <span className="text-white font-semibold">"{replacingDishData.dish_name}"</span>
+                  </p>
+                  <p className="text-gray-400">
+                    Категория: <span className="text-purple-300">{replacingDishData.category}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowReplaceDishModal(false);
+                    setReplacingDishData(null);
+                    setReplacementPrompt('');
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="mb-6">
+                <label className="block text-white font-bold mb-2">
+                  💭 Опишите пожелания для замены (необязательно):
+                </label>
+                <textarea
+                  value={replacementPrompt}
+                  onChange={(e) => setReplacementPrompt(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none resize-none"
+                  rows={4}
+                  placeholder="Например: 'Хочу более острое блюдо', 'Сделай вегетарианскую версию', 'Используй морепродукты вместо мяса', 'Адаптируй под азиатскую кухню'..."
+                />
+                <div className="text-xs text-gray-400 mt-2">
+                  💡 Подсказка: Чем конкретнее описание, тем лучше результат замены
+                </div>
+              </div>
+
+              <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <span className="text-yellow-400 text-xl">⚠️</span>
+                  <div>
+                    <p className="text-yellow-200 font-semibold mb-1">Что произойдет:</p>
+                    <ul className="text-yellow-100 text-sm space-y-1">
+                      <li>• ИИ создаст новое блюдо в том же стиле</li>
+                      <li>• Техкарта будет сохранена в истории</li>
+                      <li>• Старое блюдо останется в архиве</li>
+                      <li>• Потратится 1 техкарта из лимита</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowReplaceDishModal(false);
+                    setReplacingDishData(null);
+                    setReplacementPrompt('');
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  disabled={isReplacingDish}
+                >
+                  ❌ Отменить
+                </button>
+                <button
+                  onClick={replaceDish}
+                  disabled={isReplacingDish}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  {isReplacingDish ? '⏳ Заменяем...' : '🔄 ЗАМЕНИТЬ БЛЮДО'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
