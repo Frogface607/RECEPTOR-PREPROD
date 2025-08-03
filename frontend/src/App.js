@@ -7708,6 +7708,150 @@ function App() {
         </div>
       )}
 
+      {/* Simple Menu Creation Modal - NEW! */}
+      {showSimpleMenuModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-3xl border border-purple-400/20">
+            {/* Header */}
+            <div className="border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-purple-300 mb-2">🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА</h2>
+                  <p className="text-gray-400">Простое создание меню на основе профиля заведения</p>
+                </div>
+                <button
+                  onClick={() => setShowSimpleMenuModal(false)}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                  disabled={isGeneratingSimpleMenu}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Step 1: Menu Type */}
+              <div>
+                <label className="block text-white font-bold mb-3">
+                  🎯 1. Выберите тип меню:
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { value: 'full', label: '🍽️ Полное меню', desc: 'Все категории блюд' },
+                    { value: 'seasonal', label: '🍂 Сезонное', desc: 'Сезонные ингредиенты' },
+                    { value: 'business_lunch', label: '⏰ Бизнес-ланч', desc: 'Быстрые блюда' },
+                    { value: 'event', label: '🎉 Событийное', desc: 'Специальное меню' }
+                  ].map(type => (
+                    <button
+                      key={type.value}
+                      onClick={() => setSimpleMenuData(prev => ({ ...prev, menuType: type.value }))}
+                      className={`p-4 rounded-lg border text-left transition-all ${
+                        simpleMenuData.menuType === type.value
+                          ? 'bg-purple-600/20 border-purple-400 text-purple-200'
+                          : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:border-purple-500'
+                      }`}
+                    >
+                      <div className="font-bold text-sm">{type.label}</div>
+                      <div className="text-xs text-gray-400 mt-1">{type.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Expectations */}
+              <div>
+                <label className="block text-white font-bold mb-3">
+                  💭 2. Опишите ваши ожидания от меню:
+                </label>
+                <textarea
+                  value={simpleMenuData.expectations}
+                  onChange={(e) => setSimpleMenuData(prev => ({ ...prev, expectations: e.target.value }))}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none resize-none"
+                  rows={4}
+                  placeholder="Например: 'Хочу современное меню с акцентом на здоровую еду. Много овощей, рыба, минимум жирного. Подходящее для офисных сотрудников на обед. Цены средние, порции сытные.'"
+                />
+                <div className="text-xs text-gray-400 mt-2">
+                  💡 Чем подробнее опишите, тем лучше результат
+                </div>
+              </div>
+
+              {/* Step 3: Dish Count (Optional) */}
+              <div>
+                <label className="block text-white font-bold mb-3">
+                  📊 3. Количество блюд (необязательно):
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="number"
+                    min="6"
+                    max="50"
+                    value={simpleMenuData.dishCount || venueProfile.default_dish_count || 12}
+                    onChange={(e) => setSimpleMenuData(prev => ({ 
+                      ...prev, 
+                      dishCount: parseInt(e.target.value) || 12 
+                    }))}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white w-20 focus:border-purple-400 focus:outline-none"
+                  />
+                  <span className="text-gray-400">блюд</span>
+                  <div className="text-xs text-gray-400">
+                    (По умолчанию: {venueProfile.default_dish_count || 12} из профиля заведения)
+                  </div>
+                </div>
+              </div>
+
+              {/* Profile Warning */}
+              {(!venueProfile.venue_type || !venueProfile.cuisine_focus?.length) && (
+                <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="text-yellow-400 text-xl">⚠️</span>
+                    <div>
+                      <p className="text-yellow-200 font-semibold mb-1">Профиль заведения не настроен</p>
+                      <p className="text-yellow-100 text-sm mb-3">
+                        Для лучших результатов рекомендуем настроить профиль заведения перед созданием меню.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowSimpleMenuModal(false);
+                          setShowVenueProfileModal(true);
+                        }}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors"
+                      >
+                        ⚙️ НАСТРОИТЬ ПРОФИЛЬ
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-purple-400/20 p-6">
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowSimpleMenuModal(false)}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  disabled={isGeneratingSimpleMenu}
+                >
+                  ❌ Отменить
+                </button>
+                <button
+                  onClick={generateSimpleMenu}
+                  disabled={isGeneratingSimpleMenu || !simpleMenuData.menuType || !simpleMenuData.expectations.trim()}
+                  className="flex-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-lg transition-all"
+                >
+                  {isGeneratingSimpleMenu ? (
+                    <>⏳ Создаём меню...</>
+                  ) : (
+                    <>🚀 СОЗДАТЬ МЕНЮ</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Replace Dish Modal */}
       {showReplaceDishModal && replacingDishData && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
