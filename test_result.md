@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Expand Kitchen Equipment feature into comprehensive VENUE CUSTOMIZATION system allowing restaurants to specify venue type (Fine Dining, Food Truck, Bar/Pub, etc.), cuisine focus (Asian, European, Caucasian, etc.), average check price, and equipment to generate highly personalized tech cards adapted to specific restaurant concepts and business models."
+user_problem_statement: "Implement sequential tech card generation instead of mass parallel generation and add 'replace dish' functionality allowing users to replace individual dishes within generated menus while maintaining context and menu structure."
 
   - task: "PRACTICAL FINANCES PRO Feature - Complete"
     implemented: true
