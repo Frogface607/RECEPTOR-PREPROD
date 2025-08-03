@@ -2864,9 +2864,30 @@ function App() {
                 setCurrentUser(testUser);
                 localStorage.setItem('receptor_user', JSON.stringify(testUser));
               }}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
             >
               НАЧАТЬ ТЕСТИРОВАНИЕ
+            </button>
+            
+            {/* BYPASS BUTTON FOR TESTING */}
+            <button
+              onClick={() => {
+                // Создаем тестового пользователя без выбора города
+                const testUser = {
+                  id: 'test_user_' + Date.now(),
+                  name: 'Тест Предприниматель',
+                  email: 'entrepreneur@test.com',
+                  city: 'moskva',
+                  subscription_plan: 'pro',
+                  monthly_tech_cards_used: 0,
+                  created_at: new Date().toISOString()
+                };
+                setCurrentUser(testUser);
+                localStorage.setItem('receptor_user', JSON.stringify(testUser));
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm"
+            >
+              🚀 БЫСТРЫЙ ТЕСТ (обход регистрации)
             </button>
             
             <p className="text-gray-400 text-sm mt-4">
