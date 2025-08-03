@@ -968,20 +968,29 @@ backend:
         agent: "testing"
         comment: "✅ SEQUENTIAL GENERATION VERIFIED: Comprehensive testing confirmed mass tech card generation works sequentially (not parallel). Generated 4 dishes one by one with proper processing order, 1-second delays between requests, and 100% success rate. Response time: 76-80 seconds for 4 dishes. All dishes properly saved to database with correct menu linking. Sequential processing working perfectly as required."
 
-  - task: "Replace Dish Functionality Backend"
+  - task: "Enhanced Venue Profile Backend"
     implemented: true
     working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Added new /api/replace-dish endpoint that allows PRO users to replace individual dishes in generated menus. The endpoint generates a new tech card with same venue context as the original menu, supports custom replacement prompts, tracks the replaced dish, and saves the new tech card with proper linking to the original menu."
+        comment: "Extended VenueProfileUpdate model to include all detailed profiling fields previously stored in menuProfile: audience demographics (audience_ages, audience_occupations), regional context, cuisine style preferences, kitchen capabilities, business requirements, default menu settings, and additional context fields. Updated get_venue_profile and update_venue_profile endpoints to handle comprehensive venue profiling."
+
+  - task: "Simple Menu Generation Backend"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: true
-        agent: "testing"
-        comment: "✅ REPLACE DISH FULLY FUNCTIONAL: Fixed critical regex bug in dish name extraction (line 2507) - changed .match() to re.search(). Comprehensive testing confirmed replace dish endpoint works perfectly - generated 'Вегетарианский рис с овощами и острыми специями' as replacement for 'Плов узбекский' with custom prompt 'Make it vegetarian and spicier'. Response time: 18.2 seconds. Original dish tracking, proper context preservation, and database storage all working correctly. PRO subscription validation enforced properly."
+        agent: "main"
+        comment: "Added new /api/generate-simple-menu endpoint that uses venue profile settings to generate menus with minimal user input. Users only need to specify menu_type and expectations, while all other settings are automatically derived from their saved venue profile. Added SimpleMenuRequest model and comprehensive menu generation logic using venue context."
   - task: "Dashboard Backend Functionality"
     implemented: true
     working: true
