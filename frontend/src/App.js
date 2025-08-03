@@ -166,9 +166,19 @@ function App() {
   });
   const [showMassGenerationModal, setShowMassGenerationModal] = useState(false);
 
-  // Menu Generation Modal states (NEW!)
+  // Menu Generation Modal states (Simplified!)
   const [showMenuGenerationModal, setShowMenuGenerationModal] = useState(false);
   const [menuGenerationProgress, setMenuGenerationProgress] = useState(0);
+
+  // Simplified Menu Creation states - NEW APPROACH!
+  const [showSimpleMenuModal, setShowSimpleMenuModal] = useState(false);
+  const [simpleMenuData, setSimpleMenuData] = useState({
+    menuType: '', // full, seasonal, business_lunch, event
+    expectations: '', // Free-form user input
+    dishCount: 0, // Will be set from venue profile default
+    customCategories: null // Optional override
+  });
+  const [isGeneratingSimpleMenu, setIsGeneratingSimpleMenu] = useState(false);
 
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
