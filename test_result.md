@@ -380,7 +380,7 @@ frontend:
     implemented: true
     working: false
     file: "frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -390,6 +390,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ CANNOT ACCESS MENU GENERATOR LANDING PAGE: Registration form validation error prevents access to main application. The enhanced landing page with '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' button cannot be reached due to city selection dropdown validation failure in registration form. Users cannot proceed past the registration screen to see the improved menu generator interface."
+      - working: false
+        agent: "testing"
+        comment: "❌ ENHANCED MENU GENERATOR LANDING PAGE STILL INACCESSIBLE: Continued testing confirms that the enhanced menu generator landing page with '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' button remains unreachable due to persistent registration form blocking issue. Despite main agent's claimed fixes for cities fallback data, users still cannot access the main application to see the improved menu generator interface. The enhanced landing page functionality cannot be verified until the registration barrier is removed."
 
   - task: "Venue Profile Integration Enhancement"
     implemented: true
