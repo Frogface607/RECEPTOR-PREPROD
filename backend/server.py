@@ -2504,8 +2504,8 @@ async def replace_dish(request: dict):
         tech_card_content = response.choices[0].message.content.strip()
         
         # Extract the new dish name from generated content
-        title_match = tech_card_content.match(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)')
-        new_dish_name = title_match[1].strip() if title_match else f"Замена для {dish_name}"
+        title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card_content)
+        new_dish_name = title_match.group(1).strip() if title_match else f"Замена для {dish_name}"
         
         # Save new tech card to database
         tech_card_record = {
