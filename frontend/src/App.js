@@ -3571,7 +3571,8 @@ function App() {
                         menuType: '',
                         expectations: '',
                         dishCount: venueProfile.default_dish_count || 12,
-                        customCategories: null
+                        customCategories: null,
+                        projectId: null
                       });
                       setShowSimpleMenuModal(true);
                     }}
