@@ -7844,6 +7844,262 @@ function App() {
         </div>
       )}
 
+      {/* Menu Projects Modal - NEW! */}
+      {showProjectsModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-purple-300 mb-2">📁 ПРОЕКТЫ МЕНЮ</h2>
+                  <p className="text-gray-400">Организуйте ваши меню и техкарты по проектам</p>
+                </div>
+                <button
+                  onClick={() => setShowProjectsModal(false)}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {isLoadingProjects ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">⏳</div>
+                  <p className="text-gray-400">Загружаем проекты...</p>
+                </div>
+              ) : menuProjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📁</div>
+                  <h3 className="text-xl font-bold text-gray-300 mb-4">Пока нет проектов</h3>
+                  <p className="text-gray-400 mb-6">
+                    Создайте первый проект для организации ваших меню
+                  </p>
+                  <button
+                    onClick={() => setShowCreateProjectModal(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    ➕ СОЗДАТЬ ПЕРВЫЙ ПРОЕКТ
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {/* Create Project Button */}
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setShowCreateProjectModal(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      ➕ НОВЫЙ ПРОЕКТ
+                    </button>
+                  </div>
+
+                  {/* Projects Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {menuProjects.map(project => (
+                      <div key={project.id} className="bg-gray-700/50 rounded-lg p-6 border border-gray-600/50">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="font-bold text-white text-lg line-clamp-2">{project.project_name}</h3>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => {
+                                // TODO: View project details
+                                alert('Просмотр проекта скоро будет доступен!');
+                              }}
+                              className="text-gray-400 hover:text-purple-300 transition-colors"
+                              title="Просмотреть проект"
+                            >
+                              👁️
+                            </button>
+                            <button
+                              onClick={() => {
+                                // TODO: Edit project
+                                alert('Редактирование проекта скоро будет доступен!');
+                              }}
+                              className="text-gray-400 hover:text-cyan-300 transition-colors"
+                              title="Редактировать проект"
+                            >
+                              ✏️
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+                          {project.description || 'Описание отсутствует'}
+                        </p>
+                        
+                        <div className="bg-gray-800/50 rounded-lg p-3 mb-4">
+                          <div className="text-xs text-gray-400 mb-2">Статистика:</div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-cyan-300">📋 Меню: {project.menus_count}</span>
+                            <span className="text-green-300">🍽️ Техкарты: {project.tech_cards_count}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="text-xs text-gray-400 mb-4">
+                          <div>Тип: <span className="text-purple-300 capitalize">{project.project_type}</span></div>
+                          <div>Создан: {new Date(project.created_at).toLocaleDateString('ru-RU')}</div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSimpleMenuData(prev => ({ ...prev, projectId: project.id }));
+                              setShowProjectsModal(false);
+                              setShowSimpleMenuModal(true);
+                            }}
+                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 px-3 rounded transition-colors"
+                          >
+                            ➕ Добавить меню
+                          </button>
+                          <button
+                            onClick={() => {
+                              // TODO: View project content
+                              alert('Просмотр содержимого проекта скоро будет доступен!');
+                            }}
+                            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-xs py-2 px-3 rounded transition-colors"
+                          >
+                            📂 Открыть
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Project Modal - NEW! */}
+      {showCreateProjectModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-2xl border border-purple-400/20">
+            {/* Header */}
+            <div className="border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">➕ СОЗДАТЬ ПРОЕКТ</h2>
+                  <p className="text-gray-400">Новый проект для организации меню</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCreateProjectModal(false);
+                    setNewProjectData({
+                      projectName: '',
+                      description: '',
+                      projectType: '',
+                      venueType: null
+                    });
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                  disabled={isCreatingProject}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Project Name */}
+              <div>
+                <label className="block text-white font-bold mb-2">
+                  📝 Название проекта *
+                </label>
+                <input
+                  type="text"
+                  value={newProjectData.projectName}
+                  onChange={(e) => setNewProjectData(prev => ({ ...prev, projectName: e.target.value }))}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none"
+                  placeholder="Например: Летнее меню 2025, Банкетное меню, Детская кухня..."
+                  maxLength={100}
+                />
+              </div>
+
+              {/* Project Type */}
+              <div>
+                <label className="block text-white font-bold mb-2">
+                  🎯 Тип проекта *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'restaurant_launch', label: '🚀 Запуск ресторана', desc: 'Новое заведение' },
+                    { value: 'seasonal_update', label: '🍂 Сезонное обновление', desc: 'Сезонные изменения' },
+                    { value: 'special_event', label: '🎉 Специальное событие', desc: 'Банкеты, праздники' },
+                    { value: 'menu_refresh', label: '🔄 Обновление меню', desc: 'Освежить текущее' }
+                  ].map(type => (
+                    <button
+                      key={type.value}
+                      onClick={() => setNewProjectData(prev => ({ ...prev, projectType: type.value }))}
+                      className={`p-4 rounded-lg border text-left transition-all ${
+                        newProjectData.projectType === type.value
+                          ? 'bg-purple-600/20 border-purple-400 text-purple-200'
+                          : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:border-purple-500'
+                      }`}
+                    >
+                      <div className="font-bold text-sm">{type.label}</div>
+                      <div className="text-xs text-gray-400 mt-1">{type.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-white font-bold mb-2">
+                  💭 Описание (необязательно)
+                </label>
+                <textarea
+                  value={newProjectData.description}
+                  onChange={(e) => setNewProjectData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none resize-none"
+                  rows={3}
+                  placeholder="Краткое описание проекта, целей, особенностей..."
+                  maxLength={500}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-purple-400/20 p-6">
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowCreateProjectModal(false);
+                    setNewProjectData({
+                      projectName: '',
+                      description: '',
+                      projectType: '',
+                      venueType: null
+                    });
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  disabled={isCreatingProject}
+                >
+                  ❌ Отменить
+                </button>
+                <button
+                  onClick={createMenuProject}
+                  disabled={isCreatingProject || !newProjectData.projectName.trim() || !newProjectData.projectType}
+                  className="flex-2 bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-lg transition-all"
+                >
+                  {isCreatingProject ? (
+                    <>⏳ Создаём проект...</>
+                  ) : (
+                    <>➕ СОЗДАТЬ ПРОЕКТ</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Simple Menu Creation Modal - NEW! */}
       {showSimpleMenuModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
