@@ -173,6 +173,17 @@ function App() {
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
 
+  // Menu Tech Cards View states
+  const [showMenuTechCards, setShowMenuTechCards] = useState(false);
+  const [menuTechCards, setMenuTechCards] = useState(null);
+  const [isLoadingMenuTechCards, setIsLoadingMenuTechCards] = useState(false);
+  
+  // Replace Dish states
+  const [showReplaceDishModal, setShowReplaceDishModal] = useState(false);
+  const [replacingDishData, setReplacingDishData] = useState(null); // {dish_name, category, menu_id}
+  const [replacementPrompt, setReplacementPrompt] = useState('');
+  const [isReplacingDish, setIsReplacingDish] = useState(false);
+
   // Tips and lifehacks for mass generation loading
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const receptionTips = [
