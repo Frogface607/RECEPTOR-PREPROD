@@ -2758,6 +2758,9 @@ function App() {
           generation_method: response.data.generation_method
         });
 
+        // CRITICAL FIX: Set currentView to menu-generator to show the generated menu
+        setCurrentView('menu-generator');
+
         // Close modal and show success
         setShowSimpleMenuModal(false);
         setSimpleMenuData({
