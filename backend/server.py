@@ -1212,6 +1212,7 @@ async def get_venue_profile(user_id: str):
     plan_info = SUBSCRIPTION_PLANS.get(subscription_plan, SUBSCRIPTION_PLANS["free"])
     
     profile = {
+        # Basic venue information
         "venue_type": user.get("venue_type"),
         "cuisine_focus": user.get("cuisine_focus", []),
         "average_check": user.get("average_check"),
@@ -1220,6 +1221,57 @@ async def get_venue_profile(user_id: str):
         "target_audience": user.get("target_audience"),
         "special_features": user.get("special_features", []),
         "kitchen_equipment": user.get("kitchen_equipment", []),
+        
+        # Enhanced venue profiling
+        "region": user.get("region", "moskva"),
+        
+        # Audience Demographics
+        "audience_ages": user.get("audience_ages", {
+            '18-25': 20,
+            '26-35': 50, 
+            '36-50': 20,
+            '50+': 10
+        }),
+        "audience_occupations": user.get("audience_occupations", []),
+        
+        # Regional Context
+        "region_details": user.get("region_details", {
+            "type": "capital",
+            "geography": "plains", 
+            "climate": "temperate"
+        }),
+        
+        # Cuisine Style and Influences
+        "cuisine_style": user.get("cuisine_style", "classic"),
+        "cuisine_influences": user.get("cuisine_influences", []),
+        
+        # Kitchen Capabilities
+        "kitchen_capabilities": user.get("kitchen_capabilities", []),
+        "staff_skill_level": user.get("staff_skill_level", "medium"),
+        "preparation_time": user.get("preparation_time", "medium"),
+        "ingredient_budget": user.get("ingredient_budget", "medium"),
+        
+        # Business Requirements
+        "menu_goals": user.get("menu_goals", []),
+        "special_requirements": user.get("special_requirements", []),
+        "dietary_options": user.get("dietary_options", []),
+        
+        # Default Menu Constructor Settings
+        "default_dish_count": user.get("default_dish_count", 12),
+        "default_categories": user.get("default_categories", {
+            "salads": 2,
+            "appetizers": 3,
+            "soups": 2,
+            "main_dishes": 4,
+            "desserts": 2,
+            "beverages": 1
+        }),
+        
+        # Additional Context
+        "venue_description": user.get("venue_description"),
+        "business_notes": user.get("business_notes"),
+        
+        # System info
         "has_pro_features": plan_info.get("kitchen_equipment", False)
     }
     
