@@ -3128,6 +3128,19 @@ async def get_menu_project_content(project_id: str):
         
         tech_cards = await tech_cards_cursor.to_list(length=500)
         
+        # Remove MongoDB _id fields to avoid serialization issues
+        for menu in menus:
+            if "_id" in menu:
+                del menu["_id"]
+                
+        for card in tech_cards:
+            if "_id" in card:
+                del card["_id"]
+        
+        # Clean project data
+        if "_id" in project:
+            del project["_id"]
+        
         return {
             "success": True,
             "project": project,
