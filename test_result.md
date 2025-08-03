@@ -360,15 +360,18 @@ frontend:
 
   - task: "Simple Menu Creation Interface"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Created simplified menu creation modal with just 3 steps: menu type selection (full/seasonal/business_lunch/event), expectations description (free text), and optional dish count. Added showSimpleMenuModal state, simpleMenuData state for form data, generateSimpleMenu function, and comprehensive modal UI. Replaced complex 5-step wizard button with simple '3 КЛИКА' approach."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL BUG CONFIRMED: Unable to test simplified menu creation due to registration form blocking access to main application. Registration form shows validation error 'Please select an item in the list' preventing form submission. City selection dropdown is not working properly - even when selecting 'Санкт-Петербург', the validation error persists. This blocks access to the main application where the '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' button would be located. The user's reported bug about menu disappearing cannot be tested until registration/login flow is fixed. IMMEDIATE ACTION REQUIRED: Fix city selection validation in registration form to allow users to access the main application and test menu generation functionality."
 
   - task: "Enhanced Menu Generator Landing Page"
     implemented: true
