@@ -398,7 +398,7 @@ frontend:
     implemented: true
     working: false
     file: "frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -408,6 +408,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ VENUE PROFILE INTEGRATION CANNOT BE TESTED: Registration form blocking access to main application prevents testing of venue profile integration with simplified menu creation. The enhanced integration features cannot be verified until users can successfully register and access the main application interface."
+      - working: false
+        agent: "testing"
+        comment: "❌ VENUE PROFILE INTEGRATION ENHANCEMENT STILL UNTESTABLE: The enhanced venue profile integration with simple menu creation remains untestable due to the persistent registration form blocking issue. Users cannot access the main application to test the automatic use of venue profile defaults (default_dish_count, default_categories) or the profile setup prompts. The seamless integration between venue profile configuration and menu generation process cannot be verified until the registration barrier is resolved."
   - task: "Venue Profile Modal - ДАЛЕЕ Button Activation Issue"
     implemented: true
     working: false
