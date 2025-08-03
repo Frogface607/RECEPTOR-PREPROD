@@ -2770,7 +2770,8 @@ function App() {
         menu_type: simpleMenuData.menuType,
         expectations: simpleMenuData.expectations,
         dish_count: dishCount,
-        custom_categories: simpleMenuData.customCategories
+        custom_categories: simpleMenuData.customCategories,
+        project_id: simpleMenuData.projectId // Include project assignment
       });
 
       if (response.data.success) {
@@ -2792,13 +2793,18 @@ function App() {
           menuType: '',
           expectations: '',
           dishCount: 0,
-          customCategories: null
+          customCategories: null,
+          projectId: null
         });
 
-        alert(`✅ ${response.data.message}\n\n🍽️ Создано ${response.data.dish_count} блюд\n💡 Концепция: ${response.data.menu_concept}`);
+        const projectMessage = simpleMenuData.projectId ? '\n📁 Добавлено в проект' : '';
+        alert(`✅ ${response.data.message}\n\n🍽️ Создано ${response.data.dish_count} блюд\n💡 Концепция: ${response.data.menu_concept}${projectMessage}`);
 
-        // Update user history
+        // Update user history and projects
         await fetchUserHistory();
+        if (menuProjects.length > 0) {
+          await fetchMenuProjects();
+        }
       } else {
         throw new Error(response.data.error || 'Failed to generate simple menu');
       }
@@ -2817,6 +2823,73 @@ function App() {
       alert(errorMessage);
     } finally {
       setIsGeneratingSimpleMenu(false);
+    }
+  };
+
+  // Menu Projects functions
+  const fetchMenuProjects = async () => {
+    if (!currentUser?.id) return;
+    
+    setIsLoadingProjects(true);
+    try {
+      const response = await axios.get(`${API}/menu-projects/${currentUser.id}`);
+      
+      if (response.data.success) {
+        setMenuProjects(response.data.projects);
+      } else {
+        throw new Error('Failed to fetch menu projects');
+      }
+    } catch (error) {
+      console.error('Error fetching menu projects:', error);
+      alert('Ошибка при загрузке проектов');
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  };
+
+  const createMenuProject = async () => {
+    if (!currentUser?.id) {
+      alert('Пользователь не найден!');
+      return;
+    }
+
+    if (!newProjectData.projectName.trim() || !newProjectData.projectType) {
+      alert('Пожалуйста, заполните название и тип проекта!');
+      return;
+    }
+
+    setIsCreatingProject(true);
+    try {
+      const response = await axios.post(`${API}/create-menu-project`, {
+        user_id: currentUser.id,
+        project_name: newProjectData.projectName,
+        description: newProjectData.description,
+        project_type: newProjectData.projectType,
+        venue_type: newProjectData.venueType
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+        
+        // Reset form and close modal
+        setNewProjectData({
+          projectName: '',
+          description: '',
+          projectType: '',
+          venueType: null
+        });
+        setShowCreateProjectModal(false);
+        
+        // Refresh projects list
+        await fetchMenuProjects();
+      } else {
+        throw new Error(response.data.error || 'Failed to create project');
+      }
+    } catch (error) {
+      console.error('Error creating menu project:', error);
+      alert('Ошибка при создании проекта: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsCreatingProject(false);
     }
   };
 
