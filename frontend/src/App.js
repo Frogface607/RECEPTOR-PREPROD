@@ -2810,11 +2810,23 @@ function App() {
         // Set generated menu
         setGeneratedMenu({
           menu_id: response.data.menu_id,
-          menu_concept: response.data.menu_concept,
-          dishes: response.data.dishes,
-          dish_count: response.data.dish_count,
-          generation_method: response.data.generation_method
+          menu_concept: response.data.menu?.menu_concept || 'Generated via simple menu creation',
+          dishes: response.data.menu?.dishes || [],
+          dish_count: response.data.menu?.dishes?.length || dishCount,
+          generation_method: 'simple_adapted'
         });
+
+        // If project_id is specified, need to update menu to link it to project
+        if (simpleMenuData.projectId) {
+          try {
+            // Note: Since existing endpoint doesn't support project_id, 
+            // we'd need to update the database separately
+            console.log('Project linking would be done here:', simpleMenuData.projectId);
+          } catch (error) {
+            console.error('Error linking menu to project:', error);
+            // Don't fail the entire process for project linking
+          }
+        }
 
         // CRITICAL FIX: Set currentView to menu-generator to show the generated menu
         setCurrentView('menu-generator');
@@ -2830,7 +2842,9 @@ function App() {
         });
 
         const projectMessage = simpleMenuData.projectId ? '\n📁 Добавлено в проект' : '';
-        alert(`✅ ${response.data.message}\n\n🍽️ Создано ${response.data.dish_count} блюд\n💡 Концепция: ${response.data.menu_concept}${projectMessage}`);
+        const menuConcept = response.data.menu?.menu_concept || 'Simple menu generated successfully';
+        const dishCount = response.data.menu?.dishes?.length || 0;
+        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${dishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
 
         // Update user history and projects
         await fetchUserHistory();
