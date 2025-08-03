@@ -321,6 +321,41 @@ user_problem_statement: "Implement sequential tech card generation instead of ma
         comment: "Usage limits are working correctly. Free tier users are limited to 3 tech cards per month, and attempts to exceed this limit are properly blocked with appropriate error messages. Monthly usage tracking and reset functionality appear to be implemented correctly."
 
 frontend:
+  - task: "Menu Tech Cards Display Interface"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added comprehensive menu tech cards display modal with category organization, individual dish viewing, and replace dish functionality. Added states: showMenuTechCards, menuTechCards, isLoadingMenuTechCards. Updated 'МОЕ МЕНЮ' button to use new fetchMenuTechCards function with proper loading states."
+
+  - task: "Replace Dish Frontend Interface"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added replace dish modal with custom prompt input, warning information, and proper state management. Added states: showReplaceDishModal, replacingDishData, replacementPrompt, isReplacingDish. Implemented replaceDish function and openReplaceDishModal helper. Each tech card in menu view now has a 'Replace' button."
+
+  - task: "Enhanced Menu Tech Cards Integration"  
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Integrated menu tech cards display with existing tech card viewing functionality. When user clicks 'View' on a dish, it loads the full tech card content and closes the menu modal. Added proper refresh of menu tech cards after dish replacement to show updated content."
   - task: "Venue Profile Modal - ДАЛЕЕ Button Activation Issue"
     implemented: true
     working: false
