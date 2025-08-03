@@ -3446,25 +3446,35 @@ function App() {
                   </button>
                 </div>
 
-                {/* Coming Soon Message */}
-                <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700">
-                  <div className="text-4xl mb-4">🚧</div>
-                  <h3 className="text-xl font-bold text-cyan-300 mb-4">Мастер создания меню в разработке!</h3>
+                {/* Profile Setup Section */}
+                <div className="bg-purple-900/20 border border-purple-400/30 rounded-xl p-6">
+                  <div className="text-4xl mb-4">⚙️</div>
+                  <h3 className="text-xl font-bold text-purple-300 mb-4">Настройте профиль заведения для лучших результатов</h3>
                   <p className="text-gray-400 mb-6">
-                    Революционная функция создания полного меню за 15 минут будет доступна очень скоро.
+                    Укажите подробности о вашем заведении один раз, чтобы ИИ создавал идеальные меню автоматически.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                    <div className="space-y-2 text-gray-300">
-                      <p>✅ Сбалансированное меню под тип заведения</p>
-                      <p>✅ Оптимизация ингредиентов для экономии</p>
-                      <p>✅ Готовые техкарты с себестоимостью</p>
-                    </div>
-                    <div className="space-y-2 text-gray-300">
-                      <p>✅ Персонализация под оборудование</p>
-                      <p>✅ Учет среднего чека и стиля кухни</p>
-                      <p>✅ PDF для печати и внедрения</p>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => setShowVenueProfileModal(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mr-4"
+                  >
+                    ⚙️ НАСТРОИТЬ ПРОФИЛЬ
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Auto-fill from venue profile
+                      if (venueProfile.cuisine_type && !menuProfile.cuisineStyle) {
+                        setMenuProfile(prev => ({
+                          ...prev,
+                          cuisineStyle: venueProfile.cuisine_type,
+                          region: currentUser.city || 'moskva'
+                        }));
+                      }
+                      setShowMenuWizard(true);
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    🧙‍♂️ РАСШИРЕННЫЙ МАСТЕР
+                  </button>
                 </div>
               </div>
             ) : (
