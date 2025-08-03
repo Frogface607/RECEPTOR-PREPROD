@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement sequential tech card generation instead of mass parallel generation and add 'replace dish' functionality allowing users to replace individual dishes within generated menus while maintaining context and menu structure."
+user_problem_statement: "Simplify menu creation process by moving all venue details, audience settings, and configuration to a comprehensive venue profile. Reduce menu generation wizard from 5 complex steps to 3 simple steps: menu type selection, menu expectations description, and dish count. Remove complexity and improve user experience to prevent abandonment."
 
   - task: "PRACTICAL FINANCES PRO Feature - Complete"
     implemented: true
