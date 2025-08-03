@@ -2929,6 +2929,7 @@ async def generate_simple_menu(request: SimpleMenuRequest):
                 "average_check": average_check
             },
             "generation_method": "simple",  # Mark as simplified generation
+            "project_id": request.project_id,  # Link to project if provided
             "created_at": datetime.utcnow().isoformat(),
             "is_menu": True
         }
