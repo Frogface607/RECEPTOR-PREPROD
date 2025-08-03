@@ -3004,6 +3004,11 @@ async def get_user_menu_projects(user_id: str):
         
         projects = await projects_cursor.to_list(length=100)
         
+        # Remove MongoDB _id fields to avoid serialization issues
+        for project in projects:
+            if "_id" in project:
+                del project["_id"]
+        
         # Get counts for each project
         project_stats = []
         for project in projects:
