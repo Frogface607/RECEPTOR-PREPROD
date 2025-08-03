@@ -918,6 +918,29 @@ frontend:
         comment: "BACKEND IMPLEMENTATION COMPLETED: ✅ Added comprehensive venue configuration system with 7 venue types, 5 cuisine types, and 4 average check categories. ✅ Extended User model with venue profile fields (venue_type, cuisine_focus, average_check, venue_name, venue_concept, target_audience, special_features). ✅ Created new endpoints: /venue-types, /cuisine-types, /average-check-categories, /venue-profile/{user_id}, /update-venue-profile/{user_id}. ✅ Enhanced GOLDEN_PROMPT with dynamic venue context, venue-specific rules, and personalized generation based on restaurant profile. ✅ Added utility functions for context generation based on venue type, cuisine focus, and average check. ✅ Modified tech card generation to use venue profile for highly personalized recipes. Ready for backend testing."
 
 backend:
+  - task: "Sequential Tech Card Generation Enhancement"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Mass tech card generation was already implemented as sequential in the backend. The existing /api/generate-mass-tech-cards endpoint processes dishes one by one using a for loop, with a 1-second delay between requests to avoid API rate limits. The generation is not parallel as originally thought."
+
+  - task: "Replace Dish Functionality Backend"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added new /api/replace-dish endpoint that allows PRO users to replace individual dishes in generated menus. The endpoint generates a new tech card with same venue context as the original menu, supports custom replacement prompts, tracks the replaced dish, and saves the new tech card with proper linking to the original menu."
   - task: "Dashboard Backend Functionality"
     implemented: true
     working: true
