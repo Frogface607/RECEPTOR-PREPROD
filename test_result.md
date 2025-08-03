@@ -345,7 +345,7 @@ frontend:
         agent: "main"
         comment: "Added replace dish modal with custom prompt input, warning information, and proper state management. Added states: showReplaceDishModal, replacingDishData, replacementPrompt, isReplacingDish. Implemented replaceDish function and openReplaceDishModal helper. Each tech card in menu view now has a 'Replace' button."
 
-  - task: "Enhanced Menu Tech Cards Integration"  
+  - task: "Simple Menu Creation Interface"
     implemented: true
     working: true
     file: "frontend/src/App.js"
@@ -355,7 +355,31 @@ frontend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Integrated menu tech cards display with existing tech card viewing functionality. When user clicks 'View' on a dish, it loads the full tech card content and closes the menu modal. Added proper refresh of menu tech cards after dish replacement to show updated content."
+        comment: "Created simplified menu creation modal with just 3 steps: menu type selection (full/seasonal/business_lunch/event), expectations description (free text), and optional dish count. Added showSimpleMenuModal state, simpleMenuData state for form data, generateSimpleMenu function, and comprehensive modal UI. Replaced complex 5-step wizard button with simple '3 КЛИКА' approach."
+
+  - task: "Enhanced Menu Generator Landing Page"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Updated menu generator landing page to promote simple menu creation while still providing access to advanced wizard. Added profile setup section encouraging users to configure venue profile first. Changed main CTA to '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' and added secondary button for advanced wizard access."
+
+  - task: "Venue Profile Integration Enhancement"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Enhanced simple menu creation to automatically use venue profile defaults (default_dish_count, default_categories) and display warnings when venue profile is incomplete. Added profile setup prompts and seamless integration between venue profile configuration and menu generation process."
   - task: "Venue Profile Modal - ДАЛЕЕ Button Activation Issue"
     implemented: true
     working: false
