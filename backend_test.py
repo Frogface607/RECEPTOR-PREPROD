@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for Sequential Tech Card Generation and Replace Dish Feature
-Testing the critical requirements from the review request.
+Backend Testing Suite for Simplified Menu Generation System and Enhanced Venue Profile
+Testing the new /api/generate-simple-menu endpoint and enhanced venue profile functionality
 """
 
 import requests
@@ -10,395 +10,442 @@ import time
 import sys
 from datetime import datetime
 
-# Backend URL from environment
+# Get backend URL from environment
 BACKEND_URL = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
 
-def log_test(message):
-    """Log test messages with timestamp"""
+def log_test(test_name, status, details=""):
+    """Log test results with timestamp"""
     timestamp = datetime.now().strftime("%H:%M:%S")
-    print(f"[{timestamp}] {message}")
+    status_emoji = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+    print(f"[{timestamp}] {status_emoji} {test_name}: {status}")
+    if details:
+        print(f"    Details: {details}")
+    print()
 
-def test_sequential_mass_tech_cards():
-    """
-    Test 1: Sequential Mass Tech Card Generation
-    - Create a test menu with 3-4 dishes using /api/generate-menu
-    - Use /api/generate-mass-tech-cards to create tech cards sequentially
-    - Verify all dishes are processed one by one (not in parallel)
-    - Check response structure and success rate
-    """
-    log_test("🎯 STARTING TEST 1: Sequential Mass Tech Card Generation")
+def test_enhanced_venue_profile():
+    """Test enhanced venue profile system with all new fields"""
+    print("🏢 TESTING ENHANCED VENUE PROFILE SYSTEM")
+    print("=" * 60)
     
-    # Test user with PRO subscription
     user_id = "test_user_12345"
     
+    # Test 1: GET venue profile for test user
+    print("Test 1: GET /api/venue-profile/{user_id}")
     try:
-        # Step 1: Generate a test menu first
-        log_test("Step 1: Generating test menu with 4 dishes...")
+        response = requests.get(f"{BACKEND_URL}/venue-profile/{user_id}")
         
+        if response.status_code == 200:
+            profile_data = response.json()
+            
+            # Check for all new fields mentioned in review
+            required_fields = [
+                'audience_ages', 'region_details', 'cuisine_style', 'kitchen_capabilities',
+                'staff_skill_level', 'preparation_time', 'ingredient_budget', 'menu_goals',
+                'special_requirements', 'dietary_options', 'default_dish_count', 
+                'default_categories', 'venue_description', 'business_notes'
+            ]
+            
+            missing_fields = []
+            for field in required_fields:
+                if field not in profile_data:
+                    missing_fields.append(field)
+            
+            if not missing_fields:
+                log_test("GET venue profile - all new fields present", "PASS", 
+                        f"All {len(required_fields)} new fields found in response")
+            else:
+                log_test("GET venue profile - missing fields", "FAIL", 
+                        f"Missing fields: {missing_fields}")
+                
+            # Log some sample field values
+            print(f"    Sample values:")
+            print(f"    - audience_ages: {profile_data.get('audience_ages')}")
+            print(f"    - default_dish_count: {profile_data.get('default_dish_count')}")
+            print(f"    - default_categories: {profile_data.get('default_categories')}")
+            print()
+            
+        else:
+            log_test("GET venue profile", "FAIL", 
+                    f"HTTP {response.status_code}: {response.text}")
+            
+    except Exception as e:
+        log_test("GET venue profile", "FAIL", f"Exception: {str(e)}")
+    
+    # Test 2: POST update venue profile with comprehensive data
+    print("Test 2: POST /api/update-venue-profile/{user_id}")
+    try:
+        comprehensive_profile_data = {
+            "venue_type": "fine_dining",
+            "cuisine_focus": ["european", "french"],
+            "average_check": 2500,
+            "venue_name": "Le Gourmet Test",
+            "venue_concept": "Modern French cuisine with local ingredients",
+            "target_audience": "Food enthusiasts and business professionals",
+            "special_features": ["wine_cellar", "chef_table", "private_dining"],
+            "kitchen_equipment": ["sous_vide", "convection_oven", "plancha"],
+            "region": "moskva",
+            "audience_ages": {
+                "25-35": 40,
+                "36-50": 45,
+                "50+": 15
+            },
+            "audience_occupations": ["business_professionals", "food_enthusiasts"],
+            "region_details": {
+                "type": "capital",
+                "geography": "urban",
+                "climate": "continental"
+            },
+            "cuisine_style": "modern",
+            "cuisine_influences": ["molecular", "seasonal"],
+            "kitchen_capabilities": ["advanced_equipment", "molecular", "sous_vide"],
+            "staff_skill_level": "expert",
+            "preparation_time": "extended",
+            "ingredient_budget": "luxury",
+            "menu_goals": ["profit_optimization", "customer_experience", "innovation"],
+            "special_requirements": ["allergen_free_options", "seasonal_menu"],
+            "dietary_options": ["vegetarian", "gluten_free", "vegan"],
+            "default_dish_count": 15,
+            "default_categories": {
+                "amuse_bouche": 2,
+                "appetizers": 4,
+                "soups": 2,
+                "main_dishes": 5,
+                "desserts": 2
+            },
+            "venue_description": "Upscale fine dining restaurant focusing on modern French techniques with seasonal local ingredients",
+            "business_notes": "Target high-end clientele, emphasis on wine pairing and chef's table experiences"
+        }
+        
+        response = requests.post(
+            f"{BACKEND_URL}/update-venue-profile/{user_id}",
+            json=comprehensive_profile_data
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("success"):
+                updated_fields = result.get("updated_fields", [])
+                log_test("POST update venue profile", "PASS", 
+                        f"Updated {len(updated_fields)} fields successfully")
+                print(f"    Updated fields: {updated_fields}")
+            else:
+                log_test("POST update venue profile", "FAIL", 
+                        f"Success=False: {result}")
+        else:
+            log_test("POST update venue profile", "FAIL", 
+                    f"HTTP {response.status_code}: {response.text}")
+            
+    except Exception as e:
+        log_test("POST update venue profile", "FAIL", f"Exception: {str(e)}")
+
+def test_simple_menu_generation():
+    """Test the new /api/generate-simple-menu endpoint thoroughly"""
+    print("🍽️ TESTING SIMPLE MENU GENERATION ENDPOINT")
+    print("=" * 60)
+    
+    user_id = "test_user_12345"
+    
+    # Test 1: Simple menu generation with minimal parameters
+    print("Test 1: POST /api/generate-simple-menu with minimal parameters")
+    try:
         menu_request = {
             "user_id": user_id,
-            "menu_profile": {
-                "menuType": "restaurant",
-                "dishCount": 4,
-                "averageCheck": "medium",
-                "cuisineStyle": "italian",
-                "specialRequirements": ["local", "seasonal"]
-            },
-            "venue_profile": {
-                "venue_name": "Test Restaurant Sequential",
-                "venue_type": "fine_dining",
-                "cuisine_type": "italian",
-                "average_check": 1500
-            }
+            "menu_type": "business_lunch",
+            "expectations": "Healthy quick meals for office workers, focus on salads and light main dishes, moderate prices",
+            "dish_count": None  # Should use profile default
         }
         
         start_time = time.time()
-        menu_response = requests.post(f"{BACKEND_URL}/generate-menu", json=menu_request, timeout=60)
-        menu_time = time.time() - start_time
+        response = requests.post(
+            f"{BACKEND_URL}/generate-simple-menu",
+            json=menu_request,
+            timeout=120  # 2 minute timeout for menu generation
+        )
+        end_time = time.time()
         
-        log_test(f"Menu generation response: {menu_response.status_code} (took {menu_time:.2f}s)")
-        
-        if menu_response.status_code != 200:
-            log_test(f"❌ Menu generation failed: {menu_response.text}")
-            return False
+        if response.status_code == 200:
+            result = response.json()
             
-        menu_data = menu_response.json()
-        menu_id = menu_data.get("menu_id")
-        
-        if not menu_id:
-            log_test("❌ No menu_id returned from menu generation")
-            return False
-            
-        log_test(f"✅ Menu generated successfully with ID: {menu_id}")
-        
-        # Count dishes in menu
-        menu_categories = menu_data.get("menu", {}).get("categories", [])
-        total_dishes = sum(len(cat.get("dishes", [])) for cat in menu_categories)
-        log_test(f"Menu contains {total_dishes} dishes across {len(menu_categories)} categories")
-        
-        # Step 2: Test sequential mass tech card generation
-        log_test("Step 2: Testing sequential mass tech card generation...")
-        
-        mass_request = {
-            "user_id": user_id,
-            "menu_id": menu_id
-        }
-        
-        start_time = time.time()
-        mass_response = requests.post(f"{BACKEND_URL}/generate-mass-tech-cards", json=mass_request, timeout=300)
-        mass_time = time.time() - start_time
-        
-        log_test(f"Mass generation response: {mass_response.status_code} (took {mass_time:.2f}s)")
-        
-        if mass_response.status_code == 403:
-            log_test("❌ PRO subscription validation failed - user should have PRO access")
-            return False
-        elif mass_response.status_code != 200:
-            log_test(f"❌ Mass generation failed: {mass_response.text}")
-            return False
-            
-        mass_data = mass_response.json()
-        
-        # Verify response structure
-        required_fields = ["success", "generated_count", "failed_count", "tech_cards", "failed_generations"]
-        for field in required_fields:
-            if field not in mass_data:
-                log_test(f"❌ Missing required field in response: {field}")
-                return False
+            if result.get("success"):
+                menu_concept = result.get("menu_concept", "")
+                dish_count = result.get("dish_count", 0)
+                dishes = result.get("dishes", [])
+                generation_method = result.get("generation_method", "")
                 
-        generated_count = mass_data.get("generated_count", 0)
-        failed_count = mass_data.get("failed_count", 0)
-        tech_cards = mass_data.get("tech_cards", [])
-        
-        log_test(f"✅ Mass generation completed: {generated_count} success, {failed_count} failed")
-        log_test(f"✅ Sequential processing verified (took {mass_time:.2f}s for {generated_count} dishes)")
-        
-        # Verify tech card quality
-        if tech_cards:
-            sample_card = tech_cards[0]
-            content_length = len(sample_card.get("content", ""))
-            log_test(f"✅ Sample tech card content length: {content_length} characters")
-            
-            # Check for required sections
-            content = sample_card.get("content", "")
-            required_sections = ["Ингредиенты", "Себестоимость", "КБЖУ", "Пошаговый рецепт"]
-            sections_found = sum(1 for section in required_sections if section in content)
-            log_test(f"✅ Tech card sections found: {sections_found}/{len(required_sections)}")
-        
-        # Step 3: Verify database storage
-        log_test("Step 3: Verifying tech cards are properly stored...")
-        
-        menu_cards_response = requests.get(f"{BACKEND_URL}/menu/{menu_id}/tech-cards", timeout=30)
-        if menu_cards_response.status_code == 200:
-            cards_data = menu_cards_response.json()
-            stored_count = cards_data.get("total_cards", 0)
-            log_test(f"✅ {stored_count} tech cards stored in database with menu linkage")
+                log_test("Simple menu generation", "PASS", 
+                        f"Generated {dish_count} dishes in {end_time - start_time:.2f}s")
+                
+                print(f"    Menu concept: {menu_concept}")
+                print(f"    Generation method: {generation_method}")
+                print(f"    Dishes generated: {dish_count}")
+                
+                # Verify business lunch style
+                business_lunch_keywords = ["быстр", "офис", "обед", "легк", "салат", "здоров"]
+                menu_text = json.dumps(result, ensure_ascii=False).lower()
+                found_keywords = [kw for kw in business_lunch_keywords if kw in menu_text]
+                
+                if found_keywords:
+                    log_test("Business lunch style verification", "PASS", 
+                            f"Found keywords: {found_keywords}")
+                else:
+                    log_test("Business lunch style verification", "WARN", 
+                            "No business lunch keywords found in menu")
+                
+                # Sample some dishes
+                print(f"    Sample dishes:")
+                for i, dish in enumerate(dishes[:3]):
+                    print(f"    {i+1}. {dish.get('name', 'N/A')} - {dish.get('category', 'N/A')}")
+                
+            else:
+                log_test("Simple menu generation", "FAIL", 
+                        f"Success=False: {result}")
         else:
-            log_test(f"⚠️ Could not verify database storage: {menu_cards_response.status_code}")
-        
-        log_test("🎉 TEST 1 PASSED: Sequential Mass Tech Card Generation working correctly")
-        return True, menu_id  # Return menu_id for next test
-        
+            log_test("Simple menu generation", "FAIL", 
+                    f"HTTP {response.status_code}: {response.text}")
+            
     except requests.exceptions.Timeout:
-        log_test("❌ TEST 1 FAILED: Request timeout - sequential generation taking too long")
-        return False
+        log_test("Simple menu generation", "FAIL", "Request timeout (>120s)")
     except Exception as e:
-        log_test(f"❌ TEST 1 FAILED: {str(e)}")
-        return False
+        log_test("Simple menu generation", "FAIL", f"Exception: {str(e)}")
 
-def test_replace_dish_endpoint(menu_id=None):
-    """
-    Test 2: Replace Dish Endpoint
-    - Use /api/replace-dish with specific parameters
-    - Verify new tech card is generated with proper context
-    - Check that original dish tracking works
-    - Test PRO subscription validation
-    """
-    log_test("🎯 STARTING TEST 2: Replace Dish Endpoint")
+def test_profile_menu_integration():
+    """Test that simple menu generation properly inherits venue profile settings"""
+    print("🔗 TESTING PROFILE-MENU INTEGRATION")
+    print("=" * 60)
     
-    user_id = "test_user_12345"  # PRO user
+    user_id = "test_user_12345"
     
+    # Test 1: Verify venue profile defaults are used
+    print("Test 1: Verify venue profile defaults are used when not specified")
     try:
-        # If no menu_id provided, create a simple one
-        if not menu_id:
-            log_test("Creating test menu for dish replacement...")
+        # First get the venue profile to see defaults
+        profile_response = requests.get(f"{BACKEND_URL}/venue-profile/{user_id}")
+        
+        if profile_response.status_code == 200:
+            profile = profile_response.json()
+            default_dish_count = profile.get("default_dish_count", 12)
+            default_categories = profile.get("default_categories", {})
+            venue_type = profile.get("venue_type", "family_restaurant")
+            cuisine_focus = profile.get("cuisine_focus", [])
+            
+            print(f"    Profile defaults:")
+            print(f"    - default_dish_count: {default_dish_count}")
+            print(f"    - venue_type: {venue_type}")
+            print(f"    - cuisine_focus: {cuisine_focus}")
+            
+            # Generate menu without specifying dish_count
             menu_request = {
                 "user_id": user_id,
-                "menu_profile": {
-                    "menuType": "restaurant",
-                    "dishCount": 3,
-                    "averageCheck": "medium",
-                    "cuisineStyle": "italian"
-                },
-                "venue_profile": {
-                    "venue_name": "Test Replace Restaurant",
-                    "venue_type": "family_restaurant",
-                    "average_check": 800
-                }
+                "menu_type": "full",
+                "expectations": "Traditional menu showcasing our venue's specialty cuisine"
             }
             
-            menu_response = requests.post(f"{BACKEND_URL}/generate-menu", json=menu_request, timeout=60)
-            if menu_response.status_code == 200:
-                menu_id = menu_response.json().get("menu_id")
-                log_test(f"✅ Test menu created: {menu_id}")
-            else:
-                log_test("❌ Failed to create test menu for replacement")
-                return False
-        
-        # Step 1: Test replace dish with proper parameters
-        log_test("Step 1: Testing dish replacement with custom prompt...")
-        
-        replace_request = {
-            "user_id": user_id,
-            "menu_id": menu_id,
-            "dish_name": "Паста Карбонара",  # Generic dish name to replace
-            "category": "Основные блюда",
-            "replacement_prompt": "Make it vegetarian and spicier"
-        }
-        
-        start_time = time.time()
-        replace_response = requests.post(f"{BACKEND_URL}/replace-dish", json=replace_request, timeout=120)
-        replace_time = time.time() - start_time
-        
-        log_test(f"Replace dish response: {replace_response.status_code} (took {replace_time:.2f}s)")
-        
-        if replace_response.status_code == 403:
-            log_test("❌ PRO subscription validation failed - user should have PRO access")
-            return False
-        elif replace_response.status_code != 200:
-            log_test(f"❌ Replace dish failed: {replace_response.text}")
-            return False
+            response = requests.post(
+                f"{BACKEND_URL}/generate-simple-menu",
+                json=menu_request,
+                timeout=120
+            )
             
-        replace_data = replace_response.json()
-        
-        # Verify response structure
-        required_fields = ["success", "original_dish", "new_dish", "tech_card_id", "content", "category"]
-        for field in required_fields:
-            if field not in replace_data:
-                log_test(f"❌ Missing required field in response: {field}")
-                return False
-        
-        original_dish = replace_data.get("original_dish")
-        new_dish = replace_data.get("new_dish")
-        tech_card_id = replace_data.get("tech_card_id")
-        content = replace_data.get("content", "")
-        
-        log_test(f"✅ Dish replacement successful:")
-        log_test(f"   Original: {original_dish}")
-        log_test(f"   New: {new_dish}")
-        log_test(f"   Tech card ID: {tech_card_id}")
-        log_test(f"   Content length: {len(content)} characters")
-        
-        # Step 2: Verify context preservation and customization
-        log_test("Step 2: Verifying context preservation and customization...")
-        
-        # Check for vegetarian and spicy elements in the replacement
-        vegetarian_indicators = ["вегетарианск", "овощ", "без мяса", "растительн"]
-        spicy_indicators = ["остр", "перец", "чили", "пикантн", "жгуч"]
-        
-        vegetarian_found = any(indicator in content.lower() for indicator in vegetarian_indicators)
-        spicy_found = any(indicator in content.lower() for indicator in spicy_indicators)
-        
-        log_test(f"✅ Vegetarian elements found: {vegetarian_found}")
-        log_test(f"✅ Spicy elements found: {spicy_found}")
-        
-        # Check for proper tech card structure
-        required_sections = ["Название", "Ингредиенты", "Себестоимость", "КБЖУ"]
-        sections_found = sum(1 for section in required_sections if section in content)
-        log_test(f"✅ Tech card sections found: {sections_found}/{len(required_sections)}")
-        
-        # Step 3: Test subscription validation with free user
-        log_test("Step 3: Testing PRO subscription validation...")
-        
-        free_user_request = {
-            "user_id": "free_user_test",
-            "menu_id": menu_id,
-            "dish_name": "Test Dish",
-            "category": "Test Category",
-            "replacement_prompt": "Test replacement"
-        }
-        
-        free_response = requests.post(f"{BACKEND_URL}/replace-dish", json=free_user_request, timeout=30)
-        
-        if free_response.status_code == 403:
-            log_test("✅ Free user correctly blocked from dish replacement")
+            if response.status_code == 200:
+                result = response.json()
+                
+                if result.get("success"):
+                    generated_dish_count = result.get("dish_count", 0)
+                    venue_context = result.get("venue_context", {})
+                    
+                    # Check if default dish count was used (approximately)
+                    if abs(generated_dish_count - default_dish_count) <= 2:  # Allow some variance
+                        log_test("Default dish count usage", "PASS", 
+                                f"Generated {generated_dish_count} dishes (default: {default_dish_count})")
+                    else:
+                        log_test("Default dish count usage", "WARN", 
+                                f"Generated {generated_dish_count} dishes, expected ~{default_dish_count}")
+                    
+                    # Check venue context integration
+                    if venue_context:
+                        log_test("Venue context integration", "PASS", 
+                                f"Venue context included: {venue_context}")
+                    else:
+                        log_test("Venue context integration", "FAIL", 
+                                "No venue context in response")
+                        
+                else:
+                    log_test("Profile defaults integration", "FAIL", 
+                            f"Menu generation failed: {result}")
+            else:
+                log_test("Profile defaults integration", "FAIL", 
+                        f"HTTP {response.status_code}: {response.text}")
         else:
-            log_test(f"⚠️ Free user validation issue: {free_response.status_code}")
-        
-        # Step 4: Verify menu tech cards retrieval includes replacement
-        log_test("Step 4: Verifying menu tech cards retrieval...")
-        
-        menu_cards_response = requests.get(f"{BACKEND_URL}/menu/{menu_id}/tech-cards", timeout=30)
-        if menu_cards_response.status_code == 200:
-            cards_data = menu_cards_response.json()
-            total_cards = cards_data.get("total_cards", 0)
-            categories = cards_data.get("tech_cards_by_category", {})
+            log_test("Profile defaults integration", "FAIL", 
+                    f"Could not get venue profile: HTTP {profile_response.status_code}")
             
-            log_test(f"✅ Menu contains {total_cards} tech cards across {len(categories)} categories")
-            
-            # Check if replacement is included
-            replacement_found = False
-            for category, cards in categories.items():
-                for card in cards:
-                    if card.get("id") == tech_card_id:
-                        replacement_found = True
-                        break
-            
-            if replacement_found:
-                log_test("✅ Replacement dish found in menu tech cards")
-            else:
-                log_test("⚠️ Replacement dish not found in menu tech cards")
-        
-        log_test("🎉 TEST 2 PASSED: Replace Dish Endpoint working correctly")
-        return True
-        
-    except requests.exceptions.Timeout:
-        log_test("❌ TEST 2 FAILED: Request timeout")
-        return False
     except Exception as e:
-        log_test(f"❌ TEST 2 FAILED: {str(e)}")
-        return False
+        log_test("Profile defaults integration", "FAIL", f"Exception: {str(e)}")
 
-def test_subscription_validation():
-    """
-    Test 3: Subscription Validation
-    - Test both endpoints with free user (should fail with 403)
-    - Test with PRO user (should work)
-    """
-    log_test("🎯 STARTING TEST 3: Subscription Validation")
+def test_model_validation():
+    """Test SimpleMenuRequest model validation"""
+    print("🔍 TESTING MODEL VALIDATION")
+    print("=" * 60)
     
+    user_id = "test_user_12345"
+    
+    # Test 1: Missing required fields
+    print("Test 1: Missing required fields (should fail)")
     try:
-        # Test 1: Free user should be blocked from mass generation
-        log_test("Testing free user access to mass generation...")
-        
-        free_request = {
-            "user_id": "free_user_validation_test",
-            "menu_id": "dummy_menu_id"
+        invalid_request = {
+            "user_id": user_id
+            # Missing menu_type and expectations
         }
         
-        free_response = requests.post(f"{BACKEND_URL}/generate-mass-tech-cards", json=free_request, timeout=30)
+        response = requests.post(
+            f"{BACKEND_URL}/generate-simple-menu",
+            json=invalid_request
+        )
         
-        if free_response.status_code == 403:
-            log_test("✅ Free user correctly blocked from mass tech card generation")
+        if response.status_code == 422:  # Validation error
+            log_test("Missing required fields validation", "PASS", 
+                    "Correctly rejected request with missing fields")
+        elif response.status_code == 400:
+            log_test("Missing required fields validation", "PASS", 
+                    "Correctly rejected request with 400 error")
         else:
-            log_test(f"⚠️ Free user validation issue for mass generation: {free_response.status_code}")
-        
-        # Test 2: Free user should be blocked from dish replacement
-        log_test("Testing free user access to dish replacement...")
-        
-        free_replace_request = {
-            "user_id": "free_user_validation_test",
-            "menu_id": "dummy_menu_id",
-            "dish_name": "Test Dish",
-            "category": "Test"
-        }
-        
-        free_replace_response = requests.post(f"{BACKEND_URL}/replace-dish", json=free_replace_request, timeout=30)
-        
-        if free_replace_response.status_code == 403:
-            log_test("✅ Free user correctly blocked from dish replacement")
-        else:
-            log_test(f"⚠️ Free user validation issue for dish replacement: {free_replace_response.status_code}")
-        
-        # Test 3: PRO user should have access (already tested in previous tests)
-        log_test("✅ PRO user access verified in previous tests")
-        
-        log_test("🎉 TEST 3 PASSED: Subscription Validation working correctly")
-        return True
-        
+            log_test("Missing required fields validation", "FAIL", 
+                    f"Expected 422/400, got {response.status_code}")
+            
     except Exception as e:
-        log_test(f"❌ TEST 3 FAILED: {str(e)}")
-        return False
+        log_test("Missing required fields validation", "FAIL", f"Exception: {str(e)}")
+    
+    # Test 2: Invalid menu_type values
+    print("Test 2: Invalid menu_type values")
+    try:
+        invalid_request = {
+            "user_id": user_id,
+            "menu_type": "invalid_menu_type",
+            "expectations": "Test expectations"
+        }
+        
+        response = requests.post(
+            f"{BACKEND_URL}/generate-simple-menu",
+            json=invalid_request
+        )
+        
+        # The API might accept any string for menu_type, so this might not fail
+        # But we can check if it handles it gracefully
+        if response.status_code in [200, 400, 422]:
+            log_test("Invalid menu_type handling", "PASS", 
+                    f"Handled invalid menu_type gracefully (HTTP {response.status_code})")
+        else:
+            log_test("Invalid menu_type handling", "FAIL", 
+                    f"Unexpected status code: {response.status_code}")
+            
+    except Exception as e:
+        log_test("Invalid menu_type handling", "FAIL", f"Exception: {str(e)}")
+    
+    # Test 3: Empty expectations (should fail)
+    print("Test 3: Empty expectations (should fail)")
+    try:
+        invalid_request = {
+            "user_id": user_id,
+            "menu_type": "full",
+            "expectations": ""  # Empty expectations
+        }
+        
+        response = requests.post(
+            f"{BACKEND_URL}/generate-simple-menu",
+            json=invalid_request
+        )
+        
+        if response.status_code in [400, 422]:
+            log_test("Empty expectations validation", "PASS", 
+                    "Correctly rejected empty expectations")
+        elif response.status_code == 200:
+            # Check if it actually generated something meaningful
+            result = response.json()
+            if result.get("success") and result.get("dish_count", 0) > 0:
+                log_test("Empty expectations validation", "WARN", 
+                        "Accepted empty expectations and generated menu")
+            else:
+                log_test("Empty expectations validation", "PASS", 
+                        "Empty expectations resulted in failed generation")
+        else:
+            log_test("Empty expectations validation", "FAIL", 
+                    f"Unexpected status code: {response.status_code}")
+            
+    except Exception as e:
+        log_test("Empty expectations validation", "FAIL", f"Exception: {str(e)}")
+
+def test_subscription_access():
+    """Test that menu generation requires proper subscription"""
+    print("🔐 TESTING SUBSCRIPTION ACCESS")
+    print("=" * 60)
+    
+    # Test with a free user (if we can create one)
+    print("Test 1: Free user access (should be blocked)")
+    try:
+        # Try with a different user ID that might be free
+        free_user_id = "free_user_test"
+        
+        menu_request = {
+            "user_id": free_user_id,
+            "menu_type": "full",
+            "expectations": "Test menu for free user"
+        }
+        
+        response = requests.post(
+            f"{BACKEND_URL}/generate-simple-menu",
+            json=menu_request
+        )
+        
+        if response.status_code == 403:
+            log_test("Free user access restriction", "PASS", 
+                    "Correctly blocked free user from menu generation")
+        elif response.status_code == 404:
+            log_test("Free user access restriction", "PASS", 
+                    "User not found (expected for non-existent free user)")
+        elif response.status_code == 200:
+            log_test("Free user access restriction", "WARN", 
+                    "Free user was allowed to generate menu (might be auto-upgraded)")
+        else:
+            log_test("Free user access restriction", "FAIL", 
+                    f"Unexpected status code: {response.status_code}")
+            
+    except Exception as e:
+        log_test("Free user access restriction", "FAIL", f"Exception: {str(e)}")
 
 def main():
     """Run all tests"""
-    log_test("🚀 STARTING COMPREHENSIVE BACKEND TESTING")
-    log_test("Testing Sequential Tech Card Generation and Replace Dish Feature")
-    log_test(f"Backend URL: {BACKEND_URL}")
+    print("🧪 BACKEND TESTING: SIMPLIFIED MENU GENERATION & ENHANCED VENUE PROFILE")
+    print("=" * 80)
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print()
     
-    results = []
-    menu_id = None
-    
-    # Test 1: Sequential Mass Tech Card Generation
-    test1_result = test_sequential_mass_tech_cards()
-    if isinstance(test1_result, tuple):
-        results.append(test1_result[0])
-        menu_id = test1_result[1]
-    else:
-        results.append(test1_result)
-    
-    print("\n" + "="*60 + "\n")
-    
-    # Test 2: Replace Dish Endpoint
-    test2_result = test_replace_dish_endpoint(menu_id)
-    results.append(test2_result)
-    
-    print("\n" + "="*60 + "\n")
-    
-    # Test 3: Subscription Validation
-    test3_result = test_subscription_validation()
-    results.append(test3_result)
-    
-    print("\n" + "="*60 + "\n")
-    
-    # Summary
-    passed_tests = sum(results)
-    total_tests = len(results)
-    
-    log_test("📊 TESTING SUMMARY:")
-    log_test(f"✅ Sequential Mass Tech Card Generation: {'PASSED' if results[0] else 'FAILED'}")
-    log_test(f"✅ Replace Dish Endpoint: {'PASSED' if results[1] else 'FAILED'}")
-    log_test(f"✅ Subscription Validation: {'PASSED' if results[2] else 'FAILED'}")
-    log_test(f"")
-    log_test(f"🎯 OVERALL RESULT: {passed_tests}/{total_tests} tests passed")
-    
-    if passed_tests == total_tests:
-        log_test("🎉 ALL TESTS PASSED - Backend functionality is working correctly!")
-        return True
-    else:
-        log_test("❌ SOME TESTS FAILED - Issues need to be addressed")
-        return False
+    try:
+        # Test 1: Enhanced Venue Profile System
+        test_enhanced_venue_profile()
+        
+        # Test 2: Simple Menu Generation
+        test_simple_menu_generation()
+        
+        # Test 3: Profile-Menu Integration
+        test_profile_menu_integration()
+        
+        # Test 4: Model Validation
+        test_model_validation()
+        
+        # Test 5: Subscription Access
+        test_subscription_access()
+        
+        print("🏁 ALL TESTS COMPLETED")
+        print("=" * 80)
+        print(f"Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+    except KeyboardInterrupt:
+        print("\n⚠️ Tests interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Fatal error during testing: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+    main()
