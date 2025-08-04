@@ -245,18 +245,16 @@ def test_retry_generation_insufficient_dishes():
     menu_request = {
         "user_id": user_id,
         "menu_type": "full",
-        "dish_count": 15,  # Request 15 dishes
-        "cuisine_style": "european",
         "expectations": "Complete restaurant menu with appetizers, mains, and desserts",
-        "region": "moskva"
+        "dish_count": 15  # Request 15 dishes
     }
     
-    print("Test: POST /api/generate-menu with 15 dishes (may trigger retry logic)")
+    print("Test: POST /api/generate-simple-menu with 15 dishes (may trigger retry logic)")
     print(f"Request: {json.dumps(menu_request, indent=2, ensure_ascii=False)}")
     
     try:
         start_time = time.time()
-        response = requests.post(f"{BACKEND_URL}/generate-menu", json=menu_request, timeout=180)
+        response = requests.post(f"{BACKEND_URL}/generate-simple-menu", json=menu_request, timeout=180)
         end_time = time.time()
         
         print(f"Response Status: {response.status_code}")
@@ -286,7 +284,11 @@ def test_retry_generation_insufficient_dishes():
                 # Check for any placeholder dishes in the larger menu
                 placeholder_found = False
                 for dish in dishes:
-                    dish_name = dish.get("name", "")
+                    if isinstance(dish, dict):
+                        dish_name = dish.get("name", "")
+                    else:
+                        dish_name = str(dish)
+                    
                     if "Специальное блюдо" in dish_name or "Блюдо дня" in dish_name:
                         placeholder_found = True
                         break
