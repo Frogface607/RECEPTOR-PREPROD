@@ -391,7 +391,9 @@ def test_menu_data_completeness():
                     log_test("Category organization", "PASS", 
                             f"Menu organized into {len(categories)} categories")
                     
-                    for cat_name, cat_dishes in categories.items():
+                    for category in categories:
+                        cat_name = category.get("category_name", "Unknown")
+                        cat_dishes = category.get("dishes", [])
                         print(f"    Category '{cat_name}': {len(cat_dishes)} dishes")
                 else:
                     log_test("Category organization", "FAIL", 
