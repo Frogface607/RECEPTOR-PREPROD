@@ -2751,8 +2751,8 @@ function App() {
 
         const projectMessage = simpleMenuData.projectId ? '\n📁 Добавлено в проект' : '';
         const menuConcept = response.data.menu?.menu_concept || 'Simple menu generated successfully';
-        const dishCount = response.data.menu?.dishes?.length || 0;
-        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${dishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
+        const finalDishCount = response.data.menu?.dishes?.length || 0;
+        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${finalDishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
 
         // Update user history only (projects temporarily disabled)
         await fetchUserHistory();
