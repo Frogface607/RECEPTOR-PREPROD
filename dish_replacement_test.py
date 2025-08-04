@@ -32,22 +32,20 @@ def test_menu_generation_no_placeholders():
     
     user_id = "test_user_12345"
     
-    # Test with small dish count (6) to check if placeholders are added
+    # Test with simple menu generation (small dish count) to check if placeholders are added
     menu_request = {
         "user_id": user_id,
         "menu_type": "business_lunch",
-        "dish_count": 6,
-        "cuisine_style": "european",
         "expectations": "Healthy quick meals for office workers, focus on salads and light main dishes, moderate prices",
-        "region": "moskva"
+        "dish_count": 6  # Small count to test if placeholders are added
     }
     
-    print("Test 1: POST /api/generate-menu with 6 dishes")
+    print("Test 1: POST /api/generate-simple-menu with 6 dishes")
     print(f"Request: {json.dumps(menu_request, indent=2, ensure_ascii=False)}")
     
     try:
         start_time = time.time()
-        response = requests.post(f"{BACKEND_URL}/generate-menu", json=menu_request, timeout=120)
+        response = requests.post(f"{BACKEND_URL}/generate-simple-menu", json=menu_request, timeout=120)
         end_time = time.time()
         
         print(f"Response Status: {response.status_code}")
@@ -66,7 +64,12 @@ def test_menu_generation_no_placeholders():
                 placeholder_dishes = []
                 
                 for dish in dishes:
-                    dish_name = dish.get("name", "")
+                    # Handle both string and dict formats
+                    if isinstance(dish, dict):
+                        dish_name = dish.get("name", "")
+                    else:
+                        dish_name = str(dish)
+                    
                     # Check for various placeholder patterns
                     placeholder_patterns = [
                         "Специальное блюдо дня",
@@ -93,7 +96,11 @@ def test_menu_generation_no_placeholders():
                 # Print all dish names for verification
                 print("Generated dishes:")
                 for i, dish in enumerate(dishes, 1):
-                    print(f"  {i}. {dish.get('name', 'No name')}")
+                    if isinstance(dish, dict):
+                        dish_name = dish.get("name", "No name")
+                    else:
+                        dish_name = str(dish)
+                    print(f"  {i}. {dish_name}")
                 
                 return dishes  # Return for use in replacement test
                 
