@@ -2666,10 +2666,10 @@ function App() {
     if (currentUser && currentView === 'dashboard') {
       fetchUserHistory();
     }
-    // Load projects when user is available
-    if (currentUser && menuProjects.length === 0) {
-      fetchMenuProjects();
-    }
+    // Projects temporarily disabled due to routing issues
+    // if (currentUser && menuProjects.length === 0) {
+    //   fetchMenuProjects();
+    // }
   }, [currentView, currentUser]);
 
   // Fetch menu tech cards function
