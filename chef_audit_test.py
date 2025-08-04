@@ -26,7 +26,7 @@ from typing import Dict, List, Tuple
 
 class ChefAuditSystem:
     def __init__(self):
-        self.base_url = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
+        self.base_url = "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api"
         self.user_id = "chef_audit_2025"
         self.audit_results = {}
         

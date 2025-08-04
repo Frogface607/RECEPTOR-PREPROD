@@ -42,7 +42,7 @@ def get_cors_origins():
     
     # Add all possible preview and deployment domains
     preview_patterns = [
-        "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com",  # All preview URLs
+        "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com",  # All preview URLs
         "https://*.vercel.app",  # All Vercel deployments
         "https://*.netlify.app",  # All Netlify deployments
         "https://receptor-ai-thte.vercel.app",  # Specific Vercel domain

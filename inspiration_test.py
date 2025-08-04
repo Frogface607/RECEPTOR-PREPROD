@@ -13,7 +13,7 @@ def test_generate_inspiration():
     """Test the /api/generate-inspiration endpoint with specified test data"""
     
     # Use the public endpoint for testing
-    base_url = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
+    base_url = "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api"
     
     print("🎯 TESTING /api/generate-inspiration ENDPOINT")
     print("=" * 60)
@@ -142,7 +142,7 @@ def test_generate_inspiration():
 def test_error_scenarios():
     """Test error scenarios for the inspiration endpoint"""
     
-    base_url = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
+    base_url = "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api"
     
     print("\n🔍 TESTING ERROR SCENARIOS")
     print("=" * 40)

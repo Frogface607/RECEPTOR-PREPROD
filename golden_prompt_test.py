@@ -14,7 +14,7 @@ class GoldenPromptTest(unittest.TestCase):
     
     def setUp(self):
         # Use the public endpoint for testing
-        self.base_url = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
+        self.base_url = "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api"
         self.user_id = None
         self.user_email = f"golden_test_{self.random_string(6)}@example.com"
         self.user_name = f"Golden Test User {self.random_string(4)}"
@@ -365,7 +365,7 @@ def run_golden_prompt_tests():
 if __name__ == "__main__":
     print("🚀 Starting RECEPTOR Golden Prompt Tests")
     print("🎯 Focus: Updated AI prompt, tech card history, format verification")
-    print(f"🔗 Testing against: https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api")
+    print(f"🔗 Testing against: https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api")
     print("=" * 80)
     
     success = run_golden_prompt_tests()

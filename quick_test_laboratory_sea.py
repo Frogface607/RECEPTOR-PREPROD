@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_sea_cuisine_name_fix():

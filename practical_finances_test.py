@@ -12,7 +12,7 @@ from datetime import datetime
 class PracticalFinancesTest:
     def __init__(self):
         # Use the public endpoint for testing
-        self.base_url = "https://cc951b09-9773-4d61-a26a-ba72b5f2050b.preview.emergentagent.com/api"
+        self.base_url = "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api"
         self.test_user_id = "test_user_12345"
         
         # Sample tech card for "Паста Карбонара на 4 порции" as requested
