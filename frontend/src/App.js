@@ -2685,10 +2685,11 @@ function App() {
     }
 
     setIsGeneratingSimpleMenu(true);
+    
+    // Use venue profile default dish count if not specified
+    const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
+    
     try {
-      // Use venue profile default dish count if not specified
-      const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
-
       const requestData = {
         user_id: currentUser.id,
         // Convert simple menu data to complex menu format for existing endpoint
