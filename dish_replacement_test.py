@@ -263,8 +263,8 @@ def test_retry_generation_insufficient_dishes():
         if response.status_code == 200:
             menu_data = response.json()
             
-            if "menu" in menu_data and menu_data["menu"]:
-                dishes = menu_data["menu"]
+            if "dishes" in menu_data and menu_data["dishes"]:
+                dishes = menu_data["dishes"]
                 requested_count = menu_request["dish_count"]
                 actual_count = len(dishes)
                 
@@ -301,7 +301,7 @@ def test_retry_generation_insufficient_dishes():
                            "No placeholder dishes found in large menu")
                 
             else:
-                log_test("Retry Generation - Sufficient Dishes", "FAIL", "No menu generated")
+                log_test("Retry Generation - Sufficient Dishes", "FAIL", "No dishes generated")
                 
         else:
             log_test("Retry Generation - Sufficient Dishes", "FAIL", 
