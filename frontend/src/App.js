@@ -3446,7 +3446,7 @@ function App() {
                               </div>
                               <div className="flex gap-2 mt-2">
                                 <button
-                                  onClick={() => openReplaceDishModal(dish, category)}
+                                  onClick={() => openReplaceDishModal(dish.name, category.category_name, generatedMenu.menu_id)}
                                   className="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 px-3 py-1 rounded-lg text-sm border border-yellow-600/30 transition-all"
                                   title="🔄 Заменить блюдо"
                                 >
