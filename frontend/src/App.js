@@ -3216,7 +3216,6 @@ function App() {
                 >
                   МЕНЮ
                 </button>
-                {/* PROJECTS temporarily disabled due to routing issues
                 <button
                   onClick={() => setShowProjectsModal(true)}
                   className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
@@ -3224,7 +3223,6 @@ function App() {
                 >
                   ПРОЕКТЫ {menuProjects.length > 0 && `(${menuProjects.length})`}
                 </button>
-                */}
                 <button
                   onClick={() => {
                     setShowHistory(!showHistory);
