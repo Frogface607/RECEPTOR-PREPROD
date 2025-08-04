@@ -2666,10 +2666,10 @@ function App() {
     if (currentUser && currentView === 'dashboard') {
       fetchUserHistory();
     }
-    // Projects temporarily disabled due to routing issues
-    // if (currentUser && menuProjects.length === 0) {
-    //   fetchMenuProjects();
-    // }
+    // Load projects when user is available
+    if (currentUser && menuProjects.length === 0) {
+      fetchMenuProjects();
+    }
   }, [currentView, currentUser]);
 
   // Generate simple menu function - MOVED UP for better React binding
