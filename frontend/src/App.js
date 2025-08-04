@@ -2754,25 +2754,16 @@ function App() {
 
   // Generate simple menu function - NEW SIMPLIFIED APPROACH
   const generateSimpleMenu = async () => {
-    console.log('generateSimpleMenu called!');
-    console.log('currentUser:', currentUser);
-    console.log('simpleMenuData:', simpleMenuData);
-    
     if (!currentUser?.id) {
       alert('Пользователь не найден!');
-      console.log('ERROR: currentUser.id missing');
       return;
     }
 
     if (!simpleMenuData.menuType || !simpleMenuData.expectations.trim()) {
       alert('Пожалуйста, выберите тип меню и опишите ваши ожидания!');
-      console.log('ERROR: menuType or expectations missing');
-      console.log('menuType:', simpleMenuData.menuType);
-      console.log('expectations:', simpleMenuData.expectations);
       return;
     }
 
-    console.log('Starting simple menu generation...');
     setIsGeneratingSimpleMenu(true);
     try {
       // Use venue profile default dish count if not specified
@@ -2799,12 +2790,8 @@ function App() {
           average_check: venueProfile.average_check || 800
         }
       };
-      
-      console.log('Request data (adapted for existing endpoint):', requestData);
-      console.log('API URL:', `${API}/generate-menu`);
 
       const response = await axios.post(`${API}/generate-menu`, requestData);
-      console.log('API Response:', response.data);
 
       if (response.data.success) {
         // Set generated menu
