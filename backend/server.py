@@ -2277,25 +2277,50 @@ async def generate_menu(request: dict):
             total_dishes = sum(len(category.get('dishes', [])) for category in menu_data.get('categories', []))
             
             if total_dishes != dish_count:
-                logger.warning(f"Generated {total_dishes} dishes, expected {dish_count}. Adjusting...")
+                logger.warning(f"Generated {total_dishes} dishes, expected {dish_count}. Re-generating menu...")
                 
                 if total_dishes < dish_count:
-                    # Need to add more dishes
-                    needed = dish_count - total_dishes
-                    categories = menu_data.get('categories', [])
-                    if categories:
-                        # Add dishes to existing categories
-                        for i in range(needed):
-                            cat_index = i % len(categories)
-                            categories[cat_index]['dishes'].append({
-                                "name": f"Специальное блюдо дня {i+1}",
-                                "description": f"Уникальное авторское блюдо от шеф-повара",
-                                "estimated_cost": "250",
-                                "estimated_price": "750",
-                                "difficulty": "средне",
-                                "cook_time": "25",
-                                "main_ingredients": ["сезонные ингредиенты", "специи"]
-                            })
+                    # Instead of adding placeholder dishes, regenerate with clearer instructions
+                    logger.warning(f"Menu had insufficient dishes ({total_dishes} vs {dish_count}). Regenerating...")
+                    
+                    # Add emphasis to the dish count requirement
+                    enhanced_prompt = menu_prompt + f"""
+                    
+=== КРИТИЧЕСКОЕ ТРЕБОВАНИЕ ===
+ВНИМАНИЕ: В предыдущей попытке было сгенерировано только {total_dishes} блюд вместо {dish_count}!
+ОБЯЗАТЕЛЬНО создай РОВНО {dish_count} блюд с конкретными названиями!
+НЕ ИСПОЛЬЗУЙ заглушки типа "Специальное блюдо дня"!
+                    """
+                    
+                    # Retry generation with enhanced prompt
+                    retry_response = await openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": "You are an expert chef and restaurant consultant with 20+ years of experience. Always respond in Russian with valid JSON format. Create detailed, professional menus that exactly match user requirements."},
+                            {"role": "user", "content": enhanced_prompt}
+                        ],
+                        max_tokens=6000,
+                        temperature=0.8
+                    )
+                    
+                    retry_content = retry_response.choices[0].message.content.strip()
+                    if retry_content.startswith('```json'):
+                        retry_content = retry_content[7:]
+                    if retry_content.endswith('```'):
+                        retry_content = retry_content[:-3]
+                    
+                    try:
+                        retry_menu_data = json.loads(retry_content)
+                        retry_total_dishes = sum(len(cat.get('dishes', [])) for cat in retry_menu_data.get('categories', []))
+                        
+                        if retry_total_dishes >= dish_count * 0.8:  # Accept if at least 80% of requested dishes
+                            menu_data = retry_menu_data
+                            logger.info(f"✅ Retry successful: generated {retry_total_dishes} dishes")
+                        else:
+                            logger.warning(f"Retry also insufficient: {retry_total_dishes} dishes. Using original.")
+                    except Exception as retry_error:
+                        logger.error(f"Retry failed: {retry_error}")
+                        # Use original menu_data as fallback
                 
                 elif total_dishes > dish_count:
                     # Need to remove excess dishes
