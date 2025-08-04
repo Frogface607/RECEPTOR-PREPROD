@@ -8346,8 +8346,7 @@ function App() {
                 <button
                   onClick={generateSimpleMenu}
                   disabled={isGeneratingSimpleMenu || !simpleMenuData.menuType || !simpleMenuData.expectations.trim()}
-                  className="flex-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-lg transition-all z-50 relative"
-                  style={{pointerEvents: 'auto'}}
+                  className="flex-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-lg transition-all z-[9999] relative pointer-events-auto"
                 >
                   {isGeneratingSimpleMenu ? (
                     <>⏳ Создаём меню...</>
