@@ -8222,37 +8222,21 @@ function App() {
                 </div>
               </div>
 
-              {/* Step 4: Project Selection (NEW!) */}
+              {/* Step 4: Project Selection (TEMPORARILY DISABLED due to routing issues) */}
               <div>
                 <label className="block text-white font-bold mb-3">
-                  📁 4. Добавить в проект (необязательно):
+                  📁 4. Добавить в проект (скоро будет доступно):
                 </label>
-                <div className="flex gap-3">
-                  <select
-                    value={simpleMenuData.projectId || ''}
-                    onChange={(e) => setSimpleMenuData(prev => ({ 
-                      ...prev, 
-                      projectId: e.target.value || null 
-                    }))}
-                    className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-purple-400 focus:outline-none"
-                  >
-                    <option value="">Без проекта</option>
-                    {menuProjects.map(project => (
-                      <option key={project.id} value={project.id}>
-                        {project.project_name} ({project.menus_count + project.tech_cards_count} элементов)
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateProjectModal(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm"
-                  >
-                    ➕ Новый
-                  </button>
-                </div>
-                <div className="text-xs text-gray-400 mt-2">
-                  💡 Проекты помогают организовать меню по темам: "Летнее меню", "Банкет", "Детское меню"
+                <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-yellow-400 text-xl">🚧</span>
+                    <div>
+                      <p className="text-yellow-200 font-semibold">Система проектов в разработке</p>
+                      <p className="text-yellow-100 text-sm">
+                        Организация меню по проектам будет доступна в следующем обновлении
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
