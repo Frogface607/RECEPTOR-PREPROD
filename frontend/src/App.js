@@ -2715,12 +2715,15 @@ function App() {
       const response = await axios.post(`${API}/generate-menu`, requestData);
       
       if (response.data.success) {
-        // Set generated menu
+        // Set generated menu - FIX: correct response structure parsing
+        const menuData = response.data.menu || response.data;
+        const dishes = menuData.dishes || menuData.generated_dishes || [];
+        
         setGeneratedMenu({
-          menu_id: response.data.menu_id,
-          menu_concept: response.data.menu?.menu_concept || 'Generated via simple menu creation',
-          dishes: response.data.menu?.dishes || [],
-          dish_count: response.data.menu?.dishes?.length || dishCount,
+          menu_id: response.data.menu_id || response.data.id,
+          menu_concept: menuData.menu_concept || menuData.concept || 'Generated via simple menu creation',
+          dishes: dishes,
+          dish_count: dishes.length || dishCount,
           generation_method: 'simple_adapted'
         });
 
@@ -2750,8 +2753,8 @@ function App() {
         });
 
         const projectMessage = simpleMenuData.projectId ? '\n📁 Добавлено в проект' : '';
-        const menuConcept = response.data.menu?.menu_concept || 'Simple menu generated successfully';
-        const finalDishCount = response.data.menu?.dishes?.length || 0;
+        const menuConcept = menuData.menu_concept || menuData.concept || 'Simple menu generated successfully';
+        const finalDishCount = dishes.length || 0;
         alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${finalDishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
 
         // Update user history only (projects temporarily disabled)
