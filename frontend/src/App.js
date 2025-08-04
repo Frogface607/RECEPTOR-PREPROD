@@ -2658,7 +2658,8 @@ function App() {
       fetchUserSubscription();
       fetchUserHistory();
       fetchUserPrices();
-      fetchVenueProfile();
+      // TEMPORARILY DISABLE TO UNBLOCK UI
+      // fetchVenueProfile();
     }
   }, [currentUser?.id]);
 
