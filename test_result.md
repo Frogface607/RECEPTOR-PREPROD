@@ -346,17 +346,17 @@ frontend:
         agent: "main"
         comment: "Added comprehensive menu tech cards display modal with category organization, individual dish viewing, and replace dish functionality. Added states: showMenuTechCards, menuTechCards, isLoadingMenuTechCards. Updated 'МОЕ МЕНЮ' button to use new fetchMenuTechCards function with proper loading states."
 
-  - task: "Beautiful Menu Preview for Customers - Phase 1"
+  - task: "Fix Replace Dish Functionality and Remove Chef Placeholders - Phase 1"
     implemented: true
     working: true
-    file: "frontend/src/App.js"
+    file: "backend/server.py, frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "PHASE 1 COMPLETE: Переделал отображение сгенерированного меню по принципу 'от простого к сложному'. Создал два режима просмотра: 'Меню для гостей' (красивое отображение как в ресторане с названием, описанием, выходом и ценой) и 'Бизнес-анализ' (детальная информация с себестоимостью, ингредиентами, временем готовки). Убрал перегруженность техническими деталями из основного отображения. Добавил большие кнопки 'Заменить' и 'Техкарта' для каждого блюда. Улучшил UX с переключателем режимов просмотра. Исправил вызовы openReplaceDishModal функции."
+        comment: "КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ: 1) Исправлена функция замены блюда - теперь frontend обновляет generatedMenu state с новым блюдом после замены. 2) Убраны заглушки 'Специальное блюдо дня' из backend - заменена логика повторной генерации с усиленным промптом. 3) Исправлен /api/replace-dish endpoint - теперь возвращает полный объект блюда (с description, estimated_cost, estimated_price, main_ingredients) вместо только названия. 4) Добавлено извлечение данных из техкарты для корректного отображения в меню. Решены проблемы пользователя: замена блюд не сохранялась + убраны placeholder блюда."
 
   - task: "Replace Dish Frontend Interface"
     implemented: true
