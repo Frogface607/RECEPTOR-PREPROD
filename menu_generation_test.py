@@ -219,7 +219,7 @@ def test_replace_dish_functionality():
                     replace_request = {
                         "user_id": user_id,
                         "menu_id": menu_id,
-                        "dish_to_replace": original_name,
+                        "dish_name": original_name,  # Changed from dish_to_replace to dish_name
                         "replacement_prompt": "Замени это блюдо на что-то более легкое и диетическое для семейного ресторана"
                     }
                     
