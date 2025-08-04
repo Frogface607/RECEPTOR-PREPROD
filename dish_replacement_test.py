@@ -139,21 +139,29 @@ def test_dish_replacement_full_object():
         if response.status_code == 200:
             menu_data = response.json()
             
-            if "menu" in menu_data and menu_data["menu"]:
+            if "menu" in menu_data and menu_data["menu"] and "menu_id" in menu_data:
                 dishes = menu_data["menu"]
+                menu_id = menu_data["menu_id"]
                 print(f"Generated {len(dishes)} dishes for replacement test")
+                print(f"Menu ID: {menu_id}")
                 
                 # Pick the first dish for replacement
-                dish_to_replace = dishes[0]
-                print(f"Selected dish for replacement: {dish_to_replace.get('name', 'Unknown')}")
+                if isinstance(dishes[0], dict):
+                    dish_name = dishes[0].get("name", "Unknown")
+                else:
+                    dish_name = str(dishes[0])
+                
+                print(f"Selected dish for replacement: {dish_name}")
                 
                 # Test dish replacement
                 print("\nStep 2: Test dish replacement")
                 
                 replacement_request = {
                     "user_id": user_id,
-                    "dish_to_replace": dish_to_replace,
-                    "replacement_prompt": "Replace with a healthy vegetarian salad with quinoa and avocado"
+                    "menu_id": menu_id,
+                    "dish_name": dish_name,
+                    "replacement_prompt": "Replace with a healthy vegetarian salad with quinoa and avocado",
+                    "category": "salads"
                 }
                 
                 print(f"Replacement request: {json.dumps(replacement_request, indent=2, ensure_ascii=False)}")
@@ -221,7 +229,7 @@ def test_dish_replacement_full_object():
                 
         else:
             log_test("Dish Replacement - Full Object", "FAIL", 
-                   f"Could not generate initial menu: HTTP {response.status_code}")
+                   f"Could not generate initial menu: HTTP {response.status_code}: {response.text}")
             
     except Exception as e:
         log_test("Dish Replacement - Full Object", "FAIL", f"Exception: {str(e)}")
