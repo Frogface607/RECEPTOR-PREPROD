@@ -195,9 +195,15 @@ def test_replace_dish_functionality():
         if response.status_code == 200:
             result = response.json()
             
-            if result.get("success") and result.get("dishes"):
-                dishes = result.get("dishes", [])
+            if result.get("success") and result.get("menu"):
+                menu_data = result.get("menu", {})
+                categories = menu_data.get("categories", [])
                 menu_id = result.get("menu_id")
+                
+                # Extract dishes from categories
+                dishes = []
+                for category in categories:
+                    dishes.extend(category.get("dishes", []))
                 
                 if dishes:
                     # Pick the first dish to replace
