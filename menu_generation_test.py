@@ -79,7 +79,13 @@ def test_generate_menu_endpoint():
                 # Test structure requirements
                 if categories:
                     log_test("Categories structure present", "PASS", 
-                            f"Found {len(categories)} categories: {list(categories.keys())}")
+                            f"Found {len(categories)} categories")
+                    
+                    # Print category details
+                    for category in categories:
+                        cat_name = category.get("category_name", "Unknown")
+                        cat_dishes = category.get("dishes", [])
+                        print(f"    Category '{cat_name}': {len(cat_dishes)} dishes")
                 else:
                     log_test("Categories structure present", "FAIL", 
                             "No categories found in response")
