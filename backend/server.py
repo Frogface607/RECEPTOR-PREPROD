@@ -2728,9 +2728,39 @@ async def replace_dish(request: dict):
         
         tech_card_content = response.choices[0].message.content.strip()
         
-        # Extract the new dish name from generated content
+        # Extract dish details from generated content for menu display
         title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card_content)
+        description_match = re.search(r'\*\*Описание:\*\*\s*(.*?)(?=\n\n|\*\*)', tech_card_content, re.DOTALL)
+        cost_match = re.search(r'Себестоимость.*?(\d+(?:\.\d+)?)\s*₽', tech_card_content)
+        price_match = re.search(r'Рекомендуемая цена.*?(\d+(?:\.\d+)?)\s*₽', tech_card_content)
+        time_match = re.search(r'\*\*Время:\*\*\s*(.*?)(?=\n|$)', tech_card_content)
+        portion_match = re.search(r'\*\*Выход:\*\*\s*(.*?)(?=\n|$)', tech_card_content)
+        
         new_dish_name = title_match.group(1).strip() if title_match else f"Замена для {dish_name}"
+        
+        # Create a full dish object for menu display (compatible with frontend)
+        new_dish_object = {
+            "name": new_dish_name,
+            "description": description_match.group(1).strip() if description_match else "Авторское блюдо от шефа",
+            "estimated_cost": cost_match.group(1) if cost_match else "250",
+            "estimated_price": price_match.group(1) if price_match else "750", 
+            "difficulty": "средне",
+            "cook_time": time_match.group(1).strip() if time_match else "25 мин",
+            "portion_size": portion_match.group(1).strip() if portion_match else "1 порция",
+            "main_ingredients": []  # Will be extracted later if needed
+        }
+        
+        # Try to extract main ingredients from tech card
+        ingredients_match = re.search(r'\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)', tech_card_content, re.DOTALL)
+        if ingredients_match:
+            ingredients_text = ingredients_match.group(1)
+            ingredient_lines = [line.strip() for line in ingredients_text.split('\n') if line.strip().startswith('-')]
+            main_ingredients = []
+            for line in ingredient_lines[:5]:  # Take first 5 ingredients
+                ingredient_name = re.sub(r'^-\s*', '', line).split('—')[0].split('-')[0].strip()
+                if ingredient_name:
+                    main_ingredients.append(ingredient_name)
+            new_dish_object["main_ingredients"] = main_ingredients
         
         # Save new tech card to database
         tech_card_record = {
@@ -2761,7 +2791,7 @@ async def replace_dish(request: dict):
         return {
             "success": True,
             "original_dish": dish_name,
-            "new_dish": new_dish_name,
+            "new_dish": new_dish_object,  # Return full dish object instead of just name
             "tech_card_id": tech_card_record["id"],
             "content": tech_card_content,
             "category": category,
