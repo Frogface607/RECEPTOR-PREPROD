@@ -172,9 +172,18 @@ def test_replace_dish_functionality():
     try:
         menu_request = {
             "user_id": user_id,
-            "menu_type": "full",
-            "dish_count": 8,
-            "expectations": "Разнообразное меню для семейного ресторана"
+            "menu_profile": {
+                "menuType": "restaurant",
+                "dishCount": 8,
+                "averageCheck": "medium",
+                "cuisineStyle": "european",
+                "expectations": "Разнообразное меню для семейного ресторана",
+                "useConstructor": False
+            },
+            "venue_profile": {
+                "venue_name": "Семейный ресторан",
+                "venue_type": "family_restaurant"
+            }
         }
         
         response = requests.post(
