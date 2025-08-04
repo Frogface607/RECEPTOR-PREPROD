@@ -2829,6 +2829,29 @@ function App() {
       if (response.data.success) {
         alert(response.data.message);
         
+        // КРИТИЧЕСКИ ВАЖНО: Обновляем generatedMenu state с новым блюдом
+        if (generatedMenu && response.data.new_dish) {
+          const updatedMenu = { ...generatedMenu };
+          
+          // Находим и заменяем блюдо в соответствующей категории
+          updatedMenu.categories = updatedMenu.categories.map(category => {
+            if (category.category_name === replacingDishData.category) {
+              return {
+                ...category,
+                dishes: category.dishes.map(dish => 
+                  dish.name === replacingDishData.dish_name 
+                    ? response.data.new_dish 
+                    : dish
+                )
+              };
+            }
+            return category;
+          });
+          
+          setGeneratedMenu(updatedMenu);
+          console.log('✅ Меню обновлено с новым блюдом:', response.data.new_dish.name);
+        }
+        
         // Refresh menu tech cards if they are currently displayed
         if (showMenuTechCards && menuTechCards) {
           await fetchMenuTechCards(replacingDishData.menu_id);
