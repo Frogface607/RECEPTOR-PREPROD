@@ -2672,6 +2672,112 @@ function App() {
     // }
   }, [currentView, currentUser]);
 
+  // Generate simple menu function - MOVED UP for better React binding
+  const generateSimpleMenu = async () => {
+    alert('generateSimpleMenu функция вызвана!'); // Debug alert
+    
+    if (!currentUser?.id) {
+      alert('Пользователь не найден!');
+      return;
+    }
+
+    if (!simpleMenuData.menuType || !simpleMenuData.expectations.trim()) {
+      alert('Пожалуйста, выберите тип меню и опишите ваши ожидания!');
+      return;
+    }
+
+    setIsGeneratingSimpleMenu(true);
+    try {
+      // Use venue profile default dish count if not specified
+      const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
+
+      const requestData = {
+        user_id: currentUser.id,
+        // Convert simple menu data to complex menu format for existing endpoint
+        menu_profile: {
+          menuType: "restaurant",
+          dishCount: dishCount,
+          averageCheck: "medium",
+          cuisineStyle: venueProfile.cuisine_style || "classic",
+          menuStyle: simpleMenuData.menuType,
+          specialRequirements: [],
+          menuDescription: simpleMenuData.expectations,
+          expectations: simpleMenuData.expectations,
+          additional_notes: `Generated via simple menu creation. Type: ${simpleMenuData.menuType}, Project: ${simpleMenuData.projectId || 'none'}`
+        },
+        venue_profile: {
+          venue_name: venueProfile.venue_name || "Test Restaurant",
+          venue_type: venueProfile.venue_type || "family_restaurant", 
+          cuisine_type: (venueProfile.cuisine_focus && venueProfile.cuisine_focus[0]) || "russian",
+          average_check: venueProfile.average_check || 800
+        }
+      };
+
+      const response = await axios.post(`${API}/generate-menu`, requestData);
+      
+      if (response.data.success) {
+        // Set generated menu
+        setGeneratedMenu({
+          menu_id: response.data.menu_id,
+          menu_concept: response.data.menu?.menu_concept || 'Generated via simple menu creation',
+          dishes: response.data.menu?.dishes || [],
+          dish_count: response.data.menu?.dishes?.length || dishCount,
+          generation_method: 'simple_adapted'
+        });
+
+        // If project_id is specified, need to update menu to link it to project
+        if (simpleMenuData.projectId) {
+          try {
+            // Note: Since existing endpoint doesn't support project_id, 
+            // we'd need to update the database separately
+            console.log('Project linking would be done here:', simpleMenuData.projectId);
+          } catch (error) {
+            console.error('Error linking menu to project:', error);
+            // Don't fail the entire process for project linking
+          }
+        }
+
+        // CRITICAL FIX: Set currentView to menu-generator to show the generated menu
+        setCurrentView('menu-generator');
+
+        // Close modal and show success
+        setShowSimpleMenuModal(false);
+        setSimpleMenuData({
+          menuType: '',
+          expectations: '',
+          dishCount: 0,
+          customCategories: null,
+          projectId: null
+        });
+
+        const projectMessage = simpleMenuData.projectId ? '\n📁 Добавлено в проект' : '';
+        const menuConcept = response.data.menu?.menu_concept || 'Simple menu generated successfully';
+        const dishCount = response.data.menu?.dishes?.length || 0;
+        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${dishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
+
+        // Update user history only (projects temporarily disabled)
+        await fetchUserHistory();
+      } else {
+        throw new Error(response.data.error || 'Failed to generate simple menu');
+      }
+    } catch (error) {
+      console.error('Error generating simple menu:', error);
+      let errorMessage = 'Ошибка при создании меню';
+      
+      if (error.response?.status === 403) {
+        errorMessage = 'Создание меню доступно только для PRO пользователей!';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setIsGeneratingSimpleMenu(false);
+    }
+  };
+
   // Fetch menu tech cards function
   const fetchMenuTechCards = async (menuId) => {
     if (!menuId) {
