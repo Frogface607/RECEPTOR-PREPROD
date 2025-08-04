@@ -209,6 +209,9 @@ function App() {
   const [replacementPrompt, setReplacementPrompt] = useState('');
   const [isReplacingDish, setIsReplacingDish] = useState(false);
 
+  // Menu View Mode states
+  const [menuViewMode, setMenuViewMode] = useState('customer'); // 'customer' or 'business'
+
   // Tips and lifehacks for mass generation loading
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const receptionTips = [
