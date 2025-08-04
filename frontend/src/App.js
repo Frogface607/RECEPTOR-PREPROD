@@ -2715,29 +2715,28 @@ function App() {
       const response = await axios.post(`${API}/generate-menu`, requestData);
       
       if (response.data.success) {
-        // Set generated menu - FIX: correct response structure parsing
-        const menuData = response.data.menu || response.data;
-        const dishes = menuData.dishes || menuData.generated_dishes || [];
+        // Parse menu data from actual API response structure
+        const menuData = response.data.menu;
+        const categories = menuData.categories || [];
+        
+        // Extract all dishes from categories
+        let allDishes = [];
+        categories.forEach(category => {
+          const categoryDishes = (category.dishes || []).map(dish => ({
+            ...dish,
+            category: category.name || category.category || 'Без категории'
+          }));
+          allDishes = allDishes.concat(categoryDishes);
+        });
         
         setGeneratedMenu({
-          menu_id: response.data.menu_id || response.data.id,
-          menu_concept: menuData.menu_concept || menuData.concept || 'Generated via simple menu creation',
-          dishes: dishes,
-          dish_count: dishes.length || dishCount,
-          generation_method: 'simple_adapted'
+          menu_id: response.data.menu_id,
+          menu_concept: menuData.menu_name || menuData.description || 'Generated via simple menu creation',
+          dishes: allDishes,
+          dish_count: allDishes.length,
+          generation_method: 'simple_adapted',
+          categories: categories
         });
-
-        // If project_id is specified, need to update menu to link it to project
-        if (simpleMenuData.projectId) {
-          try {
-            // Note: Since existing endpoint doesn't support project_id, 
-            // we'd need to update the database separately
-            console.log('Project linking would be done here:', simpleMenuData.projectId);
-          } catch (error) {
-            console.error('Error linking menu to project:', error);
-            // Don't fail the entire process for project linking
-          }
-        }
 
         // CRITICAL FIX: Set currentView to menu-generator to show the generated menu
         setCurrentView('menu-generator');
@@ -2752,12 +2751,9 @@ function App() {
           projectId: null
         });
 
-        const projectMessage = simpleMenuData.projectId ? '\n📁 Добавлено в проект' : '';
-        const menuConcept = menuData.menu_concept || menuData.concept || 'Simple menu generated successfully';
-        const finalDishCount = dishes.length || 0;
-        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${finalDishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
+        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${allDishes.length} блюд\n💡 Концепция: ${menuData.menu_name || 'Новое меню'}`);
 
-        // Update user history only (projects temporarily disabled)
+        // Update user history
         await fetchUserHistory();
       } else {
         throw new Error(response.data.error || 'Failed to generate simple menu');
