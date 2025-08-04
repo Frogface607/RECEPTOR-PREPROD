@@ -2674,6 +2674,8 @@ function App() {
 
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
+    alert('🚀 ФУНКЦИЯ ВЫЗВАНА! Сейчас создаём меню...'); // INSTANT DEBUG
+    
     if (!currentUser?.id) {
       alert('Пользователь не найден!');
       return;
