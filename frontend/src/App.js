@@ -8222,18 +8222,18 @@ function App() {
                 </div>
               </div>
 
-              {/* Step 4: Project Selection (TEMPORARILY DISABLED due to routing issues) */}
+              {/* Step 4: Project Selection - SIMPLIFIED */}
               <div>
                 <label className="block text-white font-bold mb-3">
-                  📁 4. Добавить в проект (скоро будет доступно):
+                  📁 4. Добавить в проект (скоро):
                 </label>
-                <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-4">
+                <div className="bg-purple-900/20 border border-purple-400/30 rounded-lg p-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-yellow-400 text-xl">🚧</span>
+                    <span className="text-purple-400 text-xl">🚀</span>
                     <div>
-                      <p className="text-yellow-200 font-semibold">Система проектов в разработке</p>
-                      <p className="text-yellow-100 text-sm">
-                        Организация меню по проектам будет доступна в следующем обновлении
+                      <p className="text-purple-200 font-semibold">Система проектов скоро!</p>
+                      <p className="text-purple-100 text-sm">
+                        Организация меню по проектам будет доступна в ближайшем обновлении
                       </p>
                     </div>
                   </div>
