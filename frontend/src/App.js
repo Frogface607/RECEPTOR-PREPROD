@@ -2713,6 +2713,7 @@ function App() {
       };
 
       const response = await axios.post(`${API}/generate-menu`, requestData);
+      console.log('SUCCESS - API Response received:', response.status, response.data);
       
       if (response.data.success) {
         // Parse menu data from actual API response structure
