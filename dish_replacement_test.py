@@ -54,9 +54,9 @@ def test_menu_generation_no_placeholders():
         if response.status_code == 200:
             menu_data = response.json()
             
-            # Check if menu was generated
-            if "menu" in menu_data and menu_data["menu"]:
-                dishes = menu_data["menu"]
+            # Check if menu was generated - use "dishes" field instead of "menu"
+            if "dishes" in menu_data and menu_data["dishes"]:
+                dishes = menu_data["dishes"]
                 print(f"Generated {len(dishes)} dishes")
                 
                 # Check for placeholder dishes
@@ -105,7 +105,7 @@ def test_menu_generation_no_placeholders():
                 return dishes  # Return for use in replacement test
                 
             else:
-                log_test("Menu Generation - No Placeholders", "FAIL", "No menu generated")
+                log_test("Menu Generation - No Placeholders", "FAIL", "No dishes generated")
                 return None
         else:
             log_test("Menu Generation - No Placeholders", "FAIL", 
