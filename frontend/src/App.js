@@ -8139,7 +8139,7 @@ function App() {
             <div className="border-b border-purple-400/20 p-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-3xl font-bold text-purple-300 mb-2">🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА</h2>
+                  <h2 className="text-3xl font-bold text-purple-300 mb-2">🚀 СОЗДАТЬ МЕНЮ ЗА 4 КЛИКА</h2>
                   <p className="text-gray-400">Простое создание меню на основе профиля заведения</p>
                 </div>
                 <button
