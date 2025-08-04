@@ -3361,15 +3361,22 @@ function App() {
         {currentView === 'menu-generator' && generatedMenu && !showMenuWizard && (
           <div className="max-w-6xl mx-auto">
             {/* Menu Header */}  
-            <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 mb-8">
+            <div className="bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-400/30 rounded-xl p-6 mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300 mb-2">
-                    {generatedMenu.menu_name || 'Сгенерированное меню'}
-                  </h2>
-                  <p className="text-gray-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-4xl">🍽️</span>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-amber-300">
+                      {generatedMenu.menu_name || 'Сгенерированное меню'}
+                    </h2>
+                  </div>
+                  <p className="text-gray-300 text-lg">
                     {generatedMenu.description || 'Меню создано с учетом всех ваших требований'}
                   </p>
+                  <div className="flex gap-4 mt-3 text-sm text-gray-400">
+                    <span>📊 Всего блюд: {(generatedMenu.categories || []).reduce((total, cat) => total + (cat.dishes?.length || 0), 0)}</span>
+                    <span>🏷️ Категорий: {(generatedMenu.categories || []).length}</span>
+                  </div>
                 </div>
                 <button
                   onClick={() => {
@@ -3384,133 +3391,230 @@ function App() {
               </div>
             </div>
 
-            {/* Ingredient Optimization Info */}
-            {generatedMenu.ingredient_optimization && (
-              <div className="bg-green-900/20 border border-green-400/30 rounded-xl p-6 mb-8">
-                <h3 className="text-xl font-bold text-green-300 mb-4">💡 Оптимизация ингредиентов</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold text-green-200 mb-2">Общие ингредиенты:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {(generatedMenu.ingredient_optimization.shared_ingredients || []).map((ingredient, index) => (
-                        <span key={index} className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm">
-                          {ingredient}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-green-200 mb-2">Экономия на закупках:</h4>
-                    <div className="text-2xl font-bold text-green-300">
-                      {generatedMenu.ingredient_optimization.cost_savings || '15-20%'}
-                    </div>
-                  </div>
-                </div>
+            {/* Menu Preview Toggle */}
+            <div className="flex justify-center mb-8">
+              <div className="bg-gray-800/50 rounded-lg p-2 flex gap-2">
+                <button 
+                  onClick={() => setMenuViewMode('customer')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    menuViewMode === 'customer' 
+                      ? 'bg-amber-600 text-white' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  🍽️ Меню для гостей
+                </button>
+                <button 
+                  onClick={() => setMenuViewMode('business')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    menuViewMode === 'business' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  📊 Бизнес-анализ
+                </button>
               </div>
-            )}
+            </div>
 
-            {/* Menu Categories */}
-            <div className="space-y-6">
-              {(generatedMenu.categories || []).map((category, categoryIndex) => (
-                <div key={categoryIndex} className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700">
-                  <h3 className="text-xl font-bold text-cyan-300 mb-4">
-                    {category.category_name}
-                    <span className="text-sm text-gray-400 ml-2">({category.dishes?.length || 0} блюд)</span>
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {(category.dishes || []).map((dish, dishIndex) => (
-                      <div key={dishIndex} className="bg-gray-700/50 rounded-lg p-4 hover:bg-gray-700/70 transition-colors">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-bold text-white">{dish.name}</h4>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                // Replace dish functionality
-                                alert('Функция замены блюда скоро будет доступна!');
-                              }}
-                              className="text-yellow-400 hover:text-yellow-300 text-sm"
-                              title="🔄 Заменить блюдо"
-                            >
-                              🔄
-                            </button>
-                            <button
-                              onClick={() => {
-                                // Generate tech card with full dish context
-                                const fullDishContext = {
-                                  name: dish.name,
-                                  description: dish.description,
-                                  main_ingredients: dish.main_ingredients || [],
-                                  category: category.category_name,
-                                  estimated_cost: dish.estimated_cost,
-                                  estimated_price: dish.estimated_price,
-                                  difficulty: dish.difficulty,
-                                  cook_time: dish.cook_time
-                                };
-                                
-                                setDishContext(fullDishContext);
-                                setDishName(`${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")
-                                
+            {/* Customer Menu View */}
+            {menuViewMode === 'customer' && (
+              <div className="space-y-8">
+                {(generatedMenu.categories || []).map((category, categoryIndex) => (
+                  <div key={categoryIndex} className="bg-white/5 backdrop-blur-lg rounded-xl p-8 border border-amber-400/20">
+                    <h3 className="text-2xl font-bold text-amber-300 mb-6 text-center border-b border-amber-400/30 pb-3">
+                      {category.category_name}
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {(category.dishes || []).map((dish, dishIndex) => (
+                        <div key={dishIndex} className="border-b border-gray-600/30 pb-4 last:border-b-0">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <h4 className="text-xl font-bold text-white mb-2">{dish.name}</h4>
+                              <p className="text-gray-300 leading-relaxed">{dish.description}</p>
+                              {dish.portion_size && (
+                                <p className="text-gray-400 text-sm mt-1">Выход: {dish.portion_size}</p>
+                              )}
+                            </div>
+                            <div className="text-right ml-6">
+                              <div className="text-2xl font-bold text-amber-300">
+                                {dish.estimated_price}₽
+                              </div>
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => openReplaceDishModal(dish, category)}
+                                  className="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 px-3 py-1 rounded-lg text-sm border border-yellow-600/30 transition-all"
+                                  title="🔄 Заменить блюдо"
+                                >
+                                  🔄 Заменить
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const fullDishContext = {
+                                      name: dish.name,
+                                      description: dish.description,
+                                      main_ingredients: dish.main_ingredients || [],
+                                      category: category.category_name,
+                                      estimated_cost: dish.estimated_cost,
+                                      estimated_price: dish.estimated_price,
+                                      difficulty: dish.difficulty,
+                                      cook_time: dish.cook_time
+                                    };
+                                    
+                                    setDishContext(fullDishContext);
+                                    setDishName(`${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")
+                                    
 Категория: ${category.category_name}
 Описание: ${dish.description}
 Основные ингредиенты: ${(dish.main_ingredients || []).join(', ')}
 Ориентировочная себестоимость: ${dish.estimated_cost}₽
 Время готовки: ${dish.cook_time} мин
 Сложность: ${dish.difficulty}`);
-                                setCurrentView('create');
-                              }}
-                              className="text-cyan-400 hover:text-cyan-300 text-sm"
-                              title="📋 Создать техкарту"
-                            >
-                              📋
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <p className="text-gray-300 text-sm mb-3">{dish.description}</p>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-xs">
-                          <div>
-                            <span className="text-gray-400">Себестоимость:</span>
-                            <span className="text-green-300 font-semibold ml-1">{dish.estimated_cost}₽</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Цена:</span>
-                            <span className="text-yellow-300 font-semibold ml-1">{dish.estimated_price}₽</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Сложность:</span>
-                            <span className="text-blue-300 font-semibold ml-1">{dish.difficulty}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Время:</span>
-                            <span className="text-purple-300 font-semibold ml-1">{dish.cook_time} мин</span>
-                          </div>
-                        </div>
-                        
-                        {dish.main_ingredients && (
-                          <div className="mt-3">
-                            <span className="text-gray-400 text-xs">Ингредиенты:</span>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {dish.main_ingredients.slice(0, 3).map((ingredient, idx) => (
-                                <span key={idx} className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs">
-                                  {ingredient}
-                                </span>
-                              ))}
-                              {dish.main_ingredients.length > 3 && (
-                                <span className="px-2 py-1 text-gray-400 text-xs">
-                                  +{dish.main_ingredients.length - 3}
-                                </span>
-                              )}
+                                    setCurrentView('create');
+                                  }}
+                                  className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 px-3 py-1 rounded-lg text-sm border border-emerald-600/30 transition-all"
+                                  title="📋 Создать техкарту"
+                                >
+                                  📋 Техкарта
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Business Analysis View */}
+            {menuViewMode === 'business' && (
+              <div className="space-y-6">
+                {/* Ingredient Optimization Info */}
+                {generatedMenu.ingredient_optimization && (
+                  <div className="bg-green-900/20 border border-green-400/30 rounded-xl p-6">
+                    <h3 className="text-xl font-bold text-green-300 mb-4">💡 Оптимизация ингредиентов</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold text-green-200 mb-2">Общие ингредиенты:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(generatedMenu.ingredient_optimization.shared_ingredients || []).map((ingredient, index) => (
+                            <span key={index} className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm">
+                              {ingredient}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-green-200 mb-2">Экономия на закупках:</h4>
+                        <div className="text-2xl font-bold text-green-300">
+                          {generatedMenu.ingredient_optimization.cost_savings || '15-20%'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Menu Categories */}
+                {(generatedMenu.categories || []).map((category, categoryIndex) => (
+                  <div key={categoryIndex} className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-4">
+                      {category.category_name}
+                      <span className="text-sm text-gray-400 ml-2">({category.dishes?.length || 0} блюд)</span>
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {(category.dishes || []).map((dish, dishIndex) => (
+                        <div key={dishIndex} className="bg-gray-700/50 rounded-lg p-4 hover:bg-gray-700/70 transition-colors">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-bold text-white">{dish.name}</h4>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => openReplaceDishModal(dish, category)}
+                                className="text-yellow-400 hover:text-yellow-300 text-sm"
+                                title="🔄 Заменить блюдо"
+                              >
+                                🔄
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const fullDishContext = {
+                                    name: dish.name,
+                                    description: dish.description,
+                                    main_ingredients: dish.main_ingredients || [],
+                                    category: category.category_name,
+                                    estimated_cost: dish.estimated_cost,
+                                    estimated_price: dish.estimated_price,
+                                    difficulty: dish.difficulty,
+                                    cook_time: dish.cook_time
+                                  };
+                                  
+                                  setDishContext(fullDishContext);
+                                  setDishName(`${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")
+                                  
+Категория: ${category.category_name}
+Описание: ${dish.description}
+Основные ингредиенты: ${(dish.main_ingredients || []).join(', ')}
+Ориентировочная себестоимость: ${dish.estimated_cost}₽
+Времяготовки: ${dish.cook_time} мин
+Сложность: ${dish.difficulty}`);
+                                  setCurrentView('create');
+                                }}
+                                className="text-cyan-400 hover:text-cyan-300 text-sm"
+                                title="📋 Создать техкарту"
+                              >
+                                📋
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-300 text-sm mb-3">{dish.description}</p>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-xs">
+                            <div>
+                              <span className="text-gray-400">Себестоимость:</span>
+                              <span className="text-green-300 font-semibold ml-1">{dish.estimated_cost}₽</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Цена:</span>
+                              <span className="text-yellow-300 font-semibold ml-1">{dish.estimated_price}₽</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Сложность:</span>
+                              <span className="text-blue-300 font-semibold ml-1">{dish.difficulty}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Время:</span>
+                              <span className="text-purple-300 font-semibold ml-1">{dish.cook_time} мин</span>
+                            </div>
+                          </div>
+                          
+                          {dish.main_ingredients && (
+                            <div className="mt-3">
+                              <span className="text-gray-400 text-xs">Ингредиенты:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {dish.main_ingredients.slice(0, 3).map((ingredient, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs">
+                                    {ingredient}
+                                  </span>
+                                ))}
+                                {dish.main_ingredients.length > 3 && (
+                                  <span className="px-2 py-1 text-gray-400 text-xs">
+                                    +{dish.main_ingredients.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
