@@ -8263,6 +8263,33 @@ function App() {
                   </div>
                 </div>
               )}
+
+              {/* Quick Profile Setup - NEW! */}
+              {(venueProfile.venue_type || venueProfile.cuisine_focus?.length) && (
+                <div className="bg-green-900/20 border border-green-400/30 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3">
+                      <span className="text-green-400 text-xl">✅</span>
+                      <div>
+                        <p className="text-green-200 font-semibold mb-1">Профиль настроен</p>
+                        <p className="text-green-100 text-sm">
+                          Тип: {venueProfile.venue_type || 'не указан'}, 
+                          Кухня: {venueProfile.cuisine_focus?.join(', ') || 'не указана'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowSimpleMenuModal(false);
+                        setShowVenueProfileModal(true);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1 px-3 rounded transition-colors"
+                    >
+                      ⚙️ Изменить
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
