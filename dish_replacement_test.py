@@ -139,7 +139,7 @@ def test_dish_replacement_full_object():
         if response.status_code == 200:
             menu_data = response.json()
             
-            if "menu" in menu_data and menu_data["menu"] and "menu_id" in menu_data:
+            if "dishes" in menu_data and menu_data["dishes"] and "menu_id" in menu_data:
                 dishes = menu_data["menu"]
                 menu_id = menu_data["menu_id"]
                 print(f"Generated {len(dishes)} dishes for replacement test")
