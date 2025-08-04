@@ -2833,11 +2833,8 @@ function App() {
         const dishCount = response.data.menu?.dishes?.length || 0;
         alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${dishCount} блюд\n💡 Концепция: ${menuConcept}${projectMessage}`);
 
-        // Update user history and projects
+        // Update user history only (projects temporarily disabled)
         await fetchUserHistory();
-        if (menuProjects.length > 0) {
-          await fetchMenuProjects();
-        }
       } else {
         throw new Error(response.data.error || 'Failed to generate simple menu');
       }
