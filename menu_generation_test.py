@@ -64,9 +64,14 @@ def test_generate_menu_endpoint():
             
             if result.get("success"):
                 # Check for required structure
-                categories = result.get("categories", {})
-                dishes = result.get("dishes", [])
+                menu_data = result.get("menu", {})
+                categories = menu_data.get("categories", [])
                 menu_id = result.get("menu_id")
+                
+                # Extract dishes from categories
+                dishes = []
+                for category in categories:
+                    dishes.extend(category.get("dishes", []))
                 
                 log_test("Menu generation success", "PASS", 
                         f"Generated menu in {end_time - start_time:.2f}s")
