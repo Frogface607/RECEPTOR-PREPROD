@@ -3561,7 +3561,7 @@ function App() {
 Описание: ${dish.description}
 Основные ингредиенты: ${(dish.main_ingredients || []).join(', ')}
 Ориентировочная себестоимость: ${dish.estimated_cost}₽
-Времяготовки: ${dish.cook_time} мин
+Время готовки: ${dish.cook_time} мин
 Сложность: ${dish.difficulty}`);
                                   setCurrentView('create');
                                 }}
