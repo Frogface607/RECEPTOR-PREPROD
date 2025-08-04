@@ -3608,7 +3608,7 @@ function App() {
                     className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl text-xl transform hover:scale-105 transition-all shadow-lg"
                     title="🎯 Простое создание меню"
                   >
-                    🚀 СОЗДАТЬ МЕНЮ ЗА 4 КЛИКА
+                    🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА
                   </button>
                 </div>
 
