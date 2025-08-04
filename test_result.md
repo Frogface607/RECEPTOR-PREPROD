@@ -340,11 +340,23 @@ frontend:
     file: "frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added comprehensive menu tech cards display modal with category organization, individual dish viewing, and replace dish functionality. Added states: showMenuTechCards, menuTechCards, isLoadingMenuTechCards. Updated 'МОЕ МЕНЮ' button to use new fetchMenuTechCards function with proper loading states."
+
+  - task: "Beautiful Menu Preview for Customers - Phase 1"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "PHASE 1 COMPLETE: Переделал отображение сгенерированного меню по принципу 'от простого к сложному'. Создал два режима просмотра: 'Меню для гостей' (красивое отображение как в ресторане с названием, описанием, выходом и ценой) и 'Бизнес-анализ' (детальная информация с себестоимостью, ингредиентами, временем готовки). Убрал перегруженность техническими деталями из основного отображения. Добавил большие кнопки 'Заменить' и 'Техкарта' для каждого блюда. Улучшил UX с переключателем режимов просмотра. Исправил вызовы openReplaceDishModal функции."
 
   - task: "Replace Dish Frontend Interface"
     implemented: true
