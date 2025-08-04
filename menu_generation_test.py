@@ -235,25 +235,22 @@ def test_replace_dish_functionality():
                         replace_result = replace_response.json()
                         
                         if replace_result.get("success"):
-                            new_dish = replace_result.get("new_dish", {})
-                            new_name = new_dish.get("name", "Unknown")
+                            new_dish_name = replace_result.get("new_dish", "Unknown")
+                            tech_card_content = replace_result.get("content", "")
                             
                             log_test("Replace dish functionality", "PASS", 
-                                    f"Successfully replaced '{original_name}' with '{new_name}' in {end_time - start_time:.2f}s")
+                                    f"Successfully replaced '{original_name}' with '{new_dish_name}' in {end_time - start_time:.2f}s")
                             
-                            # Check if new dish has required fields
-                            required_fields = ["name", "description", "estimated_price", "estimated_cost"]
-                            missing_fields = [field for field in required_fields if not new_dish.get(field)]
-                            
-                            if not missing_fields:
-                                log_test("Replaced dish structure", "PASS", 
-                                        "New dish has all required fields for display")
+                            # Check if new dish has content (tech card)
+                            if tech_card_content and len(tech_card_content) > 100:
+                                log_test("Replaced dish content", "PASS", 
+                                        f"New dish has tech card content ({len(tech_card_content)} chars)")
                             else:
-                                log_test("Replaced dish structure", "FAIL", 
-                                        f"New dish missing fields: {missing_fields}")
+                                log_test("Replaced dish content", "FAIL", 
+                                        "New dish missing or insufficient tech card content")
                             
                             # Check if replacement is actually different
-                            if new_name.lower() != original_name.lower():
+                            if new_dish_name.lower() != original_name.lower():
                                 log_test("Dish replacement uniqueness", "PASS", 
                                         "New dish is different from original")
                             else:
