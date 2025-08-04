@@ -8255,9 +8255,33 @@ function App() {
                           setShowSimpleMenuModal(false);
                           setShowVenueProfileModal(true);
                         }}
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors"
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors mr-2"
                       >
                         ⚙️ НАСТРОИТЬ ПРОФИЛЬ
+                      </button>
+                      <button
+                        onClick={async () => {
+                          // Quick setup with defaults based on menu type
+                          const quickProfile = {
+                            venue_type: simpleMenuData.menuType === 'business_lunch' ? 'office_cafe' : 'family_restaurant',
+                            cuisine_focus: ['russian'],
+                            average_check: 800,
+                            region: currentUser?.city || 'moskva'
+                          };
+                          
+                          try {
+                            await axios.post(`${API}/update-venue-profile/${currentUser.id}`, quickProfile);
+                            // Update local venue profile
+                            setVenueProfile(prev => ({ ...prev, ...quickProfile }));
+                            alert('✅ Быстрая настройка профиля завершена!');
+                          } catch (error) {
+                            console.error('Error quick setup profile:', error);
+                            alert('Ошибка быстрой настройки. Используйте полную настройку.');
+                          }
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded transition-colors"
+                      >
+                        ⚡ Быстро
                       </button>
                     </div>
                   </div>
