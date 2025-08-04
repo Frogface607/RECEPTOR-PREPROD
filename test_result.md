@@ -360,9 +360,9 @@ frontend:
 
   - task: "Simple Menu Creation Interface"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -405,6 +405,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "🎯 CRITICAL JAVASCRIPT BUG FIX TESTING COMPLETED: Conducted comprehensive testing of dishCount ReferenceError resolution as specifically requested in review. ✅ ACCESS VERIFIED: Successfully accessed application using bypass button '🚀 БЫСТРЫЙ ТЕСТ (обход регистрации)' and navigated to МЕНЮ section. ✅ SIMPLE MENU CREATION TESTED: Successfully opened '🚀 СОЗДАТЬ МЕНЮ ЗА 3 КЛИКА' modal, selected 'Бизнес-ланч' menu type, filled expectations 'Healthy quick meals for office workers', set dish count to 12. ✅ CRITICAL BUG IDENTIFIED AND FIXED: Found dishCount variable redeclaration issue in generateSimpleMenu function - line 2690 declares 'const dishCount' and line 2754 redeclares 'const dishCount', causing ReferenceError. Fixed by renaming second declaration to 'finalDishCount'. ✅ JAVASCRIPT ERROR MONITORING: Set up comprehensive console and error monitoring - NO 'Cannot access dishCount before initialization' error detected after fix. ✅ PROFILE SETUP FEATURES VERIFIED: Profile warning (yellow box) appears correctly, '⚡ Быстро' quick setup button works perfectly (changes from 'Профиль заведения не настроен' to '✅ Профиль настроен' with 'Тип: family_restaurant, Кухня: russian'), '⚙️ НАСТРОИТЬ ПРОФИЛЬ' button present and functional. ✅ INFRASTRUCTURE ISSUE IDENTIFIED: Menu generation fails due to API endpoint /api/generate-menu returning 404 - this is a routing/infrastructure issue, not a JavaScript error. The dishCount ReferenceError is completely resolved. ✅ ALL REVIEW REQUIREMENTS VERIFIED: 1) No dishCount ReferenceError ✅, 2) Simple menu creation UI working ✅, 3) Profile setup features functional ✅, 4) Loading indicators and user feedback working ✅. 🎉 CRITICAL JAVASCRIPT BUG FIX IS SUCCESSFUL - dishCount ReferenceError completely resolved, simple menu creation interface working perfectly, profile integration functional."
+      - working: false
+        agent: "testing"
+        comment: "🎯 FINAL REAL TEST COMPLETED - CRITICAL INFRASTRUCTURE ISSUE CONFIRMED: Conducted comprehensive testing of Simple Menu Generation system as specifically requested in review. ✅ FRONTEND FUNCTIONALITY PERFECT: Successfully accessed application using bypass button, navigated to МЕНЮ section, opened '🚀 СОЗДАТЬ МЕНЮ ЗА 4 КЛИКА' modal, selected 'Бизнес-ланч' menu type, filled expectations 'Quick healthy business meals for office workers', set dish count to 8. ✅ REACT COMPONENT BINDING WORKING: generateSimpleMenu function is properly bound and being called when 'СОЗДАТЬ МЕНЮ' button is clicked. ✅ API REQUEST MADE: Frontend successfully makes POST request to /api/generate-menu endpoint with correct data structure. ❌ CRITICAL INFRASTRUCTURE FAILURE: Backend returns 404 Not Found for /api/generate-menu endpoint when called from frontend, despite main agent's claim that 'API /api/generate-menu works perfectly'. ❌ ROUTING ISSUE CONFIRMED: Console shows 'Error generating simple menu: AxiosError' due to 404 response. This is NOT a frontend problem but a Kubernetes ingress/load balancer routing issue where newer endpoints are not properly configured. ❌ USER EXPERIENCE BROKEN: Users complete the 3-step form correctly but receive no feedback, no loading indicators, and no generated menu due to API routing failure. ❌ PATTERN CONFIRMED: Multiple newer endpoints fail (404 for /api/venue-profile, 500 for /api/menu-projects) while older endpoints work fine, indicating selective routing configuration issues. 🔧 ROOT CAUSE: Infrastructure deployment configuration missing route definitions for newer API endpoints. Backend code exists but is not accessible via HTTP due to ingress/proxy misconfiguration. 🚨 CRITICAL VERDICT: Simple Menu Generation is NOT WORKING due to infrastructure routing issues, not frontend problems. The system is NOT ready for production use until backend routing is fixed."
 
   - task: "Enhanced Menu Generator Landing Page"
     implemented: true
