@@ -34,10 +34,21 @@ def test_generate_menu_endpoint():
     try:
         menu_request = {
             "user_id": user_id,
-            "menu_type": "full",
-            "dish_count": 10,  # 8-10 dishes as requested
-            "expectations": "Разнообразное меню для семейного ресторана",
-            "region": "moskva"
+            "menu_profile": {
+                "menuType": "restaurant",
+                "dishCount": 10,  # 8-10 dishes as requested
+                "averageCheck": "medium",
+                "cuisineStyle": "european",
+                "expectations": "Разнообразное меню для семейного ресторана",
+                "targetAudience": "семьи с детьми",
+                "useConstructor": False
+            },
+            "venue_profile": {
+                "venue_name": "Семейный ресторан",
+                "venue_type": "family_restaurant",
+                "cuisine_type": "european",
+                "average_check": "800"
+            }
         }
         
         start_time = time.time()
