@@ -315,8 +315,13 @@ def test_menu_data_completeness():
             result = response.json()
             
             if result.get("success"):
-                dishes = result.get("dishes", [])
-                categories = result.get("categories", {})
+                menu_data = result.get("menu", {})
+                categories = menu_data.get("categories", [])
+                
+                # Extract dishes from categories
+                dishes = []
+                for category in categories:
+                    dishes.extend(category.get("dishes", []))
                 
                 print(f"    Analyzing {len(dishes)} dishes for display completeness...")
                 
