@@ -6327,6 +6327,64 @@ function App() {
                   ></div>
                 ))}
               </div>
+              
+              {/* Tips and Lifehacks for Menu Generation */}
+              {loadingType === 'menu' && (
+                <div className="mt-8 p-4 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-xl border border-purple-400/30">
+                  <div className="flex items-start space-x-3">
+                    <div className="text-3xl flex-shrink-0 animate-bounce">
+                      {menuGenerationTips[currentMenuTipIndex]?.icon}
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-purple-300 font-bold text-sm mb-2">
+                        {menuGenerationTips[currentMenuTipIndex]?.title}
+                      </h4>
+                      <p className="text-gray-300 text-xs leading-relaxed">
+                        {menuGenerationTips[currentMenuTipIndex]?.text}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex justify-center space-x-1">
+                    {menuGenerationTips.slice(0, 5).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${
+                          index === (currentMenuTipIndex % 5) ? 'bg-purple-400' : 'bg-gray-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Tips for Other Types */}
+              {loadingType === 'techcard' && (
+                <div className="mt-8 p-4 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-xl border border-purple-400/30">
+                  <div className="flex items-start space-x-3">
+                    <div className="text-3xl flex-shrink-0 animate-bounce">
+                      {receptionTips[currentTipIndex]?.icon}
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-purple-300 font-bold text-sm mb-2">
+                        {receptionTips[currentTipIndex]?.title}
+                      </h4>
+                      <p className="text-gray-300 text-xs leading-relaxed">
+                        {receptionTips[currentTipIndex]?.text}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex justify-center space-x-1">
+                    {receptionTips.slice(0, 5).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${
+                          index === (currentTipIndex % 5) ? 'bg-purple-400' : 'bg-gray-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
