@@ -2808,6 +2808,7 @@ function App() {
       
       // Останавливаем анимацию при ошибке
       clearInterval(progressInterval);
+      clearInterval(tipInterval);
       
       if (error.response?.status === 403) {
         errorMessage = 'Создание меню доступно только для PRO пользователей!';
