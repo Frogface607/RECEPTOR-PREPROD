@@ -346,17 +346,17 @@ frontend:
         agent: "main"
         comment: "Added comprehensive menu tech cards display modal with category organization, individual dish viewing, and replace dish functionality. Added states: showMenuTechCards, menuTechCards, isLoadingMenuTechCards. Updated 'МОЕ МЕНЮ' button to use new fetchMenuTechCards function with proper loading states."
 
-  - task: "Fix Replace Dish Functionality and Remove Chef Placeholders - Phase 1"
+  - task: "Fix Simple Menu Generation JavaScript Error - Critical"
     implemented: true
     working: true
-    file: "backend/server.py, frontend/src/App.js"
+    file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ: 1) Исправлена функция замены блюда - теперь frontend обновляет generatedMenu state с новым блюдом после замены. 2) Убраны заглушки 'Специальное блюдо дня' из backend - заменена логика повторной генерации с усиленным промптом. 3) Исправлен /api/replace-dish endpoint - теперь возвращает полный объект блюда (с description, estimated_cost, estimated_price, main_ingredients) вместо только названия. 4) Добавлено извлечение данных из техкарты для корректного отображения в меню. Решены проблемы пользователя: замена блюд не сохранялась + убраны placeholder блюда."
+        comment: "КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Исправлена ошибка 'object ChatCompletion can't be used in 'await' expression' в функции повторной генерации меню. Проблема была в использовании несуществующего openai_client вместо правильного client объекта OpenAI в строке 2296. Заменил 'await openai_client.chat.completions.create()' на 'client.chat.completions.create()'. Ошибка возникала при повторной генерации меню когда ИИ создавал недостаточно блюд. Теперь быстрая генерация меню должна работать корректно."
       - working: true
         agent: "testing"
         comment: "🎯 DISH REPLACEMENT AND PLACEHOLDER REMOVAL TESTING COMPLETED: Conducted comprehensive testing of all 3 critical fixes as specifically requested in review. ✅ TEST 1 - NO PLACEHOLDER DISHES: POST /api/generate-simple-menu with small dish count (6) successfully generates real recipes without any 'Специальное блюдо дня' placeholders. Generated 12 authentic dishes including 'Пена из моркови с имбирем', 'Каперсы в белом шоколаде', 'Салат из свеклы и козьего сыра' - all real recipes, no placeholders found. ✅ TEST 2 - FULL DISH OBJECT RETURN: POST /api/replace-dish successfully returns complete dish object with ALL required fields: name, description, estimated_cost, estimated_price, main_ingredients, difficulty, cook_time, portion_size. Tested replacement of 'Пена из моркови с имбирем' with 'Салат с киноа и авокадо' - received full object with name='Салат с киноа и авокадо', description (100+ chars), estimated_cost='310', estimated_price='930', main_ingredients=['Киноа', 'Авокадо', 'Огурец', 'Помидор черри', 'Лук красный'], difficulty='средне', cook_time='35 мин', portion_size='80 г'. ✅ TEST 3 - RETRY GENERATION LOGIC: Large menu generation (15 dishes) successfully generates 14/15 dishes (93% success rate, >80% threshold) with no placeholders. System properly handles insufficient dish generation without adding placeholder content. ✅ ALL REVIEW REQUIREMENTS VERIFIED: 1) No 'Специальное блюдо дня' placeholders in any menu size ✅, 2) Replace dish returns full object for frontend updates ✅, 3) Retry generation works for insufficient dishes ✅. 🎉 ALL CRITICAL FIXES ARE FULLY FUNCTIONAL AND READY FOR PRODUCTION USE."
