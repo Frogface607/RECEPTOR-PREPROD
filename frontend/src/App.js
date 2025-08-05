@@ -2770,6 +2770,7 @@ function App() {
 
         // КРАСИВОЕ ЗАВЕРШЕНИЕ АНИМАЦИИ
         clearInterval(progressInterval);
+        clearInterval(tipInterval);
         setLoadingProgress(100);
         setLoadingMessage('✨ Меню готово! Переносим в интерфейс...');
         
