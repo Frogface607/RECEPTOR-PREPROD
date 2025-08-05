@@ -2293,7 +2293,7 @@ async def generate_menu(request: dict):
                     """
                     
                     # Retry generation with enhanced prompt
-                    retry_response = await openai_client.chat.completions.create(
+                    retry_response = client.chat.completions.create(
                         model="gpt-4o-mini",
                         messages=[
                             {"role": "system", "content": "You are an expert chef and restaurant consultant with 20+ years of experience. Always respond in Russian with valid JSON format. Create detailed, professional menus that exactly match user requirements."},
