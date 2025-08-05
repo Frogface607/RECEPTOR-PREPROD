@@ -2678,8 +2678,6 @@ function App() {
 
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
-    alert('🚀 ФУНКЦИЯ ВЫЗВАНА! Сейчас создаём меню...'); // INSTANT DEBUG
-    
     if (!currentUser?.id) {
       alert('Пользователь не найден!');
       return;
@@ -2690,7 +2688,14 @@ function App() {
       return;
     }
 
+    // 🚀 КРАСИВЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН С ЛАЙФХАКАМИ
     setIsGeneratingSimpleMenu(true);
+    setLoadingType('menu');
+    setLoadingProgress(0);
+    setLoadingMessage('🎯 Анализируем ваши пожелания...');
+    
+    // Запускаем анимацию прогресса и смену лайфхаков
+    const progressInterval = simulateProgress('menu', 25000); // 25 секунд анимации
     
     // Use venue profile default dish count if not specified
     const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
