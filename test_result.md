@@ -348,11 +348,11 @@ frontend:
 
   - task: "Fix Simple Menu Generation JavaScript Error - Critical"
     implemented: true
-    working: true
+    working: false
     file: "backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
@@ -360,6 +360,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "🎯 DISH REPLACEMENT AND PLACEHOLDER REMOVAL TESTING COMPLETED: Conducted comprehensive testing of all 3 critical fixes as specifically requested in review. ✅ TEST 1 - NO PLACEHOLDER DISHES: POST /api/generate-simple-menu with small dish count (6) successfully generates real recipes without any 'Специальное блюдо дня' placeholders. Generated 12 authentic dishes including 'Пена из моркови с имбирем', 'Каперсы в белом шоколаде', 'Салат из свеклы и козьего сыра' - all real recipes, no placeholders found. ✅ TEST 2 - FULL DISH OBJECT RETURN: POST /api/replace-dish successfully returns complete dish object with ALL required fields: name, description, estimated_cost, estimated_price, main_ingredients, difficulty, cook_time, portion_size. Tested replacement of 'Пена из моркови с имбирем' with 'Салат с киноа и авокадо' - received full object with name='Салат с киноа и авокадо', description (100+ chars), estimated_cost='310', estimated_price='930', main_ingredients=['Киноа', 'Авокадо', 'Огурец', 'Помидор черри', 'Лук красный'], difficulty='средне', cook_time='35 мин', portion_size='80 г'. ✅ TEST 3 - RETRY GENERATION LOGIC: Large menu generation (15 dishes) successfully generates 14/15 dishes (93% success rate, >80% threshold) with no placeholders. System properly handles insufficient dish generation without adding placeholder content. ✅ ALL REVIEW REQUIREMENTS VERIFIED: 1) No 'Специальное блюдо дня' placeholders in any menu size ✅, 2) Replace dish returns full object for frontend updates ✅, 3) Retry generation works for insufficient dishes ✅. 🎉 ALL CRITICAL FIXES ARE FULLY FUNCTIONAL AND READY FOR PRODUCTION USE."
+      - working: false
+        agent: "testing"
+        comment: "🚨 FRONTEND ACCESS ISSUE DETECTED: Conducted comprehensive UI testing of menu fixes as requested in review. ❌ CRITICAL PROBLEM: Unable to consistently access the simple menu generation interface due to session management issues. Application frequently reverts to landing page, preventing proper testing of the '3 КЛИКА' functionality. ✅ INTERFACE ELEMENTS CONFIRMED: Successfully identified 'ГЕНЕРАТОР МЕНЮ' section with '🚀 СОЗДАТЬ МЕНЮ ЗА 4 КЛИКА' button, confirming the simplified menu creation interface exists. ❌ TESTING BLOCKED: Cannot complete ChatCompletion error testing due to frontend session instability. The modal with menu type selection (Полное меню, Сезонное, Бизнес-ланч) and expectations textarea is present but not consistently accessible. ⚠️ RECOMMENDATION: Fix frontend session management and authentication flow to enable proper testing of the critical ChatCompletion error fix. Backend fix appears implemented but frontend testing is required to verify end-to-end functionality."
 
   - task: "Replace Dish Frontend Interface"
     implemented: true
