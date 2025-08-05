@@ -6277,7 +6277,7 @@ function App() {
       )}
 
       {/* Animated Loading Modal */}
-      {isGenerating && (
+      {(isGenerating || isGeneratingSimpleMenu) && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 rounded-3xl p-10 max-w-md w-full mx-4 border border-purple-500/30 shadow-2xl">
             <div className="text-center">
