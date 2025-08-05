@@ -2750,20 +2750,33 @@ function App() {
           categories: categories
         });
 
-        // CRITICAL FIX: Set currentView to menu-generator to show the generated menu
-        setCurrentView('menu-generator');
+        // КРАСИВОЕ ЗАВЕРШЕНИЕ АНИМАЦИИ
+        clearInterval(progressInterval);
+        setLoadingProgress(100);
+        setLoadingMessage('✨ Меню готово! Переносим в интерфейс...');
+        
+        // Небольшая задержка для показа завершения
+        setTimeout(() => {
+          setIsGeneratingSimpleMenu(false);
+          setLoadingProgress(0);
+          setLoadingMessage('');
+          setLoadingType('');
+          
+          // CRITICAL FIX: Set currentView to menu-generator to show the generated menu
+          setCurrentView('menu-generator');
 
-        // Close modal and show success
-        setShowSimpleMenuModal(false);
-        setSimpleMenuData({
-          menuType: '',
-          expectations: '',
-          dishCount: 0,
-          customCategories: null,
-          projectId: null
-        });
+          // Close modal and show success
+          setShowSimpleMenuModal(false);
+          setSimpleMenuData({
+            menuType: '',
+            expectations: '',
+            dishCount: 0,
+            customCategories: null,
+            projectId: null
+          });
 
-        alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${allDishes.length} блюд\n💡 Концепция: ${menuData.menu_name || 'Новое меню'}`);
+          alert(`✅ Меню успешно создано!\n\n🍽️ Создано ${allDishes.length} блюд\n💡 Концепция: ${menuData.menu_name || 'Новое меню'}`);
+        }, 2000);
 
         // Update user history
         await fetchUserHistory();
@@ -2773,6 +2786,9 @@ function App() {
     } catch (error) {
       console.error('Error generating simple menu:', error);
       let errorMessage = 'Ошибка при создании меню';
+      
+      // Останавливаем анимацию при ошибке
+      clearInterval(progressInterval);
       
       if (error.response?.status === 403) {
         errorMessage = 'Создание меню доступно только для PRO пользователей!';
@@ -2785,6 +2801,9 @@ function App() {
       alert(errorMessage);
     } finally {
       setIsGeneratingSimpleMenu(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
     }
   };
 
