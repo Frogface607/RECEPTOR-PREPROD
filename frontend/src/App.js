@@ -2709,6 +2709,12 @@ function App() {
     // Запускаем анимацию прогресса и смену лайфхаков
     const progressInterval = simulateProgress('menu', 25000); // 25 секунд анимации
     
+    // Запускаем смену меню лайфхаков каждые 3 секунды
+    setCurrentMenuTipIndex(0);
+    const tipInterval = setInterval(() => {
+      setCurrentMenuTipIndex(prev => (prev + 1) % menuGenerationTips.length);
+    }, 3000);
+    
     // Use venue profile default dish count if not specified
     const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
     
