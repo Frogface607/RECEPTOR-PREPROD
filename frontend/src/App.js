@@ -6293,6 +6293,7 @@ function App() {
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-white mb-2">
                   {loadingType === 'techcard' && 'Генерирую техкарту...'}
+                  {loadingType === 'menu' && 'Создаю идеальное меню...'}
                   {loadingType === 'sales' && 'Создаю скрипт продаж...'}
                   {loadingType === 'pairing' && 'Подбираю сочетания...'}
                   {loadingType === 'photo' && 'Готовлю советы по фото...'}
