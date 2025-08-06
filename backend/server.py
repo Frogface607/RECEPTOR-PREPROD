@@ -39,6 +39,9 @@ db = client[os.environ['DB_NAME']]
 # OpenAI client
 openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
+# Setup logging
+logger = logging.getLogger(__name__)
+
 # IIKo Integration Classes
 class IikoServerAuthManager:
     def __init__(self):
