@@ -70,7 +70,7 @@ class IikoServerIntegrationService:
         self._menu_cache: Dict[str, Any] = {}
         
     async def get_organizations(self) -> List[Dict[str, Any]]:
-        """Fetch organizations from iikoServer API"""
+        """Fetch organizations from iikoServer API using JWT token"""
         try:
             import httpx
             
@@ -79,11 +79,12 @@ class IikoServerIntegrationService:
             organizations_url = f"{self.auth_manager.base_url}/api/1/organizations"
             
             headers = {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {session_key}"
             }
             
             payload = {
-                "access_token": session_key
+                "organizationIds": []  # Empty array to get all organizations
             }
             
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -96,6 +97,14 @@ class IikoServerIntegrationService:
                     organizations = []
                     if isinstance(data, list):
                         for org in data:
+                            organizations.append({
+                                'id': org.get('id'),
+                                'name': org.get('name'),
+                                'address': org.get('address', ''),
+                                'active': True
+                            })
+                    elif isinstance(data, dict) and 'organizations' in data:
+                        for org in data['organizations']:
                             organizations.append({
                                 'id': org.get('id'),
                                 'name': org.get('name'),
