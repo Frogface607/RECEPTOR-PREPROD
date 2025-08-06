@@ -491,21 +491,22 @@ def test_iiko_integration_availability():
 
 def main():
     """Run all IIKo integration tests"""
-    print("🧪 IIKO API INTEGRATION TESTING SUITE - NEW CREDENTIALS TEST")
+    print("🧪 IIKO API INTEGRATION TESTING SUITE - JWT TOKEN TEST")
     print("=" * 80)
     print(f"Backend URL: {BACKEND_URL}")
     print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
-    print("🎯 КРИТИЧЕСКИЙ ТЕСТ - НОВЫЕ IIKO КЛЮЧИ!")
-    print("Testing IIKo API endpoints with NEW credentials:")
-    print("- IIKO_API_LOGIN: EdisonCraft")
-    print("- IIKO_API_PASSWORD: 261d9ff06a3746b19c92de45a89c969b")
+    print("🎯 РЕШАЮЩИЙ ТЕСТ - JWT ТОКЕН IIKO!")
+    print("Testing IIKo API endpoints with NEW JWT TOKEN authentication:")
+    print("- IIKO_API_LOGIN: 261d9ff06a3746b19c92de45a89c969b")
+    print("- JWT Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBcGlMb2dpbklkIjoiNjA0YjE5ZDctZTVlZS00OWJlLTg2ODAtMmNmN2M5ZmMyZGZkIiwibmJmIjoxNzU0NDkwNTE4LCJleHAiOjE3NTQ0OTQxMTgsImlhdCI6MTc1NDQ...")
     print("- IIKO_BASE_URL: https://api-ru.iiko.services")
     print()
-    print("🚀 ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ:")
+    print("🚀 ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ (ТЕПЕРЬ ДОЛЖНО РАБОТАТЬ!):")
     print("✅ Health check: 'healthy' вместо 'unhealthy'")
     print("✅ Organizations: Список реальных организаций вместо пустого массива")
     print("✅ Menu: Реальные категории и блюда из IIKo системы")
+    print("✅ Auth: 'Authentication successful' в диагностике")
     print()
     
     try:
