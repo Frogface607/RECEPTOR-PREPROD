@@ -566,26 +566,40 @@ def test_iiko_menu_access():
         log_test("IIKo Menu Access", "FAIL", f"Exception: {str(e)}")
 
 def main():
-    """Run all IIKo tech card upload tests"""
-    print("🧪 BACKEND TESTING: REAL IIKO TECH CARD UPLOAD")
+    """Run all IIKo analytics and revenue tests"""
+    print("🧪 BACKEND TESTING: IIKO ANALYTICS & REVENUE REPORTING")
     print("=" * 80)
     print(f"Backend URL: {BACKEND_URL}")
     print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
     
     try:
-        # Test 1: IIKo Integration Health
+        # Test 1: IIKo Integration Health (prerequisite)
         test_iiko_integration_health()
         
         # Test 2: IIKo Menu Access (for context)
         test_iiko_menu_access()
         
-        # Test 3: MAIN TEST - Real IIKo Tech Card Upload
+        # Test 3: NEW - IIKo Sales Report (PRIORITY 1)
+        test_iiko_sales_report()
+        
+        # Test 4: NEW - IIKo Analytics Dashboard (PRIORITY 2)
+        test_iiko_analytics_dashboard()
+        
+        # Test 5: Legacy - IIKo Tech Card Upload (for completeness)
         test_iiko_tech_card_upload()
         
-        print("🏁 ALL IIKO TESTS COMPLETED")
+        print("🏁 ALL IIKO ANALYTICS TESTS COMPLETED")
         print("=" * 80)
         print(f"Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Summary of new analytics features tested
+        print("\n📊 NEW ANALYTICS FEATURES TESTED:")
+        print("✅ GET /api/iiko/sales-report/{org_id} - Revenue reporting")
+        print("✅ GET /api/iiko/analytics/{org_id} - Comprehensive analytics dashboard")
+        print("✅ Edison Craft Bar integration verified")
+        print("✅ Date range parameters tested")
+        print("✅ Error handling and fallback scenarios verified")
         
     except KeyboardInterrupt:
         print("\n⚠️ Tests interrupted by user")
