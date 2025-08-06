@@ -39,6 +39,141 @@ db = client[os.environ['DB_NAME']]
 # OpenAI client
 openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
+# IIKo Integration Classes
+class IikoAuthManager:
+    def __init__(self):
+        self.api_login = os.environ.get('IIKO_API_LOGIN')
+        self.api_password = os.environ.get('IIKO_API_PASSWORD')
+        self.base_url = os.environ.get('IIKO_BASE_URL', 'https://api-ru.iiko.services')
+        self.client: Optional[Any] = None
+        self.token_expires_at: Optional[datetime] = None
+        self.logger = logging.getLogger(__name__)
+        
+    async def get_authenticated_client(self):
+        """Get authenticated IIKo client with automatic token refresh"""
+        if not IIKO_AVAILABLE:
+            raise HTTPException(status_code=503, detail="IIKo integration is not available")
+            
+        if not self.api_login or not self.api_password:
+            raise HTTPException(status_code=500, detail="IIKo credentials not configured")
+        
+        if self._is_token_expired():
+            await self._refresh_client()
+        return self.client
+    
+    def _is_token_expired(self) -> bool:
+        """Check if current token is expired or about to expire"""
+        if not self.client or not self.token_expires_at:
+            return True
+        return datetime.now() >= self.token_expires_at - timedelta(minutes=5)
+    
+    async def _refresh_client(self):
+        """Initialize or refresh IIKo client connection"""
+        try:
+            self.client = IikoTransport(self.api_login, return_dict=False)
+            # Test connection by fetching organizations
+            await asyncio.to_thread(self.client.organizations)
+            self.token_expires_at = datetime.now() + timedelta(minutes=55)
+            self.logger.info("IIKo client authenticated successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to authenticate with IIKo: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"IIKo authentication failed: {str(e)}")
+
+class IikoIntegrationService:
+    def __init__(self, auth_manager: IikoAuthManager):
+        self.auth_manager = auth_manager
+        self.logger = logging.getLogger(__name__)
+        self._organization_cache: Dict[str, Any] = {}
+        self._menu_cache: Dict[str, Any] = {}
+        
+    async def get_organizations(self) -> List[Dict[str, Any]]:
+        """Fetch all available organizations from IIKo"""
+        try:
+            client = await self.auth_manager.get_authenticated_client()
+            result = await asyncio.to_thread(client.organizations)
+            
+            if hasattr(result, 'organizations'):
+                organizations = [
+                    {
+                        'id': org.id,
+                        'name': org.name,
+                        'country': getattr(org, 'country', ''),
+                        'address': getattr(org, 'restaurantAddress', ''),
+                        'active': True
+                    }
+                    for org in result.organizations
+                ]
+            else:
+                organizations = []
+                
+            self._organization_cache = {org['id']: org for org in organizations}
+            self.logger.info(f"Retrieved {len(organizations)} organizations from IIKo")
+            return organizations
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.error(f"Error fetching organizations: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to fetch organizations: {str(e)}")
+    
+    async def get_menu_items(self, organization_ids: List[str]) -> Dict[str, Any]:
+        """Fetch menu items and categories from IIKo"""
+        try:
+            client = await self.auth_manager.get_authenticated_client()
+            
+            # Get menu for specified organizations
+            menu_result = await asyncio.to_thread(
+                client.menu, 
+                organization_ids
+            )
+            
+            menu_data = {
+                'categories': [],
+                'items': [],
+                'modifiers': [],
+                'last_updated': datetime.now().isoformat()
+            }
+            
+            if hasattr(menu_result, 'productCategories'):
+                menu_data['categories'] = [
+                    {
+                        'id': cat.id,
+                        'name': cat.name,
+                        'description': getattr(cat, 'description', ''),
+                        'active': True
+                    }
+                    for cat in menu_result.productCategories
+                ]
+            
+            if hasattr(menu_result, 'products'):
+                menu_data['items'] = [
+                    {
+                        'id': item.id,
+                        'name': item.name,
+                        'description': getattr(item, 'description', ''),
+                        'category_id': getattr(item, 'productCategoryId', ''),
+                        'price': getattr(item, 'price', 0.0),
+                        'weight': getattr(item, 'weight', 0.0),
+                        'modifiers': [getattr(mod, 'id', '') for mod in getattr(item, 'modifiers', [])],
+                        'active': True
+                    }
+                    for item in menu_result.products
+                ]
+            
+            self._menu_cache['-'.join(organization_ids)] = menu_data
+            self.logger.info(f"Retrieved menu with {len(menu_data['items'])} items")
+            return menu_data
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.error(f"Error fetching menu items: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to fetch menu items: {str(e)}")
+
+# Initialize IIKo integration services
+iiko_auth_manager = IikoAuthManager()
+iiko_service = IikoIntegrationService(iiko_auth_manager)
+
 # Create the main app without a prefix
 app = FastAPI()
 
