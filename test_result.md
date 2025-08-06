@@ -654,6 +654,18 @@ frontend:
         agent: "testing"
         comment: "The interactive steps editor has been implemented correctly (lines 1439-1537). It allows adding/removing steps, moving steps up/down, and editing step text. The editor is accessible via the 'РЕДАКТИРОВАТЬ ЭТАПЫ' button in the recipe steps section."
 
+  - task: "IIKo Integration with New Credentials - Critical"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🎯 КРИТИЧЕСКИЙ ТЕСТ НОВЫХ IIKO КЛЮЧЕЙ ЗАВЕРШЕН: Провел полное тестирование новых учетных данных IIKo (EdisonCraft / 261d9ff06a3746b19c92de45a89c969b) как запрошено в критическом обзоре. ❌ КРИТИЧЕСКАЯ ПРОБЛЕМА: Новые ключи НЕ РАБОТАЮТ - IIKo API возвращает ошибку 'Login EdisonCraft is not authorized' (correlationId: 08653a57-27e6-4119-9221-fbba2e95cb3c). ✅ ПРИОРИТЕТ 1 ТЕСТИРОВАНИЕ: 1) GET /api/iiko/health - возвращает 'unhealthy' вместо ожидаемого 'healthy' ❌ 2) GET /api/iiko/organizations - возвращает 500 ошибку вместо списка организаций ❌ 3) GET /api/iiko/diagnostics - подтверждает проблему аутентификации ✅. ✅ ТЕХНИЧЕСКАЯ ДИАГНОСТИКА: Все эндпоинты IIKo правильно реализованы и функционируют, проблема именно в авторизации учетной записи на стороне IIKo API. ✅ BACKEND ГОТОВ: Интеграция полностью реализована с IikoAuthManager, IikoIntegrationService, всеми 7 эндпоинтами и правильной обработкой ошибок. ❌ ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ НЕ ДОСТИГНУТЫ: Health check остается 'unhealthy', organizations список пустой, menu недоступно. ⚠️ КРИТИЧЕСКИЕ РЕКОМЕНДАЦИИ: 1) Проверить правильность учетных данных с поставщиком IIKo, 2) Убедиться что аккаунт EdisonCraft активирован и авторизован в системе IIKo, 3) Проверить права доступа аккаунта к API, 4) Возможно требуется дополнительная настройка или активация со стороны IIKo. 🔍 ЗАКЛЮЧЕНИЕ: Интеграция технически готова к работе, но новые ключи не авторизованы в системе IIKo. Требуется решение проблемы авторизации для достижения ожидаемых результатов."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
