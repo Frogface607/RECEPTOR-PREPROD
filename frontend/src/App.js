@@ -6635,51 +6635,74 @@ function App() {
       {/* Animated Loading Modal */}
       {(isGenerating || isGeneratingSimpleMenu) && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 rounded-3xl p-10 max-w-md w-full mx-4 border border-purple-500/30 shadow-2xl">
+          <div className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 rounded-3xl p-10 max-w-lg w-full mx-4 border border-purple-500/30 shadow-2xl animate-in slide-in-from-bottom duration-500">
             <div className="text-center">
-              {/* Animated Icon */}
-              <div className="mb-6 relative">
-                <div className="w-20 h-20 mx-auto">
-                  <div className="w-full h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-purple-400 to-pink-400 rounded-full animate-ping opacity-75"></div>
+              {/* Enhanced Animated Icon */}
+              <div className="mb-8 relative">
+                <div className="w-24 h-24 mx-auto relative">
+                  {/* Rotating outer ring */}
+                  <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-t-purple-500 border-r-pink-500 border-b-purple-500/20 border-l-pink-500/20 rounded-full animate-spin" style={{animationDuration: '2s', animationDirection: 'reverse'}}></div>
+                  
+                  {/* Central pulsating core */}
+                  <div className="absolute inset-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full animate-ping opacity-75"></div>
+                  
+                  {/* Dynamic emoji center */}
+                  <div className="absolute inset-0 flex items-center justify-center text-2xl animate-bounce">
+                    {loadingType === 'menu' ? '🍽️' : '📋'}
+                  </div>
                 </div>
+                
+                {/* Floating particles */}
+                <div className="absolute -top-2 -left-2 w-2 h-2 bg-purple-400 rounded-full animate-bounce opacity-60" style={{animationDelay: '0.5s'}}></div>
+                <div className="absolute -top-4 right-4 w-1.5 h-1.5 bg-pink-400 rounded-full animate-bounce opacity-60" style={{animationDelay: '1s'}}></div>
+                <div className="absolute bottom-0 -left-4 w-1 h-1 bg-purple-300 rounded-full animate-bounce opacity-60" style={{animationDelay: '1.5s'}}></div>
               </div>
               
-              {/* Loading Message */}
+              {/* Enhanced Loading Message */}
               <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {loadingType === 'techcard' && 'Генерирую техкарту...'}
-                  {loadingType === 'menu' && 'Создаю идеальное меню...'}
-                  {loadingType === 'sales' && 'Создаю скрипт продаж...'}
-                  {loadingType === 'pairing' && 'Подбираю сочетания...'}
-                  {loadingType === 'photo' && 'Готовлю советы по фото...'}
-                  {loadingType === 'inspiration' && 'Создаю вдохновение...'}
+                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300 mb-3">
+                  {loadingType === 'techcard' && '✨ Генерирую техкарту'}
+                  {loadingType === 'menu' && '🎯 Создаю идеальное меню'}
+                  {loadingType === 'sales' && '🎭 Создаю скрипт продаж'}
+                  {loadingType === 'pairing' && '🍷 Подбираю сочетания'}
+                  {loadingType === 'photo' && '📸 Готовлю советы по фото'}
+                  {loadingType === 'inspiration' && '🌟 Создаю вдохновение'}
                 </h3>
-                <p className="text-purple-300 text-sm animate-pulse">
+                <p className="text-purple-300 text-base animate-pulse font-medium">
                   {loadingMessage}
                 </p>
               </div>
               
-              {/* Progress Bar */}
-              <div className="mb-6">
-                <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                  <div 
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${loadingProgress}%` }}
-                  ></div>
+              {/* Enhanced Progress Bar */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-purple-300 text-sm font-medium">Прогресс</span>
+                  <span className="text-purple-300 text-sm font-bold">{Math.round(loadingProgress)}%</span>
                 </div>
-                <div className="text-purple-300 text-sm">
-                  {Math.round(loadingProgress)}%
+                <div className="w-full bg-gray-700 rounded-full h-3 mb-2 overflow-hidden shadow-inner">
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-400 h-full rounded-full transition-all duration-500 ease-out relative"
+                    style={{ width: `${loadingProgress}%` }}
+                  >
+                    {/* Animated glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                    {/* Moving highlight */}
+                    <div className="absolute top-0 left-0 h-full w-8 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-ping"></div>
+                  </div>
                 </div>
               </div>
               
-              {/* Fun Animation */}
-              <div className="flex justify-center space-x-1">
-                {[...Array(3)].map((_, i) => (
+              {/* Enhanced Fun Animation */}
+              <div className="flex justify-center space-x-1 mb-8">
+                {[...Array(5)].map((_, i) => (
                   <div
                     key={i}
-                    className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-                    style={{ animationDelay: `${i * 0.1}s` }}
+                    className={`w-2 h-2 rounded-full animate-bounce ${
+                      i % 2 === 0 ? 'bg-purple-400' : 'bg-pink-400'
+                    }`}
+                    style={{ animationDelay: `${i * 0.15}s` }}
                   ></div>
                 ))}
               </div>
