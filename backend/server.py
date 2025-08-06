@@ -126,7 +126,7 @@ class IikoServerIntegrationService:
             raise HTTPException(status_code=500, detail=f"Failed to fetch organizations: {str(e)}")
     
     async def get_menu_items(self, organization_ids: List[str]) -> Dict[str, Any]:
-        """Fetch menu/nomenclature from iikoServer API"""
+        """Fetch menu/nomenclature from iikoServer API using JWT token"""
         try:
             import httpx
             
@@ -136,11 +136,11 @@ class IikoServerIntegrationService:
             menu_url = f"{self.auth_manager.base_url}/api/1/nomenclature"
             
             headers = {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {session_key}"
             }
             
             payload = {
-                "access_token": session_key,
                 "organizationId": organization_ids[0] if organization_ids else None
             }
             
@@ -163,7 +163,7 @@ class IikoServerIntegrationService:
                             {
                                 'id': cat.get('id'),
                                 'name': cat.get('name'),
-                                'description': '',
+                                'description': cat.get('description', ''),
                                 'active': True
                             }
                             for cat in data.get('groups', [])
