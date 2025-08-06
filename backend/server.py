@@ -3821,9 +3821,9 @@ async def get_iiko_menu_items(organization_id: str):
 
 @api_router.post("/iiko/tech-cards/upload")
 async def upload_tech_card_to_iiko(request: TechCardUpload):
-    """Upload AI-generated tech card to IIKo as menu item"""
+    """Upload AI-generated tech card to IIKo as menu item - REAL UPLOAD!"""
     user_id = request.organization_id  # Using as user identifier for now
-    logger.info(f"Uploading tech card '{request.name}' to IIKo organization: {request.organization_id}")
+    logger.info(f"🚀 REAL UPLOAD: Uploading tech card '{request.name}' to IIKo organization: {request.organization_id}")
     
     try:
         # Validate required fields
@@ -3842,35 +3842,111 @@ async def upload_tech_card_to_iiko(request: TechCardUpload):
             'active': True
         }
         
-        # Store in our database for synchronization tracking
-        sync_record = {
-            "id": str(uuid.uuid4()),
-            "user_id": user_id,
-            "organization_id": request.organization_id,
-            "tech_card_name": request.name,
-            "iiko_data": iiko_item_data,
-            "sync_status": "prepared",
-            "created_at": datetime.now().isoformat(),
-            "ai_generated": True
-        }
+        # 🎯 ПОПЫТКА РЕАЛЬНОЙ ЗАГРУЗКИ В IIKO!
+        logger.info(f"🔄 Attempting REAL upload to IIKo system...")
         
-        await db.iiko_sync_records.insert_one(sync_record)
-        
-        logger.info(f"Tech card '{request.name}' prepared for IIKo sync with ID: {sync_record['id']}")
-        
-        return {
-            "success": True,
-            "sync_id": sync_record["id"],
-            "message": f"Техкарта '{request.name}' подготовлена для загрузки в IIKo",
-            "status": "prepared_for_sync",
-            "iiko_data": iiko_item_data,
-            "note": "Техкарта сохранена в систему. Финальная загрузка в IIKo может потребовать дополнительной настройки через веб-интерфейс IIKo."
-        }
+        try:
+            # Use the new create_product_in_iiko method
+            upload_result = await iiko_service.create_product_in_iiko(iiko_item_data, request.organization_id)
+            
+            if upload_result.get('success'):
+                # ✅ SUCCESS - Product was created in IIKo!
+                sync_status = "uploaded_to_iiko"
+                success_message = f"🎉 УСПЕХ! Техкарта '{request.name}' загружена в IIKo!"
+                
+                # Store successful sync record
+                sync_record = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "organization_id": request.organization_id,
+                    "tech_card_name": request.name,
+                    "iiko_data": iiko_item_data,
+                    "sync_status": sync_status,
+                    "iiko_product_id": upload_result.get('product_id'),
+                    "created_at": datetime.now().isoformat(),
+                    "uploaded_at": datetime.now().isoformat(),
+                    "ai_generated": True,
+                    "upload_success": True,
+                    "endpoint_used": upload_result.get('endpoint_used')
+                }
+                
+                await db.iiko_sync_records.insert_one(sync_record)
+                
+                return {
+                    "success": True,
+                    "sync_id": sync_record["id"],
+                    "message": success_message,
+                    "status": sync_status,
+                    "iiko_product_id": upload_result.get('product_id'),
+                    "iiko_data": iiko_item_data,
+                    "upload_details": upload_result,
+                    "note": "✅ Техкарта успешно загружена в IIKo POS-систему!"
+                }
+            else:
+                # ❌ FALLBACK - Save for manual sync
+                sync_status = "prepared_for_manual_sync"
+                fallback_message = f"⚠️ Техкарта '{request.name}' подготовлена (автозагрузка недоступна)"
+                
+                # Store fallback sync record
+                sync_record = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "organization_id": request.organization_id,
+                    "tech_card_name": request.name,
+                    "iiko_data": iiko_item_data,
+                    "sync_status": sync_status,
+                    "created_at": datetime.now().isoformat(),
+                    "ai_generated": True,
+                    "upload_success": False,
+                    "upload_error": upload_result.get('error'),
+                    "fallback_reason": upload_result.get('note')
+                }
+                
+                await db.iiko_sync_records.insert_one(sync_record)
+                
+                return {
+                    "success": True,  # Still success because data is prepared
+                    "sync_id": sync_record["id"],
+                    "message": fallback_message,
+                    "status": sync_status,
+                    "iiko_data": iiko_item_data,
+                    "upload_details": upload_result,
+                    "note": "📋 Техкарта подготовлена для ручной загрузки в IIKo через веб-интерфейс"
+                }
+                
+        except Exception as upload_error:
+            # 🚨 UPLOAD ERROR - But still save the data
+            logger.error(f"Upload to IIKo failed: {str(upload_error)}")
+            
+            sync_record = {
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "organization_id": request.organization_id,
+                "tech_card_name": request.name,
+                "iiko_data": iiko_item_data,
+                "sync_status": "upload_failed",
+                "created_at": datetime.now().isoformat(),
+                "ai_generated": True,
+                "upload_success": False,
+                "upload_error": str(upload_error)
+            }
+            
+            await db.iiko_sync_records.insert_one(sync_record)
+            
+            return {
+                "success": True,  # Data is still saved
+                "sync_id": sync_record["id"],
+                "message": f"⚠️ Техкарта '{request.name}' сохранена (ошибка загрузки в IIKo)",
+                "status": "upload_failed",
+                "iiko_data": iiko_item_data,
+                "error": str(upload_error),
+                "note": "💾 Техкарта сохранена локально. Попробуйте позже или свяжитесь с поддержкой."
+            }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error uploading tech card to IIKo: {str(e)}")
+        logger.error(f"Error in tech card upload process: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error uploading tech card: {str(e)}")
 
 @api_router.post("/iiko/sync-menu")
