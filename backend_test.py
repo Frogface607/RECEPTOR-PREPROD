@@ -817,7 +817,7 @@ def test_iiko_ai_menu_analysis():
 
 def main():
     """Run all IIKo analytics and revenue tests"""
-    print("🧪 BACKEND TESTING: IIKO ANALYTICS & REVENUE REPORTING")
+    print("🧪 BACKEND TESTING: IIKO ANALYTICS & AI MENU ANALYSIS")
     print("=" * 80)
     print(f"Backend URL: {BACKEND_URL}")
     print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -830,26 +830,31 @@ def main():
         # Test 2: IIKo Menu Access (for context)
         test_iiko_menu_access()
         
-        # Test 3: NEW - IIKo Sales Report (PRIORITY 1)
+        # Test 3: 🧠 NEW - AI Menu Analysis (PRIORITY 1 - THE MAGIC!)
+        test_iiko_ai_menu_analysis()
+        
+        # Test 4: IIKo Sales Report (PRIORITY 2)
         test_iiko_sales_report()
         
-        # Test 4: NEW - IIKo Analytics Dashboard (PRIORITY 2)
+        # Test 5: IIKo Analytics Dashboard (PRIORITY 3)
         test_iiko_analytics_dashboard()
         
-        # Test 5: Legacy - IIKo Tech Card Upload (for completeness)
+        # Test 6: Legacy - IIKo Tech Card Upload (for completeness)
         test_iiko_tech_card_upload()
         
-        print("🏁 ALL IIKO ANALYTICS TESTS COMPLETED")
+        print("🏁 ALL IIKO ANALYTICS & AI TESTS COMPLETED")
         print("=" * 80)
         print(f"Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
         # Summary of new analytics features tested
-        print("\n📊 NEW ANALYTICS FEATURES TESTED:")
+        print("\n🧠 NEW AI & ANALYTICS FEATURES TESTED:")
+        print("🎯 POST /api/iiko/ai-menu-analysis/{org_id} - 🧠 AI MAGIC: GPT-4 analyzes REAL menu!")
         print("✅ GET /api/iiko/sales-report/{org_id} - Revenue reporting")
         print("✅ GET /api/iiko/analytics/{org_id} - Comprehensive analytics dashboard")
         print("✅ Edison Craft Bar integration verified")
         print("✅ Date range parameters tested")
         print("✅ Error handling and fallback scenarios verified")
+        print("\n🚀💰 THE MAGIC: AI analyzes your business and gives concrete profit advice!")
         
     except KeyboardInterrupt:
         print("\n⚠️ Tests interrupted by user")
