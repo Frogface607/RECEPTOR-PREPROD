@@ -767,6 +767,28 @@ class MenuProjectUpdate(BaseModel):
     venue_type: Optional[str] = None
     is_active: Optional[bool] = None
 
+# IIKo Integration Pydantic Models
+class TechCardUpload(BaseModel):
+    name: str = Field(..., description="Tech card name")
+    description: Optional[str] = Field(None, description="Tech card description")
+    ingredients: List[Dict[str, Any]] = Field(..., description="List of ingredients")
+    preparation_steps: List[str] = Field(..., description="Preparation instructions")
+    category_id: Optional[str] = Field(None, description="IIKo category ID")
+    price: Optional[float] = Field(None, description="Item price")
+    weight: Optional[float] = Field(None, description="Item weight in grams")
+    organization_id: str = Field(..., description="IIKo organization ID")
+
+class MenuSyncRequest(BaseModel):
+    organization_ids: List[str] = Field(..., description="IIKo organization IDs")
+    sync_prices: bool = Field(True, description="Whether to sync pricing data")
+    sync_categories: bool = Field(True, description="Whether to sync category data")
+
+class IikoHealthStatus(BaseModel):
+    status: str
+    iiko_connection: str
+    timestamp: str
+    error: Optional[str] = None
+
 # Golden prompt for tech cards  
 GOLDEN_PROMPT = """Ты — RECEPTOR, профессиональный AI-помощник для шеф-поваров и рестораторов.
 
