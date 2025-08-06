@@ -230,26 +230,21 @@ class IikoServerIntegrationService:
             raise HTTPException(status_code=500, detail=f"Failed to fetch organizations: {str(e)}")
     
     async def get_menu_items(self, organization_ids: List[str]) -> Dict[str, Any]:
-        """Fetch menu/nomenclature from iikoServer API using JWT token"""
+        """Fetch menu/nomenclature from iikoOffice API using session key"""
         try:
             import httpx
             
             session_key = await self.auth_manager.get_session_key()
             
-            # iikoServer API endpoint for nomenclature
-            menu_url = f"{self.auth_manager.base_url}/api/1/nomenclature"
+            # For IIKo Office, use the working products endpoint
+            products_url = f"{self.auth_manager.base_url}/resto/api/v2/entities/products/list"
             
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {session_key}"
-            }
-            
-            payload = {
-                "organizationId": organization_ids[0] if organization_ids else None
+            params = {
+                "key": session_key
             }
             
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(menu_url, json=payload, headers=headers)
+                response = await client.get(products_url, params=params)
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -261,35 +256,40 @@ class IikoServerIntegrationService:
                         'last_updated': datetime.now().isoformat()
                     }
                     
-                    # Parse iikoServer nomenclature response
-                    if 'groups' in data:
-                        menu_data['categories'] = [
-                            {
-                                'id': cat.get('id'),
-                                'name': cat.get('name'),
-                                'description': cat.get('description', ''),
-                                'active': True
-                            }
-                            for cat in data.get('groups', [])
-                        ]
-                    
-                    if 'products' in data:
-                        menu_data['items'] = [
-                            {
-                                'id': item.get('id'),
-                                'name': item.get('name'),
-                                'description': item.get('description', ''),
-                                'category_id': item.get('parentGroup'),
-                                'price': 0.0,  # iikoServer may not have prices in nomenclature
-                                'weight': 0.0,
-                                'modifiers': [],
-                                'active': True
-                            }
-                            for item in data.get('products', [])
-                        ]
+                    # Parse iikoOffice products response
+                    if isinstance(data, list):
+                        # Create categories from unique parent IDs
+                        categories_map = {}
+                        
+                        for product in data:
+                            if not product.get('deleted', False):  # Skip deleted products
+                                # Handle categories
+                                parent_id = product.get('parent')
+                                if parent_id and parent_id not in categories_map:
+                                    categories_map[parent_id] = {
+                                        'id': parent_id,
+                                        'name': f"Category {parent_id[:8]}",  # Fallback name
+                                        'description': '',
+                                        'active': True
+                                    }
+                                
+                                # Handle products
+                                menu_data['items'].append({
+                                    'id': product.get('id'),
+                                    'name': product.get('name', ''),
+                                    'description': product.get('description', ''),
+                                    'category_id': parent_id or '',
+                                    'price': product.get('defaultSalePrice', 0.0),
+                                    'weight': product.get('unitWeight', 0.0),
+                                    'modifiers': [mod.get('id', '') for mod in product.get('modifiers', [])],
+                                    'active': not product.get('deleted', False)
+                                })
+                        
+                        # Add categories to menu data
+                        menu_data['categories'] = list(categories_map.values())
                     
                     self._menu_cache['-'.join(organization_ids)] = menu_data
-                    self.logger.info(f"Retrieved menu with {len(menu_data['items'])} items from iikoServer")
+                    self.logger.info(f"Retrieved menu with {len(menu_data['items'])} items from iikoOffice")
                     return menu_data
                 else:
                     self.logger.error(f"Menu request failed: {response.status_code} {response.text}")
