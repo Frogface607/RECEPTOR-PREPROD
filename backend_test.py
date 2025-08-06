@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Simplified Menu Generation System and Enhanced Venue Profile
-Testing the new /api/generate-simple-menu endpoint and enhanced venue profile functionality
+Backend Testing Suite for IIKo Tech Card Upload - REAL UPLOAD TESTING
+Testing the new /api/iiko/tech-cards/upload endpoint for REAL tech card uploading to IIKo system
 """
 
 import requests
