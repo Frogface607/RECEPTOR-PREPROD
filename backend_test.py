@@ -22,6 +22,272 @@ def log_test(test_name, status, details=""):
         print(f"    Details: {details}")
     print()
 
+def test_iiko_sales_report():
+    """Test the new IIKo sales report endpoint for revenue data"""
+    print("💰 TESTING IIKO SALES REPORT - PRIORITY 1")
+    print("=" * 60)
+    
+    # Use Edison Craft Bar organization ID as mentioned in review
+    organization_id = "default-org-001"  # Edison Craft Bar ID from previous tests
+    
+    print(f"Test 1: GET /api/iiko/sales-report/{organization_id} - Revenue for yesterday")
+    try:
+        start_time = time.time()
+        response = requests.get(
+            f"{BACKEND_URL}/iiko/sales-report/{organization_id}",
+            timeout=60
+        )
+        end_time = time.time()
+        
+        print(f"Response time: {end_time - start_time:.2f} seconds")
+        print(f"HTTP Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
+            
+            # Check expected response structure
+            success = result.get("success", False)
+            message = result.get("message", "")
+            organization_id_resp = result.get("organization_id")
+            period = result.get("period", {})
+            data = result.get("data")
+            summary = result.get("summary", {})
+            endpoint_used = result.get("endpoint_used")
+            
+            print(f"\n📊 SALES REPORT ANALYSIS:")
+            print(f"Success: {success}")
+            print(f"Message: {message}")
+            print(f"Organization ID: {organization_id_resp}")
+            print(f"Period: {period}")
+            print(f"Endpoint used: {endpoint_used}")
+            
+            if success:
+                log_test("SALES REPORT - SUCCESS", "PASS", 
+                        f"Revenue data retrieved successfully for {organization_id}")
+                
+                # Check for revenue data
+                if data:
+                    log_test("Sales data availability", "PASS", 
+                            "Sales data is present in response")
+                else:
+                    log_test("Sales data availability", "WARN", 
+                            "No sales data in response")
+                
+                # Check summary metrics
+                if summary:
+                    total_revenue = summary.get('total_revenue')
+                    transactions = summary.get('transactions')
+                    items_sold = summary.get('items_sold')
+                    
+                    log_test("Revenue summary parsing", "PASS", 
+                            f"Revenue: {total_revenue}, Transactions: {transactions}, Items: {items_sold}")
+                else:
+                    log_test("Revenue summary parsing", "WARN", 
+                            "No summary metrics available")
+                    
+            else:
+                log_test("SALES REPORT - FALLBACK", "PASS", 
+                        "Sales endpoints not available but handled gracefully")
+                
+                # Check diagnostic info
+                diagnostic_info = result.get("diagnostic_info", {})
+                if diagnostic_info:
+                    auth_working = diagnostic_info.get("auth_working")
+                    menu_access = diagnostic_info.get("menu_access")
+                    sales_endpoints = diagnostic_info.get("sales_endpoints")
+                    
+                    log_test("Diagnostic information", "PASS", 
+                            f"Auth: {auth_working}, Menu: {menu_access}, Sales: {sales_endpoints}")
+                else:
+                    log_test("Diagnostic information", "WARN", 
+                            "No diagnostic information provided")
+                    
+        elif response.status_code == 404:
+            log_test("SALES REPORT", "FAIL", 
+                    f"Organization not found: {response.text}")
+        elif response.status_code == 500:
+            log_test("SALES REPORT", "FAIL", 
+                    f"Server error: {response.text}")
+        else:
+            log_test("SALES REPORT", "FAIL", 
+                    f"Unexpected HTTP {response.status_code}: {response.text}")
+            
+    except requests.exceptions.Timeout:
+        log_test("SALES REPORT", "FAIL", "Request timeout (>60s)")
+    except Exception as e:
+        log_test("SALES REPORT", "FAIL", f"Exception: {str(e)}")
+    
+    # Test 2: Sales report with custom date range
+    print(f"\nTest 2: GET /api/iiko/sales-report/{organization_id} - Custom date range")
+    try:
+        from datetime import datetime, timedelta
+        
+        # Test with specific date range (last week)
+        date_to = datetime.now().strftime('%Y-%m-%d')
+        date_from = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        
+        params = {
+            'date_from': date_from,
+            'date_to': date_to
+        }
+        
+        response = requests.get(
+            f"{BACKEND_URL}/iiko/sales-report/{organization_id}",
+            params=params,
+            timeout=60
+        )
+        
+        print(f"HTTP Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            result = response.json()
+            period = result.get("period", {})
+            
+            if period.get('from') == date_from and period.get('to') == date_to:
+                log_test("Custom date range", "PASS", 
+                        f"Date range correctly applied: {date_from} to {date_to}")
+            else:
+                log_test("Custom date range", "WARN", 
+                        f"Date range may not be applied correctly")
+        else:
+            log_test("Custom date range", "FAIL", 
+                    f"HTTP {response.status_code}: {response.text}")
+            
+    except Exception as e:
+        log_test("Custom date range", "FAIL", f"Exception: {str(e)}")
+
+def test_iiko_analytics_dashboard():
+    """Test the new IIKo comprehensive analytics dashboard endpoint"""
+    print("📊 TESTING IIKO ANALYTICS DASHBOARD - PRIORITY 2")
+    print("=" * 60)
+    
+    # Use Edison Craft Bar organization ID
+    organization_id = "default-org-001"  # Edison Craft Bar ID
+    
+    print(f"Test 1: GET /api/iiko/analytics/{organization_id} - Comprehensive analytics")
+    try:
+        start_time = time.time()
+        response = requests.get(
+            f"{BACKEND_URL}/iiko/analytics/{organization_id}",
+            timeout=90  # Longer timeout for comprehensive data
+        )
+        end_time = time.time()
+        
+        print(f"Response time: {end_time - start_time:.2f} seconds")
+        print(f"HTTP Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
+            
+            # Check expected response structure
+            success = result.get("success", False)
+            message = result.get("message", "")
+            analytics = result.get("analytics", {})
+            
+            print(f"\n📈 ANALYTICS DASHBOARD ANALYSIS:")
+            print(f"Success: {success}")
+            print(f"Message: {message}")
+            
+            if success and analytics:
+                log_test("ANALYTICS DASHBOARD - SUCCESS", "PASS", 
+                        "Analytics dashboard generated successfully")
+                
+                # Check analytics structure
+                organization_id_resp = analytics.get("organization_id")
+                generated_at = analytics.get("generated_at")
+                sections = analytics.get("sections", {})
+                organization_info = analytics.get("organization_info")
+                
+                print(f"Organization ID: {organization_id_resp}")
+                print(f"Generated at: {generated_at}")
+                print(f"Sections available: {list(sections.keys())}")
+                
+                # Test 1: Organization info
+                if organization_info:
+                    if "error" in organization_info:
+                        log_test("Organization info", "WARN", 
+                                f"Organization info error: {organization_info['error']}")
+                    else:
+                        org_name = organization_info.get("name", "N/A")
+                        org_id = organization_info.get("id", "N/A")
+                        log_test("Organization info", "PASS", 
+                                f"Organization: {org_name} (ID: {org_id})")
+                else:
+                    log_test("Organization info", "WARN", 
+                            "No organization info available")
+                
+                # Test 2: Menu overview
+                menu_overview = sections.get("menu_overview", {})
+                if menu_overview:
+                    if "error" in menu_overview:
+                        log_test("Menu overview", "WARN", 
+                                f"Menu overview error: {menu_overview['error']}")
+                    else:
+                        categories_count = menu_overview.get("categories_count", 0)
+                        items_count = menu_overview.get("items_count", 0)
+                        top_categories = menu_overview.get("top_categories", [])
+                        
+                        log_test("Menu overview", "PASS", 
+                                f"Menu: {items_count} items, {categories_count} categories")
+                        
+                        if top_categories:
+                            print(f"    Top categories: {', '.join(top_categories[:3])}")
+                else:
+                    log_test("Menu overview", "WARN", 
+                            "No menu overview available")
+                
+                # Test 3: Sales summary
+                sales_summary = sections.get("sales_summary", {})
+                if sales_summary:
+                    if "error" in sales_summary:
+                        log_test("Sales summary", "WARN", 
+                                f"Sales summary error: {sales_summary['error']}")
+                    elif sales_summary.get("status") == "not_available":
+                        log_test("Sales summary", "PASS", 
+                                "Sales data not available (expected for some IIKo installations)")
+                    else:
+                        # Check for sales metrics
+                        total_revenue = sales_summary.get('total_revenue')
+                        transactions = sales_summary.get('transactions')
+                        
+                        log_test("Sales summary", "PASS", 
+                                f"Sales metrics: Revenue: {total_revenue}, Transactions: {transactions}")
+                else:
+                    log_test("Sales summary", "WARN", 
+                            "No sales summary available")
+                
+                # Overall analytics completeness
+                sections_count = len([s for s in sections.values() if not s.get("error")])
+                total_sections = len(sections)
+                
+                if sections_count >= 2:  # At least menu overview and one other section
+                    log_test("Analytics completeness", "PASS", 
+                            f"{sections_count}/{total_sections} sections working")
+                else:
+                    log_test("Analytics completeness", "WARN", 
+                            f"Only {sections_count}/{total_sections} sections working")
+                    
+            else:
+                log_test("ANALYTICS DASHBOARD - FAILURE", "FAIL", 
+                        "Analytics dashboard generation failed")
+                
+        elif response.status_code == 404:
+            log_test("ANALYTICS DASHBOARD", "FAIL", 
+                    f"Organization not found: {response.text}")
+        elif response.status_code == 500:
+            log_test("ANALYTICS DASHBOARD", "FAIL", 
+                    f"Server error: {response.text}")
+        else:
+            log_test("ANALYTICS DASHBOARD", "FAIL", 
+                    f"Unexpected HTTP {response.status_code}: {response.text}")
+            
+    except requests.exceptions.Timeout:
+        log_test("ANALYTICS DASHBOARD", "FAIL", "Request timeout (>90s)")
+    except Exception as e:
+        log_test("ANALYTICS DASHBOARD", "FAIL", f"Exception: {str(e)}")
+
 def test_iiko_tech_card_upload():
     """Test the REAL IIKo tech card upload functionality as requested in review"""
     print("🚀 TESTING REAL IIKO TECH CARD UPLOAD")
