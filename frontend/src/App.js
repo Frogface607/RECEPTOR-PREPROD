@@ -9562,6 +9562,216 @@ function App() {
         </div>
       )}
 
+      {/* IIKo Category Viewer Modal - КРАСИВЫЙ ПРОСМОТР КАТЕГОРИЙ */}
+      {showCategoryViewer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 border border-purple-400/30 rounded-2xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
+                  {categoryData?.success !== false ? 
+                    `🍽️ ${categoryData?.category?.name || categoryData?.searchedFor}` : 
+                    `🔍 Поиск категории: ${categoryData?.searchedFor}`
+                  }
+                </h3>
+                {selectedOrganization && (
+                  <span className="text-purple-400 text-sm">
+                    📍 {selectedOrganization.name}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setShowCategoryViewer(false);
+                  setCategoryData(null);
+                }}
+                className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Loading State */}
+            {isLoadingCategory && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+                <p className="text-purple-300 mt-4 text-lg">
+                  🔍 Загружаем категорию из IIKo...
+                </p>
+              </div>
+            )}
+
+            {/* Success - Category Found */}
+            {!isLoadingCategory && categoryData?.success !== false && categoryData?.category && (
+              <div>
+                {/* Category Info */}
+                <div className="bg-gradient-to-r from-purple-800/30 to-pink-800/30 rounded-xl p-4 mb-6 border border-purple-400/20">
+                  <div className="flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                      <h4 className="text-xl font-semibold text-white">
+                        {categoryData.category.name}
+                      </h4>
+                      <p className="text-purple-300 text-sm">
+                        ID: {categoryData.category.id}
+                      </p>
+                      {categoryData.category.description && (
+                        <p className="text-gray-300 text-sm mt-1">
+                          {categoryData.category.description}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-6 text-center">
+                      <div>
+                        <div className="text-3xl font-bold text-green-400">
+                          {categoryData.summary?.total_in_category || 0}
+                        </div>
+                        <div className="text-sm text-gray-400">Всего блюд</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold text-blue-400">
+                          {categoryData.summary?.shown || 0}
+                        </div>
+                        <div className="text-sm text-gray-400">Показано</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold text-purple-400">
+                          {categoryData.summary?.has_descriptions || 0}
+                        </div>
+                        <div className="text-sm text-gray-400">С описаниями</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Items Grid */}
+                {categoryData.items && categoryData.items.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categoryData.items.map((item, index) => (
+                      <div
+                        key={item.id || index}
+                        className="bg-gray-800/50 border border-gray-600/50 rounded-xl p-4 hover:bg-gray-800/70 hover:border-purple-400/50 transition-all duration-300 group"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <h5 className="font-semibold text-white text-sm group-hover:text-purple-200 transition-colors">
+                            {item.name}
+                          </h5>
+                          <div className={`w-3 h-3 rounded-full ${
+                            item.active ? 'bg-green-500' : 'bg-red-500'
+                          }`} title={item.active ? 'Активно' : 'Неактивно'}></div>
+                        </div>
+                        
+                        {item.description && item.description !== 'Без описания' && (
+                          <p className="text-gray-400 text-xs leading-relaxed mb-3">
+                            {item.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-purple-400">
+                            ID: {item.id?.substring(0, 8)}...
+                          </span>
+                          <span className={`px-2 py-1 rounded ${
+                            item.active 
+                              ? 'bg-green-600/20 text-green-300' 
+                              : 'bg-red-600/20 text-red-300'
+                          }`}>
+                            {item.active ? '✅ Активно' : '❌ Неактивно'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📭</div>
+                    <p className="text-xl text-gray-400">
+                      В этой категории пока нет блюд
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Error - Category Not Found */}
+            {!isLoadingCategory && categoryData?.success === false && (
+              <div className="text-center py-8">
+                <div className="text-6xl mb-4">🔍</div>
+                <h4 className="text-xl font-semibold text-red-300 mb-2">
+                  {categoryData.error}
+                </h4>
+                <p className="text-gray-400 mb-6">
+                  Попробуйте другое название или выберите из доступных категорий
+                </p>
+
+                {/* Similar Categories */}
+                {categoryData.similarCategories && categoryData.similarCategories.length > 0 && (
+                  <div className="mb-6">
+                    <h5 className="text-lg font-semibold text-purple-300 mb-3">
+                      Похожие категории:
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {categoryData.similarCategories.map((catName, index) => (
+                        <button
+                          key={index}
+                          onClick={() => viewIikoCategory(catName.toLowerCase())}
+                          className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm transition-colors"
+                        >
+                          {catName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* All Categories */}
+                {categoryData.allCategories && categoryData.allCategories.length > 0 && (
+                  <div>
+                    <h5 className="text-lg font-semibold text-purple-300 mb-3">
+                      Все доступные категории:
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                      {categoryData.allCategories.map((catName, index) => (
+                        <button
+                          key={index}
+                          onClick={() => viewIikoCategory(catName.toLowerCase())}
+                          className="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded text-xs transition-colors"
+                        >
+                          {catName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bottom Actions */}
+            {!isLoadingCategory && categoryData && categoryData.success !== false && (
+              <div className="flex justify-center mt-6 gap-3">
+                <button
+                  onClick={() => {
+                    setShowCategoryViewer(false);
+                    setCategoryData(null);
+                  }}
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                >
+                  ✅ Закрыть
+                </button>
+                
+                <button
+                  onClick={() => viewIikoCategory('салаты')}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                  title="Обновить категорию"
+                >
+                  🔄 Обновить
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
