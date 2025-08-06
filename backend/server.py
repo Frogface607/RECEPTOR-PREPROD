@@ -3585,12 +3585,26 @@ async def get_menu_project_content(project_id: str):
 async def iiko_health_check():
     """Health check endpoint for IIKo API connectivity"""
     try:
-        client = await iiko_auth_manager.get_authenticated_client()
-        return {
-            "status": "healthy",
-            "iiko_connection": "active",
-            "timestamp": datetime.now().isoformat()
-        }
+        # Check if we're using iikoServer API or legacy Cloud API
+        if isinstance(iiko_auth_manager, IikoServerAuthManager):
+            # For iikoServer API, test session key
+            session_key = await iiko_auth_manager.get_session_key()
+            if session_key:
+                return {
+                    "status": "healthy",
+                    "iiko_connection": "active",
+                    "timestamp": datetime.now().isoformat()
+                }
+            else:
+                raise Exception("Failed to get session key")
+        else:
+            # For legacy Cloud API
+            client = await iiko_auth_manager.get_authenticated_client()
+            return {
+                "status": "healthy",
+                "iiko_connection": "active",
+                "timestamp": datetime.now().isoformat()
+            }
     except Exception as e:
         return JSONResponse(
             status_code=503,
