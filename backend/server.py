@@ -4264,6 +4264,109 @@ async def run_iiko_diagnostics():
         }
     }
 
+@api_router.get("/iiko/sales-report/{organization_id}")
+async def get_iiko_sales_report(
+    organization_id: str,
+    date_from: str = None,
+    date_to: str = None
+):
+    """Get sales/revenue report from IIKo - SIMPLE TEST"""
+    logger.info(f"💰 SALES REPORT REQUEST: Getting sales data for {organization_id}")
+    
+    try:
+        # Get sales report from IIKo
+        sales_report = await iiko_service.get_sales_report(organization_id, date_from, date_to)
+        
+        if sales_report.get('success'):
+            logger.info(f"✅ Sales report retrieved successfully")
+            
+            return {
+                "success": True,
+                "message": "Отчет по выручке получен успешно",
+                "organization_id": organization_id,
+                "period": {
+                    "from": sales_report.get('date_from'),
+                    "to": sales_report.get('date_to')
+                },
+                "data": sales_report.get('sales_data'),
+                "summary": sales_report.get('summary', {}),
+                "endpoint_used": sales_report.get('endpoint'),
+                "method": sales_report.get('method', 'GET')
+            }
+        else:
+            logger.warning(f"⚠️ Sales report failed: {sales_report.get('error')}")
+            
+            return {
+                "success": False,
+                "message": "Не удалось получить отчет по продажам",
+                "organization_id": organization_id,
+                "error": sales_report.get('error'),
+                "tried_endpoints": sales_report.get('tried_endpoints', []),
+                "note": sales_report.get('note'),
+                "diagnostic_info": {
+                    "auth_working": True,  # We know auth works
+                    "menu_access": True,   # We know menu access works
+                    "sales_endpoints": "not_available"
+                }
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Error in sales report endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting sales report: {str(e)}")
+
+@api_router.get("/iiko/analytics/{organization_id}")  
+async def get_iiko_analytics_dashboard(organization_id: str):
+    """Get comprehensive analytics dashboard data from IIKo"""
+    logger.info(f"📊 ANALYTICS DASHBOARD: Getting analytics for {organization_id}")
+    
+    try:
+        # Combine multiple data sources
+        analytics_data = {
+            "organization_id": organization_id,
+            "generated_at": datetime.now().isoformat(),
+            "sections": {}
+        }
+        
+        # 1. Basic organization info
+        try:
+            organizations = await iiko_service.get_organizations()
+            org_info = next((org for org in organizations if org['id'] == organization_id), None)
+            analytics_data["organization_info"] = org_info
+        except Exception as e:
+            analytics_data["organization_info"] = {"error": str(e)}
+        
+        # 2. Menu overview
+        try:
+            menu_data = await iiko_service.get_menu_items([organization_id])
+            analytics_data["sections"]["menu_overview"] = {
+                "categories_count": len(menu_data.get('categories', [])),
+                "items_count": len(menu_data.get('items', [])),
+                "last_updated": menu_data.get('last_updated'),
+                "top_categories": [cat['name'] for cat in menu_data.get('categories', [])[:5]]
+            }
+        except Exception as e:
+            analytics_data["sections"]["menu_overview"] = {"error": str(e)}
+        
+        # 3. Sales data (if available)
+        try:
+            sales_report = await iiko_service.get_sales_report(organization_id)
+            if sales_report.get('success'):
+                analytics_data["sections"]["sales_summary"] = sales_report.get('summary', {})
+            else:
+                analytics_data["sections"]["sales_summary"] = {"status": "not_available"}
+        except Exception as e:
+            analytics_data["sections"]["sales_summary"] = {"error": str(e)}
+        
+        return {
+            "success": True,
+            "message": "Аналитическая панель сформирована",
+            "analytics": analytics_data
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error in analytics dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting analytics: {str(e)}")
+
 # Helper functions for IIKo integration
 def _format_ingredients_for_iiko(ingredients: List[Dict[str, Any]]) -> str:
     """Format ingredients list for IIKo display"""
