@@ -353,8 +353,15 @@ class IikoIntegrationService:
             raise HTTPException(status_code=500, detail=f"Failed to fetch menu items: {str(e)}")
 
 # Initialize IIKo integration services
-iiko_auth_manager = IikoAuthManager()
-iiko_service = IikoIntegrationService(iiko_auth_manager)
+# Try iikoServer API first, fallback to Cloud API
+try:
+    iiko_auth_manager = IikoServerAuthManager()
+    iiko_service = IikoServerIntegrationService(iiko_auth_manager)
+    logger.info("Using iikoServer API integration")
+except Exception as e:
+    logger.warning(f"iikoServer API failed, falling back to Cloud API: {e}")
+    iiko_auth_manager = IikoAuthManager()
+    iiko_service = IikoIntegrationService(iiko_auth_manager)
 
 # Create the main app without a prefix
 app = FastAPI()
