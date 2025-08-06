@@ -25,7 +25,7 @@ from datetime import datetime
 class ReceptorReviewTest:
     def __init__(self):
         # Use the public endpoint from frontend/.env
-        self.base_url = "https://1f2ccd24-594a-4a71-89be-0e37c8a52cfe.preview.emergentagent.com/api"
+        self.base_url = "https://26d71771-d1f5-449c-a365-fa5f081cd98e.preview.emergentagent.com/api"
         
         # Test data as specified in review request
         self.test_user_id = "test_user_12345"
