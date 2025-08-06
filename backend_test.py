@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for IIKo Tech Card Upload - REAL UPLOAD TESTING
-Testing the new /api/iiko/tech-cards/upload endpoint for REAL tech card uploading to IIKo system
+Backend Testing Suite for IIKo Analytics - REVENUE & ANALYTICS TESTING
+Testing the new IIKo analytics endpoints for revenue reporting and comprehensive analytics dashboard
 """
 
 import requests
