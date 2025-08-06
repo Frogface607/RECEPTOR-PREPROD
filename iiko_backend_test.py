@@ -118,11 +118,11 @@ def test_iiko_diagnostics():
         log_test("Diagnostics endpoint", "FAIL", f"Exception: {str(e)}")
 
 def test_iiko_organizations():
-    """Test IIKo organizations endpoint"""
-    print("🏢 TESTING IIKO ORGANIZATIONS")
+    """Test IIKo organizations endpoint - ГЛАВНОЕ! Должны появиться организации"""
+    print("🏢 TESTING IIKO ORGANIZATIONS - ГЛАВНОЕ!")
     print("=" * 60)
     
-    print("Test 1: GET /api/iiko/organizations")
+    print("Test 1: GET /api/iiko/organizations (ожидаем реальные организации вместо пустого списка)")
     try:
         response = requests.get(f"{BACKEND_URL}/iiko/organizations", timeout=60)
         
@@ -130,11 +130,13 @@ def test_iiko_organizations():
             result = response.json()
             
             if isinstance(result, list):
-                log_test("Organizations endpoint", "PASS", 
-                        f"Retrieved {len(result)} organizations")
+                org_count = len(result)
                 
-                # Check organization structure
-                if result:
+                if org_count > 0:
+                    log_test("🎉 ORGANIZATIONS FOUND!", "PASS", 
+                            f"🚀 УСПЕХ! Найдено {org_count} организаций - НОВЫЕ КЛЮЧИ РАБОТАЮТ!")
+                    
+                    # Check organization structure
                     org = result[0]
                     expected_fields = ['id', 'name', 'active']
                     present_fields = [field for field in expected_fields if field in org]
@@ -142,22 +144,38 @@ def test_iiko_organizations():
                     log_test("Organization data structure", "PASS" if len(present_fields) >= 2 else "WARN", 
                             f"Fields present: {present_fields}")
                     
-                    # Log sample organizations
-                    print(f"    Sample organizations:")
-                    for i, org in enumerate(result[:3]):
-                        print(f"    {i+1}. {org.get('name', 'N/A')} (ID: {org.get('id', 'N/A')})")
+                    # Log all organizations found
+                    print(f"    🎯 НАЙДЕННЫЕ ОРГАНИЗАЦИИ:")
+                    for i, org in enumerate(result):
+                        name = org.get('name', 'N/A')
+                        org_id = org.get('id', 'N/A')
+                        active = org.get('active', 'N/A')
+                        address = org.get('address', 'N/A')
+                        country = org.get('country', 'N/A')
+                        
+                        print(f"    {i+1}. {name}")
+                        print(f"       ID: {org_id}")
+                        print(f"       Active: {active}")
+                        if address != 'N/A':
+                            print(f"       Address: {address}")
+                        if country != 'N/A':
+                            print(f"       Country: {country}")
+                        print()
                         
                     return result  # Return for use in menu tests
                 else:
-                    log_test("Organizations data", "WARN", "No organizations returned")
+                    log_test("❌ NO ORGANIZATIONS", "FAIL", 
+                            "Пустой список организаций - новые ключи пока не дают доступ")
                     
             else:
                 log_test("Organizations response format", "FAIL", 
                         f"Expected list, got {type(result)}")
                 
         elif response.status_code == 500:
-            log_test("Organizations endpoint", "WARN", 
-                    "Authentication error (expected with test credentials)")
+            error_text = response.text
+            log_test("Organizations endpoint error", "FAIL", 
+                    f"Authentication/API error: {error_text}")
+            print(f"    🔍 Error details: {error_text}")
         elif response.status_code == 503:
             log_test("Organizations endpoint", "WARN", 
                     "Service unavailable (IIKo integration not available)")
