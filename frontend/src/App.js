@@ -8957,6 +8957,408 @@ function App() {
         </div>
       )}
 
+      {/* IIKo Integration Modal */}
+      {showIikoModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-purple-400/30 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-purple-200">
+                🏢 Интеграция с IIKo
+              </h3>
+              <button
+                onClick={() => setShowIikoModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* IIKo Health Status */}
+            {iikoHealthStatus && (
+              <div className={`mb-6 p-4 rounded-lg border ${
+                iikoHealthStatus.status === 'healthy' 
+                  ? 'bg-green-900/20 border-green-400/30'
+                  : iikoHealthStatus.status === 'unhealthy'
+                  ? 'bg-red-900/20 border-red-400/30'
+                  : 'bg-yellow-900/20 border-yellow-400/30'
+              }`}>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-lg">
+                    {iikoHealthStatus.status === 'healthy' ? '✅' : 
+                     iikoHealthStatus.status === 'unhealthy' ? '❌' : '⚠️'}
+                  </span>
+                  <span className={`font-semibold ${
+                    iikoHealthStatus.status === 'healthy' ? 'text-green-200' :
+                    iikoHealthStatus.status === 'unhealthy' ? 'text-red-200' : 'text-yellow-200'
+                  }`}>
+                    Статус подключения: {iikoHealthStatus.iiko_connection}
+                  </span>
+                </div>
+                {iikoHealthStatus.error && (
+                  <p className="text-red-200 text-sm">
+                    Ошибка: {iikoHealthStatus.error}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Organizations List */}
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold text-purple-200 mb-3">
+                Доступные организации
+              </h4>
+              {isLoadingIiko ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+                  <p className="text-purple-300 mt-2">Загружаем организации...</p>
+                </div>
+              ) : iikoOrganizations.length > 0 ? (
+                <div className="space-y-3">
+                  {iikoOrganizations.map((org) => (
+                    <div
+                      key={org.id}
+                      className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                        selectedOrganization?.id === org.id
+                          ? 'bg-purple-600/30 border-purple-400'
+                          : 'bg-gray-700/50 border-gray-600 hover:bg-gray-700/70'
+                      }`}
+                      onClick={() => {
+                        setSelectedOrganization(org);
+                        fetchIikoMenu(org.id);
+                      }}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-semibold text-white">{org.name}</h5>
+                          <p className="text-gray-400 text-sm">ID: {org.id}</p>
+                          {org.address && (
+                            <p className="text-gray-400 text-sm">📍 {org.address}</p>
+                          )}
+                        </div>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          org.active ? 'bg-green-600 text-green-100' : 'bg-gray-600 text-gray-100'
+                        }`}>
+                          {org.active ? 'Активна' : 'Неактивна'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <p>Организации не найдены или произошла ошибка подключения</p>
+                </div>
+              )}
+            </div>
+
+            {/* Menu Information */}
+            {selectedOrganization && (
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-purple-200 mb-3">
+                  Меню организации: {selectedOrganization.name}
+                </h4>
+                {isLoadingIiko ? (
+                  <div className="text-center py-4">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-purple-400"></div>
+                    <p className="text-purple-300 mt-2">Загружаем меню...</p>
+                  </div>
+                ) : iikoMenu ? (
+                  <div className="bg-gray-700/50 rounded-lg p-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold text-blue-300">{iikoMenu.categories?.length || 0}</div>
+                        <div className="text-sm text-gray-400">Категории</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-300">{iikoMenu.items?.length || 0}</div>
+                        <div className="text-sm text-gray-400">Блюда</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-yellow-300">{iikoMenu.modifiers?.length || 0}</div>
+                        <div className="text-sm text-gray-400">Модификаторы</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-400">Обновлено</div>
+                        <div className="text-xs text-gray-300">
+                          {iikoMenu.last_updated ? new Date(iikoMenu.last_updated).toLocaleDateString('ru-RU') : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-400 text-center py-4">Выберите организацию для загрузки меню</p>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setShowSyncMenuModal(true)}
+                disabled={!selectedOrganization}
+                className={`flex-1 ${
+                  !selectedOrganization 
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                } text-white font-bold py-3 px-6 rounded-lg transition-colors`}
+                title="Синхронизировать меню между системами"
+              >
+                🔄 Синхронизировать меню
+              </button>
+              
+              <button
+                onClick={async () => {
+                  const diagnostics = await axios.get(`${API}/iiko/diagnostics`);
+                  alert(`Диагностика IIKo:\n\n${JSON.stringify(diagnostics.data, null, 2)}`);
+                }}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                title="Запустить диагностику подключения"
+              >
+                🔧 Диагностика
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Tech Card to IIKo Modal */}
+      {showUploadTechCardModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-purple-400/30 rounded-lg p-6 max-w-2xl w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-purple-200">
+                📤 Загрузка техкарты в IIKo
+              </h3>
+              <button
+                onClick={() => {
+                  setShowUploadTechCardModal(false);
+                  setUploadResult(null);
+                }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {techCardToUpload && (
+              <>
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-white mb-2">
+                    Техкарта: {techCardToUpload.dish_name}
+                  </h4>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Выберите организацию IIKo для загрузки техкарты
+                  </p>
+                  
+                  {/* Organization Selection */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Организация IIKo
+                    </label>
+                    <select
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                      value={selectedOrganization?.id || ''}
+                      onChange={(e) => {
+                        const org = iikoOrganizations.find(o => o.id === e.target.value);
+                        setSelectedOrganization(org || null);
+                      }}
+                    >
+                      <option value="">Выберите организацию</option>
+                      {iikoOrganizations.map(org => (
+                        <option key={org.id} value={org.id}>{org.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Upload Result */}
+                {uploadResult && (
+                  <div className={`mb-6 p-4 rounded-lg border ${
+                    uploadResult.success
+                      ? 'bg-green-900/20 border-green-400/30'
+                      : 'bg-red-900/20 border-red-400/30'
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg">
+                        {uploadResult.success ? '✅' : '❌'}
+                      </span>
+                      <div>
+                        <p className={`font-semibold ${
+                          uploadResult.success ? 'text-green-200' : 'text-red-200'
+                        }`}>
+                          {uploadResult.success ? 'Успех!' : 'Ошибка'}
+                        </p>
+                        <p className="text-gray-300 text-sm mt-1">
+                          {uploadResult.message}
+                        </p>
+                        {uploadResult.syncId && (
+                          <p className="text-gray-400 text-xs mt-2">
+                            ID синхронизации: {uploadResult.syncId}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      setShowUploadTechCardModal(false);
+                      setUploadResult(null);
+                    }}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    disabled={isUploadingTechCard}
+                  >
+                    ❌ Отменить
+                  </button>
+                  <button
+                    onClick={() => uploadTechCardToIiko(techCardToUpload, selectedOrganization?.id)}
+                    disabled={isUploadingTechCard || !selectedOrganization}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    {isUploadingTechCard ? '⏳ Загружаем...' : '📤 Загрузить в IIKo'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Sync Menu Modal */}
+      {showSyncMenuModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-purple-400/30 rounded-lg p-6 max-w-2xl w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-purple-200">
+                🔄 Синхронизация меню с IIKo
+              </h3>
+              <button
+                onClick={() => {
+                  setShowSyncMenuModal(false);
+                  setSyncProgress(null);
+                }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {!isSyncing && !syncProgress ? (
+              <>
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-white mb-2">
+                    Настройки синхронизации
+                  </h4>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Выберите что синхронизировать между AI-Menu-Designer и IIKo
+                  </p>
+
+                  <div className="space-y-3">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={syncSettings.syncPrices}
+                        onChange={(e) => setSyncSettings(prev => ({...prev, syncPrices: e.target.checked}))}
+                        className="mr-3"
+                      />
+                      <span className="text-white">Синхронизировать цены</span>
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={syncSettings.syncCategories}
+                        onChange={(e) => setSyncSettings(prev => ({...prev, syncCategories: e.target.checked}))}
+                        className="mr-3"
+                      />
+                      <span className="text-white">Синхронизировать категории</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowSyncMenuModal(false)}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    ❌ Отменить
+                  </button>
+                  <button
+                    onClick={() => syncMenuWithIiko([selectedOrganization.id], syncSettings)}
+                    disabled={!selectedOrganization}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    🔄 Начать синхронизацию
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Sync Progress */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-white mb-2">
+                    Прогресс синхронизации
+                  </h4>
+                  
+                  <div className="bg-gray-700/50 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`w-4 h-4 rounded-full ${
+                        isSyncing ? 'bg-yellow-400 animate-pulse' : 
+                        syncProgress?.status === 'completed' ? 'bg-green-400' :
+                        syncProgress?.status === 'error' ? 'bg-red-400' : 'bg-gray-400'
+                      }`}></div>
+                      <span className="text-white font-medium">
+                        {syncProgress?.message || 'Подготовка к синхронизации...'}
+                      </span>
+                    </div>
+                    
+                    {syncProgress?.syncJobId && (
+                      <p className="text-gray-400 text-xs">
+                        ID задачи: {syncProgress.syncJobId}
+                      </p>
+                    )}
+                    
+                    {syncProgress?.results && (
+                      <div className="mt-4 text-sm">
+                        <p className="text-green-300">
+                          ✅ Организаций обработано: {syncProgress.results.organizations_synced?.length || 0}
+                        </p>
+                        <p className="text-blue-300">
+                          📋 Элементов меню: {syncProgress.results.items_updated || 0}
+                        </p>
+                        <p className="text-purple-300">
+                          🗂 Категорий: {syncProgress.results.categories_updated || 0}
+                        </p>
+                        {syncProgress.results.errors?.length > 0 && (
+                          <p className="text-red-300">
+                            ❌ Ошибок: {syncProgress.results.errors.length}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {!isSyncing && (
+                  <button
+                    onClick={() => {
+                      setShowSyncMenuModal(false);
+                      setSyncProgress(null);
+                    }}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    ✅ Закрыть
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
