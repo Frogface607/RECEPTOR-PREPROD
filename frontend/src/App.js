@@ -216,6 +216,10 @@ function App() {
   });
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(null);
+  // NEW - Category viewer states
+  const [showCategoryViewer, setShowCategoryViewer] = useState(false);
+  const [categoryData, setCategoryData] = useState(null);
+  const [isLoadingCategory, setIsLoadingCategory] = useState(false);
 
   // Menu Tech Cards View states
   const [showMenuTechCards, setShowMenuTechCards] = useState(false);
