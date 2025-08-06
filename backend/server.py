@@ -46,21 +46,55 @@ logger = logging.getLogger(__name__)
 class IikoServerAuthManager:
     def __init__(self):
         self.api_login = os.environ.get('IIKO_API_LOGIN')
-        self.api_token = os.environ.get('IIKO_API_TOKEN')
-        self.base_url = os.environ.get('IIKO_BASE_URL', 'https://api-ru.iiko.services')
+        self.api_password = os.environ.get('IIKO_API_PASSWORD')
+        self.base_url = os.environ.get('IIKO_BASE_URL', 'https://iikoffice1.api.rms.ru')
+        self.session_key = None
+        self.token_expires_at = None
         self.logger = logging.getLogger(__name__)
         
     async def get_session_key(self):
-        """Use the provided JWT token directly"""
-        if not self.api_token:
-            raise Exception("IIKo API token not configured")
-        
-        # For IIKo Server API, we can use the provided JWT token directly
-        return self.api_token
+        """Get session key for iikoServer API using Office credentials"""
+        if self._is_session_expired():
+            await self._refresh_session()
+        return self.session_key
     
     def _is_session_expired(self) -> bool:
-        """Check if we have a token (JWT expiration handled by server)"""
-        return not self.api_token
+        """Check if current session is expired"""
+        if not self.session_key or not self.token_expires_at:
+            return True
+        return datetime.now() >= self.token_expires_at - timedelta(minutes=5)
+    
+    async def _refresh_session(self):
+        """Get new session key from iikoServer API using Office login/password"""
+        try:
+            import httpx
+            
+            # IIKo Server API auth endpoint
+            auth_url = f"{self.base_url}/resto/api/auth"
+            
+            payload = {
+                "login": self.api_login,
+                "pass": self.api_password
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(auth_url, params=payload)
+                
+                if response.status_code == 200:
+                    # IIKo Server returns session key as plain text
+                    self.session_key = response.text.strip()
+                    if self.session_key:
+                        self.token_expires_at = datetime.now() + timedelta(hours=2)  # IIKo sessions typically last 2 hours
+                        self.logger.info("IIKo Server session key obtained successfully")
+                    else:
+                        raise Exception("Empty session key in response")
+                else:
+                    self.logger.error(f"Auth failed: {response.status_code} {response.text}")
+                    raise Exception(f"Authentication failed: {response.status_code}")
+                    
+        except Exception as e:
+            self.logger.error(f"Failed to get IIKo session key: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"IIKo authentication failed: {str(e)}")
 
 class IikoServerIntegrationService:
     def __init__(self, auth_manager: IikoServerAuthManager):
