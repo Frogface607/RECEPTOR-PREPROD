@@ -68,29 +68,66 @@ class IikoServerAuthManager:
         """Get new session key from iikoServer API using Office login/password"""
         try:
             import httpx
+            import urllib.parse
             
-            # IIKo Server API auth endpoint
-            auth_url = f"{self.base_url}/resto/api/auth"
+            # Try multiple authentication methods
+            auth_endpoints = [
+                f"{self.base_url}/resto/api/auth",
+                f"{self.base_url}/api/auth",
+                f"{self.base_url}/auth"
+            ]
             
-            payload = {
-                "login": self.api_login,
-                "pass": self.api_password
-            }
+            methods_to_try = [
+                ("GET", "params"),   # Current method
+                ("POST", "json"),    # JSON POST
+                ("POST", "form")     # Form POST
+            ]
             
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(auth_url, params=payload)
-                
-                if response.status_code == 200:
-                    # IIKo Server returns session key as plain text
-                    self.session_key = response.text.strip()
-                    if self.session_key:
-                        self.token_expires_at = datetime.now() + timedelta(hours=2)  # IIKo sessions typically last 2 hours
-                        self.logger.info("IIKo Server session key obtained successfully")
-                    else:
-                        raise Exception("Empty session key in response")
-                else:
-                    self.logger.error(f"Auth failed: {response.status_code} {response.text}")
-                    raise Exception(f"Authentication failed: {response.status_code}")
+            for endpoint in auth_endpoints:
+                for method, payload_type in methods_to_try:
+                    try:
+                        self.logger.info(f"Trying {method} {endpoint} with {payload_type}")
+                        
+                        async with httpx.AsyncClient(timeout=30.0) as client:
+                            if method == "GET" and payload_type == "params":
+                                # URL encode the password properly
+                                encoded_password = urllib.parse.quote(self.api_password)
+                                params = {
+                                    "login": self.api_login,
+                                    "pass": encoded_password
+                                }
+                                response = await client.get(endpoint, params=params)
+                                
+                            elif method == "POST" and payload_type == "json":
+                                payload = {
+                                    "login": self.api_login,
+                                    "password": self.api_password
+                                }
+                                response = await client.post(endpoint, json=payload)
+                                
+                            elif method == "POST" and payload_type == "form":
+                                payload = {
+                                    "login": self.api_login,
+                                    "pass": self.api_password
+                                }
+                                response = await client.post(endpoint, data=payload)
+                            
+                            self.logger.info(f"Response: {response.status_code} - {response.text[:100]}")
+                            
+                            if response.status_code == 200:
+                                session_key = response.text.strip()
+                                if session_key and len(session_key) > 10:  # Valid session key
+                                    self.session_key = session_key
+                                    self.token_expires_at = datetime.now() + timedelta(hours=2)
+                                    self.logger.info(f"✅ SUCCESS with {method} {endpoint} ({payload_type})")
+                                    return
+                                    
+                    except Exception as e:
+                        self.logger.info(f"❌ Failed {method} {endpoint}: {str(e)}")
+                        continue
+            
+            # If we get here, all methods failed
+            raise Exception(f"All authentication methods failed. Last response details logged above.")
                     
         except Exception as e:
             self.logger.error(f"Failed to get IIKo session key: {str(e)}")
