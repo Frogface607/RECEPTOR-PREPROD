@@ -458,18 +458,21 @@ def test_iiko_integration_availability():
 
 def main():
     """Run all IIKo integration tests"""
-    print("🧪 IIKO API INTEGRATION TESTING SUITE")
+    print("🧪 IIKO API INTEGRATION TESTING SUITE - NEW CREDENTIALS TEST")
     print("=" * 80)
     print(f"Backend URL: {BACKEND_URL}")
     print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
-    print("Testing IIKo API endpoints with credentials:")
-    print("- IIKO_API_LOGIN: Edison")
-    print("- IIKO_API_PASSWORD: ff26c0ae3e5d4f41a00b8efaf721160f")
+    print("🎯 КРИТИЧЕСКИЙ ТЕСТ - НОВЫЕ IIKO КЛЮЧИ!")
+    print("Testing IIKo API endpoints with NEW credentials:")
+    print("- IIKO_API_LOGIN: EdisonCraft")
+    print("- IIKO_API_PASSWORD: 261d9ff06a3746b19c92de45a89c969b")
     print("- IIKO_BASE_URL: https://api-ru.iiko.services")
     print()
-    print("Note: Authentication errors are expected with test credentials.")
-    print("Focus is on API structure and error handling.")
+    print("🚀 ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ:")
+    print("✅ Health check: 'healthy' вместо 'unhealthy'")
+    print("✅ Organizations: Список реальных организаций вместо пустого массива")
+    print("✅ Menu: Реальные категории и блюда из IIKo системы")
     print()
     
     try:
