@@ -381,6 +381,165 @@ class IikoServerIntegrationService:
                 
         except Exception as e:
             self.logger.error(f"Error creating product in IIKo: {str(e)}")
+    async def get_sales_report(self, organization_id: str, date_from: str = None, date_to: str = None) -> Dict[str, Any]:
+        """Get sales/revenue report from IIKo - SIMPLE TEST"""
+        try:
+            import httpx
+            from datetime import datetime, timedelta
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            # Set default dates if not provided (yesterday)
+            if not date_from or not date_to:
+                yesterday = datetime.now() - timedelta(days=1)
+                date_from = yesterday.strftime('%Y-%m-%d')
+                date_to = yesterday.strftime('%Y-%m-%d')
+            
+            # Try different endpoints for sales data
+            possible_endpoints = [
+                f"{self.auth_manager.base_url}/resto/api/reports/sales",
+                f"{self.auth_manager.base_url}/resto/api/sales",
+                f"{self.auth_manager.base_url}/resto/api/v2/reports/sales", 
+                f"{self.auth_manager.base_url}/resto/api/reports/olap",
+                f"{self.auth_manager.base_url}/resto/api/corporation/reports"
+            ]
+            
+            params = {
+                "key": session_key,
+                "dateFrom": date_from,
+                "dateTo": date_to,
+                "organizationId": organization_id
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                for endpoint in possible_endpoints:
+                    try:
+                        self.logger.info(f"🔍 Trying sales endpoint: {endpoint}")
+                        
+                        # Try GET request first
+                        response = await client.get(endpoint, params=params)
+                        self.logger.info(f"GET Response: {response.status_code} - {response.text[:200]}")
+                        
+                        if response.status_code == 200:
+                            try:
+                                data = response.json()
+                                return {
+                                    'success': True,
+                                    'endpoint': endpoint,
+                                    'date_from': date_from,
+                                    'date_to': date_to, 
+                                    'organization_id': organization_id,
+                                    'sales_data': data,
+                                    'summary': self._parse_sales_summary(data)
+                                }
+                            except:
+                                # If JSON parsing fails, return raw text
+                                return {
+                                    'success': True,
+                                    'endpoint': endpoint,
+                                    'date_from': date_from,
+                                    'date_to': date_to,
+                                    'organization_id': organization_id,
+                                    'raw_data': response.text,
+                                    'note': 'Raw text response (not JSON)'
+                                }
+                        
+                        # If GET doesn't work, try POST
+                        elif response.status_code in [404, 405]:
+                            post_response = await client.post(endpoint, params=params)
+                            self.logger.info(f"POST Response: {post_response.status_code} - {post_response.text[:200]}")
+                            
+                            if post_response.status_code == 200:
+                                try:
+                                    data = post_response.json()
+                                    return {
+                                        'success': True,
+                                        'endpoint': endpoint,
+                                        'method': 'POST',
+                                        'date_from': date_from,
+                                        'date_to': date_to,
+                                        'organization_id': organization_id,
+                                        'sales_data': data,
+                                        'summary': self._parse_sales_summary(data)
+                                    }
+                                except:
+                                    return {
+                                        'success': True,
+                                        'endpoint': endpoint,
+                                        'method': 'POST',
+                                        'date_from': date_from,
+                                        'date_to': date_to,
+                                        'organization_id': organization_id,
+                                        'raw_data': post_response.text,
+                                        'note': 'Raw text response (not JSON)'
+                                    }
+                                    
+                    except Exception as e:
+                        self.logger.debug(f"Error with endpoint {endpoint}: {str(e)}")
+                        continue
+                
+                # If no endpoint works, return diagnostic info
+                return {
+                    'success': False,
+                    'error': 'No sales endpoints accessible',
+                    'tried_endpoints': possible_endpoints,
+                    'params_used': params,
+                    'note': 'Sales reporting may require different permissions or endpoints'
+                }
+                
+        except Exception as e:
+            self.logger.error(f"Error fetching sales report: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'General error in sales report fetch'
+            }
+    
+    def _parse_sales_summary(self, sales_data) -> Dict[str, Any]:
+        """Parse sales data to extract key metrics"""
+        try:
+            # Try to find common sales metrics in the response
+            summary = {}
+            
+            if isinstance(sales_data, dict):
+                # Look for common sales fields
+                for field in ['total_revenue', 'revenue', 'total_sales', 'sales', 'amount', 'sum']:
+                    if field in sales_data:
+                        summary['total_revenue'] = sales_data[field]
+                        break
+                
+                # Look for transaction count
+                for field in ['transaction_count', 'orders_count', 'count', 'transactions']:
+                    if field in sales_data:
+                        summary['transactions'] = sales_data[field]
+                        break
+                
+                # Look for items sold
+                for field in ['items_sold', 'dishes_count', 'products_sold']:
+                    if field in sales_data:
+                        summary['items_sold'] = sales_data[field]
+                        break
+                        
+            elif isinstance(sales_data, list) and len(sales_data) > 0:
+                # If it's a list of transactions, count them
+                summary['transactions'] = len(sales_data)
+                
+                # Try to sum amounts if available
+                total = 0
+                for item in sales_data:
+                    if isinstance(item, dict):
+                        for field in ['amount', 'sum', 'total', 'revenue']:
+                            if field in item:
+                                total += float(item[field])
+                                break
+                if total > 0:
+                    summary['total_revenue'] = total
+            
+            return summary
+            
+        except Exception as e:
+            return {'parse_error': str(e)}
+
             return {
                 'success': False,
                 'error': str(e),
