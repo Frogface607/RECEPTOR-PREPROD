@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, File, Form, UploadFile
+from fastapi import FastAPI, APIRouter, HTTPException, File, Form, UploadFile, BackgroundTasks
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,9 +7,9 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 import openai
 from openai import OpenAI
@@ -16,6 +17,16 @@ import json
 import re
 import tempfile
 import pandas as pd
+
+# IIKo Integration imports
+try:
+    from pyiikocloudapi import IikoTransport
+    IIKO_AVAILABLE = True
+    print("✅ IIKo integration is available")
+except ImportError as e:
+    IIKO_AVAILABLE = False
+    print(f"⚠️ IIKo integration not available: {e}")
+    IikoTransport = None
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
