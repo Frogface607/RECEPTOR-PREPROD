@@ -3031,14 +3031,14 @@ function App() {
     setLoadingProgress(0);
     setLoadingMessage('🎯 Анализируем ваши пожелания...');
     
-    // Запускаем анимацию прогресса и смену лайфхаков
-    const progressInterval = simulateProgress('menu', 25000); // 25 секунд анимации
+    // Запускаем анимацию прогресса с увеличенным временем для большего количества этапов
+    const progressInterval = simulateProgress('menu', 35000); // 35 секунд анимации
     
-    // Запускаем смену меню лайфхаков каждые 3 секунды
+    // Запускаем смену меню лайфхаков каждые 2.5 секунды (чаще, чем раньше)
     setCurrentMenuTipIndex(0);
     const tipInterval = setInterval(() => {
       setCurrentMenuTipIndex(prev => (prev + 1) % menuGenerationTips.length);
-    }, 3000);
+    }, 2500);
     
     // Use venue profile default dish count if not specified
     const dishCount = simpleMenuData.dishCount || venueProfile.default_dish_count || 12;
