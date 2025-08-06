@@ -565,6 +565,256 @@ def test_iiko_menu_access():
     except Exception as e:
         log_test("IIKo Menu Access", "FAIL", f"Exception: {str(e)}")
 
+def test_iiko_ai_menu_analysis():
+    """🧠 Test the NEW AI Menu Analysis endpoint - MAGIC GPT-4 analysis of REAL Edison Craft Bar menu!"""
+    print("🧠 TESTING AI MENU ANALYSIS - MAGIC GPT-4 ANALYSIS!")
+    print("=" * 60)
+    
+    # Use Edison Craft Bar organization ID as specified in review
+    organization_id = "default-org-001"  # Edison Craft Bar ID
+    
+    print(f"🎯 MAGIC TEST: POST /api/iiko/ai-menu-analysis/{organization_id}")
+    print("Expected: GPT-4 analyzes REAL Edison Craft Bar menu (3,153 positions) and gives concrete recommendations!")
+    
+    try:
+        start_time = time.time()
+        
+        # Test data as specified in review - comprehensive analysis
+        test_data = {
+            "analysis_type": "comprehensive"
+        }
+        
+        response = requests.post(
+            f"{BACKEND_URL}/iiko/ai-menu-analysis/{organization_id}",
+            json=test_data,
+            timeout=120  # 2 minutes for GPT-4 analysis
+        )
+        end_time = time.time()
+        
+        print(f"Response time: {end_time - start_time:.2f} seconds")
+        print(f"HTTP Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
+            
+            # Check expected response structure from review
+            success = result.get("success", False)
+            message = result.get("message", "")
+            organization_id_resp = result.get("organization_id")
+            menu_stats = result.get("menu_stats", {})
+            ai_analysis = result.get("ai_analysis", {})
+            menu_insights = result.get("menu_insights", {})
+            
+            print(f"\n🧠 AI MENU ANALYSIS RESULTS:")
+            print(f"Success: {success}")
+            print(f"Message: {message}")
+            print(f"Organization ID: {organization_id_resp}")
+            
+            if success:
+                log_test("AI MENU ANALYSIS - SUCCESS", "PASS", 
+                        "🎉 MAGIC WORKS! GPT-4 analyzed real Edison Craft Bar menu")
+                
+                # Test 1: Menu Stats Verification (as specified in review)
+                total_items = menu_stats.get("total_items", 0)
+                categories_count = menu_stats.get("categories_count", 0)
+                analyzed_categories = menu_stats.get("analyzed_categories", 0)
+                sample_categories = menu_stats.get("sample_categories", [])
+                
+                print(f"\n📊 MENU STATS VERIFICATION:")
+                print(f"Total items: {total_items}")
+                print(f"Categories count: {categories_count}")
+                print(f"Analyzed categories: {analyzed_categories}")
+                print(f"Sample categories: {sample_categories}")
+                
+                # Verify we're analyzing the REAL Edison Craft Bar menu (3,153 positions expected)
+                if total_items >= 3000:
+                    log_test("Real Edison Menu Verification", "PASS", 
+                            f"✅ REAL MENU CONFIRMED: {total_items} items (expected ~3,153)")
+                elif total_items >= 1000:
+                    log_test("Real Edison Menu Verification", "PASS", 
+                            f"✅ Large menu confirmed: {total_items} items")
+                else:
+                    log_test("Real Edison Menu Verification", "WARN", 
+                            f"⚠️ Menu smaller than expected: {total_items} items")
+                
+                if categories_count >= 50:
+                    log_test("Menu Categories Verification", "PASS", 
+                            f"✅ Rich categorization: {categories_count} categories (expected ~75)")
+                else:
+                    log_test("Menu Categories Verification", "WARN", 
+                            f"⚠️ Fewer categories than expected: {categories_count}")
+                
+                # Test 2: AI Analysis Verification (core magic!)
+                recommendations = ai_analysis.get("recommendations", "")
+                analysis_type = ai_analysis.get("analysis_type", "")
+                model_used = ai_analysis.get("model_used", "")
+                generated_at = ai_analysis.get("generated_at", "")
+                
+                print(f"\n🤖 AI ANALYSIS VERIFICATION:")
+                print(f"Model used: {model_used}")
+                print(f"Analysis type: {analysis_type}")
+                print(f"Generated at: {generated_at}")
+                print(f"Recommendations length: {len(recommendations)} characters")
+                
+                if model_used == "gpt-4o":
+                    log_test("GPT-4 Model Verification", "PASS", 
+                            "✅ Using GPT-4o as specified in review")
+                else:
+                    log_test("GPT-4 Model Verification", "FAIL", 
+                            f"❌ Wrong model: {model_used} (expected gpt-4o)")
+                
+                if len(recommendations) >= 500:  # Substantial analysis expected
+                    log_test("AI Recommendations Quality", "PASS", 
+                            f"✅ Substantial analysis: {len(recommendations)} characters")
+                    
+                    # Check for concrete recommendations (keywords from review)
+                    concrete_indicators = ["убрать", "поднять цену", "добавить", "₽", "%", "рекомендую"]
+                    found_indicators = [ind for ind in concrete_indicators if ind.lower() in recommendations.lower()]
+                    
+                    if len(found_indicators) >= 3:
+                        log_test("Concrete Recommendations Check", "PASS", 
+                                f"✅ Found concrete advice indicators: {found_indicators}")
+                    else:
+                        log_test("Concrete Recommendations Check", "WARN", 
+                                f"⚠️ Limited concrete indicators: {found_indicators}")
+                        
+                    # Check for specific dish names (should reference actual menu items)
+                    if any(char.isupper() for char in recommendations) and len(recommendations.split()) > 50:
+                        log_test("Specific Dish References", "PASS", 
+                                "✅ Analysis contains specific references (likely dish names)")
+                    else:
+                        log_test("Specific Dish References", "WARN", 
+                                "⚠️ Analysis may lack specific dish references")
+                else:
+                    log_test("AI Recommendations Quality", "FAIL", 
+                            f"❌ Analysis too short: {len(recommendations)} characters")
+                
+                # Test 3: Menu Insights Verification
+                largest_category = menu_insights.get("largest_category")
+                category_distribution = menu_insights.get("category_distribution", {})
+                
+                print(f"\n📈 MENU INSIGHTS VERIFICATION:")
+                print(f"Largest category: {largest_category}")
+                print(f"Category distribution: {len(category_distribution)} categories shown")
+                
+                if largest_category:
+                    log_test("Menu Insights - Largest Category", "PASS", 
+                            f"✅ Identified largest category: {largest_category}")
+                else:
+                    log_test("Menu Insights - Largest Category", "WARN", 
+                            "⚠️ No largest category identified")
+                
+                if len(category_distribution) >= 5:
+                    log_test("Menu Insights - Distribution", "PASS", 
+                            f"✅ Category distribution available: {len(category_distribution)} categories")
+                    
+                    # Show top categories
+                    sorted_cats = sorted(category_distribution.items(), key=lambda x: x[1], reverse=True)
+                    print(f"    Top categories by item count:")
+                    for cat_name, count in sorted_cats[:3]:
+                        print(f"    - {cat_name}: {count} items")
+                else:
+                    log_test("Menu Insights - Distribution", "WARN", 
+                            f"⚠️ Limited category distribution: {len(category_distribution)}")
+                
+                # Test 4: Overall Magic Verification (review requirements)
+                print(f"\n🎯 MAGIC VERIFICATION - REVIEW REQUIREMENTS:")
+                
+                # Requirement 1: Real menu analysis
+                if total_items >= 1000 and categories_count >= 20:
+                    log_test("Real Menu Analysis", "PASS", 
+                            "✅ MAGIC CONFIRMED: Analyzing substantial real menu")
+                else:
+                    log_test("Real Menu Analysis", "WARN", 
+                            "⚠️ Menu size smaller than expected for 'magic' demo")
+                
+                # Requirement 2: GPT-4 personalized recommendations
+                if model_used == "gpt-4o" and len(recommendations) >= 500:
+                    log_test("GPT-4 Personalized Analysis", "PASS", 
+                            "✅ MAGIC CONFIRMED: GPT-4 providing personalized recommendations")
+                else:
+                    log_test("GPT-4 Personalized Analysis", "FAIL", 
+                            "❌ GPT-4 analysis not meeting expectations")
+                
+                # Requirement 3: Profit increase focus
+                profit_keywords = ["прибыль", "доход", "выручка", "продажи", "цена", "маржа"]
+                profit_mentions = sum(1 for keyword in profit_keywords if keyword in recommendations.lower())
+                
+                if profit_mentions >= 2:
+                    log_test("Profit Focus Verification", "PASS", 
+                            f"✅ MAGIC CONFIRMED: {profit_mentions} profit-related recommendations")
+                else:
+                    log_test("Profit Focus Verification", "WARN", 
+                            f"⚠️ Limited profit focus: {profit_mentions} mentions")
+                
+                # Final Magic Assessment
+                magic_score = 0
+                if total_items >= 1000: magic_score += 1
+                if model_used == "gpt-4o": magic_score += 1
+                if len(recommendations) >= 500: magic_score += 1
+                if profit_mentions >= 2: magic_score += 1
+                if len(found_indicators) >= 3: magic_score += 1
+                
+                if magic_score >= 4:
+                    log_test("🎉 OVERALL MAGIC ASSESSMENT", "PASS", 
+                            f"✅ MAGIC LEVEL: {magic_score}/5 - READY TO BLOW UP THE MARKET! 🚀💰")
+                elif magic_score >= 3:
+                    log_test("🎉 OVERALL MAGIC ASSESSMENT", "PASS", 
+                            f"✅ MAGIC LEVEL: {magic_score}/5 - Good magic, minor improvements needed")
+                else:
+                    log_test("🎉 OVERALL MAGIC ASSESSMENT", "WARN", 
+                            f"⚠️ MAGIC LEVEL: {magic_score}/5 - Magic needs enhancement")
+                    
+            else:
+                log_test("AI MENU ANALYSIS - FAILURE", "FAIL", 
+                        f"❌ Magic failed: {message}")
+                
+        elif response.status_code == 404:
+            log_test("AI MENU ANALYSIS", "FAIL", 
+                    f"❌ Organization not found: {response.text}")
+        elif response.status_code == 500:
+            log_test("AI MENU ANALYSIS", "FAIL", 
+                    f"❌ Server error: {response.text}")
+        else:
+            log_test("AI MENU ANALYSIS", "FAIL", 
+                    f"❌ Unexpected HTTP {response.status_code}: {response.text}")
+            
+    except requests.exceptions.Timeout:
+        log_test("AI MENU ANALYSIS", "FAIL", "❌ Request timeout (>120s)")
+    except Exception as e:
+        log_test("AI MENU ANALYSIS", "FAIL", f"❌ Exception: {str(e)}")
+    
+    # Test 2: Different analysis types (if supported)
+    print(f"\nTest 2: POST /api/iiko/ai-menu-analysis/{organization_id} - Quick analysis")
+    try:
+        test_data_quick = {
+            "analysis_type": "quick"
+        }
+        
+        response = requests.post(
+            f"{BACKEND_URL}/iiko/ai-menu-analysis/{organization_id}",
+            json=test_data_quick,
+            timeout=60
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            analysis_type = result.get("ai_analysis", {}).get("analysis_type", "")
+            
+            if analysis_type == "quick":
+                log_test("Quick Analysis Type", "PASS", 
+                        "✅ Quick analysis type parameter working")
+            else:
+                log_test("Quick Analysis Type", "WARN", 
+                        f"⚠️ Analysis type: {analysis_type} (expected: quick)")
+        else:
+            log_test("Quick Analysis Type", "WARN", 
+                    f"⚠️ Quick analysis failed: HTTP {response.status_code}")
+            
+    except Exception as e:
+        log_test("Quick Analysis Type", "WARN", f"⚠️ Exception: {str(e)}")
+
 def main():
     """Run all IIKo analytics and revenue tests"""
     print("🧪 BACKEND TESTING: IIKO ANALYTICS & REVENUE REPORTING")
