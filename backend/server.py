@@ -301,6 +301,92 @@ class IikoServerIntegrationService:
             self.logger.error(f"Error fetching menu items: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Failed to fetch menu items: {str(e)}")
 
+    async def create_product_in_iiko(self, product_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
+        """Create a new product in IIKo nomenclature"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            # Try different endpoints for product creation
+            possible_endpoints = [
+                f"{self.auth_manager.base_url}/resto/api/v2/entities/products/create",
+                f"{self.auth_manager.base_url}/resto/api/products/create",
+                f"{self.auth_manager.base_url}/resto/api/nomenclature/products/create",
+            ]
+            
+            params = {
+                "key": session_key
+            }
+            
+            # Transform tech card data to IIKo product format
+            iiko_product = {
+                "name": product_data.get('name'),
+                "description": product_data.get('description', ''),
+                "price": product_data.get('price', 0.0),
+                "composition": product_data.get('composition', ''),
+                "cookingInstructions": product_data.get('cookingInstructions', ''),
+                "weight": product_data.get('weight', 0.0),
+                "active": product_data.get('active', True),
+                "organizationId": organization_id
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                for endpoint in possible_endpoints:
+                    try:
+                        self.logger.info(f"Trying to create product in IIKo: {endpoint}")
+                        
+                        # Try POST with JSON payload
+                        response = await client.post(
+                            endpoint, 
+                            params=params, 
+                            json=iiko_product,
+                            headers={"Content-Type": "application/json"}
+                        )
+                        
+                        self.logger.info(f"Response: {response.status_code} - {response.text[:200]}")
+                        
+                        if response.status_code in [200, 201]:
+                            result_data = response.json() if response.content else {}
+                            self.logger.info(f"✅ Product created successfully in IIKo")
+                            return {
+                                'success': True,
+                                'product_id': result_data.get('id'),
+                                'response': result_data,
+                                'endpoint_used': endpoint
+                            }
+                        elif response.status_code == 400:
+                            # Bad request - log details for debugging
+                            self.logger.warning(f"Bad request to {endpoint}: {response.text}")
+                        elif response.status_code == 404:
+                            # Endpoint not found - try next
+                            continue
+                        else:
+                            self.logger.warning(f"Failed {endpoint}: {response.status_code} - {response.text}")
+                            
+                    except Exception as e:
+                        self.logger.debug(f"Error with endpoint {endpoint}: {str(e)}")
+                        continue
+                
+                # If all direct endpoints fail, try alternative approach
+                self.logger.info("Direct product creation failed, trying alternative approach...")
+                
+                # Alternative: Try to find if there's a bulk import or different format
+                return {
+                    'success': False,
+                    'error': 'Product creation endpoints not accessible',
+                    'note': 'Tech card prepared for manual import or alternative sync method',
+                    'prepared_data': iiko_product
+                }
+                
+        except Exception as e:
+            self.logger.error(f"Error creating product in IIKo: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'Tech card saved locally for future sync'
+            }
+
 # Legacy Cloud API classes (keeping for backward compatibility)
 class IikoAuthManager:
     def __init__(self):
