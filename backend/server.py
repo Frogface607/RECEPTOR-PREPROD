@@ -4472,6 +4472,91 @@ async def ai_analyze_menu(organization_id: str, request: dict = None):
         logger.error(f"❌ Error in AI menu analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error in AI analysis: {str(e)}")
 
+@api_router.get("/iiko/category/{organization_id}/{category_name}")
+async def get_iiko_category_items(organization_id: str, category_name: str):
+    """📋 Просмотр конкретной категории меню из IIKo - ПРОСТОЙ ТЕСТ"""
+    logger.info(f"📋 CATEGORY VIEW: Getting '{category_name}' for {organization_id}")
+    
+    try:
+        # 1. Получаем полное меню
+        menu_data = await iiko_service.get_menu_items([organization_id])
+        
+        if not menu_data or not menu_data.get('items'):
+            raise HTTPException(status_code=404, detail="Menu data not found")
+        
+        categories = menu_data.get('categories', [])
+        items = menu_data.get('items', [])
+        
+        # 2. Ищем категорию (case-insensitive поиск)
+        search_name = category_name.lower()
+        found_category = None
+        
+        for category in categories:
+            cat_name = category.get('name', '').lower()
+            if (search_name in cat_name or 
+                cat_name in search_name or
+                search_name.replace('ы', 'а') in cat_name or  # салаты -> салата
+                search_name == cat_name):
+                found_category = category
+                break
+        
+        if not found_category:
+            # Показываем похожие категории
+            similar_categories = [
+                cat['name'] for cat in categories 
+                if any(word in cat['name'].lower() for word in search_name.split())
+            ]
+            
+            return {
+                "success": False,
+                "message": f"Категория '{category_name}' не найдена",
+                "searched_for": category_name,
+                "similar_categories": similar_categories[:10],
+                "all_categories": [cat['name'] for cat in categories[:20]],
+                "total_categories": len(categories)
+            }
+        
+        # 3. Получаем блюда из найденной категории
+        category_items = [
+            item for item in items 
+            if item.get('category_id') == found_category['id']
+        ]
+        
+        # 4. Форматируем результат
+        formatted_items = []
+        for item in category_items[:50]:  # Максимум 50 для читаемости
+            formatted_items.append({
+                'name': item.get('name'),
+                'description': item.get('description', 'Без описания'),
+                'id': item.get('id'),
+                'active': item.get('active', True)
+            })
+        
+        return {
+            "success": True,
+            "message": f"Категория '{found_category['name']}' найдена",
+            "organization_id": organization_id,
+            "category": {
+                "id": found_category['id'],
+                "name": found_category['name'],
+                "description": found_category.get('description', ''),
+                "items_count": len(category_items)
+            },
+            "items": formatted_items,
+            "showing": f"{len(formatted_items)} из {len(category_items)}",
+            "summary": {
+                "total_in_category": len(category_items),
+                "shown": len(formatted_items),
+                "has_descriptions": len([i for i in formatted_items if i['description'] != 'Без описания'])
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error getting category: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting category: {str(e)}")
+
 # Helper functions for IIKo integration
 def _format_ingredients_for_iiko(ingredients: List[Dict[str, Any]]) -> str:
     """Format ingredients list for IIKo display"""
