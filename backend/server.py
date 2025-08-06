@@ -40,6 +40,185 @@ db = client[os.environ['DB_NAME']]
 openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
 # IIKo Integration Classes
+class IikoServerAuthManager:
+    def __init__(self):
+        self.api_login = os.environ.get('IIKO_API_LOGIN')
+        self.api_password = os.environ.get('IIKO_API_PASSWORD') 
+        self.base_url = os.environ.get('IIKO_BASE_URL', 'https://api-ru.iiko.services')
+        self.session_key = None
+        self.token_expires_at = None
+        self.logger = logging.getLogger(__name__)
+        
+    async def get_session_key(self):
+        """Get session key for iikoServer API"""
+        if self._is_session_expired():
+            await self._refresh_session()
+        return self.session_key
+    
+    def _is_session_expired(self) -> bool:
+        """Check if current session is expired"""
+        if not self.session_key or not self.token_expires_at:
+            return True
+        return datetime.now() >= self.token_expires_at - timedelta(minutes=5)
+    
+    async def _refresh_session(self):
+        """Get new session key from iikoServer API"""
+        try:
+            import httpx
+            
+            # Try iikoServer auth endpoint
+            auth_url = f"{self.base_url}/api/1/access_token"
+            
+            payload = {
+                "apiLogin": self.api_login
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(auth_url, json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    self.session_key = data.get('token')
+                    if self.session_key:
+                        self.token_expires_at = datetime.now() + timedelta(minutes=55)
+                        self.logger.info("IIKo Server session key obtained successfully")
+                    else:
+                        raise Exception("No token in response")
+                else:
+                    self.logger.error(f"Auth failed: {response.status_code} {response.text}")
+                    raise Exception(f"Authentication failed: {response.status_code}")
+                    
+        except Exception as e:
+            self.logger.error(f"Failed to get IIKo session key: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"IIKo authentication failed: {str(e)}")
+
+class IikoServerIntegrationService:
+    def __init__(self, auth_manager: IikoServerAuthManager):
+        self.auth_manager = auth_manager
+        self.logger = logging.getLogger(__name__)
+        self._organization_cache: Dict[str, Any] = {}
+        self._menu_cache: Dict[str, Any] = {}
+        
+    async def get_organizations(self) -> List[Dict[str, Any]]:
+        """Fetch organizations from iikoServer API"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            organizations_url = f"{self.auth_manager.base_url}/api/1/organizations"
+            
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "access_token": session_key
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(organizations_url, json=payload, headers=headers)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Parse organizations from iikoServer response
+                    organizations = []
+                    if isinstance(data, list):
+                        for org in data:
+                            organizations.append({
+                                'id': org.get('id'),
+                                'name': org.get('name'),
+                                'address': org.get('address', ''),
+                                'active': True
+                            })
+                    
+                    self._organization_cache = {org['id']: org for org in organizations}
+                    self.logger.info(f"Retrieved {len(organizations)} organizations from iikoServer")
+                    return organizations
+                else:
+                    self.logger.error(f"Organizations request failed: {response.status_code} {response.text}")
+                    raise Exception(f"Failed to get organizations: {response.status_code}")
+                    
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.error(f"Error fetching organizations: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to fetch organizations: {str(e)}")
+    
+    async def get_menu_items(self, organization_ids: List[str]) -> Dict[str, Any]:
+        """Fetch menu/nomenclature from iikoServer API"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            # iikoServer API endpoint for nomenclature
+            menu_url = f"{self.auth_manager.base_url}/api/1/nomenclature"
+            
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "access_token": session_key,
+                "organizationId": organization_ids[0] if organization_ids else None
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(menu_url, json=payload, headers=headers)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    menu_data = {
+                        'categories': [],
+                        'items': [],
+                        'modifiers': [],
+                        'last_updated': datetime.now().isoformat()
+                    }
+                    
+                    # Parse iikoServer nomenclature response
+                    if 'groups' in data:
+                        menu_data['categories'] = [
+                            {
+                                'id': cat.get('id'),
+                                'name': cat.get('name'),
+                                'description': '',
+                                'active': True
+                            }
+                            for cat in data.get('groups', [])
+                        ]
+                    
+                    if 'products' in data:
+                        menu_data['items'] = [
+                            {
+                                'id': item.get('id'),
+                                'name': item.get('name'),
+                                'description': item.get('description', ''),
+                                'category_id': item.get('parentGroup'),
+                                'price': 0.0,  # iikoServer may not have prices in nomenclature
+                                'weight': 0.0,
+                                'modifiers': [],
+                                'active': True
+                            }
+                            for item in data.get('products', [])
+                        ]
+                    
+                    self._menu_cache['-'.join(organization_ids)] = menu_data
+                    self.logger.info(f"Retrieved menu with {len(menu_data['items'])} items from iikoServer")
+                    return menu_data
+                else:
+                    self.logger.error(f"Menu request failed: {response.status_code} {response.text}")
+                    raise Exception(f"Failed to get menu: {response.status_code}")
+                    
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.error(f"Error fetching menu items: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to fetch menu items: {str(e)}")
+
+# Legacy Cloud API classes (keeping for backward compatibility)
 class IikoAuthManager:
     def __init__(self):
         self.api_login = os.environ.get('IIKO_API_LOGIN')
