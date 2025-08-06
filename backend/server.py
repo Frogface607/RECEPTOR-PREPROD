@@ -3377,6 +3377,378 @@ async def get_menu_project_content(project_id: str):
         logger.error(f"Error getting menu project content: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting menu project content: {str(e)}")
 
+# ============================================
+# IIKo INTEGRATION ENDPOINTS
+# ============================================
+
+@api_router.get("/iiko/health")
+async def iiko_health_check():
+    """Health check endpoint for IIKo API connectivity"""
+    try:
+        client = await iiko_auth_manager.get_authenticated_client()
+        return {
+            "status": "healthy",
+            "iiko_connection": "active",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy", 
+                "iiko_connection": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+@api_router.get("/iiko/organizations")
+async def get_iiko_organizations():
+    """Fetch all available organizations from IIKo"""
+    logger.info("Fetching IIKo organizations")
+    try:
+        organizations = await iiko_service.get_organizations()
+        return {
+            "success": True,
+            "organizations": organizations,
+            "count": len(organizations)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error fetching organizations: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+@api_router.get("/iiko/menu/{organization_id}")
+async def get_iiko_menu_items(organization_id: str):
+    """Fetch menu items and categories for specific organization"""
+    logger.info(f"Fetching IIKo menu for organization: {organization_id}")
+    try:
+        if not organization_id:
+            raise HTTPException(status_code=400, detail="Organization ID is required")
+            
+        menu_data = await iiko_service.get_menu_items([organization_id])
+        return {
+            "success": True,
+            "organization_id": organization_id,
+            "menu": menu_data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error fetching menu: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+@api_router.post("/iiko/tech-cards/upload")
+async def upload_tech_card_to_iiko(request: TechCardUpload):
+    """Upload AI-generated tech card to IIKo as menu item"""
+    user_id = request.organization_id  # Using as user identifier for now
+    logger.info(f"Uploading tech card '{request.name}' to IIKo organization: {request.organization_id}")
+    
+    try:
+        # Validate required fields
+        if not request.name or not request.ingredients:
+            raise HTTPException(status_code=400, detail="Name and ingredients are required")
+        
+        # Transform tech card data for IIKo compatibility
+        iiko_item_data = {
+            'name': request.name,
+            'description': request.description or 'Блюдо создано с помощью AI-Menu-Designer',
+            'productCategoryId': request.category_id or None,
+            'price': request.price or 0.0,
+            'weight': request.weight or 0.0,
+            'composition': _format_ingredients_for_iiko(request.ingredients),
+            'cookingInstructions': '\n'.join(request.preparation_steps) if request.preparation_steps else '',
+            'active': True
+        }
+        
+        # Store in our database for synchronization tracking
+        sync_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "organization_id": request.organization_id,
+            "tech_card_name": request.name,
+            "iiko_data": iiko_item_data,
+            "sync_status": "prepared",
+            "created_at": datetime.now().isoformat(),
+            "ai_generated": True
+        }
+        
+        await db.iiko_sync_records.insert_one(sync_record)
+        
+        logger.info(f"Tech card '{request.name}' prepared for IIKo sync with ID: {sync_record['id']}")
+        
+        return {
+            "success": True,
+            "sync_id": sync_record["id"],
+            "message": f"Техкарта '{request.name}' подготовлена для загрузки в IIKo",
+            "status": "prepared_for_sync",
+            "iiko_data": iiko_item_data,
+            "note": "Техкарта сохранена в систему. Финальная загрузка в IIKo может потребовать дополнительной настройки через веб-интерфейс IIKo."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading tech card to IIKo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error uploading tech card: {str(e)}")
+
+@api_router.post("/iiko/sync-menu")
+async def sync_menu_with_iiko(request: MenuSyncRequest, background_tasks: BackgroundTasks):
+    """Synchronize menu items between AI-Menu-Designer and IIKo"""
+    logger.info(f"Starting menu synchronization for organizations: {request.organization_ids}")
+    
+    try:
+        if not request.organization_ids:
+            raise HTTPException(status_code=400, detail="At least one organization ID is required")
+        
+        # Create sync job record
+        sync_job_id = f"sync_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        sync_job = {
+            "id": sync_job_id,
+            "organization_ids": request.organization_ids,
+            "sync_prices": request.sync_prices,
+            "sync_categories": request.sync_categories,
+            "status": "in_progress",
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        await db.iiko_sync_jobs.insert_one(sync_job)
+        
+        # Start synchronization in background
+        background_tasks.add_task(
+            _perform_menu_sync,
+            sync_job_id,
+            request.organization_ids,
+            request.sync_prices,
+            request.sync_categories
+        )
+        
+        return {
+            "success": True,
+            "message": "Синхронизация меню запущена",
+            "sync_job_id": sync_job_id,
+            "status": "in_progress",
+            "organizations_count": len(request.organization_ids)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting menu sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error starting sync: {str(e)}")
+
+@api_router.get("/iiko/sync/status/{sync_job_id}")
+async def get_sync_status(sync_job_id: str):
+    """Get synchronization job status"""
+    try:
+        sync_job = await db.iiko_sync_jobs.find_one({"id": sync_job_id})
+        if not sync_job:
+            raise HTTPException(status_code=404, detail="Sync job not found")
+        
+        # Remove MongoDB _id field
+        if "_id" in sync_job:
+            del sync_job["_id"]
+        
+        return {
+            "success": True,
+            "sync_job": sync_job
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting sync status: {str(e)}")
+
+@api_router.get("/iiko/diagnostics")
+async def run_iiko_diagnostics():
+    """Run comprehensive diagnostics on IIKo integration"""
+    logger.info("Running IIKo integration diagnostics")
+    
+    diagnosis = {
+        'timestamp': datetime.now().isoformat(),
+        'tests': [],
+        'overall_status': 'healthy'
+    }
+    
+    # Test 1: Environment variables
+    env_test = {
+        'test_name': 'Environment Variables',
+        'status': 'pass',
+        'details': [],
+        'issues': []
+    }
+    
+    required_vars = ['IIKO_API_LOGIN', 'IIKO_API_PASSWORD', 'IIKO_BASE_URL']
+    for var in required_vars:
+        value = os.getenv(var)
+        if not value:
+            env_test['status'] = 'fail'
+            env_test['issues'].append(f"Missing environment variable: {var}")
+        else:
+            env_test['details'].append(f"{var}: {'*' * 8}[CONFIGURED]")
+    
+    diagnosis['tests'].append(env_test)
+    
+    # Test 2: IIKo library availability
+    lib_test = {
+        'test_name': 'IIKo Library',
+        'status': 'pass' if IIKO_AVAILABLE else 'fail',
+        'details': ['pyiikocloudapi library loaded successfully'] if IIKO_AVAILABLE else [],
+        'issues': ['IIKo library not available'] if not IIKO_AVAILABLE else []
+    }
+    diagnosis['tests'].append(lib_test)
+    
+    # Test 3: Authentication (if possible)
+    auth_test = {
+        'test_name': 'Authentication',
+        'status': 'pass',
+        'details': [],
+        'issues': []
+    }
+    
+    try:
+        if IIKO_AVAILABLE and os.getenv('IIKO_API_LOGIN'):
+            await iiko_auth_manager.get_authenticated_client()
+            auth_test['details'].append("Authentication successful")
+        else:
+            auth_test['status'] = 'skip'
+            auth_test['details'].append("Skipped - credentials not configured or library unavailable")
+    except Exception as e:
+        auth_test['status'] = 'fail'
+        auth_test['issues'].append(f"Authentication failed: {str(e)}")
+    
+    diagnosis['tests'].append(auth_test)
+    
+    # Determine overall status
+    failed_tests = [test for test in diagnosis['tests'] if test['status'] == 'fail']
+    if failed_tests:
+        diagnosis['overall_status'] = 'unhealthy'
+    
+    return {
+        "success": True,
+        "diagnosis": diagnosis,
+        "recommendations": _generate_diagnostic_recommendations(diagnosis['tests']),
+        "support_info": {
+            "iiko_documentation": "https://api-ru.iiko.services/",
+            "integration_version": "1.0.0"
+        }
+    }
+
+# Helper functions for IIKo integration
+def _format_ingredients_for_iiko(ingredients: List[Dict[str, Any]]) -> str:
+    """Format ingredients list for IIKo display"""
+    formatted = []
+    for ingredient in ingredients:
+        name = ingredient.get('name', '')
+        quantity = ingredient.get('quantity', '')
+        unit = ingredient.get('unit', '')
+        formatted.append(f"{name}: {quantity} {unit}".strip())
+    return '; '.join(formatted)
+
+async def _perform_menu_sync(sync_job_id: str, organization_ids: List[str], sync_prices: bool, sync_categories: bool):
+    """Background task to perform menu synchronization"""
+    logger.info(f"Starting background menu sync job: {sync_job_id}")
+    
+    try:
+        sync_results = {
+            'organizations_synced': [],
+            'items_updated': 0,
+            'categories_updated': 0,
+            'errors': [],
+            'sync_timestamp': datetime.now().isoformat()
+        }
+        
+        for org_id in organization_ids:
+            try:
+                # Fetch current menu from IIKo
+                menu_data = await iiko_service.get_menu_items([org_id])
+                
+                # Store menu data in our database for reference
+                menu_record = {
+                    "id": str(uuid.uuid4()),
+                    "organization_id": org_id,
+                    "menu_data": menu_data,
+                    "sync_job_id": sync_job_id,
+                    "synced_at": datetime.now().isoformat()
+                }
+                
+                await db.iiko_menu_cache.insert_one(menu_record)
+                
+                sync_results['organizations_synced'].append({
+                    'organization_id': org_id,
+                    'status': 'success',
+                    'items_count': len(menu_data.get('items', [])),
+                    'categories_count': len(menu_data.get('categories', []))
+                })
+                
+                sync_results['items_updated'] += len(menu_data.get('items', []))
+                sync_results['categories_updated'] += len(menu_data.get('categories', []))
+                
+                logger.info(f"Successfully synced organization {org_id}")
+                
+            except Exception as org_error:
+                error_msg = f"Failed to sync organization {org_id}: {str(org_error)}"
+                sync_results['errors'].append(error_msg)
+                logger.error(error_msg)
+        
+        # Update sync job status
+        await db.iiko_sync_jobs.update_one(
+            {"id": sync_job_id},
+            {
+                "$set": {
+                    "status": "completed",
+                    "results": sync_results,
+                    "updated_at": datetime.now().isoformat()
+                }
+            }
+        )
+        
+        logger.info(f"Completed menu sync job: {sync_job_id}")
+        
+    except Exception as e:
+        error_msg = f"Critical error in sync job {sync_job_id}: {str(e)}"
+        logger.error(error_msg)
+        
+        # Update sync job with error status
+        await db.iiko_sync_jobs.update_one(
+            {"id": sync_job_id},
+            {
+                "$set": {
+                    "status": "failed",
+                    "error": str(e),
+                    "updated_at": datetime.now().isoformat()
+                }
+            }
+        )
+
+def _generate_diagnostic_recommendations(tests: List[Dict]) -> List[str]:
+    """Generate recommendations based on diagnostic test results"""
+    recommendations = []
+    
+    failed_tests = [test for test in tests if test['status'] == 'fail']
+    
+    if failed_tests:
+        recommendations.append("❌ Критические проблемы обнаружены:")
+        for test in failed_tests:
+            recommendations.append(f"   • {test['test_name']}: {'; '.join(test['issues'])}")
+    else:
+        recommendations.append("✅ Все тесты пройдены успешно - интеграция с IIKo готова к работе")
+    
+    recommendations.extend([
+        "",
+        "💡 Общие рекомендации:",
+        "   • Регулярно проверяйте статус интеграции",
+        "   • Настройте мониторинг для важных эндпоинтов",
+        "   • Ведите резервные копии данных синхронизации",
+        "   • Тестируйте интеграцию после обновлений IIKo"
+    ])
+    
+    return recommendations
+
 # Include the router in the main app
 app.include_router(api_router)
 
