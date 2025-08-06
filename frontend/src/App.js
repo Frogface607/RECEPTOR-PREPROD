@@ -1333,6 +1333,48 @@ function App() {
     }
   };
 
+  // NEW - Function to fetch and display category items beautifully
+  const viewIikoCategory = async (categoryName) => {
+    if (!selectedOrganization?.id) {
+      alert('Сначала выберите организацию');
+      return;
+    }
+
+    setIsLoadingCategory(true);
+    setShowCategoryViewer(true);
+    setCategoryData(null);
+
+    try {
+      const response = await axios.get(`${API}/iiko/category/${selectedOrganization.id}/${categoryName}`);
+      
+      if (response.data.success) {
+        setCategoryData({
+          category: response.data.category,
+          items: response.data.items,
+          summary: response.data.summary,
+          searchedFor: categoryName
+        });
+      } else {
+        setCategoryData({
+          success: false,
+          error: `Категория "${categoryName}" не найдена`,
+          similarCategories: response.data.similar_categories || [],
+          allCategories: response.data.all_categories || [],
+          searchedFor: categoryName
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching category:', error);
+      setCategoryData({
+        success: false,
+        error: `Ошибка загрузки категории: ${error.response?.data?.detail || error.message}`,
+        searchedFor: categoryName
+      });
+    } finally {
+      setIsLoadingCategory(false);
+    }
+  };
+
   const updateKitchenEquipment = async (equipmentIds) => {
     if (!currentUser?.id) return;
     try {
