@@ -9233,30 +9233,92 @@ function App() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => setShowSyncMenuModal(true)}
-                disabled={!selectedOrganization}
-                className={`flex-1 ${
-                  !selectedOrganization 
-                    ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700'
-                } text-white font-bold py-3 px-6 rounded-lg transition-colors`}
-                title="Синхронизировать меню между системами"
-              >
-                🔄 Синхронизировать меню
-              </button>
-              
-              <button
-                onClick={async () => {
-                  const diagnostics = await axios.get(`${API}/iiko/diagnostics`);
-                  alert(`Диагностика IIKo:\n\n${JSON.stringify(diagnostics.data, null, 2)}`);
-                }}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                title="Запустить диагностику подключения"
-              >
-                🔧 Диагностика
-              </button>
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setShowSyncMenuModal(true)}
+                  disabled={!selectedOrganization}
+                  className={`${
+                    !selectedOrganization 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } text-white font-bold py-3 px-6 rounded-lg transition-colors`}
+                  title="Синхронизировать меню между системами"
+                >
+                  🔄 Синхронизировать меню
+                </button>
+                
+                <button
+                  onClick={async () => {
+                    const diagnostics = await axios.get(`${API}/iiko/diagnostics`);
+                    alert(`Диагностика IIKo:\n\n${JSON.stringify(diagnostics.data, null, 2)}`);
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  title="Запустить диагностику подключения"
+                >
+                  🔧 Диагностика
+                </button>
+              </div>
+
+              {/* NEW - Category Viewing Buttons */}
+              <div className="mt-4">
+                <h4 className="text-lg font-semibold text-purple-200 mb-3">
+                  🍽️ Просмотр категорий меню
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <button
+                    onClick={() => viewIikoCategory('салаты')}
+                    disabled={!selectedOrganization}
+                    className={`${
+                      !selectedOrganization 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-green-600 hover:bg-green-700'
+                    } text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm`}
+                    title="Посмотреть все салаты из меню"
+                  >
+                    🥗 Салаты
+                  </button>
+                  
+                  <button
+                    onClick={() => viewIikoCategory('горячее')}
+                    disabled={!selectedOrganization}
+                    className={`${
+                      !selectedOrganization 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-red-600 hover:bg-red-700'
+                    } text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm`}
+                    title="Посмотреть горячие блюда"
+                  >
+                    🔥 Горячее
+                  </button>
+                  
+                  <button
+                    onClick={() => viewIikoCategory('напитки')}
+                    disabled={!selectedOrganization}
+                    className={`${
+                      !selectedOrganization 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-blue-500 hover:bg-blue-600'
+                    } text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm`}
+                    title="Посмотреть напитки"
+                  >
+                    🥤 Напитки
+                  </button>
+                  
+                  <button
+                    onClick={() => viewIikoCategory('десерты')}
+                    disabled={!selectedOrganization}
+                    className={`${
+                      !selectedOrganization 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-pink-600 hover:bg-pink-700'
+                    } text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm`}
+                    title="Посмотреть десерты"
+                  >
+                    🍰 Десерты
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
