@@ -1023,6 +1023,240 @@ function App() {
     }
   };
 
+  // IIKo Integration API functions - NEW!
+  const fetchIikoHealth = async () => {
+    try {
+      const response = await axios.get(`${API}/iiko/health`);
+      setIikoHealthStatus(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error checking IIKo health:', error);
+      setIikoHealthStatus({
+        status: 'error',
+        iiko_connection: 'failed',
+        error: error.response?.data?.detail || error.message
+      });
+      return null;
+    }
+  };
+
+  const fetchIikoOrganizations = async () => {
+    setIsLoadingIiko(true);
+    try {
+      const response = await axios.get(`${API}/iiko/organizations`);
+      
+      if (response.data.success && response.data.organizations) {
+        setIikoOrganizations(response.data.organizations);
+      } else {
+        setIikoOrganizations([]);
+        console.warn('No organizations found in IIKo response');
+      }
+    } catch (error) {
+      console.error('Error fetching IIKo organizations:', error);
+      alert('Ошибка получения списка организаций IIKo: ' + (error.response?.data?.detail || error.message));
+      setIikoOrganizations([]);
+    } finally {
+      setIsLoadingIiko(false);
+    }
+  };
+
+  const fetchIikoMenu = async (organizationId) => {
+    if (!organizationId) return;
+    
+    setIsLoadingIiko(true);
+    try {
+      const response = await axios.get(`${API}/iiko/menu/${organizationId}`);
+      
+      if (response.data.success && response.data.menu) {
+        setIikoMenu(response.data.menu);
+      } else {
+        setIikoMenu(null);
+        console.warn('No menu data found in IIKo response');
+      }
+    } catch (error) {
+      console.error('Error fetching IIKo menu:', error);
+      alert('Ошибка получения меню IIKo: ' + (error.response?.data?.detail || error.message));
+      setIikoMenu(null);
+    } finally {
+      setIsLoadingIiko(false);
+    }
+  };
+
+  const uploadTechCardToIiko = async (techCardData, organizationId) => {
+    setIsUploadingTechCard(true);
+    try {
+      // Extract tech card details from content
+      const lines = techCardData.content.split('\n');
+      let dishName = '';
+      let description = '';
+      let ingredients = [];
+      let steps = [];
+      let price = null;
+      
+      // Parse tech card content
+      lines.forEach(line => {
+        if (line.includes('Название:')) {
+          dishName = line.replace(/\*\*Название:\*\*/g, '').trim();
+        }
+        if (line.includes('Описание:')) {
+          description = line.replace(/\*\*Описание:\*\*/g, '').trim();
+        }
+        if (line.includes('Рекомендуемая цена') && line.includes('₽')) {
+          const priceMatch = line.match(/(\d+(?:\.\d+)?)\s*₽/);
+          if (priceMatch) {
+            price = parseFloat(priceMatch[1]);
+          }
+        }
+        if (line.trim().startsWith('- ') && line.includes('—')) {
+          const ingredient = line.replace(/^-\s*/, '').trim();
+          const [name, ...rest] = ingredient.split('—');
+          ingredients.push({
+            name: name.trim(),
+            quantity: rest.join('—').trim() || '1',
+            unit: 'шт'
+          });
+        }
+      });
+      
+      // Prepare upload data
+      const uploadData = {
+        name: dishName || techCardData.dish_name,
+        description: description || 'Блюдо создано с помощью AI-Menu-Designer',
+        ingredients: ingredients.length > 0 ? ingredients : [
+          {name: 'Ингредиенты уточняются', quantity: '1', unit: 'шт'}
+        ],
+        preparation_steps: steps.length > 0 ? steps : ['Готовится по технологической карте'],
+        organization_id: organizationId,
+        price: price,
+        weight: null
+      };
+      
+      const response = await axios.post(`${API}/iiko/tech-cards/upload`, uploadData);
+      
+      setUploadResult({
+        success: true,
+        message: response.data.message || 'Техкарта успешно подготовлена для загрузки в IIKo',
+        syncId: response.data.sync_id,
+        data: response.data
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading tech card to IIKo:', error);
+      const errorMessage = error.response?.data?.detail || error.message;
+      setUploadResult({
+        success: false,
+        message: `Ошибка загрузки техкарты в IIKo: ${errorMessage}`,
+        error: errorMessage
+      });
+      throw error;
+    } finally {
+      setIsUploadingTechCard(false);
+    }
+  };
+
+  const syncMenuWithIiko = async (organizationIds, syncSettings) => {
+    setIsSyncing(true);
+    setSyncProgress({
+      status: 'starting',
+      message: 'Запуск синхронизации...',
+      organizations: organizationIds.length
+    });
+    
+    try {
+      const response = await axios.post(`${API}/iiko/sync-menu`, {
+        organization_ids: organizationIds,
+        sync_prices: syncSettings.syncPrices,
+        sync_categories: syncSettings.syncCategories
+      });
+      
+      setSyncProgress({
+        status: 'in_progress',
+        syncJobId: response.data.sync_job_id,
+        message: response.data.message || 'Синхронизация запущена',
+        organizations: response.data.organizations_count
+      });
+      
+      // Poll for sync status
+      if (response.data.sync_job_id) {
+        pollSyncStatus(response.data.sync_job_id);
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error syncing menu with IIKo:', error);
+      setSyncProgress({
+        status: 'error',
+        message: `Ошибка синхронизации: ${error.response?.data?.detail || error.message}`,
+        error: error.response?.data?.detail || error.message
+      });
+      throw error;
+    }
+  };
+
+  const pollSyncStatus = async (syncJobId) => {
+    const maxPolls = 30; // 30 polls * 2 seconds = 1 minute max
+    let pollCount = 0;
+    
+    const poll = async () => {
+      try {
+        const response = await axios.get(`${API}/iiko/sync/status/${syncJobId}`);
+        const syncJob = response.data.sync_job;
+        
+        setSyncProgress({
+          status: syncJob.status,
+          syncJobId: syncJobId,
+          message: syncJob.status === 'completed' 
+            ? 'Синхронизация завершена успешно!' 
+            : syncJob.status === 'failed'
+            ? `Синхронизация завершилась с ошибкой: ${syncJob.error}`
+            : 'Синхронизация в процессе...',
+          results: syncJob.results || null,
+          error: syncJob.error || null
+        });
+        
+        if (syncJob.status === 'completed' || syncJob.status === 'failed') {
+          setIsSyncing(false);
+          return;
+        }
+        
+        pollCount++;
+        if (pollCount < maxPolls) {
+          setTimeout(poll, 2000); // Poll every 2 seconds
+        } else {
+          setSyncProgress({
+            status: 'timeout',
+            message: 'Превышено время ожидания синхронизации',
+            syncJobId: syncJobId
+          });
+          setIsSyncing(false);
+        }
+      } catch (error) {
+        console.error('Error polling sync status:', error);
+        setSyncProgress({
+          status: 'error',
+          message: 'Ошибка получения статуса синхронизации',
+          error: error.message
+        });
+        setIsSyncing(false);
+      }
+    };
+    
+    setTimeout(poll, 2000); // Start polling after 2 seconds
+  };
+
+  const openIikoIntegration = async () => {
+    setShowIikoModal(true);
+    
+    // Check IIKo health status
+    await fetchIikoHealth();
+    
+    // Load organizations if health is OK
+    if (iikoHealthStatus?.status !== 'error') {
+      await fetchIikoOrganizations();
+    }
+  };
+
   const updateKitchenEquipment = async (equipmentIds) => {
     if (!currentUser?.id) return;
     try {
