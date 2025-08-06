@@ -517,25 +517,25 @@ def main():
     print()
     
     try:
-        # ПРИОРИТЕТ 1 - ПОДКЛЮЧЕНИЕ С JWT ТОКЕНОМ (as requested)
-        print("🔥 ПРИОРИТЕТ 1 - ПРОВЕРКА ПОДКЛЮЧЕНИЯ С JWT ТОКЕНОМ")
+        # ПРИОРИТЕТ 1 - АУТЕНТИФИКАЦИЯ (as requested)
+        print("🔥 ПРИОРИТЕТ 1 - АУТЕНТИФИКАЦИЯ")
         print("=" * 60)
         
         # Test 1: Health Check (КРИТИЧЕСКИЙ!)
         test_iiko_health_check()
         
-        # Test 2: Organizations (ГЛАВНОЕ! Должны появиться организации)
+        # Test 2: Organizations (ГЛАВНОЕ! Должны появиться организации Edison Craft Bar)
         organizations = test_iiko_organizations()
         
         # Test 3: Diagnostics (полная диагностика)
         test_iiko_diagnostics()
         
-        # ПРИОРИТЕТ 2 - ЕСЛИ ОРГАНИЗАЦИИ ПОЯВИЛИСЬ
+        # ПРИОРИТЕТ 2 - РЕАЛЬНЫЕ ДАННЫЕ
         if organizations:
-            print("🎉 ОРГАНИЗАЦИИ НАЙДЕНЫ! ПЕРЕХОДИМ К ПРИОРИТЕТУ 2")
+            print("🎉 ОРГАНИЗАЦИИ НАЙДЕНЫ! ПЕРЕХОДИМ К ПРИОРИТЕТУ 2 - РЕАЛЬНЫЕ ДАННЫЕ")
             print("=" * 60)
             
-            # Test 4: Menu (проверить получение меню первой организации)
+            # Test 4: Menu (проверить получение меню Edison Craft Bar)
             test_iiko_menu(organizations)
             
             # Test 5: Tech Cards Upload (проверить готовность загрузки техкарт)
