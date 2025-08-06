@@ -3826,8 +3826,19 @@ async def run_iiko_diagnostics():
     
     try:
         if IIKO_AVAILABLE and os.getenv('IIKO_API_LOGIN'):
-            await iiko_auth_manager.get_authenticated_client()
-            auth_test['details'].append("Authentication successful")
+            # Check if we're using iikoServer API or legacy Cloud API
+            if isinstance(iiko_auth_manager, IikoServerAuthManager):
+                # For iikoServer API, test session key
+                session_key = await iiko_auth_manager.get_session_key()
+                if session_key:
+                    auth_test['details'].append("Authentication successful")
+                else:
+                    auth_test['status'] = 'fail'
+                    auth_test['issues'].append("Failed to get session key")
+            else:
+                # For legacy Cloud API
+                await iiko_auth_manager.get_authenticated_client()
+                auth_test['details'].append("Authentication successful")
         else:
             auth_test['status'] = 'skip'
             auth_test['details'].append("Skipped - credentials not configured or library unavailable")
