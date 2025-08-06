@@ -4367,6 +4367,111 @@ async def get_iiko_analytics_dashboard(organization_id: str):
         logger.error(f"❌ Error in analytics dashboard: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting analytics: {str(e)}")
 
+@api_router.post("/iiko/ai-menu-analysis/{organization_id}")
+async def ai_analyze_menu(organization_id: str, request: dict = None):
+    """🧠 AI АНАЛИЗ МЕНЮ - анализирует реальное меню из IIKo через GPT-4"""
+    logger.info(f"🧠 AI MENU ANALYSIS: Analyzing menu for {organization_id}")
+    
+    try:
+        # 1. Получаем реальное меню из IIKo
+        logger.info("📊 Fetching menu data from IIKo...")
+        menu_data = await iiko_service.get_menu_items([organization_id])
+        
+        if not menu_data or not menu_data.get('items'):
+            raise HTTPException(status_code=404, detail="Menu data not found")
+        
+        categories = menu_data.get('categories', [])
+        items = menu_data.get('items', [])
+        
+        logger.info(f"📋 Loaded {len(items)} menu items in {len(categories)} categories")
+        
+        # 2. Подготавливаем данные для AI анализа
+        analysis_type = request.get('analysis_type', 'comprehensive') if request else 'comprehensive'
+        
+        # Группируем блюда по категориям для анализа
+        menu_by_categories = {}
+        for category in categories:
+            cat_items = [item for item in items if item.get('category_id') == category['id']]
+            if cat_items:  # Только категории с блюдами
+                menu_by_categories[category['name']] = [
+                    {
+                        'name': item['name'],
+                        'description': item.get('description', ''),
+                        'id': item['id']
+                    }
+                    for item in cat_items[:10]  # Первые 10 для анализа
+                ]
+        
+        # 3. Формируем промпт для GPT-4
+        ai_prompt = f"""
+Ты - эксперт по ресторанному бизнесу и оптимизации меню. Проанализируй РЕАЛЬНОЕ меню ресторана "Edison Craft Bar".
+
+ДАННЫЕ МЕНЮ:
+- Всего позиций: {len(items)}
+- Категорий: {len(categories)}
+- Детализация по категориям:
+{json.dumps(menu_by_categories, ensure_ascii=False, indent=2)}
+
+ЗАДАЧА: Дай 5 КОНКРЕТНЫХ практических рекомендаций для увеличения прибыли этого ресторана.
+
+ФОРМАТ ОТВЕТА:
+1. **[Тема рекомендации]**: [Конкретная рекомендация с примерами из меню]
+2. **[Тема рекомендации]**: [Конкретная рекомендация с примерами из меню]
+...
+
+АКЦЕНТ НА:
+- Конкретные названия блюд из меню
+- Практические действия (поднять цену, убрать, добавить)
+- Цифры и проценты
+- Психологию продаж
+
+СТИЛЬ: Как опытный ресторатор, кратко и по делу.
+"""
+
+        # 4. Отправляем на анализ в GPT-4
+        logger.info("🤖 Sending menu to GPT-4 for analysis...")
+        
+        ai_response = openai_client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Ты эксперт по ресторанному бизнесу с 20-летним опытом оптимизации меню."},
+                {"role": "user", "content": ai_prompt}
+            ],
+            max_tokens=2000,
+            temperature=0.7
+        )
+        
+        ai_analysis = ai_response.choices[0].message.content
+        
+        # 5. Формируем детальный ответ
+        return {
+            "success": True,
+            "message": "🧠 AI-анализ меню завершен",
+            "organization_id": organization_id,
+            "menu_stats": {
+                "total_items": len(items),
+                "categories_count": len(categories),
+                "analyzed_categories": len(menu_by_categories),
+                "sample_categories": list(menu_by_categories.keys())[:5]
+            },
+            "ai_analysis": {
+                "recommendations": ai_analysis,
+                "analysis_type": analysis_type,
+                "model_used": "gpt-4o",
+                "generated_at": datetime.now().isoformat()
+            },
+            "menu_insights": {
+                "largest_category": max(categories, key=lambda c: len([i for i in items if i.get('category_id') == c['id']])).get('name') if categories else None,
+                "category_distribution": {cat['name']: len([i for i in items if i.get('category_id') == cat['id']]) for cat in categories[:10]}
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error in AI menu analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in AI analysis: {str(e)}")
+
 # Helper functions for IIKo integration
 def _format_ingredients_for_iiko(ingredients: List[Dict[str, Any]]) -> str:
     """Format ingredients list for IIKo display"""
