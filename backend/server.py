@@ -65,69 +65,46 @@ class IikoServerAuthManager:
         return datetime.now() >= self.token_expires_at - timedelta(minutes=5)
     
     async def _refresh_session(self):
-        """Get new session key from iikoServer API using Office login/password"""
+        """Get new session key from iikoServer API using Office login/password with SHA1 hash"""
         try:
             import httpx
-            import urllib.parse
+            import hashlib
             
-            # Try multiple authentication methods
-            auth_endpoints = [
-                f"{self.base_url}/resto/api/auth",
-                f"{self.base_url}/api/auth",
-                f"{self.base_url}/auth"
-            ]
+            # Hash the password using SHA1 (lowercase) - this is the correct method for IIKo Office
+            password_hash = hashlib.sha1(self.api_password.encode()).hexdigest()
+            self.logger.info(f"Using SHA1 password hash for authentication")
             
-            methods_to_try = [
-                ("GET", "params"),   # Current method
-                ("POST", "json"),    # JSON POST
-                ("POST", "form")     # Form POST
-            ]
+            # Use the correct endpoint and method that we discovered works
+            endpoint = f"{self.base_url}/resto/api/auth"
             
-            for endpoint in auth_endpoints:
-                for method, payload_type in methods_to_try:
-                    try:
-                        self.logger.info(f"Trying {method} {endpoint} with {payload_type}")
+            try:
+                self.logger.info(f"Authenticating with {endpoint} using SHA1 hash")
+                
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    params = {
+                        "login": self.api_login,
+                        "pass": password_hash  # Use SHA1 hash, not plain password
+                    }
+                    response = await client.get(endpoint, params=params)
+                    
+                    self.logger.info(f"Response: {response.status_code} - {response.text[:100]}")
+                    
+                    if response.status_code == 200:
+                        session_key = response.text.strip()
+                        if session_key and len(session_key) > 10:  # Valid session key
+                            self.session_key = session_key
+                            self.token_expires_at = datetime.now() + timedelta(hours=2)
+                            self.logger.info(f"✅ SUCCESS: IIKo authentication successful with SHA1 hash")
+                            self.logger.info(f"Session key: {session_key[:20]}...")
+                            return
+                        else:
+                            raise Exception(f"Invalid session key received: {session_key}")
+                    else:
+                        raise Exception(f"Authentication failed: HTTP {response.status_code} - {response.text}")
                         
-                        async with httpx.AsyncClient(timeout=30.0) as client:
-                            if method == "GET" and payload_type == "params":
-                                # URL encode the password properly
-                                encoded_password = urllib.parse.quote(self.api_password)
-                                params = {
-                                    "login": self.api_login,
-                                    "pass": encoded_password
-                                }
-                                response = await client.get(endpoint, params=params)
-                                
-                            elif method == "POST" and payload_type == "json":
-                                payload = {
-                                    "login": self.api_login,
-                                    "password": self.api_password
-                                }
-                                response = await client.post(endpoint, json=payload)
-                                
-                            elif method == "POST" and payload_type == "form":
-                                payload = {
-                                    "login": self.api_login,
-                                    "pass": self.api_password
-                                }
-                                response = await client.post(endpoint, data=payload)
-                            
-                            self.logger.info(f"Response: {response.status_code} - {response.text[:100]}")
-                            
-                            if response.status_code == 200:
-                                session_key = response.text.strip()
-                                if session_key and len(session_key) > 10:  # Valid session key
-                                    self.session_key = session_key
-                                    self.token_expires_at = datetime.now() + timedelta(hours=2)
-                                    self.logger.info(f"✅ SUCCESS with {method} {endpoint} ({payload_type})")
-                                    return
-                                    
-                    except Exception as e:
-                        self.logger.info(f"❌ Failed {method} {endpoint}: {str(e)}")
-                        continue
-            
-            # If we get here, all methods failed
-            raise Exception(f"All authentication methods failed. Last response details logged above.")
+            except Exception as e:
+                self.logger.error(f"❌ SHA1 authentication failed: {str(e)}")
+                raise Exception(f"SHA1 authentication failed: {str(e)}")
                     
         except Exception as e:
             self.logger.error(f"Failed to get IIKo session key: {str(e)}")
