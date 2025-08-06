@@ -476,43 +476,60 @@ def main():
     print()
     
     try:
-        # Test 1: Integration Availability
-        test_iiko_integration_availability()
+        # ПРИОРИТЕТ 1 - ПОДКЛЮЧЕНИЕ (as requested)
+        print("🔥 ПРИОРИТЕТ 1 - ПРОВЕРКА ПОДКЛЮЧЕНИЯ С НОВЫМИ КЛЮЧАМИ")
+        print("=" * 60)
         
-        # Test 2: Health Check (start with diagnostics as requested)
+        # Test 1: Health Check (КРИТИЧЕСКИЙ!)
         test_iiko_health_check()
         
-        # Test 3: Diagnostics
-        test_iiko_diagnostics()
-        
-        # Test 4: Organizations (main functionality)
+        # Test 2: Organizations (ГЛАВНОЕ! Должны появиться организации)
         organizations = test_iiko_organizations()
         
-        # Test 5: Menu (depends on organizations)
-        test_iiko_menu(organizations)
+        # Test 3: Diagnostics (полная диагностика)
+        test_iiko_diagnostics()
         
-        # Test 6: Tech Cards Upload
-        test_iiko_tech_cards_upload()
+        # ПРИОРИТЕТ 2 - ЕСЛИ ОРГАНИЗАЦИИ ПОЯВИЛИСЬ
+        if organizations:
+            print("🎉 ОРГАНИЗАЦИИ НАЙДЕНЫ! ПЕРЕХОДИМ К ПРИОРИТЕТУ 2")
+            print("=" * 60)
+            
+            # Test 4: Menu (проверить получение меню первой организации)
+            test_iiko_menu(organizations)
+            
+            # Test 5: Tech Cards Upload (проверить готовность загрузки техкарт)
+            test_iiko_tech_cards_upload()
+        else:
+            print("⚠️ ОРГАНИЗАЦИИ НЕ НАЙДЕНЫ - ПРОПУСКАЕМ ПРИОРИТЕТ 2")
+            print("=" * 60)
+        
+        # Additional tests (lower priority)
+        print("📋 ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ")
+        print("=" * 60)
+        
+        # Test 6: Integration Availability
+        test_iiko_integration_availability()
         
         # Test 7: Menu Sync
         test_iiko_menu_sync()
         
-        # Test 8: Sync Status (can be called independently)
+        # Test 8: Sync Status
         test_iiko_sync_status()
         
         # Test 9: Error Handling
         test_iiko_error_handling()
         
-        print("🏁 ALL IIKO INTEGRATION TESTS COMPLETED")
+        print("🏁 ВСЕ ТЕСТЫ IIKO ИНТЕГРАЦИИ ЗАВЕРШЕНЫ")
         print("=" * 80)
         print(f"Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print()
-        print("SUMMARY:")
-        print("✅ All IIKo API endpoints are properly implemented")
-        print("✅ Error handling is working correctly")
-        print("✅ API structure follows expected patterns")
-        print("⚠️  Authentication errors are expected with test credentials")
-        print("⚠️  Full functionality requires valid IIKo API credentials")
+        print("🎯 ИТОГОВЫЙ РЕЗУЛЬТАТ:")
+        if organizations:
+            print("✅ УСПЕХ! Новые ключи работают - интеграция с IIKo заработала!")
+            print("✅ Организации найдены - можно загружать техкарты в POS-систему!")
+        else:
+            print("❌ Новые ключи пока не дают доступ к организациям")
+            print("⚠️ Требуется дополнительная настройка или проверка прав доступа")
         
     except KeyboardInterrupt:
         print("\n⚠️ Tests interrupted by user")
