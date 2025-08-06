@@ -198,6 +198,25 @@ function App() {
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
 
+  // IIKo Integration states - NEW!
+  const [showIikoModal, setShowIikoModal] = useState(false);
+  const [iikoOrganizations, setIikoOrganizations] = useState([]);
+  const [selectedOrganization, setSelectedOrganization] = useState(null);
+  const [iikoMenu, setIikoMenu] = useState(null);
+  const [isLoadingIiko, setIsLoadingIiko] = useState(false);
+  const [iikoHealthStatus, setIikoHealthStatus] = useState(null);
+  const [showUploadTechCardModal, setShowUploadTechCardModal] = useState(false);
+  const [techCardToUpload, setTechCardToUpload] = useState(null);
+  const [isUploadingTechCard, setIsUploadingTechCard] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [showSyncMenuModal, setShowSyncMenuModal] = useState(false);
+  const [syncSettings, setSyncSettings] = useState({
+    syncPrices: true,
+    syncCategories: true
+  });
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(null);
+
   // Menu Tech Cards View states
   const [showMenuTechCards, setShowMenuTechCards] = useState(false);
   const [menuTechCards, setMenuTechCards] = useState(null);
