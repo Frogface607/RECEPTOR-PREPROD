@@ -23,11 +23,11 @@ def log_test(test_name, status, details=""):
     print()
 
 def test_iiko_health_check():
-    """Test IIKo health check endpoint"""
-    print("🏥 TESTING IIKO HEALTH CHECK")
+    """Test IIKo health check endpoint - КРИТИЧЕСКИЙ ТЕСТ!"""
+    print("🏥 TESTING IIKO HEALTH CHECK - КРИТИЧЕСКИЙ ТЕСТ!")
     print("=" * 60)
     
-    print("Test 1: GET /api/iiko/health")
+    print("Test 1: GET /api/iiko/health (ожидаем 'healthy' вместо 'unhealthy')")
     try:
         response = requests.get(f"{BACKEND_URL}/iiko/health", timeout=30)
         
@@ -42,17 +42,32 @@ def test_iiko_health_check():
                 log_test("Health check response structure", "PASS", 
                         f"All required fields present: {required_fields}")
                 
-                # Log health status details
-                print(f"    Status: {result.get('status')}")
-                print(f"    IIKo Connection: {result.get('iiko_connection')}")
+                # Log health status details with emphasis on changes
+                status = result.get('status')
+                iiko_connection = result.get('iiko_connection')
+                
+                print(f"    🎯 КРИТИЧЕСКИЙ РЕЗУЛЬТАТ:")
+                print(f"    Status: {status}")
+                print(f"    IIKo Connection: {iiko_connection}")
                 print(f"    Timestamp: {result.get('timestamp')}")
+                
+                # Check for the expected improvement
+                if status == "healthy":
+                    log_test("🎉 HEALTH STATUS IMPROVEMENT", "PASS", 
+                            "Status changed from 'unhealthy' to 'healthy' - NEW KEYS WORKING!")
+                elif status == "unhealthy":
+                    log_test("⚠️ Health status still unhealthy", "WARN", 
+                            "Status still 'unhealthy' - may need more time or additional setup")
+                else:
+                    log_test("Health status", "INFO", f"Status: {status}")
                 
                 if result.get('error'):
                     print(f"    Error: {result.get('error')}")
-                    log_test("IIKo connection status", "WARN", 
-                            f"Connection error (expected): {result.get('error')}")
+                    log_test("IIKo connection error", "WARN", 
+                            f"Connection error: {result.get('error')}")
                 else:
-                    log_test("IIKo connection status", "PASS", "No connection errors")
+                    log_test("🎉 NO CONNECTION ERRORS", "PASS", 
+                            "No connection errors - NEW CREDENTIALS WORKING!")
                     
             else:
                 log_test("Health check response structure", "FAIL", 
