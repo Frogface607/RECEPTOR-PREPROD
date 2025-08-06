@@ -118,30 +118,26 @@ class IikoServerIntegrationService:
         self._menu_cache: Dict[str, Any] = {}
         
     async def get_organizations(self) -> List[Dict[str, Any]]:
-        """Fetch organizations from iikoServer API using JWT token"""
+        """Fetch organizations from iikoOffice API using session key"""
         try:
             import httpx
             
             session_key = await self.auth_manager.get_session_key()
             
-            organizations_url = f"{self.auth_manager.base_url}/api/1/organizations"
+            # For IIKo Office, use the correct endpoint
+            organizations_url = f"{self.auth_manager.base_url}/resto/api/corporation/organizations"
             
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {session_key}"
-            }
-            
-            payload = {
-                "organizationIds": []  # Empty array to get all organizations
+            params = {
+                "key": session_key
             }
             
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(organizations_url, json=payload, headers=headers)
+                response = await client.get(organizations_url, params=params)
                 
                 if response.status_code == 200:
                     data = response.json()
                     
-                    # Parse organizations from iikoServer response
+                    # Parse organizations from iikoOffice response
                     organizations = []
                     if isinstance(data, list):
                         for org in data:
@@ -151,17 +147,27 @@ class IikoServerIntegrationService:
                                 'address': org.get('address', ''),
                                 'active': True
                             })
-                    elif isinstance(data, dict) and 'organizations' in data:
-                        for org in data['organizations']:
+                    elif isinstance(data, dict):
+                        # Handle single organization or wrapped response
+                        if 'organizations' in data:
+                            for org in data['organizations']:
+                                organizations.append({
+                                    'id': org.get('id'),
+                                    'name': org.get('name'),
+                                    'address': org.get('address', ''),
+                                    'active': True
+                                })
+                        else:
+                            # Single organization
                             organizations.append({
-                                'id': org.get('id'),
-                                'name': org.get('name'),
-                                'address': org.get('address', ''),
+                                'id': data.get('id'),
+                                'name': data.get('name'),
+                                'address': data.get('address', ''),
                                 'active': True
                             })
                     
                     self._organization_cache = {org['id']: org for org in organizations}
-                    self.logger.info(f"Retrieved {len(organizations)} organizations from iikoServer")
+                    self.logger.info(f"Retrieved {len(organizations)} organizations from iikoOffice")
                     return organizations
                 else:
                     self.logger.error(f"Organizations request failed: {response.status_code} {response.text}")
