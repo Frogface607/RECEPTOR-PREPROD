@@ -9956,6 +9956,40 @@ function App() {
                 </button>
               </div>
 
+              {/* NEW - Category Management */}
+              <div className="mt-4">
+                <h4 className="text-lg font-semibold text-purple-200 mb-3">
+                  📂 Управление категориями
+                </h4>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <button
+                    onClick={createAIMenuDesignerCategory}
+                    disabled={!selectedOrganization}
+                    className={`${
+                      !selectedOrganization 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                    } text-white font-bold py-3 px-6 rounded-lg transition-colors`}
+                    title="Создать специальную категорию для AI Menu Designer"
+                  >
+                    ✨ Создать категорию "AI Menu Designer"
+                  </button>
+                  
+                  <button
+                    onClick={viewAllIikoCategories}
+                    disabled={!selectedOrganization}
+                    className={`${
+                      !selectedOrganization 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : 'bg-indigo-600 hover:bg-indigo-700'
+                    } text-white font-bold py-3 px-6 rounded-lg transition-colors`}
+                    title="Посмотреть все категории в IIKo"
+                  >
+                    📋 Просмотр всех категорий
+                  </button>
+                </div>
+              </div>
+
               {/* NEW - Category Viewing Buttons */}
               <div className="mt-4">
                 <h4 className="text-lg font-semibold text-purple-200 mb-3">
