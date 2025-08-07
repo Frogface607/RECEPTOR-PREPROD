@@ -46,17 +46,24 @@ def test_get_projects_auto_user_creation():
             result = response.json()
             print(f"Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
             
-            # Should return empty projects list for new user
-            if isinstance(result, list):
-                if len(result) == 0:
+            # Check response format - should be dict with success, projects, total_projects
+            if isinstance(result, dict):
+                success = result.get("success", False)
+                projects = result.get("projects", [])
+                total_projects = result.get("total_projects", 0)
+                
+                if success and isinstance(projects, list) and total_projects == 0:
                     log_test("Auto User Creation - Empty Projects", "PASS", 
                             f"New user {new_user_id} created, returned empty projects list")
-                else:
+                elif success and isinstance(projects, list):
                     log_test("Auto User Creation - Empty Projects", "WARN", 
-                            f"New user has {len(result)} projects (unexpected)")
+                            f"New user has {len(projects)} projects (unexpected)")
+                else:
+                    log_test("Auto User Creation - Response Format", "FAIL", 
+                            f"Invalid response structure: success={success}, projects type={type(projects)}")
             else:
                 log_test("Auto User Creation - Response Format", "FAIL", 
-                        f"Expected list, got: {type(result)}")
+                        f"Expected dict, got: {type(result)}")
             
             # Verify user was actually created by checking again
             print(f"\nVerification: GET /api/menu-projects/{new_user_id} again")
