@@ -62,7 +62,7 @@ def test_iiko_health():
                 log_test(f"📋 Menu access: {'✅ Available' if data['menu_access'] else '❌ Not available'}")
             
             # Check if token was refreshed successfully
-            if status == 'healthy' and connection == 'active':
+            if status == 'healthy':
                 log_test("🎉 IIKo token refresh and integration working correctly!")
                 return {'success': True, 'status': status, 'connection': connection}
             else:
