@@ -868,9 +868,14 @@ class IikoServerIntegrationService:
                     if isinstance(ingredient, dict):
                         ingredients.append({
                             "productId": None,  # Will be resolved by IIKo if exists
-                            "productName": ingredient.get('name', ''),
-                            "amount": float(ingredient.get('quantity', 0)),
-                            "measureUnit": ingredient.get('unit', 'г')
+                            "amountMiddle": float(ingredient.get('quantity', 0)),
+                            "amountIn1": float(ingredient.get('quantity', 0)),
+                            "storeSpecification": {
+                                "name": ingredient.get('name', ''),
+                                "unit": ingredient.get('unit', 'г')
+                            },
+                            "sortWeight": len(ingredients) + 1,
+                            "packageCount": 1
                         })
             else:
                 # Parse ingredients from content string if needed
