@@ -879,6 +879,11 @@ class IikoServerIntegrationService:
                         # Try to find existing product ID
                         product_id = self._find_product_id(ingredient.get('name', ''), existing_products or [])
                         
+                        # If no product ID found, use a fallback UUID
+                        if not product_id:
+                            product_id = str(uuid.uuid4())
+                            self.logger.warning(f"No product ID found for '{ingredient.get('name', '')}', using generated UUID: {product_id}")
+                        
                         ingredients.append({
                             "productId": product_id,  # Use real product ID if found
                             "amountMiddle": float(ingredient.get('quantity', 0)),
