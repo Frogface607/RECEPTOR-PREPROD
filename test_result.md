@@ -703,7 +703,7 @@ frontend:
 
   - task: "IIKo Integration - Create Product/Dish - NEW CRITICAL FIX"
     implemented: true
-    working: false  
+    working: true  
     file: "backend/server.py"
     stuck_count: 1
     priority: "high"
