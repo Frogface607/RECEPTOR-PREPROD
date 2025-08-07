@@ -931,6 +931,7 @@ class IikoServerIntegrationService:
         except Exception as e:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
             # Return minimal structure with only required fields
+            from datetime import datetime
             return {
                 "items": [],
                 "assembledAmount": 1.0,
