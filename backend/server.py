@@ -2873,8 +2873,8 @@ async def generate_tech_card(request: DishRequest):
         if not can_create:
             raise HTTPException(status_code=403, detail=limit_message)
         
-        # Get regional coefficient
-        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        # Get regional coefficient (safe access to city field)
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
         
         # Generate venue context and customization
         venue_context = generate_venue_context(user)
