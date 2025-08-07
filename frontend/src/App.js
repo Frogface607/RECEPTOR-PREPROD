@@ -1622,12 +1622,6 @@ function App() {
     setShowAssemblyChartsModal(true);
     await fetchAllAssemblyCharts(selectedOrganization.id);
   };
-        searchedFor: categoryName
-      });
-    } finally {
-      setIsLoadingCategory(false);
-    }
-  };
 
   const updateKitchenEquipment = async (equipmentIds) => {
     if (!currentUser?.id) return;
