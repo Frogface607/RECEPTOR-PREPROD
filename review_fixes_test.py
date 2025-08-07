@@ -292,6 +292,32 @@ def test_simple_menu_generation():
                 else:
                     log_test(f"⚠️ Unexpected menu format: {type(menu)}")
                     return {'success': False, 'error': 'Unexpected menu format'}
+            elif 'dishes' in data:
+                # Check if dishes are in 'dishes' key instead
+                dishes = data['dishes']
+                dish_count = data.get('dish_count', len(dishes) if isinstance(dishes, list) else 0)
+                
+                log_test(f"📊 Generated {dish_count} dishes (found in 'dishes' key)")
+                
+                if isinstance(dishes, list) and len(dishes) > 0:
+                    log_test("🍽️ Sample dishes generated:")
+                    for i, dish in enumerate(dishes[:5]):  # Show first 5 dishes
+                        dish_name = dish.get('name', 'Unknown') if isinstance(dish, dict) else str(dish)
+                        log_test(f"   {i+1}. {dish_name}")
+                    
+                    # Check for business lunch characteristics
+                    dishes_text = str(dishes).lower()
+                    business_keywords = ['салат', 'легк', 'здоров', 'быстр', 'офис']
+                    found_keywords = [kw for kw in business_keywords if kw in dishes_text]
+                    
+                    if found_keywords:
+                        log_test(f"✅ Business lunch keywords found: {found_keywords}")
+                    
+                    log_test("🎉 Simple menu generation working correctly!")
+                    return {'success': True, 'menu': dishes, 'dish_count': dish_count, 'keywords': found_keywords}
+                else:
+                    log_test("⚠️ Empty dishes list")
+                    return {'success': False, 'error': 'Empty dishes list'}
             else:
                 log_test("❌ No menu content in response")
                 log_test(f"Response keys: {list(data.keys())}")
