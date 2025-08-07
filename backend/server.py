@@ -3839,10 +3839,19 @@ async def generate_simple_menu(request: SimpleMenuRequest):
 async def create_menu_project(request: MenuProjectCreate):
     """Create a new menu project for organizing menus and tech cards"""
     try:
-        # Verify user exists
+        # Auto-create user if doesn't exist (for seamless experience)
         user = await db.users.find_one({"id": request.user_id})
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            logger.info(f"Auto-creating user {request.user_id} for project creation")
+            # Create basic user profile
+            user_data = {
+                "id": request.user_id,
+                "email": f"{request.user_id}@example.com",
+                "subscription_plan": "free",
+                "subscription_features": ["basic_tech_cards"],
+                "created_at": datetime.now().isoformat()
+            }
+            await db.users.insert_one(user_data)
         
         # Create project record
         project_id = str(uuid.uuid4())
