@@ -697,7 +697,7 @@ class IikoServerIntegrationService:
             
             async with httpx.AsyncClient(timeout=60.0) as client:
                 self.logger.info(f"🔨 Creating assembly chart in IIKo: {endpoint}")
-                self.logger.info(f"🔨 Assembly chart data: {assembly_chart['name']}")
+                self.logger.info(f"🔨 Assembly chart data: {assembly_chart['appearance']['name']}")
                 
                 response = await client.post(
                     endpoint,
