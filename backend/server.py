@@ -894,8 +894,7 @@ class IikoServerIntegrationService:
             return {
                 "items": [],
                 "technologyDescription": "Создано AI-Menu-Designer",
-                "assembledAmount": 0,
-                "productWriteoff": []
+                "assembledAmount": 0
             }
     
     def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
