@@ -3046,8 +3046,8 @@ async def edit_tech_card(request: EditRequest):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Get regional coefficient
-        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        # Get regional coefficient (safe access to city field)
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
         
         # Prepare the edit prompt
         prompt = EDIT_PROMPT.format(
