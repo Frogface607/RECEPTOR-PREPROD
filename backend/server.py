@@ -55,6 +55,10 @@ class IikoServerAuthManager:
         
     async def get_session_key(self):
         """Get session key for iikoServer API using Office credentials"""
+        # Force token refresh for immediate use
+        self.session_key = None
+        self.token_expires_at = None
+        
         if self._is_session_expired():
             await self._refresh_session()
         return self.session_key
