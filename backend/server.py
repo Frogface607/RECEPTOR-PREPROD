@@ -683,6 +683,159 @@ class IikoServerIntegrationService:
         except Exception as e:
             return {'parse_error': str(e)}
 
+    # ============== CATEGORIES MANAGEMENT ==============
+    
+    async def get_categories(self, organization_id: str) -> Dict[str, Any]:
+        """Get all user categories from IIKo using /resto/api/v2/entities/products/category/list"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            endpoint = f"{self.auth_manager.base_url}/resto/api/v2/entities/products/category/list"
+            
+            params = {
+                "key": session_key,
+                "includeDeleted": False  # Don't include deleted categories
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                self.logger.info(f"📂 Fetching categories from IIKo: {endpoint}")
+                
+                response = await client.get(endpoint, params=params)
+                
+                self.logger.info(f"📂 Categories response: {response.status_code} - {response.text[:200]}")
+                
+                if response.status_code == 200:
+                    categories = response.json()
+                    
+                    return {
+                        'success': True,
+                        'endpoint': endpoint,
+                        'organization_id': organization_id,
+                        'categories': categories,
+                        'categories_count': len(categories) if isinstance(categories, list) else 0
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Categories request failed: {response.status_code}',
+                        'response': response.text
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error fetching categories: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'Error fetching categories from IIKo'
+            }
+    
+    async def create_category(self, category_name: str, organization_id: str) -> Dict[str, Any]:
+        """Create new category in IIKo using /resto/api/v2/entities/products/category/save"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            endpoint = f"{self.auth_manager.base_url}/resto/api/v2/entities/products/category/save"
+            
+            params = {
+                "key": session_key
+            }
+            
+            # Category data according to IIKo documentation
+            category_data = {
+                "name": category_name
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                self.logger.info(f"📂 Creating category in IIKo: {endpoint}")
+                self.logger.info(f"📂 Category name: {category_name}")
+                
+                response = await client.post(
+                    endpoint,
+                    params=params,
+                    json=category_data,
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                self.logger.info(f"📂 Category creation response: {response.status_code} - {response.text[:300]}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if data.get('result') == 'SUCCESS':
+                        category = data.get('response', {})
+                        return {
+                            'success': True,
+                            'method': 'category_create',
+                            'endpoint': endpoint,
+                            'category_id': category.get('id'),
+                            'category_name': category.get('name'),
+                            'response': data,
+                            'message': f"✅ Категория '{category_name}' создана в IIKo!"
+                        }
+                    else:
+                        return {
+                            'success': False,
+                            'error': f'Category creation failed: {data.get("result")}',
+                            'errors': data.get('errors', []),
+                            'note': 'IIKo API returned ERROR result'
+                        }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Category creation failed: {response.status_code}',
+                        'response': response.text,
+                        'note': f'HTTP error creating category: {response.text[:100]}'
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error creating category: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'Error creating category in IIKo'
+            }
+    
+    async def check_category_exists(self, category_name: str, organization_id: str) -> Dict[str, Any]:
+        """Check if category with given name already exists"""
+        try:
+            categories_result = await self.get_categories(organization_id)
+            
+            if not categories_result.get('success'):
+                return {
+                    'success': False,
+                    'error': 'Could not fetch categories to check existence',
+                    'details': categories_result
+                }
+            
+            categories = categories_result.get('categories', [])
+            
+            # Look for category with matching name (case insensitive)
+            existing_category = None
+            for category in categories:
+                if category.get('name', '').lower() == category_name.lower():
+                    existing_category = category
+                    break
+            
+            return {
+                'success': True,
+                'exists': existing_category is not None,
+                'category': existing_category,
+                'all_categories': categories,
+                'total_categories': len(categories)
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error checking category existence: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'Error checking if category exists'
+            }
+
     # ============== TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT ==============
     
     async def create_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
