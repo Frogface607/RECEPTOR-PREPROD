@@ -792,7 +792,11 @@ class IikoServerIntegrationService:
                         assembly_charts = data.get('assemblyCharts', [])
                         prepared_charts = data.get('preparedCharts', [])
                         
-                        self.logger.info(f"📋 Found {len(assembly_charts)} assembly charts and {len(prepared_charts)} prepared charts")
+                        # Handle None values safely
+                        assembly_count = len(assembly_charts) if assembly_charts else 0
+                        prepared_count = len(prepared_charts) if prepared_charts else 0
+                        
+                        self.logger.info(f"📋 Found {assembly_count} assembly charts and {prepared_count} prepared charts")
                         
                         return {
                             'success': True,
