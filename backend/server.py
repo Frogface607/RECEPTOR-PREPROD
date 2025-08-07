@@ -6149,7 +6149,87 @@ async def check_iiko_category(request: Dict[str, Any]):
             status_code=500
         )
 
-# ============== NEW TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT ENDPOINTS ==============
+# ============== NEW COMPLETE DISH CREATION ENDPOINT ==============
+
+@api_router.post("/iiko/products/create-complete-dish")
+async def create_complete_dish_in_iiko(request: TechCardUpload):
+    """
+    Create COMPLETE dish in IIKo: Assembly Chart + DISH Product + Category
+    This is the new recommended endpoint for creating dishes that will appear in the menu
+    """
+    try:
+        logger.info(f"🍽️ COMPLETE DISH: Creating complete dish '{request.name}' in IIKo organization: {request.organization_id}")
+        
+        # Prepare tech card data
+        tech_card_data = {
+            'name': request.name,
+            'description': request.description or 'Создано AI-Menu-Designer',
+            'ingredients': request.ingredients,
+            'preparation_steps': request.preparation_steps,
+            'weight': request.weight or 100.0,
+            'price': request.price or 0.0,
+            'category': request.category_id or ''
+        }
+        
+        # Create complete dish (Assembly Chart + DISH Product)
+        result = await iiko_service.create_complete_dish_in_iiko(
+            tech_card_data=tech_card_data,
+            organization_id=request.organization_id,
+            category_id=request.category_id
+        )
+        
+        # Save comprehensive sync record to database
+        sync_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": "system",
+            "organization_id": request.organization_id,
+            "tech_card_name": request.name,
+            "sync_type": "complete_dish_creation",
+            "sync_status": result.get('status', 'unknown'),
+            "assembly_chart_id": result.get('assembly_chart', {}).get('assembly_chart_id'),
+            "dish_product_id": result.get('dish_product', {}).get('product_id'),
+            "category_id": result.get('summary', {}).get('category_used'),
+            "created_at": datetime.now().isoformat(),
+            "ai_generated": True,
+            "steps_completed": result.get('steps_completed', []),
+            "errors": result.get('errors', []),
+            "upload_success": result.get('success', False)
+        }
+        
+        await db.iiko_sync_records.insert_one(sync_record)
+        
+        # Return structured response
+        response = {
+            "success": result.get('success', False),
+            "sync_id": sync_record["id"],
+            "status": result.get('status'),
+            "message": result.get('message'),
+            "details": {
+                "assembly_chart": {
+                    "created": result.get('assembly_chart', {}).get('success', False),
+                    "id": result.get('assembly_chart', {}).get('assembly_chart_id')
+                },
+                "dish_product": {
+                    "created": result.get('dish_product', {}).get('success', False),
+                    "id": result.get('dish_product', {}).get('product_id'),
+                    "name": result.get('dish_product', {}).get('product_name')
+                },
+                "category": {
+                    "id": result.get('summary', {}).get('category_used')
+                }
+            },
+            "summary": result.get('summary', {}),
+            "steps_completed": result.get('steps_completed', []),
+            "errors": result.get('errors', [])
+        }
+        
+        return response
+            
+    except Exception as e:
+        logger.error(f"Error in complete dish creation endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating complete dish: {str(e)}")
+
+# ============== TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT ENDPOINTS ==============
 
 @api_router.post("/iiko/assembly-charts/create")
 async def create_tech_card_in_iiko(request: TechCardUpload):
