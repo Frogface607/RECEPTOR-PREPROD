@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for IIKo Analytics - REVENUE & ANALYTICS TESTING
-Testing the new IIKo analytics endpoints for revenue reporting and comprehensive analytics dashboard
+IIKo Assembly Charts Final Testing Suite
+Testing the final versions of IIKo assembly charts API endpoints after all fixes
 """
 
 import requests
