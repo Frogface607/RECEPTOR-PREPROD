@@ -885,24 +885,8 @@ class IikoServerIntegrationService:
                 "technologyDescription": tech_card_data.get('description', ''),
                 "assembledAmount": float(tech_card_data.get('weight', 0)),
                 
-                # Try to include cooking steps in description
-                "appearance": {
-                    "name": tech_card_data.get('name', 'Новая техкарта'),
-                    "description": tech_card_data.get('description', ''),
-                    "cookingSteps": [
-                        {
-                            "stepNumber": i + 1,
-                            "description": step,
-                            "duration": None
-                        } for i, step in enumerate(tech_card_data.get('preparation_steps', []))
-                    ]
-                },
-                
                 # Additional metadata that might be accepted
-                "productWriteoff": [],
-                "effectiveDirectWriteoffStoreSpecification": None,
-                "dateTo": None,
-                "productSizeAssemblyStrategy": None
+                "productWriteoff": []
             }
             
             return assembly_chart
