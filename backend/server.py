@@ -408,25 +408,26 @@ class IikoServerIntegrationService:
                 "key": session_key
             }
             
-            # Transform tech card data to CORRECT IIKo DISH product format
-            # Based on API error analysis - using only confirmed valid fields
+            # Transform tech card data to ULTRA-MINIMAL IIKo DISH product format
+            # Using ONLY fields confirmed as working by API testing
             dish_product = {
-                # CORE REQUIRED FIELDS (confirmed valid by API error message)
+                # ONLY CONFIRMED WORKING FIELDS
                 "name": product_data.get('name'),
-                "num": f"DISH{str(uuid.uuid4())[:8].upper()}",  # Using 'num' instead of 'code'
-                "type": "DISH",  # Product type = DISH (UPPERCASE! IIKo expects uppercase)
+                "num": f"DISH{str(uuid.uuid4())[:8].upper()}",  # Using 'num' instead of 'code' 
+                "type": "DISH",  # Product type = DISH (UPPERCASE!)
+                "defaultSalePrice": float(product_data.get('price', 0.0))  # Using defaultSalePrice not price
                 
-                # BASIC PRODUCT PROPERTIES (from confirmed 34 properties list)
-                "defaultSalePrice": float(product_data.get('price', 0.0)),  # Using defaultSalePrice not price
-                
-                # MENU INTEGRATION - trying minimal structure first
-                # Removed: measureUnit (not supported), description (not in known properties)
-                # Removed: weight, isIncludedInMenu, order, images, modifiers, groupModifiers (not confirmed)
-                
-                # CATEGORY INTEGRATION (if available in known properties)
-                "productCategoryId": category_id if category_id else None,
-                "parentGroup": category_id if category_id else None
+                # REMOVED ALL OTHER FIELDS due to API compatibility:
+                # - productCategoryId: "Unrecognized field" error
+                # - parentGroup: not confirmed as valid
+                # - measureUnit: "Unrecognized field" error  
+                # - description, weight, isIncludedInMenu, etc: not confirmed
             }
+            
+            # Add assembly chart reference if available (try if supported)
+            if assembly_chart_id:
+                # Only add if this field is supported - will fail gracefully if not
+                dish_product["assemblyId"] = assembly_chart_id
             
             # Add assembly chart reference if available
             if assembly_chart_id:
