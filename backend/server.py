@@ -978,7 +978,7 @@ class IikoServerIntegrationService:
         except:
             return 0
     
-    def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
+    def _parse_ingredients_from_content(self, content: str, existing_products: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """Parse ingredients from tech card content and return in IIKo format"""
         ingredients = []
         
@@ -1015,9 +1015,12 @@ class IikoServerIntegrationService:
                                 amount = float(amount_match.group(1))
                                 unit = amount_match.group(2) if amount_match.group(2) else 'г'
                                 
+                                # Try to find existing product ID
+                                product_id = self._find_product_id(name, existing_products or [])
+                                
                                 ingredient_count += 1
                                 ingredients.append({
-                                    "productId": None,  # Will be resolved by IIKo
+                                    "productId": product_id,  # Use real product ID if found
                                     "amountMiddle": amount,
                                     "amountIn1": amount,
                                     "sortWeight": ingredient_count,
