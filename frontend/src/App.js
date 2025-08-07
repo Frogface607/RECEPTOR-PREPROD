@@ -1405,6 +1405,230 @@ function App() {
     }
   };
 
+  // ============== NEW TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT FUNCTIONS ==============
+  
+  const fetchAllAssemblyCharts = async (organizationId) => {
+    if (!organizationId) {
+      alert('Выберите организацию для просмотра техкарт');
+      return;
+    }
+
+    setIsLoadingAssemblyCharts(true);
+    try {
+      const response = await axios.get(`${API}/iiko/assembly-charts/all/${organizationId}`);
+      
+      if (response.data.success) {
+        setAssemblyCharts(response.data.assembly_charts || []);
+        return response.data;
+      } else {
+        setAssemblyCharts([]);
+        alert('Не удалось загрузить техкарты: ' + response.data.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching assembly charts:', error);
+      alert('Ошибка получения техкарт: ' + (error.response?.data?.detail || error.message));
+      setAssemblyCharts([]);
+      return null;
+    } finally {
+      setIsLoadingAssemblyCharts(false);
+    }
+  };
+
+  const createAssemblyChart = async (techCardData) => {
+    if (!selectedOrganization?.id) {
+      alert('Выберите организацию для создания техкарты');
+      return null;
+    }
+
+    setIsCreatingAssemblyChart(true);
+    try {
+      // Parse existing tech card or use provided data
+      const requestData = {
+        name: techCardData.name || assemblyChartData.name,
+        description: techCardData.description || assemblyChartData.description,
+        ingredients: techCardData.ingredients || assemblyChartData.ingredients,
+        preparation_steps: techCardData.preparation_steps || assemblyChartData.preparation_steps,
+        organization_id: selectedOrganization.id,
+        weight: techCardData.weight || 0,
+        price: techCardData.price || 0,
+        category_id: techCardData.category_id || ''
+      };
+
+      const response = await axios.post(`${API}/iiko/assembly-charts/create`, requestData);
+      
+      if (response.data.success) {
+        alert(`✅ ${response.data.message}`);
+        
+        // Refresh assembly charts list
+        await fetchAllAssemblyCharts(selectedOrganization.id);
+        
+        // Reset form data
+        setAssemblyChartData({
+          name: '',
+          description: '',
+          ingredients: [],
+          preparation_steps: []
+        });
+        
+        return response.data;
+      } else {
+        alert('Ошибка создания техкарты: ' + response.data.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error creating assembly chart:', error);
+      alert('Ошибка создания техкарты: ' + (error.response?.data?.detail || error.message));
+      return null;
+    } finally {
+      setIsCreatingAssemblyChart(false);
+    }
+  };
+
+  const deleteAssemblyChart = async (chartId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту техкарту из IIKo?')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API}/iiko/assembly-charts/${chartId}`);
+      
+      if (response.data.success) {
+        alert(`✅ ${response.data.message}`);
+        
+        // Refresh assembly charts list
+        if (selectedOrganization?.id) {
+          await fetchAllAssemblyCharts(selectedOrganization.id);
+        }
+      } else {
+        alert('Ошибка удаления техкарты: ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting assembly chart:', error);
+      alert('Ошибка удаления техкарты: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const fetchSyncStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/iiko/tech-cards/sync-status`);
+      
+      if (response.data.success) {
+        setSyncStatus(response.data);
+        setShowSyncStatusModal(true);
+      } else {
+        alert('Ошибка получения статуса синхронизации');
+      }
+    } catch (error) {
+      console.error('Error fetching sync status:', error);
+      alert('Ошибка получения статуса: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const uploadTechCardAsAssemblyChart = async (techCard) => {
+    if (!selectedOrganization?.id) {
+      alert('Выберите организацию в модальном окне IIKo');
+      return;
+    }
+
+    // Parse tech card content to extract structured data
+    const parsedData = parseTechCardForUpload(techCard);
+    
+    const result = await createAssemblyChart({
+      name: parsedData.name,
+      description: parsedData.description,
+      ingredients: parsedData.ingredients,
+      preparation_steps: parsedData.steps,
+      weight: parsedData.weight,
+      price: parsedData.price
+    });
+
+    return result;
+  };
+
+  const parseTechCardForUpload = (techCard) => {
+    // Extract structured data from tech card content
+    const content = techCard.content || '';
+    const lines = content.split('\n');
+    
+    let name = techCard.dish_name || 'Новая техкарта';
+    let description = '';
+    let ingredients = [];
+    let steps = [];
+    let weight = 0;
+    let price = 0;
+
+    let currentSection = '';
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      if (trimmedLine.includes('ИНГРЕДИЕНТЫ') || trimmedLine.includes('🥬')) {
+        currentSection = 'ingredients';
+        continue;
+      } else if (trimmedLine.includes('РЕЦЕПТ') || trimmedLine.includes('👨‍🍳')) {
+        currentSection = 'steps';
+        continue;
+      } else if (trimmedLine.includes('ОПИСАНИЕ') || trimmedLine.includes('📝')) {
+        currentSection = 'description';
+        continue;
+      }
+      
+      if (currentSection === 'ingredients' && trimmedLine && !trimmedLine.includes('💰') && !trimmedLine.includes('⏰')) {
+        if (trimmedLine.includes('—') || trimmedLine.includes('-')) {
+          const parts = trimmedLine.replace('—', '|').replace('-', '|').split('|');
+          if (parts.length >= 2) {
+            const ingredientName = parts[0].replace('•', '').trim();
+            const amountPart = parts[1].trim();
+            
+            // Extract amount and unit
+            const amountMatch = amountPart.match(/(\d+(?:\.\d+)?)\s*([а-яёa-z]*)/i);
+            if (amountMatch) {
+              ingredients.push({
+                name: ingredientName,
+                quantity: parseFloat(amountMatch[1]),
+                unit: amountMatch[2] || 'г',
+                price: 0
+              });
+            }
+          }
+        }
+      } else if (currentSection === 'steps' && trimmedLine && !trimmedLine.includes('💡')) {
+        if (trimmedLine.match(/^\d+\./)) {
+          steps.push(trimmedLine);
+        }
+      } else if (currentSection === 'description' && trimmedLine) {
+        description += (description ? ' ' : '') + trimmedLine;
+      }
+    }
+
+    return {
+      name,
+      description: description || `Блюдо создано с помощью AI-Menu-Designer`,
+      ingredients,
+      steps,
+      weight,
+      price
+    };
+  };
+
+  const openAssemblyChartsManager = async () => {
+    if (!selectedOrganization?.id) {
+      // First open IIKo modal to select organization
+      await openIikoIntegration();
+      return;
+    }
+
+    setShowAssemblyChartsModal(true);
+    await fetchAllAssemblyCharts(selectedOrganization.id);
+  };
+        searchedFor: categoryName
+      });
+    } finally {
+      setIsLoadingCategory(false);
+    }
+  };
+
   const updateKitchenEquipment = async (equipmentIds) => {
     if (!currentUser?.id) return;
     try {
