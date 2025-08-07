@@ -3543,6 +3543,249 @@ function App() {
     );
   };
 
+  // NEW: Analytics and OLAP functions
+  const loadAnalyticsOverview = async () => {
+    if (!currentUser?.id) return;
+    
+    setIsLoadingAnalytics(true);
+    try {
+      // Load overall analytics data
+      const [historyResponse, projectsResponse] = await Promise.all([
+        axios.get(`${API}/user-history/${currentUser.id}`),
+        axios.get(`${API}/menu-projects/${currentUser.id}`)
+      ]);
+      
+      const history = historyResponse.data || [];
+      const projects = projectsResponse.data.projects || [];
+      
+      // Calculate overall statistics
+      const totalTechCards = history.filter(item => !item.is_menu).length;
+      const totalMenus = history.filter(item => item.is_menu).length;
+      const totalProjects = projects.length;
+      
+      // Time savings calculation
+      const totalTimeSaved = totalMenus * 15 + totalTechCards * 45; // минуты
+      const totalCostSaved = totalMenus * 5000 + totalTechCards * 2000; // рубли
+      
+      // Last activity
+      const sortedHistory = history.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const lastActivity = sortedHistory[0]?.created_at;
+      
+      // Most productive day
+      const activityByDate = {};
+      history.forEach(item => {
+        const date = new Date(item.created_at).toDateString();
+        activityByDate[date] = (activityByDate[date] || 0) + 1;
+      });
+      
+      const mostProductiveDay = Object.entries(activityByDate)
+        .sort(([,a], [,b]) => b - a)[0];
+      
+      setAnalyticsData({
+        overview: {
+          totalTechCards,
+          totalMenus,
+          totalProjects,
+          totalTimeSaved,
+          totalCostSaved,
+          lastActivity,
+          mostProductiveDay: mostProductiveDay ? {
+            date: mostProductiveDay[0],
+            count: mostProductiveDay[1]
+          } : null
+        },
+        recentActivity: sortedHistory.slice(0, 10),
+        projects: projects.map(project => ({
+          ...project,
+          productivity_score: (project.menus_count * 15 + project.tech_cards_count * 45) / 60 // hours
+        })).sort((a, b) => b.productivity_score - a.productivity_score)
+      });
+      
+    } catch (error) {
+      console.error('Error loading analytics overview:', error);
+      setAnalyticsData(null);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  };
+
+  const loadOLAPReport = async () => {
+    if (iikoOrganizations.length === 0) {
+      alert('Сначала настройте интеграцию с IIKo');
+      return;
+    }
+    
+    setIsLoadingAnalytics(true);
+    try {
+      const orgId = iikoOrganizations[0].id;
+      const response = await axios.get(`${API}/iiko/sales-report?organization_id=${orgId}`);
+      
+      if (response.data.success) {
+        setOlapReportData(response.data);
+      } else {
+        throw new Error(response.data.error || 'Failed to load OLAP report');
+      }
+    } catch (error) {
+      console.error('Error loading OLAP report:', error);
+      alert('Ошибка загрузки OLAP отчета: ' + (error.response?.data?.detail || error.message));
+      setOlapReportData(null);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  };
+
+  const renderAnalyticsOverview = () => {
+    if (!analyticsData) return null;
+    
+    const { overview, recentActivity, projects } = analyticsData;
+    
+    return (
+      <div className="space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-blue-900/30 rounded-lg p-4 text-center">
+            <div className="text-3xl font-bold text-blue-300">{overview.totalTechCards}</div>
+            <div className="text-sm text-gray-400">Техкарт создано</div>
+          </div>
+          <div className="bg-green-900/30 rounded-lg p-4 text-center">
+            <div className="text-3xl font-bold text-green-300">{overview.totalMenus}</div>
+            <div className="text-sm text-gray-400">Меню создано</div>
+          </div>
+          <div className="bg-purple-900/30 rounded-lg p-4 text-center">
+            <div className="text-3xl font-bold text-purple-300">{overview.totalProjects}</div>
+            <div className="text-sm text-gray-400">Проектов</div>
+          </div>
+          <div className="bg-orange-900/30 rounded-lg p-4 text-center">
+            <div className="text-3xl font-bold text-orange-300">{Math.round(overview.totalTimeSaved / 60)}</div>
+            <div className="text-sm text-gray-400">Часов сэкономлено</div>
+          </div>
+        </div>
+        
+        {/* Savings Highlight */}
+        <div className="bg-green-900/20 rounded-lg p-6 border border-green-500/30">
+          <h3 className="text-xl font-bold text-green-300 mb-3">💰 ЭКОНОМИЯ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="text-2xl font-bold text-green-400">{overview.totalTimeSaved} минут</div>
+              <div className="text-sm text-gray-300">Времени сэкономлено</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-green-400">{overview.totalCostSaved.toLocaleString()} ₽</div>
+              <div className="text-sm text-gray-300">Стоимость работы разработчика</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Top Projects */}
+        {projects.length > 0 && (
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-purple-300 mb-3">🏆 ТОП ПРОЕКТЫ</h3>
+            <div className="space-y-3">
+              {projects.slice(0, 5).map((project, index) => (
+                <div key={project.id} className="flex justify-between items-center bg-gray-700/50 rounded p-3">
+                  <div>
+                    <div className="font-bold text-sm">{project.project_name}</div>
+                    <div className="text-xs text-gray-400">{project.menus_count} меню, {project.tech_cards_count} техкарт</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-purple-300">{project.productivity_score.toFixed(1)}ч</div>
+                    <div className="text-xs text-gray-400">продуктивности</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Recent Activity */}
+        {recentActivity.length > 0 && (
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-blue-300 mb-3">🕒 ПОСЛЕДНЯЯ АКТИВНОСТЬ</h3>
+            <div className="space-y-2">
+              {recentActivity.slice(0, 5).map((item, index) => (
+                <div key={item.id || index} className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className={item.is_menu ? '🍽️' : '📋'} />
+                    <span>{item.dish_name || item.menu_type || 'Неизвестно'}</span>
+                  </div>
+                  <div className="text-gray-400">
+                    {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderOLAPReport = () => {
+    if (!olapReportData) return null;
+    
+    const { summary, top_dishes, period } = olapReportData;
+    
+    return (
+      <div className="space-y-6">
+        {/* Report Period */}
+        <div className="bg-blue-900/20 rounded-lg p-4">
+          <h3 className="text-lg font-bold text-blue-300 mb-2">📊 ПЕРИОД ОТЧЕТА</h3>
+          <div className="text-sm text-gray-300">
+            {period?.from ? `${period.from} - ${period.to}` : 'Последние 7 дней'}
+          </div>
+        </div>
+        
+        {/* Summary Stats */}
+        {summary && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-green-900/30 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-green-300">{Math.round(summary.total_revenue || 0)}</div>
+              <div className="text-sm text-gray-400">₽ Общая выручка</div>
+            </div>
+            <div className="bg-blue-900/30 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-blue-300">{summary.total_items_sold || 0}</div>
+              <div className="text-sm text-gray-400">Блюд продано</div>
+            </div>
+            <div className="bg-purple-900/30 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-purple-300">{Math.round(summary.average_check || 0)}</div>
+              <div className="text-sm text-gray-400">₽ Средний чек</div>
+            </div>
+            <div className="bg-orange-900/30 rounded-lg p-4 text-center">
+              <div className="text-3xl font-bold text-orange-300">{summary.unique_dishes || 0}</div>
+              <div className="text-sm text-gray-400">Уникальных блюд</div>
+            </div>
+          </div>
+        )}
+        
+        {/* Top Dishes */}
+        {top_dishes && top_dishes.length > 0 && (
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-yellow-300 mb-3">🏆 ТОП БЛЮДА ПО ПРОДАЖАМ</h3>
+            <div className="space-y-3">
+              {top_dishes.slice(0, 10).map((dish, index) => (
+                <div key={index} className="flex justify-between items-center bg-gray-700/50 rounded p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm">{dish.name}</div>
+                      <div className="text-xs text-gray-400">{dish.category}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-green-300">{Math.round(dish.revenue || 0)} ₽</div>
+                    <div className="text-xs text-gray-400">{dish.quantity || 0} шт</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const loadUserPrices = async (userId) => {
     try {
       const response = await axios.get(`${API}/user-prices/${userId}`);
