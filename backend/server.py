@@ -540,6 +540,142 @@ class IikoServerIntegrationService:
         except Exception as e:
             return {'parse_error': str(e)}
 
+    async def get_sales_olap_report(self, organization_id: str, date_from: str = None, date_to: str = None) -> Dict[str, Any]:
+        """Get sales report using OLAP - ПРАВИЛЬНЫЙ СПОСОБ из документации!"""
+        try:
+            import httpx
+            from datetime import datetime, timedelta
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            # Set default dates if not provided (last 7 days)
+            if not date_from or not date_to:
+                end_date = datetime.now()
+                start_date = end_date - timedelta(days=7)
+                date_from = start_date.strftime('%Y-%m-%d')
+                date_to = end_date.strftime('%Y-%m-%d')
+            
+            # OLAP отчет по продажам - из твоего исследования!
+            olap_url = f"{self.auth_manager.base_url}/resto/api/v2/reports/olap"
+            
+            # Параметры из документации
+            olap_request = {
+                "reportType": "SALES",
+                "groupByRowFields": ["OpenDate.Typed", "DishName", "DishCategory"],
+                "aggregateFields": ["DishDiscountSumInt", "DishAmountInt"],
+                "filters": {
+                    "OpenDate.Typed": {
+                        "filterType": "DateRange", 
+                        "periodType": "CUSTOM",
+                        "from": date_from,
+                        "to": date_to,
+                        "includeLow": "true",
+                        "includeHigh": "true"
+                    }
+                }
+            }
+            
+            params = {"key": session_key}
+            
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                self.logger.info(f"📊 OLAP Request: POST {olap_url}")
+                self.logger.info(f"📊 OLAP Data: {olap_request}")
+                
+                response = await client.post(
+                    olap_url,
+                    params=params,
+                    json=olap_request,
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                self.logger.info(f"📊 OLAP Response: {response.status_code} - {response.text[:300]}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    return {
+                        'success': True,
+                        'method': 'OLAP',
+                        'endpoint': olap_url,
+                        'date_from': date_from,
+                        'date_to': date_to,
+                        'organization_id': organization_id,
+                        'raw_data': data,
+                        'summary': self._parse_olap_sales_data(data)
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'OLAP request failed: {response.status_code}',
+                        'response': response.text,
+                        'note': 'Возможно нужны права B_RPT, B_CASR, B_VOTR'
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error in OLAP sales report: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'OLAP отчет требует специальных прав доступа'
+            }
+    
+    def _parse_olap_sales_data(self, olap_data) -> Dict[str, Any]:
+        """Parse OLAP sales data to extract useful metrics"""
+        try:
+            summary = {
+                'total_revenue': 0,
+                'total_items_sold': 0,
+                'top_dishes': [],
+                'sales_by_date': {},
+                'categories_performance': {}
+            }
+            
+            if 'data' in olap_data:
+                for row in olap_data['data']:
+                    # Каждая строка: [дата, название блюда, категория, сумма скидочная, количество]
+                    if len(row) >= 5:
+                        date_val = row[0]
+                        dish_name = row[1]
+                        category = row[2]
+                        revenue = float(row[3]) if row[3] else 0
+                        quantity = int(row[4]) if row[4] else 0
+                        
+                        # Общая статистика
+                        summary['total_revenue'] += revenue
+                        summary['total_items_sold'] += quantity
+                        
+                        # По датам
+                        if date_val not in summary['sales_by_date']:
+                            summary['sales_by_date'][date_val] = {'revenue': 0, 'items': 0}
+                        summary['sales_by_date'][date_val]['revenue'] += revenue
+                        summary['sales_by_date'][date_val]['items'] += quantity
+                        
+                        # По категориям
+                        if category not in summary['categories_performance']:
+                            summary['categories_performance'][category] = {'revenue': 0, 'items': 0}
+                        summary['categories_performance'][category]['revenue'] += revenue
+                        summary['categories_performance'][category]['items'] += quantity
+                        
+                        # Топ блюда
+                        summary['top_dishes'].append({
+                            'name': dish_name,
+                            'category': category,
+                            'revenue': revenue,
+                            'quantity': quantity
+                        })
+                
+                # Сортируем топ блюда по выручке
+                summary['top_dishes'] = sorted(
+                    summary['top_dishes'],
+                    key=lambda x: x['revenue'],
+                    reverse=True
+                )[:10]
+                
+            return summary
+            
+        except Exception as e:
+            return {'parse_error': str(e)}
+
             return {
                 'success': False,
                 'error': str(e),
