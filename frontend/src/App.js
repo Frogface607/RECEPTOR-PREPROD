@@ -3352,7 +3352,7 @@ function App() {
       });
 
       if (response.data.success) {
-        alert(response.data.message);
+        alert('Проект успешно создан!');
         
         // Reset form and close modal
         setNewProjectData({
@@ -3374,6 +3374,166 @@ function App() {
     } finally {
       setIsCreatingProject(false);
     }
+  };
+
+  // NEW: Enhanced project content and analytics functions
+  const viewProjectContent = async (project) => {
+    setSelectedProject(project);
+    setShowProjectContentModal(true);
+    setProjectContent(null);
+    setProjectAnalytics(null);
+    
+    // Load project content
+    setIsLoadingProjectContent(true);
+    try {
+      const response = await axios.get(`${API}/menu-project/${project.id}/content`);
+      if (response.data.success) {
+        setProjectContent(response.data);
+      } else {
+        throw new Error('Failed to load project content');
+      }
+    } catch (error) {
+      console.error('Error loading project content:', error);
+      alert('Ошибка загрузки содержимого проекта');
+    } finally {
+      setIsLoadingProjectContent(false);
+    }
+    
+    // Load analytics if IIKo is available
+    if (iikoOrganizations.length > 0) {
+      setIsLoadingProjectAnalytics(true);
+      try {
+        const orgId = iikoOrganizations[0].id; // Use first available organization
+        const analyticsResponse = await axios.get(`${API}/menu-project/${project.id}/analytics?organization_id=${orgId}`);
+        if (analyticsResponse.data.success) {
+          setProjectAnalytics(analyticsResponse.data);
+        }
+      } catch (error) {
+        console.error('Error loading project analytics:', error);
+        // Don't show alert for analytics errors - they're optional
+      } finally {
+        setIsLoadingProjectAnalytics(false);
+      }
+    }
+  };
+
+  const exportProject = async (projectId, format = 'excel') => {
+    setIsExportingProject(true);
+    try {
+      const response = await axios.post(`${API}/menu-project/${projectId}/export?export_format=${format}`);
+      
+      if (response.data.success) {
+        alert(`Проект экспортирован в ${format.toUpperCase()}! Ссылка для скачивания: ${response.data.download_url}`);
+        
+        // In a real implementation, you would handle the file download
+        console.log('Export URL:', response.data.download_url);
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (error) {
+      console.error('Error exporting project:', error);
+      alert('Ошибка при экспорте проекта: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsExportingProject(false);
+    }
+  };
+
+  const renderProjectStats = (stats) => {
+    if (!stats) return null;
+    
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-blue-900/20 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-blue-300">{stats.creation_time_saved}</div>
+          <div className="text-xs text-gray-400">минут сэкономлено</div>
+        </div>
+        <div className="bg-green-900/20 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-green-300">{stats.estimated_cost_savings}</div>
+          <div className="text-xs text-gray-400">₽ экономия</div>
+        </div>
+        <div className="bg-purple-900/20 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-purple-300">{stats.total_dishes}</div>
+          <div className="text-xs text-gray-400">всего блюд</div>
+        </div>
+        <div className="bg-orange-900/20 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-orange-300">{stats.complexity_score}%</div>
+          <div className="text-xs text-gray-400">сложность</div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderProjectAnalytics = (analytics) => {
+    if (!analytics) return null;
+    
+    const salesPerformance = analytics.sales_performance;
+    const recommendations = analytics.recommendations || [];
+    
+    return (
+      <div className="space-y-6">
+        {/* Sales Performance */}
+        {salesPerformance && salesPerformance.status === 'success' && (
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-lg font-bold text-green-300 mb-3">📈 ПРОДАЖИ IIKo</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-xl font-bold text-green-400">
+                  {Math.round(salesPerformance.project_performance?.total_revenue || 0)} ₽
+                </div>
+                <div className="text-sm text-gray-400">Выручка проекта</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-blue-400">
+                  {salesPerformance.project_performance?.total_quantity || 0}
+                </div>
+                <div className="text-sm text-gray-400">Блюд продано</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-purple-400">
+                  {Math.round((salesPerformance.project_performance?.match_rate || 0) * 100)}%
+                </div>
+                <div className="text-sm text-gray-400">Найдено в продажах</div>
+              </div>
+            </div>
+            
+            {/* Market Share */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-green-900/20 rounded p-3">
+                <div className="text-sm text-gray-400">Доля в выручке</div>
+                <div className="text-lg font-bold text-green-300">
+                  {Math.round(salesPerformance.market_share?.project_revenue_share || 0)}%
+                </div>
+              </div>
+              <div className="bg-blue-900/20 rounded p-3">
+                <div className="text-sm text-gray-400">Доля в продажах</div>
+                <div className="text-lg font-bold text-blue-300">
+                  {Math.round(salesPerformance.market_share?.project_quantity_share || 0)}%
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-lg font-bold text-yellow-300 mb-3">💡 РЕКОМЕНДАЦИИ</h4>
+            <div className="space-y-3">
+              {recommendations.slice(0, 3).map((rec, index) => (
+                <div key={index} className={`p-3 rounded border-l-4 ${
+                  rec.priority === 'high' ? 'border-red-400 bg-red-900/20' :
+                  rec.priority === 'medium' ? 'border-yellow-400 bg-yellow-900/20' :
+                  'border-green-400 bg-green-900/20'
+                }`}>
+                  <div className="font-bold text-sm mb-1">{rec.title}</div>
+                  <div className="text-xs text-gray-300">{rec.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const loadUserPrices = async (userId) => {
