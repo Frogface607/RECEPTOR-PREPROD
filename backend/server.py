@@ -864,26 +864,48 @@ class IikoServerIntegrationService:
             ingredients = []
             
             if 'ingredients' in tech_card_data and isinstance(tech_card_data['ingredients'], list):
-                for ingredient in tech_card_data['ingredients']:
+                for i, ingredient in enumerate(tech_card_data['ingredients']):
                     if isinstance(ingredient, dict):
                         ingredients.append({
                             "productId": None,  # Will be resolved by IIKo if exists
                             "amountMiddle": float(ingredient.get('quantity', 0)),
                             "amountIn1": float(ingredient.get('quantity', 0)),
-                            "sortWeight": len(ingredients) + 1,
+                            "sortWeight": i + 1,
                             "packageCount": 1
                         })
             else:
                 # Parse ingredients from content string if needed
                 content = tech_card_data.get('content', '')
-                ingredients = self._parse_ingredients_from_content(content)
+                parsed_ingredients = self._parse_ingredients_from_content(content)
+                ingredients = parsed_ingredients
             
-            # Create assembly chart structure based on IIKo API expectations
+            # Create assembly chart structure based on IIKo API requirements
+            # Adding potentially required fields based on typical IIKo structure
             assembly_chart = {
-                # Based on IIKo API error, use minimal required fields
-                "items": ingredients,  # This seems to be the ingredients field
-                "technologyDescription": tech_card_data.get('description', ''),
-                "assembledAmount": float(tech_card_data.get('weight', 0))
+                # Main structure
+                "items": ingredients,
+                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
+                "assembledAmount": float(tech_card_data.get('weight', 1.0)) if tech_card_data.get('weight', 0) > 0 else 1.0,  # Must be > 0
+                
+                # Potentially required fields based on API feedback
+                "name": tech_card_data.get('name', 'Новая техкарта'),
+                "num": tech_card_data.get('name', 'Новая техкарта'),  # Some IIKo APIs use 'num' for name
+                "active": True,
+                "organizationId": organization_id,
+                
+                # Additional fields that might be required
+                "category": tech_card_data.get('category', ''),
+                "type": "ASSEMBLY_CHART",  # Explicit type
+                "cookingTimeMinutes": self._parse_cooking_time(tech_card_data.get('cook_time', '0')),
+                "portion": {
+                    "weight": float(tech_card_data.get('weight', 1.0)) if tech_card_data.get('weight', 0) > 0 else 1.0,
+                    "unit": "г"
+                },
+                
+                # Metadata
+                "externalId": str(uuid.uuid4()),
+                "description": tech_card_data.get('description', ''),
+                "createdBy": "AI-Menu-Designer"
             }
             
             return assembly_chart
@@ -894,8 +916,41 @@ class IikoServerIntegrationService:
             return {
                 "items": [],
                 "technologyDescription": "Создано AI-Menu-Designer",
-                "assembledAmount": 0
+                "assembledAmount": 1.0,
+                "name": tech_card_data.get('name', 'Техкарта'),
+                "num": tech_card_data.get('name', 'Техкарта'),
+                "active": True,
+                "organizationId": organization_id,
+                "type": "ASSEMBLY_CHART"
             }
+    
+    def _parse_cooking_time(self, cook_time_str: str) -> int:
+        """Parse cooking time string to minutes"""
+        try:
+            if not cook_time_str:
+                return 0
+            
+            # Extract number from strings like "15 мин", "1 час", "30 минут"
+            import re
+            
+            # Look for minutes
+            min_match = re.search(r'(\d+)\s*мин', cook_time_str, re.IGNORECASE)
+            if min_match:
+                return int(min_match.group(1))
+            
+            # Look for hours
+            hour_match = re.search(r'(\d+)\s*час', cook_time_str, re.IGNORECASE)
+            if hour_match:
+                return int(hour_match.group(1)) * 60
+            
+            # Just look for any number
+            num_match = re.search(r'(\d+)', cook_time_str)
+            if num_match:
+                return int(num_match.group(1))
+                
+            return 0
+        except:
+            return 0
     
     def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
         """Parse ingredients from tech card content and return in IIKo format"""
