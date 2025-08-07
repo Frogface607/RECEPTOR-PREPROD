@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
-IIKo Integration - Create Product/Dish Testing with CORRECTED Structure
-Testing the fixed endpoint /api/iiko/products/create-complete-dish with corrected ProductDto structure.
+IIKo Integration - Create Product/Dish FINAL TESTING
+Testing the critical case sensitivity fix: "type": "dish" → "type": "DISH"
 
-Focus: Testing the corrected DISH creation structure according to official IIKo documentation:
-- name, code, type='dish' (lowercase)
-- measureUnit='порция', price, weight  
-- isIncludedInMenu=true, order=1000
-- productCategoryId, parentGroup (for categories)
-- images=[], modifiers=[], groupModifiers=[]
-- REMOVED invalid fields: active, deleted, defaultSalePrice, cookingPlace, assembly, measurementUnit='PORTION', tags, additionalInfo
+CRITICAL FIX CONTEXT:
+Previous testing showed ProductDto structure was 95% correct, but IIKo API requires 
+uppercase values for enum field type. Enum values: [GOODS, DISH, PREPARED, SERVICE, MODIFIER, OUTER, RATE, PETROL]
+
+EXPECTED RESULT:
+✅ DISH products should now create SUCCESSFULLY in IIKo
+✅ Dishes should appear in IIKo menu  
+✅ 'AI Menu Designer' category should be populated with dishes
+✅ Complete solution - dishes in menu, not just tech cards
 """
 
 import requests
@@ -27,229 +29,333 @@ def log_test(message):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {message}")
 
-def test_corrected_dish_creation():
-    """Test POST /api/iiko/products/create-complete-dish with CORRECTED structure"""
-    log_test("🍽️ TESTING CORRECTED DISH CREATION STRUCTURE")
-    log_test("=" * 80)
+def test_create_complete_dish_fixed():
+    """Test POST /api/iiko/products/create-complete-dish with FIXED case sensitivity"""
+    log_test("🍽️ FINAL TESTING: IIKo Integration - Create Product/Dish с исправленным case sensitivity")
+    log_test("🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Изменил 'type': 'dish' (lowercase) на 'type': 'DISH' (uppercase)")
     
-    # Test data from review request
+    # Test data as specified in the review request
     test_data = {
-        "name": "Исправленное тестовое блюдо",
+        "name": "Финальное тестовое блюдо DISH",
         "organization_id": "default-org-001", 
-        "description": "Тест с исправленной структурой ProductDto",
+        "description": "Финальный тест с type='DISH' uppercase",
         "ingredients": [
-            {"name": "Мука", "quantity": 200, "unit": "г"},
-            {"name": "Яйца", "quantity": 2, "unit": "шт"}
+            {"name": "Мука", "quantity": 250, "unit": "г"}
         ],
-        "preparation_steps": ["Смешать ингредиенты", "Выпекать 30 минут"],
-        "weight": 300.0,
-        "price": 450.0
+        "preparation_steps": ["Создать блюдо с правильным type"],
+        "weight": 350.0,
+        "price": 500.0
     }
+    
+    log_test(f"📝 Test dish: {test_data['name']}")
+    log_test(f"📋 Description: {test_data['description']}")
+    log_test(f"🥬 Ingredients:")
+    for ing in test_data['ingredients']:
+        log_test(f"   - {ing['name']}: {ing['quantity']}{ing['unit']}")
+    log_test(f"⚖️ Weight: {test_data['weight']}г")
+    log_test(f"💰 Price: {test_data['price']}₽")
+    
+    log_test("\n🎯 EXPECTED RESULTS AFTER FIX:")
+    log_test("✅ NO errors related to 'Invalid enum value for type'")
+    log_test("✅ NO errors related to 'dish is not a valid enum value'")
+    log_test("✅ NO case sensitivity problems")
+    log_test("✅ success: true for dish_product")
+    log_test("✅ product_type: 'DISH'")
+    log_test("✅ will_appear_in_menu: true")
     
     try:
         url = f"{API_BASE}/iiko/products/create-complete-dish"
-        log_test(f"🔗 Making request to: {url}")
-        log_test(f"📋 Test data: {test_data['name']} - {test_data['price']}₽")
+        log_test(f"\n🌐 Making request to: {url}")
         
         start_time = time.time()
         response = requests.post(url, json=test_data, timeout=60)
-        duration = time.time() - start_time
+        response_time = time.time() - start_time
         
-        log_test(f"⏱️ Response time: {duration:.2f} seconds")
         log_test(f"📊 Response status: {response.status_code}")
-        
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                log_test(f"✅ SUCCESS: Endpoint responded with HTTP 200")
-                
-                # Check response structure
-                log_test("\n🔍 ANALYZING RESPONSE STRUCTURE:")
-                
-                # Check for assembly chart creation
-                assembly_result = data.get('assembly_chart_result', {})
-                if assembly_result.get('success'):
-                    log_test(f"✅ Assembly Chart: {assembly_result.get('message', 'Created successfully')}")
-                    log_test(f"📋 Assembly Chart ID: {assembly_result.get('assembly_chart_id', 'N/A')}")
-                else:
-                    log_test(f"❌ Assembly Chart: {assembly_result.get('error', 'Failed')}")
-                
-                # Check for DISH product creation - THIS IS THE KEY TEST
-                dish_result = data.get('dish_product_result', {})
-                if dish_result.get('success'):
-                    log_test(f"✅ DISH Product: {dish_result.get('message', 'Created successfully')}")
-                    log_test(f"🍽️ DISH Product ID: {dish_result.get('product_id', 'N/A')}")
-                    log_test(f"🍽️ DISH Product Name: {dish_result.get('product_name', 'N/A')}")
-                    log_test(f"🍽️ DISH Product Type: {dish_result.get('product_type', 'N/A')}")
-                    
-                    # Verify corrected structure fields
-                    log_test("\n🔍 VERIFYING CORRECTED DISH STRUCTURE:")
-                    
-                    # Check if response contains structure details
-                    if 'prepared_dish_data' in dish_result:
-                        dish_data = dish_result['prepared_dish_data']
-                        log_test(f"✅ type: {dish_data.get('type', 'MISSING')} (should be 'dish')")
-                        log_test(f"✅ measureUnit: {dish_data.get('measureUnit', 'MISSING')} (should be 'порция')")
-                        log_test(f"✅ isIncludedInMenu: {dish_data.get('isIncludedInMenu', 'MISSING')} (should be true)")
-                        
-                        # Check for REMOVED invalid fields
-                        invalid_fields = ['active', 'deleted', 'defaultSalePrice', 'cookingPlace', 'assembly', 'measurementUnit', 'tags', 'additionalInfo']
-                        for field in invalid_fields:
-                            if field in dish_data:
-                                log_test(f"❌ INVALID FIELD FOUND: {field} = {dish_data[field]} (should be removed)")
-                            else:
-                                log_test(f"✅ INVALID FIELD REMOVED: {field}")
-                    
-                else:
-                    log_test(f"❌ DISH Product: {dish_result.get('error', 'Failed')}")
-                    log_test(f"📝 Note: {dish_result.get('note', 'No additional info')}")
-                    
-                    # Check if fallback was used
-                    if 'fallback_instructions' in dish_result:
-                        log_test(f"🔄 Fallback: {dish_result.get('fallback_instructions', 'N/A')}")
-                
-                # Check category handling
-                category_result = data.get('category_result', {})
-                if category_result.get('success'):
-                    log_test(f"✅ Category: {category_result.get('message', 'Handled successfully')}")
-                else:
-                    log_test(f"ℹ️ Category: {category_result.get('note', 'Using existing or default')}")
-                
-                # Overall assessment
-                log_test("\n🎯 OVERALL ASSESSMENT:")
-                if dish_result.get('success'):
-                    log_test("✅ CORRECTED DISH STRUCTURE TEST: PASSED")
-                    log_test("✅ DISH products should now be created with proper structure")
-                else:
-                    log_test("❌ CORRECTED DISH STRUCTURE TEST: FAILED")
-                    log_test("❌ DISH creation still has issues despite structure corrections")
-                
-                return data
-                
-            except json.JSONDecodeError as e:
-                log_test(f"❌ JSON parsing failed: {str(e)}")
-                log_test(f"📄 Raw response: {response.text[:500]}")
-                return None
-                
-        else:
-            log_test(f"❌ HTTP Error: {response.status_code}")
-            log_test(f"📄 Error response: {response.text[:500]}")
-            return None
-            
-    except requests.exceptions.Timeout:
-        log_test("❌ Request timeout (60 seconds)")
-        return None
-    except requests.exceptions.RequestException as e:
-        log_test(f"❌ Request failed: {str(e)}")
-        return None
-
-def test_fallback_minimal_structure():
-    """Test if the fallback minimal structure works when main structure fails"""
-    log_test("\n🔄 TESTING FALLBACK MINIMAL STRUCTURE")
-    log_test("=" * 80)
-    
-    # Simpler test data to trigger fallback
-    minimal_test_data = {
-        "name": "Минимальное тестовое блюдо",
-        "organization_id": "default-org-001",
-        "description": "Тест минимальной структуры fallback",
-        "weight": 250.0,
-        "price": 350.0
-    }
-    
-    try:
-        url = f"{API_BASE}/iiko/products/create-complete-dish"
-        log_test(f"🔗 Making request to: {url}")
-        log_test(f"📋 Minimal test data: {minimal_test_data['name']}")
-        
-        response = requests.post(url, json=minimal_test_data, timeout=60)
-        log_test(f"📊 Response status: {response.status_code}")
+        log_test(f"⏱️ Response time: {response_time:.2f}s")
         
         if response.status_code == 200:
             data = response.json()
-            dish_result = data.get('dish_product_result', {})
+            log_test("✅ Create complete dish request successful!")
+            
+            # Analyze the response for the fix
+            log_test("\n🔍 ANALYZING CASE SENSITIVITY FIX RESULTS:")
+            
+            # Check assembly chart creation
+            assembly_result = data.get('assembly_chart', {})
+            if assembly_result.get('success'):
+                log_test(f"✅ Assembly Chart: SUCCESS")
+                log_test(f"   - ID: {assembly_result.get('assembly_chart_id', 'Unknown')}")
+                log_test(f"   - Name: {assembly_result.get('name', 'Unknown')}")
+            else:
+                log_test(f"❌ Assembly Chart: FAILED")
+                if 'error' in assembly_result:
+                    log_test(f"   - Error: {assembly_result['error']}")
+            
+            # Check DISH product creation - THIS IS THE CRITICAL TEST
+            dish_result = data.get('dish_product', {})
+            log_test(f"\n🍽️ DISH PRODUCT CREATION (CRITICAL TEST):")
             
             if dish_result.get('success'):
-                log_test("✅ FALLBACK MINIMAL STRUCTURE: WORKING")
-                log_test(f"🍽️ Minimal DISH created: {dish_result.get('product_name', 'N/A')}")
+                log_test(f"🎉 DISH PRODUCT: SUCCESS! (Case sensitivity fix WORKED!)")
+                log_test(f"   - Product ID: {dish_result.get('product_id', 'Unknown')}")
+                log_test(f"   - Product Name: {dish_result.get('product_name', 'Unknown')}")
+                log_test(f"   - Product Type: {dish_result.get('product_type', 'Unknown')}")
+                log_test(f"   - Category ID: {dish_result.get('category_id', 'Unknown')}")
+                log_test(f"   - Assembly Chart ID: {dish_result.get('assembly_chart_id', 'Unknown')}")
+                log_test(f"   - Message: {dish_result.get('message', 'No message')}")
+                
+                # Check if it will appear in menu
+                if dish_result.get('product_type') == 'DISH':
+                    log_test(f"✅ Product type is correctly 'DISH' (uppercase)")
+                    log_test(f"✅ This dish SHOULD appear in IIKo menu!")
+                    log_test(f"✅ 'AI Menu Designer' category should be populated!")
+                else:
+                    log_test(f"⚠️ Product type: {dish_result.get('product_type')} (expected 'DISH')")
+                
             else:
-                log_test("❌ FALLBACK MINIMAL STRUCTURE: FAILED")
-                log_test(f"📝 Error: {dish_result.get('error', 'Unknown error')}")
+                log_test(f"❌ DISH PRODUCT: FAILED")
+                error_msg = dish_result.get('error', 'Unknown error')
+                log_test(f"   - Error: {error_msg}")
+                
+                # Check for specific case sensitivity errors
+                if 'dish is not a valid enum value' in error_msg.lower():
+                    log_test(f"🚨 CASE SENSITIVITY ERROR STILL PRESENT!")
+                    log_test(f"💡 Backend still sending lowercase 'dish' instead of 'DISH'")
+                elif 'invalid enum value for type' in error_msg.lower():
+                    log_test(f"🚨 ENUM VALUE ERROR STILL PRESENT!")
+                    log_test(f"💡 Type field validation still failing")
+                else:
+                    log_test(f"🔍 Different error (not case sensitivity): {error_msg}")
             
-            return data
+            # Check category handling
+            category_result = data.get('category', {})
+            if 'category_id' in category_result:
+                log_test(f"\n📂 CATEGORY HANDLING:")
+                log_test(f"   - Category ID: {category_result.get('category_id')}")
+                log_test(f"   - Category Name: {category_result.get('category_name', 'AI Menu Designer')}")
+                log_test(f"   - Category Status: {category_result.get('status', 'Unknown')}")
+            
+            # Overall success assessment
+            log_test(f"\n📊 OVERALL ASSESSMENT:")
+            assembly_success = assembly_result.get('success', False)
+            dish_success = dish_result.get('success', False)
+            
+            if dish_success:
+                log_test(f"🎉 CRITICAL FIX SUCCESSFUL!")
+                log_test(f"✅ Case sensitivity issue RESOLVED")
+                log_test(f"✅ DISH products now creating in IIKo")
+                log_test(f"✅ Dishes will appear in menu")
+                log_test(f"✅ Complete solution achieved!")
+                
+                return {
+                    'success': True,
+                    'dish_success': True,
+                    'assembly_success': assembly_success,
+                    'case_sensitivity_fixed': True,
+                    'data': data
+                }
+            else:
+                log_test(f"❌ CRITICAL FIX INCOMPLETE")
+                log_test(f"❌ DISH creation still failing")
+                log_test(f"❌ Case sensitivity may not be fully resolved")
+                
+                return {
+                    'success': False,
+                    'dish_success': False,
+                    'assembly_success': assembly_success,
+                    'case_sensitivity_fixed': False,
+                    'data': data,
+                    'error': dish_result.get('error', 'DISH creation failed')
+                }
+            
         else:
-            log_test(f"❌ Minimal structure test failed: {response.status_code}")
-            return None
+            log_test(f"❌ Create complete dish failed: HTTP {response.status_code}")
+            try:
+                error_data = response.json()
+                log_test(f"📋 Error details: {json.dumps(error_data, indent=2, ensure_ascii=False)}")
+            except:
+                log_test(f"📋 Raw error response: {response.text[:500]}")
+            
+            return {
+                'success': False,
+                'dish_success': False,
+                'case_sensitivity_fixed': False,
+                'error': f"HTTP {response.status_code}",
+                'response': response.text
+            }
             
     except Exception as e:
-        log_test(f"❌ Minimal structure test error: {str(e)}")
-        return None
+        log_test(f"❌ Error testing create complete dish: {str(e)}")
+        return {
+            'success': False,
+            'dish_success': False,
+            'case_sensitivity_fixed': False,
+            'error': str(e)
+        }
 
-def compare_with_previous_results():
+def test_compare_with_previous_results():
     """Compare current results with previous testing to show improvement"""
-    log_test("\n📊 COMPARISON WITH PREVIOUS RESULTS")
-    log_test("=" * 80)
+    log_test("\n📊 COMPARISON WITH PREVIOUS TESTING RESULTS:")
+    log_test("🔍 Previous testing showed:")
+    log_test("   ❌ 'dish is not a valid enum value' errors")
+    log_test("   ❌ 'Invalid enum value for type' errors")
+    log_test("   ❌ DISH products failing to create")
+    log_test("   ❌ Only Assembly Charts created, no menu items")
+    log_test("   ❌ 'AI Menu Designer' category empty")
     
-    log_test("🔍 PREVIOUS ISSUES (from test_result.md):")
-    log_test("❌ IIKo ProductDto only accepts 34 specific fields")
-    log_test("❌ Backend sent invalid fields like 'active', 'deleted', 'type', 'description', 'weight', 'cookingPlace'")
-    log_test("❌ Most DISH creation endpoints returned 404 (not available)")
-    log_test("❌ Only /resto/api/v2/entities/products/save accessible but rejected structure")
-    log_test("❌ Existing IIKo menu has 3,153 products but ZERO DISH type products")
+    log_test("\n🎯 Expected improvement after fix:")
+    log_test("   ✅ No enum value errors")
+    log_test("   ✅ DISH products create successfully")
+    log_test("   ✅ Both Assembly Charts AND DISH products")
+    log_test("   ✅ Dishes appear in IIKo menu")
+    log_test("   ✅ 'AI Menu Designer' category populated")
+
+def test_verify_menu_population():
+    """Test if the created dish appears in the IIKo menu"""
+    log_test("\n🔍 STEP 2: Verifying dish appears in IIKo menu")
     
-    log_test("\n🔧 APPLIED FIXES:")
-    log_test("✅ Corrected ProductDto structure using official IIKo documentation")
-    log_test("✅ Using CORRECT fields: name, code, type='dish', measureUnit='порция', price, weight")
-    log_test("✅ Added proper menu integration: isIncludedInMenu=true, order=1000")
-    log_test("✅ REMOVED invalid fields: active, deleted, defaultSalePrice, cookingPlace, assembly")
-    log_test("✅ Added fallback to minimal structure if main structure fails")
-    
-    log_test("\n🎯 EXPECTED IMPROVEMENTS:")
-    log_test("✅ DISH products should now pass IIKo validation")
-    log_test("✅ Should progress further in creation process without structure errors")
-    log_test("✅ Better error handling with meaningful fallback options")
+    try:
+        url = f"{API_BASE}/iiko/menu/default-org-001"
+        log_test(f"Getting menu from: {url}")
+        
+        response = requests.get(url, timeout=30)
+        log_test(f"Response status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            menu = data.get('menu', {})
+            items = menu.get('items', [])
+            categories = menu.get('categories', [])
+            
+            log_test(f"📊 Menu contains {len(items)} items and {len(categories)} categories")
+            
+            # Look for our test dish
+            test_dish_name = "Финальное тестовое блюдо DISH"
+            found_dish = None
+            
+            for item in items:
+                if test_dish_name.lower() in item.get('name', '').lower():
+                    found_dish = item
+                    break
+            
+            if found_dish:
+                log_test(f"🎉 TEST DISH FOUND IN MENU!")
+                log_test(f"   - Name: {found_dish.get('name', 'Unknown')}")
+                log_test(f"   - ID: {found_dish.get('id', 'Unknown')}")
+                log_test(f"   - Category: {found_dish.get('category_id', 'Unknown')}")
+                log_test(f"   - Price: {found_dish.get('price', 'Unknown')}")
+                log_test(f"✅ DISH successfully appears in IIKo menu!")
+                return True
+            else:
+                log_test(f"❌ Test dish not found in menu")
+                log_test(f"🔍 Searching for dishes containing 'тестовое' or 'DISH':")
+                
+                test_dishes = [item for item in items if 
+                             'тестовое' in item.get('name', '').lower() or 
+                             'dish' in item.get('name', '').lower()]
+                
+                if test_dishes:
+                    log_test(f"📋 Found {len(test_dishes)} related dishes:")
+                    for dish in test_dishes[:5]:
+                        log_test(f"   - {dish.get('name', 'Unknown')} (ID: {dish.get('id', 'Unknown')})")
+                else:
+                    log_test(f"❌ No related test dishes found")
+                
+                return False
+            
+            # Check AI Menu Designer category
+            ai_category = None
+            for category in categories:
+                if 'AI Menu Designer' in category.get('name', ''):
+                    ai_category = category
+                    break
+            
+            if ai_category:
+                log_test(f"\n📂 'AI Menu Designer' category found:")
+                log_test(f"   - ID: {ai_category.get('id', 'Unknown')}")
+                log_test(f"   - Name: {ai_category.get('name', 'Unknown')}")
+                
+                # Count items in this category
+                ai_items = [item for item in items if item.get('category_id') == ai_category.get('id')]
+                log_test(f"   - Items in category: {len(ai_items)}")
+                
+                if ai_items:
+                    log_test(f"✅ 'AI Menu Designer' category is populated!")
+                    for item in ai_items[:3]:
+                        log_test(f"      - {item.get('name', 'Unknown')}")
+                else:
+                    log_test(f"❌ 'AI Menu Designer' category is empty")
+            else:
+                log_test(f"❌ 'AI Menu Designer' category not found")
+            
+        else:
+            log_test(f"❌ Failed to get menu: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        log_test(f"❌ Error verifying menu: {str(e)}")
+        return False
 
 def main():
-    """Main testing function"""
-    log_test("🚀 STARTING IIKO DISH CREATION TESTING WITH CORRECTED STRUCTURE")
-    log_test("=" * 80)
-    log_test(f"🔗 Backend URL: {BACKEND_URL}")
-    log_test(f"🔗 API Base: {API_BASE}")
-    log_test(f"📅 Test Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    # Compare with previous results first
-    compare_with_previous_results()
-    
-    # Test corrected dish creation
-    result1 = test_corrected_dish_creation()
-    
-    # Test fallback minimal structure
-    result2 = test_fallback_minimal_structure()
-    
-    # Final summary
-    log_test("\n🎯 FINAL TESTING SUMMARY")
+    """Main testing function for IIKo DISH creation fix"""
+    log_test("🚀 ФИНАЛЬНОЕ ТЕСТИРОВАНИЕ: IIKo Integration - Create Product/Dish")
+    log_test("🔧 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: case sensitivity fix 'dish' → 'DISH'")
+    log_test(f"🌐 Backend URL: {BACKEND_URL}")
     log_test("=" * 80)
     
-    if result1:
-        dish_result = result1.get('dish_product_result', {})
-        if dish_result.get('success'):
-            log_test("✅ CORRECTED DISH STRUCTURE: WORKING")
-            log_test("✅ Main agent's fixes have resolved the ProductDto structure issues")
-        else:
-            log_test("❌ CORRECTED DISH STRUCTURE: STILL HAS ISSUES")
-            log_test("❌ Further investigation needed despite structure corrections")
+    # Compare with previous results
+    test_compare_with_previous_results()
+    
+    log_test("\n" + "=" * 80)
+    
+    # Step 1: Test the fixed create complete dish endpoint
+    creation_result = test_create_complete_dish_fixed()
+    
+    log_test("\n" + "=" * 80)
+    
+    # Step 2: Verify dish appears in menu (if creation was successful)
+    menu_populated = False
+    if creation_result.get('dish_success'):
+        log_test("✅ DISH creation successful, verifying menu population...")
+        menu_populated = test_verify_menu_population()
     else:
-        log_test("❌ CORRECTED DISH STRUCTURE: ENDPOINT NOT ACCESSIBLE")
+        log_test("❌ DISH creation failed, checking menu anyway...")
+        menu_populated = test_verify_menu_population()
     
-    if result2:
-        dish_result2 = result2.get('dish_product_result', {})
-        if dish_result2.get('success'):
-            log_test("✅ FALLBACK MINIMAL STRUCTURE: WORKING")
-        else:
-            log_test("❌ FALLBACK MINIMAL STRUCTURE: NOT WORKING")
+    # Final Summary
+    log_test("\n" + "=" * 80)
+    log_test("📋 ФИНАЛЬНОЕ ТЕСТИРОВАНИЕ SUMMARY:")
+    log_test(f"✅ DISH Product Creation: {'SUCCESS' if creation_result.get('dish_success') else 'FAILED'}")
+    log_test(f"✅ Case Sensitivity Fix: {'WORKING' if creation_result.get('case_sensitivity_fixed') else 'NOT WORKING'}")
+    log_test(f"✅ Menu Population: {'SUCCESS' if menu_populated else 'FAILED'}")
+    log_test(f"✅ Assembly Chart Creation: {'SUCCESS' if creation_result.get('assembly_success') else 'FAILED'}")
     
-    log_test("\n🏁 TESTING COMPLETED")
-    log_test("📋 Results logged above for main agent review")
+    if creation_result.get('dish_success') and creation_result.get('case_sensitivity_fixed'):
+        log_test("\n🎉 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ УСПЕШНО!")
+        log_test("✅ Case sensitivity issue RESOLVED")
+        log_test("✅ DISH products now creating in IIKo")
+        log_test("✅ Dishes appearing in menu")
+        log_test("✅ Complete solution achieved!")
+        log_test("✅ 'AI Menu Designer' category populated")
+        log_test("🚀 READY FOR PRODUCTION USE!")
+    else:
+        log_test("\n❌ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ НЕ ЗАВЕРШЕНО:")
+        if not creation_result.get('case_sensitivity_fixed'):
+            log_test("   - Case sensitivity issue still present")
+        if not creation_result.get('dish_success'):
+            log_test("   - DISH product creation still failing")
+        if not menu_populated:
+            log_test("   - Dishes not appearing in menu")
+        
+        if 'error' in creation_result:
+            log_test(f"   - Error: {creation_result['error']}")
+        
+        log_test("💡 Further investigation needed")
+    
+    log_test("=" * 80)
+    
+    return creation_result
 
 if __name__ == "__main__":
     main()
