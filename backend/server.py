@@ -61,9 +61,11 @@ class IikoServerAuthManager:
     
     def _is_session_expired(self) -> bool:
         """Check if current session is expired"""
+        # Force refresh session every time to avoid token expiration issues
         if not self.session_key or not self.token_expires_at:
             return True
-        return datetime.now() >= self.token_expires_at - timedelta(minutes=5)
+        # Refresh token with a much bigger safety margin (15 minutes instead of 5)
+        return datetime.now() >= self.token_expires_at - timedelta(minutes=15)
     
     async def _refresh_session(self):
         """Get new session key from iikoServer API using Office login/password with SHA1 hash"""
