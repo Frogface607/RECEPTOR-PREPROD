@@ -235,6 +235,12 @@ function App() {
   const [showCategoryViewer, setShowCategoryViewer] = useState(false);
   const [categoryData, setCategoryData] = useState(null);
   const [isLoadingCategory, setIsLoadingCategory] = useState(false);
+  // NEW - Category management states
+  const [iikoCategories, setIikoCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [categoryCreationResult, setCategoryCreationResult] = useState(null);
+  const [showAllCategoriesModal, setShowAllCategoriesModal] = useState(false);
 
   // NEW - Assembly Charts (Tech Cards) Management states
   const [showAssemblyChartsModal, setShowAssemblyChartsModal] = useState(false);
