@@ -756,31 +756,72 @@ class IikoServerIntegrationService:
         """Get all assembly charts from IIKo using /resto/api/v2/assemblyCharts/getAll"""
         try:
             import httpx
+            from datetime import datetime, timedelta
             
             session_key = await self.auth_manager.get_session_key()
             
             endpoint = f"{self.auth_manager.base_url}/resto/api/v2/assemblyCharts/getAll"
             
+            # According to official IIKo documentation, dateFrom is REQUIRED for getAll
+            # Set dateFrom to 1 year ago and dateTo to 1 year in future to get all charts
+            date_from = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+            date_to = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
+            
             params = {
-                "key": session_key
+                "key": session_key,
+                "dateFrom": date_from,  # Required parameter
+                "dateTo": date_to,      # Optional but recommended
+                "includeDeletedProducts": True,   # Include charts for deleted products
+                "includePreparedCharts": False    # Don't include prepared charts (can be many)
             }
+            
+            self.logger.info(f"📋 Getting assembly charts from {date_from} to {date_to}")
             
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(endpoint, params=params)
                 
+                self.logger.info(f"📋 Assembly charts response: {response.status_code}")
+                
                 if response.status_code == 200:
                     data = response.json()
                     
-                    return {
-                        'success': True,
-                        'assembly_charts': data,
-                        'count': len(data) if isinstance(data, list) else 0
-                    }
+                    # Parse assembly charts from official response structure
+                    assembly_charts = []
+                    if isinstance(data, dict):
+                        # Official response structure: ChartResultDto
+                        assembly_charts = data.get('assemblyCharts', [])
+                        prepared_charts = data.get('preparedCharts', [])
+                        
+                        self.logger.info(f"📋 Found {len(assembly_charts)} assembly charts and {len(prepared_charts)} prepared charts")
+                        
+                        return {
+                            'success': True,
+                            'assembly_charts': assembly_charts,
+                            'prepared_charts': prepared_charts,
+                            'count': len(assembly_charts)
+                        }
+                    elif isinstance(data, list):
+                        # Alternative response format
+                        return {
+                            'success': True,
+                            'assembly_charts': data,
+                            'count': len(data)
+                        }
+                    else:
+                        return {
+                            'success': True,
+                            'assembly_charts': [],
+                            'count': 0,
+                            'note': 'No assembly charts found'
+                        }
                 else:
+                    error_text = response.text
+                    self.logger.error(f"Assembly charts request failed: {response.status_code} - {error_text}")
                     return {
                         'success': False,
                         'error': f'Failed to get assembly charts: {response.status_code}',
-                        'response': response.text
+                        'response': error_text,
+                        'note': 'Check if dateFrom parameter is properly formatted'
                     }
                     
         except Exception as e:
