@@ -879,21 +879,13 @@ class IikoServerIntegrationService:
                 parsed_ingredients = self._parse_ingredients_from_content(content)
                 ingredients = parsed_ingredients
             
-            # Create assembly chart structure using ONLY the 8 valid IIKo fields identified by API testing
-            # Based on error feedback: use only fields that IIKo API recognizes
-            # Adding minimal required values to avoid @NotNull errors
+            # Create assembly chart structure using ONLY the 3 absolutely minimal fields
+            # Based on error feedback: avoid complex DTOs that require specific structure
             assembly_chart = {
-                # Required fields based on API testing
+                # Only the 3 core required fields
                 "items": ingredients,
                 "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Must be > 0
-                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
-                
-                # Optional valid fields (providing minimal values instead of None to avoid @NotNull errors)
-                "effectiveDirectWriteoffStoreSpecification": {},
-                "appearance": "",
-                "dateTo": "2099-12-31",  # Far future date
-                "productSizeAssemblyStrategy": "STANDARD",
-                "productWriteoffStrategy": "STANDARD"
+                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer')
             }
             
             return assembly_chart
