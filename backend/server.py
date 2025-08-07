@@ -3658,7 +3658,7 @@ async def generate_mass_tech_cards(request: dict):
         failed_generations = []
         
         # Get user settings for tech card generation
-        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
         venue_context = generate_venue_context(user)
         venue_specific_rules = generate_venue_specific_rules(user)
         
