@@ -6315,6 +6315,31 @@ function App() {
                         >
                           📤 ЗАГРУЗИТЬ В IIKo
                         </button>
+                        <button
+                          onClick={async () => {
+                            if (!techCard) return;
+                            
+                            if (!selectedOrganization?.id) {
+                              alert('Сначала выберите организацию в модальном окне IIKo');
+                              return;
+                            }
+                            
+                            const result = await uploadTechCardAsAssemblyChart({
+                              id: currentTechCardId,
+                              dish_name: 'Техкарта из AI-Menu-Designer',
+                              content: techCard
+                            });
+                            
+                            if (result?.success) {
+                              alert(`✅ Техкарта создана как Assembly Chart в IIKo!`);
+                            }
+                          }}
+                          disabled={!techCard}
+                          className={`w-full ${!techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px] mt-2`}
+                          title="🔨 СОЗДАТЬ ТЕХКАРТУ: Создает Assembly Chart в IIKo системе на основе этой техкарты"
+                        >
+                          🔨 СОЗДАТЬ ТЕХКАРТУ В IIKo
+                        </button>
                       </div>
                     </div>
                   </div>
