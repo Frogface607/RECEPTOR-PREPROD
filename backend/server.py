@@ -5746,6 +5746,114 @@ async def get_iiko_category_items(organization_id: str, category_name: str):
             "items": []
         }
 
+# ============== IIKO CATEGORIES MANAGEMENT ENDPOINTS ==============
+
+@api_router.get("/iiko/categories/{organization_id}")
+async def get_iiko_categories(organization_id: str):
+    """Get all user categories from IIKo system"""
+    try:
+        logger.info(f"📂 Getting categories for organization: {organization_id}")
+        
+        result = await iiko_service.get_categories(organization_id)
+        
+        if result.get('success'):
+            logger.info(f"✅ Retrieved {result.get('categories_count', 0)} categories from IIKo")
+            return JSONResponse(
+                content=result,
+                status_code=200
+            )
+        else:
+            logger.error(f"❌ Failed to get categories: {result.get('error')}")
+            return JSONResponse(
+                content=result,
+                status_code=400
+            )
+            
+    except Exception as e:
+        logger.error(f"Error in get_iiko_categories: {str(e)}")
+        return JSONResponse(
+            content={"error": str(e), "success": False},
+            status_code=500
+        )
+
+@api_router.post("/iiko/categories/create")
+async def create_iiko_category(request: Dict[str, Any]):
+    """Create a new category in IIKo system"""
+    try:
+        category_name = request.get('name', 'AI Menu Designer')
+        organization_id = request.get('organization_id', 'default-org-001')
+        
+        logger.info(f"📂 Creating category '{category_name}' in IIKo organization: {organization_id}")
+        
+        # First check if category already exists
+        check_result = await iiko_service.check_category_exists(category_name, organization_id)
+        
+        if check_result.get('success') and check_result.get('exists'):
+            existing_category = check_result.get('category')
+            logger.info(f"ℹ️ Category '{category_name}' already exists")
+            return JSONResponse(
+                content={
+                    "success": True,
+                    "already_exists": True,
+                    "category": existing_category,
+                    "message": f"Категория '{category_name}' уже существует в IIKo"
+                },
+                status_code=200
+            )
+        
+        # Create new category
+        result = await iiko_service.create_category(category_name, organization_id)
+        
+        if result.get('success'):
+            logger.info(f"✅ Category '{category_name}' created successfully")
+            return JSONResponse(
+                content=result,
+                status_code=201
+            )
+        else:
+            logger.error(f"❌ Failed to create category: {result.get('error')}")
+            return JSONResponse(
+                content=result,
+                status_code=400
+            )
+            
+    except Exception as e:
+        logger.error(f"Error in create_iiko_category: {str(e)}")
+        return JSONResponse(
+            content={"error": str(e), "success": False},
+            status_code=500
+        )
+
+@api_router.post("/iiko/categories/check")
+async def check_iiko_category(request: Dict[str, Any]):
+    """Check if category exists in IIKo system"""
+    try:
+        category_name = request.get('name', 'AI Menu Designer')
+        organization_id = request.get('organization_id', 'default-org-001')
+        
+        logger.info(f"📂 Checking category '{category_name}' in organization: {organization_id}")
+        
+        result = await iiko_service.check_category_exists(category_name, organization_id)
+        
+        if result.get('success'):
+            return JSONResponse(
+                content=result,
+                status_code=200
+            )
+        else:
+            logger.error(f"❌ Failed to check category: {result.get('error')}")
+            return JSONResponse(
+                content=result,
+                status_code=400
+            )
+            
+    except Exception as e:
+        logger.error(f"Error in check_iiko_category: {str(e)}")
+        return JSONResponse(
+            content={"error": str(e), "success": False},
+            status_code=500
+        )
+
 # ============== NEW TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT ENDPOINTS ==============
 
 @api_router.post("/iiko/assembly-charts/create")
