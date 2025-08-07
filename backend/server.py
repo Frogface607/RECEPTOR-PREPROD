@@ -879,30 +879,30 @@ class IikoServerIntegrationService:
             
             # Create assembly chart structure based on IIKo API expectations
             assembly_chart = {
-                # Use 'name' instead of 'title' based on API error feedback
-                "name": tech_card_data.get('name', 'Новая техкарта'),
-                "comment": tech_card_data.get('description', ''),
+                # Based on IIKo API error, use minimal required fields
+                "items": ingredients,  # This seems to be the ingredients field
+                "technologyDescription": tech_card_data.get('description', ''),
+                "assembledAmount": float(tech_card_data.get('weight', 0)),
                 "organizationId": organization_id,
-                "active": True,
                 
-                # Assembly chart specific fields
-                "ingredients": ingredients,
-                "cookingSteps": [
-                    {
-                        "stepNumber": i + 1,
-                        "description": step,
-                        "duration": None
-                    } for i, step in enumerate(tech_card_data.get('preparation_steps', []))
-                ],
+                # Try to include cooking steps in description
+                "appearance": {
+                    "name": tech_card_data.get('name', 'Новая техкарта'),
+                    "description": tech_card_data.get('description', ''),
+                    "cookingSteps": [
+                        {
+                            "stepNumber": i + 1,
+                            "description": step,
+                            "duration": None
+                        } for i, step in enumerate(tech_card_data.get('preparation_steps', []))
+                    ]
+                },
                 
-                # Additional metadata
-                "yieldAmount": float(tech_card_data.get('weight', 0)),
-                "yieldUnit": "г",
-                "preparationTime": tech_card_data.get('cook_time', ''),
-                "difficulty": tech_card_data.get('difficulty', ''),
-                "category": tech_card_data.get('category', ''),
-                "cost": float(tech_card_data.get('cost', 0)),
-                "price": float(tech_card_data.get('price', 0)),
+                # Additional metadata that might be accepted
+                "productWriteoff": [],
+                "effectiveDirectWriteoffStoreSpecification": None,
+                "dateTo": None,
+                "productSizeAssemblyStrategy": None,
                 
                 # Metadata for tracking
                 "externalId": str(uuid.uuid4()),
