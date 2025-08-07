@@ -1031,6 +1031,7 @@ class IikoServerIntegrationService:
                                     "productId": product_id,  # Use real product ID if found
                                     "amountMiddle": amount,
                                     "amountIn": amount,  # Fixed field name
+                                    "amountOut": amount,  # Required field
                                     "sortWeight": ingredient_count,
                                     "packageCount": 1
                                 })
