@@ -501,7 +501,7 @@ class IikoServerIntegrationService:
                             
                             minimal_dish = {
                                 "name": product_data.get('name'),
-                                "type": "dish",
+                                "type": "DISH",  # UPPERCASE as required by IIKo
                                 "measureUnit": "порция",
                                 "price": float(product_data.get('price', 0.0))
                             }
