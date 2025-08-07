@@ -1003,7 +1003,7 @@ class IikoServerIntegrationService:
             return 0
     
     def _parse_ingredients_from_content(self, content: str, existing_products: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        """Parse ingredients from tech card content and return in IIKo format"""
+        """Parse ingredients from tech card content and return in official IIKo format"""
         ingredients = []
         
         try:
@@ -1042,15 +1042,28 @@ class IikoServerIntegrationService:
                                 # Try to find existing product ID
                                 product_id = self._find_product_id(name, existing_products or [])
                                 
-                                ingredient_count += 1
-                                ingredients.append({
-                                    "productId": product_id,  # Use real product ID if found
-                                    "amountMiddle": amount,
-                                    "amountIn": amount,  # Fixed field name
-                                    "amountOut": amount,  # Required field
-                                    "sortWeight": ingredient_count,
-                                    "packageCount": 1
-                                })
+                                # Only add ingredients with valid product IDs
+                                if product_id:
+                                    ingredients.append({
+                                        # Official IIKo AssemblyChartItemDto structure
+                                        "sortWeight": float(ingredient_count),
+                                        "productId": product_id,
+                                        "productSizeSpecification": None,
+                                        "storeSpecification": None,
+                                        "amountIn": amount,  # Gross amount - used in calculations
+                                        "amountMiddle": amount,  # Net amount
+                                        "amountOut": amount,  # Output of finished product
+                                        "amountIn1": 0.0,
+                                        "amountOut1": 0.0,
+                                        "amountIn2": 0.0,
+                                        "amountOut2": 0.0,
+                                        "amountIn3": 0.0,
+                                        "amountOut3": 0.0,
+                                        "packageTypeId": None
+                                    })
+                                    ingredient_count += 1
+                                else:
+                                    self.logger.warning(f"Skipping ingredient '{name}' - no matching product ID found")
             
         except Exception as e:
             self.logger.error(f"Error parsing ingredients from content: {str(e)}")
