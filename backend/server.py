@@ -5429,6 +5429,179 @@ async def get_iiko_category_items(organization_id: str, category_name: str):
             "items": []
         }
 
+# ============== NEW TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT ENDPOINTS ==============
+
+@api_router.post("/iiko/assembly-charts/create")
+async def create_tech_card_in_iiko(request: TechCardUpload):
+    """Create a new tech card (assembly chart) directly in IIKo system"""
+    try:
+        logger.info(f"🔨 Creating assembly chart '{request.name}' in IIKo organization: {request.organization_id}")
+        
+        # Prepare tech card data for assembly chart
+        tech_card_data = {
+            'name': request.name,
+            'description': request.description or 'Создано AI-Menu-Designer',
+            'ingredients': request.ingredients,
+            'preparation_steps': request.preparation_steps,
+            'weight': request.weight or 0.0,
+            'price': request.price or 0.0,
+            'category': request.category_id or ''
+        }
+        
+        # Create assembly chart in IIKo
+        result = await iiko_service.create_assembly_chart(tech_card_data, request.organization_id)
+        
+        if result.get('success'):
+            # Save success record to database
+            sync_record = {
+                "id": str(uuid.uuid4()),
+                "user_id": "system",
+                "organization_id": request.organization_id,
+                "tech_card_name": request.name,
+                "assembly_chart_id": result.get('assembly_chart_id'),
+                "sync_status": "created_as_assembly_chart",
+                "created_at": datetime.now().isoformat(),
+                "ai_generated": True,
+                "upload_success": True
+            }
+            
+            await db.iiko_sync_records.insert_one(sync_record)
+            
+            return {
+                "success": True,
+                "sync_id": sync_record["id"],
+                "assembly_chart_id": result.get('assembly_chart_id'),
+                "message": result.get('message'),
+                "note": "✅ Техкарта создана как Assembly Chart в IIKo!"
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.get('error'),
+                "note": result.get('note')
+            }
+            
+    except Exception as e:
+        logger.error(f"Error creating tech card in IIKo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating tech card: {str(e)}")
+
+@api_router.get("/iiko/assembly-charts/all/{organization_id}")
+async def get_all_tech_cards_from_iiko(organization_id: str):
+    """Get all tech cards (assembly charts) from IIKo system"""
+    try:
+        logger.info(f"📋 Getting all assembly charts from IIKo organization: {organization_id}")
+        
+        result = await iiko_service.get_all_assembly_charts(organization_id)
+        
+        if result.get('success'):
+            return {
+                "success": True,
+                "organization_id": organization_id,
+                "assembly_charts": result.get('assembly_charts', []),
+                "count": result.get('count', 0),
+                "message": f"Найдено {result.get('count', 0)} техкарт в IIKo"
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.get('error'),
+                "assembly_charts": [],
+                "count": 0
+            }
+            
+    except Exception as e:
+        logger.error(f"Error getting all tech cards from IIKo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting tech cards: {str(e)}")
+
+@api_router.get("/iiko/assembly-charts/{chart_id}")
+async def get_tech_card_by_id_from_iiko(chart_id: str):
+    """Get specific tech card (assembly chart) by ID from IIKo system"""
+    try:
+        logger.info(f"🔍 Getting assembly chart by ID from IIKo: {chart_id}")
+        
+        result = await iiko_service.get_assembly_chart_by_id(chart_id)
+        
+        if result.get('success'):
+            return {
+                "success": True,
+                "chart_id": chart_id,
+                "assembly_chart": result.get('assembly_chart'),
+                "message": "Техкарта найдена"
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.get('error'),
+                "chart_id": chart_id
+            }
+            
+    except Exception as e:
+        logger.error(f"Error getting tech card by ID from IIKo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting tech card: {str(e)}")
+
+@api_router.delete("/iiko/assembly-charts/{chart_id}")
+async def delete_tech_card_from_iiko(chart_id: str):
+    """Delete tech card (assembly chart) from IIKo system"""
+    try:
+        logger.info(f"🗑️ Deleting assembly chart from IIKo: {chart_id}")
+        
+        result = await iiko_service.delete_assembly_chart(chart_id)
+        
+        if result.get('success'):
+            # Update sync records
+            await db.iiko_sync_records.update_many(
+                {"assembly_chart_id": chart_id},
+                {"$set": {
+                    "sync_status": "deleted_from_iiko",
+                    "deleted_at": datetime.now().isoformat()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "chart_id": chart_id,
+                "message": result.get('message')
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.get('error'),
+                "chart_id": chart_id
+            }
+            
+    except Exception as e:
+        logger.error(f"Error deleting tech card from IIKo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting tech card: {str(e)}")
+
+@api_router.get("/iiko/tech-cards/sync-status")
+async def get_tech_cards_sync_status():
+    """Get sync status of all tech cards with IIKo"""
+    try:
+        # Get all sync records from database
+        sync_records = await db.iiko_sync_records.find(
+            {},
+            {"_id": 0}
+        ).sort([("created_at", -1)]).to_list(length=100)
+        
+        # Group by status
+        status_summary = {}
+        for record in sync_records:
+            status = record.get('sync_status', 'unknown')
+            if status not in status_summary:
+                status_summary[status] = 0
+            status_summary[status] += 1
+        
+        return {
+            "success": True,
+            "sync_records": sync_records,
+            "status_summary": status_summary,
+            "total_records": len(sync_records)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting tech cards sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting sync status: {str(e)}")
+
 # Helper functions for IIKo integration
 def _format_ingredients_for_iiko(ingredients: List[Dict[str, Any]]) -> str:
     """Format ingredients list for IIKo display"""
