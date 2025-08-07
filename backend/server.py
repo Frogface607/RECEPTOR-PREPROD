@@ -867,32 +867,47 @@ class IikoServerIntegrationService:
                 for ingredient in tech_card_data['ingredients']:
                     if isinstance(ingredient, dict):
                         ingredients.append({
-                            "name": ingredient.get('name', ''),
+                            "productId": None,  # Will be resolved by IIKo if exists
+                            "productName": ingredient.get('name', ''),
                             "amount": float(ingredient.get('quantity', 0)),
-                            "unit": ingredient.get('unit', 'г'),
-                            "cost": float(ingredient.get('price', 0))
+                            "measureUnit": ingredient.get('unit', 'г')
                         })
             else:
                 # Parse ingredients from content string if needed
                 content = tech_card_data.get('content', '')
                 ingredients = self._parse_ingredients_from_content(content)
             
-            # Create assembly chart structure
+            # Create assembly chart structure based on IIKo API expectations
             assembly_chart = {
-                "name": tech_card_data.get('name', 'Новая техкарта'),
-                "description": tech_card_data.get('description', ''),
+                # Use 'title' instead of 'name' based on API error feedback
+                "title": tech_card_data.get('name', 'Новая техкарта'),
+                "comment": tech_card_data.get('description', ''),
                 "organizationId": organization_id,
                 "active": True,
+                
+                # Assembly chart specific fields
                 "ingredients": ingredients,
-                "instructions": tech_card_data.get('preparation_steps', []),
-                "portionWeight": float(tech_card_data.get('weight', 0)),
-                "cookingTime": tech_card_data.get('cook_time', ''),
-                "difficulty": tech_card_data.get('difficulty', 'средне'),
+                "cookingSteps": [
+                    {
+                        "stepNumber": i + 1,
+                        "description": step,
+                        "duration": None
+                    } for i, step in enumerate(tech_card_data.get('preparation_steps', []))
+                ],
+                
+                # Additional metadata
+                "yieldAmount": float(tech_card_data.get('weight', 0)),
+                "yieldUnit": "г",
+                "preparationTime": tech_card_data.get('cook_time', ''),
+                "difficulty": tech_card_data.get('difficulty', ''),
                 "category": tech_card_data.get('category', ''),
                 "cost": float(tech_card_data.get('cost', 0)),
                 "price": float(tech_card_data.get('price', 0)),
-                "created_by": "AI-Menu-Designer",
-                "ai_generated": True
+                
+                # Metadata for tracking
+                "externalId": str(uuid.uuid4()),
+                "createdBy": "AI-Menu-Designer",
+                "aiGenerated": True
             }
             
             return assembly_chart
@@ -901,12 +916,13 @@ class IikoServerIntegrationService:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
             # Return minimal structure if transformation fails
             return {
-                "name": tech_card_data.get('name', 'Техкарта'),
-                "description": "Создано AI-Menu-Designer",
+                "title": tech_card_data.get('name', 'Техкарта'),
+                "comment": "Создано AI-Menu-Designer",
                 "organizationId": organization_id,
                 "active": True,
                 "ingredients": [],
-                "ai_generated": True
+                "cookingSteps": [],
+                "aiGenerated": True
             }
     
     def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
