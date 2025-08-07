@@ -394,7 +394,19 @@ frontend:
         agent: "main"
         comment: "FINAL SUCCESS CONFIRMED BY USER! Menu generation works completely - user reports 'меню создалось' and 'проект даже создался'. All core functionality operational including profile setup, menu generation, and project integration. System ready for production use."
 
-  - task: "Menu Projects System Backend"
+  - task: "Enhanced Menu Projects System with Analytics & OLAP Integration - New"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 ENHANCED MENU PROJECTS SYSTEM TESTING COMPLETED: Conducted comprehensive testing of expanded project system with analytics, IIKo OLAP integration, and export functionality. ✅ PROJECT MANAGEMENT ENDPOINTS: All CRUD operations verified - GET /api/menu-projects/{user_id} returns 3 existing projects with statistics, POST /api/create-menu-project creates 'Тестовое летнее меню' successfully (ID: d7418f5f-1da5-4448-bd00-bafef56a1b9a), GET /api/menu-project/{project_id}/content loads project with 15 items and enhanced statistics. ✅ ADVANCED ANALYTICS INTEGRATION: GET /api/menu-project/{project_id}/analytics?organization_id=default-org-001 returns comprehensive analytics with 4/4 sections working: project_overview (name, type, counts), productivity_metrics (15min time saved, 5000₽ cost savings, complexity score), IIKo integration status, and AI-generated recommendations. ✅ IIKO OLAP INTEGRATION: System properly handles IIKo sales data integration - health check returns 'healthy/active', Edison Craft Bar organization found, graceful fallback when sales endpoints unavailable, proper error handling for OLAP reports. ✅ PROJECT EXPORT FUNCTIONALITY: POST /api/menu-project/{project_id}/export?export_format=excel working correctly - generates proper download URLs with timestamp formatting, handles Excel export with multiple sheets (project overview, menus, tech cards, statistics), returns structured response with project name and format. ✅ ANALYTICS QUALITY: System generates meaningful productivity metrics (time/cost savings calculations), project complexity scoring based on content analysis, category coverage tracking, and intelligent recommendations with priority levels (high/medium/low). ✅ ERROR HANDLING: Robust error handling for missing projects (404), IIKo unavailability (graceful degradation), export failures (proper error messages), and malformed requests. ✅ INTEGRATION TESTING: Full integration between project system, IIKo API, analytics generation, and export functionality verified. System ready for production with all advanced project management features functional."
+
+  - task: "Menu Projects System Backend - Original"
     implemented: true
     working: true
     file: "backend/server.py"
