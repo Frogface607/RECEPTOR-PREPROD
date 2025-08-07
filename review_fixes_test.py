@@ -225,9 +225,9 @@ def test_simple_menu_generation():
     """Test POST /api/simple-menu - simple menu generation"""
     log_test("📋 STEP 4: Testing POST /api/simple-menu - simple menu generation")
     
-    # Test data for simple menu
+    # Test data for simple menu (using test_user_ prefix for backend compatibility)
     test_data = {
-        "user_id": "test-user-123",
+        "user_id": "test_user_12345",
         "menu_type": "business_lunch",
         "expectations": "Здоровые быстрые блюда для офисных работников, фокус на салаты и легкие основные блюда, умеренные цены"
     }
