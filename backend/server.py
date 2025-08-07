@@ -409,31 +409,23 @@ class IikoServerIntegrationService:
             }
             
             # Transform tech card data to CORRECT IIKo DISH product format
-            # Based on official documentation and web search results
+            # Based on API error analysis - using only confirmed valid fields
             dish_product = {
-                # CORE REQUIRED FIELDS
+                # CORE REQUIRED FIELDS (confirmed valid by API error message)
                 "name": product_data.get('name'),
-                "code": f"DISH_{str(uuid.uuid4())[:8].upper()}",  # Unique code
+                "num": f"DISH{str(uuid.uuid4())[:8].upper()}",  # Using 'num' instead of 'code'
                 "type": "DISH",  # Product type = DISH (UPPERCASE! IIKo expects uppercase)
                 
-                # BASIC PRODUCT PROPERTIES  
-                "description": product_data.get('description', ''),
-                "measureUnit": "порция",  # Unit for dishes
-                "price": float(product_data.get('price', 0.0)),
-                "weight": max(float(product_data.get('weight', 100.0)), 1.0),
+                # BASIC PRODUCT PROPERTIES (from confirmed 34 properties list)
+                "defaultSalePrice": float(product_data.get('price', 0.0)),  # Using defaultSalePrice not price
                 
-                # MENU INTEGRATION
-                "isIncludedInMenu": True,  # Include in menu
-                "order": 1000,  # Display order
+                # MENU INTEGRATION - trying minimal structure first
+                # Removed: measureUnit (not supported), description (not in known properties)
+                # Removed: weight, isIncludedInMenu, order, images, modifiers, groupModifiers (not confirmed)
                 
-                # CATEGORY INTEGRATION
+                # CATEGORY INTEGRATION (if available in known properties)
                 "productCategoryId": category_id if category_id else None,
-                "parentGroup": category_id if category_id else None,
-                
-                # OPTIONAL FIELDS
-                "images": [],
-                "modifiers": [],
-                "groupModifiers": []
+                "parentGroup": category_id if category_id else None
             }
             
             # Add assembly chart reference if available
