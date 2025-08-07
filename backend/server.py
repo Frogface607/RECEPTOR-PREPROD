@@ -903,18 +903,15 @@ class IikoServerIntegrationService:
             
             # Create assembly chart structure with ONLY the 8 valid IIKo fields
             # Based on testing: only these fields are accepted by IIKo API
+            # Try with minimal required fields first
             assembly_chart = {
                 "items": ingredients,  # Required - list of ingredients
                 "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Required - must be > 0
-                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),  # Required
-                
-                # Optional valid fields - set to None/empty if not provided
-                "effectiveDirectWriteoffStoreSpecification": None,
-                "appearance": None,
-                "dateTo": None,
-                "productSizeAssemblyStrategy": None,
-                "productWriteoffStrategy": None
+                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer')  # Required
             }
+            
+            # Only add optional fields if they have meaningful values
+            # Leave out None values to avoid @NotNull issues
             
             # Add assembledProductId only if we have a valid one
             if assembled_product_id:
