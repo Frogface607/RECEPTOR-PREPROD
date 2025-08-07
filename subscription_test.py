@@ -8,7 +8,7 @@ from datetime import datetime
 class SubscriptionAPITest(unittest.TestCase):
     def setUp(self):
         # Use the public endpoint for testing
-        self.base_url = "https://6fef0306-3b86-43a7-9af9-64a8d83a066e.preview.emergentagent.com/api"
+        self.base_url = "https://505e5bfa-929d-4220-a43a-07be25c44be2.preview.emergentagent.com/api"
         self.user_id = None
         self.user_email = f"test_user_{self.random_string(6)}@example.com"
         self.user_name = f"Test User {self.random_string(4)}"
@@ -343,7 +343,7 @@ def run_tests():
 
 if __name__ == "__main__":
     print("🚀 Starting RECEPTOR Subscription API Tests")
-    print(f"🔗 Testing against: https://6fef0306-3b86-43a7-9af9-64a8d83a066e.preview.emergentagent.com/api")
+    print(f"🔗 Testing against: https://505e5bfa-929d-4220-a43a-07be25c44be2.preview.emergentagent.com/api")
     print("=" * 70)
     
     success = run_tests()

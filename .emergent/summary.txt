@@ -1,30 +1,53 @@
 <analysis>
-The AI engineer successfully evolved Receptor Pro into AI-Menu-Designer, focusing on menu optimization for the HoReCa industry. Initial efforts streamlined UI, improved menu generation, and addressed  and  errors. A significant portion of the work revolved around the challenging IIKo integration, which involved overcoming complex authentication (SHA1 password hashing) and API limitations (lack of direct product creation, need for OLAP reports for sales data). The engineer established basic IIKo connectivity, retrieved organizations and menus, and implemented a category viewer. Project system enhancements included fixing user creation issues for projects and adding an Analytics navigation tab. The latest breakthrough is the discovery of IIKo API documentation for direct tech card creation and management, which will enable deeper integration. The approach demonstrates strong debugging, iterative development, and responsiveness to user feedback.
+The AI engineer successfully transitioned Receptor Pro into AI-Menu-Designer, initially focusing on streamlining menu generation for the HoReCa industry. A major part of the trajectory revolved around complex IIKo API integration, which involved overcoming authentication challenges (SHA1 hashing), intricate data structuring for tech cards, and continuous debugging against IIKo's strict API validation for required fields. Initial user issues with core menu generation (e.g., 'city' field errors, Pro user limitations) were addressed promptly. The work progressed iteratively, with the engineer frequently testing, adapting to user feedback (including providing specific IIKo documentation links), and meticulously refining data models to match IIKo's precise requirements. The current state reflects a fully functional IIKo tech card creation and retrieval system, having resolved multiple  and  errors by aligning with official IIKo documentation. The engineer demonstrates strong problem-solving and persistence in achieving complex integrations.
 </analysis>
 
 <product_requirements>
-The Receptor Pro platform, initially for automated tech card creation and cost management, evolved into an AI-Menu-Designer (МЕНЮ ЗА 15 МИНУТ). The core problem addressed is streamlining menu generation for the HoReCa industry by optimizing menus based on detailed venue profiles, aiming to significantly reduce manual development time. Key requirements included simplifying the 5-step menu wizard by centralizing venue data into a Venue Profile, simplifying menu creation to selecting type, free-text expectations, and dish quantity, refining menu display, implementing single-dish replacement, and ensuring all measurements in tech cards are in grams. The most critical ongoing requirement is IIKo API integration for automated tech card/price list upload, stock tracking, and sales analytics, aiming for real-time pricing and advanced AI-driven business insights, particularly focusing on sales data via OLAP reports and the newly discovered tech card management.
+The AI-Menu-Designer (МЕНЮ ЗА 15 МИНУТ) aims to automate and optimize menu generation for the HoReCa sector, significantly reducing manual development time. The platform evolved from Receptor Pro, initially for tech card creation and cost management. Key functionalities include a simplified menu creation wizard based on a Venue Profile, free-text expectations, and dish quantity, with all measurements in grams for tech cards. The most crucial ongoing requirement is deep IIKo API integration. This involves automated tech card/price list upload, stock tracking, sales analytics via OLAP reports, and real-time pricing. Specifically, the integration has focused on programmatic creation, deletion, and retrieval of tech cards within IIKo using  endpoints, and leveraging existing nomenclature and product data from IIKo to ensure accurate tech card generation.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack**: React.js (frontend), FastAPI (backend), MongoDB (database).
--   **AI/LLM**: OpenAI (GPT-4o-mini, GPT-4o), prompt engineering ().
+-   **AI/LLM**: OpenAI (GPT models), prompt engineering ().
 -   **Deployment**: Supervisor, Kubernetes (ingress rules,  prefix).
--   **Integration**: IIKo API (iikoCloud and iikoServer), custom HTTP client, SHA1 hashing.
+-   **Integration**: IIKo API (iikoCloud and iikoServer), custom HTTP client, SHA1 hashing for authentication, data transformation (DTOs).
 </key_technical_concepts>
 
 <code_architecture>
-The application uses a React frontend, FastAPI backend, and MongoDB database.
+The application utilizes a standard full-stack architecture with a React frontend, FastAPI backend, and MongoDB database.
 
 
 
--   **/app/backend/server.py**: Main FastAPI application, orchestrating backend logic, AI interactions, and database operations.
-    -   **Changes Made**: Extended  model; refined dish count validation; handled MongoDB  fields; removed special chef dishes placeholders; fixed  error; modified  to return full dish object. Crucially, major updates for IIKo integration: added  (handles SHA1 hash for token retrieval, manages  and ),  (for , , , , , , and  methods using direct HTTP requests).  was modified to explicitly request measurements in grams. New endpoints , ,  were added. Most recently,  was started, and user authentication checks in  and  were modified to automatically create users if not found, resolving  errors.
--   **/app/frontend/src/App.js**: Primary React component managing UI, state, and API calls.
-    -   **Changes Made**: Refactored for mobile responsiveness, integrated PRO features, PDF export, , . Simplified 5-step wizard. Added voice input, . Fixed  and z-index issues. Added IIKo-related states (, , , , ), ,  functions. Added an IIKo button and Upload to IIKo button. Implemented a loading screen with dynamic tips for . Added IIKo category viewer modal. Recently, project-related functions were enabled, a new  state was added, and UI elements for viewing project content (e.g., Посмотреть Содержимое, Экспорт в Excel) were introduced. A new  state and Аналитика navigation button were added, along with  functions and a  component.
--   **/app/frontend/src/App.css**: Contains global and component-specific CSS styles.
-    -   **Changes Made**: Styles for mobile responsiveness, buttons, modals, loading indicators, z-index adjustments, new IIKo modal styles, and new project/analytics modal styles.
+-   **/app/backend/server.py**: This is the core of the backend logic.
+    -   **Importance**: Orchestrates AI interactions, database operations, and all IIKo API integrations. It houses FastAPI routes and the .
+    -   **Changes Made**:
+        -   Expanded  model for dish count validation and MongoDB  handling.
+        -   Fixed  errors and  by auto-creating users.
+        -   Crucially, significant IIKo integration:  (handles SHA1 hash for token, , ), and  (with methods , , , , , , , , , , ).
+        -   Added new endpoints: , , , , , , .
+        -    modified for grams measurements.
+        -    and  methods were repeatedly updated to match IIKo's exact DTO requirements, including , , and specific UUID/ID usage.
+        -   Implemented robust error handling for IIKo API calls, including forced token refresh.
+        -   Fixed  bug by using .
+
+-   **/app/frontend/src/App.js**: The main React component.
+    -   **Importance**: Manages UI state, user interactions, and makes API calls to the backend.
+    -   **Changes Made**:
+        -   Refactored for mobile responsiveness, PRO features, PDF export, , .
+        -   Simplified 5-step wizard, added voice input, .
+        -   Added IIKo-related states (, , , , , , , ), and functions (, , , , , ).
+        -   Introduced IIKo button, Upload to IIKo button, ТЕХКАРТЫ button for managing tech cards.
+        -   Added loading screen with dynamic tips.
+        -   Enabled project-related functions, , UI elements for viewing project content (Посмотреть Содержимое, Экспорт в Excel).
+        -   Added  state, Аналитика navigation button,  functions, and a  component.
+        -   New modal components for IIKo Assembly Charts.
+
+-   **/app/frontend/src/App.css**: Contains CSS styles.
+    -   **Importance**: Provides styling for the entire application, including new UI elements.
+    -   **Changes Made**: Styles for mobile responsiveness, buttons, modals, loading indicators, z-index adjustments, new IIKo and project/analytics modal styles.
+
 -   **/app/backend/requirements.txt**: Python dependencies.
+    -   **Importance**: Lists all necessary Python libraries for the backend.
     -   **Changes Made**: Added usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
               [-o ORGANIZATION] [-t {openai,azure}]
               [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
@@ -62,12 +85,18 @@ options:
                         https://www.microsoft.com/en-
                         us/security/business/identity-access/microsoft-entra-
                         id
-  -V, --version         show program's version number and exit, , , ,  (initially, then direct HTTP used).
--   **/app/backend/.env**: Environment variables for the backend.
-    -   **Changes Made**:  updates,  variable added. Crucially, , , and  were added and updated multiple times for valid credentials.
--   **/app/frontend/.env**: Environment variables for the frontend.
+  -V, --version         show program's version number and exit, , , .  was initially added but later removed in favor of direct HTTP.
+
+-   **/app/backend/.env**: Backend environment variables.
+    -   **Importance**: Stores sensitive configurations like API keys and database URLs.
+    -   **Changes Made**:  updates,  variable added. , , and  were added and updated for IIKo connectivity.
+
+-   **/app/frontend/.env**: Frontend environment variables.
+    -   **Importance**: Stores frontend-specific configurations, notably the backend URL.
     -   **Changes Made**:  adjusted,  added.
+
 -   **/app/frontend/public/index.html**: Main HTML file.
+    -   **Importance**: The entry point for the React application.
     -   **Changes Made**: Updated title and meta description.
 </code_architecture>
 
@@ -76,15 +105,18 @@ options:
 -   **AI-Menu-Designer - UI/UX Refinement:** Further enhance the beauty and detailed interface of the menu generation flow.
 -   **Batch Export:** Allow batch export of all project tech cards to Excel/PDF.
 -   **Menu Templates:** Create ready-made menu templates for different types of venues.
--   **IIKo Integration - Product Creation**: Implement direct product creation via IIKo API using newly found documentation.
--   **IIKo Integration - Tech Card Management**: Implement creation, deletion, and retrieval of tech cards in IIKo.
 -   **IIKo Integration - Real Sales Data**: Implement retrieval of sales data via IIKo's OLAP reports.
+-   **IIKo Integration - Create Category/Folder**: Implement the creation of a dedicated category AI Menu Designer in IIKo for generated tech cards.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was addressing critical IIKo integration and project system challenges based on user feedback. The user reported issues with IIKo connectivity, which led to meticulous debugging of authentication, discovering the need for SHA1 hashing for the . This breakthrough allowed successful health checks, organization retrieval, and full menu access from IIKo. The  was also updated to ensure ingredients were specified in grams. A user bug report (При каждом клике вот такая ошибка) related to the project system was debugged, revealing a  error on the backend. This was resolved by modifying the project creation and retrieval endpoints to automatically create a user if not found. Additionally, an Аналитика (Analytics) tab was added to the navigation, along with a corresponding modal and state, to eventually display OLAP reports. The most recent and pivotal development is the user providing comprehensive IIKo API documentation for tech cards (, , , ), nomenclature, and product elements, which has opened up the path for direct product and tech card creation within IIKo.
+Immediately before this summary, the AI engineer successfully finalized the IIKo tech card integration. This involved an extensive debugging process to align the application's data structures with IIKo's strict API requirements for . Initially, the engineer faced  and  errors due to missing or incorrect fields (e.g., 'name' field not recognized, mandatory fields like  missing). Through iterative testing and referencing official IIKo documentation (provided by the user), the  and  methods in  were refined to send only the 8 required fields, including using real  from IIKo's menu nomenclature and setting appropriate / parameters.
+
+Concurrently, a critical bug affecting the core menu generation was fixed: the  access error was resolved by using . Additionally, issues with the IIKo authentication token expiring (401 errors) were addressed by implementing a forced token refresh mechanism in , ensuring continuous connectivity. The frontend () was updated with new states and API functions to support tech card management (creation, listing, viewing) and new UI elements like the ТЕХКАРТЫ button and corresponding modals.
+
+The final testing confirmed that IIKo integration is fully functional, with tech cards successfully created in the Edison Craft Bar IIKo system, product matching working, and core menu generation restored. The application is now ready for use with comprehensive IIKo tech card capabilities.
 </current_work>
 
 <optional_next_step>
-Implement full IIKo integration for tech card creation and management based on the newly provided API documentation.
+The next step is to implement the creation of a special category AI Menu Designer in IIKo, as requested by the user, to organize generated tech cards.
 </optional_next_step>

@@ -12,7 +12,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://6fef0306-3b86-43a7-9af9-64a8d83a066e.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://505e5bfa-929d-4220-a43a-07be25c44be2.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def log_test(message):
