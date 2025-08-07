@@ -3833,6 +3833,13 @@ function App() {
                   ПРОЕКТЫ {menuProjects.length > 0 && `(${menuProjects.length})`}
                 </button>
                 <button
+                  onClick={() => setShowAnalyticsModal(true)}
+                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
+                  title="📊 Аналитика и OLAP отчеты из IIKo"
+                >
+                  АНАЛИТИКА
+                </button>
+                <button
                   onClick={() => openIikoIntegration()}
                   className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
                   title="🏢 Интеграция с системой IIKo для ресторанов"
