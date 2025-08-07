@@ -898,10 +898,6 @@ class IikoServerIntegrationService:
                 "items": [],
                 "technologyDescription": "Создано AI-Menu-Designer",
                 "assembledAmount": 0,
-                "appearance": {
-                    "name": tech_card_data.get('name', 'Техкарта'),
-                    "description": "Создано AI-Menu-Designer"
-                },
                 "productWriteoff": []
             }
     
