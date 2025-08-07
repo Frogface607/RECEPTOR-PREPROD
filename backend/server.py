@@ -960,6 +960,7 @@ class IikoServerIntegrationService:
             # Look for ingredients section in content
             lines = content.split('\n')
             in_ingredients_section = False
+            ingredient_count = 0
             
             for line in lines:
                 line = line.strip()
@@ -988,11 +989,12 @@ class IikoServerIntegrationService:
                                 amount = float(amount_match.group(1))
                                 unit = amount_match.group(2) if amount_match.group(2) else 'г'
                                 
+                                ingredient_count += 1
                                 ingredients.append({
                                     "productId": None,  # Will be resolved by IIKo
                                     "amountMiddle": amount,
                                     "amountIn1": amount,
-                                    "sortWeight": len(ingredients) + 1,
+                                    "sortWeight": ingredient_count,
                                     "packageCount": 1
                                 })
             
