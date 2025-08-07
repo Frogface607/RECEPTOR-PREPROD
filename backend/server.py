@@ -868,7 +868,7 @@ class IikoServerIntegrationService:
             }
     
     def _transform_to_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str, existing_products: List[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Transform AI tech card data to IIKo assembly chart format with ONLY valid fields"""
+        """Transform AI tech card data to IIKo assembly chart format based on official documentation"""
         try:
             # Extract ingredients from tech card content if needed
             ingredients = []
@@ -879,18 +879,29 @@ class IikoServerIntegrationService:
                         # Try to find existing product ID
                         product_id = self._find_product_id(ingredient.get('name', ''), existing_products or [])
                         
-                        # If no product ID found, use a fallback UUID
+                        # If no product ID found, we need a real product ID - this is required in IIKo
                         if not product_id:
-                            product_id = str(uuid.uuid4())
-                            self.logger.warning(f"No product ID found for '{ingredient.get('name', '')}', using generated UUID: {product_id}")
+                            self.logger.warning(f"No product ID found for '{ingredient.get('name', '')}', skipping ingredient")
+                            continue
+                        
+                        amount = float(ingredient.get('quantity', 0))
                         
                         ingredients.append({
-                            "productId": product_id,  # Use real product ID if found
-                            "amountMiddle": float(ingredient.get('quantity', 0)),
-                            "amountIn": float(ingredient.get('quantity', 0)),  # Fixed field name
-                            "amountOut": float(ingredient.get('quantity', 0)),  # Required field
-                            "sortWeight": i + 1,
-                            "packageCount": 1
+                            # Required fields based on official IIKo documentation
+                            "sortWeight": float(i),  # Order of display (Double)
+                            "productId": product_id,  # UUID of ingredient (required)
+                            "productSizeSpecification": None,  # UUID of dish size (null for COMMON)
+                            "storeSpecification": None,  # Store specification (can be null)
+                            "amountIn": amount,  # Gross amount - this field participates in calculations!
+                            "amountMiddle": amount,  # Net amount  
+                            "amountOut": amount,  # Output of finished product
+                            "amountIn1": 0.0,  # Processing act 1/Gross (kg)
+                            "amountOut1": 0.0,  # Processing act 1/Net (kg)
+                            "amountIn2": 0.0,  # Processing act 2/Gross (kg)
+                            "amountOut2": 0.0,  # Processing act 2/Net (kg)
+                            "amountIn3": 0.0,  # Processing act 3/Gross (kg)
+                            "amountOut3": 0.0,  # Processing act 3/Net (kg)
+                            "packageTypeId": None  # UUID of ingredient packaging (can be null)
                         })
             else:
                 # Parse ingredients from content string if needed
@@ -901,44 +912,44 @@ class IikoServerIntegrationService:
             # Find an existing product ID for the main assembled product
             assembled_product_id = self._find_product_id(tech_card_data.get('name', ''), existing_products or [])
             
-            # If no existing product found, we need to fallback
+            # This is REQUIRED - we must have a real product ID from IIKo
             if not assembled_product_id and existing_products:
-                # Use the first available product as a placeholder
+                # Use the first available product as a placeholder - better than failing
                 assembled_product_id = existing_products[0].get('id') if existing_products else None
-                self.logger.warning(f"No matching product found for '{tech_card_data.get('name', '')}', using placeholder product")
+                self.logger.warning(f"No matching product found for '{tech_card_data.get('name', '')}', using first available product as placeholder")
             
-            # Create assembly chart structure with ONLY the 8 valid IIKo fields
-            # Based on testing: only these fields are accepted by IIKo API
-            # Try with minimal required fields first
+            if not assembled_product_id:
+                raise ValueError("assembledProductId is required - no products available to use")
+            
+            # Create assembly chart structure based on OFFICIAL IIKo documentation
+            # Reference: https://ru.iiko.help/articles/api-documentations/tekhnologicheskie-karty
             assembly_chart = {
-                "items": ingredients,  # Required - list of ingredients
-                "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Required - must be > 0
-                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),  # Required
-                "dateFrom": "2025-01-01",  # Required - start date for assembly chart validity
-                "dateTo": "2030-12-31"     # Optional - end date for assembly chart validity
+                # REQUIRED FIELDS based on official documentation
+                "assembledProductId": assembled_product_id,  # UUID (required)
+                "dateFrom": "2025-01-01",  # yyyy-MM-dd format (required) - set to current date
+                "dateTo": None,  # yyyy-MM-dd format (null for unlimited)
+                "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # BigDecimal (required)
+                "productWriteoffStrategy": "ASSEMBLE",  # "ASSEMBLE" or "DIRECT" (required)
+                "effectiveDirectWriteoffStoreSpecification": {  # StoreSpecification (required)
+                    "departments": [],  # Empty list = all departments
+                    "inverse": False  # false = inclusive filter
+                },
+                "productSizeAssemblyStrategy": "COMMON",  # "COMMON" or "SPECIFIC" (required)
+                "items": ingredients,  # List<AssemblyChartItemDto> (required)
+                
+                # OPTIONAL FIELDS based on official documentation  
+                "technologyDescription": tech_card_data.get('description', '') or 'Создано AI-Menu-Designer',
+                "description": tech_card_data.get('description', ''),
+                "appearance": "",  # Requirements for presentation
+                "organoleptic": "",  # Organoleptic quality indicators
+                "outputComment": ""  # Total yield
             }
-            
-            # Only add optional fields if they have meaningful values
-            # Leave out None values to avoid @NotNull issues
-            
-            # Add assembledProductId only if we have a valid one
-            if assembled_product_id:
-                # This field might be among the 8 valid ones, so we keep it conditionally
-                assembly_chart["assembledProductId"] = assembled_product_id
-                self.logger.info(f"Using assembledProductId: {assembled_product_id}")
-            else:
-                self.logger.warning("No assembledProductId available, creating assembly chart without product link")
             
             return assembly_chart
             
         except Exception as e:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
-            # Return minimal structure with only core required fields
-            return {
-                "items": [],
-                "assembledAmount": 1.0,
-                "technologyDescription": "Создано AI-Menu-Designer"
-            }
+            raise  # Re-raise the error instead of returning fallback - we need valid data
     
     def _find_product_id(self, product_name: str, existing_products: List[Dict[str, Any]]) -> str:
         """Find existing product ID by name matching"""
