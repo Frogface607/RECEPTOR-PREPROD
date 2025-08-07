@@ -690,6 +690,18 @@ frontend:
         agent: "testing"
         comment: "🎯 IIKO ANALYTICS DASHBOARD TESTING COMPLETED: Conducted comprehensive testing of new GET /api/iiko/analytics/{organization_id} endpoint for comprehensive analytics as specifically requested in review. ✅ ENDPOINT FUNCTIONALITY: GET /api/iiko/analytics/default-org-001 working perfectly with 200 OK status (4.28s response time). ✅ COMPREHENSIVE DATA RETRIEVAL: Successfully generates analytics dashboard with organization_info, menu_overview, and sales_summary sections. ✅ ORGANIZATION INFO: Correctly retrieves Edison Craft Bar organization details (ID: default-org-001, Name: Edison Craft Bar, Address: IIKo Office Installation). ✅ MENU OVERVIEW ANALYTICS: Successfully analyzes menu data showing 3,153 items across 75 categories with top categories identification. ✅ SALES SUMMARY INTEGRATION: Properly integrates with sales report functionality, gracefully handles when sales data is not available (status: 'not_available'). ✅ ANALYTICS COMPLETENESS: All 2/2 sections working correctly with proper error handling for each section. ✅ STRUCTURED RESPONSE: Returns well-structured analytics object with organization_id, generated_at timestamp, and organized sections. ✅ ERROR RESILIENCE: Each analytics section has independent error handling - if one section fails, others continue to work. ✅ EDISON CRAFT BAR VERIFIED: Successfully tested with Edison Craft Bar organization showing real menu data (3,153 items). ✅ PRODUCTION READY: Analytics dashboard provides valuable business insights combining organization info, menu analysis, and sales data (when available). All review requirements successfully verified - analytics dashboard endpoint ready for production use."
 
+  - task: "IIKo Integration - Create Product/Dish - NEW CRITICAL FIX"
+    implemented: true
+    working: false  
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "КРИТИЧЕСКАЯ ПРОБЛЕМА РЕШЕНА: Реализовал полноценную систему создания ПРОДУКТОВ в IIKo, а не только Assembly Charts! Проблема была в том, что приложение создавало только 'Assembly Charts' (рецепты), но не создавало фактические 'Products' (блюда), которые нужны для появления в меню IIKo. Реализовал: 1) Новый метод create_dish_product() - создает продукты типа DISH в IIKo, 2) Новый метод create_complete_dish_in_iiko() - создает и Assembly Chart и DISH продукт одновременно с привязкой к категории, 3) Новый endpoint /api/iiko/products/create-complete-dish - для создания полноценных блюд, 4) Улучшил существующий endpoint /api/iiko/tech-cards/upload - теперь создает полные блюда вместо только техкарт. Теперь генерируемые блюда будут: а) Появляться в меню IIKo как настоящие продукты, б) Заполнять категорию 'AI Menu Designer', в) Увеличивать счетчик блюд в категории, г) Иметь связанные техкарты (Assembly Charts) для рецептов. ТРЕБУЕТ ТЕСТИРОВАНИЯ BACKEND."
+
   - task: "IIKo Assembly Charts API Data Structure Fixes - New"
     implemented: true
     working: true
