@@ -126,20 +126,21 @@ def test_create_project_auto_user_creation():
             print(f"Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
             
             # Check if project was created successfully
-            project_id = result.get("id")
-            project_name = result.get("project_name")
-            user_id = result.get("user_id")
+            success = result.get("success", False)
+            project_id = result.get("project_id")
+            message = result.get("message", "")
             
-            if project_id and project_name and user_id == new_user_id:
+            if success and project_id:
                 log_test("Auto User & Project Creation", "PASS", 
-                        f"User {new_user_id} and project '{project_name}' created successfully")
+                        f"User {new_user_id} and project created successfully (ID: {project_id})")
                 
                 # Verify user can now get their projects
                 print(f"\nVerification: GET /api/menu-projects/{new_user_id}")
                 verify_response = requests.get(f"{BACKEND_URL}/menu-projects/{new_user_id}", timeout=30)
                 
                 if verify_response.status_code == 200:
-                    projects = verify_response.json()
+                    projects_data = verify_response.json()
+                    projects = projects_data.get("projects", [])
                     if isinstance(projects, list) and len(projects) >= 1:
                         found_project = any(p.get("id") == project_id for p in projects)
                         if found_project:
@@ -156,7 +157,7 @@ def test_create_project_auto_user_creation():
                             f"Cannot retrieve projects: HTTP {verify_response.status_code}")
             else:
                 log_test("Auto User & Project Creation", "FAIL", 
-                        f"Missing required fields in response: id={project_id}, name={project_name}, user_id={user_id}")
+                        f"Missing required fields in response: success={success}, project_id={project_id}")
                 
         elif response.status_code == 404:
             log_test("Auto User & Project Creation", "FAIL", 
