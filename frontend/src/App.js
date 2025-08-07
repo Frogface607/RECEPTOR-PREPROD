@@ -1411,6 +1411,106 @@ function App() {
     }
   };
 
+  // ============== NEW CATEGORY MANAGEMENT FUNCTIONS ==============
+  
+  const fetchAllIikoCategories = async (organizationId) => {
+    if (!organizationId) {
+      alert('Выберите организацию для просмотра категорий');
+      return;
+    }
+
+    setIsLoadingCategories(true);
+    try {
+      const response = await axios.get(`${API}/iiko/categories/${organizationId}`);
+      
+      if (response.data.success) {
+        setIikoCategories(response.data.categories || []);
+        return response.data;
+      } else {
+        setIikoCategories([]);
+        alert('Не удалось загрузить категории: ' + response.data.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching IIKo categories:', error);
+      alert('Ошибка получения категорий: ' + (error.response?.data?.detail || error.message));
+      setIikoCategories([]);
+      return null;
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  const createAIMenuDesignerCategory = async () => {
+    if (!selectedOrganization?.id) {
+      alert('Сначала выберите организацию IIKo');
+      return;
+    }
+
+    setIsCreatingCategory(true);
+    setCategoryCreationResult(null);
+
+    try {
+      console.log('Creating AI Menu Designer category for organization:', selectedOrganization.id);
+      
+      const categoryData = {
+        name: 'AI Menu Designer',
+        organization_id: selectedOrganization.id
+      };
+
+      const response = await axios.post(`${API}/iiko/categories/create`, categoryData);
+      
+      console.log('Category creation response:', response.data);
+
+      if (response.data.success) {
+        setCategoryCreationResult({
+          success: true,
+          message: response.data.message || 'Категория "AI Menu Designer" создана успешно!',
+          category: response.data.category,
+          already_exists: response.data.already_exists
+        });
+        
+        // Refresh categories list if modal is open
+        if (showAllCategoriesModal) {
+          await fetchAllIikoCategories(selectedOrganization.id);
+        }
+        
+        // Show success message
+        const alertMessage = response.data.already_exists 
+          ? '✅ Категория "AI Menu Designer" уже существует в вашей системе IIKo'
+          : '✅ Категория "AI Menu Designer" успешно создана в IIKo!';
+        alert(alertMessage);
+        
+      } else {
+        setCategoryCreationResult({
+          success: false,
+          error: response.data.error || 'Неизвестная ошибка при создании категории'
+        });
+        alert('❌ Ошибка создания категории: ' + (response.data.error || 'Неизвестная ошибка'));
+      }
+    } catch (error) {
+      console.error('Error creating category:', error);
+      const errorMessage = error.response?.data?.detail || error.message;
+      setCategoryCreationResult({
+        success: false,
+        error: errorMessage
+      });
+      alert('❌ Ошибка создания категории: ' + errorMessage);
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
+
+  const viewAllIikoCategories = async () => {
+    if (!selectedOrganization?.id) {
+      alert('Сначала выберите организацию IIKo');
+      return;
+    }
+
+    setShowAllCategoriesModal(true);
+    await fetchAllIikoCategories(selectedOrganization.id);
+  };
+
   // ============== NEW TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT FUNCTIONS ==============
   
   const fetchAllAssemblyCharts = async (organizationId) => {
