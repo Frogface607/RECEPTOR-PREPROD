@@ -195,6 +195,14 @@ function App() {
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
 
+  // NEW: Enhanced Project Analytics states
+  const [showProjectContentModal, setShowProjectContentModal] = useState(false);
+  const [projectContent, setProjectContent] = useState(null);
+  const [projectAnalytics, setProjectAnalytics] = useState(null);
+  const [isLoadingProjectContent, setIsLoadingProjectContent] = useState(false);
+  const [isLoadingProjectAnalytics, setIsLoadingProjectAnalytics] = useState(false);
+  const [isExportingProject, setIsExportingProject] = useState(false);
+
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
 
