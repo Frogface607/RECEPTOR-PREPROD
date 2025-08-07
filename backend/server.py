@@ -4905,12 +4905,12 @@ async def upload_tech_card_to_iiko(request: TechCardUpload):
             'active': True
         }
         
-        # 🎯 ПОПЫТКА РЕАЛЬНОЙ ЗАГРУЗКИ В IIKO!
-        logger.info(f"🔄 Attempting REAL upload to IIKo system...")
+        # 🎯 ПОПЫТКА РЕАЛЬНОЙ ЗАГРУЗКИ В IIKO КАК ТЕХКАРТА!
+        logger.info(f"🔄 Attempting REAL assembly chart creation in IIKo system...")
         
         try:
-            # Use the new create_product_in_iiko method
-            upload_result = await iiko_service.create_product_in_iiko(iiko_item_data, request.organization_id)
+            # Use the new create_assembly_chart method for tech cards
+            upload_result = await iiko_service.create_assembly_chart(iiko_item_data, request.organization_id)
             
             if upload_result.get('success'):
                 # ✅ SUCCESS - Product was created in IIKo!
