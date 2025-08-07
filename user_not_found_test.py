@@ -190,9 +190,11 @@ def test_existing_user_functionality():
         response = requests.get(f"{BACKEND_URL}/menu-projects/{existing_user_id}", timeout=30)
         
         if response.status_code == 200:
-            projects = response.json()
+            result = response.json()
+            projects = result.get("projects", [])
+            total_projects = result.get("total_projects", 0)
             log_test("Existing User Projects", "PASS", 
-                    f"Retrieved {len(projects)} projects for existing user")
+                    f"Retrieved {total_projects} projects for existing user")
         else:
             log_test("Existing User Projects", "FAIL", 
                     f"HTTP {response.status_code}: {response.text}")
@@ -218,9 +220,14 @@ def test_existing_user_functionality():
         
         if response.status_code == 200:
             result = response.json()
-            project_name = result.get("project_name")
-            log_test("Existing User New Project", "PASS", 
-                    f"Created new project '{project_name}' for existing user")
+            success = result.get("success", False)
+            project_id = result.get("project_id")
+            if success and project_id:
+                log_test("Existing User New Project", "PASS", 
+                        f"Created new project (ID: {project_id}) for existing user")
+            else:
+                log_test("Existing User New Project", "FAIL", 
+                        f"Project creation failed: success={success}, project_id={project_id}")
         else:
             log_test("Existing User New Project", "FAIL", 
                     f"HTTP {response.status_code}: {response.text}")
