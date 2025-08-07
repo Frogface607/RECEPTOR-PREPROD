@@ -3989,7 +3989,7 @@ async def delete_menu_project(project_id: str):
 
 @api_router.get("/menu-project/{project_id}/content")
 async def get_menu_project_content(project_id: str):
-    """Get all menus and tech cards for a specific project"""
+    """Get all menus and tech cards for a specific project with analytics"""
     try:
         # Find project
         project = await db.menu_projects.find_one({"id": project_id})
@@ -4025,18 +4025,95 @@ async def get_menu_project_content(project_id: str):
         if "_id" in project:
             del project["_id"]
         
+        # Calculate project statistics
+        project_stats = {
+            "creation_time_saved": len(menus) * 15 + len(tech_cards) * 45,  # минуты
+            "estimated_cost_savings": len(menus) * 5000 + len(tech_cards) * 2000,  # рубли
+            "total_dishes": sum(len(menu.get('dishes', [])) for menu in menus) + len(tech_cards),
+            "complexity_score": _calculate_project_complexity(menus, tech_cards),
+            "categories_covered": _get_project_categories(menus, tech_cards)
+        }
+        
         return {
             "success": True,
             "project": project,
             "menus": menus,
             "tech_cards": tech_cards,
             "menus_count": len(menus),
-            "tech_cards_count": len(tech_cards)
+            "tech_cards_count": len(tech_cards),
+            "project_stats": project_stats
         }
         
     except Exception as e:
         logger.error(f"Error getting menu project content: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting menu project content: {str(e)}")
+
+def _calculate_project_complexity(menus, tech_cards):
+    """Calculate complexity score for project analytics"""
+    try:
+        complexity_indicators = {
+            'advanced_techniques': ['су-вид', 'молекулярная', 'конфи', 'фламбирование'],
+            'premium_ingredients': ['трюфель', 'икра', 'фуа-гра', 'мраморная говядина', 'тунец'],
+            'complex_preparations': ['маринад', 'долгое тушение', 'ферментация', '24 часа']
+        }
+        
+        total_score = 0
+        content_texts = []
+        
+        # Collect all content texts
+        for menu in menus:
+            if menu.get('content'):
+                content_texts.append(menu['content'].lower())
+        
+        for card in tech_cards:
+            if card.get('content'):
+                content_texts.append(card['content'].lower())
+        
+        # Calculate complexity based on content analysis
+        for text in content_texts:
+            for category, indicators in complexity_indicators.items():
+                for indicator in indicators:
+                    if indicator in text:
+                        total_score += 1
+        
+        # Normalize score (0-100)
+        max_possible_score = len(content_texts) * len(complexity_indicators) * 3
+        if max_possible_score > 0:
+            return min(100, int((total_score / max_possible_score) * 100))
+        return 0
+        
+    except Exception:
+        return 0
+
+def _get_project_categories(menus, tech_cards):
+    """Extract categories covered in the project"""
+    try:
+        categories = set()
+        
+        # Extract from menus
+        for menu in menus:
+            dishes = menu.get('dishes', [])
+            for dish in dishes:
+                category = dish.get('category', '').strip()
+                if category:
+                    categories.add(category)
+        
+        # Extract from tech cards (try to parse from content)
+        for card in tech_cards:
+            content = card.get('content', '')
+            if 'Категория:' in content:
+                try:
+                    category_line = [line for line in content.split('\n') if 'Категория:' in line][0]
+                    category = category_line.split('Категория:')[1].strip().replace('**', '')
+                    if category:
+                        categories.add(category)
+                except:
+                    pass
+        
+        return list(categories)
+        
+    except Exception:
+        return []
 
 # ============================================
 # IIKo INTEGRATION ENDPOINTS
