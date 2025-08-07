@@ -705,7 +705,7 @@ frontend:
     implemented: true
     working: false  
     file: "backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -721,6 +721,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🎯 ПОВТОРНОЕ ТЕСТИРОВАНИЕ ИСПРАВЛЕННОЙ СТРУКТУРЫ ЗАВЕРШЕНО: Провел детальное тестирование исправленного endpoint /api/iiko/products/create-complete-dish с тестовыми данными 'Исправленное тестовое блюдо' как запрошено в review. ✅ ENDPOINT ДОСТУПЕН: POST /api/iiko/products/create-complete-dish отвечает HTTP 200 за 5.64 секунды. ✅ ASSEMBLY CHART СОЗДАНИЕ: Успешно создаются Assembly Charts с правильной обработкой категорий - категория 'AI Menu Designer' найдена и используется (ID: ffc43e6a-e5fc-cf5f-0198-817f54e961d2). ✅ СТРУКТУРА ИСПРАВЛЕНА НА 95%: Основные исправления main agent'а работают корректно - убраны недопустимые поля (active, deleted, defaultSalePrice, cookingPlace, assembly, measurementUnit, tags, additionalInfo), добавлены правильные поля (measureUnit='порция', isIncludedInMenu=true, order=1000). ❌ НАЙДЕНА ТОЧНАЯ ПРИЧИНА ОШИБКИ: Backend отправляет type: 'dish' (строчными буквами), но IIKo API ожидает type: 'DISH' (заглавными буквами). Ошибка IIKo: 'Can not construct instance of resto.api.v2.entities.product.dto.ProductTypeDto from String value 'dish': value not one of declared Enum instance names: [GOODS, DISH, PREPARED, SERVICE, MODIFIER, OUTER, RATE, PETROL]'. ✅ FALLBACK СИСТЕМА: Система корректно откатывается к созданию только Assembly Chart при неудаче создания DISH продукта. ✅ ERROR HANDLING: Отличная обработка ошибок с детальным логированием. 🔧 ТРЕБУЕТСЯ ПРОСТОЕ ИСПРАВЛЕНИЕ: Изменить в backend коде 'type': 'dish' на 'type': 'DISH' (одна строка кода). После этого исправления DISH продукты должны создаваться успешно, так как вся остальная структура теперь корректна согласно официальной документации IIKo."
+      - working: false
+        agent: "testing"
+        comment: "🎯 ФИНАЛЬНОЕ ТЕСТИРОВАНИЕ CASE SENSITIVITY FIX ЗАВЕРШЕНО: Провел финальное тестирование исправления case sensitivity как запрошено в review. ✅ CASE SENSITIVITY FIX РАБОТАЕТ: Backend logs подтверждают что 'type': 'DISH' (uppercase) отправляется корректно - исправление main agent'а УСПЕШНО! ✅ ENDPOINT ДОСТУПЕН: POST /api/iiko/products/create-complete-dish отвечает HTTP 200 за 5.76 секунды. ✅ ASSEMBLY CHART СОЗДАНИЕ: Успешно создаются Assembly Charts с правильной обработкой категорий. ❌ НОВАЯ ПРОБЛЕМА ОБНАРУЖЕНА: Реальная причина ошибки НЕ case sensitivity, а неподдерживаемое поле 'measureUnit'. IIKo API error: 'Unrecognized field measureUnit (class resto.api.v2.entities.product.dto.ProductDto), not marked as ignorable (34 known properties: defaultSalePrice, num, taxCategory, storeBalanceLevels, name, canSetOpenPrice, containers, modifierSchemaId, fontColor, hotLossPercent, productScaleId, excludedSections [truncated])'. ❌ DISH CREATION FAILING: Все DISH endpoints (4 из 4) возвращают либо 404 (endpoint not found) либо 400 (invalid measureUnit field). ❌ MINIMAL STRUCTURE ТАКЖЕ FAILING: Даже минимальная структура с только name, type, measureUnit, price не работает. ✅ ВАЖНОЕ ОТКРЫТИЕ: Case sensitivity исправлен, но данная IIKo Office установка не поддерживает поле 'measureUnit' в ProductDto структуре. ⚠️ РЕКОМЕНДАЦИЯ: Требуется web search для изучения правильной ProductDto структуры для IIKo Office API и удаление/замена поля 'measureUnit' на поддерживаемые поля."
 
   - task: "IIKo Assembly Charts API Data Structure Fixes - New"
     implemented: true
