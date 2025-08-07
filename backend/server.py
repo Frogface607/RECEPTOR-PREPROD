@@ -676,11 +676,286 @@ class IikoServerIntegrationService:
         except Exception as e:
             return {'parse_error': str(e)}
 
+    # ============== TECH CARDS (ASSEMBLY CHARTS) MANAGEMENT ==============
+    
+    async def create_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
+        """Create tech card (assembly chart) in IIKo using /resto/api/v2/assemblyCharts/save"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            # Assembly charts endpoint from documentation
+            endpoint = f"{self.auth_manager.base_url}/resto/api/v2/assemblyCharts/save"
+            
+            params = {
+                "key": session_key
+            }
+            
+            # Transform AI tech card to IIKo assembly chart format
+            assembly_chart = self._transform_to_assembly_chart(tech_card_data, organization_id)
+            
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                self.logger.info(f"🔨 Creating assembly chart in IIKo: {endpoint}")
+                self.logger.info(f"🔨 Assembly chart data: {assembly_chart['name']}")
+                
+                response = await client.post(
+                    endpoint,
+                    params=params,
+                    json=assembly_chart,
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                self.logger.info(f"🔨 Assembly chart response: {response.status_code} - {response.text[:300]}")
+                
+                if response.status_code in [200, 201]:
+                    data = response.json() if response.content else {}
+                    
+                    return {
+                        'success': True,
+                        'method': 'assembly_chart',
+                        'endpoint': endpoint,
+                        'assembly_chart_id': data.get('id'),
+                        'name': assembly_chart['name'],
+                        'response': data,
+                        'message': f"✅ Техкарта '{assembly_chart['name']}' создана в IIKo!"
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Assembly chart creation failed: {response.status_code}',
+                        'response': response.text,
+                        'note': f'Не удалось создать техкарту: {response.text[:100]}'
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error creating assembly chart: {str(e)}")
             return {
                 'success': False,
                 'error': str(e),
-                'note': 'Tech card saved locally for future sync'
+                'note': 'Ошибка при создании техкарты в IIKo'
             }
+    
+    async def get_all_assembly_charts(self, organization_id: str) -> Dict[str, Any]:
+        """Get all assembly charts from IIKo using /resto/api/v2/assemblyCharts/getAll"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            endpoint = f"{self.auth_manager.base_url}/resto/api/v2/assemblyCharts/getAll"
+            
+            params = {
+                "key": session_key
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(endpoint, params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    return {
+                        'success': True,
+                        'assembly_charts': data,
+                        'count': len(data) if isinstance(data, list) else 0
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Failed to get assembly charts: {response.status_code}',
+                        'response': response.text
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error getting assembly charts: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    async def get_assembly_chart_by_id(self, chart_id: str) -> Dict[str, Any]:
+        """Get specific assembly chart by ID using /resto/api/v2/assemblyCharts/byId"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            endpoint = f"{self.auth_manager.base_url}/resto/api/v2/assemblyCharts/byId"
+            
+            params = {
+                "key": session_key,
+                "id": chart_id
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(endpoint, params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    return {
+                        'success': True,
+                        'assembly_chart': data
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Assembly chart not found: {response.status_code}',
+                        'response': response.text
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error getting assembly chart by ID: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    async def delete_assembly_chart(self, chart_id: str) -> Dict[str, Any]:
+        """Delete assembly chart using /resto/api/v2/assemblyCharts/delete"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            endpoint = f"{self.auth_manager.base_url}/resto/api/v2/assemblyCharts/delete"
+            
+            params = {
+                "key": session_key
+            }
+            
+            # Send chart ID in request body
+            delete_data = {
+                "id": chart_id
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    endpoint,
+                    params=params,
+                    json=delete_data,
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                if response.status_code in [200, 204]:
+                    return {
+                        'success': True,
+                        'message': f'Техкарта удалена (ID: {chart_id})'
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': f'Failed to delete assembly chart: {response.status_code}',
+                        'response': response.text
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error deleting assembly chart: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def _transform_to_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
+        """Transform AI tech card data to IIKo assembly chart format"""
+        try:
+            # Extract ingredients from tech card content if needed
+            ingredients = []
+            
+            if 'ingredients' in tech_card_data and isinstance(tech_card_data['ingredients'], list):
+                for ingredient in tech_card_data['ingredients']:
+                    if isinstance(ingredient, dict):
+                        ingredients.append({
+                            "name": ingredient.get('name', ''),
+                            "amount": float(ingredient.get('quantity', 0)),
+                            "unit": ingredient.get('unit', 'г'),
+                            "cost": float(ingredient.get('price', 0))
+                        })
+            else:
+                # Parse ingredients from content string if needed
+                content = tech_card_data.get('content', '')
+                ingredients = self._parse_ingredients_from_content(content)
+            
+            # Create assembly chart structure
+            assembly_chart = {
+                "name": tech_card_data.get('name', 'Новая техкарта'),
+                "description": tech_card_data.get('description', ''),
+                "organizationId": organization_id,
+                "active": True,
+                "ingredients": ingredients,
+                "instructions": tech_card_data.get('preparation_steps', []),
+                "portionWeight": float(tech_card_data.get('weight', 0)),
+                "cookingTime": tech_card_data.get('cook_time', ''),
+                "difficulty": tech_card_data.get('difficulty', 'средне'),
+                "category": tech_card_data.get('category', ''),
+                "cost": float(tech_card_data.get('cost', 0)),
+                "price": float(tech_card_data.get('price', 0)),
+                "created_by": "AI-Menu-Designer",
+                "ai_generated": True
+            }
+            
+            return assembly_chart
+            
+        except Exception as e:
+            self.logger.error(f"Error transforming to assembly chart: {str(e)}")
+            # Return minimal structure if transformation fails
+            return {
+                "name": tech_card_data.get('name', 'Техкарта'),
+                "description": "Создано AI-Menu-Designer",
+                "organizationId": organization_id,
+                "active": True,
+                "ingredients": [],
+                "ai_generated": True
+            }
+    
+    def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
+        """Parse ingredients from tech card content"""
+        ingredients = []
+        
+        try:
+            # Look for ingredients section in content
+            lines = content.split('\n')
+            in_ingredients_section = False
+            
+            for line in lines:
+                line = line.strip()
+                
+                if 'ИНГРЕДИЕНТЫ' in line.upper() or '🥬' in line:
+                    in_ingredients_section = True
+                    continue
+                    
+                if in_ingredients_section and line:
+                    # Stop if we hit another section
+                    if any(marker in line.upper() for marker in ['ВРЕМЯ', 'СЕБЕСТОИМОСТЬ', 'РЕЦЕПТ', '⏰', '💰', '👨‍🍳']):
+                        break
+                    
+                    # Parse ingredient line: "Название — количество единица (дополнительно)"
+                    if '—' in line or '-' in line:
+                        parts = line.replace('—', '|').replace('-', '|').split('|')
+                        if len(parts) >= 2:
+                            name = parts[0].strip().replace('•', '').strip()
+                            amount_part = parts[1].strip()
+                            
+                            # Extract amount and unit
+                            import re
+                            amount_match = re.search(r'(\d+(?:\.\d+)?)\s*([а-яёa-z]*)', amount_part, re.IGNORECASE)
+                            
+                            if amount_match:
+                                amount = float(amount_match.group(1))
+                                unit = amount_match.group(2) if amount_match.group(2) else 'г'
+                                
+                                ingredients.append({
+                                    "name": name,
+                                    "amount": amount,
+                                    "unit": unit,
+                                    "cost": 0.0  # Will be calculated later
+                                })
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing ingredients from content: {str(e)}")
+        
+        return ingredients
 
 # Legacy Cloud API classes (keeping for backward compatibility)
 class IikoAuthManager:
