@@ -916,12 +916,15 @@ class IikoServerIntegrationService:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
             # Return minimal structure if transformation fails
             return {
-                "name": tech_card_data.get('name', 'Техкарта'),
-                "comment": "Создано AI-Menu-Designer",
+                "items": [],
+                "technologyDescription": "Создано AI-Menu-Designer",
+                "assembledAmount": 0,
                 "organizationId": organization_id,
-                "active": True,
-                "ingredients": [],
-                "cookingSteps": [],
+                "appearance": {
+                    "name": tech_card_data.get('name', 'Техкарта'),
+                    "description": "Создано AI-Menu-Designer"
+                },
+                "productWriteoff": [],
                 "aiGenerated": True
             }
     
