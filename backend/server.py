@@ -491,11 +491,12 @@ class IikoServerIntegrationService:
                             # Bad request - try minimal structure
                             self.logger.warning(f"🍽️ Bad request to {endpoint}, trying minimal structure")
                             
+                            # Try ultra-minimal structure with only confirmed valid fields
                             minimal_dish = {
                                 "name": product_data.get('name'),
                                 "type": "DISH",  # UPPERCASE as required by IIKo
-                                "measureUnit": "порция",
-                                "price": float(product_data.get('price', 0.0))
+                                "defaultSalePrice": float(product_data.get('price', 0.0))
+                                # Removed measureUnit - not supported by this API
                             }
                             
                             minimal_response = await client.post(
