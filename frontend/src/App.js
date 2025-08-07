@@ -9946,6 +9946,187 @@ function App() {
         </div>
       )}
 
+      {/* Project Content Modal - NEW! */}
+      {showProjectContentModal && selectedProject && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-purple-300 mb-2">
+                    📁 {selectedProject.project_name}
+                  </h2>
+                  <p className="text-gray-400">
+                    {selectedProject.project_type} • Создан {new Date(selectedProject.created_at).toLocaleDateString('ru-RU')}
+                  </p>
+                  {selectedProject.description && (
+                    <p className="text-sm text-gray-300 mt-2">{selectedProject.description}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => exportProject(selectedProject.id, 'excel')}
+                    disabled={isExportingProject}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    {isExportingProject ? '⏳ Экспорт...' : '📊 Экспорт Excel'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowProjectContentModal(false);
+                      setSelectedProject(null);
+                      setProjectContent(null);
+                      setProjectAnalytics(null);
+                    }}
+                    className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {isLoadingProjectContent ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin text-6xl mb-4">⚡</div>
+                  <div className="text-xl text-purple-300 font-bold mb-2">Загружаем содержимое проекта...</div>
+                  <div className="text-gray-400">Анализируем меню и техкарты</div>
+                </div>
+              ) : projectContent ? (
+                <div className="space-y-8">
+                  {/* Project Statistics */}
+                  {projectContent.project_stats && renderProjectStats(projectContent.project_stats)}
+                  
+                  {/* Analytics Section */}
+                  {isLoadingProjectAnalytics ? (
+                    <div className="bg-gray-800/50 rounded-lg p-6 text-center">
+                      <div className="animate-spin text-3xl mb-2">📊</div>
+                      <div className="text-lg text-purple-300">Загружаем аналитику IIKo...</div>
+                    </div>
+                  ) : (
+                    projectAnalytics && renderProjectAnalytics(projectAnalytics.analytics)
+                  )}
+
+                  {/* Content Tabs */}
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="flex gap-4 mb-4">
+                      <h3 className="text-2xl font-bold text-purple-300">📂 СОДЕРЖИМОЕ ПРОЕКТА</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Menus Section */}
+                      <div className="bg-gray-700/50 rounded-lg p-4">
+                        <h4 className="text-lg font-bold text-green-300 mb-3 flex items-center gap-2">
+                          🍽️ МЕНЮ ({projectContent.menus_count})
+                        </h4>
+                        
+                        {projectContent.menus.length === 0 ? (
+                          <div className="text-gray-400 text-center py-8">
+                            <div className="text-4xl mb-2">📋</div>
+                            <div>Меню в проекте пока нет</div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 max-h-96 overflow-y-auto">
+                            {projectContent.menus.map((menu, index) => (
+                              <div key={index} className="bg-gray-800/50 rounded p-3 border-l-4 border-green-400">
+                                <div className="font-bold text-sm text-green-300 mb-1">
+                                  {menu.menu_type} • {menu.dishes?.length || 0} блюд
+                                </div>
+                                <div className="text-xs text-gray-400 mb-2">
+                                  {new Date(menu.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                                {menu.expectations && (
+                                  <div className="text-xs text-gray-300 line-clamp-2">
+                                    {menu.expectations.substring(0, 100)}...
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tech Cards Section */}
+                      <div className="bg-gray-700/50 rounded-lg p-4">
+                        <h4 className="text-lg font-bold text-blue-300 mb-3 flex items-center gap-2">
+                          📋 ТЕХКАРТЫ ({projectContent.tech_cards_count})
+                        </h4>
+                        
+                        {projectContent.tech_cards.length === 0 ? (
+                          <div className="text-gray-400 text-center py-8">
+                            <div className="text-4xl mb-2">📄</div>
+                            <div>Техкарты в проекте пока нет</div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 max-h-96 overflow-y-auto">
+                            {projectContent.tech_cards.slice(0, 20).map((card, index) => (
+                              <div key={index} className="bg-gray-800/50 rounded p-3 border-l-4 border-blue-400">
+                                <div className="font-bold text-sm text-blue-300 mb-1">
+                                  {card.dish_name}
+                                </div>
+                                <div className="text-xs text-gray-400 mb-2">
+                                  {new Date(card.created_at).toLocaleDateString('ru-RU')}
+                                  {card.is_inspiration && (
+                                    <span className="ml-2 bg-orange-600 text-white px-2 py-0.5 rounded text-xs">
+                                      ВДОХНОВЕНИЕ
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setTechCard(card.content);
+                                    setCurrentTechCardId(card.id);
+                                    setShowProjectContentModal(false);
+                                  }}
+                                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
+                                >
+                                  👁️ Открыть
+                                </button>
+                              </div>
+                            ))}
+                            {projectContent.tech_cards.length > 20 && (
+                              <div className="text-center text-gray-400 text-sm py-2">
+                                ... и еще {projectContent.tech_cards.length - 20} техкарт
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Categories Coverage */}
+                  {projectContent.project_stats?.categories_covered && projectContent.project_stats.categories_covered.length > 0 && (
+                    <div className="bg-gray-800/50 rounded-lg p-4">
+                      <h4 className="text-lg font-bold text-yellow-300 mb-3">🏷️ ПОКРЫТЫЕ КАТЕГОРИИ</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {projectContent.project_stats.categories_covered.map((category, index) => (
+                          <span 
+                            key={index}
+                            className="bg-yellow-600/20 text-yellow-300 px-3 py-1 rounded-full text-sm"
+                          >
+                            {category}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">❌</div>
+                  <div className="text-xl text-red-300 font-bold mb-2">Ошибка загрузки</div>
+                  <div className="text-gray-400">Не удалось загрузить содержимое проекта</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
