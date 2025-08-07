@@ -879,8 +879,8 @@ class IikoServerIntegrationService:
             
             # Create assembly chart structure based on IIKo API expectations
             assembly_chart = {
-                # Use 'title' instead of 'name' based on API error feedback
-                "title": tech_card_data.get('name', 'Новая техкарта'),
+                # Use 'name' instead of 'title' based on API error feedback
+                "name": tech_card_data.get('name', 'Новая техкарта'),
                 "comment": tech_card_data.get('description', ''),
                 "organizationId": organization_id,
                 "active": True,
