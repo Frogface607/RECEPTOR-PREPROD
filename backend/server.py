@@ -883,10 +883,7 @@ class IikoServerIntegrationService:
                 # Based on IIKo API error, use minimal required fields
                 "items": ingredients,  # This seems to be the ingredients field
                 "technologyDescription": tech_card_data.get('description', ''),
-                "assembledAmount": float(tech_card_data.get('weight', 0)),
-                
-                # Additional metadata that might be accepted
-                "productWriteoff": []
+                "assembledAmount": float(tech_card_data.get('weight', 0))
             }
             
             return assembly_chart
