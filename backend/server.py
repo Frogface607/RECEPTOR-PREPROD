@@ -1029,7 +1029,7 @@ class IikoServerIntegrationService:
                                 ingredients.append({
                                     "productId": product_id,  # Use real product ID if found
                                     "amountMiddle": amount,
-                                    "amountIn1": amount,
+                                    "amountIn": amount,  # Fixed field name
                                     "sortWeight": ingredient_count,
                                     "packageCount": 1
                                 })
