@@ -907,7 +907,9 @@ class IikoServerIntegrationService:
             assembly_chart = {
                 "items": ingredients,  # Required - list of ingredients
                 "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Required - must be > 0
-                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer')  # Required
+                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),  # Required
+                "dateFrom": "2025-01-01",  # Required - start date for assembly chart validity
+                "dateTo": "2030-12-31"     # Optional - end date for assembly chart validity
             }
             
             # Only add optional fields if they have meaningful values
