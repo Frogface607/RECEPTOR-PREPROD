@@ -916,7 +916,7 @@ class IikoServerIntegrationService:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
             # Return minimal structure if transformation fails
             return {
-                "title": tech_card_data.get('name', 'Техкарта'),
+                "name": tech_card_data.get('name', 'Техкарта'),
                 "comment": "Создано AI-Menu-Designer",
                 "organizationId": organization_id,
                 "active": True,
