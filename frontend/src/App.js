@@ -10756,6 +10756,366 @@ function App() {
         </div>
       )}
 
+      {/* ============== NEW ASSEMBLY CHARTS MODAL ============== */}
+      {showAssemblyChartsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-green-300">🔨 ТЕХКАРТЫ В IIKo</h2>
+              <button
+                onClick={() => setShowAssemblyChartsModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {selectedOrganization && (
+              <div className="mb-4 p-3 bg-blue-900/30 rounded-lg border border-blue-400/30">
+                <div className="text-sm text-blue-300">
+                  🏢 Организация: <span className="font-bold">{selectedOrganization.name}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-4 mb-6">
+              <button
+                onClick={() => setShowCreateAssemblyChartModal(true)}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
+              >
+                ➕ Создать техкарту
+              </button>
+              
+              <button
+                onClick={() => selectedOrganization?.id && fetchAllAssemblyCharts(selectedOrganization.id)}
+                disabled={isLoadingAssemblyCharts}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:bg-gray-600"
+              >
+                {isLoadingAssemblyCharts ? '⏳ Обновляем...' : '🔄 Обновить'}
+              </button>
+
+              <button
+                onClick={() => fetchSyncStatus()}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition-colors"
+              >
+                📊 Статус синхронизации
+              </button>
+            </div>
+
+            {isLoadingAssemblyCharts ? (
+              <div className="text-center py-12">
+                <div className="animate-spin text-4xl mb-4">🔄</div>
+                <div className="text-gray-300">Загружаем техкарты из IIKo...</div>
+              </div>
+            ) : assemblyCharts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📋</div>
+                <div className="text-xl text-gray-300 mb-2">Техкарт пока нет</div>
+                <div className="text-gray-400 mb-6">
+                  Создайте первую техкарту или загрузите из AI-Menu-Designer
+                </div>
+                <button
+                  onClick={() => setShowCreateAssemblyChartModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded"
+                >
+                  ➕ Создать техкарту
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {assemblyCharts.map((chart, index) => (
+                  <div key={index} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-bold text-green-300">{chart.name || `Техкарта ${index + 1}`}</h3>
+                      <button
+                        onClick={() => deleteAssemblyChart(chart.id)}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                        title="Удалить техкарту"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                    
+                    {chart.description && (
+                      <div className="text-sm text-gray-300 mb-3">
+                        {chart.description.substring(0, 100)}
+                        {chart.description.length > 100 && '...'}
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {chart.ingredients && chart.ingredients.length > 0 && (
+                        <span className="bg-blue-900/30 text-blue-300 px-2 py-1 rounded">
+                          🥬 {chart.ingredients.length} ингредиентов
+                        </span>
+                      )}
+                      {chart.ai_generated && (
+                        <span className="bg-purple-900/30 text-purple-300 px-2 py-1 rounded">
+                          🤖 AI
+                        </span>
+                      )}
+                      {chart.active && (
+                        <span className="bg-green-900/30 text-green-300 px-2 py-1 rounded">
+                          ✅ Активна
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CREATE ASSEMBLY CHART MODAL */}
+      {showCreateAssemblyChartModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-green-300">➕ СОЗДАТЬ ТЕХКАРТУ</h2>
+              <button
+                onClick={() => {
+                  setShowCreateAssemblyChartModal(false);
+                  setAssemblyChartData({
+                    name: '',
+                    description: '',
+                    ingredients: [],
+                    preparation_steps: []
+                  });
+                }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">
+                  Название техкарты *
+                </label>
+                <input
+                  type="text"
+                  value={assemblyChartData.name}
+                  onChange={(e) => setAssemblyChartData({...assemblyChartData, name: e.target.value})}
+                  className="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white"
+                  placeholder="Например: Паста Карбонара"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">
+                  Описание
+                </label>
+                <textarea
+                  value={assemblyChartData.description}
+                  onChange={(e) => setAssemblyChartData({...assemblyChartData, description: e.target.value})}
+                  className="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white h-24"
+                  placeholder="Краткое описание блюда..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">
+                  Ингредиенты
+                </label>
+                <div className="text-sm text-gray-400 mb-2">
+                  Добавьте ингредиенты в формате: название, количество, единица измерения
+                </div>
+                <div className="space-y-2">
+                  {assemblyChartData.ingredients.map((ingredient, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={ingredient.name || ''}
+                        onChange={(e) => {
+                          const newIngredients = [...assemblyChartData.ingredients];
+                          newIngredients[index] = {...ingredient, name: e.target.value};
+                          setAssemblyChartData({...assemblyChartData, ingredients: newIngredients});
+                        }}
+                        className="flex-1 p-2 border border-gray-600 rounded bg-gray-700 text-white text-sm"
+                        placeholder="Название ингредиента"
+                      />
+                      <input
+                        type="number"
+                        value={ingredient.quantity || ''}
+                        onChange={(e) => {
+                          const newIngredients = [...assemblyChartData.ingredients];
+                          newIngredients[index] = {...ingredient, quantity: parseFloat(e.target.value) || 0};
+                          setAssemblyChartData({...assemblyChartData, ingredients: newIngredients});
+                        }}
+                        className="w-20 p-2 border border-gray-600 rounded bg-gray-700 text-white text-sm"
+                        placeholder="100"
+                      />
+                      <input
+                        type="text"
+                        value={ingredient.unit || ''}
+                        onChange={(e) => {
+                          const newIngredients = [...assemblyChartData.ingredients];
+                          newIngredients[index] = {...ingredient, unit: e.target.value};
+                          setAssemblyChartData({...assemblyChartData, ingredients: newIngredients});
+                        }}
+                        className="w-16 p-2 border border-gray-600 rounded bg-gray-700 text-white text-sm"
+                        placeholder="г"
+                      />
+                      <button
+                        onClick={() => {
+                          const newIngredients = assemblyChartData.ingredients.filter((_, i) => i !== index);
+                          setAssemblyChartData({...assemblyChartData, ingredients: newIngredients});
+                        }}
+                        className="text-red-400 hover:text-red-300 px-2"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setAssemblyChartData({
+                        ...assemblyChartData,
+                        ingredients: [...assemblyChartData.ingredients, {name: '', quantity: 0, unit: 'г', price: 0}]
+                      });
+                    }}
+                    className="text-green-400 hover:text-green-300 text-sm"
+                  >
+                    ➕ Добавить ингредиент
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">
+                  Этапы приготовления
+                </label>
+                <div className="space-y-2">
+                  {assemblyChartData.preparation_steps.map((step, index) => (
+                    <div key={index} className="flex gap-2">
+                      <span className="text-gray-400 text-sm mt-2">{index + 1}.</span>
+                      <textarea
+                        value={step}
+                        onChange={(e) => {
+                          const newSteps = [...assemblyChartData.preparation_steps];
+                          newSteps[index] = e.target.value;
+                          setAssemblyChartData({...assemblyChartData, preparation_steps: newSteps});
+                        }}
+                        className="flex-1 p-2 border border-gray-600 rounded bg-gray-700 text-white text-sm"
+                        placeholder="Описание этапа приготовления..."
+                        rows="2"
+                      />
+                      <button
+                        onClick={() => {
+                          const newSteps = assemblyChartData.preparation_steps.filter((_, i) => i !== index);
+                          setAssemblyChartData({...assemblyChartData, preparation_steps: newSteps});
+                        }}
+                        className="text-red-400 hover:text-red-300 px-2"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setAssemblyChartData({
+                        ...assemblyChartData,
+                        preparation_steps: [...assemblyChartData.preparation_steps, '']
+                      });
+                    }}
+                    className="text-green-400 hover:text-green-300 text-sm"
+                  >
+                    ➕ Добавить этап
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => createAssemblyChart(assemblyChartData)}
+                disabled={!assemblyChartData.name || isCreatingAssemblyChart}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-2 px-6 rounded transition-colors"
+              >
+                {isCreatingAssemblyChart ? '⏳ Создаем...' : '✅ Создать техкарту'}
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowCreateAssemblyChartModal(false);
+                  setAssemblyChartData({
+                    name: '',
+                    description: '',
+                    ingredients: [],
+                    preparation_steps: []
+                  });
+                }}
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SYNC STATUS MODAL */}
+      {showSyncStatusModal && syncStatus && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-purple-300">📊 СТАТУС СИНХРОНИЗАЦИИ</h2>
+              <button
+                onClick={() => setShowSyncStatusModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {Object.entries(syncStatus.status_summary).map(([status, count]) => (
+                <div key={status} className="bg-gray-700 rounded-lg p-4">
+                  <div className="text-lg font-bold text-blue-300">{count}</div>
+                  <div className="text-sm text-gray-300 capitalize">{status.replace('_', ' ')}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {syncStatus.sync_records.map((record, index) => (
+                <div key={index} className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-bold text-green-300">{record.tech_card_name}</div>
+                    <div className={`text-xs px-2 py-1 rounded ${
+                      record.sync_status === 'created_as_assembly_chart' 
+                        ? 'bg-green-900/30 text-green-300'
+                        : record.sync_status === 'upload_failed'
+                        ? 'bg-red-900/30 text-red-300'
+                        : 'bg-yellow-900/30 text-yellow-300'
+                    }`}>
+                      {record.sync_status}
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-400 mb-2">
+                    {new Date(record.created_at).toLocaleString('ru-RU')}
+                    {record.assembly_chart_id && (
+                      <span className="ml-2">ID: {record.assembly_chart_id}</span>
+                    )}
+                  </div>
+
+                  {record.upload_error && (
+                    <div className="text-xs text-red-300 mt-2 p-2 bg-red-900/20 rounded">
+                      Ошибка: {record.upload_error}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
