@@ -969,10 +969,6 @@ class IikoServerIntegrationService:
                                     "productId": None,  # Will be resolved by IIKo
                                     "amountMiddle": amount,
                                     "amountIn1": amount,
-                                    "storeSpecification": {
-                                        "name": name,
-                                        "unit": unit
-                                    },
                                     "sortWeight": len(ingredients) + 1,
                                     "packageCount": 1
                                 })
