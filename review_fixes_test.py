@@ -128,9 +128,9 @@ def test_generate_tech_card():
     """Test POST /api/generate-tech-card - main function with 'city' field fix"""
     log_test("🍽️ STEP 3: Testing POST /api/generate-tech-card - verify 'city' field fix")
     
-    # Test data as specified in review request
+    # Test data as specified in review request (using test_user_ prefix for backend compatibility)
     test_data = {
-        "user_id": "test-user-123",
+        "user_id": "test_user_12345",
         "dish_name": "Тестовое блюдо", 
         "customization": "простое блюдо для теста"
     }
