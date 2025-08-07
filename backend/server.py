@@ -883,10 +883,13 @@ class IikoServerIntegrationService:
             # Create assembly chart structure using ONLY the 3 absolutely minimal fields
             # Based on error feedback: avoid complex DTOs that require specific structure
             assembly_chart = {
-                # Only the 3 core required fields
+                # Core required fields
                 "items": ingredients,
                 "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Must be > 0
-                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer')
+                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
+                
+                # Required field identified from logs: assembledProductId cannot be null
+                "assembledProductId": str(uuid.uuid4())  # Generate a proper UUID
             }
             
             return assembly_chart
