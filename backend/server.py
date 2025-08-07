@@ -883,6 +883,7 @@ class IikoServerIntegrationService:
                             "productId": product_id,  # Use real product ID if found
                             "amountMiddle": float(ingredient.get('quantity', 0)),
                             "amountIn": float(ingredient.get('quantity', 0)),  # Fixed field name
+                            "amountOut": float(ingredient.get('quantity', 0)),  # Required field
                             "sortWeight": i + 1,
                             "packageCount": 1
                         })
