@@ -971,9 +971,14 @@ class IikoServerIntegrationService:
                                 
                                 ingredients.append({
                                     "productId": None,  # Will be resolved by IIKo
-                                    "productName": name,
-                                    "amount": amount,
-                                    "measureUnit": unit
+                                    "amountMiddle": amount,
+                                    "amountIn1": amount,
+                                    "storeSpecification": {
+                                        "name": name,
+                                        "unit": unit
+                                    },
+                                    "sortWeight": len(ingredients) + 1,
+                                    "packageCount": 1
                                 })
             
         except Exception as e:
