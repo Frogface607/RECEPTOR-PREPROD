@@ -203,6 +203,13 @@ function App() {
   const [isLoadingProjectAnalytics, setIsLoadingProjectAnalytics] = useState(false);
   const [isExportingProject, setIsExportingProject] = useState(false);
 
+  // Analytics & OLAP Reports states - NEW!
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+  const [selectedAnalyticsType, setSelectedAnalyticsType] = useState('overview'); // 'overview', 'olap', 'projects'
+  const [olapReportData, setOlapReportData] = useState(null);
+
   // Enhanced tech card context for menu dishes
   const [dishContext, setDishContext] = useState(null);
 
