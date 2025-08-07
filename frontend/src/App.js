@@ -10384,6 +10384,138 @@ function App() {
         </div>
       )}
 
+      {/* Analytics Modal - NEW! */}
+      {showAnalyticsModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-purple-300 mb-2">📊 АНАЛИТИКА И ОТЧЕТЫ</h2>
+                  <p className="text-gray-400">Статистика использования и OLAP отчеты из IIKo</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAnalyticsModal(false);
+                    setSelectedAnalyticsType('overview');
+                    setAnalyticsData(null);
+                    setOlapReportData(null);
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              
+              {/* Analytics Type Tabs */}
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    setSelectedAnalyticsType('overview');
+                    loadAnalyticsOverview();
+                  }}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+                    selectedAnalyticsType === 'overview'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  📈 Общая аналитика
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedAnalyticsType('olap');
+                    loadOLAPReport();
+                  }}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+                    selectedAnalyticsType === 'olap'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                  disabled={iikoOrganizations.length === 0}
+                  title={iikoOrganizations.length === 0 ? 'Требуется интеграция с IIKo' : 'OLAP отчеты из IIKo'}
+                >
+                  📊 OLAP отчеты
+                </button>
+                <button
+                  onClick={() => setSelectedAnalyticsType('projects')}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+                    selectedAnalyticsType === 'projects'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  📁 Аналитика проектов
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {isLoadingAnalytics ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin text-6xl mb-4">📊</div>
+                  <div className="text-xl text-purple-300 font-bold mb-2">Загружаем аналитику...</div>
+                  <div className="text-gray-400">
+                    {selectedAnalyticsType === 'overview' && 'Анализируем вашу активность'}
+                    {selectedAnalyticsType === 'olap' && 'Загружаем данные из IIKo'}
+                    {selectedAnalyticsType === 'projects' && 'Обрабатываем данные проектов'}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {selectedAnalyticsType === 'overview' && renderAnalyticsOverview()}
+                  {selectedAnalyticsType === 'olap' && (
+                    olapReportData ? renderOLAPReport() : (
+                      <div className="text-center py-12">
+                        <div className="text-6xl mb-4">📊</div>
+                        <div className="text-xl text-gray-300 font-bold mb-2">OLAP отчеты</div>
+                        <div className="text-gray-400 mb-6">
+                          {iikoOrganizations.length === 0 
+                            ? 'Для просмотра OLAP отчетов сначала настройте интеграцию с IIKo'
+                            : 'Нажмите кнопку "📊 OLAP отчеты" для загрузки данных'
+                          }
+                        </div>
+                        {iikoOrganizations.length === 0 && (
+                          <button
+                            onClick={() => {
+                              setShowAnalyticsModal(false);
+                              openIikoIntegration();
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg"
+                          >
+                            🏢 Настроить IIKo
+                          </button>
+                        )}
+                      </div>
+                    )
+                  )}
+                  {selectedAnalyticsType === 'projects' && (
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">📁</div>
+                      <div className="text-xl text-gray-300 font-bold mb-2">Аналитика проектов</div>
+                      <div className="text-gray-400 mb-6">
+                        Детальную аналитику проектов можно посмотреть, открыв конкретный проект
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowAnalyticsModal(false);
+                          setShowProjectsModal(true);
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg"
+                      >
+                        📁 Открыть проекты
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
