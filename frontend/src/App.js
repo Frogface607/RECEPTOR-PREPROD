@@ -4330,6 +4330,13 @@ function App() {
                   IIKo
                 </button>
                 <button
+                  onClick={() => openAssemblyChartsManager()}
+                  className="text-green-300 hover:text-green-200 font-semibold text-sm sm:text-base transition-colors"
+                  title="🔨 Управление техкартами в IIKo (создание, просмотр, удаление)"
+                >
+                  ТЕХКАРТЫ
+                </button>
+                <button
                   onClick={() => {
                     setShowHistory(!showHistory);
                     if (!showHistory) {
