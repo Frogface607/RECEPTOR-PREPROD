@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Assembly Charts API with Real Product ID Matching
-Testing the final version of assembly charts API with real product IDs as requested.
+Backend Testing Suite for IIKo Assembly Charts API - Official Structure Testing
+Testing the final version assembly charts API with official IIKo structure from documentation.
+
+Focus: Testing POST /api/iiko/assembly-charts/create with official IIKo structure including:
+- assembledProductId, dateFrom, assembledAmount, productWriteoffStrategy
+- effectiveDirectWriteoffStoreSpecification, productSizeAssemblyStrategy, items
+- AssemblyChartItemDto structure with sortWeight, productId, amountIn, amountMiddle, amountOut
+- Real product ID matching for ingredients
 """
 
 import requests
