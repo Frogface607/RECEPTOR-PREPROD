@@ -800,9 +800,9 @@ class IikoServerIntegrationService:
                         
                         return {
                             'success': True,
-                            'assembly_charts': assembly_charts,
-                            'prepared_charts': prepared_charts,
-                            'count': len(assembly_charts)
+                            'assembly_charts': assembly_charts or [],
+                            'prepared_charts': prepared_charts or [],
+                            'count': assembly_count
                         }
                     elif isinstance(data, list):
                         # Alternative response format
