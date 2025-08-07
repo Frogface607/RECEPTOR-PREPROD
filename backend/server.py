@@ -858,7 +858,7 @@ class IikoServerIntegrationService:
             }
     
     def _transform_to_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
-        """Transform AI tech card data to IIKo assembly chart format"""
+        """Transform AI tech card data to IIKo assembly chart format with only valid fields"""
         try:
             # Extract ingredients from tech card content if needed
             ingredients = []
@@ -879,49 +879,31 @@ class IikoServerIntegrationService:
                 parsed_ingredients = self._parse_ingredients_from_content(content)
                 ingredients = parsed_ingredients
             
-            # Create assembly chart structure based on IIKo API requirements
-            # Adding potentially required fields based on typical IIKo structure
+            # Create assembly chart structure using ONLY the 8 valid IIKo fields identified by API testing
+            # Based on error feedback: use only fields that IIKo API recognizes
             assembly_chart = {
-                # Main structure
+                # Required fields based on API testing
                 "items": ingredients,
+                "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Must be > 0
                 "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
-                "assembledAmount": float(tech_card_data.get('weight', 1.0)) if tech_card_data.get('weight', 0) > 0 else 1.0,  # Must be > 0
                 
-                # Potentially required fields based on API feedback
-                "name": tech_card_data.get('name', 'Новая техкарта'),
-                "num": tech_card_data.get('name', 'Новая техкарта'),  # Some IIKo APIs use 'num' for name
-                "active": True,
-                "organizationId": organization_id,
-                
-                # Additional fields that might be required
-                "category": tech_card_data.get('category', ''),
-                "type": "ASSEMBLY_CHART",  # Explicit type
-                "cookingTimeMinutes": self._parse_cooking_time(tech_card_data.get('cook_time', '0')),
-                "portion": {
-                    "weight": float(tech_card_data.get('weight', 1.0)) if tech_card_data.get('weight', 0) > 0 else 1.0,
-                    "unit": "г"
-                },
-                
-                # Metadata
-                "externalId": str(uuid.uuid4()),
-                "description": tech_card_data.get('description', ''),
-                "createdBy": "AI-Menu-Designer"
+                # Optional valid fields (adding empty/null values for fields that API expects)
+                "effectiveDirectWriteoffStoreSpecification": None,
+                "appearance": None,
+                "dateTo": None,
+                "productSizeAssemblyStrategy": None,
+                "productWriteoffStrategy": None
             }
             
             return assembly_chart
             
         except Exception as e:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
-            # Return minimal structure if transformation fails
+            # Return minimal structure with only required fields
             return {
                 "items": [],
-                "technologyDescription": "Создано AI-Menu-Designer",
                 "assembledAmount": 1.0,
-                "name": tech_card_data.get('name', 'Техкарта'),
-                "num": tech_card_data.get('name', 'Техкарта'),
-                "active": True,
-                "organizationId": organization_id,
-                "type": "ASSEMBLY_CHART"
+                "technologyDescription": "Создано AI-Menu-Designer"
             }
     
     def _parse_cooking_time(self, cook_time_str: str) -> int:
