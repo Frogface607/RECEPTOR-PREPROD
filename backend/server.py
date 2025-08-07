@@ -926,7 +926,7 @@ class IikoServerIntegrationService:
             }
     
     def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
-        """Parse ingredients from tech card content"""
+        """Parse ingredients from tech card content and return in IIKo format"""
         ingredients = []
         
         try:
@@ -962,10 +962,10 @@ class IikoServerIntegrationService:
                                 unit = amount_match.group(2) if amount_match.group(2) else 'г'
                                 
                                 ingredients.append({
-                                    "name": name,
+                                    "productId": None,  # Will be resolved by IIKo
+                                    "productName": name,
                                     "amount": amount,
-                                    "unit": unit,
-                                    "cost": 0.0  # Will be calculated later
+                                    "measureUnit": unit
                                 })
             
         except Exception as e:
