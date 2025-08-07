@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
 """
-IIKo Integration - Create Product/Dish FINAL TESTING
-Testing the critical case sensitivity fix: "type": "dish" → "type": "DISH"
+IIKo Integration - Create Product/Dish ОКОНЧАТЕЛЬНОЕ ТЕСТИРОВАНИЕ
+Testing the minimal correct structure for DISH creation as requested in review.
 
-CRITICAL FIX CONTEXT:
-Previous testing showed ProductDto structure was 95% correct, but IIKo API requires 
-uppercase values for enum field type. Enum values: [GOODS, DISH, PREPARED, SERVICE, MODIFIER, OUTER, RATE, PETROL]
+ОКОНЧАТЕЛЬНЫЕ ИСПРАВЛЕНИЯ:
+1. Case sensitivity: type="DISH" (uppercase) ✅
+2. Убрал неподдерживаемое поле "measureUnit" 
+3. Заменил "code" на "num" (из 34 known properties)
+4. Заменил "price" на "defaultSalePrice" (из 34 known properties)
+5. Убрал все неподтвержденные поля: description, weight, isIncludedInMenu, order, images, modifiers, groupModifiers
 
-EXPECTED RESULT:
-✅ DISH products should now create SUCCESSFULLY in IIKo
-✅ Dishes should appear in IIKo menu  
-✅ 'AI Menu Designer' category should be populated with dishes
-✅ Complete solution - dishes in menu, not just tech cards
+МИНИМАЛЬНАЯ СТРУКТУРА DISH:
+{
+  "name": "Название блюда",
+  "num": "DISHXXXXXXXX", 
+  "type": "DISH",
+  "defaultSalePrice": 500.0,
+  "productCategoryId": "category_id_if_available"
+}
+
+ОЖИДАЕМЫЙ РЕЗУЛЬТАТ:
+✅ DISH продукты должны создаваться с минимальной корректной структурой
+✅ Блюда должны появляться в меню IIKo
+✅ Полное решение проблемы: блюда в меню, не только техкарты
 """
 
 import requests
