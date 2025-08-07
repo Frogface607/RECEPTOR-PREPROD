@@ -868,7 +868,7 @@ class IikoServerIntegrationService:
             }
     
     def _transform_to_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str, existing_products: List[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Transform AI tech card data to IIKo assembly chart format with only valid fields"""
+        """Transform AI tech card data to IIKo assembly chart format with ONLY valid fields"""
         try:
             # Extract ingredients from tech card content if needed
             ingredients = []
@@ -901,45 +901,38 @@ class IikoServerIntegrationService:
                 assembled_product_id = existing_products[0].get('id') if existing_products else None
                 self.logger.warning(f"No matching product found for '{tech_card_data.get('name', '')}', using placeholder product")
             
-            # Create assembly chart structure with potentially required @NotNull fields
+            # Create assembly chart structure with ONLY the 8 valid IIKo fields
+            # Based on testing: only these fields are accepted by IIKo API
             assembly_chart = {
-                # Core required fields identified from testing
-                "items": ingredients,
-                "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Must be > 0
-                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
+                "items": ingredients,  # Required - list of ingredients
+                "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Required - must be > 0
+                "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),  # Required
+                
+                # Optional valid fields - set to None/empty if not provided
+                "effectiveDirectWriteoffStoreSpecification": None,
+                "appearance": None,
+                "dateTo": None,
+                "productSizeAssemblyStrategy": None,
+                "productWriteoffStrategy": None
             }
             
             # Add assembledProductId only if we have a valid one
             if assembled_product_id:
+                # This field might be among the 8 valid ones, so we keep it conditionally
                 assembly_chart["assembledProductId"] = assembled_product_id
-            
-            # Add potentially required @NotNull fields based on common DTO patterns
-            from datetime import datetime
-            assembly_chart.update({
-                "chartId": str(uuid.uuid4()),  # Unique identifier
-                "assemblyName": tech_card_data.get('name', 'AI Техкарта'),  # Assembly name
-                "creationDate": datetime.now().isoformat(),  # Creation date
-                "active": True,  # Status
-                "version": "1.0",  # Version
-                "organizationId": organization_id,  # Organization link
-                "status": "ACTIVE",  # Explicit status
-                "author": "AI-Menu-Designer"  # Author information
-            })
+                self.logger.info(f"Using assembledProductId: {assembled_product_id}")
+            else:
+                self.logger.warning("No assembledProductId available, creating assembly chart without product link")
             
             return assembly_chart
             
         except Exception as e:
             self.logger.error(f"Error transforming to assembly chart: {str(e)}")
-            # Return minimal structure with only required fields
-            from datetime import datetime
+            # Return minimal structure with only core required fields
             return {
                 "items": [],
                 "assembledAmount": 1.0,
-                "technologyDescription": "Создано AI-Menu-Designer",
-                "chartId": str(uuid.uuid4()),
-                "assemblyName": "Fallback техкарта",
-                "creationDate": datetime.now().isoformat(),
-                "active": True
+                "technologyDescription": "Создано AI-Menu-Designer"
             }
     
     def _find_product_id(self, product_name: str, existing_products: List[Dict[str, Any]]) -> str:
