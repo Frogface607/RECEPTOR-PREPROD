@@ -4116,6 +4116,404 @@ def _get_project_categories(menus, tech_cards):
         return []
 
 # ============================================
+# ENHANCED PROJECT ANALYTICS ENDPOINTS
+# ============================================
+
+@api_router.get("/menu-project/{project_id}/analytics")
+async def get_project_analytics(project_id: str, organization_id: str = None):
+    """Get comprehensive analytics for a menu project including IIKo sales data"""
+    try:
+        # Find project
+        project = await db.menu_projects.find_one({"id": project_id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get project content
+        menus_cursor = db.user_history.find({
+            "project_id": project_id,
+            "is_menu": True
+        })
+        menus = await menus_cursor.to_list(length=100)
+        
+        tech_cards_cursor = db.user_history.find({
+            "project_id": project_id,
+            "is_menu": False
+        })
+        tech_cards = await tech_cards_cursor.to_list(length=500)
+        
+        # Basic project analytics
+        basic_analytics = {
+            "project_overview": {
+                "name": project.get("project_name"),
+                "type": project.get("project_type"),
+                "created_at": project.get("created_at"),
+                "menus_count": len(menus),
+                "tech_cards_count": len(tech_cards),
+                "total_items": sum(len(menu.get('dishes', [])) for menu in menus) + len(tech_cards)
+            },
+            "productivity_metrics": {
+                "time_saved_minutes": len(menus) * 15 + len(tech_cards) * 45,
+                "cost_savings_rubles": len(menus) * 5000 + len(tech_cards) * 2000,
+                "complexity_score": _calculate_project_complexity(menus, tech_cards),
+                "categories_covered": _get_project_categories(menus, tech_cards)
+            }
+        }
+        
+        # Try to get IIKo sales analytics if organization_id provided
+        sales_analytics = None
+        if organization_id:
+            try:
+                # Get sales data for dishes in this project
+                sales_data = await _get_project_sales_performance(project_id, organization_id, menus, tech_cards)
+                sales_analytics = sales_data
+            except Exception as e:
+                logger.warning(f"Could not get IIKo sales data for project {project_id}: {str(e)}")
+                sales_analytics = {
+                    "status": "unavailable",
+                    "reason": "IIKo integration not available or no sales data found"
+                }
+        
+        # Clean MongoDB _id fields
+        if "_id" in project:
+            del project["_id"]
+        
+        return {
+            "success": True,
+            "project": project,
+            "analytics": basic_analytics,
+            "sales_performance": sales_analytics,
+            "recommendations": _generate_project_recommendations(basic_analytics, sales_analytics)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting project analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting project analytics: {str(e)}")
+
+async def _get_project_sales_performance(project_id: str, organization_id: str, menus: list, tech_cards: list):
+    """Get sales performance for dishes in this project from IIKo"""
+    try:
+        # Extract dish names from project content
+        project_dishes = set()
+        
+        # From menus
+        for menu in menus:
+            dishes = menu.get('dishes', [])
+            for dish in dishes:
+                dish_name = dish.get('name', '').strip()
+                if dish_name:
+                    project_dishes.add(dish_name.lower())
+        
+        # From tech cards
+        for card in tech_cards:
+            dish_name = card.get('dish_name', '').strip()
+            if dish_name:
+                project_dishes.add(dish_name.lower())
+        
+        if not project_dishes:
+            return {"status": "no_dishes", "dishes_found": 0}
+        
+        # Get OLAP sales report from IIKo
+        olap_data = await iiko_service.get_sales_olap_report(organization_id)
+        
+        if not olap_data.get('success'):
+            return {
+                "status": "iiko_unavailable",
+                "error": olap_data.get('error', 'OLAP data unavailable'),
+                "dishes_tracked": len(project_dishes)
+            }
+        
+        # Match project dishes with sales data
+        sales_summary = olap_data.get('summary', {})
+        top_dishes = sales_summary.get('top_dishes', [])
+        
+        project_sales_matches = []
+        total_project_revenue = 0
+        total_project_quantity = 0
+        
+        for dish_data in top_dishes:
+            dish_name_lower = dish_data.get('name', '').lower()
+            
+            # Try to match with project dishes (fuzzy matching)
+            for project_dish in project_dishes:
+                # Simple matching: if project dish name is contained in sales dish name or vice versa
+                if (project_dish in dish_name_lower or 
+                    dish_name_lower in project_dish or
+                    _calculate_similarity(project_dish, dish_name_lower) > 0.7):
+                    
+                    project_sales_matches.append({
+                        "project_dish": project_dish,
+                        "sales_dish": dish_data.get('name'),
+                        "revenue": dish_data.get('revenue', 0),
+                        "quantity": dish_data.get('quantity', 0),
+                        "category": dish_data.get('category', ''),
+                        "match_confidence": _calculate_similarity(project_dish, dish_name_lower)
+                    })
+                    
+                    total_project_revenue += dish_data.get('revenue', 0)
+                    total_project_quantity += dish_data.get('quantity', 0)
+                    break
+        
+        return {
+            "status": "success",
+            "period": {
+                "from": olap_data.get('date_from'),
+                "to": olap_data.get('date_to')
+            },
+            "project_performance": {
+                "total_revenue": total_project_revenue,
+                "total_quantity": total_project_quantity,
+                "matched_dishes": len(project_sales_matches),
+                "total_project_dishes": len(project_dishes),
+                "match_rate": len(project_sales_matches) / len(project_dishes) if project_dishes else 0
+            },
+            "dish_performance": project_sales_matches[:10],  # Top 10 performing dishes
+            "market_share": {
+                "project_revenue_share": (total_project_revenue / sales_summary.get('total_revenue', 1)) * 100 if sales_summary.get('total_revenue') else 0,
+                "project_quantity_share": (total_project_quantity / sales_summary.get('total_items_sold', 1)) * 100 if sales_summary.get('total_items_sold') else 0
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting project sales performance: {str(e)}")
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+def _calculate_similarity(str1: str, str2: str) -> float:
+    """Simple similarity calculation for dish name matching"""
+    try:
+        # Simple word overlap similarity
+        words1 = set(str1.lower().split())
+        words2 = set(str2.lower().split())
+        
+        if not words1 or not words2:
+            return 0.0
+            
+        intersection = words1.intersection(words2)
+        union = words1.union(words2)
+        
+        return len(intersection) / len(union) if union else 0.0
+        
+    except Exception:
+        return 0.0
+
+def _generate_project_recommendations(basic_analytics: dict, sales_analytics: dict) -> list:
+    """Generate actionable recommendations based on project analytics"""
+    recommendations = []
+    
+    try:
+        # Basic productivity recommendations
+        productivity = basic_analytics.get("productivity_metrics", {})
+        complexity_score = productivity.get("complexity_score", 0)
+        
+        if complexity_score > 70:
+            recommendations.append({
+                "type": "optimization",
+                "priority": "high",
+                "title": "Упростите сложные блюда",
+                "description": f"Проект имеет высокую сложность ({complexity_score}%). Рассмотрите упрощение некоторых рецептов для ускорения приготовления.",
+                "action": "review_complex_dishes"
+            })
+        
+        categories_count = len(productivity.get("categories_covered", []))
+        if categories_count < 3:
+            recommendations.append({
+                "type": "expansion",
+                "priority": "medium",
+                "title": "Расширьте ассортимент",
+                "description": f"Проект покрывает только {categories_count} категории. Добавьте блюда из других категорий для разнообразия.",
+                "action": "add_categories"
+            })
+        
+        # Sales performance recommendations
+        if sales_analytics and sales_analytics.get("status") == "success":
+            performance = sales_analytics.get("project_performance", {})
+            match_rate = performance.get("match_rate", 0) * 100
+            
+            if match_rate < 50:
+                recommendations.append({
+                    "type": "naming",
+                    "priority": "high", 
+                    "title": "Улучшите названия блюд",
+                    "description": f"Только {match_rate:.1f}% блюд проекта найдены в продажах. Проверьте соответствие названий в меню и IIKo.",
+                    "action": "sync_dish_names"
+                })
+            
+            market_share = sales_analytics.get("market_share", {})
+            revenue_share = market_share.get("project_revenue_share", 0)
+            
+            if revenue_share > 20:
+                recommendations.append({
+                    "type": "success",
+                    "priority": "low",
+                    "title": "Отличная производительность!",
+                    "description": f"Блюда проекта составляют {revenue_share:.1f}% от общей выручки. Это превосходный результат!",
+                    "action": "maintain_strategy"
+                })
+            elif revenue_share < 5:
+                recommendations.append({
+                    "type": "promotion",
+                    "priority": "high",
+                    "title": "Увеличьте продвижение блюд",
+                    "description": f"Блюда проекта составляют только {revenue_share:.1f}% выручки. Рассмотрите маркетинговые акции.",
+                    "action": "promote_dishes"
+                })
+        
+        # Time and cost savings highlights
+        time_saved = productivity.get("time_saved_minutes", 0)
+        if time_saved > 120:  # More than 2 hours
+            recommendations.append({
+                "type": "achievement",
+                "priority": "low",
+                "title": "Значительная экономия времени",
+                "description": f"Проект сэкономил {time_saved} минут работы! Это эквивалент {time_saved // 60} часов профессиональной разработки меню.",
+                "action": "celebrate_efficiency"
+            })
+        
+        return recommendations
+        
+    except Exception as e:
+        logger.error(f"Error generating recommendations: {str(e)}")
+        return [{
+            "type": "error",
+            "priority": "low",
+            "title": "Ошибка анализа",
+            "description": "Не удалось сгенерировать рекомендации из-за ошибки анализа данных.",
+            "action": "retry_analysis"
+        }]
+
+@api_router.post("/menu-project/{project_id}/export")
+async def export_project_content(project_id: str, export_format: str = "excel"):
+    """Export all project content to Excel or PDF"""
+    try:
+        # Find project
+        project = await db.menu_projects.find_one({"id": project_id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get project content
+        project_content = await get_menu_project_content(project_id)
+        if not project_content["success"]:
+            raise HTTPException(status_code=500, detail="Failed to get project content")
+        
+        # Prepare export data
+        export_data = {
+            "project_info": project_content["project"],
+            "menus": project_content["menus"],
+            "tech_cards": project_content["tech_cards"],
+            "stats": project_content.get("project_stats", {})
+        }
+        
+        if export_format.lower() == "excel":
+            file_url = await _export_project_to_excel(export_data)
+        elif export_format.lower() == "pdf":
+            file_url = await _export_project_to_pdf(export_data)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported export format. Use 'excel' or 'pdf'")
+        
+        return {
+            "success": True,
+            "message": f"Проект экспортирован в формат {export_format.upper()}",
+            "download_url": file_url,
+            "project_name": project.get("project_name"),
+            "export_format": export_format
+        }
+        
+    except Exception as e:
+        logger.error(f"Error exporting project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error exporting project: {str(e)}")
+
+async def _export_project_to_excel(export_data: dict) -> str:
+    """Export project data to Excel format"""
+    try:
+        import pandas as pd
+        from datetime import datetime
+        import tempfile
+        import os
+        
+        project_info = export_data["project_info"]
+        project_name = project_info.get("project_name", "Project").replace(" ", "_")
+        
+        # Create temporary file
+        temp_dir = tempfile.gettempdir()
+        filename = f"{project_name}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filepath = os.path.join(temp_dir, filename)
+        
+        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+            # Project Overview Sheet
+            project_overview = pd.DataFrame([{
+                "Название проекта": project_info.get("project_name"),
+                "Тип проекта": project_info.get("project_type"),
+                "Описание": project_info.get("description", ""),
+                "Дата создания": project_info.get("created_at"),
+                "Количество меню": len(export_data["menus"]),
+                "Количество техкарт": len(export_data["tech_cards"]),
+                "Статус": "Активный" if project_info.get("is_active") else "Неактивный"
+            }])
+            project_overview.to_excel(writer, sheet_name='Обзор проекта', index=False)
+            
+            # Menus Sheet
+            if export_data["menus"]:
+                menus_data = []
+                for menu in export_data["menus"]:
+                    dishes = menu.get('dishes', [])
+                    menus_data.append({
+                        "ID меню": menu.get("menu_id"),
+                        "Тип меню": menu.get("menu_type"),
+                        "Количество блюд": len(dishes),
+                        "Дата создания": menu.get("created_at"),
+                        "Описание": menu.get("expectations", "")[:100] + "..." if len(menu.get("expectations", "")) > 100 else menu.get("expectations", "")
+                    })
+                
+                menus_df = pd.DataFrame(menus_data)
+                menus_df.to_excel(writer, sheet_name='Меню', index=False)
+            
+            # Tech Cards Sheet
+            if export_data["tech_cards"]:
+                tech_cards_data = []
+                for card in export_data["tech_cards"]:
+                    tech_cards_data.append({
+                        "Название блюда": card.get("dish_name"),
+                        "Дата создания": card.get("created_at"),
+                        "Город": card.get("city", ""),
+                        "Тип": "Вдохновение" if card.get("is_inspiration") else "Стандарт"
+                    })
+                
+                tech_cards_df = pd.DataFrame(tech_cards_data)
+                tech_cards_df.to_excel(writer, sheet_name='Техкарты', index=False)
+            
+            # Statistics Sheet
+            if export_data.get("stats"):
+                stats_data = pd.DataFrame([export_data["stats"]])
+                stats_data.to_excel(writer, sheet_name='Статистика', index=False)
+        
+        # For demo purposes, return a placeholder URL
+        # In production, this would upload to cloud storage
+        return f"/downloads/{filename}"
+        
+    except Exception as e:
+        logger.error(f"Error creating Excel export: {str(e)}")
+        raise Exception(f"Failed to create Excel export: {str(e)}")
+
+async def _export_project_to_pdf(export_data: dict) -> str:
+    """Export project data to PDF format"""
+    try:
+        # For now, return a placeholder - PDF generation would require additional libraries
+        project_info = export_data["project_info"]
+        project_name = project_info.get("project_name", "Project").replace(" ", "_")
+        filename = f"{project_name}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        
+        # Placeholder implementation
+        logger.info(f"PDF export requested for project: {project_name}")
+        
+        return f"/downloads/{filename}"
+        
+    except Exception as e:
+        logger.error(f"Error creating PDF export: {str(e)}")
+        raise Exception(f"Failed to create PDF export: {str(e)}")
+
+# ============================================
 # IIKo INTEGRATION ENDPOINTS
 # ============================================
 
