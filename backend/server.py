@@ -3876,10 +3876,19 @@ async def create_menu_project(request: MenuProjectCreate):
 async def get_user_menu_projects(user_id: str):
     """Get all menu projects for a user"""
     try:
-        # Verify user exists
+        # Auto-create user if doesn't exist (for seamless experience)
         user = await db.users.find_one({"id": user_id})
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            logger.info(f"Auto-creating user {user_id} for projects")
+            # Create basic user profile
+            user_data = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "subscription_plan": "free",
+                "subscription_features": ["basic_tech_cards"],
+                "created_at": datetime.now().isoformat()
+            }
+            await db.users.insert_one(user_data)
         
         # Get all projects for user
         projects_cursor = db.menu_projects.find(
