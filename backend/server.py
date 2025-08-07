@@ -3868,7 +3868,7 @@ async def replace_dish(request: dict):
     try:
         # Generate replacement dish using same context as original menu
         # Get user settings for tech card generation
-        regional_coefficient = REGIONAL_COEFFICIENTS.get(user["city"].lower(), 1.0)
+        regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
         venue_context = generate_venue_context(user)
         venue_specific_rules = generate_venue_specific_rules(user)
         
