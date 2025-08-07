@@ -8805,13 +8805,19 @@ function App() {
                             ➕ Добавить меню
                           </button>
                           <button
-                            onClick={() => {
-                              // TODO: View project content
-                              alert('Просмотр содержимого проекта скоро будет доступен!');
-                            }}
+                            onClick={() => viewProjectContent(project)}
                             className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-xs py-2 px-3 rounded transition-colors"
+                            title="Просмотр содержимого и аналитики проекта"
                           >
                             📂 Открыть
+                          </button>
+                          <button
+                            onClick={() => exportProject(project.id, 'excel')}
+                            disabled={isExportingProject}
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-xs py-2 px-2 rounded transition-colors"
+                            title="Экспорт проекта в Excel"
+                          >
+                            {isExportingProject ? '⏳' : '📊'}
                           </button>
                         </div>
                       </div>
