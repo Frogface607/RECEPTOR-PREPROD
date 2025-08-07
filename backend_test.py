@@ -33,9 +33,10 @@ def test_get_menu_products():
         if response.status_code == 200:
             data = response.json()
             
-            # Extract menu items
-            items = data.get('items', [])
-            categories = data.get('categories', [])
+            # Extract menu items from the correct structure
+            menu = data.get('menu', {})
+            items = menu.get('items', [])
+            categories = menu.get('categories', [])
             
             log_test(f"✅ Menu retrieved successfully!")
             log_test(f"📊 Found {len(items)} products and {len(categories)} categories")
