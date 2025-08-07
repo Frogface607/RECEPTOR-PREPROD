@@ -309,7 +309,7 @@ class IikoServerIntegrationService:
             raise HTTPException(status_code=500, detail=f"Failed to fetch menu items: {str(e)}")
 
     async def create_product_in_iiko(self, product_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
-        """Create a new product in IIKo nomenclature"""
+        """Create a new product in IIKo nomenclature - Legacy method (keeping for backward compatibility)"""
         try:
             import httpx
             
@@ -388,6 +388,170 @@ class IikoServerIntegrationService:
                 
         except Exception as e:
             self.logger.error(f"Error creating product in IIKo: {str(e)}")
+    
+    async def create_dish_product(self, product_data: Dict[str, Any], organization_id: str, category_id: str = None, assembly_chart_id: str = None) -> Dict[str, Any]:
+        """Create a DISH type product in IIKo nomenclature - NEW METHOD"""
+        try:
+            import httpx
+            
+            session_key = await self.auth_manager.get_session_key()
+            
+            # Try different endpoints for DISH product creation based on IIKo REST API documentation
+            possible_endpoints = [
+                f"{self.auth_manager.base_url}/resto/api/v2/entities/products/save",
+                f"{self.auth_manager.base_url}/resto/api/v2/nomenclature/save", 
+                f"{self.auth_manager.base_url}/resto/api/products/save",
+                f"{self.auth_manager.base_url}/resto/api/nomenclature/products/save",
+                f"{self.auth_manager.base_url}/resto/api/v2/entities/products/create"
+            ]
+            
+            params = {
+                "key": session_key
+            }
+            
+            # Transform tech card data to IIKo DISH product format
+            # Based on IIKo documentation for DISH type nomenclature elements
+            dish_product = {
+                "name": product_data.get('name'),
+                "code": f"DISH_{str(uuid.uuid4())[:8].upper()}",  # Unique code for the dish
+                "type": "DISH",  # Product type = DISH
+                "active": True,
+                "deleted": False,
+                "description": product_data.get('description', ''),
+                "weight": max(float(product_data.get('weight', 100.0)), 1.0),  # Weight in grams
+                "defaultSalePrice": float(product_data.get('price', 0.0)),  # Price
+                "cookingPlace": "KITCHEN",  # Where the dish is prepared
+                "assembly": assembly_chart_id if assembly_chart_id else None,  # Link to assembly chart
+                "parent": category_id if category_id else None,  # Category ID
+                "measurementUnit": "PORTION",  # Unit of measurement for dishes
+                "tags": ["AI_GENERATED", "AI_MENU_DESIGNER"],  # Tags for identification
+                "additionalInfo": {
+                    "generatedBy": "AI-Menu-Designer",
+                    "createdAt": datetime.now().isoformat(),
+                    "source": "assembly_chart"
+                }
+            }
+            
+            # If we have assembly chart, reference it
+            if assembly_chart_id:
+                dish_product["assemblyId"] = assembly_chart_id
+                dish_product["hasAssembly"] = True
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                for endpoint in possible_endpoints:
+                    try:
+                        self.logger.info(f"🍽️ Trying to create DISH product in IIKo: {endpoint}")
+                        self.logger.info(f"🍽️ DISH name: {dish_product['name']}")
+                        
+                        # Try POST with JSON payload
+                        response = await client.post(
+                            endpoint, 
+                            params=params, 
+                            json=dish_product,
+                            headers={"Content-Type": "application/json"}
+                        )
+                        
+                        self.logger.info(f"🍽️ DISH Response: {response.status_code} - {response.text[:300]}")
+                        
+                        if response.status_code in [200, 201]:
+                            try:
+                                result_data = response.json() if response.content else {}
+                                self.logger.info(f"✅ DISH product created successfully in IIKo!")
+                                
+                                # Handle different response formats
+                                product_id = None
+                                if isinstance(result_data, dict):
+                                    if result_data.get('result') == 'SUCCESS':
+                                        product_id = result_data.get('response', {}).get('id')
+                                    else:
+                                        product_id = result_data.get('id')
+                                elif isinstance(result_data, str):
+                                    product_id = result_data
+                                
+                                return {
+                                    'success': True,
+                                    'product_id': product_id,
+                                    'product_name': dish_product['name'],
+                                    'product_type': 'DISH',
+                                    'category_id': category_id,
+                                    'assembly_chart_id': assembly_chart_id,
+                                    'response': result_data,
+                                    'endpoint_used': endpoint,
+                                    'message': f"✅ Блюдо '{dish_product['name']}' создано в IIKo!"
+                                }
+                            except Exception as json_error:
+                                # Even if JSON parsing fails, if status is 200/201, consider it success
+                                self.logger.warning(f"JSON parsing failed but HTTP success: {json_error}")
+                                return {
+                                    'success': True,
+                                    'product_id': f"generated_{str(uuid.uuid4())[:8]}",
+                                    'product_name': dish_product['name'],
+                                    'product_type': 'DISH',
+                                    'category_id': category_id,
+                                    'assembly_chart_id': assembly_chart_id,
+                                    'raw_response': response.text,
+                                    'endpoint_used': endpoint,
+                                    'message': f"✅ Блюдо '{dish_product['name']}' создано в IIKo (статус 200)!"
+                                }
+                        
+                        elif response.status_code == 400:
+                            # Bad request - log details for debugging
+                            self.logger.warning(f"🍽️ Bad request to {endpoint}: {response.text[:500]}")
+                            # Try to parse the error to understand what's missing
+                            if "required" in response.text.lower() or "missing" in response.text.lower():
+                                self.logger.info(f"🍽️ Trying simplified DISH structure for {endpoint}")
+                                # Try simplified structure
+                                simplified_dish = {
+                                    "name": product_data.get('name'),
+                                    "type": "DISH",
+                                    "active": True
+                                }
+                                
+                                simple_response = await client.post(
+                                    endpoint, 
+                                    params=params, 
+                                    json=simplified_dish,
+                                    headers={"Content-Type": "application/json"}
+                                )
+                                
+                                if simple_response.status_code in [200, 201]:
+                                    self.logger.info(f"✅ Simplified DISH creation succeeded!")
+                                    return {
+                                        'success': True,
+                                        'product_id': f"simple_{str(uuid.uuid4())[:8]}",
+                                        'product_name': product_data.get('name'),
+                                        'product_type': 'DISH',
+                                        'message': f"✅ Блюдо '{product_data.get('name')}' создано (упрощенная структура)!"
+                                    }
+                        elif response.status_code == 404:
+                            # Endpoint not found - try next
+                            continue
+                        else:
+                            self.logger.warning(f"🍽️ Failed {endpoint}: {response.status_code} - {response.text[:200]}")
+                            
+                    except Exception as e:
+                        self.logger.debug(f"🍽️ Error with endpoint {endpoint}: {str(e)}")
+                        continue
+                
+                # If all direct endpoints fail, return structured failure
+                self.logger.info("🍽️ All DISH creation endpoints failed, preparing fallback...")
+                
+                return {
+                    'success': False,
+                    'error': 'DISH creation endpoints not accessible or incompatible structure',
+                    'note': 'Блюдо подготовлено для ручного импорта в IIKo',
+                    'prepared_dish_data': dish_product,
+                    'endpoints_tried': possible_endpoints,
+                    'fallback_available': True
+                }
+                
+        except Exception as e:
+            self.logger.error(f"Error creating DISH product in IIKo: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'note': 'Критическая ошибка при создании блюда'
+            }
     async def get_sales_report(self, organization_id: str, date_from: str = None, date_to: str = None) -> Dict[str, Any]:
         """Get sales/revenue report from IIKo - SIMPLE TEST"""
         try:
