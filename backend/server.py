@@ -901,20 +901,30 @@ class IikoServerIntegrationService:
                 assembled_product_id = existing_products[0].get('id') if existing_products else None
                 self.logger.warning(f"No matching product found for '{tech_card_data.get('name', '')}', using placeholder product")
             
-            # Create assembly chart structure using minimal valid fields
+            # Create assembly chart structure with potentially required @NotNull fields
             assembly_chart = {
                 # Core required fields identified from testing
                 "items": ingredients,
                 "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Must be > 0
                 "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
-                "assembledProductId": assembled_product_id  # Use real product ID
             }
             
-            # Only add assembledProductId if we have a valid one
-            if not assembled_product_id:
-                # Remove the field if we don't have a valid product ID
-                del assembly_chart["assembledProductId"]
-                self.logger.warning("No assembledProductId available, creating assembly chart without product link")
+            # Add assembledProductId only if we have a valid one
+            if assembled_product_id:
+                assembly_chart["assembledProductId"] = assembled_product_id
+            
+            # Add potentially required @NotNull fields based on common DTO patterns
+            from datetime import datetime
+            assembly_chart.update({
+                "chartId": str(uuid.uuid4()),  # Unique identifier
+                "assemblyName": tech_card_data.get('name', 'AI Техкарта'),  # Assembly name
+                "creationDate": datetime.now().isoformat(),  # Creation date
+                "active": True,  # Status
+                "version": "1.0",  # Version
+                "organizationId": organization_id,  # Organization link
+                "status": "ACTIVE",  # Explicit status
+                "author": "AI-Menu-Designer"  # Author information
+            })
             
             return assembly_chart
             
@@ -924,7 +934,11 @@ class IikoServerIntegrationService:
             return {
                 "items": [],
                 "assembledAmount": 1.0,
-                "technologyDescription": "Создано AI-Menu-Designer"
+                "technologyDescription": "Создано AI-Menu-Designer",
+                "chartId": str(uuid.uuid4()),
+                "assemblyName": "Fallback техкарта",
+                "creationDate": datetime.now().isoformat(),
+                "active": True
             }
     
     def _find_product_id(self, product_name: str, existing_products: List[Dict[str, Any]]) -> str:
