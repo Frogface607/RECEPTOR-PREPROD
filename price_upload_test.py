@@ -13,7 +13,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://26d71771-d1f5-449c-a365-fa5f081cd98e.preview.emergentagent.com/api"
+BACKEND_URL = "https://20f89b22-cb12-404f-ae7e-adb10a6a6793.preview.emergentagent.com/api"
 TEST_USER_ID = "test_user_12345"
 
 def print_test_header(test_name):

@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://26d71771-d1f5-449c-a365-fa5f081cd98e.preview.emergentagent.com/api"
+BACKEND_URL = "https://20f89b22-cb12-404f-ae7e-adb10a6a6793.preview.emergentagent.com/api"
 
 def test_venue_serving_recommendations():
     """Test venue-specific serving recommendations for different venue types"""

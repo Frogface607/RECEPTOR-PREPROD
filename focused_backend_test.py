@@ -16,7 +16,7 @@ from datetime import datetime
 
 class FocusedReceptorTest:
     def __init__(self):
-        self.base_url = "https://26d71771-d1f5-449c-a365-fa5f081cd98e.preview.emergentagent.com/api"
+        self.base_url = "https://20f89b22-cb12-404f-ae7e-adb10a6a6793.preview.emergentagent.com/api"
         self.test_results = []
         
     def random_string(self, length=6):
