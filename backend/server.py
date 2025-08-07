@@ -867,7 +867,7 @@ class IikoServerIntegrationService:
                 'error': str(e)
             }
     
-    def _transform_to_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str) -> Dict[str, Any]:
+    def _transform_to_assembly_chart(self, tech_card_data: Dict[str, Any], organization_id: str, existing_products: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Transform AI tech card data to IIKo assembly chart format with only valid fields"""
         try:
             # Extract ingredients from tech card content if needed
@@ -876,8 +876,11 @@ class IikoServerIntegrationService:
             if 'ingredients' in tech_card_data and isinstance(tech_card_data['ingredients'], list):
                 for i, ingredient in enumerate(tech_card_data['ingredients']):
                     if isinstance(ingredient, dict):
+                        # Try to find existing product ID
+                        product_id = self._find_product_id(ingredient.get('name', ''), existing_products or [])
+                        
                         ingredients.append({
-                            "productId": None,  # Will be resolved by IIKo if exists
+                            "productId": product_id,  # Use real product ID if found
                             "amountMiddle": float(ingredient.get('quantity', 0)),
                             "amountIn1": float(ingredient.get('quantity', 0)),
                             "sortWeight": i + 1,
@@ -886,20 +889,32 @@ class IikoServerIntegrationService:
             else:
                 # Parse ingredients from content string if needed
                 content = tech_card_data.get('content', '')
-                parsed_ingredients = self._parse_ingredients_from_content(content)
+                parsed_ingredients = self._parse_ingredients_from_content(content, existing_products)
                 ingredients = parsed_ingredients
             
-            # Create assembly chart structure using ONLY the 3 absolutely minimal fields
-            # Based on error feedback: avoid complex DTOs that require specific structure
+            # Find an existing product ID for the main assembled product
+            assembled_product_id = self._find_product_id(tech_card_data.get('name', ''), existing_products or [])
+            
+            # If no existing product found, we need to fallback
+            if not assembled_product_id and existing_products:
+                # Use the first available product as a placeholder
+                assembled_product_id = existing_products[0].get('id') if existing_products else None
+                self.logger.warning(f"No matching product found for '{tech_card_data.get('name', '')}', using placeholder product")
+            
+            # Create assembly chart structure using minimal valid fields
             assembly_chart = {
-                # Core required fields
+                # Core required fields identified from testing
                 "items": ingredients,
                 "assembledAmount": max(float(tech_card_data.get('weight', 1.0)), 1.0),  # Must be > 0
                 "technologyDescription": tech_card_data.get('description', 'Создано AI-Menu-Designer'),
-                
-                # Required field identified from logs: assembledProductId cannot be null
-                "assembledProductId": str(uuid.uuid4())  # Generate a proper UUID
+                "assembledProductId": assembled_product_id  # Use real product ID
             }
+            
+            # Only add assembledProductId if we have a valid one
+            if not assembled_product_id:
+                # Remove the field if we don't have a valid product ID
+                del assembly_chart["assembledProductId"]
+                self.logger.warning("No assembledProductId available, creating assembly chart without product link")
             
             return assembly_chart
             
@@ -911,6 +926,29 @@ class IikoServerIntegrationService:
                 "assembledAmount": 1.0,
                 "technologyDescription": "Создано AI-Menu-Designer"
             }
+    
+    def _find_product_id(self, product_name: str, existing_products: List[Dict[str, Any]]) -> str:
+        """Find existing product ID by name matching"""
+        if not product_name or not existing_products:
+            return None
+        
+        product_name_lower = product_name.lower().strip()
+        
+        # Try exact match first
+        for product in existing_products:
+            if isinstance(product, dict):
+                existing_name = product.get('name', '').lower().strip()
+                if existing_name == product_name_lower:
+                    return product.get('id')
+        
+        # Try partial match
+        for product in existing_products:
+            if isinstance(product, dict):
+                existing_name = product.get('name', '').lower().strip()
+                if product_name_lower in existing_name or existing_name in product_name_lower:
+                    return product.get('id')
+        
+        return None
     
     def _parse_cooking_time(self, cook_time_str: str) -> int:
         """Parse cooking time string to minutes"""
