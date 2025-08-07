@@ -236,6 +236,21 @@ function App() {
   const [categoryData, setCategoryData] = useState(null);
   const [isLoadingCategory, setIsLoadingCategory] = useState(false);
 
+  // NEW - Assembly Charts (Tech Cards) Management states
+  const [showAssemblyChartsModal, setShowAssemblyChartsModal] = useState(false);
+  const [assemblyCharts, setAssemblyCharts] = useState([]);
+  const [isLoadingAssemblyCharts, setIsLoadingAssemblyCharts] = useState(false);
+  const [showCreateAssemblyChartModal, setShowCreateAssemblyChartModal] = useState(false);
+  const [isCreatingAssemblyChart, setIsCreatingAssemblyChart] = useState(false);
+  const [assemblyChartData, setAssemblyChartData] = useState({
+    name: '',
+    description: '',
+    ingredients: [],
+    preparation_steps: []
+  });
+  const [syncStatus, setSyncStatus] = useState(null);
+  const [showSyncStatusModal, setShowSyncStatusModal] = useState(false);
+
   // Menu Tech Cards View states
   const [showMenuTechCards, setShowMenuTechCards] = useState(false);
   const [menuTechCards, setMenuTechCards] = useState(null);
