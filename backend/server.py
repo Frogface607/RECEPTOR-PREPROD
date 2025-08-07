@@ -1438,6 +1438,137 @@ class IikoServerIntegrationService:
         
         return ingredients
 
+    async def create_complete_dish_in_iiko(self, tech_card_data: Dict[str, Any], organization_id: str, category_id: str = None) -> Dict[str, Any]:
+        """
+        Create COMPLETE dish in IIKo: Assembly Chart + DISH Product
+        This method creates both:
+        1. Assembly Chart (recipe/tech card)  
+        2. DISH Product (menu item) linked to the assembly chart and category
+        """
+        try:
+            complete_result = {
+                'success': False,
+                'assembly_chart': None,
+                'dish_product': None,
+                'steps_completed': [],
+                'errors': []
+            }
+            
+            dish_name = tech_card_data.get('name', 'Unknown Dish')
+            self.logger.info(f"🍽️ COMPLETE DISH CREATION: Starting for '{dish_name}'")
+            
+            # STEP 1: Create Assembly Chart first
+            self.logger.info(f"📋 STEP 1: Creating Assembly Chart for '{dish_name}'")
+            try:
+                assembly_result = await self.create_assembly_chart(tech_card_data, organization_id)
+                complete_result['assembly_chart'] = assembly_result
+                
+                if assembly_result.get('success'):
+                    complete_result['steps_completed'].append('assembly_chart_created')
+                    assembly_chart_id = assembly_result.get('assembly_chart_id')
+                    self.logger.info(f"✅ STEP 1: Assembly Chart created successfully! ID: {assembly_chart_id}")
+                else:
+                    complete_result['errors'].append(f"Assembly Chart creation failed: {assembly_result.get('error')}")
+                    self.logger.warning(f"⚠️ STEP 1: Assembly Chart failed, continuing with DISH creation...")
+                    assembly_chart_id = None
+                    
+            except Exception as e:
+                complete_result['errors'].append(f"Assembly Chart exception: {str(e)}")
+                self.logger.warning(f"❌ STEP 1 Exception: {str(e)}, continuing...")
+                assembly_chart_id = None
+            
+            # STEP 2: Get or create "AI Menu Designer" category
+            self.logger.info(f"📂 STEP 2: Handling category for DISH")
+            if not category_id:
+                try:
+                    # Check if "AI Menu Designer" category exists
+                    category_check = await self.check_category_exists("AI Menu Designer", organization_id)
+                    if category_check.get('success') and category_check.get('exists'):
+                        category_id = category_check.get('category', {}).get('id')
+                        self.logger.info(f"✅ STEP 2: Using existing AI Menu Designer category: {category_id}")
+                    else:
+                        # Create the category
+                        category_result = await self.create_category("AI Menu Designer", organization_id)
+                        if category_result.get('success'):
+                            category_id = category_result.get('category_id')
+                            self.logger.info(f"✅ STEP 2: Created AI Menu Designer category: {category_id}")
+                        else:
+                            self.logger.warning(f"⚠️ STEP 2: Category creation failed, proceeding without category")
+                            
+                except Exception as e:
+                    self.logger.warning(f"❌ STEP 2 Exception: {str(e)}, proceeding without category")
+            
+            complete_result['steps_completed'].append('category_handled')
+            
+            # STEP 3: Create DISH Product
+            self.logger.info(f"🍽️ STEP 3: Creating DISH Product for '{dish_name}'")
+            try:
+                dish_result = await self.create_dish_product(
+                    product_data=tech_card_data,
+                    organization_id=organization_id, 
+                    category_id=category_id,
+                    assembly_chart_id=assembly_chart_id
+                )
+                complete_result['dish_product'] = dish_result
+                
+                if dish_result.get('success'):
+                    complete_result['steps_completed'].append('dish_product_created')
+                    self.logger.info(f"✅ STEP 3: DISH Product created successfully!")
+                else:
+                    complete_result['errors'].append(f"DISH Product creation failed: {dish_result.get('error')}")
+                    self.logger.warning(f"⚠️ STEP 3: DISH Product creation failed")
+                    
+            except Exception as e:
+                complete_result['errors'].append(f"DISH Product exception: {str(e)}")
+                self.logger.error(f"❌ STEP 3 Exception: {str(e)}")
+            
+            # DETERMINE OVERALL SUCCESS
+            has_assembly = complete_result.get('assembly_chart', {}).get('success', False)
+            has_dish = complete_result.get('dish_product', {}).get('success', False)
+            
+            if has_assembly and has_dish:
+                complete_result['success'] = True
+                complete_result['status'] = 'complete_success'
+                complete_result['message'] = f"✅ Блюдо '{dish_name}' полностью создано в IIKo (техкарта + продукт)!"
+                self.logger.info(f"🎉 COMPLETE SUCCESS: Both Assembly Chart and DISH Product created for '{dish_name}'")
+            elif has_assembly:
+                complete_result['success'] = True  # Partial success is still success
+                complete_result['status'] = 'assembly_only'
+                complete_result['message'] = f"⚠️ Техкарта создана, но блюдо не добавлено в меню. Создана только Assembly Chart для '{dish_name}'"
+                self.logger.info(f"⚠️ PARTIAL SUCCESS: Only Assembly Chart created for '{dish_name}'")
+            elif has_dish:
+                complete_result['success'] = True  # Partial success is still success
+                complete_result['status'] = 'dish_only'
+                complete_result['message'] = f"⚠️ Блюдо добавлено в меню без техкарты. Создан только DISH продукт для '{dish_name}'"
+                self.logger.info(f"⚠️ PARTIAL SUCCESS: Only DISH Product created for '{dish_name}'")
+            else:
+                complete_result['success'] = False
+                complete_result['status'] = 'complete_failure'  
+                complete_result['message'] = f"❌ Не удалось создать блюдо '{dish_name}' в IIKo"
+                self.logger.error(f"❌ COMPLETE FAILURE: Neither Assembly Chart nor DISH Product created for '{dish_name}'")
+            
+            # Add summary information
+            complete_result['summary'] = {
+                'dish_name': dish_name,
+                'assembly_chart_created': has_assembly,
+                'dish_product_created': has_dish,
+                'category_used': category_id,
+                'steps_completed': len(complete_result['steps_completed']),
+                'errors_count': len(complete_result['errors'])
+            }
+            
+            return complete_result
+            
+        except Exception as e:
+            self.logger.error(f"Critical error in complete dish creation: {str(e)}")
+            return {
+                'success': False,
+                'status': 'critical_error',
+                'error': str(e),
+                'message': f"❌ Критическая ошибка при создании блюда: {str(e)}"
+            }
+
+
 # Legacy Cloud API classes (keeping for backward compatibility)
 class IikoAuthManager:
     def __init__(self):
