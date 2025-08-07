@@ -11281,6 +11281,132 @@ function App() {
         </div>
       )}
 
+      {/* All IIKo Categories Modal */}
+      {showAllCategoriesModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-purple-400/30 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-purple-200">
+                📂 Категории в IIKo: {selectedOrganization?.name}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAllCategoriesModal(false);
+                  setIikoCategories([]);
+                }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {isLoadingCategories ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+                <p className="text-purple-300 mt-2">Загружаем категории из IIKo...</p>
+              </div>
+            ) : iikoCategories.length > 0 ? (
+              <div>
+                <div className="mb-4 text-center">
+                  <span className="text-gray-300">
+                    Найдено категорий: <span className="font-bold text-white">{iikoCategories.length}</span>
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+                  {iikoCategories.map((category, index) => (
+                    <div
+                      key={category.id || index}
+                      className={`p-3 rounded-lg border transition-colors ${
+                        category.name === 'AI Menu Designer'
+                          ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-400'
+                          : category.deleted
+                          ? 'bg-red-900/20 border-red-400/30'
+                          : 'bg-gray-700/50 border-gray-600 hover:bg-gray-700/70'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h5 className={`font-medium ${
+                            category.name === 'AI Menu Designer' ? 'text-purple-200' : 'text-white'
+                          }`}>
+                            {category.name === 'AI Menu Designer' && '✨ '}
+                            {category.name}
+                          </h5>
+                          <p className="text-gray-400 text-xs mt-1">
+                            ID: {category.id}
+                          </p>
+                          {category.code && (
+                            <p className="text-gray-400 text-xs">
+                              Код: {category.code}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          category.deleted 
+                            ? 'bg-red-600 text-red-100' 
+                            : category.name === 'AI Menu Designer'
+                            ? 'bg-purple-600 text-purple-100'
+                            : 'bg-green-600 text-green-100'
+                        }`}>
+                          {category.deleted ? 'Удалена' : 
+                           category.name === 'AI Menu Designer' ? 'AI Designer' : 'Активна'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={createAIMenuDesignerCategory}
+                    disabled={isCreatingCategory || iikoCategories.some(cat => cat.name === 'AI Menu Designer')}
+                    className={`${
+                      isCreatingCategory 
+                        ? 'bg-gray-600 cursor-not-allowed' 
+                        : iikoCategories.some(cat => cat.name === 'AI Menu Designer')
+                        ? 'bg-green-600 cursor-default'
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                    } text-white font-bold py-3 px-6 rounded-lg transition-colors`}
+                    title={
+                      iikoCategories.some(cat => cat.name === 'AI Menu Designer')
+                        ? 'Категория AI Menu Designer уже существует'
+                        : 'Создать категорию AI Menu Designer'
+                    }
+                  >
+                    {isCreatingCategory ? '⏳ Создаем...' : 
+                     iikoCategories.some(cat => cat.name === 'AI Menu Designer') ? '✅ AI Menu Designer уже создана' :
+                     '✨ Создать AI Menu Designer'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <p className="mb-4">Категории не найдены или произошла ошибка загрузки</p>
+                <button
+                  onClick={() => fetchAllIikoCategories(selectedOrganization?.id)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                >
+                  🔄 Повторить загрузку
+                </button>
+              </div>
+            )}
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => {
+                  setShowAllCategoriesModal(false);
+                  setIikoCategories([]);
+                }}
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
