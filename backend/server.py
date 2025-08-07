@@ -884,7 +884,6 @@ class IikoServerIntegrationService:
                 "items": ingredients,  # This seems to be the ingredients field
                 "technologyDescription": tech_card_data.get('description', ''),
                 "assembledAmount": float(tech_card_data.get('weight', 0)),
-                "organizationId": organization_id,
                 
                 # Try to include cooking steps in description
                 "appearance": {
@@ -903,12 +902,7 @@ class IikoServerIntegrationService:
                 "productWriteoff": [],
                 "effectiveDirectWriteoffStoreSpecification": None,
                 "dateTo": None,
-                "productSizeAssemblyStrategy": None,
-                
-                # Metadata for tracking
-                "externalId": str(uuid.uuid4()),
-                "createdBy": "AI-Menu-Designer",
-                "aiGenerated": True
+                "productSizeAssemblyStrategy": None
             }
             
             return assembly_chart
