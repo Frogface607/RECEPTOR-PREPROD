@@ -692,7 +692,7 @@ frontend:
 
   - task: "IIKo Assembly Charts API Data Structure Fixes - New"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
     stuck_count: 2
     priority: "high"
