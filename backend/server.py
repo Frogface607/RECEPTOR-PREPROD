@@ -914,13 +914,11 @@ class IikoServerIntegrationService:
                 "items": [],
                 "technologyDescription": "Создано AI-Menu-Designer",
                 "assembledAmount": 0,
-                "organizationId": organization_id,
                 "appearance": {
                     "name": tech_card_data.get('name', 'Техкарта'),
                     "description": "Создано AI-Menu-Designer"
                 },
-                "productWriteoff": [],
-                "aiGenerated": True
+                "productWriteoff": []
             }
     
     def _parse_ingredients_from_content(self, content: str) -> List[Dict[str, Any]]:
