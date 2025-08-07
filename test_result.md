@@ -57,8 +57,19 @@
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##    - agent: "main"
+##      message: "Добавлена критическая новая задача: создание полноценных ПРОДУКТОВ в IIKo, а не только Assembly Charts. Реализована система create_complete_dish_in_iiko() которая создает и техкарту и продукт одновременно. Теперь блюда должны появляться в меню IIKo и заполнять категорию 'AI Menu Designer'. ТРЕБУЕТ СРОЧНОГО ТЕСТИРОВАНИЯ."
+##
+## test_plan:
+##   current_focus:
+##     - "IIKo Integration - Create Product/Dish - NEW CRITICAL FIX"
+##     - "Simplified Menu Generation System and Enhanced Venue Profile - New"
+##     - "PRACTICAL FINANCES PRO Feature - Complete"
+##   stuck_tasks:
+##     - "Enhanced Menu Generator Landing Page"
+##     - "Venue Profile Integration Enhancement"
+##   test_all: false
+##   test_priority: "high_first"
 
 # Protocol Guidelines for Main agent
 #
