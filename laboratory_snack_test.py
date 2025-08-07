@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://20f89b22-cb12-404f-ae7e-adb10a6a6793.preview.emergentagent.com/api"
+BACKEND_URL = "https://6fef0306-3b86-43a7-9af9-64a8d83a066e.preview.emergentagent.com/api"
 
 def test_laboratory_snack_experiment():
     """Test POST /api/laboratory-experiment with snack experiment type"""
