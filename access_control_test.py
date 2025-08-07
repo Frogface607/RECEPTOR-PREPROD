@@ -5,7 +5,7 @@ def test_non_pro_access():
     """Test that non-PRO users cannot access PRO AI functions"""
     print("🔒 Testing PRO AI access control for non-PRO users...")
     
-    base_url = "https://505e5bfa-929d-4220-a43a-07be25c44be2.preview.emergentagent.com/api"
+    base_url = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com/api"
     
     # Create a free tier user
     user_data = {

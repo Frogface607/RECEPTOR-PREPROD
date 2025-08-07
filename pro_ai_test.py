@@ -12,7 +12,7 @@ import json
 import time
 
 def test_pro_ai_functions():
-    base_url = "https://505e5bfa-929d-4220-a43a-07be25c44be2.preview.emergentagent.com/api"
+    base_url = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com/api"
     
     # First, register a PRO user for testing
     print("🔧 Setting up PRO user for testing...")
