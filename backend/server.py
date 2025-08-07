@@ -686,6 +686,15 @@ class IikoServerIntegrationService:
             
             session_key = await self.auth_manager.get_session_key()
             
+            # First, try to get existing menu to find real product IDs
+            try:
+                menu_data = await self.get_menu_items([organization_id])
+                existing_products = menu_data.get('items', []) if menu_data else []
+                self.logger.info(f"Found {len(existing_products)} existing products in menu")
+            except Exception as e:
+                self.logger.warning(f"Could not get existing menu: {str(e)}")
+                existing_products = []
+            
             # Assembly charts endpoint from documentation
             endpoint = f"{self.auth_manager.base_url}/resto/api/v2/assemblyCharts/save"
             
@@ -694,7 +703,7 @@ class IikoServerIntegrationService:
             }
             
             # Transform AI tech card to IIKo assembly chart format
-            assembly_chart = self._transform_to_assembly_chart(tech_card_data, organization_id)
+            assembly_chart = self._transform_to_assembly_chart(tech_card_data, organization_id, existing_products)
             
             async with httpx.AsyncClient(timeout=60.0) as client:
                 self.logger.info(f"🔨 Creating assembly chart in IIKo: {endpoint}")
