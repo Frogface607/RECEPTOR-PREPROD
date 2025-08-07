@@ -414,7 +414,7 @@ class IikoServerIntegrationService:
                 # CORE REQUIRED FIELDS
                 "name": product_data.get('name'),
                 "code": f"DISH_{str(uuid.uuid4())[:8].upper()}",  # Unique code
-                "type": "dish",  # Product type = dish (lowercase)
+                "type": "DISH",  # Product type = DISH (UPPERCASE! IIKo expects uppercase)
                 
                 # BASIC PRODUCT PROPERTIES  
                 "description": product_data.get('description', ''),
