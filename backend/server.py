@@ -718,7 +718,7 @@ class IikoServerIntegrationService:
                         'assembly_chart_id': data.get('id'),
                         'name': assembly_chart['appearance']['name'],
                         'response': data,
-                        'message': f"✅ Техкарта '{assembly_chart['name']}' создана в IIKo!"
+                        'message': f"✅ Техкарта '{assembly_chart['appearance']['name']}' создана в IIKo!"
                     }
                 else:
                     return {
