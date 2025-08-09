@@ -142,15 +142,18 @@ backend:
 
   - task: "HACCP Pro Frontend Module (FE-01A)"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "FE-01A COMPLETED: Implemented HACCP Pro frontend module with complete functionality. Added HACCP Pro toggle in venue profile settings (step 4, PRO users only). Created compact HACCP display block on tech card page showing status badges (OK/Требуется проверка), allergens chips, CCP table (limit 2), and storage info. Implemented auto-generation with 2-second debounce after tech card changes, integrated with POST /api/v1/haccp.v2/generate endpoint. Added localStorage persistence for HACCP Pro setting. Module only visible when enabled and user has PRO/Business subscription."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL ISSUE FOUND: HACCP Pro functionality is NOT visible to users as reported. ✅ BACKEND VERIFICATION: HACCP API endpoints working perfectly - /api/v1/haccp.v2/audit returns proper audit results with issues detection and patch recommendations. ✅ QUICK TEST ACCESS: Successfully accessed app via 'БЫСТРЫЙ ТЕСТ' button. ❌ MAIN PROBLEM: HACCP block is NOT appearing on generated tech cards despite: 1) PRO user setup (subscription_plan: 'pro'), 2) HACCP enabled in localStorage ('haccpProEnabled': 'true'), 3) Tech card generation working correctly. ❌ VENUE PROFILE ISSUE: Cannot consistently access venue profile steps to test HACCP Pro toggle in step 4 - modal navigation is unstable. ❌ USER EXPERIENCE: User complaint 'кнопок нигде нет' is CONFIRMED - HACCP buttons and interface elements are not visible despite proper backend functionality and code implementation. 🔍 ROOT CAUSE: Frontend HACCP display conditions may not be working correctly, or there's a rendering issue preventing the HACCP block from appearing in the formatTechCard function. The code exists but the UI elements are not showing."
 
   - task: "HACCP Audit Frontend (FE-01B)"
     implemented: true
