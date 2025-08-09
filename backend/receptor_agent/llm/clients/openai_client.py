@@ -46,7 +46,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any], model: 
             "json_schema": {
                 "name": "techcard_schema",
                 "schema": json_schema,
-                "strict": True
+                "strict": False  # Убираем strict mode для совместимости
             }
         }
     )
