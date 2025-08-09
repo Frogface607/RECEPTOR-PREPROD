@@ -3574,6 +3574,11 @@ function App() {
     }
   }, [currentView, currentUser]);
 
+  // Save HACCP Pro setting to localStorage
+  useEffect(() => {
+    localStorage.setItem('haccp_pro_enabled', JSON.stringify(haccpProEnabled));
+  }, [haccpProEnabled]);
+
   // Auto HACCP generation hook
   useEffect(() => {
     if (!haccpProEnabled || !techCard || isAutoGeneratingHaccp) return;
