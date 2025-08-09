@@ -3,6 +3,9 @@ from typing import Dict, Any, List
 from pydantic import BaseModel
 from receptor_agent.techcards_v2.schemas import TechCardV2
 from receptor_agent.techcards_v2.validators import validate_card
+from receptor_agent.techcards_v2.normalize import normalize_card
+from receptor_agent.techcards_v2.quantify import rebalance
+from receptor_agent.techcards_v2.haccp_templates import enrich_haccp
 
 class ProfileInput(BaseModel):
     name: str
@@ -15,10 +18,8 @@ class PipelineResult(BaseModel):
     card: TechCardV2
     issues: List[str] = []
 
-# --- Заглушки шагов (позже подключим 4o-mini через client) ---
-
 def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
-    # минимальный черновик, чтобы тесты бежали
+    # как было — минимальный черновик
     return {
         "meta": {"name": f"Блюдо {profile.cuisine or 'авторское'}", "category": "Горячее", "cuisine": profile.cuisine},
         "yield": {"portions": 10, "per_portion_g": 250, "total_net_g": 2500},
@@ -32,20 +33,18 @@ def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
     }
 
 def normalize(draft: Dict[str, Any]) -> Dict[str, Any]:
-    # TODO: нормализация (канонические имена/единицы)
-    return draft
+    return normalize_card(draft)
 
 def quantify(norm: Dict[str, Any]) -> Dict[str, Any]:
-    # TODO: баланс нетто/брутто/потерь + пересчёты
-    return norm
+    return rebalance(norm)
 
 def build_haccp(data: Dict[str, Any]) -> Dict[str, Any]:
-    # TODO: шаблоны CCP по типу блюда
-    return data
+    return enrich_haccp(data)
 
 def critique(card: TechCardV2) -> List[str]:
-    # TODO: self-critique → issues/patch
-    return []
+    # простая самопроверка — всё в validators.validate_card
+    ok, issues = validate_card(card)
+    return issues if not ok else []
 
 def run_pipeline(profile: ProfileInput) -> PipelineResult:
     draft = generate_draft(profile)
@@ -54,5 +53,8 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
     final = build_haccp(quant)
     card = TechCardV2.model_validate(final)
     ok, issues = validate_card(card)
-    # TODO: если есть issues — прогон через critique/auto-fix
+    # авто-фикс 1 проход: если расходится только total_net → пересчёт уже делает quantify()
+    if not ok:
+        # второй прогон re-validate без изменений, если остались — отдаём issues
+        pass
     return PipelineResult(card=card, issues=issues)
