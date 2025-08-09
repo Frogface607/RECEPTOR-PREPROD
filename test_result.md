@@ -62,12 +62,9 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "IIKo Integration - Create Product/Dish - NEW CRITICAL FIX"
-##     - "Simplified Menu Generation System and Enhanced Venue Profile - New"
-##     - "PRACTICAL FINANCES PRO Feature - Complete"
-##   stuck_tasks:
-##     - "Enhanced Menu Generator Landing Page"
-##     - "Venue Profile Integration Enhancement"
+##     - "HACCP-only LLM Module Implementation (EM-01I)"
+##     - "HACCP API v2 Endpoints (EM-01J)"
+##   stuck_tasks: []
 ##   test_all: false
 ##   test_priority: "high_first"
 
