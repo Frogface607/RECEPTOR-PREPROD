@@ -3545,6 +3545,12 @@ function App() {
         loadUserPrices(parsedUser.id);
       }
     }
+    
+    // Load HACCP Pro setting
+    const savedHaccpPro = localStorage.getItem('haccp_pro_enabled');
+    if (savedHaccpPro) {
+      setHaccpProEnabled(JSON.parse(savedHaccpPro));
+    }
   }, []);
 
   // Fetch subscription data when user changes
