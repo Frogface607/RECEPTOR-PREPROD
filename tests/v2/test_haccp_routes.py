@@ -1,8 +1,12 @@
 import os
+import sys
 os.environ.setdefault("FEATURE_TECHCARDS_V2", "true")
 
+# Add backend path for imports
+sys.path.insert(0, '/app/backend')
+
 from fastapi.testclient import TestClient
-from receptor_agent.server import app
+from server import app
 from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
 
 def test_haccp_generate_and_audit():
