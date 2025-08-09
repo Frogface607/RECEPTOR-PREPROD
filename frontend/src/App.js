@@ -998,9 +998,6 @@ function App() {
                 {isAutoGeneratingHaccp && (
                   <span className="text-xs text-orange-400">Обновляется...</span>
                 )}
-                <span className="text-xs text-gray-400">
-                  Pro: {haccpProEnabled ? 'ON' : 'OFF'}
-                </span>
               </h3>
               <button
                 onClick={auditHaccp}
@@ -1012,70 +1009,70 @@ function App() {
             </div>
             
             <div className="space-y-3">
-              {/* HACCP Pro toggle info */}
+              {/* HACCP Pro status info */}
               <div className="bg-orange-800/30 p-3 rounded-lg text-xs">
-                <div className="text-orange-300 font-medium">HACCP Pro модуль</div>
+                <div className="text-orange-300 font-medium">HACCP Pro модуль (Debug)</div>
                 <div className="text-gray-400">
                   Статус: {haccpProEnabled ? '✅ Включен' : '❌ Выключен'} | 
                   Подписка: {currentUser?.subscription_plan || 'N/A'} |
-                  Пользователь: {currentUser?.email || 'N/A'}
+                  User: {currentUser?.email || currentUser?.name || 'N/A'}
                 </div>
                 {!haccpProEnabled && (
                   <div className="text-orange-400 mt-2">
-                    💡 Включите HACCP Pro в настройках профиля заведения
+                    💡 Включите HACCP Pro в настройках профиля заведения (шаг 4)
                   </div>
                 )}
               </div>
               
-              {currentTechCardHaccp && (
-                  <div>
-                    <h4 className="text-sm font-bold text-orange-400 mb-2">Аллергены:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {currentTechCardHaccp.allergens.map((allergen, idx) => (
-                        <span key={idx} className="bg-red-600 px-2 py-1 rounded-full text-xs">
-                          {allergen}
-                        </span>
-                      ))}
-                    </div>
+              {/* Allergens chips */}
+              {currentTechCardHaccp?.allergens && currentTechCardHaccp.allergens.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-orange-400 mb-2">Аллергены:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {currentTechCardHaccp.allergens.map((allergen, idx) => (
+                      <span key={idx} className="bg-red-600 px-2 py-1 rounded-full text-xs">
+                        {allergen}
+                      </span>
+                    ))}
                   </div>
-                )}
-                
-                {/* Critical Control Points */}
-                {currentTechCardHaccp.ccp && currentTechCardHaccp.ccp.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-orange-400 mb-2">Критические контрольные точки:</h4>
-                    <div className="space-y-2">
-                      {currentTechCardHaccp.ccp.slice(0, 2).map((ccp, idx) => (
-                        <div key={idx} className="bg-orange-800/30 p-2 rounded text-xs">
-                          <div className="font-medium">{ccp.name}</div>
-                          <div className="text-gray-400">Предел: {ccp.limit}</div>
-                        </div>
-                      ))}
-                      {currentTechCardHaccp.ccp.length > 2 && (
-                        <div className="text-xs text-gray-400">
-                          +{currentTechCardHaccp.ccp.length - 2} больше точек
-                        </div>
-                      )}
-                    </div>
+                </div>
+              )}
+              
+              {/* Critical Control Points */}
+              {currentTechCardHaccp?.ccp && currentTechCardHaccp.ccp.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-orange-400 mb-2">Критические контрольные точки:</h4>
+                  <div className="space-y-2">
+                    {currentTechCardHaccp.ccp.slice(0, 2).map((ccp, idx) => (
+                      <div key={idx} className="bg-orange-800/30 p-2 rounded text-xs">
+                        <div className="font-medium">{ccp.name}</div>
+                        <div className="text-gray-400">Предел: {ccp.limit}</div>
+                      </div>
+                    ))}
+                    {currentTechCardHaccp.ccp.length > 2 && (
+                      <div className="text-xs text-gray-400">
+                        +{currentTechCardHaccp.ccp.length - 2} больше точек
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                {/* Storage */}
-                {currentTechCardHaccp.storage && (
-                  <div>
-                    <h4 className="text-sm font-bold text-orange-400 mb-2">Хранение:</h4>
-                    <p className="text-xs text-gray-300">{currentTechCardHaccp.storage}</p>
-                  </div>
-                )}
-                
-                {/* Hazards count */}
-                {currentTechCardHaccp.hazards && currentTechCardHaccp.hazards.length > 0 && (
-                  <div className="text-xs text-gray-400">
-                    Выявлено рисков: {currentTechCardHaccp.hazards.length}
-                  </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+              
+              {/* Storage */}
+              {currentTechCardHaccp?.storage && (
+                <div>
+                  <h4 className="text-sm font-bold text-orange-400 mb-2">Хранение:</h4>
+                  <p className="text-xs text-gray-300">{currentTechCardHaccp.storage}</p>
+                </div>
+              )}
+              
+              {/* Hazards count */}
+              {currentTechCardHaccp?.hazards && currentTechCardHaccp.hazards.length > 0 && (
+                <div className="text-xs text-gray-400">
+                  Выявлено рисков: {currentTechCardHaccp.hazards.length}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
