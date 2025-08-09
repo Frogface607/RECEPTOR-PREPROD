@@ -6484,6 +6484,8 @@ app.include_router(api_router)
 if os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on"):
     from receptor_agent.routes.techcards_v2 import router as tc_v2_router
     app.include_router(tc_v2_router, prefix="/api/v1", tags=["techcards.v2"])
+    from receptor_agent.routes.menus_v2 import router as menus_v2_router
+    app.include_router(menus_v2_router, prefix="/api/v1", tags=["menus.v2"])
 
 # Add a catch-all OPTIONS handler for CORS preflight
 @app.options("/{full_path:path}")
