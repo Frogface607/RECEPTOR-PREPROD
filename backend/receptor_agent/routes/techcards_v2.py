@@ -1,6 +1,6 @@
 from __future__ import annotations
 import os
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
 from receptor_agent.techcards_v2.schemas import TechCardV2
@@ -15,10 +15,23 @@ router = APIRouter()
 def _flag() -> bool:
     return os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on")
 
+def _llm_enabled() -> bool:
+    return os.getenv("TECHCARDS_V2_USE_LLM","false").lower() in ("1","true","yes","on") and bool(os.getenv("OPENAI_API_KEY"))
+
+@router.get("/techcards.v2/status")
+def status_tc_v2():
+    return {
+        "feature_enabled": _flag(),
+        "llm_enabled": _llm_enabled(),
+        "model": os.getenv("TECHCARDS_V2_MODEL","gpt-4o-mini") if _llm_enabled() else None
+    }
+
 @router.post("/techcards.v2/generate", response_model=TechCardV2)
-def generate_tc_v2(profile: ProfileInput):
+def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, description="override env flag")):
     if not _flag():
         raise HTTPException(404, "feature disabled")
+    if use_llm is not None:
+        os.environ["TECHCARDS_V2_USE_LLM"] = "true" if use_llm else "false"
     res = run_pipeline(profile)
     ok, issues = validate_card(res.card)
     if not ok:
