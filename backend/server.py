@@ -6480,6 +6480,11 @@ def _generate_diagnostic_recommendations(tests: List[Dict]) -> List[str]:
 # Include the router in the main app
 app.include_router(api_router)
 
+# Подключаем v2-функционал только по флагу
+if os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on"):
+    from receptor_agent.routes.techcards_v2 import router as tc_v2_router
+    app.include_router(tc_v2_router, prefix="/api/v1", tags=["techcards.v2"])
+
 # Add a catch-all OPTIONS handler for CORS preflight
 @app.options("/{full_path:path}")
 async def options_handler(full_path: str):
