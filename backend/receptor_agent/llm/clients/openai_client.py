@@ -32,22 +32,30 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any], model: 
     mdl = model or os.getenv("TECHCARDS_V2_MODEL", "gpt-4o-mini")
     tmo = float(os.getenv("TECHCARDS_V2_REQUEST_TIMEOUT", str(timeout or 25)))
 
-    # Responses API + response_format json_schema (Structured Outputs)
+    # Chat Completions API + response_format json_schema (Structured Outputs)
     # https://platform.openai.com/docs/guides/structured-outputs
-    resp = cli.responses.create(
+    resp = cli.chat.completions.create(
         model=mdl,
         timeout=tmo,
-        reasoning={"effort":"medium"},
-        input=[{"role":"system","content":system},{"role":"user","content":user}],
-        response_format={"type":"json_schema","json_schema":{"name":"schema","schema":json_schema,"strict":True}},
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user}
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "techcard_schema",
+                "schema": json_schema,
+                "strict": True
+            }
+        }
     )
-    # Унифицированный способ извлечь JSON
+    
+    # Извлекаем JSON из response
     try:
-        data = resp.output_parsed  # доступно при json_schema
-        if data is None:
-            # запасной путь
-            raw = resp.output[0].content[0].text if getattr(resp, "output", None) else ""
-            data = json.loads(raw)
-        return data
-    except Exception as e:
+        content = resp.choices[0].message.content
+        if not content:
+            raise APIError("Empty response content")
+        return json.loads(content)
+    except (json.JSONDecodeError, IndexError) as e:
         raise APIError(f"Failed to parse structured output: {e}")
