@@ -11644,6 +11644,66 @@ function App() {
         </div>
       )}
 
+      {/* HACCP Audit Modal */}
+      {showHaccpAuditModal && haccpAuditResult && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-gray-900 via-orange-900 to-gray-900 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-orange-400/30">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-orange-300 flex items-center gap-3">
+                🛡️ Результаты аудита HACCP
+              </h2>
+              <button
+                onClick={() => setShowHaccpAuditModal(false)}
+                className="text-gray-400 hover:text-white transition-colors text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Issues List */}
+              <div>
+                <h3 className="text-lg font-bold text-orange-300 mb-4">
+                  Обнаруженные проблемы ({haccpAuditResult.issues?.length || 0})
+                </h3>
+                {haccpAuditResult.issues && haccpAuditResult.issues.length > 0 ? (
+                  <div className="space-y-3">
+                    {haccpAuditResult.issues.map((issue, idx) => (
+                      <div key={idx} className="bg-orange-800/30 p-3 rounded-lg flex items-start space-x-3">
+                        <span className="text-orange-400 mt-1">⚠️</span>
+                        <span className="text-gray-300 flex-1">{issue}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-green-800/30 p-4 rounded-lg text-center">
+                    <span className="text-green-300 font-medium">✅ Проблем не обнаружено</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-between pt-6 border-t border-orange-400/30">
+                <button
+                  onClick={() => setShowHaccpAuditModal(false)}
+                  className="px-6 py-3 rounded-lg font-bold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                >
+                  Отмена
+                </button>
+                {haccpAuditResult.issues && haccpAuditResult.issues.length > 0 && (
+                  <button
+                    onClick={applyHaccpPatch}
+                    className="px-6 py-3 rounded-lg font-bold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white transition-colors"
+                  >
+                    Применить исправления
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
