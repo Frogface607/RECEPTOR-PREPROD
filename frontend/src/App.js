@@ -271,6 +271,14 @@ function App() {
   // Menu View Mode states
   const [menuViewMode, setMenuViewMode] = useState('customer'); // 'customer' or 'business'
 
+  // HACCP Pro states
+  const [haccpProEnabled, setHaccpProEnabled] = useState(false);
+  const [currentTechCardHaccp, setCurrentTechCardHaccp] = useState(null);
+  const [showHaccpAuditModal, setShowHaccpAuditModal] = useState(false);
+  const [haccpAuditResult, setHaccpAuditResult] = useState(null);
+  const [isHaccpAuditing, setIsHaccpAuditing] = useState(false);
+  const [isAutoGeneratingHaccp, setIsAutoGeneratingHaccp] = useState(false);
+
   // Tips and lifehacks for mass generation loading
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const receptionTips = [
