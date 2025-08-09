@@ -58,7 +58,7 @@
 ##
 ## agent_communication:
 ##    - agent: "main"
-##      message: "HACCP MODULE IMPLEMENTATION COMPLETED: Реализованы EM-01I и EM-01J задачи. Создан полноценный HACCP-only LLM модуль с отдельными функциями generate_haccp() и audit_haccp(). Добавлены API эндпоинты POST /api/v1/haccp.v2/generate и POST /api/v1/haccp.v2/audit. Модуль поддерживает LLM режим и локальный fallback. Тесты подтверждают функциональность - audit находит 3 HACCP проблемы и предоставляет рекомендации. ТРЕБУЕТ BACKEND ТЕСТИРОВАНИЯ для проверки интеграции."
+##      message: "HACCP FRONTEND IMPLEMENTATION COMPLETED: Успешно реализованы FE-01A и FE-01B задачи. Создан полноценный HACCP Pro frontend модуль с тумблером в настройках профиля, компактным отображением на странице техкарты, автогенерацией с debounce 2 сек, и полнофункциональным аудитом с модалкой. Интегрированы backend endpoints /api/v1/haccp.v2/generate и /api/v1/haccp.v2/audit. Добавлено сохранение настроек в localStorage. HACCP блок видим только для PRO пользователей при включенной настройке. Система готова к тестированию и использованию."
 ##
 ## test_plan:
 ##   current_focus:
