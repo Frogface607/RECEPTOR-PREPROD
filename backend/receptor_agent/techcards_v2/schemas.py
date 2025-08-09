@@ -59,5 +59,4 @@ class TechCardV2(BaseModel):
     allergens: List[str] = Field(default_factory=list)
     pricing: Optional[Dict[str, float]] = None  # опционально: себестоимость/наценка
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
