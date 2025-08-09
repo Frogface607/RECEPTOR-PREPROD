@@ -58,7 +58,7 @@
 ##
 ## agent_communication:
 ##    - agent: "main"
-##      message: "Добавлена критическая новая задача: создание полноценных ПРОДУКТОВ в IIKo, а не только Assembly Charts. Реализована система create_complete_dish_in_iiko() которая создает и техкарту и продукт одновременно. Теперь блюда должны появляться в меню IIKo и заполнять категорию 'AI Menu Designer'. ТРЕБУЕТ СРОЧНОГО ТЕСТИРОВАНИЯ."
+##      message: "HACCP MODULE IMPLEMENTATION COMPLETED: Реализованы EM-01I и EM-01J задачи. Создан полноценный HACCP-only LLM модуль с отдельными функциями generate_haccp() и audit_haccp(). Добавлены API эндпоинты POST /api/v1/haccp.v2/generate и POST /api/v1/haccp.v2/audit. Модуль поддерживает LLM режим и локальный fallback. Тесты подтверждают функциональность - audit находит 3 HACCP проблемы и предоставляет рекомендации. ТРЕБУЕТ BACKEND ТЕСТИРОВАНИЯ для проверки интеграции."
 ##
 ## test_plan:
 ##   current_focus:
