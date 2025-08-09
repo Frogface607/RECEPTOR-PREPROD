@@ -14,11 +14,15 @@ def test_haccp_generate_and_audit():
     card = run_pipeline(ProfileInput(name="EDISON", cuisine="итальянская")).card.model_dump(by_alias=True)
 
     g = client.post("/api/v1/haccp.v2/generate", json=card)
+    print(f"Generate response status: {g.status_code}")
+    print(f"Generate response text: {g.text}")
     assert g.status_code == 200
     tc = g.json()
     assert tc["haccp"]["hazards"]
 
     a = client.post("/api/v1/haccp.v2/audit", json=tc)
+    print(f"Audit response status: {a.status_code}")
+    print(f"Audit response text: {a.text}")
     assert a.status_code == 200
     audit = a.json()
     assert "issues" in audit and "patch" in audit
