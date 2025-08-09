@@ -3421,6 +3421,63 @@ function App() {
     }
   }, [currentView, currentUser]);
 
+  // Auto HACCP generation hook
+  useEffect(() => {
+    if (!haccpProEnabled || !techCard || isAutoGeneratingHaccp) return;
+    
+    // Debounce HACCP generation by 2 seconds after tech card changes
+    const timeout = setTimeout(async () => {
+      try {
+        console.log('Auto-generating HACCP...');
+        setIsAutoGeneratingHaccp(true);
+        
+        // Parse tech card content to create a simple structure for the API
+        const cardData = {
+          meta: {
+            name: techCard.match(/\*\*Название:\*\*\s*(.*?)(?=\n|$)/)?.[1]?.trim() || "Блюдо",
+            category: techCard.match(/\*\*Категория:\*\*\s*(.*?)(?=\n|$)/)?.[1]?.trim() || "Основные блюда",
+            cuisine: "международная"
+          },
+          ingredients: [], // Simplified for now
+          process: [], // Simplified for now
+          yield: {
+            portions: 4,
+            per_portion_g: 250,
+            total_net_g: 1000
+          },
+          haccp: {
+            hazards: [],
+            ccp: [],
+            storage: null
+          },
+          allergens: []
+        };
+
+        const response = await fetch(`${API}/v1/haccp.v2/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(cardData),
+        });
+
+        if (response.ok) {
+          const haccpData = await response.json();
+          setCurrentTechCardHaccp(haccpData.haccp);
+          console.log('HACCP auto-generated successfully:', haccpData.haccp);
+        } else {
+          console.log('HACCP auto-generation failed:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error auto-generating HACCP:', error);
+      } finally {
+        setIsAutoGeneratingHaccp(false);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [haccpProEnabled, techCard, isAutoGeneratingHaccp]);
+
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
     if (!currentUser?.id) {
