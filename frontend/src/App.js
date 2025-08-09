@@ -1143,6 +1143,74 @@ function App() {
     }
   };
 
+  // HACCP Audit function
+  const auditHaccp = async () => {
+    if (!techCard || !currentUser?.id) return;
+    
+    setIsHaccpAuditing(true);
+    
+    try {
+      // Parse tech card content to create a simple structure for the API
+      const cardData = {
+        meta: {
+          name: techCard.match(/\*\*Название:\*\*\s*(.*?)(?=\n|$)/)?.[1]?.trim() || "Блюдо",
+          category: techCard.match(/\*\*Категория:\*\*\s*(.*?)(?=\n|$)/)?.[1]?.trim() || "Основные блюда",
+          cuisine: "международная"
+        },
+        ingredients: [], // Simplified for now
+        process: [], // Simplified for now
+        yield: {
+          portions: 4,
+          per_portion_g: 250,
+          total_net_g: 1000
+        },
+        haccp: currentTechCardHaccp || {
+          hazards: [],
+          ccp: [],
+          storage: null
+        },
+        allergens: []
+      };
+
+      const response = await fetch(`${API}/v1/haccp.v2/audit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cardData),
+      });
+
+      if (response.ok) {
+        const auditData = await response.json();
+        setHaccpAuditResult(auditData);
+        setShowHaccpAuditModal(true);
+        console.log('HACCP audit completed:', auditData);
+      } else {
+        const errorText = await response.text();
+        console.error('HACCP audit failed:', errorText);
+        alert('Не удалось выполнить аудит. Попробуйте ещё раз');
+      }
+    } catch (error) {
+      console.error('Error during HACCP audit:', error);
+      alert('Не удалось выполнить аудит. Попробуйте ещё раз');
+    } finally {
+      setIsHaccpAuditing(false);
+    }
+  };
+
+  // Apply HACCP patch function
+  const applyHaccpPatch = () => {
+    if (!haccpAuditResult?.patch) return;
+    
+    // For now, just update the HACCP data
+    // In a real implementation, you'd update the entire tech card
+    setCurrentTechCardHaccp(haccpAuditResult.patch.haccp);
+    setShowHaccpAuditModal(false);
+    
+    // Show success message
+    alert('Исправления применены');
+  };
+
   // IIKo Integration API functions - NEW!
   const fetchIikoHealth = async () => {
     try {
