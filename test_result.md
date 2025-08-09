@@ -64,9 +64,11 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "HACCP-only LLM Module Implementation (EM-01I)"
-##     - "HACCP API v2 Endpoints (EM-01J)"
-##   stuck_tasks: []
+##     - "HACCP Pro Frontend Module (FE-01A)"
+##     - "HACCP Audit Frontend (FE-01B)"
+##   stuck_tasks:
+##     - "HACCP Pro Frontend Module (FE-01A)"
+##     - "HACCP Audit Frontend (FE-01B)"
 ##   test_all: false
 ##   test_priority: "high_first"
 
