@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com/api"
+BACKEND_URL = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com/api"
 
 def test_all_review_requirements():
     """Test all specific requirements from the review request"""

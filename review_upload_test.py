@@ -59,7 +59,7 @@ def test_1_test_user_pro_subscription():
     print("- Проверяем автоматическое создание пользователя с PRO подпиской")
     print("- Проверяем отсутствие ошибки 'Требуется PRO подписка'")
     
-    base_url = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com"
+    base_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com"
     test_user_id = "test_user_12345"
     
     # Create test Excel file
@@ -103,7 +103,7 @@ def test_2_excel_file_upload():
     print("- Проверяем корректную обработку файла")
     print("- Проверяем количество обработанных позиций")
     
-    base_url = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com"
+    base_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com"
     test_user_id = "test_user_12345"
     
     # Create test Excel file
@@ -162,7 +162,7 @@ def test_3_api_response_validation():
     print("- Проверяем, что count > 0 (не 0 позиций)")
     print("- Проверяем, что message содержит корректное количество")
     
-    base_url = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com"
+    base_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com"
     test_user_id = "test_user_12345"
     
     # Create test Excel file
@@ -222,7 +222,7 @@ def test_4_csv_file_processing():
     print("- Создаём тестовый CSV файл с теми же данными")
     print("- Проверяем, что CSV файлы теперь обрабатываются корректно")
     
-    base_url = "https://a8a5672b-ce8b-43b7-b77c-996ec8e61bdd.preview.emergentagent.com"
+    base_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com"
     test_user_id = "test_user_12345"
     
     # Create test CSV file
