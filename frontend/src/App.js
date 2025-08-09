@@ -8859,6 +8859,31 @@ function App() {
                   </div>
                 ))}
                 
+                {/* HACCP Pro Settings */}
+                {(currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business') && (
+                  <div className="pt-6 border-t border-purple-400/30">
+                    <h4 className="text-lg font-bold text-orange-300 mb-4 flex items-center space-x-2">
+                      <span>🛡️</span>
+                      <span>HACCP Pro</span>
+                      <span className="bg-orange-600 px-2 py-1 rounded text-xs">PRO</span>
+                    </h4>
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={haccpProEnabled}
+                        onChange={(e) => setHaccpProEnabled(e.target.checked)}
+                        className="w-5 h-5 text-orange-600 bg-gray-700 border-gray-600 rounded focus:ring-orange-500 focus:ring-2"
+                      />
+                      <div className="text-gray-300">
+                        <div className="font-medium">Включить HACCP Pro модуль</div>
+                        <div className="text-sm text-gray-400">
+                          Автоматическая генерация и аудит HACCP протоколов для соблюдения требований безопасности пищевых продуктов
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                )}
+                
                 <div className="flex justify-between pt-6 border-t border-purple-400/30">
                   <button
                     onClick={() => setProfileStep(3)}
