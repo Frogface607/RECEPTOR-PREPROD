@@ -139,6 +139,30 @@ backend:
       - working: true
         agent: "main"
         comment: "EM-01J COMPLETED: Created HACCP API v2 endpoints with dedicated router. Implemented POST /api/v1/haccp.v2/generate for HACCP regeneration and POST /api/v1/haccp.v2/audit for HACCP audit with issues detection. Router properly integrated into server.py under FEATURE_TECHCARDS_V2 flag. Tests confirm audit endpoint works correctly, finding 3 HACCP issues and providing patch recommendations. Generate endpoint validates output strictly and may require input cards to be already valid."
+
+  - task: "HACCP Pro Frontend Module (FE-01A)"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "FE-01A COMPLETED: Implemented HACCP Pro frontend module with complete functionality. Added HACCP Pro toggle in venue profile settings (step 4, PRO users only). Created compact HACCP display block on tech card page showing status badges (OK/Требуется проверка), allergens chips, CCP table (limit 2), and storage info. Implemented auto-generation with 2-second debounce after tech card changes, integrated with POST /api/v1/haccp.v2/generate endpoint. Added localStorage persistence for HACCP Pro setting. Module only visible when enabled and user has PRO/Business subscription."
+
+  - task: "HACCP Audit Frontend (FE-01B)"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "FE-01B COMPLETED: Implemented HACCP audit functionality with modal interface. Added 'HACCP АУДИТ' button in HACCP block that calls POST /api/v1/haccp.v2/audit endpoint. Created audit results modal showing issues list with warning icons and descriptions. Added 'Применить исправления' button that applies patch to current tech card and shows success message. Includes proper error handling and loading states. Modal displays issue count and provides clear user experience for HACCP compliance checking."
       - working: true
         agent: "testing"
         comment: "🎯 HACCP API v2 ENDPOINTS COMPREHENSIVE TESTING COMPLETED: Conducted detailed testing of EM-01J implementation as requested in review. ✅ ROUTER INTEGRATION: HACCP v2 router properly integrated into server.py at /api/v1/haccp.v2/* endpoints. Both endpoints accessible and responding correctly. ✅ POST /api/v1/haccp.v2/generate ENDPOINT: Working correctly - HTTP 200 responses with proper HACCP generation. Generated HACCP with 3 hazards including 'Biological: Salmonella (from eggs)', 'Chemical: Allergens (egg, milk)' and 3 CCPs with temperature controls. Strict validation ensures only valid tech cards pass through. ✅ POST /api/v1/haccp.v2/audit ENDPOINT: Working perfectly - HTTP 200 responses with comprehensive audit results. Found 4 issues including 'No critical control points (CCPs) identified', 'Lack of temperature control measures for storage'. Returns proper structure with 'issues' array and 'patch' object. ✅ FEATURE FLAG INTEGRATION: Endpoints properly controlled by FEATURE_TECHCARDS_V2 flag. When enabled, endpoints work correctly. ✅ INPUT VALIDATION: Proper validation with HTTP 422 for invalid input structures, HTTP 400 for validation failures. ✅ ERROR HANDLING: Robust error handling for malformed requests, validation failures, and edge cases. ✅ INTEGRATION TESTING: Full integration between HACCP module functions and API endpoints verified. Both LLM and fallback modes work through API. 🎉 HACCP API v2 ENDPOINTS ARE FULLY FUNCTIONAL AND READY FOR PRODUCTION USE."
