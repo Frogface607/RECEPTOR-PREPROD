@@ -157,9 +157,9 @@ backend:
 
   - task: "HACCP Audit Frontend (FE-01B)"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -169,6 +169,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 HACCP API v2 ENDPOINTS COMPREHENSIVE TESTING COMPLETED: Conducted detailed testing of EM-01J implementation as requested in review. ✅ ROUTER INTEGRATION: HACCP v2 router properly integrated into server.py at /api/v1/haccp.v2/* endpoints. Both endpoints accessible and responding correctly. ✅ POST /api/v1/haccp.v2/generate ENDPOINT: Working correctly - HTTP 200 responses with proper HACCP generation. Generated HACCP with 3 hazards including 'Biological: Salmonella (from eggs)', 'Chemical: Allergens (egg, milk)' and 3 CCPs with temperature controls. Strict validation ensures only valid tech cards pass through. ✅ POST /api/v1/haccp.v2/audit ENDPOINT: Working perfectly - HTTP 200 responses with comprehensive audit results. Found 4 issues including 'No critical control points (CCPs) identified', 'Lack of temperature control measures for storage'. Returns proper structure with 'issues' array and 'patch' object. ✅ FEATURE FLAG INTEGRATION: Endpoints properly controlled by FEATURE_TECHCARDS_V2 flag. When enabled, endpoints work correctly. ✅ INPUT VALIDATION: Proper validation with HTTP 422 for invalid input structures, HTTP 400 for validation failures. ✅ ERROR HANDLING: Robust error handling for malformed requests, validation failures, and edge cases. ✅ INTEGRATION TESTING: Full integration between HACCP module functions and API endpoints verified. Both LLM and fallback modes work through API. 🎉 HACCP API v2 ENDPOINTS ARE FULLY FUNCTIONAL AND READY FOR PRODUCTION USE."
+      - working: false
+        agent: "testing"
+        comment: "🚨 FRONTEND DISPLAY ISSUE CONFIRMED: HACCP audit functionality is NOT accessible to users. ✅ BACKEND AUDIT WORKING: POST /api/v1/haccp.v2/audit endpoint tested successfully - returns proper audit results with issues: 'Missing critical control points (CCP) in cooking process', 'No temperature thresholds specified for cooking steps' and provides patch recommendations. ❌ FRONTEND ISSUE: 'HACCP АУДИТ' button is NOT visible on tech cards despite proper implementation in code (lines 1002-1007 in formatTechCard function). ❌ USER ACCESS PROBLEM: Users cannot access HACCP audit functionality because the HACCP block itself is not rendering on tech cards. The audit modal and functionality exist in code but are unreachable due to missing HACCP block display. 🔍 ROOT CAUSE: Same as FE-01A - HACCP block rendering conditions not working properly in frontend, preventing access to audit functionality."
 
 backend:
   - task: "Simplified Menu Generation System and Enhanced Venue Profile - New"
