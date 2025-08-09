@@ -59,6 +59,8 @@
 ## agent_communication:
 ##    - agent: "main"
 ##      message: "HACCP FRONTEND IMPLEMENTATION COMPLETED: Успешно реализованы FE-01A и FE-01B задачи. Создан полноценный HACCP Pro frontend модуль с тумблером в настройках профиля, компактным отображением на странице техкарты, автогенерацией с debounce 2 сек, и полнофункциональным аудитом с модалкой. Интегрированы backend endpoints /api/v1/haccp.v2/generate и /api/v1/haccp.v2/audit. Добавлено сохранение настроек в localStorage. HACCP блок видим только для PRO пользователей при включенной настройке. Система готова к тестированию и использованию."
+##    - agent: "testing"
+##      message: "🚨 CRITICAL ISSUE IDENTIFIED: HACCP Pro functionality is NOT visible to users despite proper implementation. ✅ BACKEND FULLY FUNCTIONAL: All HACCP API endpoints working perfectly - audit returns proper results with issues detection. ❌ FRONTEND DISPLAY PROBLEM: HACCP block is NOT rendering on tech cards even with PRO user + enabled setting. User complaint 'кнопок нигде нет' is CONFIRMED. 🔍 ROOT CAUSE: Frontend HACCP display conditions in formatTechCard function (lines 987-1063) are not working correctly. The code exists but UI elements don't show. ⚠️ URGENT FIX NEEDED: Debug HACCP block rendering conditions - check haccpProEnabled state, subscription validation, and currentTechCardHaccp data flow. Users cannot access HACCP functionality despite complete backend implementation."
 ##
 ## test_plan:
 ##   current_focus:
