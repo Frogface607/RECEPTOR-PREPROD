@@ -1,9 +1,8 @@
 # Минимальные схемы для шагов, совместимые с TechCardV2
 TECHCARD_CORE_SCHEMA = {
   "type":"object",
-  "additionalProperties": False,
   "properties":{
-    "meta":{"type":"object","additionalProperties": False,"properties":{
+    "meta":{"type":"object","properties":{
       "name":{"type":"string","minLength":2},
       "category":{"type":["string","null"]},
       "cuisine":{"type":["string","null"]},
@@ -15,7 +14,7 @@ TECHCARD_CORE_SCHEMA = {
       "total_net_g":{"type":"integer","minimum":1}
     },"required":["portions","per_portion_g","total_net_g"]},
     "ingredients":{"type":"array","items":{
-      "type":"object","additionalProperties": False,"properties":{
+      "type":"object","properties":{
         "name":{"type":"string"},
         "uom":{"type":"string","enum":["g","ml","pcs"]},
         "gross_g":{"type":"number","minimum":0},
