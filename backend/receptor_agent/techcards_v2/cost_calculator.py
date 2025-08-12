@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from difflib import SequenceMatcher
 import re
 
-from .schemas import TechCardV2, IngredientV2, CostV2
+from .schemas import TechCardV2, IngredientV2, CostV2, CostMetaV2
 
 class CostCalculator:
     """Калькулятор себестоимости для техкарт"""
