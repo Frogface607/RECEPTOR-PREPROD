@@ -221,7 +221,7 @@ class CostCalculator:
         Расчет полной стоимости техкарты
         Возвращает: (cost, cost_meta, issues)
         """
-        # Проверяем флаг LLM для цен
+        # Проверяем флаг LLM для цен (по умолчанию false)
         use_llm_for_prices = os.getenv("PRICE_VIA_LLM", "false").lower() in ("true", "1", "yes", "on")
         
         total_cost = 0.0
