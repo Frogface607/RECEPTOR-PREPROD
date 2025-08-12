@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Техкарта - Борщ украинский</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .no-print { display: none; }
+            .page-break { page-break-before: always; }
+            table { page-break-inside: avoid; }
+            tr { page-break-inside: avoid; }
+        }
+        
+        body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.3; margin: 0; position: relative; }
+        
+        .watermark {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 72pt; font-weight: bold; color: rgba(255,0,0,0.1);
+            z-index: -1; pointer-events: none;
+        }
+        
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .title { font-size: 16pt; font-weight: bold; margin-bottom: 5px; }
+        .meta-info { font-size: 10pt; margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; font-size: 10pt; }
+        th { background-color: #f0f0f0; font-weight: bold; text-align: center; }
+        .total-row { background-color: #f8f8f8; font-weight: bold; }
+        
+        .section { margin-bottom: 20px; }
+        .section h3 { font-size: 12pt; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #666; padding-bottom: 3px; }
+        
+        .storage { background-color: #f9f9f9; padding: 8px; border: 1px solid #ccc; margin-bottom: 15px; }
+        .issues { background-color: #ffe6e6; padding: 10px; border: 1px solid #ff0000; margin-bottom: 15px; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 9pt; border-top: 1px solid #666; padding-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="watermark">ЧЕРНОВИК</div>
+    
+    <div class="header">
+        <div class="title">ТЕХНОЛОГИЧЕСКАЯ КАРТА</div>
+        <div class="title">Борщ украинский</div>
+        <div class="meta-info">
+            Версия: 2.0 | Дата: 12.08.2025 | 
+            Кухня: украинская | 
+            Порций: 4 | Выход на порцию: 200г | Выход партии: 800г
+        </div>
+    </div>
+    
+    <div class="issues"><h4>Замечания:</h4><ul><li>Недостаточно ингредиентов</li><li>Отсутствует CCP для мяса</li></ul></div>
+    
+    <div class="section">
+        <h3>СОСТАВ И РАСХОД СЫРЬЯ</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Наименование</th>
+                    <th>Брутто, г</th>
+                    <th>Потери, %</th>
+                    <th>Нетто, г</th>
+                    <th>Ед.</th>
+                    <th>SKU</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>Говядина</td>
+            <td>400.0</td>
+            <td>15.0</td>
+            <td>340.0</td>
+            <td>g</td>
+            <td>BEEF001</td>
+        </tr>
+        
+        <tr>
+            <td>Свекла</td>
+            <td>200.0</td>
+            <td>20.0</td>
+            <td>160.0</td>
+            <td>g</td>
+            <td>—</td>
+        </tr>
+        
+        <tr>
+            <td>Морковь</td>
+            <td>100.0</td>
+            <td>15.0</td>
+            <td>85.0</td>
+            <td>g</td>
+            <td>—</td>
+        </tr>
+        
+        <tr>
+            <td>Яйца куриные</td>
+            <td>2.0</td>
+            <td>5.0</td>
+            <td>1.9</td>
+            <td>pcs</td>
+            <td>—</td>
+        </tr>
+        
+    <tr class="total-row">
+        <td><strong>ИТОГО по нетто:</strong></td>
+        <td colspan="2">—</td>
+        <td><strong>586.9</strong></td>
+        <td colspan="2">Заявленный выход: 800.0 г</td>
+    </tr>
+    
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h3>ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Действие</th>
+                    <th>Время, мин</th>
+                    <th>Темп., °C</th>
+                    <th>Оборудование</th>
+                    <th>CCP</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td>Подготовка мяса и овощей</td>
+            <td>20</td>
+            <td>—</td>
+            <td>—</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>2</td>
+            <td>Варка бульона</td>
+            <td>90</td>
+            <td>95</td>
+            <td>—</td>
+            <td>✓</td>
+        </tr>
+        
+        <tr>
+            <td>3</td>
+            <td>Добавление овощей</td>
+            <td>30</td>
+            <td>85</td>
+            <td>—</td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td>4</td>
+            <td>Финальная готовка</td>
+            <td>10</td>
+            <td>—</td>
+            <td>—</td>
+            <td></td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h3>УСЛОВИЯ И СРОКИ ХРАНЕНИЯ</h3>
+        <div class="storage">
+            <p><strong>Условия:</strong> Холодильник 0...+4°C</p>
+            <p><strong>Срок хранения:</strong> 48 часов</p>
+            <p><strong>Температура подачи:</strong> 65.0°C</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>ПИЩЕВАЯ ЦЕННОСТЬ</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Показатель</th>
+                    <th>ккал</th>
+                    <th>Белки, г</th>
+                    <th>Жиры, г</th>
+                    <th>Углеводы, г</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td><strong>На 100г готового блюда</strong></td>
+            <td>55.0</td>
+            <td>3.5</td>
+            <td>2.1</td>
+            <td>6.2</td>
+        </tr>
+        
+        <tr>
+            <td><strong>На 1 порцию</strong></td>
+            <td>110.0</td>
+            <td>7.0</td>
+            <td>4.2</td>
+            <td>12.4</td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h3>ЭКОНОМИЧЕСКИЕ ПОКАЗАТЕЛИ</h3>
+        
+        <p><strong>Себестоимость:</strong> 180.50 ₽ (партия), 45.13 ₽ (порция)</p>
+        <p><strong>Наценка:</strong> 300%, НДС: 20%</p>
+        
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <p><strong>Примечания:</strong> Подавать с сметаной; Украсить зеленью</p>
+        <br>
+        <table style="width: 100%; border: none;">
+            <tr style="border: none;">
+                <td style="border: none; width: 50%;">Ответственный: ________________</td>
+                <td style="border: none; width: 50%;">Утверждено: ________________</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="footer">
+        Стр. 1 | Дата печати: 12.08.2025 17:30 | TechCard ID: b3aebda7-e507-42b0-9148-174b8e91930b
+    </div>
+</body>
+</html>
