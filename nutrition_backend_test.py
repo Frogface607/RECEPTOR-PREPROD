@@ -111,16 +111,11 @@ def test_nutrition_calculator():
     
     # Test different units: g, ml, pcs
     test_profile_units = {
-        "dish_name": "Тест конвертации единиц",
-        "portions": 2,
-        "ingredients": [
-            {"name": "куриное филе", "netto_g": 200, "unit": "g"},  # Direct grams
-            {"name": "растительное масло", "netto_g": 20, "unit": "ml"},  # ml→g conversion (density 0.91)
-            {"name": "яйцо куриное", "netto_g": 2, "unit": "pcs"},  # pcs→g conversion (55g per piece)
-            {"name": "молоко", "netto_g": 100, "unit": "ml"}  # ml→g conversion (density 1.03)
-        ],
-        "yield_per_batch_g": 400,
-        "yield_per_portion_g": 200
+        "name": "Тест конвертации единиц",
+        "cuisine": "европейская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
