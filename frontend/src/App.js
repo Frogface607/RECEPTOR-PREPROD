@@ -989,7 +989,7 @@ function App() {
           <div className="bg-gradient-to-r from-orange-900/20 to-yellow-900/20 rounded-lg p-4 border border-orange-500/30">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-orange-300 flex items-center space-x-2">
-                <span>🛡️ HACCP</span>
+                <span>🛡️ HACCP [ДОЛЖЕН БЫТЬ СКРЫТ]</span>
                 <span className="text-xs bg-purple-600 px-2 py-1 rounded">PRO</span>
                 {currentTechCardHaccp?.hazards?.length > 0 ? (
                   <span className="bg-green-600 px-2 py-1 rounded text-xs">OK</span>
