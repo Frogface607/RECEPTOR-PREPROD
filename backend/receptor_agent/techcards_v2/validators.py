@@ -35,8 +35,5 @@ def validate_card(card: TechCardV2) -> Tuple[bool, List[str]]:
     issues = []
     if not ok1: issues.append(m1)
     if not ok2: issues.append(m2)
-    # enrich allergens suggestion (не навязываем, а предлагаем)
-    suggested = recompute_allergens(card)
-    if sorted(card.allergens) != suggested:
-        issues.append(f"allergens mismatch: have={card.allergens}, suggested={suggested}")
+    # Note: allergens validation removed as it's per-ingredient in TechCardV2
     return (len(issues) == 0, issues)
