@@ -62,6 +62,35 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
             "raw_data": None
         }
 
+@router.post("/techcards.v2/export/iiko")
+def export_tc_v2_to_iiko(card: TechCardV2):
+    """Экспорт техкарты в формат iiko (XLSX с листами Products и Recipes)"""
+    if not _flag():
+        raise HTTPException(404, "feature disabled")
+    
+    try:
+        # Экспортируем в iiko формат
+        xlsx_file, issues = export_techcard_to_iiko(card)
+        
+        # Создаем безопасное имя файла
+        safe_title = "".join(c for c in card.meta.title if c.isalnum() or c in (' ', '-', '_')).strip()
+        safe_title = safe_title.replace(' ', '_')
+        filename = f"iiko_export_{safe_title}.xlsx"
+        
+        # Логируем issues если есть
+        if issues:
+            print(f"iiko export issues: {issues}")
+        
+        return StreamingResponse(
+            io.BytesIO(xlsx_file.read()),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    
+    except Exception as e:
+        print(f"iiko export error: {e}")
+        raise HTTPException(500, f"Export failed: {str(e)}")
+
 @router.post("/techcards.v2/print")
 def print_tc_v2(card: TechCardV2):
     """Генерация ГОСТ-печати A4 из TechCardV2"""
