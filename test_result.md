@@ -1727,8 +1727,8 @@ frontend:
 
 test_plan:
   current_focus:
-    - "HACCP Pro Frontend Module (FE-01A)"
-    - "HACCP Audit Frontend (FE-01B)"
+    - "Cost Calculator Implementation for TechCardV2"
+    - "Pipeline Integration for Cost Calculation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
