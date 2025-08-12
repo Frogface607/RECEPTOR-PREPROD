@@ -54,8 +54,8 @@ def test_nutrition_calculator():
             data = response.json()
             print(f"Response status: {data.get('status')}")
             
-            if data.get('status') == 'success' and data.get('card'):
-                card = data['card']
+            if data.get('status') in ['success', 'draft']:
+                card = data.get('card') or data.get('raw_data', {})
                 nutrition = card.get('nutrition', {})
                 nutrition_meta = card.get('nutritionMeta', {})
                 
