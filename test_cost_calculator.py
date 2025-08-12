@@ -79,6 +79,7 @@ def test_cost_calculator():
     # Test full tech card cost
     cost_obj, cost_meta, issues = calculator.calculate_tech_card_cost(test_card)
     print("=== Общая стоимость техкарты ===")
+    print(f"PRICE_VIA_LLM={os.getenv('PRICE_VIA_LLM', 'not_set')}")
     print(f"Общая стоимость сырья: {cost_obj.rawCost} RUB")
     print(f"Стоимость на порцию: {cost_obj.costPerPortion} RUB")
     print(f"Наценка: {cost_obj.markup_pct}%")
