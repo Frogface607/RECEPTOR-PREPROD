@@ -3659,39 +3659,36 @@ function App() {
 
   // централизованная функция закрытия модалок
   const closeAllModals = React.useCallback(() => {
-    try {
-      setShowRegistration(false);
-      setShowPricingModal(false);
-      setShowEquipmentModal(false);
-      setShowHistory(false);
-      setShowPriceModal(false);
-      setShowInstructions(false);
-      setShowProAIModal(false);
-      setShowSalesScriptModal(false);
-      setShowFoodPairingModal(false);
-      setShowPhotoTipsModal(false);
-      setShowInspirationModal(false);
-      setShowFinancesModal(false);
-      setShowImproveDishModal(false);
-      setShowLaboratoryModal(false);
-      setShowVenueProfileModal(false);
-      setShowMenuWizard(false);
-      setShowMassGenerationModal(false);
-      setShowMenuGenerationModal(false);
-      setShowSimpleMenuModal(false);
-      setShowProjectsModal(false);
-      setShowCreateProjectModal(false);
-      setShowProjectContentModal(false);
-      setShowAnalyticsModal(false);
-      setShowIikoModal(false);
-      setShowUploadTechCardModal(false);
-      setShowSyncMenuModal(false);
-      setShowCategoryViewer(false);
-      setShowAllCategoriesModal(false);
-      setShowAssemblyChartsModal(false);
-      setShowCreateAssemblyChartModal(false);
-      // setShowHaccpAuditModal(false); // ОТКЛЮЧЕНО
-    } catch (e) {}
+    setShowRegistration(false);
+    setShowPricingModal(false);
+    setShowEquipmentModal(false);
+    setShowHistory(false);
+    setShowPriceModal(false);
+    setShowInstructions(false);
+    setShowProAIModal(false);
+    setShowSalesScriptModal(false);
+    setShowFoodPairingModal(false);
+    setShowPhotoTipsModal(false);
+    setShowInspirationModal(false);
+    setShowFinancesModal(false);
+    setShowImproveDishModal(false);
+    setShowLaboratoryModal(false);
+    setShowVenueProfileModal(false);
+    setShowMenuWizard(false);
+    setShowMassGenerationModal(false);
+    setShowMenuGenerationModal(false);
+    setShowSimpleMenuModal(false);
+    setShowProjectsModal(false);
+    setShowCreateProjectModal(false);
+    setShowProjectContentModal(false);
+    setShowAnalyticsModal(false);
+    setShowIikoModal(false);
+    setShowUploadTechCardModal(false);
+    setShowSyncMenuModal(false);
+    setShowCategoryViewer(false);
+    setShowAllCategoriesModal(false);
+    setShowAssemblyChartsModal(false);
+    setShowCreateAssemblyChartModal(false);
   }, []);
 
   // ESC listener который не черствеет
