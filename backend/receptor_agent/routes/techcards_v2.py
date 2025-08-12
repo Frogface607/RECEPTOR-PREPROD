@@ -60,6 +60,24 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
             "raw_data": None
         }
 
+@router.post("/techcards.v2/print")
+def print_tc_v2(card: TechCardV2):
+    """Генерация ГОСТ-печати A4 из TechCardV2"""
+    if not _flag():
+        raise HTTPException(404, "feature disabled")
+    
+    # Валидация техкарты
+    ok, issues = validate_card(card)
+    is_draft = not ok or len(issues) > 0
+    
+    # Определяем статус для водяного знака
+    status = "draft" if is_draft else "success"
+    
+    # Генерируем HTML для печати
+    html_content = generate_print_html(card, status, issues)
+    
+    return HTMLResponse(content=html_content, media_type="text/html")
+
 @router.post("/techcards.v2/export")
 def export_tc_v2(card: TechCardV2):
     if not _flag():
