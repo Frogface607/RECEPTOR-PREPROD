@@ -96,6 +96,12 @@ class GoldenTestRunner:
         def has_range(value):
             """Проверяет содержит ли значение диапазон"""
             if isinstance(value, str):
+                # Исключаем ISO даты и технические форматы
+                if re.match(r'\d{4}-\d{2}-\d{2}', value):  # ISO date
+                    return False
+                if re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', value):  # ISO datetime  
+                    return False
+                
                 # Ищем паттерны типа "10-15", "5...8", "от 2 до 5"
                 range_patterns = [
                     r'\d+\s*-\s*\d+',
