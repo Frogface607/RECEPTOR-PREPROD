@@ -141,10 +141,14 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         # Генерируем черновик в формате TechCardV2
         data = generate_draft(profile)
         
-        # Пропускаем legacy обработку для TechCardV2
-        # data = normalize(data)  # ОТКЛЮЧЕНО для TechCardV2
-        # data = quantify(data)   # ОТКЛЮЧЕНО для TechCardV2  
-        # data = build_haccp(data) # ОТКЛЮЧЕНО для TechCardV2
+        # Включаем LLM обработку если доступна
+        if _use_llm():
+            # Пропускаем legacy normalize/quantify для LLM режима
+            # LLM должен сразу генерировать в правильном формате TechCardV2
+            pass
+        else:
+            # В fallback режиме данные уже в правильном формате
+            pass
         
         # СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
         is_valid, issues, validated_card = validate_techcard_v2(data)
