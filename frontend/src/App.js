@@ -3317,6 +3317,79 @@ function App() {
     }, 500);
   };
 
+  const handleGostPrint = async () => {
+    try {
+      // Пока что используем существующую техкарту как основу
+      // TODO: Преобразовать в TechCardV2 формат
+      const mockTechCardV2 = {
+        meta: {
+          id: Date.now().toString(),
+          title: techCard.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Неизвестное блюдо',
+          version: "2.0",
+          createdAt: new Date().toISOString(),
+          cuisine: "не указана",
+          tags: []
+        },
+        portions: 4,
+        yield: {
+          perPortion_g: 150.0,
+          perBatch_g: 600.0
+        },
+        ingredients: [
+          {
+            name: "Тестовый ингредиент",
+            unit: "g",
+            brutto_g: 100.0,
+            loss_pct: 5.0,
+            netto_g: 95.0,
+            allergens: []
+          }
+        ],
+        process: [
+          { n: 1, action: "Подготовка", time_min: 5.0 },
+          { n: 2, action: "Приготовление", time_min: 15.0, temp_c: 180.0 },
+          { n: 3, action: "Подача", time_min: 2.0 }
+        ],
+        storage: {
+          conditions: "Холодильник 0...+4°C",
+          shelfLife_hours: 48.0,
+          servingTemp_c: 65.0
+        },
+        nutrition: {
+          per100g: { kcal: 150.0, proteins_g: 10.0, fats_g: 5.0, carbs_g: 15.0 },
+          perPortion: { kcal: 225.0, proteins_g: 15.0, fats_g: 7.5, carbs_g: 22.5 }
+        },
+        cost: {
+          rawCost: 150.0,
+          costPerPortion: 37.5,
+          markup_pct: 300.0,
+          vat_pct: 20.0
+        },
+        printNotes: []
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}/api/v1/techcards.v2/print`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mockTechCardV2)
+      });
+
+      if (response.ok) {
+        const htmlContent = await response.text();
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+      } else {
+        alert('Ошибка при генерации ГОСТ-печати');
+      }
+    } catch (error) {
+      console.error('Ошибка ГОСТ-печати:', error);
+      alert('Ошибка при генерации ГОСТ-печати');
+    }
+  };
+
   const generateMenu = async () => {
     try {
       setIsGenerating(true);
