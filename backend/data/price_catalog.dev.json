@@ -1,0 +1,152 @@
+{
+  "catalog_version": "1.0",
+  "last_updated": "2025-01-17",
+  "currency": "RUB",
+  "price_unit": "per_kg_or_liter",
+  "ingredients": {
+    "мясо_птица": {
+      "куриное филе": {"price": 450, "unit": "kg", "category": "мясо"},
+      "куриное бедро": {"price": 350, "unit": "kg", "category": "мясо"},
+      "куриные крылья": {"price": 280, "unit": "kg", "category": "мясо"},
+      "курица целая": {"price": 220, "unit": "kg", "category": "мясо"},
+      "индейка филе": {"price": 650, "unit": "kg", "category": "мясо"},
+      "утка": {"price": 800, "unit": "kg", "category": "мясо"}
+    },
+    "мясо_говядина": {
+      "говядина тушеная": {"price": 800, "unit": "kg", "category": "мясо"},
+      "говядина для стейка": {"price": 1200, "unit": "kg", "category": "мясо"},
+      "говядина фарш": {"price": 450, "unit": "kg", "category": "мясо"},
+      "телятина": {"price": 900, "unit": "kg", "category": "мясо"}
+    },
+    "мясо_свинина": {
+      "свинина вырезка": {"price": 550, "unit": "kg", "category": "мясо"},
+      "свинина лопатка": {"price": 400, "unit": "kg", "category": "мясо"},
+      "бекон": {"price": 700, "unit": "kg", "category": "мясо"},
+      "ветчина": {"price": 800, "unit": "kg", "category": "мясо"}
+    },
+    "рыба_морепродукты": {
+      "лосось": {"price": 1000, "unit": "kg", "category": "рыба"},
+      "семга": {"price": 1200, "unit": "kg", "category": "рыба"},
+      "треска": {"price": 600, "unit": "kg", "category": "рыба"},
+      "скумбрия": {"price": 350, "unit": "kg", "category": "рыба"},
+      "креветки": {"price": 800, "unit": "kg", "category": "морепродукты"},
+      "кальмары": {"price": 450, "unit": "kg", "category": "морепродукты"},
+      "мидии": {"price": 300, "unit": "kg", "category": "морепродукты"}
+    },
+    "молочные": {
+      "молоко": {"price": 80, "unit": "liter", "category": "молочные"},
+      "сливки 20%": {"price": 150, "unit": "liter", "category": "молочные"},
+      "сливки 35%": {"price": 200, "unit": "liter", "category": "молочные"},
+      "сметана": {"price": 120, "unit": "kg", "category": "молочные"},
+      "творог": {"price": 180, "unit": "kg", "category": "молочные"},
+      "сыр российский": {"price": 400, "unit": "kg", "category": "сыры"},
+      "сыр пармезан": {"price": 1200, "unit": "kg", "category": "сыры"},
+      "сыр моцарелла": {"price": 800, "unit": "kg", "category": "сыры"},
+      "сыр чеддер": {"price": 600, "unit": "kg", "category": "сыры"},
+      "масло сливочное": {"price": 400, "unit": "kg", "category": "молочные"}
+    },
+    "яйца": {
+      "яйца куриные": {"price": 120, "unit": "kg", "category": "яйца", "pieces_per_kg": 18},
+      "перепелиные яйца": {"price": 600, "unit": "kg", "category": "яйца", "pieces_per_kg": 80}
+    },
+    "крупы_макароны": {
+      "рис круглозерный": {"price": 90, "unit": "kg", "category": "крупы"},
+      "рис длиннозерный": {"price": 120, "unit": "kg", "category": "крупы"},
+      "гречка": {"price": 100, "unit": "kg", "category": "крупы"},
+      "пшено": {"price": 70, "unit": "kg", "category": "крупы"},
+      "овсянка": {"price": 80, "unit": "kg", "category": "крупы"},
+      "макароны": {"price": 110, "unit": "kg", "category": "макароны"},
+      "спагетти": {"price": 130, "unit": "kg", "category": "макароны"},
+      "паста": {"price": 150, "unit": "kg", "category": "макароны"}
+    },
+    "овощи": {
+      "картофель": {"price": 40, "unit": "kg", "category": "овощи"},
+      "морковь": {"price": 50, "unit": "kg", "category": "овощи"},
+      "лук репчатый": {"price": 35, "unit": "kg", "category": "овощи"},
+      "лук зеленый": {"price": 200, "unit": "kg", "category": "зелень"},
+      "чеснок": {"price": 300, "unit": "kg", "category": "овощи"},
+      "помидоры": {"price": 180, "unit": "kg", "category": "овощи"},
+      "огурцы": {"price": 120, "unit": "kg", "category": "овощи"},
+      "капуста белокочанная": {"price": 45, "unit": "kg", "category": "овощи"},
+      "капуста цветная": {"price": 120, "unit": "kg", "category": "овощи"},
+      "брокколи": {"price": 200, "unit": "kg", "category": "овощи"},
+      "перец болгарский": {"price": 250, "unit": "kg", "category": "овощи"},
+      "баклажаны": {"price": 180, "unit": "kg", "category": "овощи"},
+      "кабачки": {"price": 80, "unit": "kg", "category": "овощи"},
+      "свекла": {"price": 50, "unit": "kg", "category": "овощи"}
+    },
+    "зелень_специи": {
+      "укроп": {"price": 800, "unit": "kg", "category": "зелень"},
+      "петрушка": {"price": 700, "unit": "kg", "category": "зелень"},
+      "базилик": {"price": 1200, "unit": "kg", "category": "зелень"},
+      "кинза": {"price": 900, "unit": "kg", "category": "зелень"},
+      "соль поваренная": {"price": 25, "unit": "kg", "category": "специи"},
+      "перец черный молотый": {"price": 800, "unit": "kg", "category": "специи"},
+      "перец красный молотый": {"price": 600, "unit": "kg", "category": "специи"},
+      "лавровый лист": {"price": 2000, "unit": "kg", "category": "специи"},
+      "тмин": {"price": 400, "unit": "kg", "category": "специи"},
+      "орегано": {"price": 1500, "unit": "kg", "category": "специи"},
+      "тимьян": {"price": 1800, "unit": "kg", "category": "специи"}
+    },
+    "масла_жиры": {
+      "растительное масло": {"price": 150, "unit": "liter", "category": "масла"},
+      "оливковое масло": {"price": 400, "unit": "liter", "category": "масла"},
+      "масло подсолнечное": {"price": 130, "unit": "liter", "category": "масла"},
+      "маргарин": {"price": 180, "unit": "kg", "category": "жиры"},
+      "жир свиной": {"price": 250, "unit": "kg", "category": "жиры"}
+    },
+    "мука_сахар": {
+      "мука пшеничная": {"price": 45, "unit": "kg", "category": "мука"},
+      "мука ржаная": {"price": 55, "unit": "kg", "category": "мука"},
+      "сахар": {"price": 80, "unit": "kg", "category": "сахар"},
+      "сахар коричневый": {"price": 120, "unit": "kg", "category": "сахар"},
+      "мед": {"price": 500, "unit": "kg", "category": "подсластители"}
+    },
+    "фрукты_ягоды": {
+      "яблоки": {"price": 100, "unit": "kg", "category": "фрукты"},
+      "груши": {"price": 150, "unit": "kg", "category": "фрукты"},
+      "бананы": {"price": 120, "unit": "kg", "category": "фрукты"},
+      "апельсины": {"price": 140, "unit": "kg", "category": "фрукты"},
+      "лимоны": {"price": 180, "unit": "kg", "category": "фрукты"},
+      "клубника": {"price": 400, "unit": "kg", "category": "ягоды"},
+      "малина": {"price": 600, "unit": "kg", "category": "ягоды"},
+      "черника": {"price": 800, "unit": "kg", "category": "ягоды"}
+    },
+    "консервы_соусы": {
+      "томатная паста": {"price": 200, "unit": "kg", "category": "консервы"},
+      "томаты в собственном соку": {"price": 150, "unit": "kg", "category": "консервы"},
+      "майонез": {"price": 180, "unit": "kg", "category": "соусы"},
+      "кетчуп": {"price": 160, "unit": "kg", "category": "соусы"},
+      "горчица": {"price": 120, "unit": "kg", "category": "соусы"},
+      "уксус": {"price": 60, "unit": "liter", "category": "уксус"},
+      "соевый соус": {"price": 300, "unit": "liter", "category": "соусы"}
+    },
+    "напитки": {
+      "вода": {"price": 25, "unit": "liter", "category": "напитки"},
+      "вино белое": {"price": 400, "unit": "liter", "category": "алкоголь"},
+      "вино красное": {"price": 450, "unit": "liter", "category": "алкоголь"},
+      "коньяк": {"price": 1200, "unit": "liter", "category": "алкоголь"}
+    }
+  },
+  "fallback_prices": {
+    "default_meat": 500,
+    "default_fish": 600,
+    "default_dairy": 200,
+    "default_vegetable": 100,
+    "default_spice": 1000,
+    "default_grain": 100,
+    "default_oil": 200,
+    "default_other": 150
+  },
+  "markup_settings": {
+    "default_markup_pct": 300,
+    "default_vat_pct": 20,
+    "by_category": {
+      "мясо": {"markup_pct": 250, "vat_pct": 20},
+      "рыба": {"markup_pct": 280, "vat_pct": 20},
+      "молочные": {"markup_pct": 200, "vat_pct": 10},
+      "овощи": {"markup_pct": 350, "vat_pct": 10},
+      "специи": {"markup_pct": 400, "vat_pct": 20}
+    }
+  }
+}
