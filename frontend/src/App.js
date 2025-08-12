@@ -8661,7 +8661,7 @@ function App() {
 
       {/* Venue Profile Modal */}
       {showVenueProfileModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={(e)=>{ if (e.target===e.currentTarget) closeAllModals(); }}>
           <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-purple-400/30">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
