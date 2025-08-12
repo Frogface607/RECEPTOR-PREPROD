@@ -192,16 +192,11 @@ def test_nutrition_calculator():
     
     # Test with mix of known and unknown ingredients
     test_profile_coverage = {
-        "dish_name": "Тест покрытия каталога",
-        "portions": 1,
-        "ingredients": [
-            {"name": "куриное филе", "netto_g": 100, "unit": "g"},  # Known
-            {"name": "растительное масло", "netto_g": 10, "unit": "ml"},  # Known
-            {"name": "экзотическая специя", "netto_g": 5, "unit": "g"},  # Unknown
-            {"name": "редкий ингредиент", "netto_g": 20, "unit": "g"}  # Unknown
-        ],
-        "yield_per_batch_g": 130,
-        "yield_per_portion_g": 130
+        "name": "Тест покрытия каталога",
+        "cuisine": "европейская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
