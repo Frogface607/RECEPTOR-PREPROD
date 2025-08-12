@@ -241,14 +241,11 @@ def test_nutrition_calculator():
     
     # Test noMassForPcs issue
     test_profile_issues = {
-        "dish_name": "Тест генерации issues",
-        "portions": 1,
-        "ingredients": [
-            {"name": "неизвестный продукт в штуках", "netto_g": 3, "unit": "pcs"},  # Should generate noMassForPcs
-            {"name": "неизвестный ингредиент", "netto_g": 50, "unit": "g"}  # Should generate noNutrition
-        ],
-        "yield_per_batch_g": 100,
-        "yield_per_portion_g": 100
+        "name": "Тест генерации issues",
+        "cuisine": "европейская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
