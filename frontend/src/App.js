@@ -3596,8 +3596,9 @@ function App() {
     localStorage.setItem('haccp_pro_enabled', JSON.stringify(haccpProEnabled));
   }, [haccpProEnabled]);
 
-  // Auto HACCP generation hook
+  // Auto HACCP generation hook - ОТКЛЮЧЕНО
   useEffect(() => {
+    return; // ПОЛНОСТЬЮ ОТКЛЮЧЕНО
     if (!FEATURE_HACCP) return;
     if (!haccpProEnabled || !techCard || isAutoGeneratingHaccp) return;
     
