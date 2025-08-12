@@ -110,7 +110,7 @@ class NutritionCalculator:
             density = 1.0  # По умолчанию как вода
             
             # Определяем плотность по названию
-            if any(word in name_lower for word in ['масло растительное', 'масло подсолнечное']):
+            if any(word in name_lower for word in ['масло растительное', 'растительное масло', 'масло подсолнечное']):
                 density = self.densities.get("veg_oil", 0.91)
             elif 'масло оливковое' in name_lower:
                 density = self.densities.get("olive_oil", 0.91)
