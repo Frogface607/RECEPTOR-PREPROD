@@ -3390,6 +3390,110 @@ function App() {
     }
   };
 
+  const handleIikoExport = async () => {
+    try {
+      // Пока что используем существующую техкарту как основу
+      // TODO: Преобразовать в TechCardV2 формат
+      const mockTechCardV2 = {
+        meta: {
+          id: Date.now().toString(),
+          title: techCard.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Неизвестное блюдо',
+          version: "2.0",
+          createdAt: new Date().toISOString(),
+          cuisine: "не указана",
+          tags: []
+        },
+        portions: 4,
+        yield: {
+          perPortion_g: 150.0,
+          perBatch_g: 600.0
+        },
+        ingredients: [
+          {
+            name: "Говядина лопатка",
+            unit: "g",
+            brutto_g: 400.0,
+            loss_pct: 15.0,
+            netto_g: 340.0,
+            skuId: "MEAT_001",
+            allergens: []
+          },
+          {
+            name: "Свёкла столовая",
+            unit: "g",
+            brutto_g: 200.0,
+            loss_pct: 20.0,
+            netto_g: 160.0,
+            skuId: "BEET_001",
+            allergens: []
+          },
+          {
+            name: "Морковь",
+            unit: "g",
+            brutto_g: 100.0,
+            loss_pct: 15.0,
+            netto_g: 85.0,
+            allergens: []
+          }
+        ],
+        process: [
+          { n: 1, action: "Подготовка", time_min: 10.0 },
+          { n: 2, action: "Варка", time_min: 60.0, temp_c: 95.0 },
+          { n: 3, action: "Подача", time_min: 5.0 }
+        ],
+        storage: {
+          conditions: "Холодильник 0...+4°C",
+          shelfLife_hours: 48.0,
+          servingTemp_c: 65.0
+        },
+        nutrition: {
+          per100g: { kcal: 45.0, proteins_g: 2.5, fats_g: 1.2, carbs_g: 6.8 },
+          perPortion: { kcal: 67.5, proteins_g: 3.75, fats_g: 1.8, carbs_g: 10.2 }
+        },
+        cost: {
+          rawCost: 185.0,
+          costPerPortion: 46.25,
+          markup_pct: 300.0,
+          vat_pct: 20.0
+        },
+        costMeta: {
+          source: "catalog",
+          coveragePct: 85.0,
+          asOf: "2025-01-17"
+        }
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}/api/v1/techcards.v2/export/iiko`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mockTechCardV2)
+      });
+
+      if (response.ok) {
+        // Создаем ссылку для скачивания файла
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `iiko_export_${mockTechCardV2.meta.title.replace(/\s+/g, '_')}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        alert('Файл для импорта в iiko успешно скачан!');
+      } else {
+        alert('Ошибка при экспорте в iiko');
+      }
+    } catch (error) {
+      console.error('Ошибка iiko экспорта:', error);
+      alert('Ошибка при экспорте в iiko');
+    }
+  };
+
   const generateMenu = async () => {
     try {
       setIsGenerating(true);
