@@ -330,7 +330,7 @@ def test_nutrition_calculator():
         
         try:
             response = requests.post(
-                f"{API_BASE}/techcards.v2/generate",
+                f"{API_BASE}/techcards.v2/generate?use_llm=false",
                 json=test_profile_density,
                 timeout=60
             )
