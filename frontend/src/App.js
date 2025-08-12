@@ -7464,7 +7464,7 @@ function App() {
 
       {/* Voice Recognition Modal */}
       {showVoiceModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e)=>{ if (e.target===e.currentTarget) setShowVoiceModal(false); }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e)=>{ if (e.target===e.currentTarget) closeAllModals(); }}>
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-purple-500/30">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center animate-pulse">
