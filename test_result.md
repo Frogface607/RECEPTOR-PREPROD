@@ -1753,11 +1753,14 @@ frontend:
     file: "backend/receptor_agent/techcards_v2/nutrition_calculator.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "NUTRITION CALCULATOR COMPLETED: Implemented deterministic KBJU calculator for TechCardV2 (code-based, no LLM). Created nutrition_catalog.dev.json with 10 basic products. Features: 1) Fuzzy ingredient matching (80% similarity) 2) Unit conversions: ml→g via densities (veg_oil=0.91, milk=1.03, etc), pcs→g via mass_per_piece 3) Calculates per100g and perPortion with proper rounding 4) nutritionMeta with source/coveragePct 5) Issues for missing data (noNutrition, noMassForPcs) 6) Integrated after cost calculator in pipeline. Test results: 80% coverage, formula verification ±3%, 259.1 kcal/portion."
+      - working: true
+        agent: "testing"
+        comment: "🎯 NUTRITION CALCULATOR COMPREHENSIVE TESTING COMPLETED (Task #4): Conducted detailed testing of nutrition calculator implementation as specifically requested in review. ✅ NUTRITION CALCULATION INTEGRATION: POST /api/v1/techcards.v2/generate endpoint working perfectly - generated tech cards successfully populate ALL nutrition fields: per100g (kcal=195.5, proteins=28.9g, fats=8.0g, carbs=0.0g) and perPortion (kcal=283.5, proteins=41.9g, fats=11.6g, carbs=0.0g). nutritionMeta includes source='catalog' and coveragePct=100.0%. ✅ UNIT CONVERSION TESTING: All conversions working correctly - ml→g uses correct densities (растительное масло 20ml → 18.2g at density 0.91, молоко 100ml → 103.0g at density 1.03), pcs→g conversion for eggs (2 pcs → 110g at 55g per piece). Verified 7 density mappings including veg_oil=0.91, milk=1.03, olive_oil=0.91, soy_sauce=1.20. ✅ FORMULA VERIFICATION: Formula perPortion ≈ per100g × (yield.perPortion_g/100) verified with perfect accuracy - all macronutrients calculated with 0.0% difference, well within ±3% tolerance. Multiplier calculation (1.45) working correctly. ✅ NUTRITION CATALOG COVERAGE: 10 ingredients in catalog with 100% fuzzy matching at 80% similarity threshold. Mixed coverage scenarios working - 50% coverage correctly calculated (2/4 ingredients found), nutritionMeta.coveragePct accurate. ✅ ISSUES GENERATION: Both issue types working perfectly - noNutrition issues generated for unknown ingredients ('экзотическая специя'), noMassForPcs issues generated for piece-based ingredients without mass data ('лук репчатый' in pcs). Issue structure correct with type and name fields. ✅ PROPER ROUNDING: All rounding rules verified - kcal rounded to 1 decimal place (195.5, 283.5), proteins/fats/carbs rounded to 0.1g precision. ✅ DENSITY CONVERSIONS: All 7 density mappings verified working correctly including water=1.0, cream=1.02, vinegar=1.01. 🎉 NUTRITION CALCULATOR IS FULLY FUNCTIONAL AND READY FOR PRODUCTION USE - ALL REVIEW REQUIREMENTS SUCCESSFULLY VERIFIED."
 
 agent_communication:
   - agent: "main"
