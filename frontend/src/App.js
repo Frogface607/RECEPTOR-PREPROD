@@ -3596,6 +3596,7 @@ function App() {
 
   // Auto HACCP generation hook
   useEffect(() => {
+    if (!FEATURE_HACCP) return;
     if (!haccpProEnabled || !techCard || isAutoGeneratingHaccp) return;
     
     // Debounce HACCP generation by 2 seconds after tech card changes
