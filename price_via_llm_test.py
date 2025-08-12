@@ -181,7 +181,7 @@ def test_price_via_llm_flag_true():
         url = f"{API_BASE}/v1/techcards.v2/generate?use_llm=true"
         log_test(f"Making request to: {url}")
         log_test(f"Test profile: {test_profile['name']}")
-        log_test("LLM fallback pricing ENABLED via use_llm=true parameter")
+        log_test("Testing cost calculation with PRICE_VIA_LLM=true (LLM fallback enabled)")
         
         start_time = time.time()
         response = requests.post(url, json=test_profile, timeout=60)
