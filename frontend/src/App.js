@@ -3694,13 +3694,16 @@ function App() {
   // ESC listener который не черствеет
   useEffect(() => {
     const onKey = (e) => { 
+      console.log('Key pressed:', e.key); // DEBUG
       if (e.key === 'Escape') {
+        console.log('ESC pressed, closing modals'); // DEBUG
         e.preventDefault();
+        e.stopPropagation();
         closeAllModals(); 
       }
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, { capture: true });
+    return () => document.removeEventListener('keydown', onKey, { capture: true });
   }, [closeAllModals]);
 
   // Generate simple menu function - MOVED UP for better React binding
