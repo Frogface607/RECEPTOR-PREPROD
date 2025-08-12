@@ -77,12 +77,22 @@ def test_cost_calculator():
         print()
     
     # Test full tech card cost
-    cost_obj = calculator.calculate_tech_card_cost(test_card)
+    cost_obj, cost_meta, issues = calculator.calculate_tech_card_cost(test_card)
     print("=== Общая стоимость техкарты ===")
     print(f"Общая стоимость сырья: {cost_obj.rawCost} RUB")
     print(f"Стоимость на порцию: {cost_obj.costPerPortion} RUB")
     print(f"Наценка: {cost_obj.markup_pct}%")
     print(f"НДС: {cost_obj.vat_pct}%")
+    
+    print("\n=== Метаданные стоимости ===")
+    print(f"Источник: {cost_meta.source}")
+    print(f"Покрытие: {cost_meta.coveragePct}%")
+    print(f"Дата каталога: {cost_meta.asOf}")
+    
+    if issues:
+        print(f"\n=== Issues ({len(issues)}) ===")
+        for issue in issues:
+            print(f"  {issue}")
     
     # Test catalog loading
     print()
