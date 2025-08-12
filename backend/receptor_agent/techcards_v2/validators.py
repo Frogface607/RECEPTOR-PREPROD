@@ -19,8 +19,8 @@ def validate_yield_balance(card: TechCardV2) -> Tuple[bool, str]:
 
 def validate_loss_bounds(card: TechCardV2) -> Tuple[bool, str]:
     for ing in card.ingredients:
-        if ing.net_g > ing.gross_g + 1e-6:
-            return (False, f"net_g > gross_g for '{ing.name}'")
+        if ing.netto_g > ing.brutto_g + 1e-6:
+            return (False, f"netto_g > brutto_g for '{ing.name}'")
         if not (0 <= ing.loss_pct <= 95):
             return (False, f"loss_pct out of bounds for '{ing.name}'")
     return (True, "ok")
