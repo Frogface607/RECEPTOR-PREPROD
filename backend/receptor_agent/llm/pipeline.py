@@ -138,11 +138,13 @@ def critique(card: TechCardV2) -> List[str]:
 def run_pipeline(profile: ProfileInput) -> PipelineResult:
     """Генерация техкарты с строгой валидацией TechCardV2"""
     try:
-        # Генерируем черновик
+        # Генерируем черновик в формате TechCardV2
         data = generate_draft(profile)
-        data = normalize(data)
-        data = quantify(data)
-        data = build_haccp(data)
+        
+        # Пропускаем legacy обработку для TechCardV2
+        # data = normalize(data)  # ОТКЛЮЧЕНО для TechCardV2
+        # data = quantify(data)   # ОТКЛЮЧЕНО для TechCardV2  
+        # data = build_haccp(data) # ОТКЛЮЧЕНО для TechCardV2
         
         # СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
         is_valid, issues, validated_card = validate_techcard_v2(data)
