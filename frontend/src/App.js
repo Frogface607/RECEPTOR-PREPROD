@@ -3693,8 +3693,13 @@ function App() {
 
   // ESC listener который не черствеет
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') closeAllModals(); };
-    document.addEventListener('keydown', onKey, { passive: true });
+    const onKey = (e) => { 
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeAllModals(); 
+      }
+    };
+    document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [closeAllModals]);
 
