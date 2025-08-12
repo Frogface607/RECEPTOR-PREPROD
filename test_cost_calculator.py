@@ -69,11 +69,14 @@ def test_cost_calculator():
     
     # Test individual ingredients
     for ingredient in test_card.ingredients:
-        cost, status = calculator.calculate_ingredient_cost(ingredient)
+        # Проверим флаг для отладки
+        use_llm_for_prices = os.getenv("PRICE_VIA_LLM", "false").lower() in ("true", "1", "yes", "on") 
+        cost, status = calculator.calculate_ingredient_cost(ingredient, use_llm_fallback=use_llm_for_prices)
         print(f"Ингредиент: {ingredient.name}")
         print(f"  Количество: {ingredient.brutto_g}{ingredient.unit}")
         print(f"  Стоимость: {cost:.2f} RUB")
         print(f"  Статус: {status}")
+        print(f"  use_llm_fallback: {use_llm_for_prices}")
         print()
     
     # Test full tech card cost
