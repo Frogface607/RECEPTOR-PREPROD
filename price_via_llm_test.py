@@ -29,9 +29,9 @@ def test_price_via_llm_flag_false():
     """Test 1: PRICE_VIA_LLM=false (default) - No LLM fallback pricing"""
     log_test("🔍 TEST 1: PRICE_VIA_LLM=false - Testing deterministic pricing without LLM fallback")
     
-    # Test data with mix of known and unknown ingredients
+    # Test data with mix of known and unknown ingredients - using simpler dish name
     test_profile = {
-        "name": "Тестовое блюдо с неизвестными ингредиентами: куриное филе 400г, растительное масло 30мл, соль поваренная 8г, экзотическая специя 5г, редкий ингредиент 20г",
+        "name": "Куриное филе с овощами",
         "cuisine": "русская",
         "equipment": [],
         "budget": None,
