@@ -24,8 +24,10 @@ class ProfileInput(BaseModel):
     dietary: List[str] = []
 
 class PipelineResult(BaseModel):
-    card: TechCardV2
+    card: TechCardV2 | None = None
     issues: List[str] = []
+    status: str = "success"  # "success", "draft", "failed"
+    raw_data: Dict[str, Any] | None = None
 
 def _system() -> str:
     return "You return strictly JSON that matches the provided JSON Schema."
