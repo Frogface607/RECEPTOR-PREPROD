@@ -1,8 +1,8 @@
 const read = (k, d) => {
-  if (typeof import !== 'undefined' && import.meta?.env?.[k]) {
+  if (typeof window !== 'undefined' && import.meta && import.meta.env && import.meta.env[k]) {
     return import.meta.env[k];
   }
-  if (typeof process !== 'undefined' && process.env?.[k]) {
+  if (typeof process !== 'undefined' && process.env && process.env[k]) {
     return process.env[k];
   }
   return d;
