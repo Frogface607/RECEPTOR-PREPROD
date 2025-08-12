@@ -26,7 +26,7 @@ def validate_loss_bounds(card: TechCardV2) -> Tuple[bool, str]:
     return (True, "ok")
 
 def recompute_allergens(card: TechCardV2) -> List[str]:
-    names = [i.canonical or i.name for i in card.ingredients]
+    names = [i.name for i in card.ingredients]
     return sorted(detect_allergens(names))
 
 def validate_card(card: TechCardV2) -> Tuple[bool, List[str]]:
