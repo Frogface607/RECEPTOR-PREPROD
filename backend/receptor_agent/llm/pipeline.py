@@ -53,8 +53,8 @@ def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
         },
         "portions": 4,
         "yield": {
-            "perPortion_g": 250.0,
-            "perBatch_g": 1000.0
+            "perPortion_g": 145.0,    # 577.7g / 4 = 144.4, округлено до 145
+            "perBatch_g": 580.0       # 145 * 4 = 580, близко к сумме netto_g (577.7)
         },
         "ingredients": [
             {
