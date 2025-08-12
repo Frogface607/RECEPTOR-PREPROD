@@ -7,14 +7,14 @@ class ValidationError(Exception):
     pass
 
 def validate_yield_balance(card: TechCardV2) -> Tuple[bool, str]:
-    total_net_ingredients = round(sum(i.net_g for i in card.ingredients), 2)
-    expected_total = float(card.yield_.total_net_g)
+    total_net_ingredients = round(sum(i.netto_g for i in card.ingredients), 2)
+    expected_total = float(card.yield_.perBatch_g)
     if abs(total_net_ingredients - expected_total) > 0.01 * max(1.0, expected_total):
-        return (False, f"total_net_g mismatch: ingredients={total_net_ingredients}, yield.total_net_g={expected_total}")
+        return (False, f"perBatch_g mismatch: ingredients={total_net_ingredients}, yield.perBatch_g={expected_total}")
     # per_portion check
-    calc_total_from_portions = card.yield_.portions * card.yield_.per_portion_g
+    calc_total_from_portions = card.portions * card.yield_.perPortion_g
     if abs(calc_total_from_portions - expected_total) > 0.01 * max(1.0, expected_total):
-        return (False, f"yield per_portion mismatch: portions*per_portion_g={calc_total_from_portions}, total_net_g={expected_total}")
+        return (False, f"yield per_portion mismatch: portions*perPortion_g={calc_total_from_portions}, perBatch_g={expected_total}")
     return (True, "ok")
 
 def validate_loss_bounds(card: TechCardV2) -> Tuple[bool, str]:
