@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "id": "golden-borsch-001",
+    "title": "Борщ украинский",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "украинская",
+    "tags": ["суп", "мясной", "традиционный"]
+  },
+  "portions": 6,
+  "yield": {
+    "perPortion_g": 300.0,
+    "perBatch_g": 1800.0
+  },
+  "ingredients": [
+    {
+      "name": "Говядина на косточке",
+      "unit": "g",
+      "brutto_g": 600.0,
+      "loss_pct": 20.0,
+      "netto_g": 480.0,
+      "skuId": "MEAT_BEEF_BONE_001",
+      "allergens": []
+    },
+    {
+      "name": "Свекла",
+      "unit": "g", 
+      "brutto_g": 400.0,
+      "loss_pct": 15.0,
+      "netto_g": 340.0,
+      "skuId": "VEG_BEETROOT_001",
+      "allergens": []
+    },
+    {
+      "name": "Капуста белокочанная",
+      "unit": "g",
+      "brutto_g": 300.0,
+      "loss_pct": 20.0,
+      "netto_g": 240.0,
+      "skuId": "VEG_CABBAGE_001",
+      "allergens": []
+    },
+    {
+      "name": "Морковь",
+      "unit": "g",
+      "brutto_g": 200.0,
+      "loss_pct": 15.0,
+      "netto_g": 170.0,
+      "skuId": "VEG_CARROT_001", 
+      "allergens": []
+    },
+    {
+      "name": "Лук репчатый",
+      "unit": "g",
+      "brutto_g": 150.0,
+      "loss_pct": 10.0,
+      "netto_g": 135.0,
+      "skuId": "VEG_ONION_001",
+      "allergens": []
+    },
+    {
+      "name": "Картофель",
+      "unit": "g",
+      "brutto_g": 400.0,
+      "loss_pct": 20.0,
+      "netto_g": 320.0,
+      "skuId": "VEG_POTATO_001",
+      "allergens": []
+    },
+    {
+      "name": "Томатная паста",
+      "unit": "g",
+      "brutto_g": 30.0,
+      "loss_pct": 0.0,
+      "netto_g": 30.0,
+      "skuId": "SAUCE_TOMATO_001",
+      "allergens": []
+    },
+    {
+      "name": "Растительное масло",
+      "unit": "ml",
+      "brutto_g": 40.0,
+      "loss_pct": 0.0,
+      "netto_g": 40.0,
+      "skuId": "OIL_SUNFLOWER_001",
+      "allergens": []
+    },
+    {
+      "name": "Соль поваренная", 
+      "unit": "g",
+      "brutto_g": 15.0,
+      "loss_pct": 0.0,
+      "netto_g": 15.0,
+      "skuId": "SPICE_SALT_001",
+      "allergens": []
+    },
+    {
+      "name": "Лавровый лист",
+      "unit": "g",
+      "brutto_g": 2.0,
+      "loss_pct": 0.0,
+      "netto_g": 2.0,
+      "skuId": "SPICE_BAY_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Подготовить мясо, промыть, нарезать на куски",
+      "time_min": 15.0
+    },
+    {
+      "n": 2,
+      "action": "Отварить мясо до готовности в подсоленной воде",
+      "time_min": 120.0,
+      "temp_c": 95.0,
+      "equipment": ["кастрюля"],
+      "ccp": true
+    },
+    {
+      "n": 3,
+      "action": "Подготовить овощи: очистить, нарезать",
+      "time_min": 20.0
+    },
+    {
+      "n": 4,
+      "action": "Свеклу потушить отдельно с томатной пастой",
+      "time_min": 30.0,
+      "temp_c": 180.0,
+      "equipment": ["сковорода"]
+    },
+    {
+      "n": 5,
+      "action": "В кипящий бульон добавить картофель, варить 10 минут",
+      "time_min": 10.0,
+      "temp_c": 95.0
+    },
+    {
+      "n": 6,
+      "action": "Добавить капусту, морковь, лук, варить до готовности",
+      "time_min": 15.0,
+      "temp_c": 95.0
+    },
+    {
+      "n": 7,
+      "action": "За 5 минут до готовности добавить тушеную свеклу, лавровый лист",
+      "time_min": 5.0,
+      "temp_c": 95.0
+    }
+  ],
+  "storage": {
+    "conditions": "Холодильник 0...+4°C",
+    "shelfLife_hours": 72.0,
+    "servingTemp_c": 70.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 62.0,
+      "proteins_g": 4.2,
+      "fats_g": 2.8,
+      "carbs_g": 6.5
+    },
+    "perPortion": {
+      "kcal": 186.0,
+      "proteins_g": 12.6,
+      "fats_g": 8.4,
+      "carbs_g": 19.5
+    }
+  },
+  "cost": {
+    "rawCost": 420.50,
+    "costPerPortion": 70.08,
+    "markup_pct": 280.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 90.0
+  },
+  "printNotes": ["Подавать со сметаной", "Украсить зеленью"]
+}
