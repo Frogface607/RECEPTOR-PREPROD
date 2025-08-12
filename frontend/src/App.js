@@ -1239,6 +1239,10 @@ function App() {
 
   // HACCP Audit function
   const auditHaccp = async () => {
+    if (!FEATURE_HACCP) { 
+      console.warn('HACCP disabled by feature flag'); 
+      return; 
+    }
     if (!techCard || !currentUser?.id) return;
     
     setIsHaccpAuditing(true);
