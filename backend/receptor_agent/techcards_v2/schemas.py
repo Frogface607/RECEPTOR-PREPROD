@@ -96,6 +96,7 @@ class TechCardV2(BaseModel):
     process: List[ProcessStepV2] = Field(..., min_length=3)
     storage: StorageV2
     nutrition: NutritionV2 = Field(default_factory=NutritionV2)
+    nutritionMeta: Optional[NutritionMetaV2] = None
     cost: CostV2 = Field(default_factory=CostV2)
     costMeta: Optional[CostMetaV2] = None
     printNotes: Optional[List[str]] = Field(default_factory=list)
