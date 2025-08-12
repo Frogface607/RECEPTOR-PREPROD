@@ -3654,46 +3654,49 @@ function App() {
     return () => clearTimeout(timeout);
   }, [FEATURE_HACCP, haccpProEnabled, techCard, isAutoGeneratingHaccp]);
 
-  // Global ESC handler for modals
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') {
-        setShowRegistration(false);
-        setShowPricingModal(false);
-        setShowEquipmentModal(false);
-        setShowHistory(false);
-        setShowPriceModal(false);
-        setShowInstructions(false);
-        setShowProAIModal(false);
-        setShowSalesScriptModal(false);
-        setShowFoodPairingModal(false);
-        setShowPhotoTipsModal(false);
-        setShowInspirationModal(false);
-        setShowFinancesModal(false);
-        setShowImproveDishModal(false);
-        setShowLaboratoryModal(false);
-        setShowVenueProfileModal(false);
-        setShowMenuWizard(false);
-        setShowMassGenerationModal(false);
-        setShowMenuGenerationModal(false);
-        setShowSimpleMenuModal(false);
-        setShowProjectsModal(false);
-        setShowCreateProjectModal(false);
-        setShowProjectContentModal(false);
-        setShowAnalyticsModal(false);
-        setShowIikoModal(false);
-        setShowUploadTechCardModal(false);
-        setShowSyncMenuModal(false);
-        setShowCategoryViewer(false);
-        setShowAllCategoriesModal(false);
-        setShowAssemblyChartsModal(false);
-        setShowCreateAssemblyChartModal(false);
-        setShowHaccpAuditModal(false);
-      }
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+  // централизованная функция закрытия модалок
+  const closeAllModals = React.useCallback(() => {
+    try {
+      setShowRegistration(false);
+      setShowPricingModal(false);
+      setShowEquipmentModal(false);
+      setShowHistory(false);
+      setShowPriceModal(false);
+      setShowInstructions(false);
+      setShowProAIModal(false);
+      setShowSalesScriptModal(false);
+      setShowFoodPairingModal(false);
+      setShowPhotoTipsModal(false);
+      setShowInspirationModal(false);
+      setShowFinancesModal(false);
+      setShowImproveDishModal(false);
+      setShowLaboratoryModal(false);
+      setShowVenueProfileModal(false);
+      setShowMenuWizard(false);
+      setShowMassGenerationModal(false);
+      setShowMenuGenerationModal(false);
+      setShowSimpleMenuModal(false);
+      setShowProjectsModal(false);
+      setShowCreateProjectModal(false);
+      setShowProjectContentModal(false);
+      setShowAnalyticsModal(false);
+      setShowIikoModal(false);
+      setShowUploadTechCardModal(false);
+      setShowSyncMenuModal(false);
+      setShowCategoryViewer(false);
+      setShowAllCategoriesModal(false);
+      setShowAssemblyChartsModal(false);
+      setShowCreateAssemblyChartModal(false);
+      setShowHaccpAuditModal(false);
+    } catch (e) {}
   }, []);
+
+  // ESC listener который не черствеет
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') closeAllModals(); };
+    document.addEventListener('keydown', onKey, { passive: true });
+    return () => document.removeEventListener('keydown', onKey);
+  }, [closeAllModals]);
 
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
