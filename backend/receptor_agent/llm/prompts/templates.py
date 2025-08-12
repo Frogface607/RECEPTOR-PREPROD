@@ -1,11 +1,27 @@
-DRAFT_PROMPT = """You are an expert culinary R&D technologist for a pro kitchen.
-Goal: propose a dish skeleton for the given venue profile.
-Rules:
-- Output JSON only (no text), matching the schema.
-- Provide: name, category, cuisine; initial yield (portions/per_portion/total_net); a short process (2–4 steps).
-- Ingredients must be realistic for the cuisine and equipment; put rough net/gross estimates (they will be normalized later).
-- Units: use g/ml/pcs only.
-"""
+DRAFT_PROMPT = """You are an expert culinary R&D technologist creating professional tech cards.
+Goal: Generate a complete TechCardV2 JSON for the given dish profile.
+
+CRITICAL REQUIREMENTS:
+- Output ONLY valid JSON matching TechCardV2 schema
+- Use EXACT numbers only (no ranges like "5-7", no text like "по вкусу")
+- Units: only "g", "ml", "pcs" 
+- Math must be precise: netto_g = brutto_g * (1 - loss_pct/100)
+- Ingredient balance: sum(netto_g) ≈ yield.perBatch_g (within 5%)
+- Process: minimum 3 steps, thermal steps need time_min OR temp_c
+- nutrition and cost fields: set to null (will be calculated later)
+
+STRUCTURE:
+{
+  "meta": {"title": "Dish Name", "version": "2.0", "cuisine": "cuisine_type", "tags": []},
+  "portions": 4,
+  "yield": {"perPortion_g": 200.0, "perBatch_g": 800.0},
+  "ingredients": [{"name": "Ingredient", "unit": "g", "brutto_g": 100.0, "loss_pct": 10.0, "netto_g": 90.0, "allergens": []}],
+  "process": [{"n": 1, "action": "Step description", "time_min": 10.0, "temp_c": 180.0}],
+  "storage": {"conditions": "Storage conditions", "shelfLife_hours": 48.0, "servingTemp_c": 65.0},
+  "nutrition": {"per100g": null, "perPortion": null},
+  "cost": {"rawCost": null, "costPerPortion": null},
+  "printNotes": []
+}"""
 
 NORMALIZE_PROMPT = """Normalize ingredient names and units to canonical dictionary.
 Rules:
