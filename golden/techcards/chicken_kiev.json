@@ -1,0 +1,168 @@
+{
+  "meta": {
+    "id": "golden-kiev-005",
+    "title": "Котлета по-киевски",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "украинская",
+    "tags": ["мясо", "курица", "классическое"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 200.0,
+    "perBatch_g": 800.0
+  },
+  "ingredients": [
+    {
+      "name": "Куриное филе",
+      "unit": "g",
+      "brutto_g": 600.0,
+      "loss_pct": 5.0,
+      "netto_g": 570.0,
+      "skuId": "MEAT_CHICKEN_BREAST_001",
+      "allergens": []
+    },
+    {
+      "name": "Масло сливочное",
+      "unit": "g",
+      "brutto_g": 120.0,
+      "loss_pct": 0.0,
+      "netto_g": 120.0,
+      "skuId": "DAIRY_BUTTER_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Зелень укропа",
+      "unit": "g",
+      "brutto_g": 20.0,
+      "loss_pct": 15.0,
+      "netto_g": 17.0,
+      "skuId": "HERB_DILL_001",
+      "allergens": []
+    },
+    {
+      "name": "Яйца куриные",
+      "unit": "pcs",
+      "brutto_g": 100.0,
+      "loss_pct": 10.0,
+      "netto_g": 90.0,
+      "skuId": "EGG_CHICKEN_001",
+      "allergens": ["eggs"]
+    },
+    {
+      "name": "Панировочные сухари",
+      "unit": "g",
+      "brutto_g": 80.0,
+      "loss_pct": 5.0,
+      "netto_g": 76.0,
+      "skuId": "BREADCRUMB_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Мука пшеничная",
+      "unit": "g",
+      "brutto_g": 40.0,
+      "loss_pct": 0.0,
+      "netto_g": 40.0,
+      "skuId": "FLOUR_WHEAT_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Соль поваренная",
+      "unit": "g",
+      "brutto_g": 5.0,
+      "loss_pct": 0.0,
+      "netto_g": 5.0,
+      "skuId": "SPICE_SALT_001",
+      "allergens": []
+    },
+    {
+      "name": "Перец черный молотый",
+      "unit": "g",
+      "brutto_g": 2.0,
+      "loss_pct": 0.0,
+      "netto_g": 2.0,
+      "skuId": "SPICE_PEPPER_BLACK_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Филе разрезать пополам, отбить до толщины 5 мм",
+      "time_min": 15.0,
+      "equipment": ["молоток"]
+    },
+    {
+      "n": 2,
+      "action": "Сливочное масло смешать с измельченной зеленью, сформировать брусочки",
+      "time_min": 10.0
+    },
+    {
+      "n": 3,
+      "action": "Положить масло на филе, завернуть в рулет, закрепить",
+      "time_min": 8.0
+    },
+    {
+      "n": 4,
+      "action": "Запанировать в муке, затем во взбитом яйце",
+      "time_min": 5.0
+    },
+    {
+      "n": 5,
+      "action": "Обвалять в панировочных сухарях",
+      "time_min": 5.0
+    },
+    {
+      "n": 6,
+      "action": "Обжарить во фритюре до золотистой корочки",
+      "time_min": 8.0,
+      "temp_c": 180.0,
+      "equipment": ["фритюрница"],
+      "ccp": true
+    },
+    {
+      "n": 7,
+      "action": "Довести до готовности в духовке",
+      "time_min": 12.0,
+      "temp_c": 180.0,
+      "equipment": ["духовка"],
+      "ccp": true
+    }
+  ],
+  "storage": {
+    "conditions": "Подавать горячим немедленно",
+    "shelfLife_hours": 2.0,
+    "servingTemp_c": 75.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 285.0,
+      "proteins_g": 22.8,
+      "fats_g": 18.5,
+      "carbs_g": 6.2
+    },
+    "perPortion": {
+      "kcal": 570.0,
+      "proteins_g": 45.6,
+      "fats_g": 37.0,
+      "carbs_g": 12.4
+    }
+  },
+  "cost": {
+    "rawCost": 450.0,
+    "costPerPortion": 112.5,
+    "markup_pct": 250.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 87.5
+  },
+  "printNotes": ["При подаче проткнуть зубочисткой, чтобы масло не вытекло резко"]
+}

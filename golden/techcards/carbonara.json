@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "id": "golden-carbonara-003",
+    "title": "Паста Карбонара",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "итальянская", 
+    "tags": ["паста", "бекон", "классическая"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 250.0,
+    "perBatch_g": 1000.0
+  },
+  "ingredients": [
+    {
+      "name": "Спагетти",
+      "unit": "g",
+      "brutto_g": 320.0,
+      "loss_pct": 0.0,
+      "netto_g": 320.0,
+      "skuId": "PASTA_SPAGHETTI_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Бекон",
+      "unit": "g",
+      "brutto_g": 200.0,
+      "loss_pct": 10.0,
+      "netto_g": 180.0,
+      "skuId": "MEAT_BACON_001",
+      "allergens": []
+    },
+    {
+      "name": "Яйца куриные",
+      "unit": "pcs",
+      "brutto_g": 120.0,
+      "loss_pct": 15.0,
+      "netto_g": 102.0,
+      "skuId": "EGG_CHICKEN_001",
+      "allergens": ["eggs"]
+    },
+    {
+      "name": "Сыр Пармезан",
+      "unit": "g",
+      "brutto_g": 80.0,
+      "loss_pct": 5.0,
+      "netto_g": 76.0,
+      "skuId": "CHEESE_PARMESAN_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Перец черный молотый",
+      "unit": "g",
+      "brutto_g": 2.0,
+      "loss_pct": 0.0,
+      "netto_g": 2.0,
+      "skuId": "SPICE_PEPPER_BLACK_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Спагетти отварить в подсоленной воде до состояния аль денте",
+      "time_min": 10.0,
+      "temp_c": 100.0,
+      "equipment": ["кастрюля"],
+      "ccp": false
+    },
+    {
+      "n": 2,
+      "action": "Бекон нарезать кубиками и обжарить до золотистого цвета",
+      "time_min": 6.0,
+      "temp_c": 180.0,
+      "equipment": ["сковорода"]
+    },
+    {
+      "n": 3,
+      "action": "Яйца взбить с тертым пармезаном и перцем",
+      "time_min": 3.0
+    },
+    {
+      "n": 4,
+      "action": "Горячую пасту смешать с беконом вне огня",
+      "time_min": 1.0
+    },
+    {
+      "n": 5,
+      "action": "Быстро вмешать яично-сырную смесь, постоянно перемешивая",
+      "time_min": 2.0,
+      "note": "Важно не дать яйцам свернуться"
+    },
+    {
+      "n": 6,
+      "action": "Подавать немедленно, посыпав дополнительным пармезаном",
+      "time_min": 1.0
+    }
+  ],
+  "storage": {
+    "conditions": "Подавать немедленно, хранение не рекомендуется",
+    "shelfLife_hours": 0.5,
+    "servingTemp_c": 65.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 280.0,
+      "proteins_g": 15.2,
+      "fats_g": 12.8,
+      "carbs_g": 26.5
+    },
+    "perPortion": {
+      "kcal": 700.0,
+      "proteins_g": 38.0,
+      "fats_g": 32.0,
+      "carbs_g": 66.25
+    }
+  },
+  "cost": {
+    "rawCost": 340.0,
+    "costPerPortion": 85.0,
+    "markup_pct": 300.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0
+  },
+  "printNotes": ["Подавать горячим"]
+}

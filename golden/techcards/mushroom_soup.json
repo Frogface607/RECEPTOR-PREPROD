@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "id": "golden-mushroom-004",
+    "title": "Крем-суп грибной",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "европейская",
+    "tags": ["суп", "грибы", "крем-суп"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 250.0,
+    "perBatch_g": 1000.0
+  },
+  "ingredients": [
+    {
+      "name": "Шампиньоны свежие",
+      "unit": "g",
+      "brutto_g": 400.0,
+      "loss_pct": 10.0,
+      "netto_g": 360.0,
+      "skuId": "MUSH_CHAMPIGNON_001",
+      "allergens": []
+    },
+    {
+      "name": "Сливки 20%",
+      "unit": "ml",
+      "brutto_g": 200.0,
+      "loss_pct": 0.0,
+      "netto_g": 200.0,
+      "skuId": "DAIRY_CREAM_20_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Лук репчатый",
+      "unit": "g",
+      "brutto_g": 100.0,
+      "loss_pct": 10.0,
+      "netto_g": 90.0,
+      "skuId": "VEG_ONION_001",
+      "allergens": []
+    },
+    {
+      "name": "Картофель",
+      "unit": "g",
+      "brutto_g": 200.0,
+      "loss_pct": 20.0,
+      "netto_g": 160.0,
+      "skuId": "VEG_POTATO_001",
+      "allergens": []
+    },
+    {
+      "name": "Масло сливочное",
+      "unit": "g",
+      "brutto_g": 40.0,
+      "loss_pct": 0.0,
+      "netto_g": 40.0,
+      "skuId": "DAIRY_BUTTER_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Мука пшеничная",
+      "unit": "g",
+      "brutto_g": 30.0,
+      "loss_pct": 0.0,
+      "netto_g": 30.0,
+      "skuId": "FLOUR_WHEAT_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Бульон овощной",
+      "unit": "ml",
+      "brutto_g": 500.0,
+      "loss_pct": 0.0,
+      "netto_g": 500.0,
+      "skuId": "BROTH_VEGETABLE_001",
+      "allergens": []
+    },
+    {
+      "name": "Соль поваренная",
+      "unit": "g",
+      "brutto_g": 5.0,
+      "loss_pct": 0.0,
+      "netto_g": 5.0,
+      "skuId": "SPICE_SALT_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Грибы очистить, нарезать пластинками",
+      "time_min": 10.0
+    },
+    {
+      "n": 2,
+      "action": "Лук мелко нарезать, обжарить на сливочном масле до прозрачности",
+      "time_min": 5.0,
+      "temp_c": 160.0,
+      "equipment": ["сковорода"]
+    },
+    {
+      "n": 3,
+      "action": "Добавить грибы к луку, жарить до выпаривания жидкости",
+      "time_min": 15.0,
+      "temp_c": 180.0
+    },
+    {
+      "n": 4,
+      "action": "Всыпать муку, перемешать, жарить 2 минуты",
+      "time_min": 2.0,
+      "temp_c": 160.0
+    },
+    {
+      "n": 5,
+      "action": "Постепенно влить горячий бульон, довести до кипения",
+      "time_min": 5.0,
+      "temp_c": 95.0,
+      "ccp": true
+    },
+    {
+      "n": 6,
+      "action": "Добавить нарезанный картофель, варить до готовности",
+      "time_min": 20.0,
+      "temp_c": 90.0
+    },
+    {
+      "n": 7,
+      "action": "Пробить суп блендером до однородности",
+      "time_min": 3.0,
+      "equipment": ["блендер"]
+    },
+    {
+      "n": 8,
+      "action": "Влить сливки, довести до кипения, посолить по вкусу",
+      "time_min": 5.0,
+      "temp_c": 85.0
+    }
+  ],
+  "storage": {
+    "conditions": "Холодильник 0...+4°C",
+    "shelfLife_hours": 24.0,
+    "servingTemp_c": 70.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 82.0,
+      "proteins_g": 2.8,
+      "fats_g": 6.2,
+      "carbs_g": 4.5
+    },
+    "perPortion": {
+      "kcal": 205.0,
+      "proteins_g": 7.0,
+      "fats_g": 15.5,
+      "carbs_g": 11.25
+    }
+  },
+  "cost": {
+    "rawCost": 280.0,
+    "costPerPortion": 70.0,
+    "markup_pct": 350.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 87.5
+  },
+  "printNotes": ["Подавать с сухариками"]
+}
