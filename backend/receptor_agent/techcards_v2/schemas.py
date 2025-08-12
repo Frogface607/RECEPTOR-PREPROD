@@ -93,6 +93,7 @@ class TechCardV2(BaseModel):
     storage: StorageV2
     nutrition: NutritionV2 = Field(default_factory=NutritionV2)
     cost: CostV2 = Field(default_factory=CostV2)
+    costMeta: Optional[CostMetaV2] = None
     printNotes: Optional[List[str]] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
