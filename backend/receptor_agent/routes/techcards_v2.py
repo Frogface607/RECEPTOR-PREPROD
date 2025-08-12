@@ -9,6 +9,7 @@ from receptor_agent.exports.iiko_csv import techcard_to_csv
 from receptor_agent.exports.xlsx import techcard_to_xlsx
 from receptor_agent.exports.pdf import techcard_to_pdf
 from receptor_agent.exports.zipper import make_zip
+from receptor_agent.exports.html import generate_print_html
 
 router = APIRouter()
 
