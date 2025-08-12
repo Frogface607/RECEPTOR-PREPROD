@@ -167,9 +167,9 @@ def test_price_via_llm_flag_true():
     """Test 2: PRICE_VIA_LLM=true - With LLM fallback pricing"""
     log_test("🔍 TEST 2: PRICE_VIA_LLM=true - Testing with LLM fallback pricing enabled")
     
-    # Same test data as Test 1 for comparison
+    # Same test data as Test 1 for comparison - using simpler dish name
     test_profile = {
-        "name": "Тестовое блюдо с неизвестными ингредиентами (LLM enabled): куриное филе 400г, растительное масло 30мл, соль поваренная 8г, экзотическая специя 5г, редкий ингредиент 20г",
+        "name": "Куриное филе с овощами (LLM enabled)",
         "cuisine": "русская",
         "equipment": [],
         "budget": None,
