@@ -4,6 +4,7 @@ from typing import Dict, Any, List
 from pydantic import BaseModel
 from receptor_agent.techcards_v2.schemas import TechCardV2
 from receptor_agent.techcards_v2.validators import validate_card
+from receptor_agent.techcards_v2.strict_validator import validate_techcard_v2, create_draft_response
 from receptor_agent.techcards_v2.normalize import normalize_card
 from receptor_agent.techcards_v2.quantify import rebalance
 from receptor_agent.techcards_v2.haccp_templates import enrich_haccp
