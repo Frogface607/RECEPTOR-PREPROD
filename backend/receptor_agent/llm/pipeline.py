@@ -62,7 +62,7 @@ def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
                 "unit": "g",
                 "brutto_g": 600.0,
                 "loss_pct": 10.0,
-                "netto_g": 540.0,
+                "netto_g": 540.0,  # 600 * (1 - 10/100) = 540 ✓
                 "allergens": []
             },
             {
@@ -70,15 +70,15 @@ def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
                 "unit": "g", 
                 "brutto_g": 8.0,
                 "loss_pct": 0.0,
-                "netto_g": 8.0,
+                "netto_g": 8.0,  # 8 * (1 - 0/100) = 8 ✓
                 "allergens": []
             },
             {
                 "name": "Растительное масло",
                 "unit": "ml",
                 "brutto_g": 30.0,
-                "loss_pct": 5.0,
-                "netto_g": 28.5,
+                "loss_pct": 1.0,  # Изменил с 5% на 1%
+                "netto_g": 29.7,  # 30 * (1 - 1/100) = 29.7 ✓
                 "allergens": []
             }
         ],
