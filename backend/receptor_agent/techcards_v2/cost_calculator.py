@@ -297,11 +297,13 @@ class CostCalculator:
 def calculate_cost_for_tech_card(tech_card: TechCardV2) -> TechCardV2:
     """
     Функция-обертка для расчета стоимости техкарты
-    Возвращает обновленную техкарту с заполненными полями cost
+    Возвращает обновленную техкарту с заполненными полями cost и costMeta
     """
     calculator = CostCalculator()
-    cost = calculator.calculate_tech_card_cost(tech_card)
+    cost, cost_meta, cost_issues = calculator.calculate_tech_card_cost(tech_card)
     
-    # Обновляем техкарту с рассчитанной стоимостью
+    # Обновляем техкарту с рассчитанной стоимостью и метаданными
     tech_card.cost = cost
+    tech_card.costMeta = cost_meta
+    
     return tech_card
