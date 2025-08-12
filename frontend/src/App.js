@@ -8935,8 +8935,8 @@ function App() {
                   </div>
                 ))}
                 
-                {/* HACCP Pro Settings */}
-                {(currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business') && (
+                {/* HACCP Pro Settings - ОТКЛЮЧЕНО */}
+                {false && (currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business') && (
                   <div className="pt-6 border-t border-purple-400/30">
                     <h4 className="text-lg font-bold text-orange-300 mb-4 flex items-center space-x-2">
                       <span>🛡️</span>
