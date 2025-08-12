@@ -18,7 +18,7 @@ def create_draft_techcard():
         "portions": 1,
         "yield": {
             "perPortion_g": 100.0,
-            "perBatch_g": 100.0
+            "perBatch_g": 200.0  # Mismatch with ingredients to trigger validation failure
         },
         "ingredients": [
             {
@@ -33,8 +33,16 @@ def create_draft_techcard():
             {
                 "n": 1,
                 "action": "Step 1"
+            },
+            {
+                "n": 2,
+                "action": "Step 2"
+            },
+            {
+                "n": 3,
+                "action": "Step 3"
             }
-        ],  # Only 1 step instead of required 3
+        ],
         "storage": {
             "conditions": "Test storage",
             "shelfLife_hours": 24.0
