@@ -162,6 +162,12 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             except Exception as e:
                 issues.append(f"Cost calculation error: {str(e)}")
             
+            # Рассчитываем питательность для валидной карты
+            try:
+                validated_card = calculate_nutrition_for_tech_card(validated_card)
+            except Exception as e:
+                issues.append(f"Nutrition calculation error: {str(e)}")
+            
             # Успешная валидация - возвращаем готовую карту
             return PipelineResult(
                 card=validated_card,
