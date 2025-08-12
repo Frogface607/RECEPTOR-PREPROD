@@ -179,7 +179,7 @@ def test_price_via_llm_flag_true():
         # Enable LLM fallback pricing via query parameter
         url = f"{API_BASE}/v1/techcards.v2/generate?use_llm=true"
         log_test(f"Making request to: {url}")
-        log_test(f"Test profile: {test_profile['dish_name']}")
+        log_test(f"Test profile: {test_profile['name']}")
         log_test("LLM fallback pricing ENABLED via use_llm=true parameter")
         
         start_time = time.time()
