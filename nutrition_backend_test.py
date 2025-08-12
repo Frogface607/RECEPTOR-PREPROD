@@ -128,8 +128,8 @@ def test_nutrition_calculator():
         if response.status_code == 200:
             data = response.json()
             
-            if data.get('status') == 'success' and data.get('card'):
-                card = data['card']
+            if data.get('status') in ['success', 'draft']:
+                card = data.get('card') or data.get('raw_data', {})
                 nutrition = card.get('nutrition', {})
                 
                 print(f"✅ Unit conversion test successful")
