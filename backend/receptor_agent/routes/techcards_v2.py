@@ -1,4 +1,5 @@
 from __future__ import annotations
+import io
 import os
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse, HTMLResponse
