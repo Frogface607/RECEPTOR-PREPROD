@@ -114,7 +114,44 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement HACCP-only LLM module and API endpoints. Create dedicated HACCP generation and audit functionality with separate LLM calls for enhanced food safety management. This includes generate_haccp() and audit_haccp() functions plus API endpoints for frontend integration."
+user_problem_statement: "Implement deterministic cost calculator for TechCardV2 (code-based, no LLM). Populate cost field from price catalog with ingredient prices, unit conversions, and cost calculations. Task: «Калькулятор себестоимости (только кодом, без LLM)»"
+
+backend:
+  - task: "Cost Calculator Implementation for TechCardV2"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/techcards_v2/cost_calculator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "COST CALCULATOR IMPLEMENTATION COMPLETED: Created comprehensive cost calculation module with price catalog integration. Features: 1) Price catalog with 14 categories and 99+ Russian ingredients 2) Fuzzy ingredient matching with 70% similarity threshold 3) Unit conversion (g→kg, ml→L, pcs handling) 4) Fallback pricing for unknown ingredients by category detection 5) Full cost calculation (raw cost, per-portion, markup, VAT) 6) Integration into TechCardV2 pipeline after validation. Test results: куриное филе 400g → 180 RUB, растительное масло 30ml → 4.50 RUB, total cost calculation working correctly. Ready for backend testing."
+
+  - task: "Price Catalog Data Structure" 
+    implemented: true
+    working: true
+    file: "backend/data/price_catalog.dev.json"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "PRICE CATALOG CREATED: Comprehensive JSON catalog with Russian restaurant ingredients organized in 14 categories (мясо_птица, молочные, овощи, etc.). Includes prices in RUB per kg/liter, unit specifications, fallback prices by category, and markup settings. Covers 99+ common ingredients for restaurant use with realistic pricing based on 2025 Russian market."
+
+  - task: "Pipeline Integration for Cost Calculation"
+    implemented: true
+    working: true  
+    file: "backend/receptor_agent/llm/pipeline.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "PIPELINE INTEGRATION COMPLETED: Successfully integrated cost calculator into TechCardV2 generation pipeline. Cost calculation executes after validation but before returning success result. Added error handling for cost calculation failures. Modified run_pipeline() to call calculate_cost_for_tech_card() for valid tech cards, ensuring all generated cards have populated cost fields with raw costs, per-portion costs, markup, and VAT."
 
 backend:
   - task: "HACCP-only LLM Module Implementation (EM-01I)"
