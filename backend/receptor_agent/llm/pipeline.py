@@ -95,12 +95,38 @@ def critique(card: TechCardV2) -> List[str]:
         return issues
 
 def run_pipeline(profile: ProfileInput) -> PipelineResult:
-    data = generate_draft(profile)
-    data = normalize(data)
-    data = quantify(data)
-    data = build_haccp(data)
-    card = TechCardV2.model_validate(data)
-    ok, issues = validate_card(card)
-    if not ok:
-        issues = critique(card)
-    return PipelineResult(card=card, issues=issues)
+    """Генерация техкарты с строгой валидацией TechCardV2"""
+    try:
+        # Генерируем черновик
+        data = generate_draft(profile)
+        data = normalize(data)
+        data = quantify(data)
+        data = build_haccp(data)
+        
+        # СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
+        is_valid, issues, validated_card = validate_techcard_v2(data)
+        
+        if is_valid and validated_card:
+            # Успешная валидация - возвращаем готовую карту
+            return PipelineResult(
+                card=validated_card,
+                issues=[],
+                status="success"
+            )
+        else:
+            # Ошибки валидации - возвращаем как draft
+            return PipelineResult(
+                card=None,
+                issues=issues,
+                status="draft",
+                raw_data=data
+            )
+            
+    except Exception as e:
+        # Критическая ошибка в pipeline
+        return PipelineResult(
+            card=None,
+            issues=[f"Pipeline error: {str(e)}"],
+            status="failed",
+            raw_data=None
+        )
