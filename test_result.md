@@ -1747,9 +1747,21 @@ frontend:
         agent: "main"
         comment: "PRICE LLM DISABLED & COST METADATA ADDED: Successfully implemented PRICE_VIA_LLM=false flag (off by default). Added costMeta field to TechCardV2 with source, coveragePct, asOf. When PRICE_VIA_LLM=false, no fallback prices used (0.00 RUB for unknown ingredients), issues added for missing prices. When PRICE_VIA_LLM=true, fallback prices work. Cost metadata includes source='catalog', coveragePct=75%, asOf='2025-01-17'. Test verified: flag controls fallback pricing correctly, metadata populated properly."
 
+  - task: "Nutrition Calculator Implementation (Task #4)"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/techcards_v2/nutrition_calculator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "NUTRITION CALCULATOR COMPLETED: Implemented deterministic KBJU calculator for TechCardV2 (code-based, no LLM). Created nutrition_catalog.dev.json with 10 basic products. Features: 1) Fuzzy ingredient matching (80% similarity) 2) Unit conversions: ml→g via densities (veg_oil=0.91, milk=1.03, etc), pcs→g via mass_per_piece 3) Calculates per100g and perPortion with proper rounding 4) nutritionMeta with source/coveragePct 5) Issues for missing data (noNutrition, noMassForPcs) 6) Integrated after cost calculator in pipeline. Test results: 80% coverage, formula verification ±3%, 259.1 kcal/portion."
+
 agent_communication:
   - agent: "main"
-    message: "TASK #3 COMPLETED: PRICE_VIA_LLM flag implemented and working correctly. LLM-based pricing disabled by default (PRICE_VIA_LLM=false). Added costMeta to TechCardV2 response with source tracking, coverage percentage, and catalog date. Issues generated for ingredients without prices. Test results: PRICE_VIA_LLM=false → 184.75 RUB (no fallback), PRICE_VIA_LLM=true → 199.75 RUB (with fallback). Ready for backend testing and then moving to Task #4 (nutrition calculator)."
+    message: "TASK #4 COMPLETED: Nutrition calculator implemented successfully. Deterministic KBJU calculation without LLM. Created nutrition catalog with 10 products, fuzzy matching, unit conversions (ml→g densities, pcs→g mass), per100g/perPortion calculation with rounding. nutritionMeta includes source and coverage. Issues generated for missing nutrition data. Integrated into pipeline after cost calculator. Test results: куриное филе 380g → 627 ккал, растительное масло 30ml → 245.4 ккал (density 0.91), яйцо 2 шт → 164.1 ккал. Total per portion: 259.1 kcal, 32.8g proteins. Formula verification passed with ±3% tolerance. Ready for backend testing."
   - agent: "testing"
     message: "🎉 TECHCARDV2 COST CALCULATOR TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of deterministic cost calculator implementation as requested in review. ✅ ALL REVIEW REQUIREMENTS VERIFIED: 1) TechCardV2 Generation with Cost Calculation - POST /api/v1/techcards.v2/generate endpoint working perfectly, populates all cost fields (rawCost: 274.7 RUB, costPerPortion: 68.67 RUB, markup_pct: 300%, vat_pct: 20%). 2) Cost Calculation Accuracy - verified with known ingredients from price catalog, manual calculation matches system exactly (0.00 RUB difference). 3) Unit Conversion Testing - all conversions working (g→kg ÷1000, ml→L ÷1000, pcs→kg for eggs ÷18). 4) Pipeline Integration - cost calculation executes after validation in run_pipeline(), all TechCardV2 instances have populated cost fields. 5) Ingredient Fuzzy Matching - 70% similarity threshold working, successfully matches куриное филе, растительное масло, соль поваренная. 6) Fallback Pricing - category-based fallback prices working for unknown ingredients. 🎯 DETERMINISTIC COST CALCULATOR IS FULLY FUNCTIONAL AND READY FOR PRODUCTION USE. Both LLM and fallback modes populate cost fields successfully."
 
