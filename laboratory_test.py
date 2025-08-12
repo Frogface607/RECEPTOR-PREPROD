@@ -13,7 +13,7 @@ def test_laboratory_experiment():
     """Test the new LABORATORY feature with image generation"""
     
     # Get backend URL from environment
-    backend_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com"
+    backend_url = "https://ai-menu-maker.preview.emergentagent.com"
     
     print("🧪 LABORATORY EXPERIMENT TESTING STARTED")
     print("=" * 60)

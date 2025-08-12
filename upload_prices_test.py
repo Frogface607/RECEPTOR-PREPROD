@@ -16,8 +16,8 @@ class UploadPricesTest(unittest.TestCase):
     def setUp(self):
         """Setup test environment"""
         # Use the public endpoint for testing
-        self.base_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com/api"
-        self.upload_url = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com/api/upload-prices"
+        self.base_url = "https://ai-menu-maker.preview.emergentagent.com/api"
+        self.upload_url = "https://ai-menu-maker.preview.emergentagent.com/api/upload-prices"
         
         # Test user with PRO subscription as specified in review request
         self.pro_user_id = "test_user_12345"

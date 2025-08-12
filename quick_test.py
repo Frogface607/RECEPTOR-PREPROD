@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-menu-maker.preview.emergentagent.com/api"
 
 def log_test(test_name, status, details=""):
     """Log test results with timestamp"""

@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com"
+BACKEND_URL = "https://ai-menu-maker.preview.emergentagent.com"
 
 def test_cities_endpoint():
     """Test GET /api/cities endpoint"""

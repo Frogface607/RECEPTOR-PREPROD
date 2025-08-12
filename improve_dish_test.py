@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://437f66fc-eebf-4093-b18b-db6b6d989f6e.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-menu-maker.preview.emergentagent.com/api"
 
 def test_improve_dish_feature():
     """Test the new IMPROVE DISH feature with specified test data"""
