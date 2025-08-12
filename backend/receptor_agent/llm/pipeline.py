@@ -155,6 +155,12 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         is_valid, issues, validated_card = validate_techcard_v2(data)
         
         if is_valid and validated_card:
+            # Рассчитываем стоимость для валидной карты
+            try:
+                validated_card = calculate_cost_for_tech_card(validated_card)
+            except Exception as e:
+                issues.append(f"Cost calculation error: {str(e)}")
+            
             # Успешная валидация - возвращаем готовую карту
             return PipelineResult(
                 card=validated_card,
