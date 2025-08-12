@@ -213,16 +213,37 @@ class CostCalculator:
         else:
             return fallback_prices.get("default_other", 150)
     
-    def calculate_tech_card_cost(self, tech_card: TechCardV2) -> CostV2:
+    def calculate_tech_card_cost(self, tech_card: TechCardV2) -> tuple[CostV2, CostMetaV2, list]:
         """
         Расчет полной стоимости техкарты
+        Возвращает: (cost, cost_meta, issues)
         """
+        # Проверяем флаг LLM для цен
+        use_llm_for_prices = os.getenv("PRICE_VIA_LLM", "false").lower() in ("true", "1", "yes", "on")
+        
         total_cost = 0.0
         ingredient_costs = []
+        found_ingredients = 0
+        issues = []
         
         # Рассчитываем стоимость каждого ингредиента
         for ingredient in tech_card.ingredients:
             cost, status = self.calculate_ingredient_cost(ingredient)
+            
+            if "found_in_catalog" in status:
+                found_ingredients += 1
+            elif "fallback_price_used" in status:
+                # Добавляем issue для отсутствующих цен
+                issues.append({
+                    "type": "noPrice",
+                    "name": ingredient.name,
+                    "hint": "upload price list / map SKU"
+                })
+                
+                # Если LLM для цен выключен, не включаем fallback цену
+                if not use_llm_for_prices:
+                    cost = 0.0  # Не учитываем в общей стоимости
+            
             total_cost += cost
             ingredient_costs.append({
                 "name": ingredient.name,
@@ -230,21 +251,48 @@ class CostCalculator:
                 "status": status
             })
         
+        # Рассчитываем метаданные
+        coverage_pct = (found_ingredients / len(tech_card.ingredients)) * 100 if tech_card.ingredients else 0
+        
+        # Определяем источник
+        if found_ingredients > 0:
+            source = "catalog"  # У нас пока только каталог, но готово для CSV
+        elif coverage_pct == 0:
+            source = "none"
+        else:
+            source = "catalog"  # Смешанный случай
+        
+        # Дата каталога из метаданных
+        catalog_date = self.catalog.get("last_updated")
+        
+        # Создаем метаданные
+        cost_meta = CostMetaV2(
+            source=source,
+            coveragePct=round(coverage_pct, 1),
+            asOf=catalog_date
+        )
+        
+        # Если покрытие 0% и LLM выключен, возвращаем пустую стоимость
+        if coverage_pct == 0 and not use_llm_for_prices:
+            return CostV2(), cost_meta, issues
+        
         # Рассчитываем стоимость на порцию
-        cost_per_portion = total_cost / tech_card.portions if tech_card.portions > 0 else total_cost
+        cost_per_portion = total_cost / tech_card.portions if tech_card.portions > 0 and total_cost > 0 else 0
         
         # Получаем настройки наценки
         markup_settings = self.catalog.get("markup_settings", {})
         default_markup = markup_settings.get("default_markup_pct", 300)
         default_vat = markup_settings.get("default_vat_pct", 20)
         
-        # Создаем и возвращаем объект стоимости
-        return CostV2(
-            rawCost=round(total_cost, 2),
-            costPerPortion=round(cost_per_portion, 2),
+        # Создаем объект стоимости
+        cost = CostV2(
+            rawCost=round(total_cost, 2) if total_cost > 0 else None,
+            costPerPortion=round(cost_per_portion, 2) if cost_per_portion > 0 else None,
             markup_pct=default_markup,
             vat_pct=default_vat
         )
+        
+        return cost, cost_meta, issues
 
 def calculate_cost_for_tech_card(tech_card: TechCardV2) -> TechCardV2:
     """
