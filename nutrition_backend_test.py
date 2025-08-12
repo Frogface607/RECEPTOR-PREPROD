@@ -88,7 +88,7 @@ def test_nutrition_calculator():
                 test_data = {
                     'per100g': per100g,
                     'perPortion': per_portion,
-                    'yield_per_portion_g': test_profile_known['yield_per_portion_g'],
+                    'yield_per_portion_g': card.get('yield', {}).get('perPortion_g', 150),
                     'nutrition_meta': nutrition_meta
                 }
                 
