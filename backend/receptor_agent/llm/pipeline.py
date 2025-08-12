@@ -43,17 +43,58 @@ def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
         except Exception:
             # fallback на локальный режим при любой ошибке LLM
             pass
-    # fallback локально
+    # fallback локально - в формате TechCardV2
     return {
-        "meta": {"name": f"Блюдо {profile.cuisine or 'авторское'}", "category": "Горячее", "cuisine": profile.cuisine},
-        "yield": {"portions": 10, "per_portion_g": 250, "total_net_g": 2500},
+        "meta": {
+            "title": f"Блюдо {profile.cuisine or 'авторское'}",
+            "version": "2.0",
+            "cuisine": profile.cuisine,
+            "tags": []
+        },
+        "portions": 4,
+        "yield": {
+            "perPortion_g": 250.0,
+            "perBatch_g": 1000.0
+        },
         "ingredients": [
-            {"name": "Куриное бедро без кожи", "uom": "g", "gross_g": 3000, "net_g": 2500, "loss_pct": 16.7},
-            {"name": "Соль", "uom": "g", "gross_g": 20, "net_g": 20, "loss_pct": 0},
+            {
+                "name": "Куриное филе",
+                "unit": "g",
+                "brutto_g": 600.0,
+                "loss_pct": 10.0,
+                "netto_g": 540.0,
+                "allergens": []
+            },
+            {
+                "name": "Соль поваренная",
+                "unit": "g", 
+                "brutto_g": 8.0,
+                "loss_pct": 0.0,
+                "netto_g": 8.0,
+                "allergens": []
+            },
+            {
+                "name": "Растительное масло",
+                "unit": "ml",
+                "brutto_g": 30.0,
+                "loss_pct": 5.0,
+                "netto_g": 28.5,
+                "allergens": []
+            }
         ],
-        "process": [{"step": 1, "desc": "Маринование 60 мин", "temp_c": 4, "time_min": 60}],
-        "haccp": {"hazards": ["bio"], "ccp": [{"name": "Internal temp", "limit": "≥75°C", "monitoring": "термометр", "corrective": "доготовить"}]},
-        "allergens": [],
+        "process": [
+            {"n": 1, "action": "Подготовка ингредиентов", "time_min": 10.0, "temp_c": None},
+            {"n": 2, "action": "Обжаривание на среднем огне", "time_min": 15.0, "temp_c": 180.0},
+            {"n": 3, "action": "Доведение до готовности", "time_min": 10.0, "temp_c": 75.0}
+        ],
+        "storage": {
+            "conditions": "Холодильник 0...+4°C",
+            "shelfLife_hours": 48.0,
+            "servingTemp_c": 65.0
+        },
+        "nutrition": {"per100g": None, "perPortion": None},
+        "cost": {"rawCost": None, "costPerPortion": None},
+        "printNotes": []
     }
 
 def normalize(draft: Dict[str, Any]) -> Dict[str, Any]:
