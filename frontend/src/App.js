@@ -3690,7 +3690,7 @@ function App() {
       setShowAllCategoriesModal(false);
       setShowAssemblyChartsModal(false);
       setShowCreateAssemblyChartModal(false);
-      setShowHaccpAuditModal(false);
+      // setShowHaccpAuditModal(false); // ОТКЛЮЧЕНО
     } catch (e) {}
   }, []);
 
