@@ -984,7 +984,98 @@ function App() {
           </div>
         )}
 
-        {/* HACCP - ВРЕМЕННО ОТКЛЮЧЕН */}
+        {/* HACCP - ОТКЛЮЧЕНО FEATURE FLAG */}
+        {FEATURE_HACCP && (currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business') && (
+          <div className="bg-gradient-to-r from-orange-900/20 to-yellow-900/20 rounded-lg p-4 border border-orange-500/30">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-orange-300 flex items-center space-x-2">
+                <span>🛡️ HACCP</span>
+                <span className="text-xs bg-purple-600 px-2 py-1 rounded">PRO</span>
+                {currentTechCardHaccp?.hazards?.length > 0 ? (
+                  <span className="bg-green-600 px-2 py-1 rounded text-xs">OK</span>
+                ) : (
+                  <span className="bg-orange-600 px-2 py-1 rounded text-xs">Требуется проверка</span>
+                )}
+                {isAutoGeneratingHaccp && (
+                  <span className="text-xs text-orange-400">Обновляется...</span>
+                )}
+              </h3>
+              <button
+                onClick={auditHaccp}
+                disabled={isHaccpAuditing}
+                className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors"
+              >
+                {isHaccpAuditing ? 'Проверяем...' : 'HACCP АУДИТ'}
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {/* HACCP Pro status info */}
+              <div className="bg-orange-800/30 p-3 rounded-lg text-xs">
+                <div className="text-orange-300 font-medium">HACCP Pro модуль (Debug)</div>
+                <div className="text-gray-400">
+                  Статус: {haccpProEnabled ? '✅ Включен' : '❌ Выключен'} | 
+                  Подписка: {currentUser?.subscription_plan || 'N/A'} |
+                  User: {currentUser?.email || currentUser?.name || 'N/A'}
+                </div>
+                {!haccpProEnabled && (
+                  <div className="text-orange-400 mt-2">
+                    💡 Включите HACCP Pro в настройках профиля заведения (шаг 4)
+                  </div>
+                )}
+              </div>
+              
+              {/* Allergens chips */}
+              {currentTechCardHaccp?.allergens && currentTechCardHaccp.allergens.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-orange-400 mb-2">Аллергены:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {currentTechCardHaccp.allergens.map((allergen, idx) => (
+                      <span key={idx} className="bg-red-600 px-2 py-1 rounded-full text-xs">
+                        {allergen}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Critical Control Points */}
+              {currentTechCardHaccp?.ccp && currentTechCardHaccp.ccp.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-orange-400 mb-2">Критические контрольные точки:</h4>
+                  <div className="space-y-2">
+                    {currentTechCardHaccp.ccp.slice(0, 2).map((ccp, idx) => (
+                      <div key={idx} className="bg-orange-800/30 p-2 rounded text-xs">
+                        <div className="font-medium">{ccp.name}</div>
+                        <div className="text-gray-400">Предел: {ccp.limit}</div>
+                      </div>
+                    ))}
+                    {currentTechCardHaccp.ccp.length > 2 && (
+                      <div className="text-xs text-gray-400">
+                        +{currentTechCardHaccp.ccp.length - 2} больше точек
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Storage */}
+              {currentTechCardHaccp?.storage && (
+                <div>
+                  <h4 className="text-sm font-bold text-orange-400 mb-2">Хранение:</h4>
+                  <p className="text-xs text-gray-300">{currentTechCardHaccp.storage}</p>
+                </div>
+              )}
+              
+              {/* Hazards count */}
+              {currentTechCardHaccp?.hazards && currentTechCardHaccp.hazards.length > 0 && (
+                <div className="text-xs text-gray-400">
+                  Выявлено рисков: {currentTechCardHaccp.hazards.length}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ЗАГОТОВКИ И ХРАНЕНИЕ */}
         {storage && (
