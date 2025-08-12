@@ -31,17 +31,11 @@ def test_price_via_llm_flag_false():
     
     # Test data with mix of known and unknown ingredients
     test_profile = {
-        "dish_name": "Тестовое блюдо с неизвестными ингредиентами",
+        "name": "Тестовое блюдо с неизвестными ингредиентами: куриное филе 400г, растительное масло 30мл, соль поваренная 8г, экзотическая специя 5г, редкий ингредиент 20г",
         "cuisine": "русская",
-        "portions": 4,
-        "description": "Блюдо для тестирования PRICE_VIA_LLM=false",
-        "ingredients": [
-            "куриное филе 400г",  # Known ingredient in catalog
-            "растительное масло 30мл",  # Known ingredient in catalog
-            "соль поваренная 8г",  # Known ingredient in catalog
-            "экзотическая специя 5г",  # Unknown ingredient - should get 0.00 RUB
-            "редкий ингредиент 20г"  # Unknown ingredient - should get 0.00 RUB
-        ]
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
