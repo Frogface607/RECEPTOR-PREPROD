@@ -3650,7 +3650,7 @@ function App() {
     }, 2000);
 
     return () => clearTimeout(timeout);
-  }, [haccpProEnabled, techCard, isAutoGeneratingHaccp]);
+  }, [FEATURE_HACCP, haccpProEnabled, techCard, isAutoGeneratingHaccp]);
 
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
