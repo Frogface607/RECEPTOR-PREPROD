@@ -3659,6 +3659,7 @@ function App() {
 
   // централизованная функция закрытия модалок
   const closeAllModals = React.useCallback(() => {
+    console.log('closeAllModals called'); // DEBUG
     setShowRegistration(false);
     setShowPricingModal(false);
     setShowEquipmentModal(false);
