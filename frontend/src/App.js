@@ -1237,8 +1237,9 @@ function App() {
     }
   };
 
-  // HACCP Audit function
+  // HACCP Audit function - ОТКЛЮЧЕНО
   const auditHaccp = async () => {
+    return; // ПОЛНОСТЬЮ ОТКЛЮЧЕНО
     if (!FEATURE_HACCP) return;
     if (!techCard || !currentUser?.id) return;
     
