@@ -1,0 +1,180 @@
+{
+  "meta": {
+    "id": "golden-gazpacho-010",
+    "title": "Гаспачо андалузский",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "испанская",
+    "tags": ["суп", "холодный", "овощи"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 200.0,
+    "perBatch_g": 800.0
+  },
+  "ingredients": [
+    {
+      "name": "Помидоры спелые",
+      "unit": "g",
+      "brutto_g": 600.0,
+      "loss_pct": 10.0,
+      "netto_g": 540.0,
+      "skuId": "VEG_TOMATO_001",
+      "allergens": []
+    },
+    {
+      "name": "Огурцы свежие",
+      "unit": "g",
+      "brutto_g": 150.0,
+      "loss_pct": 8.0,
+      "netto_g": 138.0,
+      "skuId": "VEG_CUCUMBER_001",
+      "allergens": []
+    },
+    {
+      "name": "Перец болгарский красный",
+      "unit": "g",
+      "brutto_g": 100.0,
+      "loss_pct": 15.0,
+      "netto_g": 85.0,
+      "skuId": "VEG_PEPPER_RED_001",
+      "allergens": []
+    },
+    {
+      "name": "Лук красный",
+      "unit": "g",
+      "brutto_g": 50.0,
+      "loss_pct": 12.0,
+      "netto_g": 44.0,
+      "skuId": "VEG_ONION_RED_001",
+      "allergens": []
+    },
+    {
+      "name": "Чеснок",
+      "unit": "g",
+      "brutto_g": 10.0,
+      "loss_pct": 20.0,
+      "netto_g": 8.0,
+      "skuId": "VEG_GARLIC_001",
+      "allergens": []
+    },
+    {
+      "name": "Хлеб белый черствый",
+      "unit": "g",
+      "brutto_g": 50.0,
+      "loss_pct": 5.0,
+      "netto_g": 47.5,
+      "skuId": "BREAD_WHITE_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Оливковое масло",
+      "unit": "ml",
+      "brutto_g": 60.0,
+      "loss_pct": 0.0,
+      "netto_g": 60.0,
+      "skuId": "OIL_OLIVE_001",
+      "allergens": []
+    },
+    {
+      "name": "Уксус винный белый",
+      "unit": "ml",
+      "brutto_g": 15.0,
+      "loss_pct": 0.0,
+      "netto_g": 15.0,
+      "skuId": "VINEGAR_WINE_001",
+      "allergens": ["sulfites"]
+    },
+    {
+      "name": "Соль морская",
+      "unit": "g",
+      "brutto_g": 5.0,
+      "loss_pct": 0.0,
+      "netto_g": 5.0,
+      "skuId": "SPICE_SALT_SEA_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Помидоры ошпарить кипятком, снять кожицу, удалить семена",
+      "time_min": 10.0,
+      "temp_c": 100.0
+    },
+    {
+      "n": 2,
+      "action": "Огурцы очистить от кожуры, удалить семена",
+      "time_min": 5.0
+    },
+    {
+      "n": 3,
+      "action": "Перец очистить от семян, нарезать крупно",
+      "time_min": 3.0
+    },
+    {
+      "n": 4,
+      "action": "Лук и чеснок очистить, нарезать",
+      "time_min": 3.0
+    },
+    {
+      "n": 5,
+      "action": "Хлеб размочить в воде, отжать",
+      "time_min": 5.0
+    },
+    {
+      "n": 6,
+      "action": "Все ингредиенты пробить блендером до однородности",
+      "time_min": 8.0,
+      "equipment": ["блендер"]
+    },
+    {
+      "n": 7,
+      "action": "Протереть через сито для гладкости",
+      "time_min": 5.0,
+      "equipment": ["сито"]
+    },
+    {
+      "n": 8,
+      "action": "Охладить в холодильнике минимум 2 часа",
+      "time_min": 120.0,
+      "temp_c": 4.0,
+      "equipment": ["холодильник"]
+    }
+  ],
+  "storage": {
+    "conditions": "Холодильник 0...+4°C",
+    "shelfLife_hours": 24.0,
+    "servingTemp_c": 8.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 85.0,
+      "proteins_g": 2.2,
+      "fats_g": 6.8,
+      "carbs_g": 4.5
+    },
+    "perPortion": {
+      "kcal": 170.0,
+      "proteins_g": 4.4,
+      "fats_g": 13.6,
+      "carbs_g": 9.0
+    }
+  },
+  "cost": {
+    "rawCost": 320.0,
+    "costPerPortion": 80.0,
+    "markup_pct": 300.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 88.9
+  },
+  "printNotes": ["Подавать с кубиками льда", "Украсить зеленью"]
+}

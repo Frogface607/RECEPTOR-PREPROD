@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "id": "golden-draniki-008",
+    "title": "Драники картофельные",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "белорусская",
+    "tags": ["картофель", "традиционное", "завтрак"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 150.0,
+    "perBatch_g": 600.0
+  },
+  "ingredients": [
+    {
+      "name": "Картофель",
+      "unit": "g",
+      "brutto_g": 800.0,
+      "loss_pct": 25.0,
+      "netto_g": 600.0,
+      "skuId": "VEG_POTATO_001",
+      "allergens": []
+    },
+    {
+      "name": "Лук репчатый",
+      "unit": "g",
+      "brutto_g": 50.0,
+      "loss_pct": 10.0,
+      "netto_g": 45.0,
+      "skuId": "VEG_ONION_001",
+      "allergens": []
+    },
+    {
+      "name": "Яйцо куриное",
+      "unit": "pcs",
+      "brutto_g": 50.0,
+      "loss_pct": 10.0,
+      "netto_g": 45.0,
+      "skuId": "EGG_CHICKEN_001",
+      "allergens": ["eggs"]
+    },
+    {
+      "name": "Мука пшеничная",
+      "unit": "g",
+      "brutto_g": 30.0,
+      "loss_pct": 0.0,
+      "netto_g": 30.0,
+      "skuId": "FLOUR_WHEAT_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Соль поваренная",
+      "unit": "g",
+      "brutto_g": 5.0,
+      "loss_pct": 0.0,
+      "netto_g": 5.0,
+      "skuId": "SPICE_SALT_001",
+      "allergens": []
+    },
+    {
+      "name": "Растительное масло",
+      "unit": "ml",
+      "brutto_g": 80.0,
+      "loss_pct": 0.0,
+      "netto_g": 80.0,
+      "skuId": "OIL_SUNFLOWER_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Картофель очистить и натереть на мелкой терке",
+      "time_min": 10.0,
+      "equipment": ["терка"]
+    },
+    {
+      "n": 2,
+      "action": "Лук натереть на мелкой терке",
+      "time_min": 3.0
+    },
+    {
+      "n": 3,
+      "action": "Смешать картофель с луком, добавить яйцо, муку, соль",
+      "time_min": 3.0
+    },
+    {
+      "n": 4,
+      "action": "Разогреть сковороду с растительным маслом",
+      "time_min": 3.0,
+      "temp_c": 180.0,
+      "equipment": ["сковорода"]
+    },
+    {
+      "n": 5,
+      "action": "Выкладывать тесто ложкой, формируя оладьи",
+      "time_min": 2.0
+    },
+    {
+      "n": 6,
+      "action": "Обжарить с одной стороны до золотистого цвета",
+      "time_min": 4.0,
+      "temp_c": 180.0
+    },
+    {
+      "n": 7,
+      "action": "Перевернуть и обжарить с другой стороны",
+      "time_min": 4.0,
+      "temp_c": 180.0,
+      "ccp": true
+    }
+  ],
+  "storage": {
+    "conditions": "Подавать горячими немедленно",
+    "shelfLife_hours": 3.0,
+    "servingTemp_c": 60.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 165.0,
+      "proteins_g": 4.2,
+      "fats_g": 8.5,
+      "carbs_g": 18.5
+    },
+    "perPortion": {
+      "kcal": 247.5,
+      "proteins_g": 6.3,
+      "fats_g": 12.75,
+      "carbs_g": 27.75
+    }
+  },
+  "cost": {
+    "rawCost": 120.0,
+    "costPerPortion": 30.0,
+    "markup_pct": 400.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0
+  },
+  "printNotes": ["Подавать со сметаной"]
+}

@@ -1,0 +1,117 @@
+{
+  "meta": {
+    "id": "golden-ribeye-006",
+    "title": "Стейк Рибай",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "американская",
+    "tags": ["мясо", "говядина", "стейк"]
+  },
+  "portions": 2,
+  "yield": {
+    "perPortion_g": 300.0,
+    "perBatch_g": 600.0
+  },
+  "ingredients": [
+    {
+      "name": "Говядина рибай",
+      "unit": "g",
+      "brutto_g": 600.0,
+      "loss_pct": 2.0,
+      "netto_g": 588.0,
+      "skuId": "MEAT_BEEF_RIBEYE_001",
+      "allergens": []
+    },
+    {
+      "name": "Соль крупная морская",
+      "unit": "g",
+      "brutto_g": 8.0,
+      "loss_pct": 0.0,
+      "netto_g": 8.0,
+      "skuId": "SPICE_SALT_SEA_001",
+      "allergens": []
+    },
+    {
+      "name": "Перец черный крупномолотый",
+      "unit": "g",
+      "brutto_g": 4.0,
+      "loss_pct": 0.0,
+      "netto_g": 4.0,
+      "skuId": "SPICE_PEPPER_COARSE_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Достать мясо из холодильника, довести до комнатной температуры",
+      "time_min": 30.0
+    },
+    {
+      "n": 2,
+      "action": "Натереть стейк солью и перцем с обеих сторон",
+      "time_min": 2.0
+    },
+    {
+      "n": 3,
+      "action": "Разогреть сковороду-гриль до высокой температуры",
+      "time_min": 5.0,
+      "temp_c": 250.0,
+      "equipment": ["сковорода-гриль"]
+    },
+    {
+      "n": 4,
+      "action": "Обжарить стейк с одной стороны без переворачивания",
+      "time_min": 4.0,
+      "temp_c": 250.0,
+      "ccp": true
+    },
+    {
+      "n": 5,
+      "action": "Перевернуть и обжарить с другой стороны до средней прожарки",
+      "time_min": 3.0,
+      "temp_c": 250.0,
+      "ccp": true
+    },
+    {
+      "n": 6,
+      "action": "Дать мясу отдохнуть под фольгой",
+      "time_min": 5.0
+    }
+  ],
+  "storage": {
+    "conditions": "Подавать немедленно после приготовления",
+    "shelfLife_hours": 0.5,
+    "servingTemp_c": 55.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 250.0,
+      "proteins_g": 26.0,
+      "fats_g": 15.0,
+      "carbs_g": 0.0
+    },
+    "perPortion": {
+      "kcal": 750.0,
+      "proteins_g": 78.0,
+      "fats_g": 45.0,
+      "carbs_g": 0.0
+    }
+  },
+  "cost": {
+    "rawCost": 1800.0,
+    "costPerPortion": 900.0,
+    "markup_pct": 200.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0
+  },
+  "printNotes": ["Подавать с овощами-гриль"]
+}

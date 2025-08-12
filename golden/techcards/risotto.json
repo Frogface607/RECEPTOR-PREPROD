@@ -1,0 +1,170 @@
+{
+  "meta": {
+    "id": "golden-risotto-007",
+    "title": "Ризотто с грибами",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "итальянская",
+    "tags": ["рис", "грибы", "классическое"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 220.0,
+    "perBatch_g": 880.0
+  },
+  "ingredients": [
+    {
+      "name": "Рис арборио",
+      "unit": "g",
+      "brutto_g": 280.0,
+      "loss_pct": 0.0,
+      "netto_g": 280.0,
+      "skuId": "RICE_ARBORIO_001",
+      "allergens": []
+    },
+    {
+      "name": "Шампиньоны",
+      "unit": "g",
+      "brutto_g": 300.0,
+      "loss_pct": 10.0,
+      "netto_g": 270.0,
+      "skuId": "MUSH_CHAMPIGNON_001",
+      "allergens": []
+    },
+    {
+      "name": "Бульон куриный",
+      "unit": "ml",
+      "brutto_g": 800.0,
+      "loss_pct": 0.0,
+      "netto_g": 800.0,
+      "skuId": "BROTH_CHICKEN_001",
+      "allergens": []
+    },
+    {
+      "name": "Лук репчатый",
+      "unit": "g",
+      "brutto_g": 80.0,
+      "loss_pct": 12.0,
+      "netto_g": 70.4,
+      "skuId": "VEG_ONION_001",
+      "allergens": []
+    },
+    {
+      "name": "Белое вино сухое",
+      "unit": "ml",
+      "brutto_g": 100.0,
+      "loss_pct": 0.0,
+      "netto_g": 100.0,
+      "skuId": "WINE_WHITE_DRY_001",
+      "allergens": ["sulfites"]
+    },
+    {
+      "name": "Сыр пармезан",
+      "unit": "g",
+      "brutto_g": 80.0,
+      "loss_pct": 3.0,
+      "netto_g": 77.6,
+      "skuId": "CHEESE_PARMESAN_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Масло сливочное",
+      "unit": "g",
+      "brutto_g": 60.0,
+      "loss_pct": 0.0,
+      "netto_g": 60.0,
+      "skuId": "DAIRY_BUTTER_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Оливковое масло",
+      "unit": "ml",
+      "brutto_g": 30.0,
+      "loss_pct": 0.0,
+      "netto_g": 30.0,
+      "skuId": "OIL_OLIVE_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Бульон подогреть и держать горячим",
+      "time_min": 5.0,
+      "temp_c": 80.0,
+      "equipment": ["кастрюля"]
+    },
+    {
+      "n": 2,
+      "action": "Лук мелко нарезать, обжарить на оливковом масле",
+      "time_min": 5.0,
+      "temp_c": 160.0,
+      "equipment": ["сковорода"]
+    },
+    {
+      "n": 3,
+      "action": "Грибы нарезать, добавить к луку, жарить до готовности",
+      "time_min": 8.0,
+      "temp_c": 180.0
+    },
+    {
+      "n": 4,
+      "action": "Добавить рис, помешивать 2 минуты до прозрачности",
+      "time_min": 2.0,
+      "temp_c": 160.0
+    },
+    {
+      "n": 5,
+      "action": "Влить вино, помешивать до полного впитывания",
+      "time_min": 3.0,
+      "temp_c": 160.0
+    },
+    {
+      "n": 6,
+      "action": "Добавлять горячий бульон по половине черпака, постоянно помешивая",
+      "time_min": 25.0,
+      "temp_c": 160.0,
+      "ccp": true
+    },
+    {
+      "n": 7,
+      "action": "За 2 минуты до готовности добавить сливочное масло и пармезан",
+      "time_min": 2.0
+    }
+  ],
+  "storage": {
+    "conditions": "Подавать немедленно",
+    "shelfLife_hours": 1.0,
+    "servingTemp_c": 65.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 180.0,
+      "proteins_g": 6.8,
+      "fats_g": 8.2,
+      "carbs_g": 20.5
+    },
+    "perPortion": {
+      "kcal": 396.0,
+      "proteins_g": 15.0,
+      "fats_g": 18.0,
+      "carbs_g": 45.1
+    }
+  },
+  "cost": {
+    "rawCost": 520.0,
+    "costPerPortion": 130.0,
+    "markup_pct": 280.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 87.5
+  },
+  "printNotes": ["Подавать с тертым пармезаном"]
+}

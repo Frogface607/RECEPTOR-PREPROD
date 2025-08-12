@@ -1,0 +1,163 @@
+{
+  "meta": {
+    "id": "golden-syrniki-009",
+    "title": "Сырники творожные",
+    "version": "2.0",
+    "createdAt": "2025-01-17T12:00:00Z",
+    "cuisine": "русская",
+    "tags": ["творог", "завтрак", "десерт"]
+  },
+  "portions": 4,
+  "yield": {
+    "perPortion_g": 120.0,
+    "perBatch_g": 480.0
+  },
+  "ingredients": [
+    {
+      "name": "Творог 9%",
+      "unit": "g",
+      "brutto_g": 400.0,
+      "loss_pct": 2.0,
+      "netto_g": 392.0,
+      "skuId": "DAIRY_COTTAGE_9_001",
+      "allergens": ["dairy"]
+    },
+    {
+      "name": "Яйцо куриное",
+      "unit": "pcs",
+      "brutto_g": 50.0,
+      "loss_pct": 10.0,
+      "netto_g": 45.0,
+      "skuId": "EGG_CHICKEN_001",
+      "allergens": ["eggs"]
+    },
+    {
+      "name": "Сахар",
+      "unit": "g",
+      "brutto_g": 30.0,
+      "loss_pct": 0.0,
+      "netto_g": 30.0,
+      "skuId": "SUGAR_WHITE_001",
+      "allergens": []
+    },
+    {
+      "name": "Мука пшеничная",
+      "unit": "g",
+      "brutto_g": 40.0,
+      "loss_pct": 0.0,
+      "netto_g": 40.0,
+      "skuId": "FLOUR_WHEAT_001",
+      "allergens": ["gluten"]
+    },
+    {
+      "name": "Ванилин",
+      "unit": "g",
+      "brutto_g": 1.0,
+      "loss_pct": 0.0,
+      "netto_g": 1.0,
+      "skuId": "SPICE_VANILLA_001",
+      "allergens": []
+    },
+    {
+      "name": "Соль поваренная",
+      "unit": "g",
+      "brutto_g": 2.0,
+      "loss_pct": 0.0,
+      "netto_g": 2.0,
+      "skuId": "SPICE_SALT_001",
+      "allergens": []
+    },
+    {
+      "name": "Растительное масло",
+      "unit": "ml",
+      "brutto_g": 30.0,
+      "loss_pct": 0.0,
+      "netto_g": 30.0,
+      "skuId": "OIL_SUNFLOWER_001",
+      "allergens": []
+    }
+  ],
+  "process": [
+    {
+      "n": 1,
+      "action": "Творог протереть через сито для однородности",
+      "time_min": 8.0,
+      "equipment": ["сито"]
+    },
+    {
+      "n": 2,
+      "action": "Добавить к творогу яйцо, сахар, ванилин, соль",
+      "time_min": 2.0
+    },
+    {
+      "n": 3,
+      "action": "Хорошо перемешать до однородной массы",
+      "time_min": 3.0
+    },
+    {
+      "n": 4,
+      "action": "Постепенно добавить муку, замесить тесто",
+      "time_min": 5.0
+    },
+    {
+      "n": 5,
+      "action": "Сформировать сырники, обвалять в муке",
+      "time_min": 8.0
+    },
+    {
+      "n": 6,
+      "action": "Разогреть сковороду с растительным маслом",
+      "time_min": 3.0,
+      "temp_c": 160.0,
+      "equipment": ["сковорода"]
+    },
+    {
+      "n": 7,
+      "action": "Обжарить сырники с одной стороны до золотистого цвета",
+      "time_min": 4.0,
+      "temp_c": 160.0
+    },
+    {
+      "n": 8,
+      "action": "Перевернуть и обжарить с другой стороны",
+      "time_min": 4.0,
+      "temp_c": 160.0,
+      "ccp": true
+    }
+  ],
+  "storage": {
+    "conditions": "Подавать теплыми",
+    "shelfLife_hours": 12.0,
+    "servingTemp_c": 50.0
+  },
+  "nutrition": {
+    "per100g": {
+      "kcal": 220.0,
+      "proteins_g": 16.8,
+      "fats_g": 8.5,
+      "carbs_g": 18.2
+    },
+    "perPortion": {
+      "kcal": 264.0,
+      "proteins_g": 20.2,
+      "fats_g": 10.2,
+      "carbs_g": 21.8
+    }
+  },
+  "cost": {
+    "rawCost": 180.0,
+    "costPerPortion": 45.0,
+    "markup_pct": 350.0,
+    "vat_pct": 20.0
+  },
+  "costMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0,
+    "asOf": "2025-01-17"
+  },
+  "nutritionMeta": {
+    "source": "catalog",
+    "coveragePct": 100.0
+  },
+  "printNotes": ["Подавать с джемом, сметаной или медом"]
+}
