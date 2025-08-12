@@ -1,11 +1,11 @@
 const read = (k, d) => {
-  if (typeof window !== 'undefined' && import.meta && import.meta.env && import.meta.env[k]) {
-    return import.meta.env[k];
-  }
-  if (typeof process !== 'undefined' && process.env && process.env[k]) {
-    return process.env[k];
-  }
-  return d;
+  // Try different environment variable prefixes
+  const envValue = 
+    (typeof process !== 'undefined' && process.env && process.env[`REACT_APP_${k.replace('VITE_', '')}`]) ||
+    (typeof process !== 'undefined' && process.env && process.env[k]) ||
+    (typeof window !== 'undefined' && import.meta && import.meta.env && import.meta.env[k]) ||
+    d;
+  return envValue;
 };
 
 export const FEATURE_HACCP = String(read('VITE_FEATURE_HACCP', 'false')) === 'true';
