@@ -34,17 +34,11 @@ def test_nutrition_calculator():
     
     # Test with known ingredients from catalog
     test_profile_known = {
-        "dish_name": "Куриное филе с овощами",
-        "portions": 4,
-        "ingredients": [
-            {"name": "куриное филе", "netto_g": 400, "unit": "g"},
-            {"name": "растительное масло", "netto_g": 30, "unit": "ml"},
-            {"name": "лук репчатый", "netto_g": 100, "unit": "g"},
-            {"name": "морковь", "netto_g": 80, "unit": "g"},
-            {"name": "соль поваренная", "netto_g": 5, "unit": "g"}
-        ],
-        "yield_per_batch_g": 600,
-        "yield_per_portion_g": 150
+        "name": "Куриное филе с овощами",
+        "cuisine": "европейская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
