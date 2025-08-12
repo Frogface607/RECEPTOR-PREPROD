@@ -1796,7 +1796,7 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Nutrition Calculator Implementation (Task #4)"
+    - "GOST A4 Print Template Implementation (Task #5)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
