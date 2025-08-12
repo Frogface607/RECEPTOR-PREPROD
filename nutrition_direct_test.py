@@ -36,7 +36,11 @@ def test_direct_nutrition_calculator():
         portions=4,
         yield_=test_yield,
         ingredients=test_ingredients,
-        process=[],
+        process=[
+            {"n": 1, "action": "Подготовка ингредиентов", "time_min": 10, "temp_c": None},
+            {"n": 2, "action": "Приготовление", "time_min": 20, "temp_c": 180},
+            {"n": 3, "action": "Подача", "time_min": 5, "temp_c": 65}
+        ],
         storage={"conditions": "test", "shelfLife_hours": 24, "servingTemp_c": 65}
     )
     
