@@ -1294,8 +1294,9 @@ function App() {
     }
   };
 
-  // Apply HACCP patch function
+  // Apply HACCP patch function - ОТКЛЮЧЕНО
   const applyHaccpPatch = () => {
+    return; // ПОЛНОСТЬЮ ОТКЛЮЧЕНО
     if (!FEATURE_HACCP) return;
     if (!haccpAuditResult?.patch) return;
     
