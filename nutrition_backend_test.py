@@ -321,13 +321,11 @@ def test_nutrition_calculator():
     
     for test_case in density_test_cases:
         test_profile_density = {
-            "dish_name": f"Тест плотности {test_case['name']}",
-            "portions": 1,
-            "ingredients": [
-                {"name": test_case['name'], "netto_g": test_case['ml'], "unit": "ml"}
-            ],
-            "yield_per_batch_g": 100,
-            "yield_per_portion_g": 100
+            "name": f"Тест плотности {test_case['name']}",
+            "cuisine": "европейская",
+            "equipment": [],
+            "budget": None,
+            "dietary": []
         }
         
         try:
