@@ -1828,7 +1828,7 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "iiko Export Implementation (Task #6)"
+    - "Golden Tests + CI Gate Implementation (Task #7)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
