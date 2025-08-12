@@ -984,7 +984,8 @@ function App() {
           </div>
         )}
 
-        {/* HACCP - ОТКЛЮЧЕНО FEATURE FLAG */}
+        {/* HACCP - ПОЛНОСТЬЮ ОТКЛЮЧЕН КОММЕНТАРИЕМ */}
+        {/*
         {(() => {
           const shouldShowHaccp = false; // HARD DISABLED
           const isProUser = currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business';
