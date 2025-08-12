@@ -6935,6 +6935,13 @@ function App() {
                     >
                       ГОСТ-ПЕЧАТЬ
                     </button>
+                    <button 
+                      onClick={handleIikoExport}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="📊 Экспорт в iiko: XLSX с листами Products и Recipes для импорта в систему iiko"
+                    >
+                      ЭКСПОРТ В IIKO
+                    </button>
                   </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
