@@ -26,17 +26,38 @@ def status_tc_v2():
         "model": os.getenv("TECHCARDS_V2_MODEL","gpt-4o-mini") if _llm_enabled() else None
     }
 
-@router.post("/techcards.v2/generate", response_model=TechCardV2)
+@router.post("/techcards.v2/generate")
 def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, description="override env flag")):
     if not _flag():
         raise HTTPException(404, "feature disabled")
     if use_llm is not None:
         os.environ["TECHCARDS_V2_USE_LLM"] = "true" if use_llm else "false"
+    
     res = run_pipeline(profile)
-    ok, issues = validate_card(res.card)
-    if not ok:
-        raise HTTPException(400, f"validation failed: {issues}")
-    return res.card
+    
+    # Возвращаем результат в зависимости от статуса валидации
+    if res.status == "success":
+        return {
+            "status": "success",
+            "card": res.card.model_dump(by_alias=True),
+            "issues": []
+        }
+    elif res.status == "draft":
+        return {
+            "status": "draft",
+            "message": "Validation failed: tech card saved as draft with issues",
+            "card": None,
+            "issues": res.issues,
+            "raw_data": res.raw_data
+        }
+    else:
+        return {
+            "status": "failed",
+            "message": "Pipeline error",
+            "card": None,
+            "issues": res.issues,
+            "raw_data": None
+        }
 
 @router.post("/techcards.v2/export")
 def export_tc_v2(card: TechCardV2):
