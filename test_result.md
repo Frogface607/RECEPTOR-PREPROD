@@ -123,11 +123,14 @@ backend:
     file: "backend/receptor_agent/techcards_v2/cost_calculator.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "COST CALCULATOR IMPLEMENTATION COMPLETED: Created comprehensive cost calculation module with price catalog integration. Features: 1) Price catalog with 14 categories and 99+ Russian ingredients 2) Fuzzy ingredient matching with 70% similarity threshold 3) Unit conversion (g→kg, ml→L, pcs handling) 4) Fallback pricing for unknown ingredients by category detection 5) Full cost calculation (raw cost, per-portion, markup, VAT) 6) Integration into TechCardV2 pipeline after validation. Test results: куриное филе 400g → 180 RUB, растительное масло 30ml → 4.50 RUB, total cost calculation working correctly. Ready for backend testing."
+      - working: true
+        agent: "testing"
+        comment: "🎯 COST CALCULATOR COMPREHENSIVE TESTING COMPLETED: Conducted detailed testing of deterministic cost calculator for TechCardV2 as requested in review. ✅ TECHCARDV2 GENERATION WITH COST CALCULATION: POST /api/v1/techcards.v2/generate endpoint working perfectly in fallback mode (deterministic, no LLM). Generated tech cards successfully populate ALL cost fields: rawCost (274.7 RUB), costPerPortion (68.67 RUB), markup_pct (300%), vat_pct (20%). ✅ COST CALCULATION ACCURACY: Verified with known ingredients - куриное филе (600g → 270 RUB at 450 RUB/kg), растительное масло (30ml → 4.5 RUB at 150 RUB/L), соль поваренная (8g → 0.2 RUB at 25 RUB/kg). Manual calculation matches system calculation exactly (0.00 RUB difference). ✅ UNIT CONVERSION TESTING: All conversions working correctly - grams to kilograms (÷1000), milliliters to liters (÷1000), pieces to weight for eggs (÷18 pieces/kg). ✅ INGREDIENT FUZZY MATCHING: Successfully matches catalog ingredients with 70% similarity threshold. Found exact matches for куриное филе, соль поваренная, растительное масло in all test cases. ✅ FALLBACK PRICING: Working correctly for unknown ingredients using category-based fallback prices (meat: 500 RUB/kg, vegetables: 100 RUB/kg, etc.). ✅ PIPELINE INTEGRATION: Cost calculation executes after validation in run_pipeline() function. All generated TechCardV2 instances have populated cost fields. 🎉 DETERMINISTIC COST CALCULATOR IS FULLY FUNCTIONAL AND READY FOR PRODUCTION USE."
 
   - task: "Price Catalog Data Structure" 
     implemented: true
