@@ -1295,10 +1295,7 @@ function App() {
 
   // Apply HACCP patch function
   const applyHaccpPatch = () => {
-    if (!FEATURE_HACCP) { 
-      console.warn('HACCP disabled by feature flag'); 
-      return; 
-    }
+    if (!FEATURE_HACCP) return;
     if (!haccpAuditResult?.patch) return;
     
     // For now, just update the HACCP data
