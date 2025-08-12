@@ -9,6 +9,7 @@ from receptor_agent.techcards_v2.normalize import normalize_card
 from receptor_agent.techcards_v2.quantify import rebalance
 from receptor_agent.techcards_v2.haccp_templates import enrich_haccp
 from receptor_agent.techcards_v2.cost_calculator import calculate_cost_for_tech_card
+from receptor_agent.techcards_v2.nutrition_calculator import calculate_nutrition_for_tech_card
 
 from .clients.openai_client import call_structured, get_client
 from .prompts.templates import DRAFT_PROMPT, NORMALIZE_PROMPT, QUANTIFY_PROMPT, HACCP_PROMPT, CRITIC_PROMPT
