@@ -6928,6 +6928,13 @@ function App() {
                     >
                       ЭКСПОРТ В PDF
                     </button>
+                    <button 
+                      onClick={handleGostPrint}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="🏛️ ГОСТ-печать A4: технологическая карта в официальном формате с таблицами и подписями"
+                    >
+                      ГОСТ-ПЕЧАТЬ
+                    </button>
                   </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
