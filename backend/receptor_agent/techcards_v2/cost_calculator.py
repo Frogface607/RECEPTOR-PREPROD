@@ -152,7 +152,7 @@ class CostCalculator:
         # По умолчанию возвращаем как есть
         return amount
     
-    def calculate_ingredient_cost(self, ingredient: IngredientV2) -> Tuple[float, str]:
+    def calculate_ingredient_cost(self, ingredient: IngredientV2, use_llm_fallback: bool = True) -> Tuple[float, str]:
         """
         Расчет стоимости одного ингредиента
         Возвращает: (стоимость, статус)
@@ -175,12 +175,15 @@ class CostCalculator:
             cost = converted_amount * price_per_unit
             return cost, f"found_in_catalog_{category}"
         else:
-            # Используем fallback цену
-            fallback_price = self._get_fallback_price(ingredient.name)
-            # Для fallback используем граммы как есть
-            amount_kg = ingredient.brutto_g / 1000.0 if ingredient.unit == "g" else ingredient.brutto_g
-            cost = amount_kg * fallback_price
-            return cost, "fallback_price_used"
+            # Используем fallback только если разрешено
+            if use_llm_fallback:
+                fallback_price = self._get_fallback_price(ingredient.name)
+                # Для fallback используем граммы как есть
+                amount_kg = ingredient.brutto_g / 1000.0 if ingredient.unit == "g" else ingredient.brutto_g
+                cost = amount_kg * fallback_price
+                return cost, "fallback_price_used"
+            else:
+                return 0.0, "no_price_found"
     
     def _get_fallback_price(self, ingredient_name: str) -> float:
         """Получение резервной цены на основе названия ингредиента"""
