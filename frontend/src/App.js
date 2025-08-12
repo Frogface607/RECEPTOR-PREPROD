@@ -985,7 +985,12 @@ function App() {
         )}
 
         {/* HACCP - Только для PRO пользователей */}
-        {FEATURE_HACCP && (currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business') && (
+        {(() => {
+          const haccpEnabled = FEATURE_HACCP;
+          const isPro = currentUser?.subscription_plan === 'pro' || currentUser?.subscription_plan === 'business';
+          console.log(`HACCP Render Debug: FEATURE_HACCP=${haccpEnabled}, isPro=${isPro}, user=${currentUser?.subscription_plan}`);
+          return haccpEnabled && isPro;
+        })() && (
           <div className="bg-gradient-to-r from-orange-900/20 to-yellow-900/20 rounded-lg p-4 border border-orange-500/30">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-orange-300 flex items-center space-x-2">
