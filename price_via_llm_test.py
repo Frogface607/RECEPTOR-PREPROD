@@ -42,8 +42,8 @@ def test_price_via_llm_flag_false():
         url = f"{API_BASE}/v1/techcards.v2/generate"
         log_test(f"Making request to: {url}")
         log_test(f"Test profile: {test_profile['name']}")
-        log_test(f"Known ingredients: куриное филе, растительное масло, соль поваренная")
-        log_test(f"Unknown ingredients: экзотическая специя, редкий ингредиент")
+        log_test(f"Expected ingredients: куриное филе, овощи, растительное масло, соль")
+        log_test(f"Testing cost calculation with PRICE_VIA_LLM=false (default)")
         
         start_time = time.time()
         response = requests.post(url, json=test_profile, timeout=60)
