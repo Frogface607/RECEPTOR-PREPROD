@@ -231,21 +231,17 @@ class CostCalculator:
         
         # Рассчитываем стоимость каждого ингредиента
         for ingredient in tech_card.ingredients:
-            cost, status = self.calculate_ingredient_cost(ingredient)
+            cost, status = self.calculate_ingredient_cost(ingredient, use_llm_fallback=use_llm_for_prices)
             
             if "found_in_catalog" in status:
                 found_ingredients += 1
-            elif "fallback_price_used" in status:
+            elif status in ["fallback_price_used", "no_price_found"]:
                 # Добавляем issue для отсутствующих цен
                 issues.append({
                     "type": "noPrice",
                     "name": ingredient.name,
                     "hint": "upload price list / map SKU"
                 })
-                
-                # Если LLM для цен выключен, не включаем fallback цену
-                if not use_llm_for_prices:
-                    cost = 0.0  # Не учитываем в общей стоимости
             
             total_cost += cost
             ingredient_costs.append({
