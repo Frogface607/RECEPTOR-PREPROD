@@ -168,17 +168,11 @@ def test_price_via_llm_flag_true():
     
     # Same test data as Test 1 for comparison
     test_profile = {
-        "dish_name": "Тестовое блюдо с неизвестными ингредиентами (LLM enabled)",
-        "cuisine": "русская", 
-        "portions": 4,
-        "description": "Блюдо для тестирования PRICE_VIA_LLM=true",
-        "ingredients": [
-            "куриное филе 400г",  # Known ingredient in catalog
-            "растительное масло 30мл",  # Known ingredient in catalog
-            "соль поваренная 8г",  # Known ingredient in catalog
-            "экзотическая специя 5г",  # Unknown ingredient - should get fallback price
-            "редкий ингредиент 20г"  # Unknown ingredient - should get fallback price
-        ]
+        "name": "Тестовое блюдо с неизвестными ингредиентами (LLM enabled): куриное филе 400г, растительное масло 30мл, соль поваренная 8г, экзотическая специя 5г, редкий ингредиент 20г",
+        "cuisine": "русская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
