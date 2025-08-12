@@ -174,18 +174,9 @@ class TechCardV2PrintTester:
     def create_test_techcard_draft(self) -> Dict[str, Any]:
         """Create a draft TechCardV2 with validation issues"""
         card = self.create_test_techcard_valid()
-        # Make it invalid by removing required process steps
-        card["process"] = [
-            {
-                "n": 1,
-                "action": "Отварить спагетти",
-                "time_min": None,
-                "temp_c": None,
-                "equipment": [],
-                "ccp": False
-            }
-        ]
-        # Remove nutrition data
+        # Make it invalid by creating yield mismatch
+        card["yield"]["perBatch_g"] = 2000.0  # Mismatch with ingredients to trigger validation failure
+        # Remove nutrition and cost data
         card["nutrition"] = {}
         card["cost"] = {}
         return card
