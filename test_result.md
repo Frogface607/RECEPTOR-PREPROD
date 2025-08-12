@@ -1750,8 +1750,7 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Cost Calculator Implementation for TechCardV2"
-    - "Pipeline Integration for Cost Calculation"
+    - "Disable LLM Pricing and Add Cost Metadata (Task #3)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
