@@ -1779,7 +1779,7 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Disable LLM Pricing and Add Cost Metadata (Task #3)"
+    - "Nutrition Calculator Implementation (Task #4)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
