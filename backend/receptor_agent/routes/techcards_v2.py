@@ -72,9 +72,13 @@ def export_tc_v2_to_iiko(card: TechCardV2):
         # Экспортируем в iiko формат
         xlsx_file, issues = export_techcard_to_iiko(card)
         
-        # Создаем безопасное имя файла
-        safe_title = "".join(c for c in card.meta.title if c.isalnum() or c in (' ', '-', '_')).strip()
-        safe_title = safe_title.replace(' ', '_')
+        # Создаем безопасное имя файла (только ASCII символы)
+        import re
+        safe_title = re.sub(r'[^\w\s-]', '', card.meta.title)  # Remove special chars
+        safe_title = re.sub(r'[а-яё]', '', safe_title, flags=re.IGNORECASE)  # Remove Cyrillic
+        safe_title = re.sub(r'\s+', '_', safe_title.strip())  # Replace spaces with underscores
+        if not safe_title:  # If title becomes empty, use default
+            safe_title = "techcard"
         filename = f"iiko_export_{safe_title}.xlsx"
         
         # Логируем issues если есть
