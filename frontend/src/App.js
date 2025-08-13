@@ -1138,6 +1138,17 @@ function App() {
   };
 
   const formatTechCard = (content) => {
+    // V1 fallback - only used when FORCE_TECHCARD_V2 is disabled
+    if (FORCE_TECHCARD_V2) {
+      return (
+        <div className="text-center py-8 text-red-400">
+          <p className="text-lg">⚠️ V1 Tech Cards не поддерживаются</p>
+          <p className="text-sm">FORCE_TECHCARD_V2 включен - используется только TechCard v2</p>
+          <p className="text-xs mt-2">Сгенерируйте новую техкарту для получения данных V2</p>
+        </div>
+      );
+    }
+    
     if (!content) return null;
 
     // Извлекаем основные секции с помощью regex
