@@ -45,12 +45,13 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
     """
     try:
         if not _flag():
-            return {
+            response_data = {
                 "status": "error",
                 "card": None,
                 "issues": [{"type": "feature_disabled", "message": "TechCards V2 feature is disabled"}],
                 "message": "Feature disabled"
             }
+            return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
         
         # Set LLM override if provided
         if use_llm is not None:
