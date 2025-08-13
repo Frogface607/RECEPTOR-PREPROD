@@ -1056,54 +1056,103 @@ function App() {
         )}
 
         {/* ПИЩЕВАЯ ЦЕННОСТЬ */}
-        {(nutrition.per100g || nutrition.perPortion) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {nutrition.per100g && (
-              <div className="bg-green-900/20 rounded-lg p-4">
-                <h4 className="text-green-300 font-bold mb-3 text-center">КБЖУ на 100г</h4>
-                <div className="grid grid-cols-4 gap-2 text-center text-sm">
-                  <div>
-                    <div className="text-yellow-300 font-bold">{nutrition.per100g.kcal || 0}</div>
-                    <div className="text-gray-400">ккал</div>
-                  </div>
-                  <div>
-                    <div className="text-blue-300 font-bold">{nutrition.per100g.proteins_g || 0}</div>
-                    <div className="text-gray-400">белки</div>
-                  </div>
-                  <div>
-                    <div className="text-red-300 font-bold">{nutrition.per100g.fats_g || 0}</div>
-                    <div className="text-gray-400">жиры</div>
-                  </div>
-                  <div>
-                    <div className="text-green-300 font-bold">{nutrition.per100g.carbs_g || 0}</div>
-                    <div className="text-gray-400">углеводы</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {nutrition.perPortion && (
-              <div className="bg-blue-900/20 rounded-lg p-4">
-                <h4 className="text-blue-300 font-bold mb-3 text-center">КБЖУ на порцию</h4>
-                <div className="grid grid-cols-4 gap-2 text-center text-sm">
-                  <div>
-                    <div className="text-yellow-300 font-bold">{nutrition.perPortion.kcal || 0}</div>
-                    <div className="text-gray-400">ккал</div>
-                  </div>
-                  <div>
-                    <div className="text-blue-300 font-bold">{nutrition.perPortion.proteins_g || 0}</div>
-                    <div className="text-gray-400">белки</div>
-                  </div>
-                  <div>
-                    <div className="text-red-300 font-bold">{nutrition.perPortion.fats_g || 0}</div>
-                    <div className="text-gray-400">жиры</div>
-                  </div>
-                  <div>
-                    <div className="text-green-300 font-bold">{nutrition.perPortion.carbs_g || 0}</div>
-                    <div className="text-gray-400">углеводы</div>
+        {nutritionMeta.coveragePct > 0 && (nutrition.per100g || nutrition.perPortion) ? (
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {nutrition.per100g && (
+                <div className="bg-green-900/20 rounded-lg p-4">
+                  <h4 className="text-green-300 font-bold mb-3 text-center">КБЖУ на 100г</h4>
+                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                    <div>
+                      <div className="text-yellow-300 font-bold">
+                        {Math.round(nutrition.per100g.kcal || 0)}
+                      </div>
+                      <div className="text-gray-400">ккал</div>
+                    </div>
+                    <div>
+                      <div className="text-blue-300 font-bold">
+                        {(nutrition.per100g.proteins_g || 0).toFixed(1)}
+                      </div>
+                      <div className="text-gray-400">белки</div>
+                    </div>
+                    <div>
+                      <div className="text-red-300 font-bold">
+                        {(nutrition.per100g.fats_g || 0).toFixed(1)}
+                      </div>
+                      <div className="text-gray-400">жиры</div>
+                    </div>
+                    <div>
+                      <div className="text-green-300 font-bold">
+                        {(nutrition.per100g.carbs_g || 0).toFixed(1)}
+                      </div>
+                      <div className="text-gray-400">углеводы</div>
+                    </div>
                   </div>
                 </div>
+              )}
+              {nutrition.perPortion && (
+                <div className="bg-blue-900/20 rounded-lg p-4">
+                  <h4 className="text-blue-300 font-bold mb-3 text-center">КБЖУ на порцию</h4>
+                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                    <div>
+                      <div className="text-yellow-300 font-bold">
+                        {Math.round(nutrition.perPortion.kcal || 0)}
+                      </div>
+                      <div className="text-gray-400">ккал</div>
+                    </div>
+                    <div>
+                      <div className="text-blue-300 font-bold">
+                        {(nutrition.perPortion.proteins_g || 0).toFixed(1)}
+                      </div>
+                      <div className="text-gray-400">белки</div>
+                    </div>
+                    <div>
+                      <div className="text-red-300 font-bold">
+                        {(nutrition.perPortion.fats_g || 0).toFixed(1)}
+                      </div>
+                      <div className="text-gray-400">жиры</div>
+                    </div>
+                    <div>
+                      <div className="text-green-300 font-bold">
+                        {(nutrition.perPortion.carbs_g || 0).toFixed(1)}
+                      </div>
+                      <div className="text-gray-400">углеводы</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* МЕТАДАННЫЕ ПИТАНИЯ */}
+            {nutritionMeta.coveragePct < 100 && nutritionMeta.coveragePct > 0 && (
+              <div className="mt-3 text-sm text-gray-400 text-center bg-yellow-900/10 rounded-lg p-3">
+                ⚠️ Покрытие {nutritionMeta.coveragePct}% (часть ингредиентов без данных)
+                {nutritionMeta.source && (
+                  <span className="ml-2">• Источник: {nutritionMeta.source}</span>
+                )}
               </div>
             )}
+            {nutritionMeta.coveragePct === 100 && (
+              <div className="mt-3 text-sm text-green-400 text-center">
+                ✅ Полные данные по всем ингредиентам
+                {nutritionMeta.source && (
+                  <span className="ml-2">• Источник: {nutritionMeta.source}</span>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-gray-800/30 rounded-lg p-6 text-center">
+            <h3 className="text-lg font-bold text-gray-400 mb-2">ПИЩЕВАЯ ЦЕННОСТЬ</h3>
+            <div className="text-gray-500">
+              <div className="text-4xl mb-2">📊</div>
+              <p>Данные не заполнены</p>
+              <p className="text-sm mt-1">
+                {nutritionMeta.coveragePct === 0 ? 
+                  'Отсутствуют данные по ингредиентам в базе' : 
+                  'Расчет не выполнен'
+                }
+              </p>
+            </div>
           </div>
         )}
 
