@@ -7058,6 +7058,23 @@ function App() {
                   </button>
                 </form>
                 
+                {/* DEBUG INFO */}
+                {isDebugMode && (
+                  <div className="mt-4 bg-gray-800/50 border border-gray-600/50 rounded-lg p-3">
+                    <h4 className="text-gray-300 font-bold text-xs mb-2">🐛 DEBUG INFO (?debug=1)</h4>
+                    <div className="space-y-1 text-xs text-gray-400">
+                      <div><strong>Status:</strong> {generationStatus || 'none'}</div>
+                      <div><strong>First Issue:</strong> {generationIssues[0] || 'none'}</div>
+                      <div><strong>Last Request:</strong> {
+                        typeof window !== 'undefined' && window.__lastGenerationDebug ? 
+                        `${window.__lastGenerationDebug.requestTime}ms at ${window.__lastGenerationDebug.timestamp}` : 
+                        'none'
+                      }</div>
+                      <div><strong>TcV2 Present:</strong> {tcV2 ? 'yes' : 'no'}</div>
+                    </div>
+                  </div>
+                )}
+                
                 {/* PRO Price Management */}
                 {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
                   <div className="border-t border-purple-400/30 pt-4 sm:pt-6">
