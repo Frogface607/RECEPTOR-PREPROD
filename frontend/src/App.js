@@ -3685,7 +3685,8 @@ function App() {
 
     } catch (error) {
       console.error('Error printing tech card:', error);
-      alert('Ошибка при печати техкарты: ' + error.message);
+      setGenerationError('Ошибка при печати техкарты: ' + error.message);
+      setGenerationStatus('error');
     }
   };
 
