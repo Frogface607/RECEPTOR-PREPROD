@@ -1,6 +1,6 @@
 from __future__ import annotations
 import os, json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Set
 from pydantic import BaseModel
 from receptor_agent.techcards_v2.schemas import TechCardV2
 from receptor_agent.techcards_v2.validators import validate_card
