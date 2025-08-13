@@ -64,7 +64,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
         if res.status == "success":
             response_data = {
                 "status": "success",
-                "card": res.card.model_dump(by_alias=True) if res.card else None,
+                "card": res.card.model_dump(by_alias=True, mode="json") if res.card else None,
                 "issues": res.issues or [],
                 "message": "Tech card generated successfully"
             }
