@@ -3550,12 +3550,12 @@ function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log('GOST print response:', data);
+      const htmlContent = await response.text(); // Get HTML directly instead of JSON
+      console.log('Print response received');
 
-      if (data.html) {
+      if (htmlContent) {
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(data.html);
+        printWindow.document.write(htmlContent);
         printWindow.document.close();
         
         // Show draft watermark if status is draft
