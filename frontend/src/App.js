@@ -3736,7 +3736,8 @@ function App() {
 
     } catch (error) {
       console.error('Error printing GOST tech card:', error);
-      alert('Ошибка при ГОСТ-печати: ' + error.message);
+      setGenerationError('Ошибка при ГОСТ-печати: ' + error.message);
+      setGenerationStatus('error');
     }
   };
 
