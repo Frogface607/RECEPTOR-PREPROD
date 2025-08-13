@@ -3367,13 +3367,20 @@ function App() {
     console.log('Dish name:', dishName);
     console.log('Current user:', currentUser);
     
+    // Clear previous status
+    setGenerationStatus(null);
+    setGenerationError(null);
+    setGenerationIssues([]);
+    
     if (!dishName.trim()) {
-      alert('Пожалуйста, введите название блюда');
+      setGenerationError('Пожалуйста, введите название блюда');
+      setGenerationStatus('error');
       return;
     }
     
     if (!currentUser?.id) {
-      alert('Пожалуйста, войдите в систему');
+      setGenerationError('Пожалуйста, войдите в систему');
+      setGenerationStatus('error');
       return;
     }
     
@@ -3382,9 +3389,16 @@ function App() {
     setLoadingType('techcard');
     const progressInterval = simulateProgress('techcard', 15000);
     
+    const requestStartTime = Date.now();
+    
     try {
-      console.log('Sending request to:', `${API}/v1/techcards.v2/generate`);
-      console.log('[V2] Using TechCard V2 generation endpoint with FORCE_TECHCARD_V2=', FORCE_TECHCARD_V2);
+      const endpoint = `${API}/v1/techcards.v2/generate`;
+      
+      if (isDebugMode) {
+        console.log('[DEBUG] Starting request to:', endpoint);
+        console.log('[DEBUG] FORCE_TECHCARD_V2:', FORCE_TECHCARD_V2);
+      }
+      
       const requestData = {
         name: dishName,
         description: dishContext?.description || `Техкарта для блюда ${dishName}`,
@@ -3399,7 +3413,7 @@ function App() {
         setDishContext(null);
       }
       
-      const response = await fetch(`${API}/v1/techcards.v2/generate`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3407,23 +3421,46 @@ function App() {
         body: JSON.stringify(requestData)
       });
       
+      const requestTime = Date.now() - requestStartTime;
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        const errorMessage = `HTTP ${response.status}: ${errorText || response.statusText}`;
+        
+        if (isDebugMode) {
+          console.log('[DEBUG] HTTP Error:', response.status, errorMessage);
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
-      console.log('TechCardV2 generation response:', data);
       
-      // Handle V2 response format
+      if (isDebugMode) {
+        console.log('[DEBUG] Response received in', requestTime, 'ms');
+        console.log('[DEBUG] Response status:', data.status);
+        console.log('[DEBUG] Issues count:', (data.issues || []).length);
+        if (data.issues && data.issues.length > 0) {
+          console.log('[DEBUG] First issue:', data.issues[0]);
+        }
+      }
+      
+      // Always complete progress bar
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      
+      // Handle different statuses
       if (data.status === 'success' && data.card) {
         const techCardV2 = data.card;
         setTcV2(techCardV2);
+        setGenerationStatus('success');
+        setGenerationIssues(data.issues || []);
         
-        // Log V2 data for debugging
+        // Log success for debugging
         console.log('[V2] Generated TechCard V2 successfully');
         console.log('[V2] tcV2.version:', techCardV2.meta?.version);
         console.log('[V2] tcV2.status:', data.status);
-        console.log('[V2] API endpoint used:', '/api/v1/techcards.v2/generate');
+        console.log('[V2] API endpoint used:', endpoint);
         
         // Convert V2 to display format for backwards compatibility
         const displayText = convertV2ToDisplayText(techCardV2);
@@ -3444,43 +3481,91 @@ function App() {
         setCurrentIngredients(parsedIngredients);
         setEditableIngredients(parsedIngredients);
         
+        setLoadingMessage('✨ Техкарта готова!');
+        
+      } else if (data.status === 'draft' && data.card) {
+        const techCardV2 = data.card;
+        setTcV2(techCardV2);
+        setGenerationStatus('draft');
+        setGenerationIssues(data.issues || []);
+        
+        console.log('[V2] Generated draft tcV2 - validation issues found');
+        console.log('[V2] Issues:', data.issues);
+        
+        const displayText = convertV2ToDisplayText(techCardV2);
+        setTechCard(displayText);
+        
+        // Parse ingredients for draft version too
+        const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
+          id: index + 1,
+          name: ing.name,
+          quantity: ing.netto_g.toString(),
+          unit: ing.unit,
+          unitPrice: '0',
+          totalPrice: '0',
+          originalQuantity: ing.netto_g.toString(),
+          originalPrice: '0'
+        })) || [];
+        
+        setCurrentIngredients(parsedIngredients);
+        setEditableIngredients(parsedIngredients);
+        
+        setLoadingMessage('⚠️ Техкарта создана (черновик)');
+        
       } else {
-        // Handle draft or error case
-        if (data.status === 'draft' && data.card) {
-          const techCardV2 = data.card;
-          setTcV2(techCardV2);
-          console.log('Generated draft tcV2 - validation issues found');
-          
-          const displayText = convertV2ToDisplayText(techCardV2);
-          setTechCard(displayText);
-        } else {
-          throw new Error(data.error || 'Failed to generate tech card');
+        // Handle unexpected response format
+        const errorMsg = data.error || 'Неожиданный формат ответа от сервера';
+        setGenerationStatus('error');
+        setGenerationError(errorMsg);
+        setLoadingMessage('❌ Ошибка генерации');
+        
+        if (isDebugMode) {
+          console.log('[DEBUG] Unexpected response format:', data);
         }
       }
       
-      // Добавляем в историю
-      await fetchUserHistory();
+      // Add to history if successful
+      if (data.status === 'success' || data.status === 'draft') {
+        try {
+          await fetchUserHistory();
+        } catch (historyError) {
+          console.warn('Failed to update history:', historyError);
+        }
+      }
       
-      // Завершаем анимацию
+      // Store debug info if enabled
+      if (isDebugMode) {
+        window.__lastGenerationDebug = {
+          status: data.status,
+          firstIssue: (data.issues || [])[0] || null,
+          requestTime: requestTime,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+    } catch (error) {
+      console.error('Error generating tech card:', error);
+      
+      // Always complete progress
       clearInterval(progressInterval);
       setLoadingProgress(100);
-      setLoadingMessage('✨ Техкарта готова!');
       
+      // Set error state
+      setGenerationStatus('error');
+      setGenerationError(error.message || 'Неизвестная ошибка при генерации техкарты');
+      setLoadingMessage('❌ Ошибка генерации');
+      
+      if (isDebugMode) {
+        console.log('[DEBUG] Exception occurred:', error);
+      }
+    } finally {
+      // Always clean up UI state after a delay
       setTimeout(() => {
         setIsGenerating(false);
         setLoadingProgress(0);
         setLoadingMessage('');
         setLoadingType('');
       }, 2000);
-      
-    } catch (error) {
-      console.error('Error generating tech card:', error);
-      clearInterval(progressInterval);
-      setIsGenerating(false);
-      setLoadingProgress(0);
-      setLoadingMessage('');
-      setLoadingType('');
-      alert('Ошибка при генерации техкарты. Попробуйте еще раз.');
     }
   };
 
