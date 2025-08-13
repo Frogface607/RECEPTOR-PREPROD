@@ -181,19 +181,26 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             # В fallback режиме данные уже в правильном формате
             pass
         
+        # Собираем ID подрецептов из сгенерированных данных
+        sub_recipe_ids = collect_sub_recipe_ids(data)
+        
+        # Получаем подрецепты из кеша (пока заглушка)
+        # TODO: В будущем сделать async и использовать await fetch_sub_recipes_cache(sub_recipe_ids) 
+        sub_recipes_cache = {}  # Временная заглушка
+        
         # СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
         is_valid, issues, validated_card = validate_techcard_v2(data)
         
         if is_valid and validated_card:
-            # Рассчитываем стоимость для валидной карты
+            # Рассчитываем стоимость для валидной карты с подрецептами
             try:
-                validated_card = calculate_cost_for_tech_card(validated_card)
+                validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
             except Exception as e:
                 issues.append(f"Cost calculation error: {str(e)}")
             
-            # Рассчитываем питательность для валидной карты
+            # Рассчитываем питательность для валидной карты с подрецептами
             try:
-                validated_card = calculate_nutrition_for_tech_card(validated_card)
+                validated_card = calculate_nutrition_for_tech_card(validated_card, sub_recipes_cache)
             except Exception as e:
                 issues.append(f"Nutrition calculation error: {str(e)}")
             
@@ -210,14 +217,14 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 # Попытаемся создать TechCardV2 из raw данных, даже если есть validation issues
                 draft_card = TechCardV2.model_validate(data)
                 
-                # Попытаемся добавить базовые расчеты для draft карты
+                # Попытаемся добавить базовые расчеты для draft карты с подрецептами
                 try:
-                    draft_card = calculate_cost_for_tech_card(draft_card)
+                    draft_card = calculate_cost_for_tech_card(draft_card, sub_recipes_cache)
                 except Exception:
                     pass  # Игнорируем ошибки расчета стоимости для draft
                 
                 try:
-                    draft_card = calculate_nutrition_for_tech_card(draft_card)
+                    draft_card = calculate_nutrition_for_tech_card(draft_card, sub_recipes_cache)
                 except Exception:
                     pass  # Игнорируем ошибки расчета питания для draft
                     
