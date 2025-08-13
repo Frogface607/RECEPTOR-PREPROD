@@ -209,7 +209,7 @@ class NutritionCalculator:
         
         return nutrition, f"subrecipe_calculated_{subrecipe_title}"
     
-    def calculate_tech_card_nutrition(self, tech_card: TechCardV2) -> tuple[NutritionV2, NutritionMetaV2, list]:
+    def calculate_tech_card_nutrition(self, tech_card: TechCardV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> tuple[NutritionV2, NutritionMetaV2, list]:
         """
         Расчет полной питательности техкарты
         Возвращает: (nutrition, nutrition_meta, issues)
@@ -226,23 +226,41 @@ class NutritionCalculator:
         
         # Рассчитываем питательность каждого ингредиента
         for ingredient in tech_card.ingredients:
-            nutrition, status = self.calculate_ingredient_nutrition(ingredient)
+            nutrition, status = self.calculate_ingredient_nutrition(ingredient, sub_recipes_cache)
             
             if nutrition:
-                found_ingredients += 1
+                # Добавляем к общей питательности
                 for key in total_nutrition:
                     total_nutrition[key] += nutrition[key]
+                
+                if "calculated" in status or "subrecipe_calculated" in status:
+                    found_ingredients += 1
             else:
                 # Добавляем issue для отсутствующих данных
-                if "no_mass_for_pcs" in status:
+                if "subrecipe_not_found" in status or "subrecipe_no_nutrition" in status:
+                    # Issues для проблем с подрецептами
+                    subrecipe_title = status.split('_', 3)[-1] if '_' in status else "unknown"
+                    missing = []
+                    if "not_found" in status:
+                        missing.append("recipe")
+                    if "no_nutrition" in status:
+                        missing.append("nutrition")
+                    
+                    issues.append({
+                        "type": "subRecipeNotReady",
+                        "name": subrecipe_title,
+                        "missing": missing
+                    })
+                elif "no_mass_for_pcs" in status:
                     issues.append({
                         "type": "noMassForPcs",
                         "name": ingredient.name
                     })
                 else:
                     issues.append({
-                        "type": "noNutrition", 
-                        "name": ingredient.name
+                        "type": "noNutrition",
+                        "name": ingredient.name,
+                        "hint": "add to nutrition catalog / map canonical_id"
                     })
         
         # Рассчитываем метаданные
