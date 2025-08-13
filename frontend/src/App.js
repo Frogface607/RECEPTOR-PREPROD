@@ -949,20 +949,28 @@ function App() {
               {meta.title || 'Техкарта'}
             </h1>
             <div className="flex gap-2">
-              <span 
-                className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold cursor-pointer hover:bg-purple-700 transition-colors"
-                onClick={() => {
-                  console.log('Full TechCardV2 data:', tcV2);
-                  console.table(tcV2.ingredients);
-                }}
-                title="Кликните для просмотра данных в DevTools"
-              >
+              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                 TechCard v2
               </span>
               <span className={`px-3 py-1 rounded-full text-sm font-bold ${tcV2.status === 'success' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
                 {tcV2.status || 'draft'}
               </span>
             </div>
+          </div>
+          {/* ПОКРЫТИЕ КАТАЛОГОВ */}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className={`px-3 py-1 rounded-full text-sm font-bold ${costMeta.coveragePct >= 90 ? 'bg-green-600 text-white' : costMeta.coveragePct >= 70 ? 'bg-yellow-600 text-black' : 'bg-red-600 text-white'}`}>
+              💰 Цены: {costMeta.coveragePct || 0}%
+            </div>
+            <div className={`px-3 py-1 rounded-full text-sm font-bold ${nutritionMeta.coveragePct >= 90 ? 'bg-green-600 text-white' : nutritionMeta.coveragePct >= 70 ? 'bg-yellow-600 text-black' : 'bg-red-600 text-white'}`}>
+              📊 БЖУ: {nutritionMeta.coveragePct || 0}%
+            </div>
+            {costMeta.asOf && (
+              <div className={`px-2 py-1 rounded text-xs ${new Date(costMeta.asOf) < new Date(Date.now() - 30*24*60*60*1000) ? 'bg-yellow-600 text-black' : 'bg-gray-600 text-white'}`}>
+                📅 {costMeta.asOf}
+                {new Date(costMeta.asOf) < new Date(Date.now() - 30*24*60*60*1000) && ' (устарел)'}
+              </div>
+            )}
           </div>
           {meta.cuisine && (
             <p className="text-gray-400 text-lg">{meta.cuisine}</p>
