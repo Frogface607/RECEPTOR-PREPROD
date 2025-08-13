@@ -3692,7 +3692,8 @@ function App() {
 
   const handleGostPrint = async () => {
     if (!tcV2) {
-      alert('Сначала создайте техкарту');
+      setGenerationError('Сначала создайте техкарту');
+      setGenerationStatus('error');
       return;
     }
 
