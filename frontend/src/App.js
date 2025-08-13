@@ -934,7 +934,14 @@ function App() {
               {meta.title || 'Техкарта'}
             </h1>
             <div className="flex gap-2">
-              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+              <span 
+                className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold cursor-pointer hover:bg-purple-700 transition-colors"
+                onClick={() => {
+                  console.log('Full TechCardV2 data:', tcV2);
+                  console.table(tcV2.ingredients);
+                }}
+                title="Кликните для просмотра данных в DevTools"
+              >
                 TechCard v2
               </span>
               <span className={`px-3 py-1 rounded-full text-sm font-bold ${tcV2.status === 'success' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
