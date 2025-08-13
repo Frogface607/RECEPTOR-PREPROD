@@ -17,6 +17,7 @@ function App() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
   const [techCard, setTechCard] = useState(null);
+  const [tcV2, setTcV2] = useState(null); // TechCardV2 data object
   const [userTechCards, setUserTechCards] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editInstruction, setEditInstruction] = useState('');
