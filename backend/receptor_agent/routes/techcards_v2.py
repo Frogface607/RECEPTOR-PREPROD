@@ -138,7 +138,55 @@ def export_tc_v2_to_iiko(card: TechCardV2):
         print(f"iiko export error: {e}")
         raise HTTPException(500, f"Export failed: {str(e)}")
 
-@router.post("/techcards.v2/print")
+@router.post("/techcards.v2/recalc")
+def recalc_tc_v2(techcard: TechCardV2):
+    """
+    Пересчитывает cost и nutrition для техкарты после обновления маппинга ингредиентов.
+    
+    Returns:
+        JSON: {
+            "status": "success" | "error",
+            "card": TechCardV2,
+            "message": "description"
+        }
+    """
+    try:
+        # Импортируем калькуляторы
+        from ..techcards_v2.cost_calculator import calculate_cost_for_tech_card
+        from ..techcards_v2.nutrition_calculator import calculate_nutrition_for_tech_card
+        
+        # Запускаем только калькуляторы (без LLM)
+        updated_card = techcard
+        
+        # Пересчитываем стоимость
+        try:
+            updated_card = calculate_cost_for_tech_card(updated_card)
+        except Exception as cost_error:
+            print(f"Cost calculation warning: {cost_error}")
+            # Продолжаем даже если стоимость не рассчиталась
+        
+        # Пересчитываем питание
+        try:
+            updated_card = calculate_nutrition_for_tech_card(updated_card)
+        except Exception as nutrition_error:
+            print(f"Nutrition calculation warning: {nutrition_error}")
+            # Продолжаем даже если питание не рассчиталось
+        
+        response_data = {
+            "status": "success",
+            "card": updated_card.model_dump(by_alias=True, mode="json"),
+            "message": "Tech card recalculated successfully"
+        }
+        return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
+        
+    except Exception as e:
+        error_message = str(e)
+        response_data = {
+            "status": "error",
+            "card": None,
+            "message": f"Recalculation failed: {error_message}"
+        }
+        return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
 def print_tc_v2(card: TechCardV2):
     """Генерация ГОСТ-печати A4 из TechCardV2"""
     if not _flag():
