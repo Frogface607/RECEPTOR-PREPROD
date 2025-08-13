@@ -3388,53 +3388,6 @@ function App() {
         }
       }
       
-      // Парсим ингредиенты для редактора
-      const ingredientsText = data.tech_card;
-      const ingredientLines = ingredientsText.split('\n').filter(line => 
-        line.trim().startsWith('- ') && line.includes('—') && line.includes('₽')
-      );
-      
-      const parsedIngredients = ingredientLines.map((line, index) => {
-        const parts = line.split('—').map(part => part.trim());
-        if (parts.length >= 3) {
-          const name = parts[0].replace(/^-\s*/, '').trim();
-          const quantityPart = parts[1].trim();
-          const pricePart = parts[2].replace(/[~₽]/g, '').trim();
-          
-          // Парсим количество и единицу
-          const quantityMatch = quantityPart.match(/(\d+(?:\.\d+)?)\s*([а-яёА-ЯЁ]*|г|кг|мл|л|шт|штук)?/);
-          const quantity = quantityMatch ? quantityMatch[1] : '100';
-          const unit = quantityMatch ? (quantityMatch[2] || 'г') : 'г';
-          
-          const totalPrice = parseFloat(pricePart) || 0;
-          const pricePerUnit = parseFloat(totalPrice) / parseFloat(quantity);
-          
-          return {
-            id: index + 1,
-            name,
-            quantity,
-            unit,
-            unitPrice: pricePerUnit.toFixed(2),
-            totalPrice: totalPrice.toFixed(1),
-            originalQuantity: quantity,
-            originalPrice: totalPrice.toFixed(1)
-          };
-        }
-        return null;
-      }).filter(Boolean);
-      
-      console.log('Parsed ingredients:', parsedIngredients);
-      setCurrentIngredients(parsedIngredients);
-      
-      // Инициализируем редактируемые ингредиенты и этапы
-      setEditableIngredients(parsedIngredients);
-      
-      // Парсим этапы для редактирования
-      const stepsLines = data.tech_card.split('\n').filter(line => 
-        line.trim().match(/^\d+\./)
-      );
-      setEditableSteps(stepsLines);
-      
       // Добавляем в историю
       await fetchUserHistory();
       
