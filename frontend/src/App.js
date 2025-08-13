@@ -997,12 +997,28 @@ function App() {
                 <tbody>
                   {ingredients.map((ing, index) => (
                     <tr key={index} className="border-b border-gray-800">
-                      <td className="py-2 text-gray-300">{ing.name}</td>
+                      <td className="py-2 text-gray-300">
+                        <div className="flex items-center gap-2">
+                          {ing.name}
+                          {(!ing.canonical_id && !ing.skuId) && (
+                            <span className="text-yellow-400 text-xs" title="Нет маппинга к каталогу">⚠️</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="text-center py-2 text-gray-300">{ing.brutto_g}</td>
                       <td className="text-center py-2 text-gray-300">{ing.loss_pct}</td>
                       <td className="text-center py-2 text-gray-300 font-bold">{ing.netto_g}</td>
                       <td className="text-center py-2 text-gray-400">{ing.unit}</td>
                       <td className="text-center py-2 text-gray-400 text-xs">{ing.skuId || '-'}</td>
+                      <td className="text-center py-2">
+                        <button
+                          className="text-purple-400 hover:text-purple-300 transition-colors"
+                          onClick={() => handleOpenIngredientMapping(index)}
+                          title="Назначить продукт/SKU из каталога"
+                        >
+                          ✏️
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
