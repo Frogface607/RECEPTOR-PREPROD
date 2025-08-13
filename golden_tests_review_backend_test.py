@@ -181,13 +181,13 @@ def test_nutrition_calculator(techcard=None):
             log_test("Nutrition Calculator: No nutrition data found in techcard", "ERROR")
             return False
         
-        # Verify nutrition fields
+        # Verify nutrition fields (handle None values)
         required_nutrition_fields = ['per100g', 'perPortion']
-        nutrition_sections = [section for section in required_nutrition_fields if section in nutrition_data]
+        nutrition_sections = [section for section in required_nutrition_fields if section in nutrition_data and nutrition_data[section] is not None]
         
         if len(nutrition_sections) >= 2:
-            per100g = nutrition_data.get('per100g', {})
-            per_portion = nutrition_data.get('perPortion', {})
+            per100g = nutrition_data.get('per100g', {}) or {}
+            per_portion = nutrition_data.get('perPortion', {}) or {}
             
             # Check for basic nutrition values
             nutrition_values = ['calories', 'protein', 'fat', 'carbs']
