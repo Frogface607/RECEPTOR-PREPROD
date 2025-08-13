@@ -37,6 +37,7 @@ const rawHaccp = q || ls || read('VITE_FEATURE_HACCP', read('REACT_APP_FEATURE_H
 export const FEATURE_HACCP = String(rawHaccp) === 'true';
 export const STRICT_MODE = String(read('VITE_STRICT_MODE', read('REACT_APP_STRICT_MODE', 'true'))) === 'true';
 export const PRINT_GOST = String(read('VITE_PRINT_GOST', read('REACT_APP_PRINT_GOST', 'true'))) === 'true';
+export const FORCE_TECHCARD_V2 = String(read('VITE_FORCE_TECHCARD_V2', read('REACT_APP_FORCE_TECHCARD_V2', 'true'))) === 'true';
 
 try {
   if (typeof window !== 'undefined') {
