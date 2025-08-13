@@ -283,29 +283,22 @@ def test_iiko_export(techcard=None):
         response = requests.post(url, json=techcard, timeout=60)
         
         if response.status_code == 200:
-            data = response.json()
+            # Check if we got a file download (Excel format)
+            content_type = response.headers.get('content-type', '')
+            content_length = len(response.content)
             
-            # Check if export was successful
-            if 'success' in data and data['success']:
-                log_test(f"IIKo Export: Successfully exported to IIKo", "SUCCESS")
+            if 'spreadsheet' in content_type or 'excel' in content_type or content_length > 1000:
+                log_test(f"IIKo Export: Successfully exported to Excel format ({content_length} bytes)", "SUCCESS")
                 
-                # Log export details if available
-                if 'results' in data:
-                    results = data['results']
-                    log_test(f"IIKo Export: Export results - {len(results)} operations completed", "INFO")
+                # Check for proper filename in headers
+                content_disposition = response.headers.get('content-disposition', '')
+                if 'iiko_export' in content_disposition:
+                    log_test("IIKo Export: Proper filename format in response headers", "INFO")
                 
                 return True
             else:
-                # Even if IIKo integration fails, the endpoint should respond properly
-                error_msg = data.get('error', 'Unknown error')
-                log_test(f"IIKo Export: Export failed but endpoint responded: {error_msg}", "WARNING")
-                
-                # Check if it's a connection/authentication issue (acceptable for testing)
-                if any(keyword in error_msg.lower() for keyword in ['connection', 'authentication', 'timeout', 'unavailable']):
-                    log_test("IIKo Export: Endpoint works but IIKo service unavailable (acceptable for testing)", "SUCCESS")
-                    return True
-                else:
-                    return False
+                log_test(f"IIKo Export: Unexpected content type: {content_type}, length: {content_length}", "ERROR")
+                return False
         else:
             log_test(f"IIKo Export: HTTP {response.status_code} - {response.text[:200]}", "ERROR")
             return False
