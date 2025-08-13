@@ -348,13 +348,13 @@ class CostCalculator:
         
         return cost, cost_meta, issues
 
-def calculate_cost_for_tech_card(tech_card: TechCardV2) -> TechCardV2:
+def calculate_cost_for_tech_card(tech_card: TechCardV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> TechCardV2:
     """
     Функция-обертка для расчета стоимости техкарты
     Возвращает обновленную техкарту с заполненными полями cost и costMeta
     """
     calculator = CostCalculator()
-    cost, cost_meta, cost_issues = calculator.calculate_tech_card_cost(tech_card)
+    cost, cost_meta, cost_issues = calculator.calculate_tech_card_cost(tech_card, sub_recipes_cache)
     
     # Обновляем техкарту с рассчитанной стоимостью и метаданными
     tech_card.cost = cost
