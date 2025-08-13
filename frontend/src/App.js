@@ -3424,22 +3424,46 @@ function App() {
       const requestTime = Date.now() - requestStartTime;
       
       if (!response.ok) {
-        const errorText = await response.text();
-        const errorMessage = `HTTP ${response.status}: ${errorText || response.statusText}`;
+        let errorText;
+        try {
+          const errorData = await response.json();
+          errorText = errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+        } catch {
+          errorText = await response.text() || `HTTP ${response.status}: ${response.statusText}`;
+        }
+        
+        const errorMessage = `HTTP ${response.status}: ${errorText}`;
         
         if (isDebugMode) {
           console.log('[DEBUG] HTTP Error:', response.status, errorMessage);
+          console.log('[DEBUG] Content-Type:', response.headers.get('content-type'));
         }
         
         throw new Error(errorMessage);
       }
       
-      const data = await response.json();
+      // Parse response as JSON with error handling
+      let data;
+      const contentType = response.headers.get('content-type');
+      
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        if (isDebugMode) {
+          console.log('[DEBUG] JSON Parse Error:', parseError);
+          console.log('[DEBUG] Content-Type:', contentType);
+          console.log('[DEBUG] Response body (first 300 chars):', (await response.text()).substring(0, 300));
+        }
+        
+        throw new Error('Сервер вернул не-JSON ответ');
+      }
       
       if (isDebugMode) {
         console.log('[DEBUG] Response received in', requestTime, 'ms');
+        console.log('[DEBUG] Content-Type:', contentType);
         console.log('[DEBUG] Response status:', data.status);
         console.log('[DEBUG] Issues count:', (data.issues || []).length);
+        console.log('[DEBUG] Response body (first 300 chars):', JSON.stringify(data).substring(0, 300));
         if (data.issues && data.issues.length > 0) {
           console.log('[DEBUG] First issue:', data.issues[0]);
         }
@@ -3449,8 +3473,26 @@ function App() {
       clearInterval(progressInterval);
       setLoadingProgress(100);
       
-      // Handle different statuses
-      if (data.status === 'success' && data.card) {
+      // Support both new contract and legacy format
+      let normalizedData = data;
+      
+      // Check if it's a legacy "raw card" format (has version in root)
+      if (data.meta && data.meta.version === "2.0" && !data.status) {
+        // Legacy format: treat whole response as success card
+        normalizedData = {
+          status: "success",
+          card: data,
+          issues: [],
+          message: "Legacy format parsed as success"
+        };
+        
+        if (isDebugMode) {
+          console.log('[DEBUG] Detected legacy card format, normalized to new contract');
+        }
+      }
+      
+      // Handle standardized response format
+      if (normalizedData.status === 'success' && normalizedData.card) {
         const techCardV2 = data.card;
         setTcV2(techCardV2);
         setGenerationStatus('success');
