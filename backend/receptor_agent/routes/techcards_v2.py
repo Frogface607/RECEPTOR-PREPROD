@@ -69,19 +69,21 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
             }
             return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
         elif res.status == "draft":
-            return {
+            response_data = {
                 "status": "draft", 
                 "card": res.card.model_dump(by_alias=True) if res.card else None,
                 "issues": res.issues or [],
                 "message": "Tech card generated with validation issues"
             }
+            return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
         else:  # failed or any other status
-            return {
+            response_data = {
                 "status": "error",
                 "card": None,
                 "issues": res.issues or [{"type": "pipeline_error", "message": "Pipeline execution failed"}],
                 "message": f"Pipeline error: {res.status}"
             }
+            return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
             
     except Exception as e:
         # Always return JSON even for exceptions
