@@ -47,5 +47,9 @@ try {
       url: q, 
       ls: ls
     });
+    console.info('[FF] FORCE_TECHCARD_V2=', FORCE_TECHCARD_V2, {
+      VITE: read('VITE_FORCE_TECHCARD_V2', undefined),
+      CRA: read('REACT_APP_FORCE_TECHCARD_V2', undefined)
+    });
   }
 } catch (e) {}
