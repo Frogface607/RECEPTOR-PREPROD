@@ -3496,7 +3496,7 @@ function App() {
 
     try {
       console.log('Sending print request to V2 endpoint');
-      const response = await fetch(`${API}/v1/techcards.v2/print/gost`, {
+      const response = await fetch(`${API}/v1/techcards.v2/print`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
