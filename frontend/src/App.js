@@ -3493,15 +3493,15 @@ function App() {
       
       // Handle standardized response format
       if (normalizedData.status === 'success' && normalizedData.card) {
-        const techCardV2 = data.card;
+        const techCardV2 = normalizedData.card;
         setTcV2(techCardV2);
         setGenerationStatus('success');
-        setGenerationIssues(data.issues || []);
+        setGenerationIssues(normalizedData.issues || []);
         
         // Log success for debugging
         console.log('[V2] Generated TechCard V2 successfully');
         console.log('[V2] tcV2.version:', techCardV2.meta?.version);
-        console.log('[V2] tcV2.status:', data.status);
+        console.log('[V2] tcV2.status:', normalizedData.status);
         console.log('[V2] API endpoint used:', endpoint);
         
         // Convert V2 to display format for backwards compatibility
@@ -3525,14 +3525,14 @@ function App() {
         
         setLoadingMessage('✨ Техкарта готова!');
         
-      } else if (data.status === 'draft' && data.card) {
-        const techCardV2 = data.card;
+      } else if (normalizedData.status === 'draft' && normalizedData.card) {
+        const techCardV2 = normalizedData.card;
         setTcV2(techCardV2);
         setGenerationStatus('draft');
-        setGenerationIssues(data.issues || []);
+        setGenerationIssues(normalizedData.issues || []);
         
         console.log('[V2] Generated draft tcV2 - validation issues found');
-        console.log('[V2] Issues:', data.issues);
+        console.log('[V2] Issues:', normalizedData.issues);
         
         const displayText = convertV2ToDisplayText(techCardV2);
         setTechCard(displayText);
@@ -3554,15 +3554,27 @@ function App() {
         
         setLoadingMessage('⚠️ Техкарта создана (черновик)');
         
+      } else if (normalizedData.status === 'error') {
+        // Handle error response with message from server
+        const errorMsg = normalizedData.message || 'Ошибка сервера при генерации';
+        setGenerationStatus('error');
+        setGenerationError(errorMsg);
+        setGenerationIssues(normalizedData.issues || []);
+        setLoadingMessage('❌ Ошибка генерации');
+        
+        if (isDebugMode) {
+          console.log('[DEBUG] Server returned error status:', normalizedData);
+        }
+        
       } else {
-        // Handle unexpected response format
-        const errorMsg = data.error || 'Неожиданный формат ответа от сервера';
+        // Fallback for completely unexpected format (should not happen now)
+        const errorMsg = normalizedData.message || normalizedData.error || 'Неизвестный статус ответа сервера';
         setGenerationStatus('error');
         setGenerationError(errorMsg);
         setLoadingMessage('❌ Ошибка генерации');
         
         if (isDebugMode) {
-          console.log('[DEBUG] Unexpected response format:', data);
+          console.log('[DEBUG] Unexpected response format after normalization:', normalizedData);
         }
       }
       
