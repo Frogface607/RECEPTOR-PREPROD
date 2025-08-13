@@ -175,9 +175,28 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 status="success"
             )
         else:
-            # Ошибки валидации - возвращаем как draft
+            # Ошибки валидации - попытаемся все же создать карту для draft режима
+            draft_card = None
+            try:
+                # Попытаемся создать TechCardV2 из raw данных, даже если есть validation issues
+                draft_card = TechCardV2.model_validate(data)
+                
+                # Попытаемся добавить базовые расчеты для draft карты
+                try:
+                    draft_card = calculate_cost_for_tech_card(draft_card)
+                except Exception:
+                    pass  # Игнорируем ошибки расчета стоимости для draft
+                
+                try:
+                    draft_card = calculate_nutrition_for_tech_card(draft_card)
+                except Exception:
+                    pass  # Игнорируем ошибки расчета питания для draft
+                    
+            except Exception as validation_error:
+                issues.append(f"Failed to create draft card: {str(validation_error)}")
+            
             return PipelineResult(
-                card=None,
+                card=draft_card,  # Теперь возвращаем карту даже для draft
                 issues=issues,
                 status="draft",
                 raw_data=data
