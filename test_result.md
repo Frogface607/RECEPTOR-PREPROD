@@ -117,6 +117,19 @@
 user_problem_statement: "Implement deterministic cost calculator for TechCardV2 (code-based, no LLM). Populate cost field from price catalog with ingredient prices, unit conversions, and cost calculations. Task: «Калькулятор себестоимости (только кодом, без LLM)»"
 
 backend:
+  - task: "Sub-recipes Integration Backend (Task #14)"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/llm/pipeline.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "TASK #14 BACKEND IMPLEMENTATION COMPLETED: Successfully updated pipeline.py to support sub-recipes integration. ✅ Added collect_sub_recipe_ids function to extract sub-recipe IDs from generated tech card data. ✅ Added fetch_sub_recipes_cache placeholder function for future database retrieval of sub-recipes. ✅ Updated run_pipeline function to collect sub-recipe IDs and pass sub_recipes_cache to both calculate_cost_for_tech_card and calculate_nutrition_for_tech_card functions. ✅ Both cost and nutrition calculations now receive sub_recipes_cache parameter for processing SubRecipeRefV2 ingredients. ✅ Added proper error handling and TODO comments for future database integration. Backend sub-recipe support is implemented and ready for testing."
+
+backend:
   - task: "Cost Calculator Implementation for TechCardV2"
     implemented: true
     working: true
