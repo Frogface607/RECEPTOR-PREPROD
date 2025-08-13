@@ -64,8 +64,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "HACCP Pro Frontend Module (FE-01A)"
-##     - "HACCP Audit Frontend (FE-01B)"
+##     - "Sub-recipes Integration Backend (Task #14)"
 ##   stuck_tasks:
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
