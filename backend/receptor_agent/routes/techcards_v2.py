@@ -87,11 +87,10 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
             
     except Exception as e:
         # Always return JSON even for exceptions
-        import traceback
         error_message = str(e)
         stack_trace = traceback.format_exc()
         
-        return {
+        response_data = {
             "status": "error",
             "card": None,
             "issues": [
@@ -103,6 +102,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
             ],
             "message": f"Server exception: {error_message}"
         }
+        return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
 
 @router.post("/techcards.v2/export/iiko")
 def export_tc_v2_to_iiko(card: TechCardV2):
