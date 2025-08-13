@@ -19,6 +19,14 @@ function App() {
   const [generationStatus, setGenerationStatus] = useState(null); // 'success' | 'draft' | 'error'
   const [generationError, setGenerationError] = useState(null);
   const [generationIssues, setGenerationIssues] = useState([]);
+  
+  // Ingredient mapping states
+  const [mappingModalOpen, setMappingModalOpen] = useState(false);
+  const [mappingIngredientIndex, setMappingIngredientIndex] = useState(null);
+  const [catalogSearchQuery, setCatalogSearchQuery] = useState('');
+  const [catalogSearchResults, setCatalogSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isRecalculating, setIsRecalculating] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
