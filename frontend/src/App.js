@@ -7338,6 +7338,44 @@ function App() {
                     </button>
                   </div>
                 </div>
+                
+                {/* STATUS BANNERS */}
+                {generationStatus === 'error' && generationError && (
+                  <div className="mb-6 bg-red-900/30 border border-red-500/50 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-red-400 text-xl">❌</div>
+                      <div>
+                        <h4 className="text-red-300 font-bold mb-1">Не удалось сгенерировать</h4>
+                        <p className="text-red-200 text-sm">{generationError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {generationStatus === 'draft' && generationIssues.length > 0 && (
+                  <div className="mb-6 bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-yellow-400 text-xl">⚠️</div>
+                      <div className="flex-1">
+                        <h4 className="text-yellow-300 font-bold mb-2">Техкарта создана в режиме DRAFT</h4>
+                        <p className="text-yellow-200 text-sm mb-3">Обнаружены проблемы, требующие внимания:</p>
+                        <div className="space-y-1">
+                          {generationIssues.slice(0, 5).map((issue, index) => (
+                            <div key={index} className="text-yellow-100 text-sm bg-yellow-900/20 rounded px-2 py-1">
+                              • {issue}
+                            </div>
+                          ))}
+                          {generationIssues.length > 5 && (
+                            <div className="text-yellow-300 text-xs mt-2">
+                              ... и ещё {generationIssues.length - 5} проблем
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="prose prose-invert max-w-none">
                   {FORCE_TECHCARD_V2 ? (
                     tcV2 ? renderTechCardV2(tcV2) : (
