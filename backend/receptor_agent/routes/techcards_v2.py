@@ -59,14 +59,15 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
         # Run pipeline
         res = run_pipeline(profile)
         
-        # Standard response contract
+        # Standard response contract with correct content type
         if res.status == "success":
-            return {
+            response_data = {
                 "status": "success",
                 "card": res.card.model_dump(by_alias=True) if res.card else None,
                 "issues": res.issues or [],
                 "message": "Tech card generated successfully"
             }
+            return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
         elif res.status == "draft":
             return {
                 "status": "draft", 
