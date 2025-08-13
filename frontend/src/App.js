@@ -844,6 +844,74 @@ function App() {
     );
   };
 
+  // Convert TechCardV2 JSON to display text format
+  const convertV2ToDisplayText = (tcV2) => {
+    if (!tcV2) return '';
+    
+    const meta = tcV2.meta || {};
+    const title = meta.title || 'Техкарта';
+    const yield_data = tcV2.yield || {};
+    const ingredients = tcV2.ingredients || [];
+    const process = tcV2.process || [];
+    const storage = tcV2.storage || {};
+    const nutrition = tcV2.nutrition || {};
+    const cost = tcV2.cost || {};
+    
+    let text = `**Название:** ${title}\n\n`;
+    
+    // Basic info
+    text += `**Выход:** ${yield_data.perBatch_g || 0}г (${tcV2.portions || 1} порций по ${yield_data.perPortion_g || 0}г)\n\n`;
+    
+    // Ingredients table
+    if (ingredients.length > 0) {
+      text += `**Ингредиенты:**\n\n`;
+      ingredients.forEach(ing => {
+        text += `- ${ing.name} — ${ing.netto_g}${ing.unit} (брутто: ${ing.brutto_g}${ing.unit}, потери: ${ing.loss_pct}%)\n`;
+      });
+      text += '\n';
+    }
+    
+    // Process steps
+    if (process.length > 0) {
+      text += `**Пошаговый рецепт:**\n\n`;
+      process.forEach((step, index) => {
+        text += `${step.n || index + 1}. ${step.action}`;
+        if (step.time_min) text += ` (${step.time_min} мин)`;
+        if (step.temp_c) text += ` при ${step.temp_c}°C`;
+        text += '\n';
+      });
+      text += '\n';
+    }
+    
+    // Storage
+    if (storage.conditions) {
+      text += `**Заготовки и хранение:** ${storage.conditions}\n`;
+      if (storage.shelfLife_hours) text += `Срок хранения: ${storage.shelfLife_hours} часов\n`;
+      if (storage.servingTemp_c) text += `Температура подачи: ${storage.servingTemp_c}°C\n`;
+      text += '\n';
+    }
+    
+    // Nutrition
+    if (nutrition.per100g) {
+      const per100g = nutrition.per100g;
+      text += `**КБЖУ на 100 г:** ${per100g.kcal || 0} ккал, Б: ${per100g.proteins_g || 0}г, Ж: ${per100g.fats_g || 0}г, У: ${per100g.carbs_g || 0}г\n`;
+    }
+    if (nutrition.perPortion) {
+      const perPortion = nutrition.perPortion;
+      text += `**КБЖУ на 1 порцию:** ${perPortion.kcal || 0} ккал, Б: ${perPortion.proteins_g || 0}г, Ж: ${perPortion.fats_g || 0}г, У: ${perPortion.carbs_g || 0}г\n`;
+    }
+    text += '\n';
+    
+    // Cost
+    if (cost.rawCost) {
+      text += `**💸 Себестоимость:** ${cost.rawCost}₽ (на порцию: ${cost.costPerPortion}₽)\n`;
+      if (cost.markup_pct) text += `Наценка: ${cost.markup_pct}% \n`;
+      text += '\n';
+    }
+    
+    return text;
+  };
+
   const formatTechCard = (content) => {
     if (!content) return null;
 
