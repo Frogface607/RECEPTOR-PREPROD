@@ -3578,75 +3578,49 @@ function App() {
   };
 
   const handleGostPrint = async () => {
-    try {
-      // Пока что используем существующую техкарту как основу
-      // TODO: Преобразовать в TechCardV2 формат
-      const mockTechCardV2 = {
-        meta: {
-          id: Date.now().toString(),
-          title: techCard.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Неизвестное блюдо',
-          version: "2.0",
-          createdAt: new Date().toISOString(),
-          cuisine: "не указана",
-          tags: []
-        },
-        portions: 4,
-        yield: {
-          perPortion_g: 150.0,
-          perBatch_g: 600.0
-        },
-        ingredients: [
-          {
-            name: "Тестовый ингредиент",
-            unit: "g",
-            brutto_g: 100.0,
-            loss_pct: 5.0,
-            netto_g: 95.0,
-            allergens: []
-          }
-        ],
-        process: [
-          { n: 1, action: "Подготовка", time_min: 5.0 },
-          { n: 2, action: "Приготовление", time_min: 15.0, temp_c: 180.0 },
-          { n: 3, action: "Подача", time_min: 2.0 }
-        ],
-        storage: {
-          conditions: "Холодильник 0...+4°C",
-          shelfLife_hours: 48.0,
-          servingTemp_c: 65.0
-        },
-        nutrition: {
-          per100g: { kcal: 150.0, proteins_g: 10.0, fats_g: 5.0, carbs_g: 15.0 },
-          perPortion: { kcal: 225.0, proteins_g: 15.0, fats_g: 7.5, carbs_g: 22.5 }
-        },
-        cost: {
-          rawCost: 150.0,
-          costPerPortion: 37.5,
-          markup_pct: 300.0,
-          vat_pct: 20.0
-        },
-        printNotes: []
-      };
+    if (!tcV2) {
+      alert('Сначала создайте техкарту');
+      return;
+    }
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}/api/v1/techcards.v2/print`, {
+    try {
+      console.log('Sending GOST print request to V2 endpoint');
+      const response = await fetch(`${API}/v1/techcards.v2/print/gost`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(mockTechCardV2)
+        body: JSON.stringify(tcV2)
       });
 
-      if (response.ok) {
-        const htmlContent = await response.text();
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-      } else {
-        alert('Ошибка при генерации ГОСТ-печати');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log('GOST print response:', data);
+
+      if (data.html) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(data.html);
+        printWindow.document.close();
+        
+        // Show draft watermark if status is draft
+        if (tcV2.status === 'draft') {
+          console.log('DRAFT watermark should be visible');
+        }
+        
+        // Wait for content to load then trigger print dialog
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      } else {
+        throw new Error('No HTML content received');
+      }
+
     } catch (error) {
-      console.error('Ошибка ГОСТ-печати:', error);
-      alert('Ошибка при генерации ГОСТ-печати');
+      console.error('Error printing GOST tech card:', error);
+      alert('Ошибка при ГОСТ-печати: ' + error.message);
     }
   };
 
