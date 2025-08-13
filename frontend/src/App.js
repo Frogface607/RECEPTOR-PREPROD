@@ -1218,6 +1218,99 @@ function App() {
     );
   };
 
+  // Ingredient mapping functions
+  const handleOpenIngredientMapping = (ingredientIndex) => {
+    setMappingIngredientIndex(ingredientIndex);
+    setMappingModalOpen(true);
+    setCatalogSearchQuery('');
+    setCatalogSearchResults([]);
+    
+    // Auto-fill search with ingredient name
+    if (tcV2 && tcV2.ingredients && tcV2.ingredients[ingredientIndex]) {
+      setCatalogSearchQuery(tcV2.ingredients[ingredientIndex].name);
+      performCatalogSearch(tcV2.ingredients[ingredientIndex].name);
+    }
+  };
+
+  const performCatalogSearch = async (query) => {
+    if (!query.trim()) {
+      setCatalogSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(`${API}/v1/techcards.v2/catalog-search?q=${encodeURIComponent(query)}&limit=10`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setCatalogSearchResults(data.items || []);
+      } else {
+        setCatalogSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Catalog search error:', error);
+      setCatalogSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleAssignIngredientMapping = async (catalogItem) => {
+    if (!tcV2 || mappingIngredientIndex === null) return;
+
+    // Update tcV2 with mapping
+    const updatedTcV2 = {
+      ...tcV2,
+      ingredients: tcV2.ingredients.map((ing, index) => {
+        if (index === mappingIngredientIndex) {
+          return {
+            ...ing,
+            canonical_id: catalogItem.canonical_id || null,
+            skuId: catalogItem.sku_id || null
+          };
+        }
+        return ing;
+      })
+    };
+
+    setTcV2(updatedTcV2);
+    setMappingModalOpen(false);
+
+    // Perform recalculation
+    await performRecalculation(updatedTcV2);
+  };
+
+  const performRecalculation = async (updatedCard) => {
+    setIsRecalculating(true);
+    try {
+      const response = await fetch(`${API}/v1/techcards.v2/recalc`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedCard)
+      });
+
+      const data = await response.json();
+      
+      if (data.status === 'success' && data.card) {
+        setTcV2(data.card);
+        console.log('✅ Recalculation successful');
+      } else {
+        console.error('Recalculation failed:', data.message);
+        setGenerationError(`Ошибка пересчета: ${data.message}`);
+        setGenerationStatus('error');
+      }
+    } catch (error) {
+      console.error('Recalculation error:', error);
+      setGenerationError('Ошибка при пересчете техкарты');
+      setGenerationStatus('error');
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   const formatTechCard = (content) => {
     // V1 fallback - only used when FORCE_TECHCARD_V2 is disabled
     if (FORCE_TECHCARD_V2) {
