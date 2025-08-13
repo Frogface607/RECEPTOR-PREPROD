@@ -20,7 +20,8 @@ class YieldV2(BaseModel):
 
 class IngredientV2(BaseModel):
     name: str = Field(..., min_length=1)
-    skuId: Optional[str] = None
+    canonical_id: Optional[str] = None  # Для маппинга к каталогу питания
+    skuId: Optional[str] = None  # Для маппинга к каталогу цен/SKU
     unit: UOM = "g"
     brutto_g: float = Field(..., ge=0)
     loss_pct: float = Field(..., ge=0, le=100)
