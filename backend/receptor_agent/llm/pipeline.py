@@ -31,6 +31,35 @@ class PipelineResult(BaseModel):
     status: str = "success"  # "success", "draft", "failed"
     raw_data: Dict[str, Any] | None = None
 
+def collect_sub_recipe_ids(tech_card_data: Dict[str, Any]) -> Set[str]:
+    """Собираем все ID подрецептов из техкарты"""
+    sub_recipe_ids = set()
+    ingredients = tech_card_data.get("ingredients", [])
+    for ingredient in ingredients:
+        sub_recipe = ingredient.get("subRecipe")
+        if sub_recipe and "id" in sub_recipe:
+            sub_recipe_ids.add(sub_recipe["id"])
+    return sub_recipe_ids
+
+async def fetch_sub_recipes_cache(sub_recipe_ids: Set[str]) -> Dict[str, TechCardV2]:
+    """
+    Получаем подрецепты по ID из базы данных
+    
+    TODO: В будущем это должно извлекать TechCardV2 из MongoDB
+    Пока возвращаем пустой кеш для избежания ошибок
+    """
+    # Заглушка для подрецептов - в будущем здесь будет обращение к БД
+    sub_recipes_cache = {}
+    
+    # TODO: Реализовать получение подрецептов из базы данных:
+    # from motor.motor_asyncio import AsyncIOMotorClient
+    # for sub_recipe_id in sub_recipe_ids:
+    #     doc = await db.techcards_v2.find_one({"meta.id": sub_recipe_id})
+    #     if doc:
+    #         sub_recipes_cache[sub_recipe_id] = TechCardV2.model_validate(doc)
+    
+    return sub_recipes_cache
+
 def _system() -> str:
     return "You return strictly JSON that matches the provided JSON Schema."
 
