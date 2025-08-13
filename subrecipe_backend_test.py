@@ -560,7 +560,7 @@ class SubRecipeIntegrationTester:
                     issue_types[issue_type] += 1
                 
                 # Check if sub-recipe issues would be properly structured if they existed
-                subrecipe_issues = [issue for issue in issues if issue.get('type') == 'subRecipeNotReady']
+                subrecipe_issues = [issue for issue in issues if isinstance(issue, dict) and issue.get('type') == 'subRecipeNotReady']
                 
                 # Verify issue structure for any sub-recipe issues
                 valid_subrecipe_issues = True
