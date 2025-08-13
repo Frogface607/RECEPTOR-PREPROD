@@ -3557,7 +3557,7 @@ function App() {
       }
 
       const htmlContent = await response.text(); // Get HTML directly instead of JSON
-      console.log('Print response received');
+      console.log('[V2] GOST print HTML content received');
 
       if (htmlContent) {
         const printWindow = window.open('', '_blank');
@@ -3566,8 +3566,10 @@ function App() {
         
         // Show draft watermark if status is draft
         if (tcV2.status === 'draft') {
-          console.log('DRAFT watermark should be visible');
+          console.log('[V2] DRAFT watermark should be visible');
         }
+        
+        console.log('[V2] GOST print using official V2 template');
         
         // Wait for content to load then trigger print dialog
         setTimeout(() => {
