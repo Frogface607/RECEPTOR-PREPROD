@@ -3317,6 +3317,7 @@ function App() {
     
     try {
       console.log('Sending request to:', `${API}/v1/techcards.v2/generate`);
+      console.log('[V2] Using TechCard V2 generation endpoint with FORCE_TECHCARD_V2=', FORCE_TECHCARD_V2);
       const requestData = {
         name: dishName,
         description: dishContext?.description || `Техкарта для блюда ${dishName}`,
