@@ -72,7 +72,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
         elif res.status == "draft":
             response_data = {
                 "status": "draft", 
-                "card": res.card.model_dump(by_alias=True) if res.card else None,
+                "card": res.card.model_dump(by_alias=True, mode="json") if res.card else None,
                 "issues": res.issues or [],
                 "message": "Tech card generated with validation issues"
             }
