@@ -251,7 +251,7 @@ class CostCalculator:
         else:
             return fallback_prices.get("default_other", 150)
     
-    def calculate_tech_card_cost(self, tech_card: TechCardV2) -> tuple[CostV2, CostMetaV2, list]:
+    def calculate_tech_card_cost(self, tech_card: TechCardV2, sub_recipes_cache: Dict[str, 'TechCardV2'] = None) -> tuple[CostV2, CostMetaV2, list]:
         """
         Расчет полной стоимости техкарты
         Возвращает: (cost, cost_meta, issues)
@@ -266,10 +266,30 @@ class CostCalculator:
         
         # Рассчитываем стоимость каждого ингредиента
         for ingredient in tech_card.ingredients:
-            cost, status = self.calculate_ingredient_cost(ingredient, use_llm_fallback=use_llm_for_prices)
+            cost, status = self.calculate_ingredient_cost(
+                ingredient, 
+                use_llm_fallback=use_llm_for_prices,
+                sub_recipes_cache=sub_recipes_cache or {}
+            )
             
-            if "found_in_catalog" in status:
+            if "found_in_catalog" in status or "subrecipe_calculated" in status:
                 found_ingredients += 1
+            elif "subrecipe_not_found" in status or "subrecipe_no_cost" in status or "subrecipe_no_yield" in status:
+                # Issues для проблем с подрецептами
+                subrecipe_title = status.split('_', 3)[-1] if '_' in status else "unknown"
+                missing = []
+                if "not_found" in status:
+                    missing.append("recipe")
+                if "no_cost" in status:
+                    missing.append("cost")
+                if "no_yield" in status:
+                    missing.append("yield")
+                    
+                issues.append({
+                    "type": "subRecipeNotReady",
+                    "name": subrecipe_title,
+                    "missing": missing
+                })
             elif status in ["fallback_price_used", "no_price_found"]:
                 # Добавляем issue для отсутствующих цен
                 issues.append({
