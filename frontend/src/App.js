@@ -12521,6 +12521,90 @@ function App() {
           </div>
         </div>
       )}
+      
+      {/* INGREDIENT MAPPING MODAL */}
+      {mappingModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-purple-300">Назначить продукт из каталога</h3>
+              <button
+                onClick={() => setMappingModalOpen(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {mappingIngredientIndex !== null && tcV2.ingredients[mappingIngredientIndex] && (
+              <div className="mb-4 p-3 bg-gray-800 rounded">
+                <p className="text-gray-300">
+                  <strong>Ингредиент:</strong> {tcV2.ingredients[mappingIngredientIndex].name}
+                </p>
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <input
+                type="text"
+                value={catalogSearchQuery}
+                onChange={(e) => {
+                  setCatalogSearchQuery(e.target.value);
+                  performCatalogSearch(e.target.value);
+                }}
+                placeholder="Поиск в каталоге продуктов..."
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
+              />
+            </div>
+            
+            {isSearching && (
+              <div className="text-center py-4 text-gray-400">
+                🔍 Поиск...
+              </div>
+            )}
+            
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {catalogSearchResults.map((item, index) => (
+                <div
+                  key={index}
+                  className="p-3 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer transition-colors"
+                  onClick={() => handleAssignIngredientMapping(item)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-white">{item.name}</div>
+                      <div className="text-sm text-gray-400">
+                        {item.category} • {item.unit}
+                        {item.price && ` • ${item.price}₽/${item.unit}`}
+                        {item.has_nutrition && ` • ${item.nutrition_preview}`}
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      {item.price && <span className="text-green-400 text-xs">💰</span>}
+                      {item.has_nutrition && <span className="text-blue-400 text-xs">📊</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {!isSearching && catalogSearchQuery && catalogSearchResults.length === 0 && (
+                <div className="text-center py-4 text-gray-400">
+                  Ничего не найдено для "{catalogSearchQuery}"
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setMappingModalOpen(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
