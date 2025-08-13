@@ -3775,11 +3775,12 @@ function App() {
       document.body.removeChild(a);
       
       console.log('IIKo export file downloaded successfully');
-      alert('XLSX файл для импорта в iiko успешно скачан!');
+      // Success feedback - could add a success banner here
 
     } catch (error) {
       console.error('Error exporting to IIKo:', error);
-      alert('Ошибка при экспорте в iiko: ' + error.message);
+      setGenerationError('Ошибка при экспорте в iiko: ' + error.message);
+      setGenerationStatus('error');
     }
   };
 
