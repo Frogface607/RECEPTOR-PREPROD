@@ -3535,113 +3535,46 @@ function App() {
     setUserTechCards([]);
   };
 
-  const handlePrintTechCard = () => {
-    const dishName = techCard.split('\n').find(line => line.includes('Название'))?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Техкарта';
-    const printWindow = window.open('', '_blank');
-    
-    // Process content to clean up formatting
-    const cleanedContent = techCard.split('\n').map(line => {
-      // Remove all ** formatting
-      let cleanLine = line.replace(/\*\*/g, '');
-      
-      // Skip unwanted lines
-      if (cleanLine.includes('Сгенерировано RECEPTOR AI') || 
-          cleanLine.includes('экономьте') || 
-          cleanLine.includes('стандартная ресторанная порция') ||
-          cleanLine.toLowerCase().includes('указывай на одну порцию') ||
-          cleanLine.toLowerCase().includes('указывай ингредиенты') ||
-          cleanLine.toLowerCase().includes('ингредиенты указывай') ||
-          cleanLine.trim() === '') {
-        return '';
+  const handlePrintTechCard = async () => {
+    if (!tcV2) {
+      alert('Сначала создайте техкарту');
+      return;
+    }
+
+    try {
+      console.log('Sending print request to V2 endpoint');
+      const response = await fetch(`${API}/v1/techcards.v2/print/gost`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tcV2)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      // Format headers
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const title = cleanLine.replace(':', '').trim();
-        if (title.includes('Название')) {
-          const dishTitle = title.replace('Название', '').trim();
-          return `<h1 style="color: #8B5CF6; font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #8B5CF6; padding-bottom: 15px;">${dishTitle}</h1>`;
-        }
-        return `<h2 style="color: #1A1B23; font-size: 18px; font-weight: 800; text-transform: uppercase; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #C084FC; padding-bottom: 8px;">${title}</h2>`;
+
+      const data = await response.json();
+      console.log('GOST print response:', data);
+
+      if (data.html) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(data.html);
+        printWindow.document.close();
+        
+        // Wait for content to load then print
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      } else {
+        throw new Error('No HTML content received');
       }
-      
-      // Format ingredients - remove all price information
-      if (line.startsWith('- ') && (line.includes('₽') || line.includes('руб'))) {
-        // Remove price information completely from ingredient lines
-        // Улучшенная логика для удаления цен с учетом различных форматов (граммы, штуки и т.д.)
-        let cleanIngredient = cleanLine.replace('- ', '')
-          .replace(/\s*—\s*~\d+(?:\.\d+)?\s*₽\s*$/g, '') // ~цена₽ в конце
-          .replace(/\s*—\s*\d+(?:\.\d+)?\s*₽\s*$/g, '') // цена₽ в конце
-          .replace(/\s*\(\d+(?:\.\d+)?\s*₽[^)]*\)/g, '') // (цена₽) в скобках
-          .replace(/\s*\d+(?:\.\d+)?\s*₽(?:\s*за\s*[^,\n]*)?/g, '') // цена₽ за единицу
-          .replace(/\s*\d+(?:\.\d+)?\s*руб\.?(?:\s*за\s*[^,\n]*)?/g, '') // цена руб за единицу
-          .trim();
-        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanIngredient}</p>`;
-      }
-      
-      // Format numbered steps
-      if (line.match(/^\d+\./)) {
-        return `<div style="background: #F8FAFC; border-left: 4px solid #8B5CF6; padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0;">${cleanLine}</div>`;
-      }
-      
-      // Format list items
-      if (line.startsWith('- ')) {
-        return `<p style="margin-left: 20px; margin-bottom: 8px;">• ${cleanLine.replace('- ', '')}</p>`;
-      }
-      
-      // Cost information - remove all cost sections from PDF
-      if (line.includes('Себестоимость') || line.includes('Рекомендуемая цена') || line.includes('💸')) {
-        return '';  // Skip cost information completely
-      }
-      
-      // Regular paragraphs
-      if (cleanLine.trim() && !cleanLine.startsWith('─')) {
-        return `<p style="margin-bottom: 12px; line-height: 1.6;">${cleanLine}</p>`;
-      }
-      
-      return '';
-    }).filter(Boolean).join('');
-    
-    const techCardHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Технологическая карта - ${dishName}</title>
-          <meta charset="utf-8">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-          <style>
-            * { font-family: 'Montserrat', sans-serif !important; }
-            body { 
-              line-height: 1.6; 
-              margin: 40px; 
-              background: white; 
-              color: #1A1B23; 
-            }
-            @media print {
-              body { margin: 20px; }
-            }
-          </style>
-        </head>
-        <body>
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #8B5CF6; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">ТЕХНОЛОГИЧЕСКАЯ КАРТА</h1>
-          </div>
-          <div>${cleanedContent}</div>
-          <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid #E5E7EB; padding-top: 20px;">
-            <p><strong>Создано в RECEPTOR PRO Beta</strong></p>
-            <p>Дата создания: ${new Date().toLocaleDateString('ru-RU')}</p>
-            <p style="color: #F59E0B; font-size: 10px;">Тестовая версия - пожалуйста, проверяйте все расчеты</p>
-          </div>
-        </body>
-      </html>
-    `;
-    
-    printWindow.document.write(techCardHtml);
-    printWindow.document.close();
-    
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+
+    } catch (error) {
+      console.error('Error printing tech card:', error);
+      alert('Ошибка при печати техкарты: ' + error.message);
+    }
   };
 
   const handleGostPrint = async () => {
