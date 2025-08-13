@@ -3353,8 +3353,10 @@ function App() {
         setTcV2(techCardV2);
         
         // Log V2 data for debugging
-        console.log('tcV2.version:', techCardV2.meta?.version);
-        console.log('tcV2.status:', data.status);
+        console.log('[V2] Generated TechCard V2 successfully');
+        console.log('[V2] tcV2.version:', techCardV2.meta?.version);
+        console.log('[V2] tcV2.status:', data.status);
+        console.log('[V2] API endpoint used:', '/api/v1/techcards.v2/generate');
         
         // Convert V2 to display format for backwards compatibility
         const displayText = convertV2ToDisplayText(techCardV2);
