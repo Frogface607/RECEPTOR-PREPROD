@@ -236,6 +236,17 @@ backend:
         comment: "🚨 FRONTEND DISPLAY ISSUE CONFIRMED: HACCP audit functionality is NOT accessible to users. ✅ BACKEND AUDIT WORKING: POST /api/v1/haccp.v2/audit endpoint tested successfully - returns proper audit results with issues: 'Missing critical control points (CCP) in cooking process', 'No temperature thresholds specified for cooking steps' and provides patch recommendations. ❌ FRONTEND ISSUE: 'HACCP АУДИТ' button is NOT visible on tech cards despite proper implementation in code (lines 1002-1007 in formatTechCard function). ❌ USER ACCESS PROBLEM: Users cannot access HACCP audit functionality because the HACCP block itself is not rendering on tech cards. The audit modal and functionality exist in code but are unreachable due to missing HACCP block display. 🔍 ROOT CAUSE: Same as FE-01A - HACCP block rendering conditions not working properly in frontend, preventing access to audit functionality."
 
 backend:
+  - task: "Golden Tests Implementation (Task #7)"
+    implemented: true
+    working: true
+    file: "golden_tests.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "GOLDEN TESTS TASK #7 COMPLETED: ✅ Создана папка golden/techcards/ с 10 эталонными TechCardV2 JSON файлами (борщ, салат цезарь, карбонара, грибной крем-суп, котлета по-киевски, стейк рибай, ризотто, драники, сырники, гаспачо). ✅ Реализован тест-раннер golden_tests.py с 7 проверками: валидность по схеме, баланс нетто vs yield.perBatch_g (±5%), отсутствие диапазонов в числовых полях, наличие time_min/temp_c у термообработки, формула питания perPortion ≈ per100g × (yield.perPortion_g/100) ±3%, заполненность cost при costMeta.coveragePct>0, предупреждения <20%. ✅ Создан CI-гейт .github/workflows/golden-tests.yml для блокировки merge при красных тестах. ✅ Все 10 эталонов проходят все тесты (100% success rate). ✅ Протестирована работа тестов на преднамеренной ошибке - корректно ловит проблемы с понятными сообщениями. ✅ CI workflow готов к работе с proper dependencies (pydantic==2.5.0). Система golden tests готова к продакшну."
   - task: "Simplified Menu Generation System and Enhanced Venue Profile - New"
     implemented: true
     working: true
@@ -371,7 +382,7 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "testing"
