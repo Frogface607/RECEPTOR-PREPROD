@@ -991,6 +991,7 @@ function App() {
                     <th className="text-center py-2 text-purple-300">Нетто</th>
                     <th className="text-center py-2 text-purple-300">Ед.изм</th>
                     <th className="text-center py-2 text-purple-300">SKU</th>
+                    <th className="text-center py-2 text-purple-300">Маппинг</th>
                   </tr>
                 </thead>
                 <tbody>
