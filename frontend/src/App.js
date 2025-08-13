@@ -912,6 +912,224 @@ function App() {
     return text;
   };
 
+  // Render TechCardV2 directly from JSON data
+  const renderTechCardV2 = (tcV2) => {
+    if (!tcV2) return null;
+
+    const meta = tcV2.meta || {};
+    const yield_data = tcV2.yield || {};
+    const ingredients = tcV2.ingredients || [];
+    const process = tcV2.process || [];
+    const storage = tcV2.storage || {};
+    const nutrition = tcV2.nutrition || {};
+    const cost = tcV2.cost || {};
+    const costMeta = tcV2.costMeta || {};
+
+    return (
+      <div className="space-y-6">
+        {/* НАЗВАНИЕ И СТАТУС */}
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h1 className="text-3xl font-bold text-purple-300">
+              {meta.title || 'Техкарта'}
+            </h1>
+            <div className="flex gap-2">
+              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                TechCard v2
+              </span>
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${tcV2.status === 'success' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
+                {tcV2.status || 'draft'}
+              </span>
+            </div>
+          </div>
+          {meta.cuisine && (
+            <p className="text-gray-400 text-lg">{meta.cuisine}</p>
+          )}
+        </div>
+
+        {/* ВЫХОД И ПОРЦИИ */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-900/20 rounded-lg p-4 text-center">
+            <h4 className="text-blue-300 font-bold mb-2">ПОРЦИЙ</h4>
+            <p className="text-gray-300">{tcV2.portions || 1}</p>
+          </div>
+          <div className="bg-green-900/20 rounded-lg p-4 text-center">
+            <h4 className="text-green-300 font-bold mb-2">НА ПОРЦИЮ</h4>
+            <p className="text-gray-300">{yield_data.perPortion_g || 0}г</p>
+          </div>
+          <div className="bg-purple-900/20 rounded-lg p-4 text-center">
+            <h4 className="text-purple-300 font-bold mb-2">ОБЩИЙ ВЫХОД</h4>
+            <p className="text-gray-300">{yield_data.perBatch_g || 0}г</p>
+          </div>
+        </div>
+
+        {/* ИНГРЕДИЕНТЫ ТАБЛИЦА */}
+        {ingredients.length > 0 && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-purple-400 mb-4 uppercase tracking-wide">ИНГРЕДИЕНТЫ</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-2 text-purple-300">Ингредиент</th>
+                    <th className="text-center py-2 text-purple-300">Брутто</th>
+                    <th className="text-center py-2 text-purple-300">Потери %</th>
+                    <th className="text-center py-2 text-purple-300">Нетто</th>
+                    <th className="text-center py-2 text-purple-300">Ед.изм</th>
+                    <th className="text-center py-2 text-purple-300">SKU</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ingredients.map((ing, index) => (
+                    <tr key={index} className="border-b border-gray-800">
+                      <td className="py-2 text-gray-300">{ing.name}</td>
+                      <td className="text-center py-2 text-gray-300">{ing.brutto_g}</td>
+                      <td className="text-center py-2 text-gray-300">{ing.loss_pct}</td>
+                      <td className="text-center py-2 text-gray-300 font-bold">{ing.netto_g}</td>
+                      <td className="text-center py-2 text-gray-400">{ing.unit}</td>
+                      <td className="text-center py-2 text-gray-400 text-xs">{ing.skuId || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС */}
+        {process.length > 0 && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-purple-400 mb-4 uppercase tracking-wide">ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС</h3>
+            <div className="space-y-3">
+              {process.map((step, index) => (
+                <div key={index} className="bg-gray-700/20 rounded-lg p-3 border-l-4 border-purple-500">
+                  <div className="flex items-start gap-3">
+                    <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      {step.n || index + 1}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-gray-300 mb-2">{step.action}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {step.time_min && (
+                          <span className="text-blue-300">⏱ {step.time_min} мин</span>
+                        )}
+                        {step.temp_c && (
+                          <span className="text-red-300">🌡 {step.temp_c}°C</span>
+                        )}
+                        {step.equipment && step.equipment.length > 0 && (
+                          <span className="text-yellow-300">🔧 {step.equipment.join(', ')}</span>
+                        )}
+                        {step.ccp && (
+                          <span className="text-red-400 font-bold">⚠ CCP</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ХРАНЕНИЕ */}
+        {storage.conditions && (
+          <div className="bg-gray-800/30 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-purple-400 mb-3 uppercase tracking-wide">ХРАНЕНИЕ И ПОДАЧА</h3>
+            <div className="text-gray-300 space-y-2">
+              <p><strong>Условия хранения:</strong> {storage.conditions}</p>
+              {storage.shelfLife_hours && (
+                <p><strong>Срок хранения:</strong> {storage.shelfLife_hours} часов</p>
+              )}
+              {storage.servingTemp_c && (
+                <p><strong>Температура подачи:</strong> {storage.servingTemp_c}°C</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ПИЩЕВАЯ ЦЕННОСТЬ */}
+        {(nutrition.per100g || nutrition.perPortion) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {nutrition.per100g && (
+              <div className="bg-green-900/20 rounded-lg p-4">
+                <h4 className="text-green-300 font-bold mb-3 text-center">КБЖУ на 100г</h4>
+                <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                  <div>
+                    <div className="text-yellow-300 font-bold">{nutrition.per100g.kcal || 0}</div>
+                    <div className="text-gray-400">ккал</div>
+                  </div>
+                  <div>
+                    <div className="text-blue-300 font-bold">{nutrition.per100g.proteins_g || 0}</div>
+                    <div className="text-gray-400">белки</div>
+                  </div>
+                  <div>
+                    <div className="text-red-300 font-bold">{nutrition.per100g.fats_g || 0}</div>
+                    <div className="text-gray-400">жиры</div>
+                  </div>
+                  <div>
+                    <div className="text-green-300 font-bold">{nutrition.per100g.carbs_g || 0}</div>
+                    <div className="text-gray-400">углеводы</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {nutrition.perPortion && (
+              <div className="bg-blue-900/20 rounded-lg p-4">
+                <h4 className="text-blue-300 font-bold mb-3 text-center">КБЖУ на порцию</h4>
+                <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                  <div>
+                    <div className="text-yellow-300 font-bold">{nutrition.perPortion.kcal || 0}</div>
+                    <div className="text-gray-400">ккал</div>
+                  </div>
+                  <div>
+                    <div className="text-blue-300 font-bold">{nutrition.perPortion.proteins_g || 0}</div>
+                    <div className="text-gray-400">белки</div>
+                  </div>
+                  <div>
+                    <div className="text-red-300 font-bold">{nutrition.perPortion.fats_g || 0}</div>
+                    <div className="text-gray-400">жиры</div>
+                  </div>
+                  <div>
+                    <div className="text-green-300 font-bold">{nutrition.perPortion.carbs_g || 0}</div>
+                    <div className="text-gray-400">углеводы</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* СТОИМОСТЬ И МЕТАДАННЫЕ */}
+        {cost.rawCost && (
+          <div className="bg-yellow-900/20 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-yellow-400 mb-3 uppercase tracking-wide">💸 СЕБЕСТОИМОСТЬ</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-yellow-300">{cost.rawCost}₽</div>
+                <div className="text-gray-400">Общая себестоимость</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-yellow-300">{cost.costPerPortion}₽</div>
+                <div className="text-gray-400">За порцию</div>
+              </div>
+              {cost.markup_pct && (
+                <div>
+                  <div className="text-2xl font-bold text-green-300">{cost.markup_pct}%</div>
+                  <div className="text-gray-400">Наценка</div>
+                </div>
+              )}
+            </div>
+            {costMeta.source && (
+              <div className="mt-3 text-sm text-gray-400 text-center">
+                Источник: {costMeta.source}, покрытие: {costMeta.coveragePct}%, дата: {costMeta.asOf}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const formatTechCard = (content) => {
     if (!content) return null;
 
