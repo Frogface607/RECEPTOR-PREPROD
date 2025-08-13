@@ -3579,7 +3579,7 @@ function App() {
       }
       
       // Add to history if successful
-      if (data.status === 'success' || data.status === 'draft') {
+      if (normalizedData.status === 'success' || normalizedData.status === 'draft') {
         try {
           await fetchUserHistory();
         } catch (historyError) {
@@ -3590,8 +3590,8 @@ function App() {
       // Store debug info if enabled
       if (isDebugMode) {
         window.__lastGenerationDebug = {
-          status: data.status,
-          firstIssue: (data.issues || [])[0] || null,
+          status: normalizedData.status,
+          firstIssue: (normalizedData.issues || [])[0] || null,
           requestTime: requestTime,
           timestamp: new Date().toISOString()
         };
