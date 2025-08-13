@@ -169,8 +169,10 @@ def search_catalog(q: str = Query(..., description="Search query"), limit: int =
         query = q.lower().strip()
         
         # Загружаем каталог цен
-        price_catalog_path = Path(__file__).parent.parent.parent / "data" / "price_catalog.dev.json"
+        current_dir = Path(__file__).parent.parent.parent
+        price_catalog_path = current_dir / "data" / "price_catalog.dev.json"
         price_data = {}
+        
         if price_catalog_path.exists():
             with open(price_catalog_path, 'r', encoding='utf-8') as f:
                 price_catalog = json.load(f)
@@ -185,8 +187,9 @@ def search_catalog(q: str = Query(..., description="Search query"), limit: int =
                         }
         
         # Загружаем каталог питания
-        nutrition_catalog_path = Path(__file__).parent.parent.parent / "data" / "nutrition_catalog.dev.json"
+        nutrition_catalog_path = current_dir / "data" / "nutrition_catalog.dev.json"
         nutrition_data = {}
+        
         if nutrition_catalog_path.exists():
             with open(nutrition_catalog_path, 'r', encoding='utf-8') as f:
                 nutrition_catalog = json.load(f)
