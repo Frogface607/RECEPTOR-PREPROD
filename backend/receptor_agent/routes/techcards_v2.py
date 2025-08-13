@@ -31,35 +31,73 @@ def status_tc_v2():
 
 @router.post("/techcards.v2/generate")
 def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, description="override env flag")):
-    if not _flag():
-        raise HTTPException(404, "feature disabled")
-    if use_llm is not None:
-        os.environ["TECHCARDS_V2_USE_LLM"] = "true" if use_llm else "false"
+    """
+    Генерирует техкарту V2 с гарантированным JSON ответом.
     
-    res = run_pipeline(profile)
-    
-    # Возвращаем результат в зависимости от статуса валидации
-    if res.status == "success":
-        return {
-            "status": "success",
-            "card": res.card.model_dump(by_alias=True),
-            "issues": []
+    Returns:
+        JSON: {
+            "status": "success" | "draft" | "error",
+            "card": TechCardV2 | null,
+            "issues": [...],
+            "message": "optional description"
         }
-    elif res.status == "draft":
+    """
+    try:
+        if not _flag():
+            return {
+                "status": "error",
+                "card": None,
+                "issues": [{"type": "feature_disabled", "message": "TechCards V2 feature is disabled"}],
+                "message": "Feature disabled"
+            }
+        
+        # Set LLM override if provided
+        if use_llm is not None:
+            os.environ["TECHCARDS_V2_USE_LLM"] = "true" if use_llm else "false"
+        
+        # Run pipeline
+        res = run_pipeline(profile)
+        
+        # Standard response contract
+        if res.status == "success":
+            return {
+                "status": "success",
+                "card": res.card.model_dump(by_alias=True) if res.card else None,
+                "issues": res.issues or [],
+                "message": "Tech card generated successfully"
+            }
+        elif res.status == "draft":
+            return {
+                "status": "draft", 
+                "card": res.card.model_dump(by_alias=True) if res.card else None,
+                "issues": res.issues or [],
+                "message": "Tech card generated with validation issues"
+            }
+        else:  # failed or any other status
+            return {
+                "status": "error",
+                "card": None,
+                "issues": res.issues or [{"type": "pipeline_error", "message": "Pipeline execution failed"}],
+                "message": f"Pipeline error: {res.status}"
+            }
+            
+    except Exception as e:
+        # Always return JSON even for exceptions
+        import traceback
+        error_message = str(e)
+        stack_trace = traceback.format_exc()
+        
         return {
-            "status": "draft",
-            "message": "Validation failed: tech card saved as draft with issues",
+            "status": "error",
             "card": None,
-            "issues": res.issues,
-            "raw_data": res.raw_data
-        }
-    else:
-        return {
-            "status": "failed",
-            "message": "Pipeline error",
-            "card": None,
-            "issues": res.issues,
-            "raw_data": None
+            "issues": [
+                {
+                    "type": "exception",
+                    "message": error_message,
+                    "details": stack_trace if os.getenv("DEBUG", "false").lower() in ("1", "true") else None
+                }
+            ],
+            "message": f"Server exception: {error_message}"
         }
 
 @router.post("/techcards.v2/export/iiko")
