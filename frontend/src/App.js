@@ -7173,7 +7173,16 @@ function App() {
                   </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
-                  {tcV2 ? renderTechCardV2(tcV2) : formatTechCard(techCard)}
+                  {FORCE_TECHCARD_V2 ? (
+                    tcV2 ? renderTechCardV2(tcV2) : (
+                      <div className="text-center py-8 text-gray-400">
+                        <p className="text-lg">TechCard v2 не сгенерирована</p>
+                        <p className="text-sm">Создайте техкарту для просмотра данных</p>
+                      </div>
+                    )
+                  ) : (
+                    tcV2 ? renderTechCardV2(tcV2) : formatTechCard(techCard)
+                  )}
                 </div>
                 
                 {/* ВСТРОЕННЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ */}
