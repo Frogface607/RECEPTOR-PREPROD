@@ -10,7 +10,7 @@
   "portions": 6,
   "yield": {
     "perPortion_g": 300.0,
-    "perBatch_g": 1800.0
+    "perBatch_g": 1000.0
   },
   "ingredients": [
     {
