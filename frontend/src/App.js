@@ -7369,7 +7369,7 @@ function App() {
                   </div>
                 </div>
                 <div className="prose prose-invert max-w-none">
-                  {formatTechCard(techCard)}
+                  {tcV2 ? renderTechCardV2(tcV2) : formatTechCard(techCard)}
                 </div>
                 
                 {/* ВСТРОЕННЫЙ РЕДАКТОР ИНГРЕДИЕНТОВ */}
