@@ -551,7 +551,10 @@ class SubRecipeIntegrationTester:
                 # Look for different types of issues that might be generated
                 issue_types = {}
                 for issue in issues:
-                    issue_type = issue.get('type', 'unknown')
+                    if isinstance(issue, dict):
+                        issue_type = issue.get('type', 'unknown')
+                    else:
+                        issue_type = 'string_issue'
                     if issue_type not in issue_types:
                         issue_types[issue_type] = 0
                     issue_types[issue_type] += 1
