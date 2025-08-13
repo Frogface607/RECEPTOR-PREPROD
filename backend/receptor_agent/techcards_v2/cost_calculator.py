@@ -152,11 +152,16 @@ class CostCalculator:
         # По умолчанию возвращаем как есть
         return amount
     
-    def calculate_ingredient_cost(self, ingredient: IngredientV2, use_llm_fallback: bool = True) -> Tuple[float, str]:
+    def calculate_ingredient_cost(self, ingredient: IngredientV2, use_llm_fallback: bool = True, sub_recipes_cache: Dict[str, 'TechCardV2'] = None) -> Tuple[float, str]:
         """
-        Расчет стоимости одного ингредиента
+        Расчет стоимости одного ингредиента или подрецепта
         Возвращает: (стоимость, статус)
         """
+        # Если это подрецепт - рассчитываем через него
+        if ingredient.subRecipe:
+            return self._calculate_subrecipe_cost(ingredient, sub_recipes_cache or {})
+        
+        # Обычная логика для обычных ингредиентов
         # Ищем ингредиент в каталоге
         price_data = self.find_ingredient_price(ingredient.name)
         
@@ -184,6 +189,36 @@ class CostCalculator:
                 return cost, "fallback_price_used"
             else:
                 return 0.0, "no_price_found"
+    
+    def _calculate_subrecipe_cost(self, ingredient: IngredientV2, sub_recipes_cache: Dict[str, 'TechCardV2']) -> Tuple[float, str]:
+        """
+        Расчет стоимости подрецепта
+        Возвращает: (стоимость_за_netto_g, статус)
+        """
+        subrecipe_id = ingredient.subRecipe.id
+        subrecipe_title = ingredient.subRecipe.title
+        
+        # Ищем подрецепт в кеше
+        if subrecipe_id not in sub_recipes_cache:
+            return 0.0, f"subrecipe_not_found_{subrecipe_title}"
+        
+        sub_tech_card = sub_recipes_cache[subrecipe_id]
+        
+        # Проверяем наличие cost данных в подрецепте
+        if not sub_tech_card.cost or not sub_tech_card.cost.rawCost:
+            return 0.0, f"subrecipe_no_cost_{subrecipe_title}"
+        
+        # Проверяем наличие yield данных
+        if not sub_tech_card.yield_ or not sub_tech_card.yield_.perBatch_g:
+            return 0.0, f"subrecipe_no_yield_{subrecipe_title}"
+        
+        # Рассчитываем стоимость за грамм готового подрецепта
+        cost_per_g = sub_tech_card.cost.rawCost / sub_tech_card.yield_.perBatch_g
+        
+        # Стоимость за требуемое количество (netto_g граммов готового подрецепта)
+        total_cost = ingredient.netto_g * cost_per_g
+        
+        return total_cost, f"subrecipe_calculated_{subrecipe_title}"
     
     def _get_fallback_price(self, ingredient_name: str) -> float:
         """Получение резервной цены на основе названия ингредиента"""
