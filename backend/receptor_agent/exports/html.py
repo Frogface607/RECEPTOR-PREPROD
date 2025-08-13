@@ -66,7 +66,9 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
     coverage_note = ""
     
     # Проверяем наличие nutritionMeta для определения покрытия
-    coverage_pct = getattr(card, 'nutritionMeta', {}).get('coveragePct', 0) if hasattr(card, 'nutritionMeta') else 0
+    coverage_pct = 0
+    if hasattr(card, 'nutritionMeta') and card.nutritionMeta:
+        coverage_pct = getattr(card.nutritionMeta, 'coveragePct', 0)
     
     if coverage_pct > 0 and card.nutrition:
         if card.nutrition.per100g:
