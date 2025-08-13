@@ -13,6 +13,9 @@ function App() {
   const [selectedCity, setSelectedCity] = useState('');
   const [dishName, setDishName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState(null); // 'success' | 'draft' | 'error'
+  const [generationError, setGenerationError] = useState(null);
+  const [generationIssues, setGenerationIssues] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
