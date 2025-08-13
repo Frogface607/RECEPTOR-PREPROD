@@ -27,6 +27,7 @@ class IngredientV2(BaseModel):
     name: str = Field(..., min_length=1)
     canonical_id: Optional[str] = None  # Для маппинга к каталогу питания
     skuId: Optional[str] = None  # Для маппинга к каталогу цен/SKU
+    subRecipe: Optional[SubRecipeRefV2] = None  # Ссылка на подрецепт/полуфабрикат
     unit: UOM = "g"
     brutto_g: float = Field(..., ge=0)
     loss_pct: float = Field(..., ge=0, le=100)
