@@ -3743,7 +3743,8 @@ function App() {
 
   const handleIikoExport = async () => {
     if (!tcV2) {
-      alert('Сначала создайте техкарту');
+      setGenerationError('Сначала создайте техкарту');
+      setGenerationStatus('error');
       return;
     }
 
