@@ -6,6 +6,11 @@ import uuid
 
 UOM = Literal["g", "ml", "pcs"]
 
+class SubRecipeRefV2(BaseModel):
+    """Ссылка на подрецепт/полуфабрикат"""
+    id: str = Field(..., description="UUID другой техкарты")
+    title: str = Field(..., min_length=1, description="Название подрецепта для отображения")
+
 class MetaV2(BaseModel):
     id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str = Field(..., min_length=2, max_length=200)
