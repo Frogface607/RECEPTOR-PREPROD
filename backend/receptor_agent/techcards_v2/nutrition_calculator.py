@@ -263,40 +263,37 @@ class NutritionCalculator:
                         "hint": "add to nutrition catalog / map canonical_id"
                     })
         
-        # Рассчитываем метаданные
-        coverage_pct = (found_ingredients / len(tech_card.ingredients)) * 100 if tech_card.ingredients else 0
+        # Рассчитываем покрытие
+        total_ingredients = len(tech_card.ingredients)
+        coverage_pct = (found_ingredients / total_ingredients * 100) if total_ingredients > 0 else 0
         
-        # Определяем источник (пока только catalog)
-        source = "catalog" if found_ingredients > 0 else "none"
+        # Создаем питательность на 100г
+        batch_grams = tech_card.yield_.perBatch_g if tech_card.yield_ else 1.0
+        per100g = NutritionPer(
+            kcal=round(total_nutrition["kcal"] * 100 / batch_grams, 1),
+            proteins_g=round(total_nutrition["proteins_g"] * 100 / batch_grams, 1),
+            fats_g=round(total_nutrition["fats_g"] * 100 / batch_grams, 1),
+            carbs_g=round(total_nutrition["carbs_g"] * 100 / batch_grams, 1)
+        )
         
+        # Создаем питательность на порцию
+        portion_grams = tech_card.yield_.perPortion_g if tech_card.yield_ else batch_grams / max(tech_card.portions, 1)
+        per_portion = NutritionPer(
+            kcal=round(per100g.kcal * portion_grams / 100, 1),
+            proteins_g=round(per100g.proteins_g * portion_grams / 100, 1),
+            fats_g=round(per100g.fats_g * portion_grams / 100, 1),
+            carbs_g=round(per100g.carbs_g * portion_grams / 100, 1)
+        )
+        
+        # Создаем метаданные
         nutrition_meta = NutritionMetaV2(
-            source=source,
+            source="catalog",
             coveragePct=round(coverage_pct, 1)
         )
         
-        # Если нет данных, возвращаем пустое питание
-        if coverage_pct == 0:
-            return NutritionV2(), nutrition_meta, issues
-        
-        # Рассчитываем на порцию
-        per_portion = NutritionPer(
-            kcal=round(total_nutrition["kcal"] / tech_card.portions, 1),
-            proteins_g=round(total_nutrition["proteins_g"] / tech_card.portions, 1),
-            fats_g=round(total_nutrition["fats_g"] / tech_card.portions, 1),
-            carbs_g=round(total_nutrition["carbs_g"] / tech_card.portions, 1)
-        )
-        
-        # Рассчитываем на 100г готового блюда
-        batch_grams = tech_card.yield_.perBatch_g
-        per_100g = NutritionPer(
-            kcal=round(total_nutrition["kcal"] * 100 / batch_grams, 1) if batch_grams > 0 else 0,
-            proteins_g=round(total_nutrition["proteins_g"] * 100 / batch_grams, 1) if batch_grams > 0 else 0,
-            fats_g=round(total_nutrition["fats_g"] * 100 / batch_grams, 1) if batch_grams > 0 else 0,
-            carbs_g=round(total_nutrition["carbs_g"] * 100 / batch_grams, 1) if batch_grams > 0 else 0
-        )
-        
+        # Создаем результат
         nutrition = NutritionV2(
-            per100g=per_100g,
+            per100g=per100g,
             perPortion=per_portion
         )
         
