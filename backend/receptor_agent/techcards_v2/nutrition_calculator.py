@@ -140,11 +140,16 @@ class NutritionCalculator:
         
         return amount, "unknown_unit"
     
-    def calculate_ingredient_nutrition(self, ingredient: IngredientV2) -> Tuple[Optional[Dict[str, float]], str]:
+    def calculate_ingredient_nutrition(self, ingredient: IngredientV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> Tuple[Optional[Dict[str, float]], str]:
         """
-        Расчет питательности одного ингредиента
+        Расчет питательности одного ингредиента или подрецепта
         Возвращает: (питательность, статус)
         """
+        # Если это подрецепт - рассчитываем через него
+        if ingredient.subRecipe:
+            return self._calculate_subrecipe_nutrition(ingredient, sub_recipes_cache or {})
+        
+        # Обычная логика для обычных ингредиентов
         # Ищем данные о питательности
         nutrition_data = self.find_nutrition_data(ingredient.name)
         
@@ -172,6 +177,37 @@ class NutritionCalculator:
         }
         
         return nutrition, f"calculated_{conversion_status}"
+    
+    def _calculate_subrecipe_nutrition(self, ingredient: IngredientV2, sub_recipes_cache: Dict[str, TechCardV2]) -> Tuple[Optional[Dict[str, float]], str]:
+        """
+        Расчет питательности подрецепта
+        Возвращает: (питательность_за_netto_g, статус)
+        """
+        subrecipe_id = ingredient.subRecipe.id
+        subrecipe_title = ingredient.subRecipe.title
+        
+        # Ищем подрецепт в кеше
+        if subrecipe_id not in sub_recipes_cache:
+            return None, f"subrecipe_not_found_{subrecipe_title}"
+        
+        sub_tech_card = sub_recipes_cache[subrecipe_id]
+        
+        # Проверяем наличие nutrition данных в подрецепте
+        if not sub_tech_card.nutrition or not sub_tech_card.nutrition.per100g:
+            return None, f"subrecipe_no_nutrition_{subrecipe_title}"
+        
+        # Получаем питательность на 100г готового подрецепта
+        per100g = sub_tech_card.nutrition.per100g
+        
+        # Рассчитываем питательность для требуемого количества (netto_g граммов готового подрецепта)
+        nutrition = {
+            "kcal": per100g.kcal * (ingredient.netto_g / 100.0),
+            "proteins_g": per100g.proteins_g * (ingredient.netto_g / 100.0),
+            "fats_g": per100g.fats_g * (ingredient.netto_g / 100.0),
+            "carbs_g": per100g.carbs_g * (ingredient.netto_g / 100.0)
+        }
+        
+        return nutrition, f"subrecipe_calculated_{subrecipe_title}"
     
     def calculate_tech_card_nutrition(self, tech_card: TechCardV2) -> tuple[NutritionV2, NutritionMetaV2, list]:
         """
