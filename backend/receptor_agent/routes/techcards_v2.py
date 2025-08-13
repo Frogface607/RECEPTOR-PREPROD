@@ -138,6 +138,117 @@ def export_tc_v2_to_iiko(card: TechCardV2):
         print(f"iiko export error: {e}")
         raise HTTPException(500, f"Export failed: {str(e)}")
 
+@router.get("/techcards.v2/catalog-search")
+def search_catalog(q: str = Query(..., description="Search query"), limit: int = Query(10, ge=1, le=50)):
+    """
+    Поиск по объединенному каталогу цен и питания для маппинга ингредиентов.
+    
+    Returns:
+        JSON: {
+            "status": "success",
+            "items": [
+                {
+                    "name": "string",
+                    "canonical_id": "string",
+                    "sku_id": "string|null", 
+                    "category": "string",
+                    "unit": "kg|l|pcs",
+                    "price": "float|null",
+                    "has_nutrition": "boolean",
+                    "nutrition_preview": "string|null"
+                }
+            ]
+        }
+    """
+    try:
+        import json
+        import os
+        from pathlib import Path
+        
+        results = []
+        query = q.lower().strip()
+        
+        # Загружаем каталог цен
+        price_catalog_path = Path(__file__).parent.parent.parent / "data" / "price_catalog.dev.json"
+        price_data = {}
+        if price_catalog_path.exists():
+            with open(price_catalog_path, 'r', encoding='utf-8') as f:
+                price_catalog = json.load(f)
+                # Разворачиваем структуру каталога цен
+                for category, items in price_catalog.get("ingredients", {}).items():
+                    for name, details in items.items():
+                        price_data[name.lower()] = {
+                            "name": name,
+                            "price": details.get("price"),
+                            "unit": details.get("unit", "kg"),
+                            "category": details.get("category", category)
+                        }
+        
+        # Загружаем каталог питания
+        nutrition_catalog_path = Path(__file__).parent.parent.parent / "data" / "nutrition_catalog.dev.json"
+        nutrition_data = {}
+        if nutrition_catalog_path.exists():
+            with open(nutrition_catalog_path, 'r', encoding='utf-8') as f:
+                nutrition_catalog = json.load(f)
+                for item in nutrition_catalog.get("items", []):
+                    name = item.get("name", "").lower()
+                    nutrition_data[name] = {
+                        "canonical_id": item.get("canonical_id"),
+                        "name": item.get("name"),
+                        "nutrition": item.get("per100g", {})
+                    }
+        
+        # Объединяем и ищем
+        all_items = {}
+        
+        # Добавляем из каталога цен
+        for name_lower, price_info in price_data.items():
+            if query in name_lower or any(query in word for word in name_lower.split()):
+                all_items[name_lower] = {
+                    "name": price_info["name"],
+                    "canonical_id": nutrition_data.get(name_lower, {}).get("canonical_id"),
+                    "sku_id": f"SKU_{price_info['name'].replace(' ', '_').upper()}",  # Генерируем SKU
+                    "category": price_info["category"],
+                    "unit": price_info["unit"],
+                    "price": price_info["price"],
+                    "has_nutrition": name_lower in nutrition_data,
+                    "nutrition_preview": f"{nutrition_data[name_lower]['nutrition'].get('kcal', 0)} ккал" if name_lower in nutrition_data else None
+                }
+        
+        # Добавляем из каталога питания (если еще нет)
+        for name_lower, nutrition_info in nutrition_data.items():
+            if (query in name_lower or any(query in word for word in name_lower.split())) and name_lower not in all_items:
+                all_items[name_lower] = {
+                    "name": nutrition_info["name"],
+                    "canonical_id": nutrition_info["canonical_id"],
+                    "sku_id": None,
+                    "category": "unknown",
+                    "unit": "kg",
+                    "price": None,
+                    "has_nutrition": True,
+                    "nutrition_preview": f"{nutrition_info['nutrition'].get('kcal', 0)} ккал"
+                }
+        
+        # Сортируем по релевантности и ограничиваем
+        sorted_items = sorted(all_items.values(), key=lambda x: (
+            0 if query in x["name"].lower() else 1,  # Точное вхождение в начало
+            -len(x["name"]),  # Короткие названия выше
+            x["name"].lower()
+        ))[:limit]
+        
+        return JSONResponse(content={
+            "status": "success",
+            "items": sorted_items
+        }, headers={"Content-Type": "application/json; charset=utf-8"})
+        
+    except Exception as e:
+        return JSONResponse(content={
+            "status": "error",
+            "items": [],
+            "message": f"Search failed: {str(e)}"
+        }, headers={"Content-Type": "application/json; charset=utf-8"})
+
+
 @router.post("/techcards.v2/recalc")
 def recalc_tc_v2(techcard: TechCardV2):
     """
