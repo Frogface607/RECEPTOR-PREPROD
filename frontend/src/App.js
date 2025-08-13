@@ -3512,12 +3512,15 @@ function App() {
       }
 
       const htmlContent = await response.text(); // Get HTML directly instead of JSON
-      console.log('GOST print response received');
+      console.log('[V2] PDF export HTML content received (same as GOST print)');
 
       if (htmlContent) {
         const printWindow = window.open('', '_blank');
         printWindow.document.write(htmlContent);
         printWindow.document.close();
+        
+        // This is the same GOST template as GOST-print button
+        console.log('[V2] PDF export using identical GOST template as GOST-print');
         
         // Wait for content to load then print
         setTimeout(() => {
