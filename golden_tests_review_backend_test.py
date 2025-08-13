@@ -231,8 +231,8 @@ def test_gost_print(techcard=None):
                 log_test("GOST Print: Cannot test - failed to generate techcard", "ERROR")
                 return False
         
-        # Test GOST print endpoint
-        url = f"{API_BASE}/v1/techcards.v2/print/gost"
+        # Test GOST print endpoint (correct endpoint)
+        url = f"{API_BASE}/v1/techcards.v2/print"
         
         response = requests.post(url, json=techcard, timeout=30)
         
