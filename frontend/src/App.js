@@ -3022,28 +3022,22 @@ function App() {
     const progressInterval = simulateProgress('techcard', 15000);
     
     try {
-      console.log('Sending request to:', `${API}/generate-tech-card`);
+      console.log('Sending request to:', `${API}/v1/techcards.v2/generate`);
       const requestData = {
-        dish_name: dishName,
-        user_id: currentUser.id,
-        city: currentUser.city || 'москва'
+        name: dishName,
+        description: dishContext?.description || `Техкарта для блюда ${dishName}`,
+        servings: 4,
+        use_llm: false  // Use deterministic mode
       };
 
       // Add enhanced context if available (from menu dishes)
       if (dishContext) {
-        requestData.dish_description = dishContext.description;
-        requestData.main_ingredients = dishContext.main_ingredients;
-        requestData.category = dishContext.category;
-        requestData.estimated_cost = dishContext.estimated_cost;
-        requestData.estimated_price = dishContext.estimated_price;
-        requestData.difficulty = dishContext.difficulty;
-        requestData.cook_time = dishContext.cook_time;
-        
+        requestData.description = dishContext.description;
         // Clear context after use
         setDishContext(null);
       }
       
-      const response = await fetch(`${API}/generate-tech-card`, {
+      const response = await fetch(`${API}/v1/techcards.v2/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
