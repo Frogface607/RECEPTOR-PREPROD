@@ -63,32 +63,48 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
     
     # Питательность
     nutrition_html = ""
-    if card.nutrition and card.nutrition.per100g:
-        per100g = card.nutrition.per100g
-        nutrition_html += f"""
-        <tr>
-            <td><strong>На 100г готового блюда</strong></td>
-            <td>{per100g.kcal:.1f}</td>
-            <td>{per100g.proteins_g:.1f}</td>
-            <td>{per100g.fats_g:.1f}</td>
-            <td>{per100g.carbs_g:.1f}</td>
-        </tr>
-        """
+    coverage_note = ""
     
-    if card.nutrition and card.nutrition.perPortion:
-        perPortion = card.nutrition.perPortion
-        nutrition_html += f"""
-        <tr>
-            <td><strong>На 1 порцию</strong></td>
-            <td>{perPortion.kcal:.1f}</td>
-            <td>{perPortion.proteins_g:.1f}</td>
-            <td>{perPortion.fats_g:.1f}</td>
-            <td>{perPortion.carbs_g:.1f}</td>
-        </tr>
-        """
+    # Проверяем наличие nutritionMeta для определения покрытия
+    coverage_pct = getattr(card, 'nutritionMeta', {}).get('coveragePct', 0) if hasattr(card, 'nutritionMeta') else 0
+    
+    if coverage_pct > 0 and card.nutrition:
+        if card.nutrition.per100g:
+            per100g = card.nutrition.per100g
+            nutrition_html += f"""
+            <tr>
+                <td><strong>На 100г готового блюда</strong></td>
+                <td>{round(per100g.kcal or 0):.0f}</td>
+                <td>{(per100g.proteins_g or 0):.1f}</td>
+                <td>{(per100g.fats_g or 0):.1f}</td>
+                <td>{(per100g.carbs_g or 0):.1f}</td>
+            </tr>
+            """
+        
+        if card.nutrition.perPortion:
+            perPortion = card.nutrition.perPortion
+            nutrition_html += f"""
+            <tr>
+                <td><strong>На 1 порцию</strong></td>
+                <td>{round(perPortion.kcal or 0):.0f}</td>
+                <td>{(perPortion.proteins_g or 0):.1f}</td>
+                <td>{(perPortion.fats_g or 0):.1f}</td>
+                <td>{(perPortion.carbs_g or 0):.1f}</td>
+            </tr>
+            """
+        
+        # Добавляем примечание о покрытии если неполное
+        if coverage_pct < 100:
+            coverage_note = f'<tr><td colspan="5" style="font-style: italic; color: #666; font-size: 0.9em; text-align: center;">⚠️ Покрытие {coverage_pct}% (часть ингредиентов без данных)</td></tr>'
+        else:
+            coverage_note = f'<tr><td colspan="5" style="font-style: italic; color: #0a5d0a; font-size: 0.9em; text-align: center;">✅ Полные данные по всем ингредиентам</td></tr>'
     
     if not nutrition_html:
         nutrition_html = '<tr><td colspan="5"><em>Данные не заполнены</em></td></tr>'
+    
+    # Добавляем coverage_note к nutrition_html
+    if coverage_note:
+        nutrition_html += coverage_note
     
     # Стоимость
     cost_html = ""
