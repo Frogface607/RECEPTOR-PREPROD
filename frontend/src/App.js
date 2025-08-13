@@ -7194,9 +7194,20 @@ function App() {
                 <div className="prose prose-invert max-w-none">
                   {FORCE_TECHCARD_V2 ? (
                     tcV2 ? renderTechCardV2(tcV2) : (
-                      <div className="text-center py-8 text-gray-400">
-                        <p className="text-lg">TechCard v2 не сгенерирована</p>
-                        <p className="text-sm">Создайте техкарту для просмотра данных</p>
+                      <div className="text-center py-12 text-gray-400 space-y-4">
+                        <div className="text-6xl">🔧</div>
+                        <div>
+                          <p className="text-xl font-bold text-purple-300">TechCard v2 Required</p>
+                          <p className="text-lg">Создайте техкарту для просмотра данных V2</p>
+                          <div className="mt-4 bg-purple-900/20 rounded-lg p-4 max-w-md mx-auto">
+                            <p className="text-sm">
+                              <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">
+                                FORCE_TECHCARD_V2=true
+                              </span>
+                              Только современный формат TechCard v2
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     )
                   ) : (
