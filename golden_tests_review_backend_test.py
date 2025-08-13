@@ -276,15 +276,11 @@ def test_iiko_export(techcard=None):
                 log_test("IIKo Export: Cannot test - failed to generate techcard", "ERROR")
                 return False
         
-        # Test IIKo export endpoint
+        # Test IIKo export endpoint (correct format)
         url = f"{API_BASE}/v1/techcards.v2/export/iiko"
         
-        export_data = {
-            "techcard": techcard,
-            "organization_id": "default-org-001"  # Use default organization
-        }
-        
-        response = requests.post(url, json=export_data, timeout=60)
+        # The endpoint expects a TechCardV2 object directly, not wrapped
+        response = requests.post(url, json=techcard, timeout=60)
         
         if response.status_code == 200:
             data = response.json()
