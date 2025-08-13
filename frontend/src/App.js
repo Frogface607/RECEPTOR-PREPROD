@@ -971,6 +971,11 @@ function App() {
                 {new Date(costMeta.asOf) < new Date(Date.now() - 30*24*60*60*1000) && ' (устарел)'}
               </div>
             )}
+            {isRecalculating && (
+              <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-bold animate-pulse">
+                🔄 Пересчет...
+              </div>
+            )}
           </div>
           {meta.cuisine && (
             <p className="text-gray-400 text-lg">{meta.cuisine}</p>
