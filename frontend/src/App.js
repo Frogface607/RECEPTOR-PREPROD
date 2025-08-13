@@ -922,6 +922,7 @@ function App() {
     const process = tcV2.process || [];
     const storage = tcV2.storage || {};
     const nutrition = tcV2.nutrition || {};
+    const nutritionMeta = tcV2.nutritionMeta || {};
     const cost = tcV2.cost || {};
     const costMeta = tcV2.costMeta || {};
 
