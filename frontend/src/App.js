@@ -7,6 +7,9 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;  // Backend routes already include /api prefix
 
 function App() {
+  // Check if debug mode is enabled
+  const isDebugMode = new URLSearchParams(window.location.search).get('debug') === '1';
+  
   const [currentUser, setCurrentUser] = useState(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [cities, setCities] = useState([]);
