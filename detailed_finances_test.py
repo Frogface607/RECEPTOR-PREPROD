@@ -8,7 +8,7 @@ import json
 import time
 
 # Configuration
-BACKEND_URL = "https://recipe-master-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://tech-cards-v2.preview.emergentagent.com/api"
 
 def main():
     """Test the FINANCES feature with detailed output"""

@@ -10,7 +10,7 @@ import re
 def test_golden_prompt_changes():
     """Test the specific requirements from the review request"""
     
-    base_url = "https://recipe-master-7.preview.emergentagent.com/api"
+    base_url = "https://tech-cards-v2.preview.emergentagent.com/api"
     
     print("🧪 GOLDEN_PROMPT CHANGES TEST")
     print("=" * 50)

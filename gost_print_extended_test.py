@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any
 
-BACKEND_URL = "https://recipe-master-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://tech-cards-v2.preview.emergentagent.com/api"
 
 class ExtendedGOSTPrintTester:
     def __init__(self):

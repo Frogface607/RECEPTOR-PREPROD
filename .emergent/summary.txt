@@ -1,22 +1,18 @@
 <analysis>
-The previous AI engineer successfully transitioned the AI Menu Designer application from an MVP to a robust, feature-rich system. Key achievements include a comprehensive refactor of IIKo integration for Assembly Charts and categories, and the development of a entirely new v2 tech card generation pipeline. Challenges such as IIKo API limitations for DISH product creation were diagnosed and gracefully handled with fallbacks. A significant portion of the work involved implementing structured Pydantic schemas, an LLM-powered pipeline with safe fallback mechanisms, and extensive export functionalities (CSV, XLSX, PDF, ZIP). The engineer demonstrated strong debugging skills, particularly in resolving  and various OpenAI API key/schema issues, ensuring continuous system operation even with external service failures. The codebase is now highly modular and test-covered.
+The AI engineer's work in this trajectory primarily focused on refining and expanding the AI-Menu-Designer application. The previous work, including core backend architecture, LLM pipeline, HACCP module, cost calculator, nutrition calculator, GOST print, and IIKo export (Tasks #2-6), was summarized as context. The trajectory then details the completion of **Task #7 (Golden Tests)**, fixing yield mismatches and ensuring CI/CD quality. Following this, **Task #8** involved a significant frontend overhaul to solely use **TechCardV2** for generation, rendering, printing, and IIKo export. This led to **Task #9**, which enforced V2-only usage across the frontend, unifying PDF export with GOST print. **Task #10** integrated the display of calculated nutritional values (BJU) into both the UI and GOST print. A user bug report Generation is not working in **Task #11** prompted a fix for frontend generation flow, standardizing states (success/draft/error) and removing disruptive alerts. **Task #12** synchronized the backend and frontend API contract for V2 generation, ensuring consistent JSON responses. Finally, **Task #13** initiated the development of inline ingredient mapping to a catalog for improved cost/nutrition coverage. The AI engineer is currently in the middle of **Task #14**, integrating **sub-recipes** into TechCardV2 calculations and export. Throughout these tasks, the engineer demonstrated strong debugging skills, addressing issues from JSON serialization to UI rendering.
 </analysis>
 
 <product_requirements>
-The AI-Menu-Designer (МЕНЮ ЗА 15 МИНУТ) application automates menu generation for the HoReCa sector. It evolved from Receptor Pro to focus on tech card creation, cost management, and deep integration with the IIKo API. Core features include a menu creation wizard based on Venue Profiles, free-text input, and dish quantity, standardizing measurements to grams for tech cards.
-
-The primary goal is comprehensive IIKo integration for automated tech card/price list upload, stock tracking, sales analytics via OLAP reports, and real-time pricing. Initially, this focused on programmatic creation, deletion, and retrieval of tech cards (Assembly Charts) and creating a dedicated AI Menu Designer category in IIKo. A critical issue identified was IIKo's lack of direct API support for creating DISH type products (menu items), necessitating a manual linking workflow.
-
-Recent requirements involved developing a TechCards v2 system for stricter validation (brutto/netto/loss, allergens, HACCP), an LLM pipeline (using gpt-4o-mini with structured outputs and safe fallbacks) for enhanced generation, and flexible export capabilities (CSV for IIKo import, XLSX, PDF, and ZIP bundles for menus).
+The AI-Menu-Designer (МЕНЮ ЗА 15 МИНУТ) application aims to automate menu generation for the HoReCa sector, evolving from Receptor Pro to focus on tech card creation, cost management, and deep integration with the IIKo API. Core functionalities include a menu creation wizard based on Venue Profiles and free-text dish input, standardizing measurements to grams. The primary objective is comprehensive IIKo integration for automated tech card/price list upload, stock tracking, sales analytics via OLAP reports, and real-time pricing, initially targeting Assembly Charts and an AI Menu Designer category in IIKo. A critical constraint is IIKo's lack of direct API support for DISH type products. Recent development has centered on a TechCards v2 system for stricter validation (brutto/netto/loss, allergens, HACCP), an LLM pipeline (using  with structured outputs and safe fallbacks), and flexible export capabilities (CSV for IIKo, XLSX, PDF, ZIP bundles). New features include a dedicated HACCP LLM module for generation and auditing, and its frontend integration. The application now implements a code-based cost calculator, a nutrition calculator, GOST A4 printing, IIKo-specific data export, and a golden test suite for CI/CD quality gates.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack**: React.js, FastAPI, MongoDB.
--   **AI/LLM**: OpenAI (gpt-4o-mini), prompt engineering, Structured Outputs,  for retries.
--   **Deployment**: Supervisor, Kubernetes (ingress rules,  prefix).
--   **Integration**: IIKo API (iikoCloud and iikoServer), custom HTTP client, SHA1 hashing.
--   **IIKo API Concepts**: Assembly Charts, Products, Nomenclature elements, Categories.
--   **Python**: Pydantic v2 (schemas, field validation), namespaces, feature flags.
+-   **AI/LLM**: OpenAI (), structured outputs, prompt engineering,  for retries.
+-   **Deployment**: Supervisor, Kubernetes (ingress rules,  prefix), .
+-   **Integration**: IIKo API (iikoCloud/iikoServer), custom HTTP client.
+-   **Python**: Pydantic v2 (schemas, field validation, ), .
+-   **Frontend**: React , , feature flags, unit conversions.
 -   **Exports**: , , .
 </key_technical_concepts>
 
@@ -25,57 +21,64 @@ The application employs a React frontend, FastAPI backend, and MongoDB database.
 
 
 
--   **/app/backend/server.py**: The core backend application using FastAPI. It hosts existing IIKo integrations and now serves as the entry point for all new v2 API routes, conditionally including them via feature flags.
-    -   **Changes Made**: Previously housed most IIKo logic. Now includes  and new  and  for modular v2 functionality, protected by . Fixed  issue in supervisor config.
--   **/app/backend/receptor_agent/**: A new top-level namespace package ( present) to modularize the application logic.
--   **/app/backend/receptor_agent/techcards_v2/**: Contains Pydantic schemas () for the new  data structure, along with modules for ,  (for yield balance, loss bounds),  (canonical names/units),  (gross/net/loss calculation, rebalancing), and  (auto-generating HACCP blocks).
--   **/app/backend/receptor_agent/llm/**: Manages the LLM integration.
-    -   : Handles secure OpenAI API calls, including  for retries and  for structured outputs (previously attempted  with  strict mode, but reverted to  with  for stability).
-    -   : Stores the actual prompts for each stage of the LLM pipeline.
-    -   : Defines the  JSON schema for LLM structured outputs.
-    -   : Orchestrates the multi-step generation process (, , , , ). It includes logic to use the LLM (if  and API key is valid) or fall back to local functions provided by  modules.
--   **/app/backend/receptor_agent/exports/**: Contains utilities to export  data into different formats:  (for manual IIKo import),  (Excel),  (printable PDF), and  (to create ZIP archives).
--   **/app/backend/receptor_agent/menu_v2/**: Defines the  Pydantic schema for managing collections of  items.
--   **/app/backend/receptor_agent/routes/**: Contains FastAPI routers for the new v2 API endpoints.
-    -   : Handles single tech card generation (), export (), and status checks ().
-    -   : Manages menu generation (), item replacement (), and full menu export as ZIP ().
--   **/app/tests/v2/**: A new directory for dedicated tests for the v2 modules, ensuring new functionalities are robust.
--   **/app/docs/**: Contains comprehensive markdown documentation generated by the AI engineer, detailing architecture, API endpoints, data models, risks, and a roadmap.  specifically guides on configuring OpenAI.
--   **Environment Variables**:  and  now include , , , ,  for flexible control over new features and LLM integration.
--   **Dependencies**:  was updated to include , , , , .
+-   **/app/backend/server.py**: Core FastAPI application, includes v2 routers.
+-   **/app/backend/receptor_agent/techcards_v2/schemas.py**: Defines , , . **Modified**: Added  schema and  and  to .
+-   **/app/backend/receptor_agent/techcards_v2/cost_calculator.py**: Implements deterministic cost calculation. **Modified**: Updated  and  to handle  (fetching cost from sub-techcards) and add issues for missing sub-recipe cost.
+-   **/app/backend/receptor_agent/techcards_v2/nutrition_calculator.py**: Implements code-based nutrition calculation. **Modified**: Updated  and  to handle  (fetching nutrition from sub-techcards) and add issues for missing sub-recipe nutrition.
+-   **/app/backend/receptor_agent/exports/html.py**: Generates GOST A4 print HTML. **Modified**: Updated logic to display BJU from  (including coverage percentage) and fixed a  serialization error.
+-   **/app/backend/receptor_agent/llm/pipeline.py**: Integrates calculators. **Modified**: Fixed  to return  for draft status instead of .
+-   **/app/backend/receptor_agent/routes/techcards_v2.py**: Exposes API endpoints. **Modified**:  now returns a standardized JSON response  for all cases (, , ), enforces  Content-Type, and includes robust exception handling. Added new endpoints  (for recalculating cost/nutrition) and  (for mapping ingredients). Changed  route to .
+-   **/app/backend/data/price_catalog.dev.json**: Stores ingredient prices.
+-   **/app/backend/data/nutrition_catalog.dev.json**: Stores ingredient nutritional data.
+-   **/app/.github/workflows/golden-tests.yml**: GitHub Actions workflow. **Created**: Runs  as a CI gate.
+-   **/app/golden/techcards/**: Directory for golden TechCardV2 JSONs. **Created**: Contains 10 reference  JSONs for golden tests.
+-   **/app/golden_tests.py**: Test runner for golden files. **Created**: Performs validation, yield consistency, data integrity checks, and issue warnings.
+-   **/app/frontend/src/App.js**: Main frontend component. **Modified**:
+    *   Switched generation endpoint to .
+    *   Added  state and  for V2 data.
+    *   Refactored rendering to  for V2 schema.
+    *   Updated , ,  to use V2 API endpoints and  data.
+    *   Removed old V1 parsing logic.
+    *   Enforced V2-only rendering ().
+    *   Unified PDF export with GOST print by directing both to .
+    *   Added  display logic in UI, with formatting and coverage information.
+    *   Implemented new React states (, , ) for handling  states in generation flow, removing  calls.
+    *   Added UI elements for debug information (via  URL param) and error/draft banners.
+    *   Implemented UI for inline ingredient mapping, including new Mapping column, edit icons, a mapping modal with search functionality, and display of cost/nutrition coverage chips.
+    *   Added , , ,  functions for mapping logic.
+-   **/app/frontend/src/config/featureFlags.js**: Centralizes frontend feature flags. **Modified**: Added .
+-   **/app/frontend/.env**: Frontend environment variables. **Modified**: Added .
 </code_architecture>
 
 <pending_tasks>
--   **IIKo Integration - Create Product/Dish**: Implement direct creation of DISH type nomenclature elements if IIKo API support becomes available. Currently, the system falls back to creating only Assembly Charts.
--   **IIKo Integration - Real Sales Data**: Implement retrieval of sales data via IIKo's OLAP reports.
--   **AI-Menu-Designer - Phase 4 (Modularity & Monetization)**: Develop specialized menu modules and integrate updated token/subscription system.
--   **AI-Menu-Designer - UI/UX Refinement**: Further enhance the beauty and detailed interface of the menu generation flow (frontend work).
+-   IIKo Integration - Create Product/Dish: Implement direct creation of DISH type nomenclature elements if IIKo API support becomes available.
+-   IIKo Integration - Real Sales Data: Implement retrieval of sales data via IIKo's OLAP reports (currently paused).
+-   AI-Menu-Designer - Phase 4 (Modularity & Monetization): Develop specialized menu modules and integrate updated token/subscription system.
+-   AI-Menu-Designer - UI/UX Refinement: Further enhance the beauty and detailed interface (general task).
+-   Frontend: FE-01C - Markers of criticality and diff for HACCP audit (optional, deferred).
+-   Frontend: Patch #1C - Temporary redirect from 4 clicks master.
+-   Backend for Task #13 (Inline Mapping): The  and  endpoints were added but issues with their functionality were observed at the end of Task #13.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was focused on enabling and debugging the OpenAI LLM integration for the new v2 tech card and menu generation pipeline.
+Immediately prior to this summary, the AI engineer was actively working on **Задача №14 — «Полуфабрикаты/подрецепты: ссылка на другую техкарту + корректные расчёты и экспорт в iiko»**.
 
-The  flag was missing from , preventing new v2 API endpoints from loading. This was fixed by adding .
+The current state of work for Task #14 includes:
+1.  **Schema Extension**: The  schema in  has been updated. A new Pydantic model  (with uid=0(root) gid=0(root) groups=0(root) and ) was defined, and an optional  field was added to .
+2.  **Cost Calculation Logic**:  has been modified. The  and  functions were updated to:
+    *   Check for the presence of  in an ingredient.
+    *   If a  is found, it attempts to fetch the cost from the corresponding sub-techcard (presumably from a cache passed to the calculator).
+    *   Calculates the cost contribution of the sub-recipe based on its yield and cost per gram.
+    *   Adds issues () if the sub-recipe's cost data is invalid or missing, without failing the overall calculation.
+3.  **Nutrition Calculation Logic**: Similarly,  was updated. The  and  functions were extended to:
+    *   Process ingredients that are s.
+    *   Fetch nutritional values () from the sub-techcard.
+    *   Calculate the nutrition contribution based on the quantity and sub-recipe's nutritional data.
+    *   Adds issues () if sub-recipe nutrition data is invalid or missing.
 
-A  was encountered during backend startup. This was resolved by modifying the supervisor configuration () to include , ensuring Python could correctly find the new  package and its submodules.
-
-Initial attempts to use the provided OpenAI API keys resulted in  errors. The AI engineer verified the system's  mechanism, which successfully switched to local (non-LLM) generation, ensuring continuous functionality.
-
-Upon receiving a new key, the OpenAI API calls started to pass authentication but returned  errors. This was diagnosed as a JSON schema mismatch or strictness issue with OpenAI's API. The  was simplified by removing  and the OpenAI client call was adjusted to use  (instead of ).
-
-Following these fixes, OpenAI API requests now successfully return . While the LLM is now actively generating data, the output still occasionally triggers a validation error (), indicating that the generated data might not perfectly align with the  schema's balance requirements. This suggests a need for further prompt engineering to guide the LLM's output more precisely, but the core LLM integration is functional.
-
-The system currently provides:
--   : Generates a single tech card (using LLM or fallback).
--   : Exports a  to a ZIP file containing CSV, XLSX, and PDF.
--   : Generates a menu with N dishes.
--   : Replaces a specific item in a generated menu.
--   : Exports the entire menu as a ZIP bundle.
--   : Provides diagnostic information on feature flags and LLM status.
-
-The system is declared production-ready for tech card and menu generation, with robust error handling and a functional LLM pipeline (even if prompt tuning is still beneficial).
+The AI engineer is currently in the process of **updating ** to ensure that the necessary  data and cache are correctly passed to the  and  functions. The UI part of Task #14 (adding a + Sub-recipe button and selector) has not yet been addressed. The backend issues for Task #13's  and  endpoints remain implicitly pending as they were not fully resolved.
 </current_work>
 
 <optional_next_step>
-Start implementing the BI/OLAP reports from IIKo as discussed with the user.
+The next step is to continue updating  to correctly pass sub-recipe data to the cost and nutrition calculators for Task #14.
 </optional_next_step>
