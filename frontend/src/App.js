@@ -3051,10 +3051,49 @@ function App() {
       }
       
       const data = await response.json();
-      console.log('Tech card generation response:', data);
+      console.log('TechCardV2 generation response:', data);
       
-      setTechCard(data.tech_card);
-      setCurrentIngredients(parseIngredientsFromTechCard(data.tech_card));
+      // Handle V2 response format
+      if (data.status === 'success' && data.card) {
+        const techCardV2 = data.card;
+        setTcV2(techCardV2);
+        
+        // Log V2 data for debugging
+        console.log('tcV2.version:', techCardV2.meta?.version);
+        console.log('tcV2.status:', data.status);
+        
+        // Convert V2 to display format for backwards compatibility
+        const displayText = convertV2ToDisplayText(techCardV2);
+        setTechCard(displayText);
+        
+        // Parse ingredients from V2 format
+        const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
+          id: index + 1,
+          name: ing.name,
+          quantity: ing.netto_g.toString(),
+          unit: ing.unit,
+          unitPrice: '0', // Will be calculated from cost data
+          totalPrice: '0',
+          originalQuantity: ing.netto_g.toString(),
+          originalPrice: '0'
+        })) || [];
+        
+        setCurrentIngredients(parsedIngredients);
+        setEditableIngredients(parsedIngredients);
+        
+      } else {
+        // Handle draft or error case
+        if (data.status === 'draft' && data.card) {
+          const techCardV2 = data.card;
+          setTcV2(techCardV2);
+          console.log('Generated draft tcV2 - validation issues found');
+          
+          const displayText = convertV2ToDisplayText(techCardV2);
+          setTechCard(displayText);
+        } else {
+          throw new Error(data.error || 'Failed to generate tech card');
+        }
+      }
       
       // Парсим ингредиенты для редактора
       const ingredientsText = data.tech_card;
