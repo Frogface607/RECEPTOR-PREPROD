@@ -9,7 +9,7 @@ import json
 import time
 
 # Configuration
-BACKEND_URL = "https://ai-menu-maker.preview.emergentagent.com/api"
+BACKEND_URL = "https://recipe-master-7.preview.emergentagent.com/api"
 
 def quick_test_personalized_pro_functions():
     """Quick test of 2-3 PRO functions with venue personalization"""
