@@ -226,8 +226,9 @@ def analyze_techcard_coverage(techcard, dish_name):
         nutrition_data = techcard['nutrition']
         results['nutrition_data'] = nutrition_data
         
-        if 'nutritionMeta' in nutrition_data:
-            nutrition_meta = nutrition_data['nutritionMeta']
+        # nutritionMeta находится на верхнем уровне техкарты
+        if 'nutritionMeta' in techcard:
+            nutrition_meta = techcard['nutritionMeta']
             results['nutrition_coverage'] = nutrition_meta.get('coveragePct', 0)
             results['nutrition_source'] = nutrition_meta.get('source', 'unknown')
             
