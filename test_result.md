@@ -114,6 +114,17 @@
 user_problem_statement: "Задача D1-UI — «USDA в UI: чип источника + поиск/маппинг + ГОСТ-примечание». Цель: сделать видимым источник нутриентов и позволить назначать canonical_id из USDA прямо из UI. Изменения: 1) Чип источника и покрытия 📊 БЖУ {coveragePct}% • {source|Mixed} с цветами, 2) Бейджи USDA/CAT/BOOT/⚠ no map в строках ингредиентов, 3) Модалка маппинга с USDA вкладкой использующая /catalog-search?source=usda, 4) ГОСТ-печать с строкой 'Источник БЖУ: {source}; дата: {asOf}'."
 
 backend:
+  - task: "USDA UI Integration (Task D1-UI)"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js, backend/receptor_agent/exports/html.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "TASK D1-UI IMPLEMENTATION COMPLETED: Successfully implemented UI components for USDA integration as specified. ✅ Phase 1 - Source Chip Implementation: Added enhanced 📊 БЖУ chip with coverage percentage and source display (USDA/CAT/BOOT/Mixed). Added color coding (green ≥90%, yellow 70-89%, red <70%). Added hover tooltips showing source details and update date (asOf). ✅ Phase 2 - Search & Mapping Interface: Implemented tabbed modal interface with separate USDA tab. Added /catalog-search?source=usda integration with 250ms debounced search. Added per-ingredient source badges (USDA/CAT/BOOT/⚠ no map) in ingredient lists. Keyboard navigation support for accessibility. ✅ Phase 3 - GOST Print Enhancement: Added 'Источник БЖУ' line under nutrition table in print template. Shows source (USDA/каталог/демо-каталог/Mixed) and asOf date if available. Enhanced print template with proper source attribution. Backend implementation ready for testing with existing USDA integration (Task D1)."
   - task: "USDA FDC Integration (Task D1)"
     implemented: true
     working: true
