@@ -330,13 +330,10 @@ class P1PricesBackendTester:
             
             # Test with ingredients that should be found in price catalogs
             test_profile = {
-                "dish_name": "Куриное филе с овощами",
-                "dish_description": "Простое блюдо с курицей и овощами",
-                "portions": 4,
-                "cuisine_type": "русская",
-                "cooking_method": "жарка",
-                "dietary_restrictions": [],
-                "ingredients_list": "куриное филе, растительное масло, лук репчатый, морковь, соль поваренная"
+                "name": "Куриное филе с овощами",
+                "cuisine": "русская",
+                "equipment": ["плита", "сковорода"],
+                "dietary": []
             }
             
             response = requests.post(url, json=test_profile, timeout=60)
