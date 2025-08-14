@@ -5500,6 +5500,13 @@ function App() {
                   IIKo
                 </button>
                 <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="text-yellow-300 hover:text-yellow-200 font-semibold text-sm sm:text-base transition-colors"
+                  title="📂 Загрузить прайсы и данные по БЖУ"
+                >
+                  ДАННЫЕ
+                </button>
+                <button
                   onClick={() => openAssemblyChartsManager()}
                   className="text-green-300 hover:text-green-200 font-semibold text-sm sm:text-base transition-colors"
                   title="🔨 Управление техкартами в IIKo (создание, просмотр, удаление)"
