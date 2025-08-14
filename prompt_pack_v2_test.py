@@ -488,7 +488,7 @@ def test_postcheck_v2_directly():
         
         if response.status_code == 200:
             data = response.json()
-            tech_card = data.get("techCard")
+            tech_card = data.get("card")  # Changed from "techCard" to "card"
             issues = data.get("issues", [])
             
             print(f"✅ Техкарта сгенерирована для тестирования postcheck_v2")
