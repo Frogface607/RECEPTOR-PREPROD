@@ -296,7 +296,12 @@ def test_chicken_dish_generation():
     }
     
     try:
-        response = requests.post(url, json=payload, timeout=60)
+        # Добавляем параметр use_llm=false для принудительного отключения LLM
+        url_with_params = f"{url}?use_llm=false"
+        log_test(f"Отправляем запрос: POST {url_with_params}")
+        log_test(f"Блюдо: {payload['name']}")
+        
+        response = requests.post(url_with_params, json=payload, timeout=60)
         
         if response.status_code == 200:
             data = response.json()
