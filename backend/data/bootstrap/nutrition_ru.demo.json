@@ -1,0 +1,496 @@
+{
+  "catalog_version": "1.0",
+  "last_updated": "2025-01-18",
+  "description": "Bootstrap nutrition catalog for Russian products (demo)",
+  "source": "catalog",
+  "densities": {
+    "water": 1.00,
+    "milk": 1.03,
+    "cream": 1.02,
+    "veg_oil": 0.91,
+    "olive_oil": 0.91,
+    "soy_sauce": 1.20,
+    "vinegar": 1.01,
+    "honey": 1.42,
+    "mayo": 0.93
+  },
+  "items": [
+    {
+      "canonical_id": "chicken_breast",
+      "name": "куриное филе",
+      "per100g": {"kcal": 165.0, "proteins_g": 31.0, "fats_g": 3.6, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "chicken_thigh",
+      "name": "куриное бедро",
+      "per100g": {"kcal": 185.0, "proteins_g": 25.8, "fats_g": 8.8, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "chicken_wings",
+      "name": "куриные крылья", 
+      "per100g": {"kcal": 222.0, "proteins_g": 20.6, "fats_g": 15.3, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "chicken_whole",
+      "name": "курица целая",
+      "per100g": {"kcal": 190.0, "proteins_g": 25.2, "fats_g": 9.2, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "beef_tenderloin",
+      "name": "говядина вырезка",
+      "per100g": {"kcal": 218.0, "proteins_g": 22.2, "fats_g": 12.4, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "beef_stew",
+      "name": "говядина для тушения",
+      "per100g": {"kcal": 220.0, "proteins_g": 22.6, "fats_g": 12.6, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "beef_ground",
+      "name": "говяжий фарш",
+      "per100g": {"kcal": 254.0, "proteins_g": 17.2, "fats_g": 20.0, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "pork_tenderloin",
+      "name": "свинина вырезка",
+      "per100g": {"kcal": 142.0, "proteins_g": 21.0, "fats_g": 7.1, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "pork_shoulder",
+      "name": "свинина лопатка",
+      "per100g": {"kcal": 257.0, "proteins_g": 16.0, "fats_g": 21.7, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "bacon",
+      "name": "бекон",
+      "per100g": {"kcal": 458.0, "proteins_g": 23.0, "fats_g": 40.0, "carbs_g": 1.0}
+    },
+    {
+      "canonical_id": "ham",
+      "name": "ветчина",
+      "per100g": {"kcal": 270.0, "proteins_g": 22.6, "fats_g": 20.9, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "turkey_breast",
+      "name": "индейка филе",
+      "per100g": {"kcal": 157.0, "proteins_g": 21.6, "fats_g": 8.0, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "salmon",
+      "name": "лосось",
+      "per100g": {"kcal": 208.0, "proteins_g": 20.0, "fats_g": 13.4, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "salmon_atlantic",
+      "name": "семга",
+      "per100g": {"kcal": 219.0, "proteins_g": 21.6, "fats_g": 14.0, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "cod",
+      "name": "треска",
+      "per100g": {"kcal": 78.0, "proteins_g": 17.5, "fats_g": 0.6, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "mackerel",
+      "name": "скумбрия",
+      "per100g": {"kcal": 181.0, "proteins_g": 20.7, "fats_g": 9.0, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "pike_perch",
+      "name": "судак",
+      "per100g": {"kcal": 84.0, "proteins_g": 19.0, "fats_g": 0.8, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "shrimp",
+      "name": "креветки",
+      "per100g": {"kcal": 87.0, "proteins_g": 18.0, "fats_g": 1.2, "carbs_g": 0.8}
+    },
+    {
+      "canonical_id": "squid",
+      "name": "кальмары",
+      "per100g": {"kcal": 74.0, "proteins_g": 18.0, "fats_g": 0.3, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "mussels",
+      "name": "мидии",
+      "per100g": {"kcal": 77.0, "proteins_g": 11.5, "fats_g": 2.0, "carbs_g": 3.3}
+    },
+    {
+      "canonical_id": "milk_3_2",
+      "name": "молоко 3.2%",
+      "per100g": {"kcal": 58.0, "proteins_g": 2.8, "fats_g": 3.2, "carbs_g": 4.7}
+    },
+    {
+      "canonical_id": "cream_20",
+      "name": "сливки 20%",
+      "per100g": {"kcal": 207.0, "proteins_g": 2.8, "fats_g": 20.0, "carbs_g": 3.7}
+    },
+    {
+      "canonical_id": "cream_35", 
+      "name": "сливки 35%",
+      "per100g": {"kcal": 337.0, "proteins_g": 2.5, "fats_g": 35.0, "carbs_g": 3.0}
+    },
+    {
+      "canonical_id": "sour_cream_20",
+      "name": "сметана 20%",
+      "per100g": {"kcal": 206.0, "proteins_g": 2.8, "fats_g": 20.0, "carbs_g": 3.2}
+    },
+    {
+      "canonical_id": "cottage_cheese_5",
+      "name": "творог 5%",
+      "per100g": {"kcal": 121.0, "proteins_g": 17.2, "fats_g": 5.0, "carbs_g": 1.8}
+    },
+    {
+      "canonical_id": "kefir",
+      "name": "кефир",
+      "per100g": {"kcal": 59.0, "proteins_g": 2.8, "fats_g": 3.2, "carbs_g": 4.1}
+    },
+    {
+      "canonical_id": "ryazhenka",
+      "name": "ряженка",
+      "per100g": {"kcal": 85.0, "proteins_g": 3.0, "fats_g": 6.0, "carbs_g": 4.1}
+    },
+    {
+      "canonical_id": "yogurt_natural",
+      "name": "йогурт натуральный",
+      "per100g": {"kcal": 66.0, "proteins_g": 5.0, "fats_g": 3.5, "carbs_g": 3.5}
+    },
+    {
+      "canonical_id": "butter_82",
+      "name": "масло сливочное 82%",
+      "per100g": {"kcal": 748.0, "proteins_g": 0.5, "fats_g": 82.5, "carbs_g": 0.8}
+    },
+    {
+      "canonical_id": "cheese_russian",
+      "name": "сыр российский",
+      "per100g": {"kcal": 364.0, "proteins_g": 23.0, "fats_g": 30.0, "carbs_g": 0.3}
+    },
+    {
+      "canonical_id": "parmesan",
+      "name": "сыр пармезан",
+      "per100g": {"kcal": 431.0, "proteins_g": 38.0, "fats_g": 29.0, "carbs_g": 4.1}
+    },
+    {
+      "canonical_id": "mozzarella",
+      "name": "сыр моцарелла",
+      "per100g": {"kcal": 280.0, "proteins_g": 28.0, "fats_g": 17.0, "carbs_g": 2.2}
+    },
+    {
+      "canonical_id": "cheddar",
+      "name": "сыр чеддер",
+      "per100g": {"kcal": 392.0, "proteins_g": 23.0, "fats_g": 32.0, "carbs_g": 2.1}
+    },
+    {
+      "canonical_id": "cheese_adygei",
+      "name": "сыр адыгейский",
+      "per100g": {"kcal": 240.0, "proteins_g": 20.0, "fats_g": 14.0, "carbs_g": 1.5}
+    },
+    {
+      "canonical_id": "feta",
+      "name": "брынза",
+      "per100g": {"kcal": 260.0, "proteins_g": 20.1, "fats_g": 20.0, "carbs_g": 0.4}
+    },
+    {
+      "canonical_id": "eggs_chicken",
+      "name": "яйца куриные с1",
+      "per100g": {"kcal": 157.0, "proteins_g": 12.7, "fats_g": 11.5, "carbs_g": 0.7},
+      "mass_per_piece": 55.0
+    },
+    {
+      "canonical_id": "eggs_quail",
+      "name": "перепелиные яйца",
+      "per100g": {"kcal": 168.0, "proteins_g": 11.9, "fats_g": 13.1, "carbs_g": 0.6},
+      "mass_per_piece": 12.0
+    },
+    {
+      "canonical_id": "potato",
+      "name": "картофель",
+      "per100g": {"kcal": 77.0, "proteins_g": 2.0, "fats_g": 0.4, "carbs_g": 16.1}
+    },
+    {
+      "canonical_id": "carrot",
+      "name": "морковь",
+      "per100g": {"kcal": 35.0, "proteins_g": 1.3, "fats_g": 0.1, "carbs_g": 6.9}
+    },
+    {
+      "canonical_id": "onion",
+      "name": "лук репчатый",
+      "per100g": {"kcal": 41.0, "proteins_g": 1.4, "fats_g": 0.2, "carbs_g": 8.2}
+    },
+    {
+      "canonical_id": "garlic",
+      "name": "чеснок",
+      "per100g": {"kcal": 149.0, "proteins_g": 6.5, "fats_g": 0.5, "carbs_g": 29.9}
+    },
+    {
+      "canonical_id": "tomato",
+      "name": "помидоры",
+      "per100g": {"kcal": 20.0, "proteins_g": 1.1, "fats_g": 0.2, "carbs_g": 3.7}
+    },
+    {
+      "canonical_id": "cucumber",
+      "name": "огурцы",
+      "per100g": {"kcal": 15.0, "proteins_g": 0.8, "fats_g": 0.1, "carbs_g": 2.5}
+    },
+    {
+      "canonical_id": "cabbage_white",
+      "name": "капуста белокочанная",
+      "per100g": {"kcal": 27.0, "proteins_g": 1.8, "fats_g": 0.1, "carbs_g": 4.7}
+    },
+    {
+      "canonical_id": "cauliflower",
+      "name": "капуста цветная",
+      "per100g": {"kcal": 30.0, "proteins_g": 2.5, "fats_g": 0.3, "carbs_g": 4.2}
+    },
+    {
+      "canonical_id": "broccoli",
+      "name": "брокколи",
+      "per100g": {"kcal": 28.0, "proteins_g": 3.0, "fats_g": 0.4, "carbs_g": 4.0}
+    },
+    {
+      "canonical_id": "bell_pepper",
+      "name": "перец болгарский",
+      "per100g": {"kcal": 27.0, "proteins_g": 1.3, "fats_g": 0.0, "carbs_g": 5.3}
+    },
+    {
+      "canonical_id": "eggplant",
+      "name": "баклажаны",
+      "per100g": {"kcal": 24.0, "proteins_g": 1.2, "fats_g": 0.1, "carbs_g": 4.5}
+    },
+    {
+      "canonical_id": "zucchini",
+      "name": "кабачки",
+      "per100g": {"kcal": 24.0, "proteins_g": 0.6, "fats_g": 0.3, "carbs_g": 4.6}
+    },
+    {
+      "canonical_id": "beetroot",
+      "name": "свекла",
+      "per100g": {"kcal": 40.0, "proteins_g": 1.5, "fats_g": 0.1, "carbs_g": 8.8}
+    },
+    {
+      "canonical_id": "radish_black",
+      "name": "редька",
+      "per100g": {"kcal": 36.0, "proteins_g": 1.9, "fats_g": 0.2, "carbs_g": 6.7}
+    },
+    {
+      "canonical_id": "radish_red", 
+      "name": "редис",
+      "per100g": {"kcal": 19.0, "proteins_g": 1.2, "fats_g": 0.1, "carbs_g": 3.4}
+    },
+    {
+      "canonical_id": "asparagus",
+      "name": "спаржа",
+      "per100g": {"kcal": 21.0, "proteins_g": 1.9, "fats_g": 0.1, "carbs_g": 3.1}
+    },
+    {
+      "canonical_id": "spinach",
+      "name": "шпинат",
+      "per100g": {"kcal": 22.0, "proteins_g": 2.9, "fats_g": 0.3, "carbs_g": 2.0}
+    },
+    {
+      "canonical_id": "dill",
+      "name": "укроп",
+      "per100g": {"kcal": 38.0, "proteins_g": 2.5, "fats_g": 0.5, "carbs_g": 6.3}
+    },
+    {
+      "canonical_id": "parsley",
+      "name": "петрушка",
+      "per100g": {"kcal": 47.0, "proteins_g": 3.7, "fats_g": 0.4, "carbs_g": 7.6}
+    },
+    {
+      "canonical_id": "basil",
+      "name": "базилик",
+      "per100g": {"kcal": 27.0, "proteins_g": 2.5, "fats_g": 0.6, "carbs_g": 1.0}
+    },
+    {
+      "canonical_id": "lettuce",
+      "name": "салат листовой",
+      "per100g": {"kcal": 12.0, "proteins_g": 1.5, "fats_g": 0.2, "carbs_g": 1.3}
+    },
+    {
+      "canonical_id": "arugula",
+      "name": "руккола",
+      "per100g": {"kcal": 25.0, "proteins_g": 2.6, "fats_g": 0.7, "carbs_g": 2.1}
+    },
+    {
+      "canonical_id": "rice_round",
+      "name": "рис круглозерный",
+      "per100g": {"kcal": 344.0, "proteins_g": 6.7, "fats_g": 0.7, "carbs_g": 78.9}
+    },
+    {
+      "canonical_id": "rice_long",
+      "name": "рис длиннозерный",
+      "per100g": {"kcal": 365.0, "proteins_g": 7.5, "fats_g": 2.6, "carbs_g": 62.3}
+    },
+    {
+      "canonical_id": "buckwheat",
+      "name": "гречка",
+      "per100g": {"kcal": 308.0, "proteins_g": 12.6, "fats_g": 3.3, "carbs_g": 57.1}
+    },
+    {
+      "canonical_id": "oats",
+      "name": "овсяные хлопья",
+      "per100g": {"kcal": 305.0, "proteins_g": 11.0, "fats_g": 6.1, "carbs_g": 50.0}
+    },
+    {
+      "canonical_id": "millet",
+      "name": "пшено",
+      "per100g": {"kcal": 348.0, "proteins_g": 11.5, "fats_g": 3.3, "carbs_g": 69.3}
+    },
+    {
+      "canonical_id": "pearl_barley",
+      "name": "перловка",
+      "per100g": {"kcal": 315.0, "proteins_g": 9.3, "fats_g": 1.1, "carbs_g": 73.7}
+    },
+    {
+      "canonical_id": "semolina",
+      "name": "манка",
+      "per100g": {"kcal": 328.0, "proteins_g": 10.3, "fats_g": 1.0, "carbs_g": 70.6}
+    },
+    {
+      "canonical_id": "corn_grits",
+      "name": "кукурузная крупа",
+      "per100g": {"kcal": 337.0, "proteins_g": 8.3, "fats_g": 1.2, "carbs_g": 75.0}
+    },
+    {
+      "canonical_id": "bulgur",
+      "name": "булгур",
+      "per100g": {"kcal": 342.0, "proteins_g": 12.3, "fats_g": 1.3, "carbs_g": 75.9}
+    },
+    {
+      "canonical_id": "quinoa",
+      "name": "киноа",
+      "per100g": {"kcal": 368.0, "proteins_g": 14.1, "fats_g": 6.1, "carbs_g": 57.2}
+    },
+    {
+      "canonical_id": "pasta_wheat",
+      "name": "макароны пшеничные",
+      "per100g": {"kcal": 344.0, "proteins_g": 10.4, "fats_g": 1.1, "carbs_g": 71.5}
+    },
+    {
+      "canonical_id": "spaghetti",
+      "name": "спагетти",
+      "per100g": {"kcal": 344.0, "proteins_g": 10.4, "fats_g": 1.1, "carbs_g": 71.5}
+    },
+    {
+      "canonical_id": "egg_noodles",
+      "name": "лапша яичная",
+      "per100g": {"kcal": 301.0, "proteins_g": 12.0, "fats_g": 2.1, "carbs_g": 58.0}
+    },
+    {
+      "canonical_id": "flour_wheat",
+      "name": "мука пшеничная в/с",
+      "per100g": {"kcal": 334.0, "proteins_g": 10.8, "fats_g": 1.3, "carbs_g": 69.0}
+    },
+    {
+      "canonical_id": "flour_rye",
+      "name": "мука ржаная",
+      "per100g": {"kcal": 298.0, "proteins_g": 6.9, "fats_g": 1.7, "carbs_g": 61.0}
+    },
+    {
+      "canonical_id": "yeast_dry",
+      "name": "дрожжи сухие",
+      "per100g": {"kcal": 410.0, "proteins_g": 49.0, "fats_g": 7.6, "carbs_g": 9.6}
+    },
+    {
+      "canonical_id": "yeast_fresh",
+      "name": "дрожжи прессованные",
+      "per100g": {"kcal": 109.0, "proteins_g": 12.7, "fats_g": 2.7, "carbs_g": 8.5}
+    },
+    {
+      "canonical_id": "sugar",
+      "name": "сахар",
+      "per100g": {"kcal": 387.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 99.8}
+    },
+    {
+      "canonical_id": "honey",
+      "name": "мёд",
+      "per100g": {"kcal": 329.0, "proteins_g": 0.8, "fats_g": 0.0, "carbs_g": 81.5}
+    },
+    {
+      "canonical_id": "table_salt",
+      "name": "соль поваренная",
+      "per100g": {"kcal": 0.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "black_pepper",
+      "name": "перец чёрный молотый",
+      "per100g": {"kcal": 251.0, "proteins_g": 10.4, "fats_g": 3.3, "carbs_g": 38.3}
+    },
+    {
+      "canonical_id": "bay_leaves",
+      "name": "лавровый лист",
+      "per100g": {"kcal": 313.0, "proteins_g": 7.6, "fats_g": 8.4, "carbs_g": 48.7}
+    },
+    {
+      "canonical_id": "cinnamon",
+      "name": "корица молотая",
+      "per100g": {"kcal": 247.0, "proteins_g": 4.0, "fats_g": 1.2, "carbs_g": 27.5}
+    },
+    {
+      "canonical_id": "vanilla",
+      "name": "ваниль",
+      "per100g": {"kcal": 288.0, "proteins_g": 0.1, "fats_g": 0.1, "carbs_g": 12.7}
+    },
+    {
+      "canonical_id": "vegetable_oil",
+      "name": "растительное масло",
+      "per100g": {"kcal": 899.0, "proteins_g": 0.0, "fats_g": 99.9, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "olive_oil",
+      "name": "оливковое масло",
+      "per100g": {"kcal": 898.0, "proteins_g": 0.0, "fats_g": 99.8, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "sunflower_oil",
+      "name": "подсолнечное масло",
+      "per100g": {"kcal": 899.0, "proteins_g": 0.0, "fats_g": 99.9, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "corn_oil",
+      "name": "кукурузное масло",
+      "per100g": {"kcal": 899.0, "proteins_g": 0.0, "fats_g": 99.9, "carbs_g": 0.0}
+    },
+    {
+      "canonical_id": "table_vinegar",
+      "name": "уксус столовый 9%",
+      "per100g": {"kcal": 11.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 3.0}
+    },
+    {
+      "canonical_id": "soy_sauce",
+      "name": "соевый соус",
+      "per100g": {"kcal": 51.0, "proteins_g": 6.0, "fats_g": 0.0, "carbs_g": 5.0}
+    },
+    {
+      "canonical_id": "mayonnaise",
+      "name": "майонез",
+      "per100g": {"kcal": 621.0, "proteins_g": 2.8, "fats_g": 67.0, "carbs_g": 2.6}
+    },
+    {
+      "canonical_id": "ketchup",
+      "name": "кетчуп",
+      "per100g": {"kcal": 93.0, "proteins_g": 1.8, "fats_g": 0.4, "carbs_g": 22.2}
+    },
+    {
+      "canonical_id": "mustard",
+      "name": "горчица",
+      "per100g": {"kcal": 162.0, "proteins_g": 5.7, "fats_g": 6.4, "carbs_g": 22.0}
+    },
+    {
+      "canonical_id": "bread_black",
+      "name": "хлеб чёрный",
+      "per100g": {"kcal": 210.0, "proteins_g": 6.6, "fats_g": 1.2, "carbs_g": 40.9}
+    },
+    {
+      "canonical_id": "bread_white",
+      "name": "хлеб белый",
+      "per100g": {"kcal": 242.0, "proteins_g": 8.1, "fats_g": 1.0, "carbs_g": 48.8}
+    },
+    {
+      "canonical_id": "loaf_sliced",
+      "name": "батон нарезной",
+      "per100g": {"kcal": 264.0, "proteins_g": 7.7, "fats_g": 2.9, "carbs_g": 50.9}
+    }
+  ]
+}
