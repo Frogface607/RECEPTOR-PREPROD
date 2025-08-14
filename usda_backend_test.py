@@ -93,7 +93,7 @@ def test_nutrition_calculator_with_usda():
                 name="треска",
                 brutto_g=220.0,
                 loss_pct=10.0,
-                netto_g=200.0,
+                netto_g=198.0,  # 220 * (1 - 10/100) = 198
                 unit="g",
                 canonical_id="cod"
             ),
@@ -101,7 +101,7 @@ def test_nutrition_calculator_with_usda():
                 name="куриное филе", 
                 brutto_g=165.0,
                 loss_pct=10.0,
-                netto_g=150.0,
+                netto_g=148.5,  # 165 * (1 - 10/100) = 148.5
                 unit="g",
                 canonical_id="chicken_breast"
             ),
