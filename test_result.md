@@ -62,7 +62,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "USDA UI Integration (Task D1-UI)"
+##     - "P1-Prices Implementation (Task P1-Prices)"
 ##   stuck_tasks:
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
