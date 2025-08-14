@@ -973,51 +973,61 @@ function App() {
               </span>
             </div>
           </div>
-          {/* ПОКРЫТИЕ КАТАЛОГОВ */}
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className={`px-3 py-1 rounded-full text-sm font-bold ${costMeta.coveragePct >= 90 ? 'bg-green-600 text-white' : costMeta.coveragePct >= 70 ? 'bg-yellow-600 text-black' : 'bg-red-600 text-white'}`}>
-              💰 Цены: {costMeta.coveragePct || 0}%
-            </div>
-            <div className={`px-3 py-1 rounded-full text-sm font-bold ${nutritionMeta.coveragePct >= 90 ? 'bg-green-600 text-white' : nutritionMeta.coveragePct >= 70 ? 'bg-yellow-600 text-black' : 'bg-red-600 text-white'}`}>
-              📊 БЖУ: {nutritionMeta.coveragePct || 0}%
-            </div>
-            {costMeta.asOf && (
-              <div className={`px-2 py-1 rounded text-xs ${new Date(costMeta.asOf) < new Date(Date.now() - 30*24*60*60*1000) ? 'bg-yellow-600 text-black' : 'bg-gray-600 text-white'}`}>
-                📅 {costMeta.asOf}
-                {new Date(costMeta.asOf) < new Date(Date.now() - 30*24*60*60*1000) && ' (устарел)'}
-              </div>
-            )}
-            {isRecalculating && (
-              <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-bold animate-pulse">
-                🔄 Пересчет...
-              </div>
-            )}
+        {/* Coverage indicators */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+            (costMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
+            (costMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
+            'bg-red-600 text-white'
+          }`}>
+            💰 Цены {costMeta.coveragePct}%
           </div>
-          {meta.cuisine && (
-            <p className="text-gray-400 text-lg">{meta.cuisine}</p>
+          <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+            (nutritionMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
+            (nutritionMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
+            'bg-red-600 text-white'
+          }`}>
+            📊 БЖУ {nutritionMeta.coveragePct}%
+          </div>
+          {isRecalculating && (
+            <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-bold animate-pulse">
+              🔄 Пересчет...
+            </div>
           )}
         </div>
 
-        {/* ВЫХОД И ПОРЦИИ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-900/20 rounded-lg p-4 text-center">
-            <h4 className="text-blue-300 font-bold mb-2">ПОРЦИЙ</h4>
-            <p className="text-gray-300">{tcV2.portions || 1}</p>
+        {/* Recalc error banner */}
+        {recalcError && (
+          <div className="bg-red-900/50 border border-red-600/50 rounded-lg p-3 mb-4">
+            <div className="text-red-300 text-sm">
+              ❌ {recalcError}
+            </div>
           </div>
-          <div className="bg-green-900/20 rounded-lg p-4 text-center">
-            <h4 className="text-green-300 font-bold mb-2">НА ПОРЦИЮ</h4>
-            <p className="text-gray-300">{yield_data.perPortion_g || 0}г</p>
-          </div>
-          <div className="bg-purple-900/20 rounded-lg p-4 text-center">
-            <h4 className="text-purple-300 font-bold mb-2">ОБЩИЙ ВЫХОД</h4>
-            <p className="text-gray-300">{yield_data.perBatch_g || 0}г</p>
-          </div>
-        </div>
-
+        )}
+        
         {/* ИНГРЕДИЕНТЫ ТАБЛИЦА */}
         {ingredients.length > 0 && (
           <div className="bg-gray-800/30 rounded-lg p-4">
-            <h3 className="text-lg font-bold text-purple-400 mb-4 uppercase tracking-wide">ИНГРЕДИЕНТЫ</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-purple-400 uppercase tracking-wide">ИНГРЕДИЕНТЫ</h3>
+              {editingIngredientIndex !== null && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={saveIngredientEdit}
+                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
+                    disabled={Object.keys(editingErrors).length > 0}
+                  >
+                    💾 Сохранить
+                  </button>
+                  <button
+                    onClick={cancelIngredientEdit}
+                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+                  >
+                    ✖️ Отмена
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -1028,36 +1038,186 @@ function App() {
                     <th className="text-center py-2 text-purple-300">Нетто</th>
                     <th className="text-center py-2 text-purple-300">Ед.изм</th>
                     <th className="text-center py-2 text-purple-300">SKU</th>
-                    <th className="text-center py-2 text-purple-300">Маппинг</th>
+                    <th className="text-center py-2 text-purple-300">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ingredients.map((ing, index) => (
-                    <tr key={index} className="border-b border-gray-800">
-                      <td className="py-2 text-gray-300">
-                        <div className="flex items-center gap-2">
-                          {ing.name}
-                          {(!ing.canonical_id && !ing.skuId) && (
-                            <span className="text-yellow-400 text-xs" title="Нет маппинга к каталогу">⚠️</span>
+                  {ingredients.map((ing, index) => {
+                    const isEditing = editingIngredientIndex === index;
+                    const hasSubRecipeIssue = issues.some(issue => 
+                      issue.type === 'subRecipeNotReady' && issue.name === ing.name
+                    );
+                    
+                    return (
+                      <tr key={index} className={`border-b border-gray-800 ${isEditing ? 'bg-purple-900/20' : ''}`}>
+                        <td className="py-2 text-gray-300">
+                          <div className="flex items-center gap-2">
+                            <div>
+                              <div className="flex items-center gap-1">
+                                {ing.name}
+                                {(!ing.canonical_id && !ing.skuId && !ing.subRecipe) && (
+                                  <span className="text-yellow-400 text-xs" title="Нет маппинга к каталогу">⚠️</span>
+                                )}
+                              </div>
+                              {ing.subRecipe && (
+                                <div className="text-xs text-blue-300 mt-1">
+                                  📋 см. ТК "{ing.subRecipe.title}"
+                                  <button
+                                    onClick={() => window.open(`${API}/v1/techcards.v2/print?id=${ing.subRecipe.id}`, '_blank')}
+                                    className="ml-2 text-purple-400 hover:text-purple-300 underline"
+                                  >
+                                    Открыть ГОСТ-печать
+                                  </button>
+                                </div>
+                              )}
+                              {hasSubRecipeIssue && (
+                                <div className="bg-yellow-900/30 border-l-2 border-yellow-500 px-2 py-1 mt-1 text-xs text-yellow-300">
+                                  Подрецепт не готов (нет cost/БЖУ)
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        
+                        {/* Brutto column */}
+                        <td className="text-center py-2">
+                          {isEditing ? (
+                            <div>
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={editingData.brutto_g || ''}
+                                onChange={(e) => handleEditingChange('brutto_g', e.target.value)}
+                                onKeyDown={handleEditKeyDown}
+                                className={`w-16 px-1 py-1 bg-gray-700 text-white rounded text-center text-sm ${
+                                  editingErrors.brutto_g ? 'border-red-500' : 'border-gray-600'
+                                }`}
+                                autoFocus
+                              />
+                              {editingErrors.brutto_g && (
+                                <div className="text-red-400 text-xs mt-1">{editingErrors.brutto_g}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span 
+                              className="text-gray-300 cursor-pointer hover:bg-gray-700 px-2 py-1 rounded"
+                              onClick={() => startIngredientEdit(index)}
+                            >
+                              {ing.brutto_g}
+                            </span>
                           )}
-                        </div>
-                      </td>
-                      <td className="text-center py-2 text-gray-300">{ing.brutto_g}</td>
-                      <td className="text-center py-2 text-gray-300">{ing.loss_pct}</td>
-                      <td className="text-center py-2 text-gray-300 font-bold">{ing.netto_g}</td>
-                      <td className="text-center py-2 text-gray-400">{ing.unit}</td>
-                      <td className="text-center py-2 text-gray-400 text-xs">{ing.skuId || '-'}</td>
-                      <td className="text-center py-2">
-                        <button
-                          className="text-purple-400 hover:text-purple-300 transition-colors"
-                          onClick={() => handleOpenIngredientMapping(index)}
-                          title="Назначить продукт/SKU из каталога"
-                        >
-                          ✏️
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        
+                        {/* Loss % column */}
+                        <td className="text-center py-2">
+                          {isEditing ? (
+                            <div>
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={editingData.loss_pct || ''}
+                                onChange={(e) => handleEditingChange('loss_pct', e.target.value)}
+                                onKeyDown={handleEditKeyDown}
+                                className={`w-16 px-1 py-1 bg-gray-700 text-white rounded text-center text-sm ${
+                                  editingErrors.loss_pct ? 'border-red-500' : 'border-gray-600'
+                                }`}
+                              />
+                              {editingErrors.loss_pct && (
+                                <div className="text-red-400 text-xs mt-1">{editingErrors.loss_pct}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span 
+                              className="text-gray-300 cursor-pointer hover:bg-gray-700 px-2 py-1 rounded"
+                              onClick={() => startIngredientEdit(index)}
+                            >
+                              {ing.loss_pct}
+                            </span>
+                          )}
+                        </td>
+                        
+                        {/* Netto column */}
+                        <td className="text-center py-2">
+                          {isEditing ? (
+                            <div>
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={editingData.netto_g || ''}
+                                onChange={(e) => handleEditingChange('netto_g', e.target.value)}
+                                onKeyDown={handleEditKeyDown}
+                                className={`w-16 px-1 py-1 bg-gray-700 text-white rounded text-center text-sm font-bold ${
+                                  editingErrors.netto_g ? 'border-red-500' : 'border-gray-600'
+                                }`}
+                              />
+                              {editingErrors.netto_g && (
+                                <div className="text-red-400 text-xs mt-1">{editingErrors.netto_g}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span 
+                              className="text-gray-300 font-bold cursor-pointer hover:bg-gray-700 px-2 py-1 rounded"
+                              onClick={() => startIngredientEdit(index)}
+                            >
+                              {ing.netto_g}
+                            </span>
+                          )}
+                        </td>
+                        
+                        {/* Unit column */}
+                        <td className="text-center py-2">
+                          {isEditing ? (
+                            <select
+                              value={editingData.unit || 'g'}
+                              onChange={(e) => handleEditingChange('unit', e.target.value)}
+                              onKeyDown={handleEditKeyDown}
+                              className="w-16 px-1 py-1 bg-gray-700 text-white rounded text-center text-sm border-gray-600"
+                            >
+                              <option value="g">г</option>
+                              <option value="ml">мл</option>
+                              <option value="pcs">шт</option>
+                            </select>
+                          ) : (
+                            <span 
+                              className="text-gray-400 cursor-pointer hover:bg-gray-700 px-2 py-1 rounded"
+                              onClick={() => startIngredientEdit(index)}
+                            >
+                              {ing.unit}
+                            </span>
+                          )}
+                        </td>
+                        
+                        <td className="text-center py-2 text-gray-400 text-xs">{ing.skuId || '-'}</td>
+                        <td className="text-center py-2">
+                          <div className="flex justify-center gap-1">
+                            <button
+                              className="text-purple-400 hover:text-purple-300 transition-colors"
+                              onClick={() => handleOpenIngredientMapping(index)}
+                              title="Назначить продукт/SKU из каталога"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              className="text-blue-400 hover:text-blue-300 transition-colors"
+                              onClick={() => openSubRecipeModal(index)}
+                              title="Назначить подрецепт"
+                            >
+                              ➕
+                            </button>
+                            {ing.subRecipe && (
+                              <button
+                                className="text-red-400 hover:text-red-300 transition-colors"
+                                onClick={() => removeSubRecipe(index)}
+                                title="Убрать подрецепт"
+                              >
+                                ❌
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
