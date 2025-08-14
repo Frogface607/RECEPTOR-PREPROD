@@ -21,7 +21,7 @@ import csv
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://656e01f5-3dfa-48e5-95b5-5cb5a1aefe96.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ai-menu-designer.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def log_test(message):

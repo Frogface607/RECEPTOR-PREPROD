@@ -1,53 +1,71 @@
 <analysis>
-The AI engineer's work in this trajectory primarily focused on refining and expanding the AI-Menu-Designer application. The previous work, including core backend architecture, LLM pipeline, HACCP module, cost calculator, nutrition calculator, GOST print, and IIKo export (Tasks #2-6), was summarized as context. The trajectory then details the completion of **Task #7 (Golden Tests)**, fixing yield mismatches and ensuring CI/CD quality. Following this, **Task #8** involved a significant frontend overhaul to solely use **TechCardV2** for generation, rendering, printing, and IIKo export. This led to **Task #9**, which enforced V2-only usage across the frontend, unifying PDF export with GOST print. **Task #10** integrated the display of calculated nutritional values (BJU) into both the UI and GOST print. A user bug report Generation is not working in **Task #11** prompted a fix for frontend generation flow, standardizing states (success/draft/error) and removing disruptive alerts. **Task #12** synchronized the backend and frontend API contract for V2 generation, ensuring consistent JSON responses. Finally, **Task #13** initiated the development of inline ingredient mapping to a catalog for improved cost/nutrition coverage. The AI engineer is currently in the middle of **Task #14**, integrating **sub-recipes** into TechCardV2 calculations and export. Throughout these tasks, the engineer demonstrated strong debugging skills, addressing issues from JSON serialization to UI rendering.
+The AI engineer's trajectory shows a systematic progression through multiple feature development and bug-fixing tasks for the AI-Menu-Designer application. The work transitioned from initial setup and core functionality (Tasks #2-6) to advanced features and quality assurance. Key completed tasks include establishing a robust Golden Test suite (Task #7), a complete frontend migration to TechCardV2 (Task #8-9), integrating nutritional value display (Task #10), fixing frontend generation flow (Task #11), synchronizing backend API for V2 (Task #12), implementing inline ingredient mapping (Task #13, backend partially), and integrating sub-recipes into TechCardV2 calculations (Task #14, backend completed). Subsequently, the engineer focused on data management (Task 1.1 & 1.2: bootstrap catalogs and UI for catalog upload), followed by a major UI fix (Task 0.1 & 0.1-FE: inline editing, mapping, and sub-recipe integration on the frontend). More recently, the focus shifted to AI generation quality with a two-step LLM prompt chain (Task 2.1), rule-based chef sanity checks (Task 2.2), anchor validity (Task C1), and finally, rigid normalization of nutrition and cost data (Task C2). Each task involved meticulous backend and frontend updates, schema modifications, and rigorous testing. The engineer consistently addresses user feedback and adapts the development plan.
 </analysis>
 
 <product_requirements>
-The AI-Menu-Designer (МЕНЮ ЗА 15 МИНУТ) application aims to automate menu generation for the HoReCa sector, evolving from Receptor Pro to focus on tech card creation, cost management, and deep integration with the IIKo API. Core functionalities include a menu creation wizard based on Venue Profiles and free-text dish input, standardizing measurements to grams. The primary objective is comprehensive IIKo integration for automated tech card/price list upload, stock tracking, sales analytics via OLAP reports, and real-time pricing, initially targeting Assembly Charts and an AI Menu Designer category in IIKo. A critical constraint is IIKo's lack of direct API support for DISH type products. Recent development has centered on a TechCards v2 system for stricter validation (brutto/netto/loss, allergens, HACCP), an LLM pipeline (using  with structured outputs and safe fallbacks), and flexible export capabilities (CSV for IIKo, XLSX, PDF, ZIP bundles). New features include a dedicated HACCP LLM module for generation and auditing, and its frontend integration. The application now implements a code-based cost calculator, a nutrition calculator, GOST A4 printing, IIKo-specific data export, and a golden test suite for CI/CD quality gates.
+The AI-Menu-Designer application aims to automate menu generation for the HoReCa sector, evolving from Receptor Pro to focus on tech card creation, cost management, and deep integration with the IIKo API. Core functionalities include a menu creation wizard based on Venue Profiles and free-text dish input, standardizing measurements to grams. The primary objective is comprehensive IIKo integration for automated tech card/price list upload, stock tracking, sales analytics via OLAP reports, and real-time pricing. A critical constraint is IIKo's lack of direct API support for DISH type products. Recent development centered on a TechCards v2 system for stricter validation (brutto/netto/loss, allergens, HACCP), an LLM pipeline (using  with structured outputs and safe fallbacks), and flexible export capabilities (CSV for IIKo, XLSX, PDF, ZIP bundles). The application now implements a code-based cost calculator, a nutrition calculator, GOST A4 printing, IIKo-specific data export, and a golden test suite for CI/CD quality gates. Recent focus has been on enabling sub-recipes, robust catalog management, inline editing, and enhancing LLM generation quality and data consistency.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack**: React.js, FastAPI, MongoDB.
--   **AI/LLM**: OpenAI (), structured outputs, prompt engineering,  for retries.
--   **Deployment**: Supervisor, Kubernetes (ingress rules,  prefix), .
--   **Integration**: IIKo API (iikoCloud/iikoServer), custom HTTP client.
--   **Python**: Pydantic v2 (schemas, field validation, ), .
--   **Frontend**: React , , feature flags, unit conversions.
--   **Exports**: , , .
+-   **Full-stack**: React.js (frontend), FastAPI (backend), MongoDB (database).
+-   **AI/LLM**: OpenAI (), structured outputs, prompt engineering, multi-step LLM pipelines.
+-   **Deployment**: Supervisor, Kubernetes (ingress rules,  prefix).
+-   **Data Processing**: Pydantic v2 (schemas),  (CSV/Excel parsing), .
+-   **UI/UX**: React /, inline editing, modal components.
+-   **Quality Assurance**: Golden Tests, rule-based sanity checks, unit testing.
 </key_technical_concepts>
 
 <code_architecture>
-The application employs a React frontend, FastAPI backend, and MongoDB database.
+The application uses a React frontend, FastAPI backend, and MongoDB database.
 
 
 
--   **/app/backend/server.py**: Core FastAPI application, includes v2 routers.
--   **/app/backend/receptor_agent/techcards_v2/schemas.py**: Defines , , . **Modified**: Added  schema and  and  to .
--   **/app/backend/receptor_agent/techcards_v2/cost_calculator.py**: Implements deterministic cost calculation. **Modified**: Updated  and  to handle  (fetching cost from sub-techcards) and add issues for missing sub-recipe cost.
--   **/app/backend/receptor_agent/techcards_v2/nutrition_calculator.py**: Implements code-based nutrition calculation. **Modified**: Updated  and  to handle  (fetching nutrition from sub-techcards) and add issues for missing sub-recipe nutrition.
--   **/app/backend/receptor_agent/exports/html.py**: Generates GOST A4 print HTML. **Modified**: Updated logic to display BJU from  (including coverage percentage) and fixed a  serialization error.
--   **/app/backend/receptor_agent/llm/pipeline.py**: Integrates calculators. **Modified**: Fixed  to return  for draft status instead of .
--   **/app/backend/receptor_agent/routes/techcards_v2.py**: Exposes API endpoints. **Modified**:  now returns a standardized JSON response  for all cases (, , ), enforces  Content-Type, and includes robust exception handling. Added new endpoints  (for recalculating cost/nutrition) and  (for mapping ingredients). Changed  route to .
--   **/app/backend/data/price_catalog.dev.json**: Stores ingredient prices.
--   **/app/backend/data/nutrition_catalog.dev.json**: Stores ingredient nutritional data.
--   **/app/.github/workflows/golden-tests.yml**: GitHub Actions workflow. **Created**: Runs  as a CI gate.
--   **/app/golden/techcards/**: Directory for golden TechCardV2 JSONs. **Created**: Contains 10 reference  JSONs for golden tests.
--   **/app/golden_tests.py**: Test runner for golden files. **Created**: Performs validation, yield consistency, data integrity checks, and issue warnings.
--   **/app/frontend/src/App.js**: Main frontend component. **Modified**:
-    *   Switched generation endpoint to .
-    *   Added  state and  for V2 data.
-    *   Refactored rendering to  for V2 schema.
-    *   Updated , ,  to use V2 API endpoints and  data.
-    *   Removed old V1 parsing logic.
-    *   Enforced V2-only rendering ().
-    *   Unified PDF export with GOST print by directing both to .
-    *   Added  display logic in UI, with formatting and coverage information.
-    *   Implemented new React states (, , ) for handling  states in generation flow, removing  calls.
-    *   Added UI elements for debug information (via  URL param) and error/draft banners.
-    *   Implemented UI for inline ingredient mapping, including new Mapping column, edit icons, a mapping modal with search functionality, and display of cost/nutrition coverage chips.
-    *   Added , , ,  functions for mapping logic.
--   **/app/frontend/src/config/featureFlags.js**: Centralizes frontend feature flags. **Modified**: Added .
--   **/app/frontend/.env**: Frontend environment variables. **Modified**: Added .
+-   **/app/backend/server.py**: Main FastAPI application.
+    -   **Changes**: Added  endpoint to handle nutrition data uploads from UI.
+-   **/app/backend/receptor_agent/techcards_v2/schemas.py**: Defines  and related Pydantic models.
+    -   **Changes**: Added  and  to . Modified  and  schemas to enforce non-null default values for consistent data types.
+-   **/app/backend/receptor_agent/techcards_v2/cost_calculator.py**: Logic for calculating ingredient and tech card costs.
+    -   **Changes**: Updated to handle  (fetching cost from sub-techcards cache) and add issues for missing sub-recipe cost. Modified  to first attempt loading from , then from  if the dev catalog is empty.
+-   **/app/backend/receptor_agent/techcards_v2/nutrition_calculator.py**: Logic for calculating nutritional values.
+    -   **Changes**: Updated to handle  (fetching nutrition from sub-techcards cache) and add issues for missing sub-recipe nutrition. Modified  to first attempt loading from , then from  if the dev catalog is empty.
+-   **/app/backend/receptor_agent/exports/html.py**: Generates GOST A4 print HTML.
+    -   **Changes**: Updated logic to display BJU from  (including coverage percentage).
+-   **/app/backend/receptor_agent/llm/pipeline.py**: Orchestrates the LLM and calculation pipeline.
+    -   **Changes**: Fixed  to return  for draft status. Implemented a two-step LLM chain ( -> ) and integrated , , and . Added logic to pass  to calculators and to manage status transitions (/). Integrated anchor extraction at the beginning of the pipeline. Implemented  after calculators to ensure consistent / formats and set ,  before calculators.
+-   **/app/backend/receptor_agent/routes/techcards_v2.py**: Exposes API endpoints for tech cards.
+    -   **Changes**:  now returns a standardized JSON response. Added  (for recalculating cost/nutrition) and  (for mapping ingredients). Changed  route to .
+-   **/app/backend/receptor_agent/llm/clients/openai_client.py**: Client for OpenAI API calls.
+    -   **Changes**: Modified  to accept  parameter for structured outputs.
+-   **/app/backend/receptor_agent/llm/prompts/v2/**: New directory for v2-specific LLM prompts.
+    -   **Created**: , , , , , . These define the system and user templates for the multi-step LLM pipeline and anchor extraction.
+-   **/app/backend/receptor_agent/techcards_v2/postcheck_v2.py**: Performs post-generation validation checks.
+    -   **Created**: Contains code-based rules to ensure output quality (forbidden words, ranges, units, process steps, thermal info, yield consistency, loss bounds, numbers format).
+-   **/app/backend/receptor_agent/techcards_v2/chef_rules_consts.py**: Stores constants for chef rules.
+    -   **Created**: Defines values like , , , .
+-   **/app/backend/receptor_agent/techcards_v2/chef_rules.py**: Implements deterministic chef rules for sanity checks.
+    -   **Created**: Contains rules like , , , , , , , , , which add  or  issues.
+-   **/app/backend/receptor_agent/techcards_v2/contentcheck_v2.py**: Module for content-based checks related to anchor validity.
+    -   **Created**: Checks for , , and  based on the extracted anchors.
+-   **/app/backend/receptor_agent/techcards_v2/sanitize.py**: New module for strict data normalization.
+    -   **Created**: Implements  to force data types, round numbers, fill missing keys with defaults/zeros for  and  fields, and remove extra fields.
+-   **/app/backend/data/bootstrap/**: New directory for demo catalog data.
+    -   **Created**:  and  for out-of-the-box price/nutrition coverage.
+-   **/app/backend/data/anchors_map.json**: Mapping for canonical ingredient names.
+    -   **Created**: Stores RU/EN synonyms for anchor mapping.
+-   **/app/.github/workflows/golden-tests.yml**: GitHub Actions workflow.
+    -   **Created**: Runs  as a CI gate.
+-   **/app/golden/techcards/**: Directory for golden TechCardV2 JSONs.
+    -   **Created**: Contains 10 reference  JSONs for golden tests.
+-   **/app/golden_tests.py**: Test runner for golden files.
+    -   **Created**: Performs validation, yield consistency, data integrity checks, and issue warnings.
+-   **/app/tests/test_chef_rules.py**: Unit tests for chef rules.
+    -   **Created**: Contains tests for .
+-   **/app/frontend/src/App.js**: Main frontend component.
+    -   **Changes**: Switched generation/export endpoints to V2 APIs. Refactored rendering to . Enforced V2-only rendering. Unified PDF export with GOST print. Added  display. Implemented new React states for  generation statuses (removing ). Added UI elements for debug info, error/draft banners, inline ingredient mapping (modal, search, coverage chips). Added inline editing logic for , , ,  fields, with auto-calculation and validation. Added ДАННЫЕ button to main navigation, and modals for price/nutrition catalog uploads. Added a Sub-recipe button and modal for selecting existing tech cards as sub-recipes, displaying sub-recipe info and print links. Modified UI to display anchor validity issues as inline banners.
+-   **/app/frontend/src/config/featureFlags.js**: Centralizes frontend feature flags.
+    -   **Changes**: Added .
+-   **/app/frontend/.env**: Frontend environment variables.
+    -   **Changes**: Added .
 </code_architecture>
 
 <pending_tasks>
@@ -57,28 +75,25 @@ The application employs a React frontend, FastAPI backend, and MongoDB database.
 -   AI-Menu-Designer - UI/UX Refinement: Further enhance the beauty and detailed interface (general task).
 -   Frontend: FE-01C - Markers of criticality and diff for HACCP audit (optional, deferred).
 -   Frontend: Patch #1C - Temporary redirect from 4 clicks master.
--   Backend for Task #13 (Inline Mapping): The  and  endpoints were added but issues with their functionality were observed at the end of Task #13.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was actively working on **Задача №14 — «Полуфабрикаты/подрецепты: ссылка на другую техкарту + корректные расчёты и экспорт в iiko»**.
+Immediately prior to this summary, the AI engineer was actively working on **Задача C2 — «Жёсткая нормализация  и  + санитайзер в пайплайне»**.
 
-The current state of work for Task #14 includes:
-1.  **Schema Extension**: The  schema in  has been updated. A new Pydantic model  (with uid=0(root) gid=0(root) groups=0(root) and ) was defined, and an optional  field was added to .
-2.  **Cost Calculation Logic**:  has been modified. The  and  functions were updated to:
-    *   Check for the presence of  in an ingredient.
-    *   If a  is found, it attempts to fetch the cost from the corresponding sub-techcard (presumably from a cache passed to the calculator).
-    *   Calculates the cost contribution of the sub-recipe based on its yield and cost per gram.
-    *   Adds issues () if the sub-recipe's cost data is invalid or missing, without failing the overall calculation.
-3.  **Nutrition Calculation Logic**: Similarly,  was updated. The  and  functions were extended to:
-    *   Process ingredients that are s.
-    *   Fetch nutritional values () from the sub-techcard.
-    *   Calculate the nutrition contribution based on the quantity and sub-recipe's nutritional data.
-    *   Adds issues () if sub-recipe nutrition data is invalid or missing.
+The goal of this task was to ensure  and  data always adhere to a strict, consistent format, preventing  values, incorrect types (e.g., strings instead of numbers), or stuck values from the LLM, making them reliably readable by the UI, GOST print, and IIKo export.
 
-The AI engineer is currently in the process of **updating ** to ensure that the necessary  data and cache are correctly passed to the  and  functions. The UI part of Task #14 (adding a + Sub-recipe button and selector) has not yet been addressed. The backend issues for Task #13's  and  endpoints remain implicitly pending as they were not fully resolved.
+The current state of work for Task C2 includes:
+1.  **New Sanitizer Module**: A new module  has been created. This module contains the  function responsible for:
+    *   Casting all BJU/kcal fields to  and prices to .
+    *   Rounding BJU/kcal to 1 decimal place and currency to 2 decimal places.
+    *   Filling absent  keys with zeros instead of .
+    *   Filling absent  keys (, , ) with default values (e.g., ).
+    *   Removing any extraneous fields not defined in the schema.
+2.  **Pipeline Integration**: The  has been modified to integrate the sanitizer. The sequence of operations now ensures that  and  fields are explicitly set to  before the  and  are invoked. This prevents the LLM from inserting unvalidated or incorrectly formatted data into these fields. After the  and  execute, the  function is called to rigorously clean and format the calculated nutrition and cost data.
+
+The user's last message, Заверши задачу, indicated a directive to complete this task. The AI engineer acknowledged this, stating the final step of updating the pipeline for the correct order, implying the completion of Task C2.
 </current_work>
 
 <optional_next_step>
-The next step is to continue updating  to correctly pass sub-recipe data to the cost and nutrition calculators for Task #14.
+Task C2 (Rigid  and  normalization) has been completed. I am awaiting the user's next explicit instruction for further development.
 </optional_next_step>

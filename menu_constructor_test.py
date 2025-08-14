@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://tech-cards-v2.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-menu-designer.preview.emergentagent.com/api"
 
 def test_venue_types_api_performance():
     """Test VENUE TYPES API performance after improvements"""

@@ -143,7 +143,7 @@ IIKO_PASSWORD=...
 IIKO_SERVER_URL=https://iikoffice1.api.rms.ru
 
 # Frontend (.env) 
-REACT_APP_BACKEND_URL=https://tech-cards-v2.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://ai-menu-designer.preview.emergentagent.com
 ```
 
 ## Очереди задач
