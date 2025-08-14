@@ -87,21 +87,11 @@ def test_borscht_generation():
     
     # Борщ с типовыми российскими продуктами из bootstrap каталога
     payload = {
-        "dish_name": "Борщ украинский",
-        "description": "Традиционный борщ с говядиной и овощами",
-        "ingredients": [
-            {"name": "говядина для тушения", "quantity": 300, "unit": "г"},
-            {"name": "капуста белокочанная", "quantity": 200, "unit": "г"},
-            {"name": "морковь", "quantity": 100, "unit": "г"},
-            {"name": "лук репчатый", "quantity": 80, "unit": "г"},
-            {"name": "помидоры", "quantity": 150, "unit": "г"},
-            {"name": "свекла", "quantity": 120, "unit": "г"},
-            {"name": "картофель", "quantity": 200, "unit": "г"},
-            {"name": "чеснок", "quantity": 10, "unit": "г"},
-            {"name": "растительное масло", "quantity": 30, "unit": "мл"},
-            {"name": "соль поваренная", "quantity": 8, "unit": "г"}
-        ],
-        "use_llm": False  # Принудительное отключение LLM
+        "name": "Борщ украинский с говядиной и овощами",
+        "cuisine": "русская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
