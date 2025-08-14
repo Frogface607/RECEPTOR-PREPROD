@@ -425,13 +425,21 @@ async def fetch_sub_recipes_cache(sub_recipe_ids: Set[str]) -> Dict[str, TechCar
     return sub_recipes_cache
 
 def run_pipeline(profile: ProfileInput) -> PipelineResult:
-    """Генерация техкарты с строгой валидацией TechCardV2 и новой цепочкой промптов v2"""
+    """Генерация техкарты с анкерной валидностью, правилами шефа и строгой валидацией TechCardV2"""
     try:
-        # Шаг 1: Генерируем черновик с новым промптом v2
-        draft_data = generate_draft_v2(profile)
+        # Шаг 0: Извлекаем якоря из названия блюда (только если включена строгая проверка)
+        constraints = {}
+        strict_anchors = os.environ.get('STRICT_ANCHORS', 'true').lower() == 'true'
         
-        # Шаг 2: Нормализуем черновик до финального TechCardV2
-        normalized_data = normalize_to_v2(draft_data)
+        if strict_anchors:
+            constraints = extract_anchors(profile.name, profile.cuisine)
+            print(f"Extracted anchors: {constraints}")
+        
+        # Шаг 1: Генерируем черновик с новым промптом v2 и constraints
+        draft_data = generate_draft_v2(profile, constraints if constraints else None)
+        
+        # Шаг 2: Нормализуем черновик до финального TechCardV2 с constraints
+        normalized_data = normalize_to_v2(draft_data, constraints if constraints else None)
         
         # Собираем ID подрецептов из нормализованных данных
         sub_recipe_ids = collect_sub_recipe_ids(normalized_data)
@@ -443,6 +451,11 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         is_valid, validation_issues, validated_card = validate_techcard_v2(normalized_data)
         
         if is_valid and validated_card:
+            # Шаг 3.5: Анкерная валидность (только если есть constraints)
+            content_issues = []
+            if constraints and strict_anchors:
+                content_issues = run_content_check(validated_card, constraints)
+            
             # Шаг 4: Правила шефа (rule-based sanity checks)
             chef_rule_issues = run_chef_rules(validated_card)
             
@@ -450,9 +463,13 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             postcheck_issues = postcheck_v2(validated_card)
             
             # Объединяем все issues
-            all_issues = validation_issues + [issue.get("hint", "") for issue in chef_rule_issues] + [issue.get("hint", "") for issue in postcheck_issues]
+            all_issues = (validation_issues + 
+                         [issue.get("hint", "") for issue in content_issues] +
+                         [issue.get("hint", "") for issue in chef_rule_issues] + 
+                         [issue.get("hint", "") for issue in postcheck_issues])
             
-            # Проверяем наличие критических ошибок правил шефа
+            # Проверяем наличие критических ошибок
+            has_critical_content_errors = has_critical_content_errors(content_issues)
             has_critical_chef_errors = has_critical_rule_errors(chef_rule_issues)
             
             # Если есть критические ошибки постпроверки, пытаемся ещё раз нормализовать
@@ -473,10 +490,13 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     system_prompt = _load_prompt_v2("normalize_to_v2.ru.txt") + f"\n\nИСПРАВЬ ОШИБКИ: {issues_description}"
                     user_template = _load_prompt_v2("normalize_to_v2_user.ru.txt")
                     
-                    user_prompt = _format_template(
-                        user_template,
-                        draft_json=json.dumps(normalized_data, ensure_ascii=False, indent=2)
-                    )
+                    template_params = {
+                        "draft_json": json.dumps(normalized_data, ensure_ascii=False, indent=2)
+                    }
+                    if constraints:
+                        template_params["constraints"] = constraints
+                    
+                    user_prompt = _format_template(user_template, **template_params)
                     
                     fixed_data = call_structured(
                         system=_system_ru() + "\n\n" + system_prompt,
@@ -492,6 +512,8 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                         validated_card = validated_card_fixed
                         # Обновляем постпроверку
                         postcheck_issues = postcheck_v2(validated_card)
+                        if constraints and strict_anchors:
+                            content_issues = run_content_check(validated_card, constraints)
                         
                 except Exception:
                     pass  # Игнорируем ошибки дополнительной нормализации
@@ -508,15 +530,15 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             except Exception as e:
                 all_issues.append(f"Nutrition calculation error: {str(e)}")
             
-            # Определяем финальный статус на основе правил шефа и постпроверки
-            if has_critical_chef_errors:
-                # Есть критические ошибки правил шефа → draft
+            # Определяем финальный статус на основе всех проверок
+            if has_critical_content_errors or has_critical_chef_errors:
+                # Есть критические ошибки → draft
                 return PipelineResult(
                     card=validated_card,
                     issues=all_issues,
-                    status="draft"  # Критические ошибки правил шефа
+                    status="draft"  # Критические ошибки контента или правил шефа
                 )
-            elif chef_rule_issues or postcheck_issues:
+            elif content_issues or chef_rule_issues or postcheck_issues:
                 # Есть некритические предупреждения → draft
                 return PipelineResult(
                     card=validated_card,
