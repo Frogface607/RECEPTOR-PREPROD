@@ -1121,14 +1121,21 @@ function App() {
                                 {ing.name}
                                 {/* Source badges для ингредиентов */}
                                 <div className="flex items-center gap-1">
-                                  {ing.canonical_id && nutritionMeta.source === 'usda' && (
-                                    <span className="text-xs bg-green-600 text-white px-1 py-0.5 rounded" title="USDA FoodData Central">USDA</span>
-                                  )}
-                                  {ing.canonical_id && nutritionMeta.source === 'catalog' && (
-                                    <span className="text-xs bg-blue-600 text-white px-1 py-0.5 rounded" title="Каталог разработчика">CAT</span>
-                                  )}
-                                  {ing.canonical_id && nutritionMeta.source === 'bootstrap' && (
-                                    <span className="text-xs bg-orange-600 text-white px-1 py-0.5 rounded" title="Демо каталог">BOOT</span>
+                                  {ing.canonical_id && (
+                                    <>
+                                      {/* USDA badge - показываем если источник общий USDA или mixed */}
+                                      {(nutritionMeta.source === 'usda' || nutritionMeta.source === 'Mixed') && (
+                                        <span className="text-xs bg-green-600 text-white px-1 py-0.5 rounded" title="USDA FoodData Central">USDA</span>
+                                      )}
+                                      {/* CAT badge - показываем если источник каталог или mixed */}
+                                      {(nutritionMeta.source === 'catalog' || (nutritionMeta.source === 'Mixed' && !nutritionMeta.source.includes('usda'))) && (
+                                        <span className="text-xs bg-blue-600 text-white px-1 py-0.5 rounded" title="Каталог разработчика">CAT</span>
+                                      )}
+                                      {/* BOOT badge - показываем если источник bootstrap */}
+                                      {nutritionMeta.source === 'bootstrap' && (
+                                        <span className="text-xs bg-orange-600 text-white px-1 py-0.5 rounded" title="Демо каталог">BOOT</span>
+                                      )}
+                                    </>
                                   )}
                                   {(!ing.canonical_id && !ing.skuId && !ing.subRecipe) && (
                                     <span className="text-xs bg-yellow-600 text-yellow-100 px-1 py-0.5 rounded" title="Нет маппинга к каталогу">⚠ no map</span>
