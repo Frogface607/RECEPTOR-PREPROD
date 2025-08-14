@@ -1025,6 +1025,28 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* Anchor validity issues banner */}
+        {issues && issues.length > 0 && (
+          <div className="mb-4">
+            {issues.some(issue => typeof issue === 'string' && (issue.includes('Отсутствуют обязательные') || issue.includes('Обнаружены запрещённые'))) && (
+              <div className="bg-red-900/50 border border-red-600/50 rounded-lg p-3 mb-2">
+                <div className="text-red-300 text-sm font-bold mb-1">🎯 Нарушения анкерной валидности:</div>
+                {issues.filter(issue => typeof issue === 'string' && (issue.includes('Отсутствуют обязательные') || issue.includes('Обнаружены запрещённые'))).map((issue, idx) => (
+                  <div key={idx} className="text-red-300 text-sm">• {issue}</div>
+                ))}
+              </div>
+            )}
+            {issues.some(issue => typeof issue === 'string' && issue.includes('Несоответствие белка')) && (
+              <div className="bg-yellow-900/50 border border-yellow-600/50 rounded-lg p-3 mb-2">
+                <div className="text-yellow-300 text-sm font-bold mb-1">⚠️ Предупреждения:</div>
+                {issues.filter(issue => typeof issue === 'string' && issue.includes('Несоответствие белка')).map((issue, idx) => (
+                  <div key={idx} className="text-yellow-300 text-sm">• {issue}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         
         {/* ИНГРЕДИЕНТЫ ТАБЛИЦА */}
         {ingredients.length > 0 && (
