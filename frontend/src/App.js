@@ -1115,9 +1115,21 @@ function App() {
                             <div>
                               <div className="flex items-center gap-1">
                                 {ing.name}
-                                {(!ing.canonical_id && !ing.skuId && !ing.subRecipe) && (
-                                  <span className="text-yellow-400 text-xs" title="Нет маппинга к каталогу">⚠️</span>
-                                )}
+                                {/* Source badges для ингредиентов */}
+                                <div className="flex items-center gap-1">
+                                  {ing.canonical_id && nutritionMeta.source === 'usda' && (
+                                    <span className="text-xs bg-green-600 text-white px-1 py-0.5 rounded" title="USDA FoodData Central">USDA</span>
+                                  )}
+                                  {ing.canonical_id && nutritionMeta.source === 'catalog' && (
+                                    <span className="text-xs bg-blue-600 text-white px-1 py-0.5 rounded" title="Каталог разработчика">CAT</span>
+                                  )}
+                                  {ing.canonical_id && nutritionMeta.source === 'bootstrap' && (
+                                    <span className="text-xs bg-orange-600 text-white px-1 py-0.5 rounded" title="Демо каталог">BOOT</span>
+                                  )}
+                                  {(!ing.canonical_id && !ing.skuId && !ing.subRecipe) && (
+                                    <span className="text-xs bg-yellow-600 text-yellow-100 px-1 py-0.5 rounded" title="Нет маппинга к каталогу">⚠ no map</span>
+                                  )}
+                                </div>
                               </div>
                               {ing.subRecipe && (
                                 <div className="text-xs text-blue-300 mt-1">
