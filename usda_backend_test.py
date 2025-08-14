@@ -91,18 +91,24 @@ def test_nutrition_calculator_with_usda():
         test_ingredients = [
             IngredientV2(
                 name="треска",
+                brutto_g=220.0,
+                loss_pct=10.0,
                 netto_g=200.0,
                 unit="g",
                 canonical_id="cod"
             ),
             IngredientV2(
                 name="куриное филе", 
+                brutto_g=165.0,
+                loss_pct=10.0,
                 netto_g=150.0,
                 unit="g",
                 canonical_id="chicken_breast"
             ),
             IngredientV2(
                 name="растительное масло",
+                brutto_g=30.0,
+                loss_pct=0.0,
                 netto_g=30.0,
                 unit="ml"
             )
