@@ -58,7 +58,7 @@
 ##
 ## agent_communication:
 ##    - agent: "main"
-##      message: "TASK #14 BACKEND SUB-RECIPES IMPLEMENTATION COMPLETED: Successfully updated pipeline.py to support sub-recipes integration. Added collect_sub_recipe_ids function to extract IDs from tech card data, fetch_sub_recipes_cache placeholder for database retrieval, and updated run_pipeline to pass sub_recipes_cache to both cost and nutrition calculators. Backend implementation complete, needs testing to verify sub-recipe handling works correctly with existing TechCardV2 generation pipeline."
+##      message: "TASK D1-UI IMPLEMENTATION COMPLETED: Successfully implemented complete USDA UI integration according to detailed specifications. Phase 1 completed: Enhanced source chip (📊 БЖУ N% • SOURCE) with color coding and hover tooltips showing detailed source information and asOf dates. Phase 2 completed: Tabbed mapping modal with dedicated USDA tab using debounced search (250ms), keyboard navigation support, and enhanced result display with FDC IDs and portion information. Per-ingredient source badges (USDA/CAT/BOOT/⚠ no map) added to ingredient listings. Phase 3 completed: GOST print template enhanced with 'Источник БЖУ: SOURCE; дата: DATE' attribution line under nutrition table. All UI components integrated with existing USDA backend integration (Task D1). Frontend and backend modifications ready for comprehensive testing to verify complete functionality."
 ##
 ## test_plan:
 ##   current_focus:
