@@ -112,6 +112,13 @@ def test_borscht_generation():
                 log_test("✅ Техкарта успешно сгенерирована")
                 log_test(f"Статус: {data.get('status', 'unknown')}")
                 
+                # Логируем структуру техкарты для отладки
+                log_test(f"🔍 Структура техкарты: {list(techcard.keys())}")
+                if 'cost' in techcard:
+                    log_test(f"🔍 Структура cost: {list(techcard['cost'].keys())}")
+                if 'nutrition' in techcard:
+                    log_test(f"🔍 Структура nutrition: {list(techcard['nutrition'].keys())}")
+                
                 return analyze_techcard_coverage(techcard, "Борщ украинский")
             else:
                 log_test("❌ Техкарта не найдена в ответе")
