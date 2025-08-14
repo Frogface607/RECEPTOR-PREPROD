@@ -183,7 +183,7 @@ def test_chef_rules_directly(dish_config: Dict[str, Any]) -> bool:
         
         # Import chef rules module
         from receptor_agent.techcards_v2.chef_rules import run_chef_rules
-        from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, ProcessStepV2, YieldV2, MetaV2, StorageConditionsV2
+        from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, ProcessStepV2, YieldV2, MetaV2, StorageV2
         
         # Create a test tech card with the specific problem
         test_card = create_problematic_test_card(dish_config['expected_issue'])
