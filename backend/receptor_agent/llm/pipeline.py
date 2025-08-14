@@ -152,8 +152,8 @@ def extract_anchors(dish_name: str, cuisine: str = None) -> Dict[str, Any]:
         print(f"Error extracting anchors: {e}")
         return {"mustHave": [], "forbid": [], "hints": []}
 
-def generate_draft_v2(profile: ProfileInput) -> Dict[str, Any]:
-    """Генерация чернового JSON с помощью нового промпта v2"""
+def generate_draft_v2(profile: ProfileInput, constraints: Dict[str, Any] = None) -> Dict[str, Any]:
+    """Генерация чернового JSON с помощью нового промпта v2 и constraints"""
     if not _use_llm():
         return _get_fallback_draft(profile)
         
@@ -174,12 +174,17 @@ def generate_draft_v2(profile: ProfileInput) -> Dict[str, Any]:
         portions = 4
         yield_per_portion = 200.0  # грамм на порцию по умолчанию
         
-        user_prompt = _format_template(
-            user_template,
-            brief=brief,
-            portions=portions,
-            yield_per_portion_g=yield_per_portion
-        )
+        template_params = {
+            "brief": brief,
+            "portions": portions,
+            "yield_per_portion_g": yield_per_portion
+        }
+        
+        # Добавляем constraints если есть
+        if constraints:
+            template_params["constraints"] = constraints
+        
+        user_prompt = _format_template(user_template, **template_params)
         
         # Вызываем LLM с настройками для качественной генерации  
         return call_structured(
@@ -196,8 +201,8 @@ def generate_draft_v2(profile: ProfileInput) -> Dict[str, Any]:
         print(f"Error in generate_draft_v2: {e}")
         return _get_fallback_draft(profile)
 
-def normalize_to_v2(draft_json: Dict[str, Any]) -> Dict[str, Any]:
-    """Нормализация черновика до финального TechCardV2"""
+def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = None) -> Dict[str, Any]:
+    """Нормализация черновика до финального TechCardV2 с constraints"""
     if not _use_llm():
         return draft_json
         
@@ -206,10 +211,15 @@ def normalize_to_v2(draft_json: Dict[str, Any]) -> Dict[str, Any]:
         system_prompt = _load_prompt_v2("normalize_to_v2.ru.txt")
         user_template = _load_prompt_v2("normalize_to_v2_user.ru.txt") 
         
-        user_prompt = _format_template(
-            user_template,
-            draft_json=json.dumps(draft_json, ensure_ascii=False, indent=2)
-        )
+        template_params = {
+            "draft_json": json.dumps(draft_json, ensure_ascii=False, indent=2)
+        }
+        
+        # Добавляем constraints если есть
+        if constraints:
+            template_params["constraints"] = constraints
+        
+        user_prompt = _format_template(user_template, **template_params)
         
         # Определяем модель: gpt-4o для сложных случаев
         use_4o = os.environ.get('USE_4O_FOR_NORMALIZE', 'false').lower() == 'true'
