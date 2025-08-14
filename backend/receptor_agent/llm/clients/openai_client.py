@@ -24,7 +24,10 @@ def get_client() -> Optional[OpenAI]:
     wait=wait_exponential(multiplier=1, min=0.5, max=4),
     retry=retry_if_exception_type((APITimeoutError, RateLimitError))
 )
-def call_structured(system: str, user: str, json_schema: Dict[str, Any], model: Optional[str] = None, timeout: Optional[float] = None) -> Dict[str, Any]:
+def call_structured(system: str, user: str, json_schema: Dict[str, Any], 
+                   model: Optional[str] = None, timeout: Optional[float] = None,
+                   temperature: Optional[float] = None, top_p: Optional[float] = None,
+                   presence_penalty: Optional[float] = None, frequency_penalty: Optional[float] = None) -> Dict[str, Any]:
     cli = get_client()
     if cli is None:
         raise RuntimeError("LLM_DISABLED")
@@ -34,14 +37,14 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any], model: 
 
     # Chat Completions API + response_format json_schema (Structured Outputs)
     # https://platform.openai.com/docs/guides/structured-outputs
-    resp = cli.chat.completions.create(
-        model=mdl,
-        timeout=tmo,
-        messages=[
+    params = {
+        "model": mdl,
+        "timeout": tmo,
+        "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": user}
         ],
-        response_format={
+        "response_format": {
             "type": "json_schema",
             "json_schema": {
                 "name": "techcard_schema",
@@ -49,7 +52,19 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any], model: 
                 "strict": False  # Убираем strict mode для совместимости
             }
         }
-    )
+    }
+    
+    # Добавляем дополнительные параметры если они указаны
+    if temperature is not None:
+        params["temperature"] = temperature
+    if top_p is not None:
+        params["top_p"] = top_p  
+    if presence_penalty is not None:
+        params["presence_penalty"] = presence_penalty
+    if frequency_penalty is not None:
+        params["frequency_penalty"] = frequency_penalty
+        
+    resp = cli.chat.completions.create(**params)
     
     # Извлекаем JSON из response
     try:
