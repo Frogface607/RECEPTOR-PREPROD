@@ -3767,6 +3767,175 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@app.post("/api/upload-nutrition")
+async def upload_nutrition(file: UploadFile = File(...), user_id: str = Form(...)):
+    # Auto-create test user with PRO subscription if needed
+    if user_id.startswith("test_user_"):
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            # Create test user with PRO subscription
+            test_user = {
+                "id": user_id,
+                "email": f"{user_id}@example.com",
+                "name": "Test User",
+                "city": "moskva",
+                "subscription_plan": "pro",
+                "monthly_tech_cards_used": 0,
+                "created_at": datetime.now()
+            }
+            await db.users.insert_one(test_user)
+    
+    # Validate user subscription (PRO only)
+    user = await db.users.find_one({"id": user_id})
+    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    
+    try:
+        # Read file
+        content = await file.read()
+        
+        processed_nutrition = []
+        
+        # Handle JSON files
+        if file.filename.lower().endswith('.json'):
+            try:
+                nutrition_data = json.loads(content.decode('utf-8'))
+                
+                # Extract items from JSON structure
+                items = []
+                if isinstance(nutrition_data, dict):
+                    if 'items' in nutrition_data:
+                        items = nutrition_data['items']
+                    elif 'products' in nutrition_data:
+                        items = nutrition_data['products']
+                    else:
+                        # Maybe it's a simple dict of products
+                        items = [nutrition_data] if 'name' in nutrition_data else []
+                elif isinstance(nutrition_data, list):
+                    items = nutrition_data
+                
+                for item in items:
+                    if isinstance(item, dict) and 'name' in item and 'per100g' in item:
+                        per100g = item['per100g']
+                        if all(k in per100g for k in ['kcal', 'proteins_g', 'fats_g', 'carbs_g']):
+                            nutrition_entry = {
+                                "name": item['name'].lower(),
+                                "canonical_id": item.get('canonical_id', ''),
+                                "kcal": float(per100g['kcal']),
+                                "proteins_g": float(per100g['proteins_g']),
+                                "fats_g": float(per100g['fats_g']),
+                                "carbs_g": float(per100g['carbs_g']),
+                                "mass_per_piece": item.get('mass_per_piece'),
+                                "source": file.filename,
+                                "user_id": user_id,
+                                "created_at": datetime.now()
+                            }
+                            processed_nutrition.append(nutrition_entry)
+                            
+            except json.JSONDecodeError as e:
+                raise HTTPException(status_code=400, detail=f"Некорректный JSON формат: {str(e)}")
+        
+        # Handle CSV files
+        elif file.filename.lower().endswith('.csv'):
+            # Create temporary file for CSV processing
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_csv:
+                temp_csv.write(content)
+                temp_csv_path = temp_csv.name
+            
+            try:
+                df = pd.read_csv(temp_csv_path, encoding='utf-8')
+            except:
+                try:
+                    df = pd.read_csv(temp_csv_path, encoding='windows-1251')
+                except Exception as e:
+                    os.unlink(temp_csv_path)
+                    raise HTTPException(status_code=400, detail=f"Не удалось прочитать CSV файл: {str(e)}")
+            
+            # Process CSV rows - expect columns: name, kcal, proteins_g, fats_g, carbs_g
+            for _, row in df.iterrows():
+                try:
+                    if pd.notna(row.iloc[0]):  # name is first column
+                        name = str(row.iloc[0]).strip().lower()
+                        
+                        # Try to extract nutrition values from columns
+                        kcal = proteins_g = fats_g = carbs_g = 0
+                        
+                        for i, col_value in enumerate(row.values):
+                            if pd.notna(col_value) and i > 0:  # Skip name column
+                                try:
+                                    value = float(str(col_value).replace(',', '.'))
+                                    if i == 1:  # kcal
+                                        kcal = value
+                                    elif i == 2:  # proteins
+                                        proteins_g = value
+                                    elif i == 3:  # fats
+                                        fats_g = value
+                                    elif i == 4:  # carbs
+                                        carbs_g = value
+                                except:
+                                    continue
+                        
+                        if name and (kcal > 0 or proteins_g > 0 or fats_g > 0 or carbs_g > 0):
+                            nutrition_entry = {
+                                "name": name,
+                                "canonical_id": "",
+                                "kcal": kcal,
+                                "proteins_g": proteins_g,
+                                "fats_g": fats_g,
+                                "carbs_g": carbs_g,
+                                "mass_per_piece": None,
+                                "source": file.filename,
+                                "user_id": user_id,
+                                "created_at": datetime.now()
+                            }
+                            processed_nutrition.append(nutrition_entry)
+                            
+                except Exception as e:
+                    continue
+            
+            # Cleanup
+            os.unlink(temp_csv_path)
+        
+        else:
+            raise HTTPException(status_code=400, detail="Поддерживаются только JSON и CSV файлы")
+        
+        # Save to database
+        if processed_nutrition:
+            await db.user_nutrition.insert_many(processed_nutrition)
+        
+        # Create serializable version for response
+        preview_nutrition = []
+        for nutrition in processed_nutrition[:10]:
+            preview_nutrition.append({
+                "name": nutrition["name"],
+                "kcal": nutrition["kcal"],
+                "proteins_g": nutrition["proteins_g"],
+                "fats_g": nutrition["fats_g"],
+                "carbs_g": nutrition["carbs_g"],
+                "source": nutrition["source"]
+            })
+        
+        return {
+            "success": True,
+            "count": len(processed_nutrition),
+            "message": f"Обработано {len(processed_nutrition)} позиций по питанию",
+            "nutrition": preview_nutrition
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/user-nutrition/{user_id}")
+async def get_user_nutrition(user_id: str):
+    try:
+        nutrition = await db.user_nutrition.find({"user_id": user_id}).to_list(1000)
+        return {"nutrition": [{"name": n["name"], "kcal": n["kcal"], "proteins_g": n["proteins_g"], "fats_g": n["fats_g"], "carbs_g": n["carbs_g"]} for n in nutrition]}
+    except Exception as e:
+        logger.error(f"Error fetching user nutrition: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching nutrition: {str(e)}")
+
 @api_router.get("/user-prices/{user_id}")
 async def get_user_prices(user_id: str):
     try:
