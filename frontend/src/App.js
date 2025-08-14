@@ -47,6 +47,14 @@ function App() {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
+  // Upload states for Task 1.2
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadType, setUploadType] = useState('prices'); // 'prices' | 'nutrition'
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadPreview, setUploadPreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadResults, setUploadResults] = useState(null);
+  
   const [showHistory, setShowHistory] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
   const [showPriceModal, setShowPriceModal] = useState(false);
