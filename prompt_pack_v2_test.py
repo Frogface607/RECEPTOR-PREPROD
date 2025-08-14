@@ -473,13 +473,15 @@ def test_postcheck_v2_directly():
     try:
         # Test postcheck_v2 with a sample tech card
         test_payload = {
-            "dish_name": "Тестовое блюдо для постпроверки",
+            "name": "Тестовое блюдо для постпроверки",
             "cuisine": "тестовая",
-            "use_llm": True
+            "equipment": [],
+            "budget": None,
+            "dietary": []
         }
         
         response = requests.post(
-            f"{API_BASE}/v1/techcards.v2/generate",
+            f"{API_BASE}/v1/techcards.v2/generate?use_llm=true",
             json=test_payload,
             timeout=30
         )
