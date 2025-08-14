@@ -13835,6 +13835,25 @@ function App() {
         </div>
       )}
 
+      {/* Debug Panel - show if debug=1 in URL */}
+      {isDebugMode && (
+        <div className="fixed bottom-4 right-4 bg-gray-900/95 backdrop-blur-lg border border-purple-400/30 rounded-lg p-3 text-xs font-mono max-w-sm">
+          <div className="text-purple-300 font-bold mb-2">🐛 DEBUG PANEL</div>
+          <div className="space-y-1 text-gray-300">
+            <div>Status: {generationStatus || 'none'}</div>
+            <div>TcV2 Present: {tcV2 ? 'yes' : 'no'}</div>
+            <div>Price Coverage: {tcV2?.costMeta?.coveragePct ?? '-'}%</div>
+            <div>Price Source: {tcV2?.costMeta?.source ?? '-'}</div>
+            <div>Nutrition Coverage: {tcV2?.nutritionMeta?.coveragePct ?? '-'}%</div>
+            <div>Issues Count: {generationIssues?.length ?? 0}</div>
+            {generationIssues?.length > 0 && (
+              <div>First Issue: {generationIssues[0]?.type || generationIssues[0] || 'none'}</div>
+            )}
+            <div>Last Request: {window.__lastGenerationDebug?.requestTime ? `${window.__lastGenerationDebug.requestTime}ms` : 'none'}</div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
