@@ -1004,51 +1004,59 @@ function App() {
 
         {/* Coverage indicators */}
         <div className="flex flex-wrap gap-2 mb-4">
-          <div 
-            className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
-              (costMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
-              (costMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
-              'bg-red-600 text-white'
-            }`}
-            title={
-              costMeta.source === 'mixed' 
-                ? `Источники: смешанные (цены из разных каталогов). Обновлено: ${costMeta.asOf || 'не указано'}`
-                : `Источник: ${costMeta.source === 'user' ? 'Загруженные пользователем' : 
-                              costMeta.source === 'catalog' ? 'Каталог разработчика' : 
-                              costMeta.source === 'bootstrap' ? 'Демо каталог' : 
-                              costMeta.source}. Обновлено: ${costMeta.asOf || 'не указано'}`
-            }
-          >
-            💰 Цены {costMeta.coveragePct}% • {
-              costMeta.source === 'user' ? 'User' :
-              costMeta.source === 'catalog' ? 'Catalog' :
-              costMeta.source === 'bootstrap' ? 'Bootstrap' :
-              costMeta.source === 'mixed' ? 'Mixed' :
-              costMeta.source || 'Unknown'
-            }
-          </div>
-          <div 
-            className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
-              (nutritionMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
-              (nutritionMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
-              'bg-red-600 text-white'
-            }`}
-            title={
-              nutritionMeta.source === 'Mixed' 
-                ? `Источники: ${nutritionMeta.breakdown || 'USDA + каталоги'}. Обновлено: ${nutritionMeta.asOf || 'не указано'}`
-                : `Источник: ${nutritionMeta.source === 'usda' ? 'USDA FoodData Central' : 
-                              nutritionMeta.source === 'catalog' ? 'Каталог разработчика' : 
-                              nutritionMeta.source === 'bootstrap' ? 'Демо каталог' : 
-                              nutritionMeta.source}. Обновлено: ${nutritionMeta.asOf || 'не указано'}`
-            }
-          >
-            📊 БЖУ {nutritionMeta.coveragePct}% • {
-              nutritionMeta.source === 'usda' ? 'USDA' :
-              nutritionMeta.source === 'catalog' ? 'CAT' :
-              nutritionMeta.source === 'bootstrap' ? 'BOOT' :
-              nutritionMeta.source === 'Mixed' ? 'Mixed' :
-              nutritionMeta.source || 'Unknown'
-            }
+          {/* Price coverage chip - only show if costMeta exists and has coverage data */}
+          {costMeta && typeof costMeta.coveragePct === 'number' && (
+            <div 
+              className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
+                (costMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
+                (costMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
+                'bg-red-600 text-white'
+              }`}
+              title={
+                costMeta.source === 'mixed' 
+                  ? `Источники: смешанные (цены из разных каталогов). Обновлено: ${costMeta.asOf || 'не указано'}`
+                  : `Источник: ${costMeta.source === 'user' ? 'Загруженные пользователем' : 
+                                costMeta.source === 'catalog' ? 'Каталог разработчика' : 
+                                costMeta.source === 'bootstrap' ? 'Демо каталог' : 
+                                costMeta.source}. Обновлено: ${costMeta.asOf || 'не указано'}`
+              }
+            >
+              💰 Цены {costMeta.coveragePct}% • {
+                costMeta.source === 'user' ? 'User' :
+                costMeta.source === 'catalog' ? 'Catalog' :
+                costMeta.source === 'bootstrap' ? 'Bootstrap' :
+                costMeta.source === 'mixed' ? 'Mixed' :
+                costMeta.source || 'Unknown'
+              }
+            </div>
+          )}
+          
+          {/* Nutrition coverage chip - only show if nutritionMeta exists and has coverage data */}
+          {nutritionMeta && typeof nutritionMeta.coveragePct === 'number' && (
+            <div 
+              className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
+                (nutritionMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
+                (nutritionMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
+                'bg-red-600 text-white'
+              }`}
+              title={
+                nutritionMeta.source === 'Mixed' 
+                  ? `Источники: ${nutritionMeta.breakdown || 'USDA + каталоги'}. Обновлено: ${nutritionMeta.asOf || 'не указано'}`
+                  : `Источник: ${nutritionMeta.source === 'usda' ? 'USDA FoodData Central' : 
+                                nutritionMeta.source === 'catalog' ? 'Каталог разработчика' : 
+                                nutritionMeta.source === 'bootstrap' ? 'Демо каталог' : 
+                                nutritionMeta.source}. Обновлено: ${nutritionMeta.asOf || 'не указано'}`
+              }
+            >
+              📊 БЖУ {nutritionMeta.coveragePct}% • {
+                nutritionMeta.source === 'usda' ? 'USDA' :
+                nutritionMeta.source === 'catalog' ? 'CAT' :
+                nutritionMeta.source === 'bootstrap' ? 'BOOT' :
+                nutritionMeta.source === 'Mixed' ? 'Mixed' :
+                nutritionMeta.source || 'Unknown'
+              }
+            </div>
+          )}
           </div>
           {isRecalculating && (
             <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-bold animate-pulse">
