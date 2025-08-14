@@ -114,6 +114,67 @@
 user_problem_statement: "Задача P1-Prices — «Единый провайдер цен + покрытие и маппинг в UI (v1)». Цель: сделать цены таким же «первоклассным» источником, как USDA для БЖУ: детерминированные расчёты себестоимости, чип покрытия с источником, быстрый маппинг skuId в UI. Изменения: 1) Backend — единый провайдер цен (PriceProvider класс со стратегией источников: user → catalog → bootstrap → llm-fallback), 2) Интеграция в cost_calculator, 3) Расширение поиска каталога для маппинга цен, 4) UI — чип цен и маппинг (💰 Цены {coveragePct}% • {User|Catalog|Bootstrap|Mixed} с цветами и tooltip), 5) Экспорт в iiko."
 
 backend:
+  - task: "Unified Price Provider Implementation (Task P1-Backend)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/techcards_v2/price_provider.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 TASK P1-PRICES NOT IMPLEMENTED: Testing agent analysis shows that the unified PriceProvider system described in review request has NOT been implemented yet. Required components missing: 1) PriceProvider class with strategy sources (user → catalog → bootstrap → llm-fallback), 2) resolve() method returning {price_per_g, source, asOf, skuId}, 3) Integration with cost_calculator to use PriceProvider instead of direct file reading, 4) Enhanced catalog-search endpoint with source=price support, 5) UI price coverage chips and mapping interface. Current system has basic price functionality in cost_calculator.py and partial catalog-search support, but not the unified provider architecture specified in review. MAIN AGENT MUST IMPLEMENT P1-PRICES TASK FIRST BEFORE TESTING CAN PROCEED."
+
+  - task: "Price Provider Integration in Cost Calculator (Task P1-Integration)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/techcards_v2/cost_calculator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "INTEGRATION NOT IMPLEMENTED: Cost calculator still uses direct file reading instead of unified PriceProvider. Missing costMeta calculation with source/coveragePct/asOf fields, stalePrice issue detection, and mixed source handling."
+
+  - task: "Enhanced Catalog Search for Price Mapping (Task P1-Search)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "PARTIAL IMPLEMENTATION: catalog-search endpoint has basic price support but missing full P1-Prices specification. Missing proper source=price response format with {source, name, skuId, unit, price_per_unit, currency, asOf} structure and priority-based sorting."
+
+frontend:
+  - task: "Price Coverage Chip and UI Integration (Task P1-UI)"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "UI NOT IMPLEMENTED: Missing 💰 Цены coverage chip with color coding (green ≥90%, yellow 70-89%, red <70%), tooltip with source/asOf info, price mapping modal with Цены tab, ingredient source badges (USER/CAT/BOOT/⚠ no price), and stalePrice banner. Current UI only has БЖУ coverage chip from USDA integration."
+
+  - task: "Price Mapping Modal and Search Interface (Task P1-Mapping)"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "MAPPING INTERFACE NOT IMPLEMENTED: Missing Цены tab in ingredient mapping modal, debounced search with /catalog-search?source=price, skuId assignment functionality, and recalc integration after price mapping."
+
   - task: "USDA UI Integration (Task D1-UI)"
     implemented: true
     working: true
