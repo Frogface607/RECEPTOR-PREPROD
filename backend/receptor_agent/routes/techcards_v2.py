@@ -255,23 +255,6 @@ def search_catalog(
         if source in ("nutrition", "all"):
             current_dir = Path(__file__).parent.parent.parent
             
-            # Загружаем каталог цен
-            price_data = {}
-            if source in ("price", "all"):
-                price_catalog_path = current_dir / "data" / "price_catalog.dev.json"
-                if price_catalog_path.exists():
-                    with open(price_catalog_path, 'r', encoding='utf-8') as f:
-                        price_catalog = json.load(f)
-                        # Разворачиваем структуру каталога цен
-                        for category, items in price_catalog.get("ingredients", {}).items():
-                            for name, details in items.items():
-                                price_data[name.lower()] = {
-                                    "name": name,
-                                    "price": details.get("price"),
-                                    "unit": details.get("unit", "kg"),
-                                    "category": details.get("category", category)
-                                }
-            
             # Загружаем каталог питания
             nutrition_data = {}
             if source in ("nutrition", "all"):
@@ -290,23 +273,7 @@ def search_catalog(
             # Объединяем и ищем в каталогах
             all_items = {}
             
-            # Добавляем из каталога цен
-            for name_lower, price_info in price_data.items():
-                if query in name_lower or any(query in word for word in name_lower.split()):
-                    all_items[name_lower] = {
-                        "name": price_info["name"],
-                        "canonical_id": nutrition_data.get(name_lower, {}).get("canonical_id"),
-                        "fdc_id": None,
-                        "sku_id": f"SKU_{price_info['name'].replace(' ', '_').upper()}",
-                        "category": price_info["category"],
-                        "unit": price_info["unit"],
-                        "price": price_info["price"],
-                        "has_nutrition": name_lower in nutrition_data,
-                        "nutrition_preview": f"{nutrition_data[name_lower]['nutrition'].get('kcal', 0)} ккал/100г" if name_lower in nutrition_data else None,
-                        "source": "catalog"
-                    }
-            
-            # Добавляем из каталога питания (если еще нет)
+            # Добавляем из каталога питания
             for name_lower, nutrition_info in nutrition_data.items():
                 if (query in name_lower or any(query in word for word in name_lower.split())) and name_lower not in all_items:
                     all_items[name_lower] = {
