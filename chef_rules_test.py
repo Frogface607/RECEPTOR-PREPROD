@@ -366,7 +366,7 @@ def run_unit_tests() -> bool:
             'python', '-m', 'pytest', 
             'tests/test_chef_rules.py', 
             '-v', '--tb=short'
-        ], capture_output=True, text=True, timeout=60)
+        ], capture_output=True, text=True, timeout=60, env={**os.environ, 'PYTHONPATH': '/app/backend'})
         
         os.chdir(original_dir)
         
