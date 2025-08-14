@@ -1057,6 +1057,19 @@ function App() {
           )}
         </div>
 
+        {/* Stale price warning banner */}
+        {tcV2 && tcV2.issues && tcV2.issues.some(issue => issue.type === 'stalePrice') && (
+          <div className="bg-yellow-900/50 border border-yellow-600/50 rounded-lg p-3 mb-4">
+            <div className="text-yellow-300 text-sm font-bold mb-1">⏰ Предупреждение о ценах:</div>
+            <div className="text-yellow-300 text-sm">
+              Часть прайс-листа устарела (данные старше 30 дней). Рекомендуется обновить цены.
+              {tcV2.costMeta && tcV2.costMeta.asOf && (
+                <span className="ml-1">Последнее обновление: {tcV2.costMeta.asOf}</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Recalc error banner */}
         {recalcError && (
           <div className="bg-red-900/50 border border-red-600/50 rounded-lg p-3 mb-4">
