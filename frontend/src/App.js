@@ -27,6 +27,10 @@ function App() {
   const [catalogSearchResults, setCatalogSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [mappingActiveTab, setMappingActiveTab] = useState('all'); // 'all', 'usda', 'catalog'
+  const [usdaSearchQuery, setUsdaSearchQuery] = useState('');
+  const [usdaSearchResults, setUsdaSearchResults] = useState([]);
+  const [isSearchingUsda, setIsSearchingUsda] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
