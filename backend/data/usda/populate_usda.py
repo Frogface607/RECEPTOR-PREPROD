@@ -67,7 +67,7 @@ def populate_usda_db():
         # Молочные продукты
         (171265, 'Milk, whole, 3.25% milkfat', 'Dairy', '2019-04-01'),
         (171279, 'Cream, heavy whipping, 36% fat', 'Dairy', '2019-04-01'),
-        (171287, 'Sour cream, reduced fat', 'Dairy', '2019-04-01'),
+        (171288, 'Sour cream, reduced fat', 'Dairy', '2019-04-01'),
         (171296, 'Cheese, cheddar', 'Dairy', '2019-04-01'),
         (171319, 'Cheese, mozzarella, whole milk', 'Dairy', '2019-04-01'),
         (173410, 'Cheese, parmesan, grated', 'Dairy', '2019-04-01'),
