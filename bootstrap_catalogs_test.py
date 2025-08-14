@@ -199,8 +199,9 @@ def analyze_techcard_coverage(techcard, dish_name):
         cost_data = techcard['cost']
         results['cost_data'] = cost_data
         
-        if 'costMeta' in cost_data:
-            cost_meta = cost_data['costMeta']
+        # costMeta находится на верхнем уровне техкарты
+        if 'costMeta' in techcard:
+            cost_meta = techcard['costMeta']
             results['cost_coverage'] = cost_meta.get('coveragePct', 0)
             results['cost_source'] = cost_meta.get('source', 'unknown')
             
