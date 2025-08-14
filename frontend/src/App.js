@@ -1686,8 +1686,8 @@ function App() {
         if (index === mappingIngredientIndex) {
           return {
             ...ing,
-            canonical_id: catalogItem.canonical_id || null,
-            skuId: catalogItem.sku_id || null
+            canonical_id: catalogItem.canonical_id || ing.canonical_id || null,
+            skuId: catalogItem.sku_id || catalogItem.skuId || ing.skuId || null
           };
         }
         return ing;
