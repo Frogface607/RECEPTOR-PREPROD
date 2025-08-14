@@ -118,8 +118,9 @@ def test_techcard_generation_with_usda():
         "dietary": []
     }
     
-    log_test(f"📝 Test dish: {test_profile['dishName']}")
-    log_test(f"🥬 Ingredients: {', '.join(test_profile['ingredients'])}")
+    log_test(f"📝 Test dish: {test_profile['name']}")
+    log_test(f"🍽️ Cuisine: {test_profile['cuisine']}")
+    log_test("🥬 Using fallback mode to test USDA integration")
     
     try:
         url = f"{API_BASE}/v1/techcards.v2/generate"
