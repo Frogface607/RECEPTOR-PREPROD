@@ -338,7 +338,7 @@ class NutritionCalculator:
     
     def calculate_ingredient_nutrition(self, ingredient: IngredientV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> Tuple[Optional[Dict[str, float]], str]:
         """
-        Расчет питательности одного ингредиента или подрецепта
+        Расчет питательности одного ингредиента или подрецепта с поддержкой USDA
         Возвращает: (питательность, статус)
         """
         # Если это подрецепт - рассчитываем через него
@@ -346,19 +346,21 @@ class NutritionCalculator:
             return self._calculate_subrecipe_nutrition(ingredient, sub_recipes_cache or {})
         
         # Обычная логика для обычных ингредиентов
-        # Ищем данные о питательности
-        nutrition_data = self.find_nutrition_data(ingredient.name)
+        # Ищем данные о питательности (USDA → dev-каталог → bootstrap)
+        canonical_id = getattr(ingredient, 'canonical_id', None)
+        nutrition_data = self.find_nutrition_data(ingredient.name, canonical_id)
         
         if not nutrition_data or "per100g" not in nutrition_data:
             return None, "no_nutrition_data"
         
         per100g = nutrition_data["per100g"]
         
-        # Конвертируем в граммы
+        # Конвертируем в граммы (передаем nutrition_data для USDA порций)
         mass_grams, conversion_status = self._convert_to_grams(
             ingredient.netto_g, 
             ingredient.unit,
-            ingredient.name
+            ingredient.name,
+            nutrition_data  # Передаем данные о продукте для поиска порций
         )
         
         if "no_mass_for_pcs" in conversion_status:
@@ -372,7 +374,11 @@ class NutritionCalculator:
             "carbs_g": per100g["carbs_g"] * (mass_grams / 100.0)
         }
         
-        return nutrition, f"calculated_{conversion_status}"
+        # Определяем статус с учетом источника данных
+        source = nutrition_data.get("source", "catalog")
+        status = f"calculated_{conversion_status}_{source}"
+        
+        return nutrition, status
     
     def _calculate_subrecipe_nutrition(self, ingredient: IngredientV2, sub_recipes_cache: Dict[str, TechCardV2]) -> Tuple[Optional[Dict[str, float]], str]:
         """
