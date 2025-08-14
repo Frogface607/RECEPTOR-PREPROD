@@ -114,8 +114,8 @@ class P1PricesBackendTester:
                          "Unit conversion to RUB/gram working correctly" if normalization_ok else "Unit conversion issues")
             
             # Test 1.4: Stale price detection (>30 days)
-            old_date = "2024-12-01"  # More than 30 days ago
-            recent_date = "2025-01-15"  # Recent
+            old_date = "2025-07-01"  # More than 30 days ago
+            recent_date = "2025-08-10"  # Recent
             
             is_old_stale = provider.is_stale_price(old_date, 30)
             is_recent_stale = provider.is_stale_price(recent_date, 30)
