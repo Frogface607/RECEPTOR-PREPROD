@@ -13107,12 +13107,12 @@ function App() {
       {/* INGREDIENT MAPPING MODAL */}
       {mappingModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-purple-300">Назначить продукт из каталога</h3>
               <button
                 onClick={() => setMappingModalOpen(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white text-xl"
               >
                 ✕
               </button>
@@ -13125,54 +13125,170 @@ function App() {
                 </p>
               </div>
             )}
-            
+
+            {/* Tabs */}
+            <div className="flex mb-4 bg-gray-800 rounded-lg p-1">
+              <button
+                onClick={() => setMappingActiveTab('all')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  mappingActiveTab === 'all' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Все каталоги
+              </button>
+              <button
+                onClick={() => setMappingActiveTab('usda')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  mappingActiveTab === 'usda' 
+                    ? 'bg-green-600 text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                🇺🇸 USDA
+              </button>
+              <button
+                onClick={() => setMappingActiveTab('catalog')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  mappingActiveTab === 'catalog' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Каталоги
+              </button>
+            </div>
+
+            {/* Search Input */}
             <div className="mb-4">
-              <input
-                type="text"
-                value={catalogSearchQuery}
-                onChange={(e) => {
-                  setCatalogSearchQuery(e.target.value);
-                  performCatalogSearch(e.target.value);
-                }}
-                placeholder="Поиск в каталоге продуктов..."
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
-              />
+              {mappingActiveTab === 'usda' ? (
+                <input
+                  type="text"
+                  value={usdaSearchQuery}
+                  onChange={(e) => {
+                    setUsdaSearchQuery(e.target.value);
+                    debouncedUsdaSearch(e.target.value);
+                  }}
+                  placeholder="Поиск в USDA FoodData Central..."
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={catalogSearchQuery}
+                  onChange={(e) => {
+                    setCatalogSearchQuery(e.target.value);
+                    performCatalogSearch(e.target.value);
+                  }}
+                  placeholder="Поиск в каталоге продуктов..."
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
+                />
+              )}
             </div>
             
-            {isSearching && (
+            {/* Loading State */}
+            {((mappingActiveTab === 'usda' && isSearchingUsda) || (mappingActiveTab !== 'usda' && isSearching)) && (
               <div className="text-center py-4 text-gray-400">
                 🔍 Поиск...
               </div>
             )}
             
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {catalogSearchResults.map((item, index) => (
-                <div
-                  key={index}
-                  className="p-3 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer transition-colors"
-                  onClick={() => handleAssignIngredientMapping(item)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-white">{item.name}</div>
-                      <div className="text-sm text-gray-400">
-                        {item.category} • {item.unit}
-                        {item.price && ` • ${item.price}₽/${item.unit}`}
-                        {item.has_nutrition && ` • ${item.nutrition_preview}`}
+            {/* Results */}
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {mappingActiveTab === 'usda' ? (
+                // USDA Results
+                <>
+                  {usdaSearchResults.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-3 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer transition-colors border-l-4 border-green-500"
+                      onClick={() => handleAssignIngredientMapping(item)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="font-bold text-white">{item.name}</div>
+                          <div className="text-sm text-gray-400">
+                            <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs mr-2">USDA</span>
+                            {item.nutrition_preview && (
+                              <span className="text-green-300">{item.nutrition_preview}</span>
+                            )}
+                          </div>
+                          {item.fdc_id && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              FDC ID: {item.fdc_id}
+                            </div>
+                          )}
+                          {/* Show portions if available */}
+                          {item.portions && item.portions.length > 0 && (
+                            <div className="text-xs text-blue-300 mt-1">
+                              Порции: {item.portions.slice(0, 2).map(p => `${p.desc} (${p.g}г)`).join(', ')}
+                              {item.portions.length > 2 && ` +${item.portions.length - 2} еще`}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-green-400 text-xs">
+                          📊 БЖУ
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-1">
-                      {item.price && <span className="text-green-400 text-xs">💰</span>}
-                      {item.has_nutrition && <span className="text-blue-400 text-xs">📊</span>}
+                  ))}
+                  
+                  {!isSearchingUsda && usdaSearchQuery && usdaSearchResults.length === 0 && (
+                    <div className="text-center py-6 text-gray-400">
+                      <div className="text-2xl mb-2">🔍</div>
+                      <div>Ничего не найдено в USDA для "{usdaSearchQuery}"</div>
+                      <button
+                        onClick={() => setMappingModalOpen(false)}
+                        className="mt-2 text-sm text-blue-400 hover:text-blue-300"
+                      >
+                        Сообщить о пропуске
+                      </button>
                     </div>
-                  </div>
-                </div>
-              ))}
-              
-              {!isSearching && catalogSearchQuery && catalogSearchResults.length === 0 && (
-                <div className="text-center py-4 text-gray-400">
-                  Ничего не найдено для "{catalogSearchQuery}"
-                </div>
+                  )}
+                </>
+              ) : (
+                // All/Catalog Results  
+                <>
+                  {catalogSearchResults.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer transition-colors border-l-4 ${
+                        item.source === 'usda' ? 'border-green-500' : 
+                        item.source === 'catalog' ? 'border-blue-500' : 'border-orange-500'
+                      }`}
+                      onClick={() => handleAssignIngredientMapping(item)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-white">{item.name}</div>
+                          <div className="text-sm text-gray-400">
+                            <span className={`px-2 py-0.5 rounded text-xs mr-2 text-white ${
+                              item.source === 'usda' ? 'bg-green-600' : 
+                              item.source === 'catalog' ? 'bg-blue-600' : 'bg-orange-600'
+                            }`}>
+                              {item.source === 'usda' ? 'USDA' : 
+                               item.source === 'catalog' ? 'CAT' : 'BOOT'}
+                            </span>
+                            {item.category}
+                            {item.price && ` • ${item.price}₽/${item.unit}`}
+                            {item.nutrition_preview && ` • ${item.nutrition_preview}`}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          {item.price && <span className="text-green-400 text-xs">💰</span>}
+                          {item.has_nutrition && <span className="text-blue-400 text-xs">📊</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {!isSearching && catalogSearchQuery && catalogSearchResults.length === 0 && (
+                    <div className="text-center py-4 text-gray-400">
+                      Ничего не найдено для "{catalogSearchQuery}"
+                    </div>
+                  )}
+                </>
               )}
             </div>
             
