@@ -1312,6 +1312,7 @@ function App() {
 
   const performRecalculation = async (updatedCard) => {
     setIsRecalculating(true);
+    setRecalcError(null);
     try {
       const response = await fetch(`${API}/v1/techcards.v2/recalc`, {
         method: 'POST',
@@ -1328,13 +1329,11 @@ function App() {
         console.log('✅ Recalculation successful');
       } else {
         console.error('Recalculation failed:', data.message);
-        setGenerationError(`Ошибка пересчета: ${data.message}`);
-        setGenerationStatus('error');
+        setRecalcError(`Ошибка пересчета: ${data.message}`);
       }
     } catch (error) {
       console.error('Recalculation error:', error);
-      setGenerationError('Ошибка при пересчете техкарты');
-      setGenerationStatus('error');
+      setRecalcError('Ошибка при пересчете техкарты');
     } finally {
       setIsRecalculating(false);
     }
