@@ -12913,11 +12913,11 @@ function App() {
 
                       <div className="bg-blue-900/20 border border-blue-600/30 rounded-lg p-4 mb-6">
                         <div className="text-sm font-bold text-blue-300 mb-2">💡 Что дальше?</div>
-                        <div className="text-xs text-gray-300 space-y-1">
-                          <div>• Данные сохранены и будут использоваться для расчёта техкарт</div>
-                          <div>• Создайте новую техкарту для проверки покрытия данными</div>
-                          <div>• Используйте кнопку "Пересчитать" в существующих техкартах</div>
-                        </div>
+                          <div className="text-xs text-gray-300 space-y-1">
+                            <div>- Данные сохранены и будут использоваться для расчёта техкарт</div>
+                            <div>- Создайте новую техкарту для проверки покрытия данными</div>
+                            <div>- Используйте кнопку "Пересчитать" в существующих техкартах</div>
+                          </div>
                       </div>
 
                       {/* Action Buttons */}
