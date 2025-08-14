@@ -111,7 +111,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Задача D1 — «USDA FDC → канонический каталог БЖУ + интеграция». Цель: поднять nutritionMeta.coveragePct до ≥75% без ручного маппинга через интеграцию USDA FoodData Central. Реализовано: 1) USDA SQLite база (~20 продуктов для dev-теста), 2) USDANutritionProvider с поиском по canonical_id и fuzzy matching, 3) NutritionCalculator с приоритетом USDA → dev-каталог → bootstrap, 4) API catalog-search с параметром source=usda, 5) canonical_map.json для маппинга RU/EN названий к FDC ID. Тесты показывают 100% покрытие с USDA данными."
+user_problem_statement: "Задача D1-UI — «USDA в UI: чип источника + поиск/маппинг + ГОСТ-примечание». Цель: сделать видимым источник нутриентов и позволить назначать canonical_id из USDA прямо из UI. Изменения: 1) Чип источника и покрытия 📊 БЖУ {coveragePct}% • {source|Mixed} с цветами, 2) Бейджи USDA/CAT/BOOT/⚠ no map в строках ингредиентов, 3) Модалка маппинга с USDA вкладкой использующая /catalog-search?source=usda, 4) ГОСТ-печать с строкой 'Источник БЖУ: {source}; дата: {asOf}'."
 
 backend:
   - task: "USDA FDC Integration (Task D1)"
