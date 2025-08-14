@@ -214,7 +214,7 @@ def create_problematic_test_card(expected_issue: str) -> Optional[Any]:
     """Create a test tech card with a specific problem"""
     
     try:
-        from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, ProcessStepV2, YieldV2, MetaV2, StorageConditionsV2
+        from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, ProcessStepV2, YieldV2, MetaV2, StorageV2
         
         base_meta = MetaV2(
             id="test-card",
@@ -225,7 +225,7 @@ def create_problematic_test_card(expected_issue: str) -> Optional[Any]:
             tags=[]
         )
         
-        base_storage = StorageConditionsV2(
+        base_storage = StorageV2(
             conditions="Холодильник 0...+4°C",
             shelfLife_hours=48.0,
             servingTemp_c=65.0
