@@ -118,16 +118,16 @@ def test_content_check_core():
             },
             "nutrition": {
                 "per100g": {
-                    "calories": 120.0,
-                    "protein": 15.0,
-                    "fat": 5.0,
-                    "carbs": 8.0
+                    "kcal": 120.0,
+                    "proteins_g": 15.0,
+                    "fats_g": 5.0,
+                    "carbs_g": 8.0
                 },
                 "perPortion": {
-                    "calories": 240.0,
-                    "protein": 30.0,
-                    "fat": 10.0,
-                    "carbs": 16.0
+                    "kcal": 240.0,
+                    "proteins_g": 30.0,
+                    "fats_g": 10.0,
+                    "carbs_g": 16.0
                 }
             },
             "cost": {
