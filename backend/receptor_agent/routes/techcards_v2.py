@@ -371,6 +371,7 @@ def recalc_tc_v2(techcard: TechCardV2):
             "message": f"Recalculation failed: {error_message}"
         }
         return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
+@router.post("/techcards.v2/print")
 def print_tc_v2(card: TechCardV2):
     """Генерация ГОСТ-печати A4 из TechCardV2"""
     if not _flag():
