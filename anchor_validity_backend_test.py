@@ -356,31 +356,41 @@ def test_additional_anchor_scenarios():
             
             if response.status_code == 200:
                 data = response.json()
-                techcard = data.get('techcard', {})
-                ingredients = techcard.get('ingredients', [])
                 
-                log_test(f"  📊 Ингредиентов: {len(ingredients)}")
+                # Используем правильную структуру ответа
+                techcard = None
+                if 'card' in data and data['card']:
+                    techcard = data['card']
+                elif 'techcard' in data:
+                    techcard = data['techcard']
                 
-                # Быстрая проверка наличия ключевых ингредиентов
-                ingredient_names = [ing.get('name', '').lower() for ing in ingredients]
-                all_ingredients = ' '.join(ingredient_names)
-                
-                found_must = []
-                found_forbid = []
-                
-                for must_have in test_case['expected_must_have']:
-                    if must_have.lower() in all_ingredients:
-                        found_must.append(must_have)
-                
-                for forbid in test_case['expected_forbid']:
-                    if forbid.lower() in all_ingredients:
-                        found_forbid.append(forbid)
-                
-                log_test(f"  ✅ Найдены обязательные: {found_must}")
-                if found_forbid:
-                    log_test(f"  ❌ Найдены запрещенные: {found_forbid}")
+                if techcard:
+                    ingredients = techcard.get('ingredients', [])
+                    log_test(f"  📊 Ингредиентов: {len(ingredients)}")
+                    
+                    # Быстрая проверка наличия ключевых ингредиентов
+                    ingredient_names = [ing.get('name', '').lower() for ing in ingredients]
+                    all_ingredients = ' '.join(ingredient_names)
+                    
+                    found_must = []
+                    found_forbid = []
+                    
+                    for must_have in test_case['expected_must_have']:
+                        if must_have.lower() in all_ingredients:
+                            found_must.append(must_have)
+                    
+                    for forbid in test_case['expected_forbid']:
+                        if forbid.lower() in all_ingredients:
+                            found_forbid.append(forbid)
+                    
+                    log_test(f"  ✅ Найдены обязательные: {found_must}")
+                    if found_forbid:
+                        log_test(f"  ❌ Найдены запрещенные: {found_forbid}")
+                    else:
+                        log_test(f"  ✅ Запрещенные отсутствуют")
                 else:
-                    log_test(f"  ✅ Запрещенные отсутствуют")
+                    log_test(f"  ⚠️ Техкарта не создана (статус: {data.get('status', 'unknown')})")
+                    log_test(f"  📋 Issues: {len(data.get('issues', []))}")
                     
             else:
                 log_test(f"  ❌ Ошибка генерации: {response.status_code}")
