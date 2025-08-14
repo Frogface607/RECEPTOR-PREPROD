@@ -13322,7 +13322,9 @@ function App() {
             </div>
             
             {/* Loading State */}
-            {((mappingActiveTab === 'usda' && isSearchingUsda) || (mappingActiveTab !== 'usda' && isSearching)) && (
+            {((mappingActiveTab === 'usda' && isSearchingUsda) || 
+              (mappingActiveTab === 'price' && isSearchingPrice) || 
+              (mappingActiveTab !== 'usda' && mappingActiveTab !== 'price' && isSearching)) && (
               <div className="text-center py-4 text-gray-400">
                 🔍 Поиск...
               </div>
