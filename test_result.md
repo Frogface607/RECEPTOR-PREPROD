@@ -111,7 +111,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Задача D1-UI — «USDA в UI: чип источника + поиск/маппинг + ГОСТ-примечание». Цель: сделать видимым источник нутриентов и позволить назначать canonical_id из USDA прямо из UI. Изменения: 1) Чип источника и покрытия 📊 БЖУ {coveragePct}% • {source|Mixed} с цветами, 2) Бейджи USDA/CAT/BOOT/⚠ no map в строках ингредиентов, 3) Модалка маппинга с USDA вкладкой использующая /catalog-search?source=usda, 4) ГОСТ-печать с строкой 'Источник БЖУ: {source}; дата: {asOf}'."
+user_problem_statement: "Задача P1-Prices — «Единый провайдер цен + покрытие и маппинг в UI (v1)». Цель: сделать цены таким же «первоклассным» источником, как USDA для БЖУ: детерминированные расчёты себестоимости, чип покрытия с источником, быстрый маппинг skuId в UI. Изменения: 1) Backend — единый провайдер цен (PriceProvider класс со стратегией источников: user → catalog → bootstrap → llm-fallback), 2) Интеграция в cost_calculator, 3) Расширение поиска каталога для маппинга цен, 4) UI — чип цен и маппинг (💰 Цены {coveragePct}% • {User|Catalog|Bootstrap|Mixed} с цветами и tooltip), 5) Экспорт в iiko."
 
 backend:
   - task: "USDA UI Integration (Task D1-UI)"
