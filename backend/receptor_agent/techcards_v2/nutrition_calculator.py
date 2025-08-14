@@ -13,12 +13,13 @@ from .schemas import TechCardV2, IngredientV2, NutritionV2, NutritionPer, Nutrit
 class NutritionCalculator:
     """Калькулятор БЖУ для техкарт"""
     
-    def __init__(self, catalog_path: str = None):
+    def __init__(self, catalog_path: str = None, use_bootstrap: bool = True):
         """Инициализация с каталогом питательных веществ"""
         if catalog_path is None:
             catalog_path = os.path.join(os.path.dirname(__file__), "../../data/nutrition_catalog.dev.json")
         
         self.catalog_path = catalog_path
+        self.use_bootstrap = use_bootstrap
         self.catalog = self._load_catalog()
         self.nutrition_index = self._build_nutrition_index()
         self.densities = self.catalog.get("densities", {})
@@ -27,10 +28,38 @@ class NutritionCalculator:
         """Загрузка каталога питательных веществ из JSON"""
         try:
             with open(self.catalog_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                catalog = json.load(f)
+                
+            # Проверяем, есть ли данные в каталоге
+            items_count = len(catalog.get("items", []))
+            
+            # Если каталог пустой и включена поддержка bootstrap
+            if items_count < 10 and self.use_bootstrap:
+                return self._load_bootstrap_catalog()
+            
+            return catalog
         except FileNotFoundError:
+            if self.use_bootstrap:
+                return self._load_bootstrap_catalog()
             return {"items": [], "densities": {}}
         except json.JSONDecodeError:
+            if self.use_bootstrap:
+                return self._load_bootstrap_catalog()
+            return {"items": [], "densities": {}}
+    
+    def _load_bootstrap_catalog(self) -> Dict[str, Any]:
+        """Загружает bootstrap каталог питания из JSON"""
+        try:
+            bootstrap_path = os.path.join(os.path.dirname(__file__), "../../data/bootstrap/nutrition_ru.demo.json")
+            
+            if not os.path.exists(bootstrap_path):
+                return {"items": [], "densities": {}}
+            
+            with open(bootstrap_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+                
+        except Exception as e:
+            print(f"Error loading bootstrap nutrition catalog: {e}")
             return {"items": [], "densities": {}}
     
     def _build_nutrition_index(self) -> Dict[str, Dict[str, Any]]:
