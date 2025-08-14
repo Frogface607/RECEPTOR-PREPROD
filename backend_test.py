@@ -416,12 +416,10 @@ class P1PricesBackendTester:
             # First, generate a tech card to recalculate
             generate_url = f"{self.backend_url}/v1/techcards.v2/generate"
             test_profile = {
-                "dish_name": "Простое блюдо для теста",
-                "dish_description": "Тестовое блюдо для проверки пересчета",
-                "portions": 2,
-                "cuisine_type": "русская",
-                "cooking_method": "варка",
-                "ingredients_list": "куриное филе, морковь, лук"
+                "name": "Простое блюдо для теста",
+                "cuisine": "русская",
+                "equipment": ["плита"],
+                "dietary": []
             }
             
             generate_response = requests.post(generate_url, json=test_profile, timeout=60)
