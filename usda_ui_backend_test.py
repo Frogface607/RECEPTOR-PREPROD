@@ -111,15 +111,11 @@ def test_techcard_generation_with_usda():
     
     # Create test profile with ingredients that should be found in USDA
     test_profile = {
-        "dishName": "Треска с овощами",
+        "name": "Треска с овощами",
         "cuisine": "русская",
-        "portions": 4,
-        "description": "Простое блюдо из трески с растительным маслом",
-        "ingredients": [
-            "треска 400г",
-            "растительное масло 30мл", 
-            "соль поваренная 5г"
-        ]
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     log_test(f"📝 Test dish: {test_profile['dishName']}")
