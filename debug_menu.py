@@ -6,7 +6,7 @@ Debug script to examine menu generation response structure
 import requests
 import json
 
-BACKEND_URL = "https://ai-menu-designer.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-recipe-pro.preview.emergentagent.com/api"
 
 def debug_menu_structure():
     user_id = "505d1cb4-4ed3-460a-ad25-3608b58cbf24"  # Existing PRO user

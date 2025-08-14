@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://ai-menu-designer.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-recipe-pro.preview.emergentagent.com/api"
 
 def create_test_user():
     """Create a test user for testing"""

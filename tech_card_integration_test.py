@@ -10,7 +10,7 @@ import string
 
 class TechCardIntegrationTest:
     def __init__(self):
-        self.base_url = "https://ai-menu-designer.preview.emergentagent.com/api"
+        self.base_url = "https://ai-recipe-pro.preview.emergentagent.com/api"
         self.test_results = []
         
     def random_string(self, length=6):
