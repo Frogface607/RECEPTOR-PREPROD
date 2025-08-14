@@ -154,15 +154,19 @@ class USDANutritionProvider:
 
 
 class NutritionCalculator:
-    """Калькулятор БЖУ для техкарт"""
+    """Калькулятор БЖУ для техкарт с поддержкой USDA данных"""
     
-    def __init__(self, catalog_path: str = None, use_bootstrap: bool = True):
-        """Инициализация с каталогом питательных веществ"""
+    def __init__(self, catalog_path: str = None, use_bootstrap: bool = True, use_usda: bool = True):
+        """Инициализация с каталогом питательных веществ и USDA"""
         if catalog_path is None:
             catalog_path = os.path.join(os.path.dirname(__file__), "../../data/nutrition_catalog.dev.json")
         
         self.catalog_path = catalog_path
         self.use_bootstrap = use_bootstrap
+        self.use_usda = use_usda
+        
+        # Инициализируем провайдеры данных в порядке приоритета
+        self.usda_provider = USDANutritionProvider() if use_usda else None
         self.catalog = self._load_catalog()
         self.nutrition_index = self._build_nutrition_index()
         self.densities = self.catalog.get("densities", {})
