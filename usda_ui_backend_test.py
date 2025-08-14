@@ -125,8 +125,8 @@ def test_techcard_generation_with_usda():
     try:
         url = f"{API_BASE}/v1/techcards.v2/generate"
         
-        # Test with LLM disabled to get deterministic results
-        params = {"use_llm": "false"}
+        # Test with LLM enabled to get proper tech card structure
+        params = {"use_llm": "true"}
         
         start_time = time.time()
         response = requests.post(url, json=test_profile, params=params, timeout=60)
