@@ -139,9 +139,18 @@ def export_tc_v2_to_iiko(card: TechCardV2):
         raise HTTPException(500, f"Export failed: {str(e)}")
 
 @router.get("/techcards.v2/catalog-search")
-def search_catalog(q: str = Query(..., description="Search query"), limit: int = Query(10, ge=1, le=50)):
+def search_catalog(
+    q: str = Query(..., description="Search query"), 
+    limit: int = Query(10, ge=1, le=50),
+    source: str = Query("all", description="Data source: usda, price, nutrition, all")
+):
     """
-    Поиск по объединенному каталогу цен и питания для маппинга ингредиентов.
+    Поиск по объединенному каталогу цен, питания и USDA для маппинга ингредиентов.
+    
+    Parameters:
+        - q: Search query (ingredient name)
+        - limit: Maximum number of results (1-50)
+        - source: Data source filter (usda, price, nutrition, all)
     
     Returns:
         JSON: {
@@ -149,13 +158,15 @@ def search_catalog(q: str = Query(..., description="Search query"), limit: int =
             "items": [
                 {
                     "name": "string",
-                    "canonical_id": "string",
+                    "canonical_id": "string", 
+                    "fdc_id": "int|null",
                     "sku_id": "string|null", 
                     "category": "string",
                     "unit": "kg|l|pcs",
                     "price": "float|null",
                     "has_nutrition": "boolean",
-                    "nutrition_preview": "string|null"
+                    "nutrition_preview": "string|null",
+                    "source": "usda|catalog|bootstrap|price"
                 }
             ]
         }
@@ -168,80 +179,139 @@ def search_catalog(q: str = Query(..., description="Search query"), limit: int =
         results = []
         query = q.lower().strip()
         
-        # Загружаем каталог цен
-        current_dir = Path(__file__).parent.parent.parent
-        price_catalog_path = current_dir / "data" / "price_catalog.dev.json"
-        price_data = {}
+        # Инициализируем USDA провайдер если нужен
+        usda_results = []
+        if source in ("usda", "all"):
+            try:
+                from ..techcards_v2.nutrition_calculator import USDANutritionProvider
+                usda_provider = USDANutritionProvider()
+                
+                # Поиск в USDA базе
+                if usda_provider.canonical_map:
+                    for key, data in usda_provider.canonical_map.items():
+                        if 'fdc_id' in data:  # Это синоним
+                            fdc_id = data['fdc_id']
+                            canonical_id = data.get('canonical_id')
+                            
+                            # Проверяем совпадение с запросом
+                            if (query in key.lower() or 
+                                any(query in word for word in key.lower().split())):
+                                
+                                # Получаем полные данные из USDA
+                                usda_nutrition = usda_provider.find_nutrition_data(key, canonical_id)
+                                if usda_nutrition:
+                                    kcal = usda_nutrition['per100g']['kcal']
+                                    usda_results.append({
+                                        "name": key,
+                                        "canonical_id": canonical_id,
+                                        "fdc_id": fdc_id,
+                                        "sku_id": None,
+                                        "category": usda_nutrition.get('food_category', 'USDA'),
+                                        "unit": "g",
+                                        "price": None,
+                                        "has_nutrition": True,
+                                        "nutrition_preview": f"{kcal} ккал/100г",
+                                        "source": "usda"
+                                    })
+                        
+                        # Ограничиваем результаты для производительности
+                        if len(usda_results) >= limit:
+                            break
+                            
+            except Exception as e:
+                print(f"USDA search error: {e}")
         
-        if price_catalog_path.exists():
-            with open(price_catalog_path, 'r', encoding='utf-8') as f:
-                price_catalog = json.load(f)
-                # Разворачиваем структуру каталога цен
-                for category, items in price_catalog.get("ingredients", {}).items():
-                    for name, details in items.items():
-                        price_data[name.lower()] = {
-                            "name": name,
-                            "price": details.get("price"),
-                            "unit": details.get("unit", "kg"),
-                            "category": details.get("category", category)
-                        }
-        
-        # Загружаем каталог питания
-        nutrition_catalog_path = current_dir / "data" / "nutrition_catalog.dev.json"
-        nutrition_data = {}
-        
-        if nutrition_catalog_path.exists():
-            with open(nutrition_catalog_path, 'r', encoding='utf-8') as f:
-                nutrition_catalog = json.load(f)
-                for item in nutrition_catalog.get("items", []):
-                    name = item.get("name", "").lower()
-                    nutrition_data[name] = {
-                        "canonical_id": item.get("canonical_id"),
-                        "name": item.get("name"),
-                        "nutrition": item.get("per100g", {})
+        # Каталоги цен и питания (если нужны)
+        catalog_results = []
+        if source in ("price", "nutrition", "all"):
+            current_dir = Path(__file__).parent.parent.parent
+            
+            # Загружаем каталог цен
+            price_data = {}
+            if source in ("price", "all"):
+                price_catalog_path = current_dir / "data" / "price_catalog.dev.json"
+                if price_catalog_path.exists():
+                    with open(price_catalog_path, 'r', encoding='utf-8') as f:
+                        price_catalog = json.load(f)
+                        # Разворачиваем структуру каталога цен
+                        for category, items in price_catalog.get("ingredients", {}).items():
+                            for name, details in items.items():
+                                price_data[name.lower()] = {
+                                    "name": name,
+                                    "price": details.get("price"),
+                                    "unit": details.get("unit", "kg"),
+                                    "category": details.get("category", category)
+                                }
+            
+            # Загружаем каталог питания
+            nutrition_data = {}
+            if source in ("nutrition", "all"):
+                nutrition_catalog_path = current_dir / "data" / "nutrition_catalog.dev.json"
+                if nutrition_catalog_path.exists():
+                    with open(nutrition_catalog_path, 'r', encoding='utf-8') as f:
+                        nutrition_catalog = json.load(f)
+                        for item in nutrition_catalog.get("items", []):
+                            name = item.get("name", "").lower()
+                            nutrition_data[name] = {
+                                "canonical_id": item.get("canonical_id"),
+                                "name": item.get("name"),
+                                "nutrition": item.get("per100g", {})
+                            }
+            
+            # Объединяем и ищем в каталогах
+            all_items = {}
+            
+            # Добавляем из каталога цен
+            for name_lower, price_info in price_data.items():
+                if query in name_lower or any(query in word for word in name_lower.split()):
+                    all_items[name_lower] = {
+                        "name": price_info["name"],
+                        "canonical_id": nutrition_data.get(name_lower, {}).get("canonical_id"),
+                        "fdc_id": None,
+                        "sku_id": f"SKU_{price_info['name'].replace(' ', '_').upper()}",
+                        "category": price_info["category"],
+                        "unit": price_info["unit"],
+                        "price": price_info["price"],
+                        "has_nutrition": name_lower in nutrition_data,
+                        "nutrition_preview": f"{nutrition_data[name_lower]['nutrition'].get('kcal', 0)} ккал/100г" if name_lower in nutrition_data else None,
+                        "source": "catalog"
                     }
+            
+            # Добавляем из каталога питания (если еще нет)
+            for name_lower, nutrition_info in nutrition_data.items():
+                if (query in name_lower or any(query in word for word in name_lower.split())) and name_lower not in all_items:
+                    all_items[name_lower] = {
+                        "name": nutrition_info["name"],
+                        "canonical_id": nutrition_info["canonical_id"],
+                        "fdc_id": None,
+                        "sku_id": None,
+                        "category": "nutrition_only",
+                        "unit": "g",
+                        "price": None,
+                        "has_nutrition": True,
+                        "nutrition_preview": f"{nutrition_info['nutrition'].get('kcal', 0)} ккал/100г",
+                        "source": "catalog"
+                    }
+            
+            catalog_results = list(all_items.values())
         
-        # Объединяем и ищем
-        all_items = {}
+        # Объединяем результаты с приоритетом USDA
+        all_results = usda_results + catalog_results
         
-        # Добавляем из каталога цен
-        for name_lower, price_info in price_data.items():
-            if query in name_lower or any(query in word for word in name_lower.split()):
-                all_items[name_lower] = {
-                    "name": price_info["name"],
-                    "canonical_id": nutrition_data.get(name_lower, {}).get("canonical_id"),
-                    "sku_id": f"SKU_{price_info['name'].replace(' ', '_').upper()}",  # Генерируем SKU
-                    "category": price_info["category"],
-                    "unit": price_info["unit"],
-                    "price": price_info["price"],
-                    "has_nutrition": name_lower in nutrition_data,
-                    "nutrition_preview": f"{nutrition_data[name_lower]['nutrition'].get('kcal', 0)} ккал" if name_lower in nutrition_data else None
-                }
-        
-        # Добавляем из каталога питания (если еще нет)
-        for name_lower, nutrition_info in nutrition_data.items():
-            if (query in name_lower or any(query in word for word in name_lower.split())) and name_lower not in all_items:
-                all_items[name_lower] = {
-                    "name": nutrition_info["name"],
-                    "canonical_id": nutrition_info["canonical_id"],
-                    "sku_id": None,
-                    "category": "unknown",
-                    "unit": "kg",
-                    "price": None,
-                    "has_nutrition": True,
-                    "nutrition_preview": f"{nutrition_info['nutrition'].get('kcal', 0)} ккал"
-                }
-        
-        # Сортируем по релевантности и ограничиваем
-        sorted_items = sorted(all_items.values(), key=lambda x: (
-            0 if query in x["name"].lower() else 1,  # Точное вхождение в начало
+        # Сортируем по релевантности: USDA → точные совпадения → остальные
+        sorted_items = sorted(all_results, key=lambda x: (
+            0 if x["source"] == "usda" else 1,  # USDA данные имеют приоритет
+            0 if query in x["name"].lower() else 1,  # Точное вхождение
             -len(x["name"]),  # Короткие названия выше
             x["name"].lower()
         ))[:limit]
         
         return JSONResponse(content={
-            "status": "success",
-            "items": sorted_items
+            "status": "success", 
+            "items": sorted_items,
+            "total_found": len(all_results),
+            "usda_count": len(usda_results),
+            "catalog_count": len(catalog_results)
         }, headers={"Content-Type": "application/json; charset=utf-8"})
         
     except Exception as e:
