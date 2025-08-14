@@ -973,6 +973,27 @@ function App() {
               </span>
             </div>
           </div>
+          {meta.cuisine && (
+            <p className="text-gray-400 text-lg">{meta.cuisine}</p>
+          )}
+        </div>
+
+        {/* ВЫХОД И ПОРЦИИ */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-900/20 rounded-lg p-4 text-center">
+            <h4 className="text-blue-300 font-bold mb-2">ПОРЦИЙ</h4>
+            <p className="text-gray-300">{tcV2.portions || 1}</p>
+          </div>
+          <div className="bg-green-900/20 rounded-lg p-4 text-center">
+            <h4 className="text-green-300 font-bold mb-2">НА ПОРЦИЮ</h4>
+            <p className="text-gray-300">{yield_data.perPortion_g || 0}г</p>
+          </div>
+          <div className="bg-purple-900/20 rounded-lg p-4 text-center">
+            <h4 className="text-purple-300 font-bold mb-2">ОБЩИЙ ВЫХОД</h4>
+            <p className="text-gray-300">{yield_data.perBatch_g || 0}г</p>
+          </div>
+        </div>
+
         {/* Coverage indicators */}
         <div className="flex flex-wrap gap-2 mb-4">
           <div className={`px-3 py-1 rounded-full text-sm font-bold ${
