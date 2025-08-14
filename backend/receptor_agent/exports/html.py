@@ -271,6 +271,7 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
                 {nutrition_html}
             </tbody>
         </table>
+        {nutrition_source_html}
     </div>
     
     <div class="section">
