@@ -323,9 +323,9 @@ def test_edge_cases():
         
         # Create tech card with mix of known and unknown ingredients
         mixed_ingredients = [
-            IngredientV2(name="треска", netto_g=200.0, unit="g", canonical_id="cod"),  # USDA
-            IngredientV2(name="экзотический фрукт дракона", netto_g=100.0, unit="g"),  # Unknown
-            IngredientV2(name="соль поваренная", netto_g=5.0, unit="g")  # Should fallback to catalog/bootstrap
+            IngredientV2(name="треска", brutto_g=220.0, loss_pct=10.0, netto_g=200.0, unit="g", canonical_id="cod"),  # USDA
+            IngredientV2(name="экзотический фрукт дракона", brutto_g=110.0, loss_pct=10.0, netto_g=100.0, unit="g"),  # Unknown
+            IngredientV2(name="соль поваренная", brutto_g=5.0, loss_pct=0.0, netto_g=5.0, unit="g")  # Should fallback to catalog/bootstrap
         ]
         
         test_card = TechCardV2(
