@@ -1487,13 +1487,19 @@ function App() {
   const handleOpenIngredientMapping = (ingredientIndex) => {
     setMappingIngredientIndex(ingredientIndex);
     setMappingModalOpen(true);
+    setMappingActiveTab('all');
     setCatalogSearchQuery('');
     setCatalogSearchResults([]);
+    setUsdaSearchQuery('');
+    setUsdaSearchResults([]);
     
     // Auto-fill search with ingredient name
     if (tcV2 && tcV2.ingredients && tcV2.ingredients[ingredientIndex]) {
-      setCatalogSearchQuery(tcV2.ingredients[ingredientIndex].name);
-      performCatalogSearch(tcV2.ingredients[ingredientIndex].name);
+      const ingredientName = tcV2.ingredients[ingredientIndex].name;
+      setCatalogSearchQuery(ingredientName);
+      setUsdaSearchQuery(ingredientName);
+      performCatalogSearch(ingredientName);
+      debouncedUsdaSearch(ingredientName);
     }
   };
 
