@@ -2,7 +2,7 @@
 Юнит-тесты для правил шефа (chef_rules.py)
 """
 import pytest
-from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, ProcessStepV2, YieldV2, MetaV2, StorageConditionsV2
+from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, ProcessStepV2, YieldV2, MetaV2, StorageV2
 from receptor_agent.techcards_v2.chef_rules import (
     _check_yield_consistency, _check_loss_bounds, _check_salt_upper_bound,
     _check_fry_oil_per_portion, _check_steps_min3, _check_units_strict,
@@ -17,7 +17,7 @@ def create_test_techcard() -> TechCardV2:
             id="test-card",
             title="Тест блюдо", 
             version="2.0",
-            created_at="2025-01-18T12:00:00",
+            createdAt="2025-01-18T12:00:00",
             cuisine="тестовая",
             tags=[]
         ),
@@ -33,7 +33,7 @@ def create_test_techcard() -> TechCardV2:
             ProcessStepV2(n=2, action="Обжаривание", time_min=15.0, temp_c=180.0),
             ProcessStepV2(n=3, action="Доведение до готовности", time_min=10.0)
         ],
-        storage=StorageConditionsV2(
+        storage=StorageV2(
             conditions="Холодильник 0...+4°C",
             shelfLife_hours=48.0,
             servingTemp_c=65.0
