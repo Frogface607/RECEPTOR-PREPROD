@@ -161,11 +161,11 @@ class P1PricesBackendTester:
             
             # Create test tech card
             test_ingredients = [
-                IngredientV2(name="куриное филе", netto_g=400, brutto_g=450),
-                IngredientV2(name="растительное масло", netto_g=30, brutto_g=30),
-                IngredientV2(name="лук репчатый", netto_g=100, brutto_g=120),
-                IngredientV2(name="соль поваренная", netto_g=8, brutto_g=8),
-                IngredientV2(name="неизвестный ингредиент", netto_g=50, brutto_g=50)  # Should not be found
+                IngredientV2(name="куриное филе", netto_g=400, brutto_g=450, loss_pct=11.1),
+                IngredientV2(name="растительное масло", netto_g=30, brutto_g=30, loss_pct=0.0),
+                IngredientV2(name="лук репчатый", netto_g=100, brutto_g=120, loss_pct=16.7),
+                IngredientV2(name="соль поваренная", netto_g=8, brutto_g=8, loss_pct=0.0),
+                IngredientV2(name="неизвестный ингредиент", netto_g=50, brutto_g=50, loss_pct=0.0)  # Should not be found
             ]
             
             test_card = TechCardV2(
