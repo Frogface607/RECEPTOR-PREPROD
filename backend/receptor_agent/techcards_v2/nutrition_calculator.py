@@ -244,11 +244,20 @@ class NutritionCalculator:
         # Убираем лишние пробелы
         return ' '.join(name.split())
     
-    def find_nutrition_data(self, ingredient_name: str) -> Optional[Dict[str, Any]]:
+    def find_nutrition_data(self, ingredient_name: str, canonical_id: str = None) -> Optional[Dict[str, Any]]:
         """
         Поиск данных о питательности ингредиента
+        Порядок источников: USDA → dev-каталог → bootstrap
         Возвращает: данные продукта или None
         """
+        
+        # 1. Сначала пробуем USDA (если включен)
+        if self.use_usda and self.usda_provider:
+            usda_data = self.usda_provider.find_nutrition_data(ingredient_name, canonical_id)
+            if usda_data:
+                return usda_data
+        
+        # 2. Затем пробуем обычный каталог/bootstrap логику
         clean_name = ingredient_name.lower().strip()
         
         # Прямое совпадение
@@ -260,7 +269,7 @@ class NutritionCalculator:
         if clean_name_processed in self.nutrition_index:
             return self.nutrition_index[clean_name_processed]
         
-        # Fuzzy matching для близких совпадений
+        # Fuzzy matching для близких совпадений (80% порог для каталогов)
         best_match = None
         best_ratio = 0.0
         
