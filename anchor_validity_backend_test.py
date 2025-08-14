@@ -21,6 +21,39 @@ def log_test(message):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {message}")
 
+def analyze_draft_issues(data):
+    """Анализ issues в draft режиме"""
+    log_test("🔍 АНАЛИЗ ISSUES В DRAFT РЕЖИМЕ:")
+    
+    issues = data.get('issues', [])
+    status = data.get('status', 'unknown')
+    
+    log_test(f"📊 Статус: {status}")
+    log_test(f"📊 Количество issues: {len(issues)}")
+    
+    # Ищем проблемы с анкерной валидностью
+    anchor_issues = []
+    validation_issues = []
+    
+    for issue in issues:
+        issue_str = str(issue).lower()
+        if any(anchor in issue_str for anchor in ['треска', 'брокколи', 'биск', 'missinganchor', 'forbiddenингредиент']):
+            anchor_issues.append(issue)
+        else:
+            validation_issues.append(issue)
+    
+    if anchor_issues:
+        log_test("🎯 НАЙДЕНЫ ПРОБЛЕМЫ С АНКЕРНОЙ ВАЛИДНОСТЬЮ:")
+        for issue in anchor_issues:
+            log_test(f"  - {issue}")
+        return False
+    else:
+        log_test("⚠️ Проблемы с анкерной валидностью не обнаружены")
+        log_test("📋 Основные проблемы связаны с валидацией схемы:")
+        for issue in validation_issues[:3]:  # Показываем первые 3
+            log_test(f"  - {issue}")
+        return True
+
 def test_anchor_validity_cod_broccoli_bisque():
     """
     Тест анкерной валидности для "Треска с брокколи и соусом биск"
