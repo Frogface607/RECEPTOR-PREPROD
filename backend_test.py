@@ -171,7 +171,14 @@ class P1PricesBackendTester:
             test_card = TechCardV2(
                 meta=MetaV2(title="Тест блюдо", description="Тестовое блюдо"),
                 ingredients=test_ingredients,
-                portions=4
+                portions=4,
+                yield_=YieldV2(perPortion_g=200, perBatch_g=800),
+                process=[
+                    ProcessStepV2(n=1, action="Подготовить ингредиенты"),
+                    ProcessStepV2(n=2, action="Обжарить курицу"),
+                    ProcessStepV2(n=3, action="Подать блюдо")
+                ],
+                storage=StorageV2(conditions="Холодильник +2...+6°C", shelfLife_hours=24)
             )
             
             calculator = CostCalculator()
