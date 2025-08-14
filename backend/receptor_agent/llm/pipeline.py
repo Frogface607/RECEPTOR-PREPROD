@@ -155,7 +155,7 @@ def normalize_to_v2(draft_json: Dict[str, Any]) -> Dict[str, Any]:
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt, 
-            schema=TECHCARD_CORE_SCHEMA,
+            json_schema=TECHCARD_CORE_SCHEMA,
             model=model,
             temperature=0.2,
             top_p=0.9,
