@@ -149,13 +149,15 @@ def test_carbonara_generation():
         if response.status_code == 200:
             data = response.json()
             
-            if 'techcard' in data:
-                techcard = data['techcard']
+            if 'card' in data and data['card']:
+                techcard = data['card']
                 log_test("✅ Техкарта успешно сгенерирована")
+                log_test(f"Статус: {data.get('status', 'unknown')}")
                 
                 return analyze_techcard_coverage(techcard, "Паста карбонара")
             else:
                 log_test("❌ Техкарта не найдена в ответе")
+                log_test(f"Ответ: {json.dumps(data, ensure_ascii=False, indent=2)[:500]}")
                 return None
         else:
             log_test(f"❌ Ошибка генерации: {response.status_code}")
