@@ -378,7 +378,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             postcheck_issues = postcheck_v2(validated_card)
             
             # Объединяем все issues
-            all_issues = validation_issues + chef_rule_issues + [issue.get("hint", "") for issue in postcheck_issues]
+            all_issues = validation_issues + [issue.get("hint", "") for issue in chef_rule_issues] + [issue.get("hint", "") for issue in postcheck_issues]
             
             # Проверяем наличие критических ошибок правил шефа
             has_critical_chef_errors = has_critical_rule_errors(chef_rule_issues)
