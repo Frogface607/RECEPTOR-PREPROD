@@ -413,7 +413,7 @@ class NutritionCalculator:
     
     def calculate_tech_card_nutrition(self, tech_card: TechCardV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> tuple[NutritionV2, NutritionMetaV2, list]:
         """
-        Расчет полной питательности техкарты
+        Расчет полной питательности техкарты с поддержкой USDA
         Возвращает: (nutrition, nutrition_meta, issues)
         """
         total_nutrition = {
@@ -425,6 +425,7 @@ class NutritionCalculator:
         
         found_ingredients = 0
         issues = []
+        source_stats = {"usda": 0, "catalog": 0, "bootstrap": 0}
         
         # Рассчитываем питательность каждого ингредиента
         for ingredient in tech_card.ingredients:
@@ -437,6 +438,15 @@ class NutritionCalculator:
                 
                 if "calculated" in status or "subrecipe_calculated" in status:
                     found_ingredients += 1
+                    
+                    # Подсчитываем источники для метаданных
+                    if "usda" in status:
+                        source_stats["usda"] += 1
+                    elif "bootstrap" in status:
+                        # Если нашли через bootstrap каталог
+                        source_stats["bootstrap"] += 1  
+                    else:
+                        source_stats["catalog"] += 1
             else:
                 # Добавляем issue для отсутствующих данных
                 if "subrecipe_not_found" in status or "subrecipe_no_nutrition" in status:
@@ -469,6 +479,14 @@ class NutritionCalculator:
         total_ingredients = len(tech_card.ingredients)
         coverage_pct = (found_ingredients / total_ingredients * 100) if total_ingredients > 0 else 0
         
+        # Определяем основной источник данных
+        if source_stats["usda"] > source_stats["catalog"] and source_stats["usda"] > source_stats["bootstrap"]:
+            primary_source = "usda"
+        elif source_stats["bootstrap"] > source_stats["catalog"]:
+            primary_source = "bootstrap"
+        else:
+            primary_source = "catalog"
+        
         # Создаем питательность на 100г
         batch_grams = tech_card.yield_.perBatch_g if tech_card.yield_ else 1.0
         per100g = NutritionPer(
@@ -489,7 +507,7 @@ class NutritionCalculator:
         
         # Создаем метаданные
         nutrition_meta = NutritionMetaV2(
-            source="catalog",
+            source=primary_source,
             coveragePct=round(coverage_pct, 1)
         )
         
