@@ -275,7 +275,7 @@ def search_catalog(
             
             # Добавляем из каталога питания
             for name_lower, nutrition_info in nutrition_data.items():
-                if (query in name_lower or any(query in word for word in name_lower.split())) and name_lower not in all_items:
+                if (query in name_lower or any(query in word for word in name_lower.split())):
                     all_items[name_lower] = {
                         "name": nutrition_info["name"],
                         "canonical_id": nutrition_info["canonical_id"],
