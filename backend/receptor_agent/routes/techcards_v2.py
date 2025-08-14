@@ -221,9 +221,38 @@ def search_catalog(
             except Exception as e:
                 print(f"USDA search error: {e}")
         
+        # Price search results (if needed)
+        price_results = []
+        if source in ("price", "all"):
+            try:
+                from ..techcards_v2.price_provider import PriceProvider
+                price_provider = PriceProvider()
+                
+                # Use price provider search functionality
+                price_candidates = price_provider.search_for_mapping(query, limit)
+                
+                for item in price_candidates:
+                    price_results.append({
+                        "name": item["name"],
+                        "canonical_id": item.get("canonical_id"),
+                        "fdc_id": None,
+                        "sku_id": item.get("skuId"), 
+                        "category": item.get("source", "price"),
+                        "unit": item["unit"],
+                        "price": item["price_per_unit"],
+                        "has_nutrition": False,
+                        "nutrition_preview": None,
+                        "source": item["source"],
+                        "currency": item.get("currency", "RUB"),
+                        "asOf": item.get("asOf")
+                    })
+                    
+            except Exception as e:
+                print(f"Price search error: {e}")
+        
         # Каталоги цен и питания (если нужны)
         catalog_results = []
-        if source in ("price", "nutrition", "all"):
+        if source in ("nutrition", "all"):
             current_dir = Path(__file__).parent.parent.parent
             
             # Загружаем каталог цен
