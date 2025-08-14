@@ -62,7 +62,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Sub-recipes Integration Backend (Task #14)"
+##     - "USDA UI Integration (Task D1-UI)"
 ##   stuck_tasks:
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
