@@ -4205,6 +4205,12 @@ function App() {
     
     const requestStartTime = Date.now();
     
+    // Create AbortController for timeout handling
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, 30000); // 30 second timeout
+    
     try {
       const endpoint = `${API}/v1/techcards.v2/generate`;
       
@@ -4232,8 +4238,12 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(requestData),
+        signal: abortController.signal // Add abort signal
       });
+      
+      // Clear timeout on successful response
+      clearTimeout(timeoutId);
       
       const requestTime = Date.now() - requestStartTime;
       
