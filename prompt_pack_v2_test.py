@@ -90,12 +90,13 @@ def test_prompt_pack_v2():
 def test_techcard_v2_generation(dish: Dict[str, Any]) -> Dict[str, Any]:
     """Test TechCardV2 generation with v2 prompts"""
     
-    # Generate tech card using v2 pipeline
+    # Generate tech card using v2 pipeline with correct ProfileInput format
     payload = {
-        "dish_name": dish["name"],
+        "name": dish["name"],
         "cuisine": dish["cuisine"],
-        "description": dish.get("description", ""),
-        "use_llm": True  # Force LLM mode to test v2 prompts
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     print(f"🔄 Генерация техкарты для: {dish['name']}")
