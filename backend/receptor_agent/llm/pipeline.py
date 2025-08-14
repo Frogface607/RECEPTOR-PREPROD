@@ -399,7 +399,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     fixed_data = call_structured(
                         system=_system_ru() + "\n\n" + system_prompt,
                         user=user_prompt,
-                        schema=TECHCARD_CORE_SCHEMA,
+                        json_schema=TECHCARD_CORE_SCHEMA,
                         temperature=0.1,  # Более строгий режим
                         top_p=0.8
                     )
