@@ -89,6 +89,139 @@ def _format_template(template: str, **kwargs) -> str:
         result = result.replace(placeholder, str(value))
     return result
 
+def generate_draft_v2(profile: ProfileInput) -> Dict[str, Any]:
+    """Генерация чернового JSON с помощью нового промпта v2"""
+    if not _use_llm():
+        return _get_fallback_draft(profile)
+        
+    try:
+        # Загружаем промпты v2
+        system_prompt = _load_prompt_v2("generate_draft.ru.txt") 
+        user_template = _load_prompt_v2("generate_draft_user.ru.txt")
+        
+        # Подготавливаем данные для шаблона
+        brief = f"{profile.name}. Кухня: {profile.cuisine or 'международная'}. "
+        if profile.equipment:
+            brief += f"Доступно оборудование: {', '.join(profile.equipment)}. "
+        if profile.budget:
+            brief += f"Бюджет: ~{profile.budget} руб. "
+        if profile.dietary:
+            brief += f"Диетические требования: {', '.join(profile.dietary)}."
+            
+        portions = 4
+        yield_per_portion = 200.0  # грамм на порцию по умолчанию
+        
+        user_prompt = _format_template(
+            user_template,
+            brief=brief,
+            portions=portions,
+            yield_per_portion_g=yield_per_portion
+        )
+        
+        # Вызываем LLM с настройками для качественной генерации  
+        return call_structured(
+            system=_system_ru() + "\n\n" + system_prompt,
+            user=user_prompt,
+            schema=TECHCARD_CORE_SCHEMA,
+            temperature=0.2,
+            top_p=0.9,
+            presence_penalty=0,
+            frequency_penalty=0
+        )
+        
+    except Exception as e:
+        print(f"Error in generate_draft_v2: {e}")
+        return _get_fallback_draft(profile)
+
+def normalize_to_v2(draft_json: Dict[str, Any]) -> Dict[str, Any]:
+    """Нормализация черновика до финального TechCardV2"""
+    if not _use_llm():
+        return draft_json
+        
+    try:
+        # Загружаем промпты нормализации
+        system_prompt = _load_prompt_v2("normalize_to_v2.ru.txt")
+        user_template = _load_prompt_v2("normalize_to_v2_user.ru.txt") 
+        
+        user_prompt = _format_template(
+            user_template,
+            draft_json=json.dumps(draft_json, ensure_ascii=False, indent=2)
+        )
+        
+        # Определяем модель: gpt-4o для сложных случаев
+        use_4o = os.environ.get('USE_4O_FOR_NORMALIZE', 'false').lower() == 'true'
+        model = "gpt-4o" if use_4o else "gpt-4o-mini"
+        
+        return call_structured(
+            system=_system_ru() + "\n\n" + system_prompt,
+            user=user_prompt, 
+            schema=TECHCARD_CORE_SCHEMA,
+            model=model,
+            temperature=0.2,
+            top_p=0.9,
+            presence_penalty=0,
+            frequency_penalty=0
+        )
+        
+    except Exception as e:
+        print(f"Error in normalize_to_v2: {e}")
+        return draft_json
+
+def _get_fallback_draft(profile: ProfileInput) -> Dict[str, Any]:
+    """Fallback черновик при отключенном LLM"""
+    return {
+        "meta": {
+            "title": f"Блюдо {profile.cuisine or 'авторское'}",
+            "version": "2.0",
+            "cuisine": profile.cuisine,
+            "tags": []
+        },
+        "portions": 4,
+        "yield": {
+            "perPortion_g": 145.0,    
+            "perBatch_g": 580.0       
+        },
+        "ingredients": [
+            {
+                "name": "Куриное филе",
+                "unit": "g",
+                "brutto_g": 600.0,
+                "loss_pct": 10.0,
+                "netto_g": 540.0,
+                "allergens": []
+            },
+            {
+                "name": "Соль поваренная",
+                "unit": "g", 
+                "brutto_g": 8.0,
+                "loss_pct": 0.0,
+                "netto_g": 8.0,
+                "allergens": []
+            },
+            {
+                "name": "Растительное масло",
+                "unit": "ml",
+                "brutto_g": 30.0,
+                "loss_pct": 1.0,
+                "netto_g": 29.7,
+                "allergens": []
+            }
+        ],
+        "process": [
+            {"n": 1, "action": "Подготовка ингредиентов", "time_min": 10.0, "temp_c": None},
+            {"n": 2, "action": "Обжаривание на среднем огне", "time_min": 15.0, "temp_c": 180.0},
+            {"n": 3, "action": "Доведение до готовности", "time_min": 10.0, "temp_c": 75.0}
+        ],
+        "storage": {
+            "conditions": "Холодильник 0...+4°C",
+            "shelfLife_hours": 48.0,
+            "servingTemp_c": 65.0
+        },
+        "nutrition": {"per100g": None, "perPortion": None},
+        "cost": {"rawCost": None, "costPerPortion": None},
+        "printNotes": []
+    }
+
 def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
     if _use_llm():
         try:
