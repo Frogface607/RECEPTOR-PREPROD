@@ -371,11 +371,20 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         is_valid, validation_issues, validated_card = validate_techcard_v2(normalized_data)
         
         if is_valid and validated_card:
-            # Шаг 4: Пост-проверка качества генерации
+            # Шаг 4: Правила шефа (rule-based sanity checks)
+            chef_rule_issues = run_chef_rules(validated_card)
+            
+            # Шаг 5: Пост-проверка качества генерации
             postcheck_issues = postcheck_v2(validated_card)
             
+            # Объединяем все issues
+            all_issues = validation_issues + chef_rule_issues + [issue.get("hint", "") for issue in postcheck_issues]
+            
+            # Проверяем наличие критических ошибок правил шефа
+            has_critical_rule_errors = has_critical_rule_errors(chef_rule_issues)
+            
             # Если есть критические ошибки постпроверки, пытаемся ещё раз нормализовать
-            has_critical_errors = any(
+            has_critical_postcheck_errors = any(
                 issue.get("type", "").startswith("postcheck:") and 
                 issue.get("type", "") in [
                     "postcheck:yieldConsistency", 
@@ -385,7 +394,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 for issue in postcheck_issues
             )
             
-            if has_critical_errors and _use_llm():
+            if has_critical_postcheck_errors and _use_llm():
                 try:
                     # Дополнительный прогон нормализатора с описанием проблем
                     issues_description = "; ".join([issue.get("hint", "") for issue in postcheck_issues])
