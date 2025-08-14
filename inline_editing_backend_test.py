@@ -180,27 +180,31 @@ def test_user_history():
         if response.status_code == 200:
             data = response.json()
             
+            # Handle both formats: list or dict with history key
             if isinstance(data, list):
                 tech_cards = data
-                log_test(f"✅ User history retrieved: {len(tech_cards)} tech cards found")
-                
-                if tech_cards:
-                    log_test("📋 Available tech cards for sub-recipes:")
-                    for i, tc in enumerate(tech_cards[:5]):  # Show first 5
-                        title = tc.get('title', 'Unknown')
-                        created_at = tc.get('created_at', 'Unknown date')
-                        log_test(f"   {i+1}. {title} (created: {created_at})")
-                else:
-                    log_test("📋 No tech cards found in user history")
-                
-                return {
-                    'success': True,
-                    'tech_cards': tech_cards,
-                    'count': len(tech_cards)
-                }
+            elif isinstance(data, dict) and 'history' in data:
+                tech_cards = data['history']
             else:
                 log_test(f"❌ Unexpected response format: {type(data)}")
                 return {'success': False, 'error': 'Unexpected response format'}
+                
+            log_test(f"✅ User history retrieved: {len(tech_cards)} tech cards found")
+            
+            if tech_cards:
+                log_test("📋 Available tech cards for sub-recipes:")
+                for i, tc in enumerate(tech_cards[:5]):  # Show first 5
+                    title = tc.get('title', 'Unknown')
+                    created_at = tc.get('created_at', 'Unknown date')
+                    log_test(f"   {i+1}. {title} (created: {created_at})")
+            else:
+                log_test("📋 No tech cards found in user history")
+            
+            return {
+                'success': True,
+                'tech_cards': tech_cards,
+                'count': len(tech_cards)
+            }
                 
         else:
             log_test(f"❌ User history request failed: {response.status_code}")
