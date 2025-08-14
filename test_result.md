@@ -114,6 +114,18 @@
 user_problem_statement: "Implement deterministic cost calculator for TechCardV2 (code-based, no LLM). Populate cost field from price catalog with ingredient prices, unit conversions, and cost calculations. Task: «Калькулятор себестоимости (только кодом, без LLM)»"
 
 backend:
+  - task: "Anchor Validity Implementation (Task C1)"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/techcards_v2/contentcheck_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 ANCHOR VALIDITY COMPREHENSIVE TESTING COMPLETED: Conducted detailed testing of Task C1 «Анкерная валидность: блюдо обязано соответствовать брифу» as specifically requested in review. ✅ ANCHORS MAPPING VERIFIED: anchors_map.json structure confirmed with 10 categories including мясо, рыба, морепродукты, овощи, грибы, соусы, крупы, макароны, молочные, синонимы. All required mappings working: треска→cod, брокколи→broccoli, соус биск→bisque_sauce, говядина→[beef, beef_tenderloin, beef_stew, beef_ground]. ✅ CONTENT CHECK FUNCTIONALITY: All 4 validation types implemented and working correctly - missingAnchor (error) detects missing required ingredients, forbiddenIngredient (error) detects prohibited ingredients, proteinMismatch (warning) checks protein category consistency, subRecipeNotReady (warning) recommends sub-recipes for complex sauces. ✅ CRITICAL ERROR DETECTION: System properly identifies critical errors (contentError:*) that set status to 'draft', while warnings (contentWarning:*) don't block success status. ✅ INGREDIENT MAPPING FUNCTIONS: find_ingredient_canonicals() and check_ingredient_presence() working correctly with fuzzy matching, canonical_id lookup, and sub-recipe checking. ✅ REVIEW SCENARIOS VERIFIED: All 3 specific test cases from review working - 'Треска с брокколи и соусом биск' (mustHave: треска, брокколи, соус биск; forbid: курица, свинина), 'Борщ украинский' (mustHave: свекла, капуста; forbid: рыба), 'Стейк из говядины' (mustHave: говядина; forbid: курица, свинина, рыба). ✅ PIPELINE INTEGRATION: STRICT_ANCHORS flag properly controls anchor validation in pipeline.py. When enabled, extract_anchors() extracts constraints from dish names and run_content_check() validates tech cards against these constraints. ✅ CONSTRAINT HANDLING: System supports mustHave (required ingredients), forbid (prohibited ingredients), and hints (cooking suggestions) with proper template integration in generate_draft_v2 and normalize_to_v2 prompts. 🎉 ALL ANCHOR VALIDITY REQUIREMENTS SUCCESSFULLY IMPLEMENTED AND TESTED - System ensures tech cards correspond to brief through mandatory ingredients and forbidden substitutions as specified in review."
+
   - task: "Prompt Pack v2 для 4o-mini + проверяющий пасс (Task 2.1)"
     implemented: true
     working: true
