@@ -12890,14 +12890,14 @@ function App() {
                               {uploadResults.preview.map((item, index) => (
                                 <div key={index} className="text-xs bg-gray-800/50 rounded p-2">
                                   {uploadType === 'prices' ? (
-                                    <span className="text-white">{item.name}</span> • 
-                                    <span className="text-green-300"> {item.price}₽</span> • 
+                                    <span className="text-white">{item.name}</span> — 
+                                    <span className="text-green-300"> {item.price}₽</span> — 
                                     <span className="text-gray-400">{item.unit}</span>
                                   ) : (
-                                    <span className="text-white">{item.name}</span> • 
-                                    <span className="text-yellow-300">{item.kcal} ккал</span> • 
-                                    <span className="text-blue-300">Б:{item.proteins_g}г</span> • 
-                                    <span className="text-orange-300">Ж:{item.fats_g}г</span> • 
+                                    <span className="text-white">{item.name}</span> — 
+                                    <span className="text-yellow-300">{item.kcal} ккал</span> — 
+                                    <span className="text-blue-300">Б:{item.proteins_g}г</span> — 
+                                    <span className="text-orange-300">Ж:{item.fats_g}г</span> — 
                                     <span className="text-green-300">У:{item.carbs_g}г</span>
                                   )}
                                 </div>
