@@ -12736,6 +12736,250 @@ function App() {
         </div>
       )}
 
+      {/* Upload Data Modal (Task 1.2) */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">📂 ЗАГРУЗИТЬ ДАННЫЕ</h2>
+                  <p className="text-gray-400">Импорт прайсов и данных по питанию для лучшего расчёта техкарт</p>
+                </div>
+                <button
+                  onClick={() => setShowUploadModal(false)}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {!uploadResults ? (
+                <div>
+                  {/* Type Selection */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-bold text-gray-300 mb-3">
+                      Тип данных для загрузки:
+                    </label>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => setUploadType('prices')}
+                        className={`flex-1 p-4 rounded-lg border-2 text-left transition-all ${
+                          uploadType === 'prices'
+                            ? 'border-green-400 bg-green-400/10 text-green-300'
+                            : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        <div className="text-lg font-bold mb-2">💰 Прайс-лист</div>
+                        <div className="text-sm text-gray-400">CSV, Excel файлы с ценами на продукты</div>
+                      </button>
+                      <button
+                        onClick={() => setUploadType('nutrition')}
+                        className={`flex-1 p-4 rounded-lg border-2 text-left transition-all ${
+                          uploadType === 'nutrition'
+                            ? 'border-blue-400 bg-blue-400/10 text-blue-300'
+                            : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        <div className="text-lg font-bold mb-2">📊 БЖУ данные</div>
+                        <div className="text-sm text-gray-400">JSON, CSV с данными по питательности</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* File Upload */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-bold text-gray-300 mb-3">
+                      Выберите файл:
+                    </label>
+                    <input
+                      type="file"
+                      accept={uploadType === 'prices' ? '.csv,.xlsx,.xls' : '.json,.csv'}
+                      onChange={handleFileSelect}
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white"
+                    />
+                    <div className="mt-2 text-sm text-gray-400">
+                      {uploadType === 'prices' 
+                        ? 'Поддерживаются: CSV, Excel (.xlsx, .xls)'
+                        : 'Поддерживаются: JSON, CSV'
+                      }
+                    </div>
+                  </div>
+
+                  {/* File Preview */}
+                  {uploadPreview && (
+                    <div className="mb-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                      <div className="text-sm font-bold text-white mb-2">📋 Предпросмотр файла:</div>
+                      <div className="space-y-1 text-sm">
+                        <div><span className="text-gray-400">Имя:</span> <span className="text-white">{uploadPreview.name}</span></div>
+                        <div><span className="text-gray-400">Размер:</span> <span className="text-white">{uploadPreview.size}</span></div>
+                        <div><span className="text-gray-400">Тип:</span> <span className="text-white">{uploadPreview.type}</span></div>
+                        <div className="mt-3">
+                          <span className="text-gray-400">
+                            {uploadType === 'prices' ? 'Ожидаемые колонки:' : 'Ожидаемый формат:'}
+                          </span>
+                          <div className="text-yellow-300 text-xs mt-1">
+                            {uploadPreview.expectedColumns || uploadPreview.expectedFormat}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      onClick={() => setShowUploadModal(false)}
+                      className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                    >
+                      Отмена
+                    </button>
+                    <button
+                      onClick={handleUpload}
+                      disabled={!uploadFile || isUploading}
+                      className={`px-6 py-2 rounded-lg transition-colors font-bold ${
+                        !uploadFile || isUploading
+                          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                          : uploadType === 'prices'
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {isUploading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Загружаю...
+                        </>
+                      ) : (
+                        `📤 Загрузить ${uploadType === 'prices' ? 'прайсы' : 'БЖУ данные'}`
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Upload Results */
+                <div>
+                  {uploadResults.success ? (
+                    <div>
+                      <div className="flex items-center mb-4">
+                        <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mr-4">
+                          <span className="text-white text-2xl">✅</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-green-300">Загрузка успешна!</h3>
+                          <p className="text-gray-300">{uploadResults.message}</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4 mb-4">
+                        <div className="text-sm font-bold text-green-300 mb-2">
+                          📊 Результат: {uploadResults.count} позиций обработано
+                        </div>
+                        
+                        {uploadResults.preview && uploadResults.preview.length > 0 && (
+                          <div>
+                            <div className="text-xs text-gray-400 mb-2">Примеры загруженных данных:</div>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                              {uploadResults.preview.map((item, index) => (
+                                <div key={index} className="text-xs bg-gray-800/50 rounded p-2">
+                                  {uploadType === 'prices' ? (
+                                    <span className="text-white">{item.name}</span> • 
+                                    <span className="text-green-300"> {item.price}₽</span> • 
+                                    <span className="text-gray-400">{item.unit}</span>
+                                  ) : (
+                                    <span className="text-white">{item.name}</span> • 
+                                    <span className="text-yellow-300">{item.kcal} ккал</span> • 
+                                    <span className="text-blue-300">Б:{item.proteins_g}г</span> • 
+                                    <span className="text-orange-300">Ж:{item.fats_g}г</span> • 
+                                    <span className="text-green-300">У:{item.carbs_g}г</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-blue-900/20 border border-blue-600/30 rounded-lg p-4 mb-6">
+                        <div className="text-sm font-bold text-blue-300 mb-2">💡 Что дальше?</div>
+                        <div className="text-xs text-gray-300 space-y-1">
+                          <div>• Данные сохранены и будут использоваться для расчёта техкарт</div>
+                          <div>• Создайте новую техкарту для проверки покрытия данными</div>
+                          <div>• Используйте кнопку "Пересчитать" в существующих техкартах</div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex justify-end space-x-4">
+                        <button
+                          onClick={() => {
+                            setShowUploadModal(false);
+                            setUploadResults(null);
+                          }}
+                          className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                        >
+                          Закрыть
+                        </button>
+                        {tcV2 && (
+                          <button
+                            onClick={triggerRecalc}
+                            disabled={isRecalculating}
+                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:bg-gray-600"
+                          >
+                            {isRecalculating ? 'Пересчитываю...' : '🔄 Пересчитать текущую ТК'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Error State */
+                    <div>
+                      <div className="flex items-center mb-4">
+                        <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
+                          <span className="text-white text-2xl">❌</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-red-300">Ошибка загрузки</h3>
+                          <p className="text-gray-300">Не удалось обработать файл</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-4 mb-6">
+                        <div className="text-sm text-red-300">
+                          {uploadResults.error}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end space-x-4">
+                        <button
+                          onClick={() => setUploadResults(null)}
+                          className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                        >
+                          Попробовать снова
+                        </button>
+                        <button
+                          onClick={() => setShowUploadModal(false)}
+                          className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                        >
+                          Закрыть
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
