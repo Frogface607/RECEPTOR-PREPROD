@@ -232,11 +232,8 @@ def test_techcard_generation():
     
     # Test data with USDA ingredients
     test_profile = {
-        "dish_name": "Треска с овощами",
-        "dish_description": "Запеченная треска с морковью и луком",
-        "portions": 4,
-        "cuisine_type": "европейская",
-        "cooking_method": "запекание"
+        "name": "Треска с овощами",
+        "cuisine": "европейская"
     }
     
     print(f"🔍 Testing: POST /api/v1/techcards.v2/generate with use_llm=false")
