@@ -114,7 +114,7 @@ def test_techcard_v2_generation(dish: Dict[str, Any]) -> Dict[str, Any]:
             data = response.json()
             
             # Extract tech card data
-            tech_card = data.get("techCard")
+            tech_card = data.get("card")  # Changed from "techCard" to "card"
             status = data.get("status", "unknown")
             issues = data.get("issues", [])
             
