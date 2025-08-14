@@ -13339,6 +13339,65 @@ function App() {
         </div>
       )}
 
+      {/* Sub-Recipe Modal */}
+      {showSubRecipeModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">📋 ВЫБРАТЬ ПОДРЕЦЕПТ</h2>
+                  <p className="text-gray-400">Выберите существующую техкарту как подрецепт</p>
+                </div>
+                <button
+                  onClick={() => setShowSubRecipeModal(false)}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              {availableSubRecipes.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <div className="text-4xl mb-4">📋</div>
+                  <p>Нет доступных техкарт для подрецептов</p>
+                  <p className="text-sm mt-2">Создайте больше техкарт, чтобы использовать их как подрецепты</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableSubRecipes.map((subRecipe, index) => (
+                    <div 
+                      key={index}
+                      className="bg-gray-700/50 rounded-lg p-4 hover:bg-gray-700/70 transition-colors cursor-pointer border border-gray-600 hover:border-blue-500"
+                      onClick={() => assignSubRecipe(subRecipe)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-white font-bold mb-1">{subRecipe.title}</h3>
+                          <div className="text-gray-400 text-sm">
+                            ID: {subRecipe.id}
+                            {subRecipe.created_at && (
+                              <span className="ml-4">
+                                📅 {new Date(subRecipe.created_at).toLocaleDateString('ru-RU')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-blue-400 font-bold">
+                          Выбрать →
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
