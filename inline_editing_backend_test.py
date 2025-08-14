@@ -40,7 +40,7 @@ def test_generate_basic_techcard():
     try:
         url = f"{API_BASE}/v1/techcards.v2/generate"
         log_test(f"Making request to: {url}")
-        log_test(f"Profile data: {profile_data['dish_name']} - {profile_data['dish_description']}")
+        log_test(f"Profile data: {profile_data['name']}")
         
         # Use deterministic mode (no LLM) for consistent testing
         response = requests.post(f"{url}?use_llm=false", json=profile_data, timeout=60)
