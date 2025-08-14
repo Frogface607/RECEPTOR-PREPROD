@@ -352,55 +352,101 @@ async def fetch_sub_recipes_cache(sub_recipe_ids: Set[str]) -> Dict[str, TechCar
     return sub_recipes_cache
 
 def run_pipeline(profile: ProfileInput) -> PipelineResult:
-    """Генерация техкарты с строгой валидацией TechCardV2"""
+    """Генерация техкарты с строгой валидацией TechCardV2 и новой цепочкой промптов v2"""
     try:
-        # Генерируем черновик в формате TechCardV2
-        data = generate_draft(profile)
+        # Шаг 1: Генерируем черновик с новым промптом v2
+        draft_data = generate_draft_v2(profile)
         
-        # Включаем LLM обработку если доступна
-        if _use_llm():
-            # Пропускаем legacy normalize/quantify для LLM режима
-            # LLM должен сразу генерировать в правильном формате TechCardV2
-            pass
-        else:
-            # В fallback режиме данные уже в правильном формате
-            pass
+        # Шаг 2: Нормализуем черновик до финального TechCardV2
+        normalized_data = normalize_to_v2(draft_data)
         
-        # Собираем ID подрецептов из сгенерированных данных
-        sub_recipe_ids = collect_sub_recipe_ids(data)
+        # Собираем ID подрецептов из нормализованных данных
+        sub_recipe_ids = collect_sub_recipe_ids(normalized_data)
         
         # Получаем подрецепты из кеша (пока заглушка)
-        # TODO: В будущем сделать async и использовать await fetch_sub_recipes_cache(sub_recipe_ids) 
         sub_recipes_cache = {}  # Временная заглушка
         
-        # СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
-        is_valid, issues, validated_card = validate_techcard_v2(data)
+        # Шаг 3: СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
+        is_valid, validation_issues, validated_card = validate_techcard_v2(normalized_data)
         
         if is_valid and validated_card:
+            # Шаг 4: Пост-проверка качества генерации
+            postcheck_issues = postcheck_v2(validated_card)
+            
+            # Если есть критические ошибки постпроверки, пытаемся ещё раз нормализовать
+            has_critical_errors = any(
+                issue.get("type", "").startswith("postcheck:") and 
+                issue.get("type", "") in [
+                    "postcheck:yieldConsistency", 
+                    "postcheck:lossBounds", 
+                    "postcheck:units"
+                ]
+                for issue in postcheck_issues
+            )
+            
+            if has_critical_errors and _use_llm():
+                try:
+                    # Дополнительный прогон нормализатора с описанием проблем
+                    issues_description = "; ".join([issue.get("hint", "") for issue in postcheck_issues])
+                    system_prompt = _load_prompt_v2("normalize_to_v2.ru.txt") + f"\n\nИСПРАВЬ ОШИБКИ: {issues_description}"
+                    user_template = _load_prompt_v2("normalize_to_v2_user.ru.txt")
+                    
+                    user_prompt = _format_template(
+                        user_template,
+                        draft_json=json.dumps(normalized_data, ensure_ascii=False, indent=2)
+                    )
+                    
+                    fixed_data = call_structured(
+                        system=_system_ru() + "\n\n" + system_prompt,
+                        user=user_prompt,
+                        schema=TECHCARD_CORE_SCHEMA,
+                        temperature=0.1,  # Более строгий режим
+                        top_p=0.8
+                    )
+                    
+                    # Повторная валидация исправленных данных
+                    is_valid_fixed, _, validated_card_fixed = validate_techcard_v2(fixed_data)
+                    if is_valid_fixed and validated_card_fixed:
+                        validated_card = validated_card_fixed
+                        # Обновляем постпроверку
+                        postcheck_issues = postcheck_v2(validated_card)
+                        
+                except Exception:
+                    pass  # Игнорируем ошибки дополнительной нормализации
+            
             # Рассчитываем стоимость для валидной карты с подрецептами
             try:
                 validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
             except Exception as e:
-                issues.append(f"Cost calculation error: {str(e)}")
+                validation_issues.append(f"Cost calculation error: {str(e)}")
             
             # Рассчитываем питательность для валидной карты с подрецептами
             try:
                 validated_card = calculate_nutrition_for_tech_card(validated_card, sub_recipes_cache)
             except Exception as e:
-                issues.append(f"Nutrition calculation error: {str(e)}")
+                validation_issues.append(f"Nutrition calculation error: {str(e)}")
             
-            # Успешная валидация - возвращаем готовую карту
-            return PipelineResult(
-                card=validated_card,
-                issues=[],
-                status="success"
-            )
+            # Определяем статус на основе постпроверки
+            if postcheck_issues:
+                all_issues = validation_issues + [issue.get("hint", "") for issue in postcheck_issues]
+                return PipelineResult(
+                    card=validated_card,
+                    issues=all_issues,
+                    status="draft"  # Есть проблемы постпроверки
+                )
+            else:
+                # Успешная генерация без проблем
+                return PipelineResult(
+                    card=validated_card,
+                    issues=[],
+                    status="success"
+                )
         else:
             # Ошибки валидации - попытаемся все же создать карту для draft режима
             draft_card = None
             try:
-                # Попытаемся создать TechCardV2 из raw данных, даже если есть validation issues
-                draft_card = TechCardV2.model_validate(data)
+                # Попытаемся создать TechCardV2 из normalized данных, даже если есть validation issues
+                draft_card = TechCardV2.model_validate(normalized_data)
                 
                 # Попытаемся добавить базовые расчеты для draft карты с подрецептами
                 try:
@@ -414,13 +460,13 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     pass  # Игнорируем ошибки расчета питания для draft
                     
             except Exception as validation_error:
-                issues.append(f"Failed to create draft card: {str(validation_error)}")
+                validation_issues.append(f"Failed to create draft card: {str(validation_error)}")
             
             return PipelineResult(
                 card=draft_card,  # Теперь возвращаем карту даже для draft
-                issues=issues,
+                issues=validation_issues,
                 status="draft",
-                raw_data=data
+                raw_data=normalized_data
             )
             
     except Exception as e:
