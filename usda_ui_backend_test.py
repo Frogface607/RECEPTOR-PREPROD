@@ -120,7 +120,7 @@ def test_techcard_generation_with_usda():
     
     log_test(f"📝 Test dish: {test_profile['name']}")
     log_test(f"🍽️ Cuisine: {test_profile['cuisine']}")
-    log_test("🥬 Using fallback mode to test USDA integration")
+    log_test("🥬 Using LLM mode to test USDA integration")
     
     try:
         url = f"{API_BASE}/v1/techcards.v2/generate"
