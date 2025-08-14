@@ -55,6 +55,14 @@ function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);
   
+  // Inline editing states for Task 0.1
+  const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
+  const [editingData, setEditingData] = useState({});
+  const [editingErrors, setEditingErrors] = useState({});
+  const [showSubRecipeModal, setShowSubRecipeModal] = useState(false);
+  const [availableSubRecipes, setAvailableSubRecipes] = useState([]);
+  const [recalcError, setRecalcError] = useState(null);
+  
   const [showHistory, setShowHistory] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
   const [showPriceModal, setShowPriceModal] = useState(false);
