@@ -320,15 +320,15 @@ def test_edge_cases():
         
         # Create tech card with mix of known and unknown ingredients
         mixed_ingredients = [
-            IngredientV2(name="треска", brutto_g=220.0, loss_pct=10.0, netto_g=200.0, unit="g", canonical_id="cod"),  # USDA
-            IngredientV2(name="экзотический фрукт дракона", brutto_g=110.0, loss_pct=10.0, netto_g=100.0, unit="g"),  # Unknown
+            IngredientV2(name="треска", brutto_g=220.0, loss_pct=10.0, netto_g=198.0, unit="g", canonical_id="cod"),  # USDA
+            IngredientV2(name="экзотический фрукт дракона", brutto_g=110.0, loss_pct=10.0, netto_g=99.0, unit="g"),  # Unknown
             IngredientV2(name="соль поваренная", brutto_g=5.0, loss_pct=0.0, netto_g=5.0, unit="g")  # Should fallback to catalog/bootstrap
         ]
         
         test_card = TechCardV2(
             meta={"title": "Mixed Ingredients Test"},
             ingredients=mixed_ingredients,
-            yield_=YieldV2(perBatch_g=300.0, perPortion_g=150.0),
+            yield_=YieldV2(perBatch_g=302.0, perPortion_g=151.0),  # Total netto: 198+99+5=302
             portions=2
         )
         
