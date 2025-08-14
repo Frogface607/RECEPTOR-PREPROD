@@ -1,53 +1,26 @@
 """
 Cost Calculator для TechCardV2
-Модуль для расчета себестоимости блюд на основе каталога цен
+Модуль для расчета себестоимости блюд на основе единого провайдера цен
 """
 
 import json
 import os
 from typing import Dict, List, Optional, Tuple, Any
 from difflib import SequenceMatcher
+from datetime import datetime
 import re
 
 from .schemas import TechCardV2, IngredientV2, CostV2, CostMetaV2
+from .price_provider import PriceProvider
 
 class CostCalculator:
-    """Калькулятор себестоимости для техкарт"""
+    """Калькулятор себестоимости для техкарт с использованием PriceProvider"""
     
-    def __init__(self, catalog_path: str = None, use_bootstrap: bool = True):
-        """Инициализация с каталогом цен"""
-        if catalog_path is None:
-            catalog_path = os.path.join(os.path.dirname(__file__), "../../data/price_catalog.dev.json")
-        
-        self.catalog_path = catalog_path
-        self.use_bootstrap = use_bootstrap
-        self.catalog = self._load_catalog()
-        self.ingredient_index = self._build_ingredient_index()
+    def __init__(self):
+        """Инициализация с PriceProvider"""
+        self.price_provider = PriceProvider()
     
-    def _load_catalog(self) -> Dict[str, Any]:
-        """Загрузка каталога цен из JSON"""
-        try:
-            with open(self.catalog_path, 'r', encoding='utf-8') as f:
-                catalog = json.load(f)
-                
-            # Проверяем, есть ли данные в каталоге
-            ingredients_count = sum(len(category) for category in catalog.get("ingredients", {}).values())
-            
-            # Если каталог пустой и включена поддержка bootstrap
-            if ingredients_count < 10 and self.use_bootstrap:
-                return self._load_bootstrap_catalog()
-            
-            return catalog
-        except FileNotFoundError:
-            if self.use_bootstrap:
-                return self._load_bootstrap_catalog()
-            return self._get_empty_catalog()
-        except json.JSONDecodeError:
-            if self.use_bootstrap:
-                return self._load_bootstrap_catalog()
-            return self._get_empty_catalog()
-    
-    def _load_bootstrap_catalog(self) -> Dict[str, Any]:
+    def calculate_cost_for_tech_card(self, card: TechCardV2, sub_recipes_cache: Dict = None) -> TechCardV2:
         """Загружает bootstrap каталог из CSV"""
         try:
             import pandas as pd
