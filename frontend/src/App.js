@@ -1044,7 +1044,7 @@ function App() {
                 <tbody>
                   {ingredients.map((ing, index) => {
                     const isEditing = editingIngredientIndex === index;
-                    const hasSubRecipeIssue = issues.some(issue => 
+                    const hasSubRecipeIssue = generationIssues.some(issue => 
                       issue.type === 'subRecipeNotReady' && issue.name === ing.name
                     );
                     
