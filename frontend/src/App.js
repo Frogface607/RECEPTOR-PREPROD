@@ -1521,6 +1521,42 @@ function App() {
     }
   };
 
+  const performUsdaSearch = async (query) => {
+    if (!query.trim()) {
+      setUsdaSearchResults([]);
+      return;
+    }
+
+    setIsSearchingUsda(true);
+    try {
+      const response = await fetch(`${API}/v1/techcards.v2/catalog-search?source=usda&q=${encodeURIComponent(query)}&limit=20`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setUsdaSearchResults(data.items || []);
+      } else {
+        setUsdaSearchResults([]);
+      }
+    } catch (error) {
+      console.error('USDA search error:', error);
+      setUsdaSearchResults([]);
+    } finally {
+      setIsSearchingUsda(false);
+    }
+  };
+
+  // Debounced USDA search
+  const [usdaSearchTimeout, setUsdaSearchTimeout] = useState(null);
+  const debouncedUsdaSearch = (query) => {
+    if (usdaSearchTimeout) {
+      clearTimeout(usdaSearchTimeout);
+    }
+    const timeout = setTimeout(() => {
+      performUsdaSearch(query);
+    }, 250);
+    setUsdaSearchTimeout(timeout);
+  };
+
   const handleAssignIngredientMapping = async (catalogItem) => {
     if (!tcV2 || mappingIngredientIndex === null) return;
 
