@@ -142,6 +142,14 @@ def test_techcard_generation_with_usda():
             
             log_test(f"✅ Generation successful with status: {status}")
             
+            if status == "error":
+                issues = data.get("issues", [])
+                message = data.get("message", "No message")
+                log_test(f"❌ Generation error: {message}")
+                if issues:
+                    log_test(f"Issues: {json.dumps(issues, indent=2, ensure_ascii=False)}")
+                return {"success": False, "error": message, "issues": issues}
+            
             if card:
                 # Check nutritionMeta for USDA integration
                 nutrition_meta = card.get("nutritionMeta")
