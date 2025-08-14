@@ -383,7 +383,7 @@ def populate_usda_db():
     # Food portions data  
     portions_data = [
         # Eggs - key for portion conversions
-        (171287, 'large egg', 50.0),
+        (171290, 'large egg', 50.0),
         (172190, 'quail egg', 12.0),
         
         # Common portion sizes
