@@ -324,21 +324,26 @@ def search_catalog(
             
             catalog_results = list(all_items.values())
         
-        # Объединяем результаты с приоритетом USDA
-        all_results = usda_results + catalog_results
+        # Объединяем результаты с приоритетом: Price → USDA → остальные
+        all_results = price_results + usda_results + catalog_results
         
-        # Сортируем по релевантности: USDA → точные совпадения → остальные
-        sorted_items = sorted(all_results, key=lambda x: (
-            0 if x["source"] == "usda" else 1,  # USDA данные имеют приоритет
-            0 if query in x["name"].lower() else 1,  # Точное вхождение
-            -len(x["name"]),  # Короткие названия выше
-            x["name"].lower()
-        ))[:limit]
+        # Сортируем по релевантности: Price → USDA → точные совпадения → остальные
+        def sort_key(x):
+            source_priority = {
+                "user": 0, "catalog": 1, "bootstrap": 2,  # Price sources 
+                "usda": 3,                                  # USDA
+                "catalog": 4                               # Other catalog
+            }.get(x.get("source", "unknown"), 5)
+            name_match = 0 if query in x["name"].lower() else 1
+            return (source_priority, name_match, -len(x["name"]), x["name"].lower())
+        
+        sorted_items = sorted(all_results, key=sort_key)[:limit]
         
         return JSONResponse(content={
             "status": "success", 
             "items": sorted_items,
             "total_found": len(all_results),
+            "price_count": len(price_results),
             "usda_count": len(usda_results),
             "catalog_count": len(catalog_results)
         }, headers={"Content-Type": "application/json; charset=utf-8"})
