@@ -14,12 +14,13 @@ from .schemas import TechCardV2, IngredientV2, CostV2, CostMetaV2
 class CostCalculator:
     """Калькулятор себестоимости для техкарт"""
     
-    def __init__(self, catalog_path: str = None):
+    def __init__(self, catalog_path: str = None, use_bootstrap: bool = True):
         """Инициализация с каталогом цен"""
         if catalog_path is None:
             catalog_path = os.path.join(os.path.dirname(__file__), "../../data/price_catalog.dev.json")
         
         self.catalog_path = catalog_path
+        self.use_bootstrap = use_bootstrap
         self.catalog = self._load_catalog()
         self.ingredient_index = self._build_ingredient_index()
     
@@ -27,10 +28,94 @@ class CostCalculator:
         """Загрузка каталога цен из JSON"""
         try:
             with open(self.catalog_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                catalog = json.load(f)
+                
+            # Проверяем, есть ли данные в каталоге
+            ingredients_count = sum(len(category) for category in catalog.get("ingredients", {}).values())
+            
+            # Если каталог пустой и включена поддержка bootstrap
+            if ingredients_count < 10 and self.use_bootstrap:
+                return self._load_bootstrap_catalog()
+            
+            return catalog
         except FileNotFoundError:
+            if self.use_bootstrap:
+                return self._load_bootstrap_catalog()
             return self._get_empty_catalog()
         except json.JSONDecodeError:
+            if self.use_bootstrap:
+                return self._load_bootstrap_catalog()
+            return self._get_empty_catalog()
+    
+    def _load_bootstrap_catalog(self) -> Dict[str, Any]:
+        """Загружает bootstrap каталог из CSV"""
+        try:
+            import pandas as pd
+            bootstrap_path = os.path.join(os.path.dirname(__file__), "../../data/bootstrap/prices_ru.demo.csv")
+            
+            if not os.path.exists(bootstrap_path):
+                return self._get_empty_catalog()
+            
+            # Читаем CSV файл
+            df = pd.read_csv(bootstrap_path, encoding='utf-8')
+            
+            # Конвертируем в формат каталога
+            catalog = {
+                "catalog_version": "1.0",
+                "last_updated": "2025-01-18",
+                "currency": "RUB",
+                "price_unit": "per_kg_or_liter",
+                "source": "bootstrap_demo",
+                "ingredients": {},
+                "fallback_prices": {
+                    "default_meat": 500,
+                    "default_fish": 600, 
+                    "default_dairy": 200,
+                    "default_vegetable": 100,
+                    "default_spice": 1000,
+                    "default_grain": 100,
+                    "default_oil": 200,
+                    "default_other": 150
+                },
+                "markup_settings": {
+                    "default_markup_pct": 300,
+                    "default_vat_pct": 20
+                }
+            }
+            
+            # Группируем по категориям
+            for _, row in df.iterrows():
+                name = row['Название продукта'].lower()
+                price = float(row['Цена за кг/л (руб)'])
+                category = row['Категория']
+                
+                if category not in catalog["ingredients"]:
+                    catalog["ingredients"][category] = {}
+                
+                # Определяем единицу измерения
+                unit = "kg"
+                if "масло" in name and "сливочное" not in name:
+                    unit = "liter"
+                elif name in ["молоко 3.2%", "сливки 20%", "сливки 35%", "кефир", "ряженка", "соевый соус", "уксус столовый 9%"]:
+                    unit = "liter"
+                
+                catalog["ingredients"][category][name] = {
+                    "price": price,
+                    "unit": unit,
+                    "category": category
+                }
+                
+                # Специальная обработка для яиц
+                if "яйца" in name:
+                    if "куриные" in name:
+                        catalog["ingredients"][category][name]["pieces_per_kg"] = 18
+                    elif "перепелиные" in name:
+                        catalog["ingredients"][category][name]["pieces_per_kg"] = 80
+                        
+            return catalog
+            
+        except Exception as e:
+            print(f"Error loading bootstrap catalog: {e}")
             return self._get_empty_catalog()
     
     def _get_empty_catalog(self) -> Dict[str, Any]:
