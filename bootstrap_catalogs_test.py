@@ -130,20 +130,11 @@ def test_carbonara_generation():
     
     # Паста карбонара с продуктами из bootstrap каталога
     payload = {
-        "dish_name": "Паста карбонара",
-        "description": "Классическая итальянская паста с беконом и яйцами",
-        "ingredients": [
-            {"name": "спагетти", "quantity": 200, "unit": "г"},
-            {"name": "бекон", "quantity": 100, "unit": "г"},
-            {"name": "яйца куриные с1", "quantity": 2, "unit": "шт"},
-            {"name": "сыр пармезан", "quantity": 50, "unit": "г"},
-            {"name": "сливки 35%", "quantity": 100, "unit": "мл"},
-            {"name": "чеснок", "quantity": 5, "unit": "г"},
-            {"name": "оливковое масло", "quantity": 20, "unit": "мл"},
-            {"name": "соль поваренная", "quantity": 3, "unit": "г"},
-            {"name": "перец чёрный молотый", "quantity": 1, "unit": "г"}
-        ],
-        "use_llm": False  # Принудительное отключение LLM
+        "name": "Паста карбонара с беконом и яйцами",
+        "cuisine": "итальянская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
