@@ -452,6 +452,14 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         is_valid, validation_issues, validated_card = validate_techcard_v2(normalized_data)
         
         if is_valid and validated_card:
+            # ВАЖНО: Обнуляем nutrition и cost, пришедшие от LLM (единый источник истины - калькуляторы)
+            card_dict = validated_card.model_dump()
+            card_dict["nutrition"] = None
+            card_dict["cost"] = None
+            
+            # Пересоздаем карту без LLM-полей
+            validated_card = TechCardV2.model_validate(card_dict)
+            
             # Шаг 3.5: Анкерная валидность (только если есть constraints)
             content_issues = []
             if constraints and strict_anchors:
@@ -463,6 +471,29 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             # Шаг 5: Пост-проверка качества генерации
             postcheck_issues = postcheck_v2(validated_card)
             
+            # Шаг 6: ВСЕГДА выполняем калькуляторы (единый источник истины)
+            try:
+                validated_card = calculate_nutrition_for_tech_card(validated_card, sub_recipes_cache)
+            except Exception as e:
+                validation_issues.append(f"Nutrition calculation error: {str(e)}")
+            
+            try:
+                validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
+            except Exception as e:
+                validation_issues.append(f"Cost calculation error: {str(e)}")
+            
+            # Шаг 7: САНИТАЙЗЕР - приводим к строгому формату
+            try:
+                sanitized_dict = sanitize_card_v2(validated_card.model_dump())
+                validated_card = TechCardV2.model_validate(sanitized_dict)
+                
+                # Проверяем что санитизация прошла корректно
+                if not validate_sanitized_card(sanitized_dict):
+                    validation_issues.append("Card sanitization validation failed")
+                    
+            except Exception as e:
+                validation_issues.append(f"Card sanitization error: {str(e)}")
+            
             # Объединяем все issues
             all_issues = (validation_issues + 
                          [issue.get("hint", "") for issue in content_issues] +
@@ -470,8 +501,8 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                          [issue.get("hint", "") for issue in postcheck_issues])
             
             # Проверяем наличие критических ошибок
-            has_critical_content_errors = has_critical_content_errors(content_issues)
-            has_critical_chef_errors = has_critical_rule_errors(chef_rule_issues)
+            has_critical_content_errors_flag = has_critical_content_errors(content_issues)
+            has_critical_chef_errors_flag = has_critical_rule_errors(chef_rule_issues)
             
             # Если есть критические ошибки постпроверки, пытаемся ещё раз нормализовать
             has_critical_postcheck_errors = any(
@@ -532,7 +563,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 all_issues.append(f"Nutrition calculation error: {str(e)}")
             
             # Определяем финальный статус на основе всех проверок
-            if has_critical_content_errors or has_critical_chef_errors:
+            if has_critical_content_errors_flag or has_critical_chef_errors_flag:
                 # Есть критические ошибки → draft
                 return PipelineResult(
                     card=validated_card,
