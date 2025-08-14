@@ -476,6 +476,32 @@ backend:
         agent: "testing"
         comment: "🚀 COMPREHENSIVE BACKEND API TESTING COMPLETED: Executed full test suite covering all backend functionality. ✅ USER MANAGEMENT: Registration, authentication, and user retrieval working correctly. ✅ SUBSCRIPTION SYSTEM: All 4 tiers (Free, Starter, PRO, Business) properly configured with correct limits and features. ✅ KITCHEN EQUIPMENT: All 21 equipment types across 3 categories properly returned, PRO user restrictions enforced correctly. ✅ TECH CARD GENERATION: Core functionality working with proper AI model (gpt-4o-mini), regional pricing, and equipment-aware generation for PRO users. ✅ USAGE LIMITS: Free tier (3 cards/month), Starter (25 cards/month), PRO/Business (unlimited) all enforced correctly. ✅ PRO FEATURES: Kitchen equipment updates, sales scripts, food pairing, and photo tips all functional. ✅ DATA PERSISTENCE: Tech cards properly saved and retrieved, history functionality working. ✅ API ENDPOINTS: All endpoints responding correctly with proper status codes and error handling. ✅ SUBSCRIPTION UPGRADES: Users can successfully upgrade between tiers with proper feature access. ✅ EQUIPMENT-AWARE GENERATION: PRO users receive recipes adapted to their selected kitchen equipment. All backend functionality verified and working as specified."
 
+backend:
+  - task: "Price Provider Implementation (Task P1-Prices)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/techcards_v2/price_provider.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🎯 TASK P1-PRICES ANALYSIS COMPLETED: Analyzed current price system implementation vs review requirements. ❌ MISSING IMPLEMENTATION: PriceProvider class with strategy sources (user, catalog, bootstrap, llm-fallback) not found. Current cost_calculator.py uses direct catalog access without provider pattern. ❌ MISSING USER PRICES: No user_prices MongoDB collection or upload functionality. ❌ MISSING PRICE MAPPING: No price-specific catalog search with skuId mapping. ✅ EXISTING FOUNDATION: price_catalog.dev.json exists with comprehensive price data, bootstrap prices_ru.demo.csv available, catalog-search endpoint partially supports source=price parameter. 🔍 REQUIREMENTS GAP: Need to implement PriceProvider class, integrate with cost_calculator, add user price uploads, enhance UI with price chip and mapping tab similar to USDA implementation. Task requires full implementation from scratch following USDA pattern."
+
+frontend:
+  - task: "Price Provider UI Integration (Task P1-Prices-UI)"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🎯 PRICE UI INTEGRATION ANALYSIS: Reviewed frontend for price-related UI components. ❌ MISSING PRICE CHIP: No 💰 Цены coverage chip with color coding (green ≥90%, yellow 70-89%, red <70%). ❌ MISSING PRICE MAPPING TAB: No dedicated price mapping tab in ingredient modal (similar to USDA tab). ❌ MISSING PRICE BADGES: No price source badges (USER/CAT/BOOT/⚠ no price) in ingredient listings. ❌ MISSING STALE PRICE WARNING: No yellow banner for outdated price data (asOf > 30 days). ✅ EXISTING FOUNDATION: USDA mapping modal structure exists and can be replicated for prices, catalog-search API supports source=price parameter. 🔍 IMPLEMENTATION NEEDED: Add price chip, price mapping tab, source badges, stale price warnings following USDA UI pattern."
+
   - task: "Bootstrap Catalogs (RU demo) - Task 1.1"
     implemented: true
     working: true
