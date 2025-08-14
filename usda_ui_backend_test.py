@@ -151,6 +151,23 @@ def test_techcard_generation_with_usda():
                 return {"success": False, "error": message, "issues": issues}
             
             if card:
+                log_test(f"✅ Card data found for status: {status}")
+            else:
+                log_test(f"⚠️ No card data for status: {status}")
+                issues = data.get("issues", [])
+                message = data.get("message", "No message")
+                log_test(f"Message: {message}")
+                if issues:
+                    log_test(f"Issues: {json.dumps(issues[:3], indent=2, ensure_ascii=False)}...")  # Show first 3 issues
+                
+                # For draft status, we might still want to continue testing if there's partial data
+                if status == "draft":
+                    log_test("⚠️ Draft status - continuing with limited testing")
+                    return {"success": False, "error": "No card data in draft", "status": status}
+                else:
+                    return {"success": False, "error": "No card data", "status": status}
+            
+            if card:
                 # Check nutritionMeta for USDA integration
                 nutrition_meta = card.get("nutritionMeta")
                 if nutrition_meta:
