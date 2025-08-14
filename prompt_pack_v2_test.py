@@ -103,7 +103,7 @@ def test_techcard_v2_generation(dish: Dict[str, Any]) -> Dict[str, Any]:
     
     try:
         response = requests.post(
-            f"{API_BASE}/v1/techcards.v2/generate",
+            f"{API_BASE}/v1/techcards.v2/generate?use_llm=true",
             json=payload,
             timeout=60
         )
