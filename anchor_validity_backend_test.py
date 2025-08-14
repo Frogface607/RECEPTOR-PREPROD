@@ -96,15 +96,29 @@ def test_anchor_validity_cod_broccoli_bisque():
         data = response.json()
         log_test(f"✅ Техкарта сгенерирована успешно")
         
+        # Логируем структуру ответа для отладки
+        log_test(f"📋 Структура ответа: {list(data.keys())}")
+        
         # Шаг 2: Проверка извлечения якорей
         log_test("🔍 ШАГ 2: Проверка извлечения якорей")
         
-        # Проверяем наличие ожидаемых полей
-        if 'techcard' not in data:
-            log_test(f"❌ ОШИБКА: Отсутствует поле 'techcard' в ответе")
-            return False
+        # Проверяем наличие ожидаемых полей (новая структура API)
+        techcard = None
+        if 'card' in data and data['card']:
+            techcard = data['card']
+        elif 'techcard' in data:
+            techcard = data['techcard']
+        else:
+            log_test(f"❌ ОШИБКА: Отсутствует поле 'card' или 'techcard' в ответе")
+            log_test(f"📄 Доступные поля: {list(data.keys())}")
+            log_test(f"📄 Статус: {data.get('status', 'unknown')}")
+            log_test(f"📄 Issues: {data.get('issues', [])}")
             
-        techcard = data['techcard']
+            # Если техкарта не создалась, но есть issues, анализируем их
+            if data.get('status') == 'draft' and data.get('issues'):
+                log_test("⚠️ Техкарта в статусе draft, анализируем issues...")
+                return analyze_draft_issues(data)
+            return False
         
         # Проверяем название
         title = techcard.get('meta', {}).get('title', '')
