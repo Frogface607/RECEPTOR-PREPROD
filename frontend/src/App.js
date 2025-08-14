@@ -955,6 +955,7 @@ function App() {
     const nutritionMeta = tcV2.nutritionMeta || {};
     const cost = tcV2.cost || {};
     const costMeta = tcV2.costMeta || {};
+    const issues = tcV2.issues || [];
 
     return (
       <div className="space-y-6">
