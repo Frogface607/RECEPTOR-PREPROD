@@ -1,10 +1,12 @@
 """
 Nutrition Calculator для TechCardV2
 Модуль для расчета БЖУ (белки, жиры, углеводы, калории) по ингредиентам
+Поддерживает USDA FoodData Central как первичный источник данных
 """
 
 import json
 import os
+import sqlite3
 from typing import Dict, List, Optional, Tuple, Any
 from difflib import SequenceMatcher
 
