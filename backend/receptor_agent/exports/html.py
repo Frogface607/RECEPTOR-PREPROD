@@ -108,6 +108,28 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
     if coverage_note:
         nutrition_html += coverage_note
     
+    # Формируем источник БЖУ для ГОСТ-печати
+    nutrition_source_html = ""
+    if hasattr(card, 'nutritionMeta') and card.nutritionMeta:
+        source = getattr(card.nutritionMeta, 'source', 'не указан')
+        asOf = getattr(card.nutritionMeta, 'asOf', '')
+        
+        if source == 'usda':
+            source_display = 'USDA'
+        elif source == 'catalog':
+            source_display = 'каталог'
+        elif source == 'bootstrap':
+            source_display = 'демо-каталог'
+        elif source == 'Mixed':
+            source_display = 'Mixed'
+        else:
+            source_display = source
+            
+        nutrition_source_html = f'<p style="font-size: 0.9em; color: #666; text-align: center; margin-top: 8px;"><strong>Источник БЖУ:</strong> {source_display}'
+        if asOf:
+            nutrition_source_html += f'; дата: {asOf}'
+        nutrition_source_html += '</p>'
+    
     # Стоимость
     cost_html = ""
     if card.cost and card.cost.rawCost:
