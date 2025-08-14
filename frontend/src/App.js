@@ -1502,14 +1502,18 @@ function App() {
     setCatalogSearchResults([]);
     setUsdaSearchQuery('');
     setUsdaSearchResults([]);
+    setPriceSearchQuery('');
+    setPriceSearchResults([]);
     
     // Auto-fill search with ingredient name
     if (tcV2 && tcV2.ingredients && tcV2.ingredients[ingredientIndex]) {
       const ingredientName = tcV2.ingredients[ingredientIndex].name;
       setCatalogSearchQuery(ingredientName);
       setUsdaSearchQuery(ingredientName);
+      setPriceSearchQuery(ingredientName);
       performCatalogSearch(ingredientName);
       debouncedUsdaSearch(ingredientName);
+      debouncedPriceSearch(ingredientName);
     }
   };
 
