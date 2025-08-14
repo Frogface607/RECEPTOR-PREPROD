@@ -537,9 +537,11 @@ def test_llm_parameters():
     print("\n🧪 Тестирование стабильности генерации (косвенная проверка параметров):")
     
     test_payload = {
-        "dish_name": "Простое тестовое блюдо",
+        "name": "Простое тестовое блюдо",
         "cuisine": "русская",
-        "use_llm": True
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     # Generate same dish multiple times to check consistency
@@ -547,7 +549,7 @@ def test_llm_parameters():
     for i in range(3):
         try:
             response = requests.post(
-                f"{API_BASE}/v1/techcards.v2/generate",
+                f"{API_BASE}/v1/techcards.v2/generate?use_llm=true",
                 json=test_payload,
                 timeout=30
             )
