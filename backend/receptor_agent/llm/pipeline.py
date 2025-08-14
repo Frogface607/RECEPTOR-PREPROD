@@ -64,8 +64,30 @@ async def fetch_sub_recipes_cache(sub_recipe_ids: Set[str]) -> Dict[str, TechCar
 def _system() -> str:
     return "You return strictly JSON that matches the provided JSON Schema."
 
+def _system_ru() -> str:
+    """System prompt для русских промптов v2"""
+    return "Ты возвращаешь строго JSON, соответствующий предоставленной JSON Schema."
+
 def _make_user(content: Dict[str, Any]) -> str:
     return json.dumps(content, ensure_ascii=False)
+
+def _load_prompt_v2(filename: str) -> str:
+    """Загружает промпт из папки prompts/v2/"""
+    prompts_dir = os.path.join(os.path.dirname(__file__), "prompts", "v2")
+    filepath = os.path.join(prompts_dir, filename)
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return f"Prompt file {filename} not found"
+
+def _format_template(template: str, **kwargs) -> str:
+    """Форматирует шаблон промпта с подстановкой переменных"""
+    result = template
+    for key, value in kwargs.items():
+        placeholder = "{{" + key + "}}"
+        result = result.replace(placeholder, str(value))
+    return result
 
 def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
     if _use_llm():
