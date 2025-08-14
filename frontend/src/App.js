@@ -1004,12 +1004,28 @@ function App() {
 
         {/* Coverage indicators */}
         <div className="flex flex-wrap gap-2 mb-4">
-          <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-            (costMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
-            (costMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
-            'bg-red-600 text-white'
-          }`}>
-            💰 Цены {costMeta.coveragePct}%
+          <div 
+            className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
+              (costMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
+              (costMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
+              'bg-red-600 text-white'
+            }`}
+            title={
+              costMeta.source === 'mixed' 
+                ? `Источники: смешанные (цены из разных каталогов). Обновлено: ${costMeta.asOf || 'не указано'}`
+                : `Источник: ${costMeta.source === 'user' ? 'Загруженные пользователем' : 
+                              costMeta.source === 'catalog' ? 'Каталог разработчика' : 
+                              costMeta.source === 'bootstrap' ? 'Демо каталог' : 
+                              costMeta.source}. Обновлено: ${costMeta.asOf || 'не указано'}`
+            }
+          >
+            💰 Цены {costMeta.coveragePct}% • {
+              costMeta.source === 'user' ? 'User' :
+              costMeta.source === 'catalog' ? 'Catalog' :
+              costMeta.source === 'bootstrap' ? 'Bootstrap' :
+              costMeta.source === 'mixed' ? 'Mixed' :
+              costMeta.source || 'Unknown'
+            }
           </div>
           <div 
             className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
