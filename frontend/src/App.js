@@ -4424,19 +4424,36 @@ function App() {
     } catch (error) {
       console.error('Error generating tech card:', error);
       
+      // Clear timeout if still active
+      clearTimeout(timeoutId);
+      
       // Always complete progress
       clearInterval(progressInterval);
       setLoadingProgress(100);
       
+      // Handle different error types
+      let errorMessage = 'Неизвестная ошибка при генерации техкарты';
+      
+      if (error.name === 'AbortError') {
+        errorMessage = 'Превышено время ожидания ответа сервера (30 сек). Попробуйте позже.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       // Set error state
       setGenerationStatus('error');
-      setGenerationError(error.message || 'Неизвестная ошибка при генерации техкарты');
+      setGenerationError(errorMessage);
       setLoadingMessage('❌ Ошибка генерации');
       
       if (isDebugMode) {
         console.log('[DEBUG] Exception occurred:', error);
+        console.log('[DEBUG] Error type:', error.name);
       }
     } finally {
+      // Always clean up
+      clearTimeout(timeoutId);
+      clearInterval(progressInterval);
+      
       // Always clean up UI state after a delay
       setTimeout(() => {
         setIsGenerating(false);
