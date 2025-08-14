@@ -1,0 +1,117 @@
+{
+  "description": "Мэппинг якорей-ингредиентов RU → EN canonical_id для анкерной валидации",
+  "version": "1.0",
+  "mappings": {
+    "мясо": {
+      "говядина": ["beef", "beef_tenderloin", "beef_stew", "beef_ground"],
+      "свинина": ["pork", "pork_tenderloin", "pork_shoulder"], 
+      "баранина": ["lamb", "mutton"],
+      "телятина": ["veal"],
+      "курица": ["chicken", "chicken_breast", "chicken_thigh", "chicken_wings", "chicken_whole"],
+      "индейка": ["turkey", "turkey_breast"],
+      "утка": ["duck"],
+      "гусь": ["goose"]
+    },
+    "рыба": {
+      "треска": ["cod"],
+      "лосось": ["salmon", "salmon_atlantic"], 
+      "семга": ["salmon_atlantic", "salmon"],
+      "тунец": ["tuna"],
+      "судак": ["pike_perch"],
+      "скумбрия": ["mackerel"],
+      "форель": ["trout"],
+      "камбала": ["flounder"],
+      "дорадо": ["dorado"],
+      "сибас": ["sea_bass"],
+      "щука": ["pike"],
+      "карп": ["carp"]
+    },
+    "морепродукты": {
+      "креветки": ["shrimp"],
+      "кальмары": ["squid"], 
+      "мидии": ["mussels"],
+      "осьминог": ["octopus"],
+      "гребешок": ["scallop"],
+      "краб": ["crab"],
+      "лобстер": ["lobster"],
+      "устрицы": ["oysters"]
+    },
+    "овощи": {
+      "брокколи": ["broccoli"],
+      "цветная капуста": ["cauliflower"],
+      "белокочанная капуста": ["cabbage_white"],
+      "капуста": ["cabbage_white", "cauliflower"],
+      "морковь": ["carrot"],
+      "лук": ["onion"],
+      "лук репчатый": ["onion"],
+      "чеснок": ["garlic"],
+      "картофель": ["potato"],
+      "свекла": ["beetroot"],
+      "помидоры": ["tomato"],
+      "огурцы": ["cucumber"],
+      "перец болгарский": ["bell_pepper"],
+      "баклажаны": ["eggplant"],
+      "кабачки": ["zucchini"],
+      "тыква": ["pumpkin"],
+      "спаржа": ["asparagus"],
+      "шпинат": ["spinach"],
+      "салат": ["lettuce"],
+      "руккола": ["arugula"]
+    },
+    "грибы": {
+      "шампиньоны": ["mushrooms", "button_mushrooms"],
+      "белые грибы": ["porcini", "white_mushrooms"],
+      "лисички": ["chanterelles"],
+      "опята": ["honey_mushrooms"],
+      "грибы": ["mushrooms"]
+    },
+    "соусы": {
+      "соус биск": ["bisque_sauce"],
+      "бешамель": ["bechamel"],
+      "голландский соус": ["hollandaise"],
+      "песто": ["pesto"],
+      "болоньезе": ["bolognese"],
+      "карбонара": ["carbonara_sauce"],
+      "альфредо": ["alfredo"],
+      "тартар": ["tartar_sauce"],
+      "айоли": ["aioli"]
+    },
+    "крупы": {
+      "рис": ["rice_round", "rice_long"],
+      "гречка": ["buckwheat"],
+      "овсянка": ["oats"],
+      "перловка": ["pearl_barley"],
+      "пшено": ["millet"],
+      "булгур": ["bulgur"],
+      "киноа": ["quinoa"]
+    },
+    "макароны": {
+      "спагетти": ["spaghetti"],
+      "паста": ["pasta_wheat", "spaghetti"],
+      "пенне": ["penne"],
+      "фарфалле": ["farfalle"],
+      "лазанья": ["lasagna"],
+      "макароны": ["pasta_wheat"]
+    },
+    "молочные": {
+      "молоко": ["milk_3_2"],
+      "сливки": ["cream_20", "cream_35"],
+      "сметана": ["sour_cream_20"],
+      "творог": ["cottage_cheese_5"],
+      "масло сливочное": ["butter_82"],
+      "сыр": ["cheese_russian", "parmesan", "mozzarella", "cheddar"],
+      "пармезан": ["parmesan"],
+      "моцарелла": ["mozzarella"],
+      "чеддер": ["cheddar"]
+    },
+    "синонимы": {
+      "треска": ["cod", "треска"],
+      "брокколи": ["broccoli", "брокколи"],
+      "биск": ["bisque_sauce", "соус биск"],
+      "говядина": ["beef", "говядина", "мясо"],
+      "курица": ["chicken", "курица", "птица"],
+      "свинина": ["pork", "свинина"],
+      "рыба": ["cod", "salmon", "mackerel", "рыба"]
+    }
+  }
+}
