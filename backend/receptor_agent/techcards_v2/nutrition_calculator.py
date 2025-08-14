@@ -12,6 +12,147 @@ from difflib import SequenceMatcher
 
 from .schemas import TechCardV2, IngredientV2, NutritionV2, NutritionPer, NutritionMetaV2
 
+class USDANutritionProvider:
+    """Провайдер данных о питательности из USDA FoodData Central"""
+    
+    def __init__(self):
+        self.usda_db_path = os.path.join(os.path.dirname(__file__), "../../data/usda/usda.sqlite")
+        self.canonical_map_path = os.path.join(os.path.dirname(__file__), "../../data/usda/canonical_map.json")
+        self.canonical_map = self._load_canonical_map()
+        
+    def _load_canonical_map(self) -> Dict[str, Any]:
+        """Загрузка канонического маппинга ингредиентов к USDA FDC ID"""
+        try:
+            with open(self.canonical_map_path, 'r', encoding='utf-8') as f:
+                mapping_list = json.load(f)
+                
+            # Создаем индекс для быстрого поиска
+            mapping = {}
+            for item in mapping_list:
+                canonical_id = item['canonical_id']
+                fdc_id = item['fdc_id']
+                synonyms = item['synonyms']
+                
+                # Индексируем по canonical_id 
+                mapping[canonical_id] = {'fdc_id': fdc_id, 'synonyms': synonyms}
+                
+                # Индексируем по каждому синониму
+                for synonym in synonyms:
+                    mapping[synonym.lower()] = {'fdc_id': fdc_id, 'canonical_id': canonical_id}
+                    
+            return mapping
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+    
+    def find_nutrition_data(self, ingredient_name: str, canonical_id: str = None) -> Optional[Dict[str, Any]]:
+        """
+        Поиск данных о питательности в USDA базе
+        Порядок поиска: canonical_id → fuzzy по synonyms → нет данных
+        """
+        if not os.path.exists(self.usda_db_path):
+            return None
+            
+        try:
+            conn = sqlite3.connect(self.usda_db_path)
+            cursor = conn.cursor()
+            
+            fdc_id = None
+            source_info = None
+            
+            # 1. Прямой поиск по canonical_id
+            if canonical_id and canonical_id in self.canonical_map:
+                fdc_id = self.canonical_map[canonical_id]['fdc_id']
+                source_info = "canonical_id_direct"
+            
+            # 2. Поиск по точному совпадению синонимов
+            if not fdc_id:
+                ingredient_lower = ingredient_name.lower().strip()
+                if ingredient_lower in self.canonical_map:
+                    fdc_id = self.canonical_map[ingredient_lower]['fdc_id']
+                    source_info = "synonym_exact"
+            
+            # 3. Fuzzy поиск по синонимам (порог 0.85)
+            if not fdc_id:
+                best_ratio = 0.0
+                best_fdc_id = None
+                
+                for synonym, data in self.canonical_map.items():
+                    if 'fdc_id' in data:  # Это синоним, не canonical_id
+                        ratio = SequenceMatcher(None, ingredient_name.lower(), synonym).ratio()
+                        if ratio > best_ratio and ratio >= 0.85:
+                            best_ratio = ratio
+                            best_fdc_id = data['fdc_id']
+                
+                if best_fdc_id:
+                    fdc_id = best_fdc_id
+                    source_info = f"synonym_fuzzy_{best_ratio:.2f}"
+            
+            # Если FDC ID найден, получаем данные из SQLite
+            if fdc_id:
+                # Получаем базовую информацию о продукте
+                cursor.execute("SELECT description FROM foods WHERE fdc_id = ?", (fdc_id,))
+                food_info = cursor.fetchone()
+                
+                if not food_info:
+                    conn.close()
+                    return None
+                    
+                # Получаем данные о питательности (nutrient_id: 1008=kcal, 1003=protein, 1004=fat, 1005=carbs)
+                cursor.execute("""
+                    SELECT nutrient_id, amount 
+                    FROM food_nutrient 
+                    WHERE fdc_id = ? AND nutrient_id IN (1008, 1003, 1004, 1005)
+                """, (fdc_id,))
+                
+                nutrients = dict(cursor.fetchall())
+                
+                # Проверяем наличие основных питательных веществ
+                if 1008 not in nutrients:  # Нет калорий
+                    conn.close()
+                    return None
+                
+                # Получаем данные о порциях для pcs конверсии
+                cursor.execute("""
+                    SELECT portion_description, gram_weight
+                    FROM food_portion
+                    WHERE fdc_id = ?
+                """, (fdc_id,))
+                
+                portions = dict(cursor.fetchall())
+                
+                conn.close()
+                
+                # Формируем результат в том же формате что и JSON каталоги
+                result = {
+                    "fdc_id": fdc_id,
+                    "description": food_info[0],
+                    "per100g": {
+                        "kcal": float(nutrients.get(1008, 0)),
+                        "proteins_g": float(nutrients.get(1003, 0)),
+                        "fats_g": float(nutrients.get(1004, 0)),
+                        "carbs_g": float(nutrients.get(1005, 0))
+                    },
+                    "source": f"usda_{source_info}"
+                }
+                
+                # Добавляем информацию о порциях если есть
+                if portions:
+                    # Ищем подходящую порцию для pcs конверсии
+                    for desc, weight in portions.items():
+                        if any(word in desc.lower() for word in ['egg', 'яйцо', 'large', 'medium', 'piece']):
+                            result["mass_per_piece_g"] = float(weight)
+                            break
+                
+                return result
+                
+            conn.close()
+            return None
+            
+        except Exception as e:
+            print(f"USDA nutrition lookup error: {e}")
+            return None
+
+
 class NutritionCalculator:
     """Калькулятор БЖУ для техкарт"""
     
