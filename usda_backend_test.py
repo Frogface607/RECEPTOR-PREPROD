@@ -362,7 +362,9 @@ def test_edge_cases():
         # Test pcs conversion for eggs (should use USDA portion data)
         egg_ingredient = IngredientV2(
             name="яйцо куриное",
-            netto_g=2.0,  # 2 pieces
+            brutto_g=2.0,  # 2 pieces
+            loss_pct=0.0,
+            netto_g=2.0,
             unit="pcs",
             canonical_id="chicken_egg"
         )
