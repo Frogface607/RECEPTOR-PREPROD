@@ -1057,7 +1057,6 @@ function App() {
               }
             </div>
           )}
-          </div>
           {isRecalculating && (
             <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-bold animate-pulse">
               🔄 Пересчет...
