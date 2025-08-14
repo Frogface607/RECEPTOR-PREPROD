@@ -424,31 +424,38 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 except Exception:
                     pass  # Игнорируем ошибки дополнительной нормализации
             
-            # Рассчитываем стоимость для валидной карты с подрецептами
+            # Рассчитываем стоимость для валидной карты с подрецептами (всегда выполняем)
             try:
                 validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
             except Exception as e:
-                validation_issues.append(f"Cost calculation error: {str(e)}")
+                all_issues.append(f"Cost calculation error: {str(e)}")
             
-            # Рассчитываем питательность для валидной карты с подрецептами
+            # Рассчитываем питательность для валидной карты с подрецептами (всегда выполняем)
             try:
                 validated_card = calculate_nutrition_for_tech_card(validated_card, sub_recipes_cache)
             except Exception as e:
-                validation_issues.append(f"Nutrition calculation error: {str(e)}")
+                all_issues.append(f"Nutrition calculation error: {str(e)}")
             
-            # Определяем статус на основе постпроверки
-            if postcheck_issues:
-                all_issues = validation_issues + [issue.get("hint", "") for issue in postcheck_issues]
+            # Определяем финальный статус на основе правил шефа и постпроверки
+            if has_critical_chef_errors:
+                # Есть критические ошибки правил шефа → draft
                 return PipelineResult(
                     card=validated_card,
                     issues=all_issues,
-                    status="draft"  # Есть проблемы постпроверки
+                    status="draft"  # Критические ошибки правил шефа
                 )
-            else:
-                # Успешная генерация без проблем
+            elif chef_rule_issues or postcheck_issues:
+                # Есть некритические предупреждения → draft
                 return PipelineResult(
                     card=validated_card,
-                    issues=[],
+                    issues=all_issues,
+                    status="draft"  # Есть предупреждения
+                )
+            else:
+                # Нет проблем → успешная генерация
+                return PipelineResult(
+                    card=validated_card,
+                    issues=all_issues,
                     status="success"
                 )
         else:
