@@ -13383,6 +13383,67 @@ function App() {
                     </div>
                   )}
                 </>
+              ) : mappingActiveTab === 'price' ? (
+                // Price Results
+                <>
+                  {priceSearchResults.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer transition-colors border-l-4 ${
+                        item.source === 'user' ? 'border-purple-500' : 
+                        item.source === 'catalog' ? 'border-blue-500' : 'border-orange-500'
+                      }`}
+                      onClick={() => handleAssignIngredientMapping(item)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="font-bold text-white">{item.name}</div>
+                          <div className="text-sm text-gray-400">
+                            <span className={`px-2 py-0.5 rounded text-xs mr-2 text-white ${
+                              item.source === 'user' ? 'bg-purple-600' : 
+                              item.source === 'catalog' ? 'bg-blue-600' : 'bg-orange-600'
+                            }`}>
+                              {item.source === 'user' ? 'USER' : 
+                               item.source === 'catalog' ? 'CAT' : 'BOOT'}
+                            </span>
+                            <span className="text-green-300 font-bold">
+                              {item.price_per_unit}₽/{item.unit}
+                            </span>
+                            {item.currency && item.currency !== 'RUB' && (
+                              <span className="text-gray-400 text-xs ml-1">({item.currency})</span>
+                            )}
+                          </div>
+                          {item.sku_id && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              SKU: {item.sku_id}
+                            </div>
+                          )}
+                          {item.asOf && (
+                            <div className="text-xs text-blue-300 mt-1">
+                              Обновлено: {item.asOf}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-yellow-400 text-xs">
+                          💰 Цена
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {!isSearchingPrice && priceSearchQuery && priceSearchResults.length === 0 && (
+                    <div className="text-center py-6 text-gray-400">
+                      <div className="text-2xl mb-2">🔍</div>
+                      <div>Цены не найдены для "{priceSearchQuery}"</div>
+                      <button
+                        onClick={() => setMappingModalOpen(false)}
+                        className="mt-2 text-sm text-blue-400 hover:text-blue-300"
+                      >
+                        Закрыть
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 // All/Catalog Results  
                 <>
