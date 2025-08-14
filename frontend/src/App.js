@@ -1561,6 +1561,18 @@ function App() {
     }
   };
 
+  // Debounced USDA search
+  const [usdaSearchTimeout, setUsdaSearchTimeout] = useState(null);
+  const debouncedUsdaSearch = (query) => {
+    if (usdaSearchTimeout) {
+      clearTimeout(usdaSearchTimeout);
+    }
+    const timeout = setTimeout(() => {
+      performUsdaSearch(query);
+    }, 250);
+    setUsdaSearchTimeout(timeout);
+  };
+
   const performPriceSearch = async (query) => {
     if (!query.trim()) {
       setPriceSearchResults([]);
