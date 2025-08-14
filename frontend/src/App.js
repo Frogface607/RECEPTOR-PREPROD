@@ -2095,7 +2095,7 @@ function App() {
 
   // ============== INLINE EDITING FUNCTIONS (Task 0.1) ==============
   
-  const startInlineEdit = (ingredientIndex) => {
+  const startIngredientEdit = (ingredientIndex) => {
     if (!tcV2 || !tcV2.ingredients[ingredientIndex]) return;
     
     const ingredient = tcV2.ingredients[ingredientIndex];
@@ -2110,7 +2110,7 @@ function App() {
     setRecalcError(null);
   };
 
-  const cancelInlineEdit = () => {
+  const cancelIngredientEdit = () => {
     setEditingIngredientIndex(null);
     setEditingData({});
     setEditingErrors({});
@@ -2143,7 +2143,7 @@ function App() {
     setEditingErrors(validateEditingData(newData));
   };
 
-  const saveInlineEdit = async () => {
+  const saveIngredientEdit = async () => {
     if (editingIngredientIndex === null || !tcV2) return;
     
     const errors = validateEditingData(editingData);
@@ -2177,13 +2177,13 @@ function App() {
     await performRecalculation(updatedTcV2);
   };
 
-  const handleKeyDown = (e) => {
+  const handleEditKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      saveInlineEdit();
+      saveIngredientEdit();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      cancelInlineEdit();
+      cancelIngredientEdit();
     }
   };
 
