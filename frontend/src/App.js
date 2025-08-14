@@ -13296,6 +13296,17 @@ function App() {
                   placeholder="Поиск в USDA FoodData Central..."
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
                 />
+              ) : mappingActiveTab === 'price' ? (
+                <input
+                  type="text"
+                  value={priceSearchQuery}
+                  onChange={(e) => {
+                    setPriceSearchQuery(e.target.value);
+                    debouncedPriceSearch(e.target.value);
+                  }}
+                  placeholder="Поиск цен в каталогах..."
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
+                />
               ) : (
                 <input
                   type="text"
