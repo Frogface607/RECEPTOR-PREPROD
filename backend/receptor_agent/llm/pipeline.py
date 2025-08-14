@@ -84,12 +84,73 @@ def _load_prompt_v2(filename: str) -> str:
         return f"Prompt file {filename} not found"
 
 def _format_template(template: str, **kwargs) -> str:
-    """Форматирует шаблон промпта с подстановкой переменных"""
+    """Форматирует шаблон промпта с подстановкой переменных, поддерживает условные блоки"""
     result = template
+    
+    # Обработка условных блоков {{#constraints}}...{{/constraints}}
+    if 'constraints' in kwargs and kwargs['constraints']:
+        # Убираем теги и оставляем содержимое
+        result = result.replace('{{#constraints}}', '').replace('{{/constraints}}', '')
+        # Подставляем constraints
+        constraints = kwargs['constraints']
+        if 'mustHave' in constraints:
+            result = result.replace('{{mustHave}}', ', '.join(constraints['mustHave']))
+        if 'forbid' in constraints:
+            result = result.replace('{{forbid}}', ', '.join(constraints['forbid']))
+        if 'hints' in constraints:
+            result = result.replace('{{hints}}', ', '.join(constraints['hints']))
+    else:
+        # Удаляем весь блок constraints если его нет
+        import re
+        result = re.sub(r'{{#constraints}}.*?{{/constraints}}', '', result, flags=re.DOTALL)
+    
+    # Обычные подстановки
     for key, value in kwargs.items():
-        placeholder = "{{" + key + "}}"
-        result = result.replace(placeholder, str(value))
+        if key != 'constraints':
+            placeholder = "{{" + key + "}}"
+            result = result.replace(placeholder, str(value))
+    
     return result
+
+def extract_anchors(dish_name: str, cuisine: str = None) -> Dict[str, Any]:
+    """Извлечение якорей из названия блюда через LLM"""
+    if not _use_llm():
+        return {"mustHave": [], "forbid": [], "hints": []}
+        
+    try:
+        system_prompt = _load_prompt_v2("extract_anchors.ru.txt")
+        user_template = _load_prompt_v2("extract_anchors_user.ru.txt")
+        
+        user_prompt = _format_template(
+            user_template,
+            dish_name=dish_name,
+            cuisine=cuisine or "международная"
+        )
+        
+        # Простая JSON схема для якорей
+        anchors_schema = {
+            "type": "object",
+            "properties": {
+                "mustHave": {"type": "array", "items": {"type": "string"}},
+                "forbid": {"type": "array", "items": {"type": "string"}},
+                "hints": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["mustHave", "forbid", "hints"]
+        }
+        
+        result = call_structured(
+            system=_system_ru() + "\n\n" + system_prompt,
+            user=user_prompt,
+            json_schema=anchors_schema,
+            temperature=0.3,
+            top_p=0.9
+        )
+        
+        return result
+        
+    except Exception as e:
+        print(f"Error extracting anchors: {e}")
+        return {"mustHave": [], "forbid": [], "hints": []}
 
 def generate_draft_v2(profile: ProfileInput) -> Dict[str, Any]:
     """Генерация чернового JSON с помощью нового промпта v2"""
