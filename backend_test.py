@@ -157,7 +157,7 @@ class P1PricesBackendTester:
         try:
             sys.path.append('/app/backend')
             from receptor_agent.techcards_v2.cost_calculator import CostCalculator
-            from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, MetaV2
+            from receptor_agent.techcards_v2.schemas import TechCardV2, IngredientV2, MetaV2, YieldV2, ProcessStepV2, StorageV2
             
             # Create test tech card
             test_ingredients = [
