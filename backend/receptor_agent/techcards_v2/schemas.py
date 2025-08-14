@@ -81,7 +81,7 @@ class NutritionV2(BaseModel):
     perPortion: Optional[NutritionPer] = None
 
 class NutritionMetaV2(BaseModel):
-    source: Literal["catalog", "csv", "none"] = "none"
+    source: Literal["catalog", "csv", "none", "usda", "bootstrap"] = "none"
     coveragePct: float = Field(..., ge=0, le=100)
 
 class CostMetaV2(BaseModel):
