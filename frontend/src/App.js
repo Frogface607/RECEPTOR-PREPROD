@@ -2085,6 +2085,116 @@ function App() {
     }
   };
 
+  // ============== UPLOAD FUNCTIONS (Task 1.2) ==============
+  
+  const openUploadModal = (type) => {
+    setUploadType(type);
+    setUploadFile(null);
+    setUploadPreview(null);
+    setUploadResults(null);
+    setShowUploadModal(true);
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = uploadType === 'prices' 
+      ? ['.csv', '.xlsx', '.xls'] 
+      : ['.json', '.csv'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    
+    if (!validTypes.includes(fileExtension)) {
+      alert(`Для ${uploadType === 'prices' ? 'прайсов' : 'БЖУ'} поддерживаются файлы: ${validTypes.join(', ')}`);
+      return;
+    }
+
+    setUploadFile(file);
+    
+    // Generate preview for display
+    if (uploadType === 'prices') {
+      setUploadPreview({
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + ' KB',
+        type: 'Прайс-лист',
+        expectedColumns: 'Название продукта, Цена, Единица измерения, Категория'
+      });
+    } else {
+      setUploadPreview({
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + ' KB', 
+        type: 'Данные по питанию',
+        expectedFormat: fileExtension === '.json' ? 'JSON с полями name, per100g' : 'CSV с колонками: название, ккал, белки, жиры, углеводы'
+      });
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile || !currentUser) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      formData.append('user_id', currentUser.id);
+
+      const endpoint = uploadType === 'prices' ? '/upload-prices' : '/upload-nutrition';
+      const response = await axios.post(`${API}${endpoint}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        setUploadResults({
+          success: true,
+          count: response.data.count,
+          message: response.data.message,
+          preview: response.data[uploadType === 'prices' ? 'prices' : 'nutrition'] || []
+        });
+      } else {
+        setUploadResults({
+          success: false,
+          error: response.data.error || 'Ошибка загрузки файла'
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadResults({
+        success: false,
+        error: error.response?.data?.detail || error.message || 'Ошибка загрузки файла'
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const triggerRecalc = async () => {
+    if (!currentUser || !tcV2) return;
+
+    setIsRecalculating(true);
+    try {
+      const response = await axios.post(`${API}/v1/techcards.v2/recalc`, {
+        card: tcV2,
+        user_id: currentUser.id
+      });
+
+      if (response.data.success && response.data.card) {
+        setTcV2(response.data.card);
+        alert(`Пересчёт выполнен! Обновлены данные по стоимости и питанию.`);
+        setShowUploadModal(false);
+      } else {
+        alert('Ошибка пересчёта: ' + (response.data.error || 'Неизвестная ошибка'));
+      }
+    } catch (error) {
+      console.error('Recalc error:', error);
+      alert('Ошибка пересчёта: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   // ============== NEW CATEGORY MANAGEMENT FUNCTIONS ==============
   
   const fetchAllIikoCategories = async (organizationId) => {
