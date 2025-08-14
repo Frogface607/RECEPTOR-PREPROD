@@ -82,7 +82,7 @@ def populate_usda_db():
         (171285, 'Butter, without salt', 'Dairy', '2019-04-01'),
         
         # Яйца
-        (171287, 'Egg, whole, raw, fresh', 'Eggs', '2019-04-01'),
+        (171290, 'Egg, whole, raw, fresh', 'Eggs', '2019-04-01'),
         (172185, 'Egg, white, raw, fresh', 'Eggs', '2019-04-01'),
         (172186, 'Egg, yolk, raw, fresh', 'Eggs', '2019-04-01'),
         (172190, 'Egg, quail, whole, fresh, raw', 'Eggs', '2019-04-01'),
