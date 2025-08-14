@@ -12,6 +12,7 @@ from receptor_agent.techcards_v2.cost_calculator import calculate_cost_for_tech_
 from receptor_agent.techcards_v2.nutrition_calculator import calculate_nutrition_for_tech_card
 from receptor_agent.techcards_v2.postcheck_v2 import postcheck_v2
 from receptor_agent.techcards_v2.chef_rules import run_chef_rules, has_critical_rule_errors
+from receptor_agent.techcards_v2.contentcheck_v2 import run_content_check, has_critical_content_errors
 
 from .clients.openai_client import call_structured, get_client
 from .prompts.templates import DRAFT_PROMPT, NORMALIZE_PROMPT, QUANTIFY_PROMPT, HACCP_PROMPT, CRITIC_PROMPT
