@@ -30,15 +30,11 @@ def test_generate_basic_techcard():
     log_test("🍔 STEP 1: Generating basic tech card 'Бургер классический' for testing")
     
     profile_data = {
-        "dish_name": "Бургер классический",
-        "dish_description": "Классический бургер с говяжьей котлетой, овощами и соусом",
-        "cuisine_type": "европейская",
-        "difficulty": "средне",
-        "cooking_time": "25 минут",
-        "portions": 4,
-        "dietary_restrictions": [],
-        "available_equipment": ["плита", "сковорода", "гриль"],
-        "chef_level": "средний"
+        "name": "Бургер классический с говяжьей котлетой, овощами и соусом",
+        "cuisine": "европейская",
+        "equipment": ["плита", "сковорода", "гриль"],
+        "budget": 500.0,
+        "dietary": []
     }
     
     try:
