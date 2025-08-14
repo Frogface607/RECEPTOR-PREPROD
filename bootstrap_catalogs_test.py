@@ -280,15 +280,11 @@ def test_chicken_dish_generation():
     
     # Простое блюдо с куриным филе для проверки цены ~450 руб/кг
     payload = {
-        "dish_name": "Куриное филе жареное",
-        "description": "Простое жареное куриное филе",
-        "ingredients": [
-            {"name": "куриное филе", "quantity": 200, "unit": "г"},
-            {"name": "растительное масло", "quantity": 20, "unit": "мл"},
-            {"name": "соль поваренная", "quantity": 3, "unit": "г"},
-            {"name": "перец чёрный молотый", "quantity": 1, "unit": "г"}
-        ],
-        "use_llm": False
+        "name": "Куриное филе жареное с овощами",
+        "cuisine": "европейская",
+        "equipment": [],
+        "budget": None,
+        "dietary": []
     }
     
     try:
