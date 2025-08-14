@@ -1561,16 +1561,40 @@ function App() {
     }
   };
 
-  // Debounced USDA search
-  const [usdaSearchTimeout, setUsdaSearchTimeout] = useState(null);
-  const debouncedUsdaSearch = (query) => {
-    if (usdaSearchTimeout) {
-      clearTimeout(usdaSearchTimeout);
+  const performPriceSearch = async (query) => {
+    if (!query.trim()) {
+      setPriceSearchResults([]);
+      return;
+    }
+
+    setIsSearchingPrice(true);
+    try {
+      const response = await fetch(`${API}/v1/techcards.v2/catalog-search?source=price&q=${encodeURIComponent(query)}&limit=20`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setPriceSearchResults(data.items || []);
+      } else {
+        setPriceSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Price search error:', error);
+      setPriceSearchResults([]);
+    } finally {
+      setIsSearchingPrice(false);
+    }
+  };
+
+  // Debounced Price search
+  const [priceSearchTimeout, setPriceSearchTimeout] = useState(null);
+  const debouncedPriceSearch = (query) => {
+    if (priceSearchTimeout) {
+      clearTimeout(priceSearchTimeout);
     }
     const timeout = setTimeout(() => {
-      performUsdaSearch(query);
+      performPriceSearch(query);
     }, 250);
-    setUsdaSearchTimeout(timeout);
+    setPriceSearchTimeout(timeout);
   };
 
   const handleAssignIngredientMapping = async (catalogItem) => {
