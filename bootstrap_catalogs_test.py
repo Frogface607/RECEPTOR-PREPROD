@@ -142,10 +142,12 @@ def test_carbonara_generation():
     }
     
     try:
-        log_test(f"Отправляем запрос: POST {url}")
-        log_test(f"Ингредиенты: {len(payload['ingredients'])} шт")
+        # Добавляем параметр use_llm=false для принудительного отключения LLM
+        url_with_params = f"{url}?use_llm=false"
+        log_test(f"Отправляем запрос: POST {url_with_params}")
+        log_test(f"Блюдо: {payload['name']}")
         
-        response = requests.post(url, json=payload, timeout=60)
+        response = requests.post(url_with_params, json=payload, timeout=60)
         log_test(f"Статус ответа: {response.status_code}")
         
         if response.status_code == 200:
