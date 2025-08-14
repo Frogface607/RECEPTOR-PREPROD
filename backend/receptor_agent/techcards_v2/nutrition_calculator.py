@@ -281,9 +281,9 @@ class NutritionCalculator:
         
         return best_match
     
-    def _convert_to_grams(self, amount: float, unit: str, ingredient_name: str = "") -> Tuple[float, str]:
+    def _convert_to_grams(self, amount: float, unit: str, ingredient_name: str = "", nutrition_data: Dict[str, Any] = None) -> Tuple[float, str]:
         """
-        Конвертация количества в граммы
+        Конвертация количества в граммы с поддержкой USDA порций
         Возвращает: (масса_в_граммах, статус)
         """
         if unit == "g":
@@ -314,12 +314,23 @@ class NutritionCalculator:
             return grams, f"ml_to_g_density_{density}"
         
         elif unit == "pcs":
-            # Для штук нужна масса одной штуки
-            nutrition_data = self.find_nutrition_data(ingredient_name)
+            # Для штук сначала проверяем USDA данные, затем обычную логику
+            mass_per_piece = None
+            
+            # 1. Проверяем USDA данные (приоритет)
             if nutrition_data and "mass_per_piece_g" in nutrition_data:
                 mass_per_piece = nutrition_data["mass_per_piece_g"]
+                source = "usda_portion"
+            else:
+                # 2. Проверяем обычный каталог
+                nutrition_fallback = self.find_nutrition_data(ingredient_name)
+                if nutrition_fallback and "mass_per_piece_g" in nutrition_fallback:
+                    mass_per_piece = nutrition_fallback["mass_per_piece_g"]
+                    source = "catalog_portion"
+            
+            if mass_per_piece:
                 grams = amount * mass_per_piece
-                return grams, f"pcs_to_g_mass_{mass_per_piece}g"
+                return grams, f"pcs_to_g_{source}_{mass_per_piece}g"
             else:
                 return 0.0, "no_mass_for_pcs"
         
