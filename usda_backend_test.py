@@ -117,7 +117,7 @@ def test_nutrition_calculator_with_usda():
         test_card = TechCardV2(
             meta={"title": "USDA Test Dish"},
             ingredients=test_ingredients,
-            yield_=YieldV2(perBatch_g=350.0, perPortion_g=175.0),
+            yield_=YieldV2(perBatch_g=376.5, perPortion_g=188.25),  # Total netto: 198+148.5+30=376.5
             portions=2
         )
         
