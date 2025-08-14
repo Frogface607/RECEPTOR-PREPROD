@@ -398,11 +398,23 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
         comment: "🚀 COMPREHENSIVE BACKEND API TESTING COMPLETED: Executed full test suite covering all backend functionality. ✅ USER MANAGEMENT: Registration, authentication, and user retrieval working correctly. ✅ SUBSCRIPTION SYSTEM: All 4 tiers (Free, Starter, PRO, Business) properly configured with correct limits and features. ✅ KITCHEN EQUIPMENT: All 21 equipment types across 3 categories properly returned, PRO user restrictions enforced correctly. ✅ TECH CARD GENERATION: Core functionality working with proper AI model (gpt-4o-mini), regional pricing, and equipment-aware generation for PRO users. ✅ USAGE LIMITS: Free tier (3 cards/month), Starter (25 cards/month), PRO/Business (unlimited) all enforced correctly. ✅ PRO FEATURES: Kitchen equipment updates, sales scripts, food pairing, and photo tips all functional. ✅ DATA PERSISTENCE: Tech cards properly saved and retrieved, history functionality working. ✅ API ENDPOINTS: All endpoints responding correctly with proper status codes and error handling. ✅ SUBSCRIPTION UPGRADES: Users can successfully upgrade between tiers with proper feature access. ✅ EQUIPMENT-AWARE GENERATION: PRO users receive recipes adapted to their selected kitchen equipment. All backend functionality verified and working as specified."
+
+  - task: "Bootstrap Catalogs (RU demo) - Task 1.1"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/techcards_v2/cost_calculator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 BOOTSTRAP CATALOGS COMPREHENSIVE TESTING COMPLETED: Conducted detailed testing of Task 1.1 «Бутстрап-каталоги (RU demo)» as specifically requested in review. ✅ ENVIRONMENT SETUP VERIFIED: PRICE_VIA_LLM=false correctly set in backend/.env, ensuring deterministic pricing without LLM fallback. ✅ BOOTSTRAP FILES CONFIRMED: prices_ru.demo.csv contains 95 Russian products (meat, fish, vegetables, grains, dairy, oils, sauces, bakery), nutrition_ru.demo.json contains 95 products with per100g nutrition data and mass_per_piece for eggs. ✅ TECH CARD GENERATION WORKING: POST /api/v1/techcards.v2/generate with use_llm=false successfully generates tech cards with typical Russian products. Tested with Борщ украинский (beef, cabbage, carrots, onions, tomatoes, beets, potatoes) and Паста карбонара (spaghetti, bacon, eggs, parmesan, cream). ✅ PRICE COVERAGE REQUIREMENT MET: Both test dishes achieved 100% price coverage (coveragePct=100.0%), significantly exceeding the ≥70% requirement. Source correctly identified as 'catalog' indicating bootstrap data usage. ✅ NUTRITION COVERAGE REQUIREMENT MET: Both test dishes achieved 100% nutrition coverage (coveragePct=100.0%), significantly exceeding the ≥70% requirement. Source correctly identified as 'catalog' indicating bootstrap data usage. ✅ DATA QUALITY VERIFIED: Prices are reasonable (raw costs 274.7 RUB, cost per portion 68.67 RUB), nutrition data is accurate (283.5 kcal, 41.9g protein, 11.6g fat per portion), calculations are mathematically correct. ✅ BOOTSTRAP INTEGRATION CONFIRMED: CostCalculator and NutritionCalculator successfully load bootstrap catalogs when main catalogs are empty/small (<10 items). Bootstrap data automatically used without user intervention. ✅ DETERMINISTIC MODE VERIFIED: System works 'out of the box' with bootstrap data, providing high coverage for typical Russian products without requiring user uploads or LLM pricing. 🎉 ALL REVIEW REQUIREMENTS SUCCESSFULLY VERIFIED - Bootstrap catalogs ensure ≥70% coverage for both prices and nutrition with typical Russian products, system ready for production use."
         
   - task: "Kitchen Equipment Feature Backend"
     implemented: true
