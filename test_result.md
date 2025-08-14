@@ -1898,7 +1898,7 @@ backend:
 
 test_plan:
   current_focus:
-    - "Upload Prices/Nutrition Data with Preview (Task 1.2)"
+    - "TechCardV2 Inline Editing and Mapping (V2) - Task 0.1"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
