@@ -1,0 +1,102 @@
+[
+  {
+    "canonical_id": "beef_tenderloin",
+    "fdc_id": 169057,
+    "synonyms": ["говядина вырезка", "говяжья вырезка", "стейк из говядины", "beef tenderloin", "beef steak", "говядина для стейка"]
+  },
+  {
+    "canonical_id": "chicken_breast", 
+    "fdc_id": 173875,
+    "synonyms": ["куриное филе", "грудка куриная", "куриная грудка", "chicken breast", "курица филе", "филе курицы"]
+  },
+  {
+    "canonical_id": "salmon",
+    "fdc_id": 175001,
+    "synonyms": ["лосось", "семга", "salmon", "лосось атлантический", "семга атлантическая", "красная рыба"]
+  },
+  {
+    "canonical_id": "cod",
+    "fdc_id": 175174,
+    "synonyms": ["треска", "cod", "треска атлантическая", "белая рыба треска"]
+  },
+  {
+    "canonical_id": "potato",
+    "fdc_id": 170393,
+    "synonyms": ["картофель", "картошка", "potato", "potatoes", "картофель сырой"]
+  },
+  {
+    "canonical_id": "carrot",
+    "fdc_id": 169998,
+    "synonyms": ["морковь", "морковка", "carrot", "carrots", "морковь сырая"]
+  },
+  {
+    "canonical_id": "onion",
+    "fdc_id": 170000,
+    "synonyms": ["лук репчатый", "лук", "onion", "лук репчатый сырой", "репчатый лук"]
+  },
+  {
+    "canonical_id": "milk",
+    "fdc_id": 171265,
+    "synonyms": ["молоко", "молоко цельное", "milk", "молоко 3.2%", "молоко коровье"]
+  },
+  {
+    "canonical_id": "chicken_egg",
+    "fdc_id": 171290,
+    "synonyms": ["яйцо куриное", "яйца куриные", "egg", "chicken egg", "яйцо с1", "куриные яйца"]
+  },
+  {
+    "canonical_id": "rice",
+    "fdc_id": 168878,
+    "synonyms": ["рис", "рис белый", "rice", "белый рис", "рис длиннозерный"]
+  },
+  {
+    "canonical_id": "olive_oil",
+    "fdc_id": 171413,
+    "synonyms": ["оливковое масло", "масло оливковое", "olive oil", "оливковое масло extra virgin", "масло оливковое первого отжима"]
+  },
+  {
+    "canonical_id": "table_salt",
+    "fdc_id": 170436,
+    "synonyms": ["соль поваренная", "соль", "salt", "table salt", "соль столовая", "поваренная соль"]
+  },
+  {
+    "canonical_id": "black_pepper",
+    "fdc_id": 171325,
+    "synonyms": ["перец чёрный молотый", "перец черный", "black pepper", "перец чёрный", "чёрный перец молотый"]
+  },
+  {
+    "canonical_id": "sugar",
+    "fdc_id": 169757,
+    "synonyms": ["сахар", "сахар-песок", "sugar", "сахарный песок", "сахар белый"]
+  },
+  {
+    "canonical_id": "honey",
+    "fdc_id": 169640,
+    "synonyms": ["мёд", "мед", "honey", "мёд натуральный", "пчелиный мёд"]
+  },
+  {
+    "canonical_id": "tomato",
+    "fdc_id": 170457,
+    "synonyms": ["помидоры", "помидор", "tomato", "томат", "томаты свежие"]
+  },
+  {
+    "canonical_id": "cabbage_white",
+    "fdc_id": 169218,
+    "synonyms": ["капуста белокочанная", "капуста", "cabbage", "белокочанная капуста", "капуста свежая"]
+  },
+  {
+    "canonical_id": "broccoli",
+    "fdc_id": 169967,
+    "synonyms": ["брокколи", "broccoli", "капуста брокколи", "брокколи свежая"]
+  },
+  {
+    "canonical_id": "butter_82",
+    "fdc_id": 171284,
+    "synonyms": ["масло сливочное", "сливочное масло", "butter", "масло сливочное 82%", "масло коровье"]
+  },
+  {
+    "canonical_id": "pasta",
+    "fdc_id": 168841,
+    "synonyms": ["макароны", "паста", "pasta", "макаронные изделия", "спагетти"]
+  }
+]
