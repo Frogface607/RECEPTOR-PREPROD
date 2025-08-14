@@ -122,7 +122,7 @@ def generate_draft_v2(profile: ProfileInput) -> Dict[str, Any]:
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt,
-            schema=TECHCARD_CORE_SCHEMA,
+            json_schema=TECHCARD_CORE_SCHEMA,
             temperature=0.2,
             top_p=0.9,
             presence_penalty=0,
