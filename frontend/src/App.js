@@ -2093,6 +2093,173 @@ function App() {
     }
   };
 
+  // ============== INLINE EDITING FUNCTIONS (Task 0.1) ==============
+  
+  const startInlineEdit = (ingredientIndex) => {
+    if (!tcV2 || !tcV2.ingredients[ingredientIndex]) return;
+    
+    const ingredient = tcV2.ingredients[ingredientIndex];
+    setEditingIngredientIndex(ingredientIndex);
+    setEditingData({
+      brutto_g: ingredient.brutto_g,
+      loss_pct: ingredient.loss_pct,
+      netto_g: ingredient.netto_g,
+      unit: ingredient.unit
+    });
+    setEditingErrors({});
+    setRecalcError(null);
+  };
+
+  const cancelInlineEdit = () => {
+    setEditingIngredientIndex(null);
+    setEditingData({});
+    setEditingErrors({});
+  };
+
+  const validateEditingData = (data) => {
+    const errors = {};
+    
+    if (data.brutto_g < 0) errors.brutto_g = "Брутто не может быть отрицательным";
+    if (data.loss_pct < 0 || data.loss_pct > 60) errors.loss_pct = "Потери должны быть от 0 до 60%";
+    if (data.netto_g < 0) errors.netto_g = "Нетто не может быть отрицательным";
+    
+    return errors;
+  };
+
+  const handleEditingChange = (field, value) => {
+    const numValue = parseFloat(value) || 0;
+    let newData = { ...editingData, [field]: numValue };
+    
+    // Auto-calculate related fields
+    if (field === 'brutto_g' || field === 'loss_pct') {
+      newData.netto_g = newData.brutto_g * (1 - newData.loss_pct / 100);
+    } else if (field === 'netto_g') {
+      if (newData.loss_pct < 100) {
+        newData.brutto_g = newData.netto_g / (1 - newData.loss_pct / 100);
+      }
+    }
+    
+    setEditingData(newData);
+    setEditingErrors(validateEditingData(newData));
+  };
+
+  const saveInlineEdit = async () => {
+    if (editingIngredientIndex === null || !tcV2) return;
+    
+    const errors = validateEditingData(editingData);
+    if (Object.keys(errors).length > 0) {
+      setEditingErrors(errors);
+      return;
+    }
+
+    // Update tcV2 with new ingredient data
+    const updatedTcV2 = {
+      ...tcV2,
+      ingredients: tcV2.ingredients.map((ing, index) => {
+        if (index === editingIngredientIndex) {
+          return {
+            ...ing,
+            brutto_g: Math.round(editingData.brutto_g * 10) / 10,
+            loss_pct: Math.round(editingData.loss_pct * 10) / 10,
+            netto_g: Math.round(editingData.netto_g * 10) / 10,
+            unit: editingData.unit
+          };
+        }
+        return ing;
+      })
+    };
+
+    setTcV2(updatedTcV2);
+    setEditingIngredientIndex(null);
+    setEditingData({});
+    
+    // Trigger recalculation
+    await performRecalculation(updatedTcV2);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveInlineEdit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelInlineEdit();
+    }
+  };
+
+  const openSubRecipeModal = (ingredientIndex) => {
+    setMappingIngredientIndex(ingredientIndex);
+    setShowSubRecipeModal(true);
+    fetchAvailableSubRecipes();
+  };
+
+  const fetchAvailableSubRecipes = async () => {
+    try {
+      // Fetch user's tech cards as potential sub-recipes
+      const response = await axios.get(`${API}/user-history/${currentUser.id}`);
+      if (response.data && response.data.length > 0) {
+        const subRecipes = response.data
+          .filter(item => item.id !== tcV2?.meta?.id) // Don't include current card
+          .slice(0, 20) // Limit to 20
+          .map(item => ({
+            id: item.id,
+            title: item.dish_name || item.title || 'Без названия',
+            created_at: item.created_at
+          }));
+        setAvailableSubRecipes(subRecipes);
+      }
+    } catch (error) {
+      console.error('Error fetching sub-recipes:', error);
+      setAvailableSubRecipes([]);
+    }
+  };
+
+  const assignSubRecipe = async (subRecipe) => {
+    if (!tcV2 || mappingIngredientIndex === null) return;
+
+    const updatedTcV2 = {
+      ...tcV2,
+      ingredients: tcV2.ingredients.map((ing, index) => {
+        if (index === mappingIngredientIndex) {
+          return {
+            ...ing,
+            subRecipe: {
+              id: subRecipe.id,
+              title: subRecipe.title
+            },
+            skuId: null // Clear SKU when assigning sub-recipe
+          };
+        }
+        return ing;
+      })
+    };
+
+    setTcV2(updatedTcV2);
+    setShowSubRecipeModal(false);
+    
+    // Trigger recalculation
+    await performRecalculation(updatedTcV2);
+  };
+
+  const removeSubRecipe = async (ingredientIndex) => {
+    if (!tcV2) return;
+
+    const updatedTcV2 = {
+      ...tcV2,
+      ingredients: tcV2.ingredients.map((ing, index) => {
+        if (index === ingredientIndex) {
+          const newIng = { ...ing };
+          delete newIng.subRecipe;
+          return newIng;
+        }
+        return ing;
+      })
+    };
+
+    setTcV2(updatedTcV2);
+    await performRecalculation(updatedTcV2);
+  };
+
   // ============== UPLOAD FUNCTIONS (Task 1.2) ==============
   
   const openUploadModal = (type) => {
