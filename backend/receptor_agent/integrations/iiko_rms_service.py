@@ -102,11 +102,12 @@ class IikoRmsService:
                 session_expires_at=datetime.now(timezone.utc) + timedelta(hours=2)
             )
             
-            # Upsert credentials
+            # Upsert credentials - exclude _id to avoid conflicts
             query = {"user_id": user_id} if user_id else {"host": host, "login": login}
+            credentials_data = credentials.model_dump(by_alias=True, exclude={"_id"})
             self.credentials.replace_one(
                 query,
-                credentials.model_dump(by_alias=True),
+                credentials_data,
                 upsert=True
             )
             
