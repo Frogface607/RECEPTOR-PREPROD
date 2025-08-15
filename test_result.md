@@ -175,6 +175,18 @@ frontend:
         agent: "testing"
         comment: "MAPPING INTERFACE NOT IMPLEMENTED: Missing Цены tab in ingredient mapping modal, debounced search with /catalog-search?source=price, skuId assignment functionality, and recalc integration after price mapping."
 
+  - task: "IIKo CSV Export Feature (Task iiko-csv-export)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/routes/techcards_v2.py, backend/receptor_agent/exports/iiko_csv_export.py, frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 FEATURE NOT IMPLEMENTED: Testing agent analysis shows that the iiko CSV export feature described in review request has NOT been implemented yet. REQUIRED COMPONENTS MISSING: 1) Backend endpoint POST /api/v1/techcards.v2/export/iiko.csv that generates ZIP with products.csv and recipes.csv files, 2) CSV generation with UTF-8 BOM encoding and semicolon delimiter, 3) Specific column structure (products.csv: sku;name;unit;price_per_unit;currency;vat_pct;category | recipes.csv: dish_code;dish_name;output_qty;output_unit;ingredient_sku;qty_net;loss_pct;unit), 4) SKU validation with noSku issues, 5) Frontend button 'iiko CSV (для импорта)' next to existing XLSX export. CURRENT STATE: Only /techcards.v2/export/iiko exists for XLSX format. MAIN AGENT MUST IMPLEMENT THIS FEATURE FIRST."
+
   - task: "P1-Prices Implementation (Task P1-Prices)"
     implemented: true
     working: true
