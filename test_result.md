@@ -2219,9 +2219,6 @@ test_plan:
     - "IK-02 Database Collections (IK-02 DB)"
     - "IK-02 Catalog Search Enhancement (IK-02 Search)"
     - "IK-02 Ingredient Matching System (IK-02 Matcher)"
-    - "IK-02 Settings Integration Interface (IK-02 Frontend Settings)"
-    - "IK-02 Tech Card Ingredient Mapping (IK-02 Frontend Mapping)"
-    - "IK-02 Price Coverage and Recalc Integration (IK-02 Frontend Recalc)"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
