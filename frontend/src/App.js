@@ -13621,6 +13621,16 @@ function App() {
                 💰 Цены
               </button>
               <button
+                onClick={() => setMappingActiveTab('iiko')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  mappingActiveTab === 'iiko' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                🏪 iiko
+              </button>
+              <button
                 onClick={() => setMappingActiveTab('catalog')}
                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                   mappingActiveTab === 'catalog' 
