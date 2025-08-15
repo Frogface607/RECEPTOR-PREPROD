@@ -211,6 +211,42 @@ backend:
         comment: "PARTIAL IMPLEMENTATION: catalog-search endpoint has basic price support but missing full P1-Prices specification. Missing proper source=price response format with {source, name, skuId, unit, price_per_unit, currency, asOf} structure and priority-based sorting."
 
 frontend:
+  - task: "IK-02 Settings Integration Interface (IK-02 Frontend Settings)"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 SETTINGS INTERFACE NOT IMPLEMENTED: Missing Настройки → Интеграции → iikoCloud interface with API Login input, organization selection, sync button, and status display as specified in IK-02 review."
+
+  - task: "IK-02 Tech Card Ingredient Mapping (IK-02 Frontend Mapping)"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 INGREDIENT MAPPING NOT IMPLEMENTED: Missing iiko SKU badges on ingredients, iiko tab in mapping modal with search functionality, and price source indicators as specified in IK-02 review."
+
+  - task: "IK-02 Price Coverage and Recalc Integration (IK-02 Frontend Recalc)"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 RECALC INTEGRATION NOT IMPLEMENTED: Missing costMeta.source='iiko' handling, stale price warnings for asOf > 30 days, and recalc workflow after iiko SKU assignment as specified in IK-02 review."
+
   - task: "Price Coverage Chip and UI Integration (Task P1-UI)"
     implemented: false
     working: "NA"
