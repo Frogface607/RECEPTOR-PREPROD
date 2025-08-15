@@ -5626,7 +5626,7 @@ async def iiko_health_check_legacy():
             }
         )
 
-@api_router.get("/iiko/organizations")
+@api_router.get("/iiko/organizations-legacy")
 async def get_iiko_organizations():
     """Fetch all available organizations from IIKo"""
     logger.info("Fetching IIKo organizations")
