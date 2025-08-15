@@ -139,6 +139,44 @@ def export_tc_v2_to_iiko(card: TechCardV2):
         print(f"iiko export error: {e}")
         raise HTTPException(500, f"Export failed: {str(e)}")
 
+@router.post("/techcards.v2/export/iiko.csv")
+def export_tc_v2_to_iiko_csv(card: TechCardV2):
+    """Экспорт техкарты в формат iiko CSV (ZIP с products.csv и recipes.csv для импорта)"""
+    if not _flag():
+        raise HTTPException(404, "feature disabled")
+    
+    try:
+        from ..exports.iiko_csv import generate_iiko_import_csv_zip
+        
+        # Генерируем ZIP с CSV файлами
+        zip_buffer, issues = generate_iiko_import_csv_zip([card])
+        
+        # Создаем безопасное имя файла  
+        import re
+        safe_title = re.sub(r'[^\w\s-]', '', card.meta.title)  # Remove special chars
+        safe_title = re.sub(r'[а-яё]', '', safe_title, flags=re.IGNORECASE)  # Remove Cyrillic  
+        safe_title = re.sub(r'\s+', '_', safe_title.strip())  # Replace spaces with underscores
+        if not safe_title:  # If title becomes empty, use default
+            safe_title = "techcard"
+        filename = f"iiko_export_{safe_title}.zip"
+        
+        # Логируем issues если есть (особенно noSku warnings)
+        if issues:
+            print(f"iiko CSV export issues: {issues}")
+            # Добавляем issues в response headers для frontend
+            issues_json = json.dumps([{"type": issue["type"], "name": issue["name"], "hint": issue["hint"]} for issue in issues])
+        
+        zip_buffer.seek(0)
+        return StreamingResponse(
+            iter([zip_buffer.read()]),
+            media_type="application/zip",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    
+    except Exception as e:
+        print(f"iiko CSV export error: {e}")
+        raise HTTPException(500, f"Export failed: {str(e)}")
+
 @router.get("/techcards.v2/catalog-search")
 def search_catalog(
     q: str = Query(..., description="Search query"), 
