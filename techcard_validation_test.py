@@ -183,7 +183,12 @@ class TechCardV2ValidationTester:
                         
                         # Test 2.3: No validation errors in response
                         issues = data.get("issues", [])
-                        validation_errors = [issue for issue in issues if "validation" in issue.get("type", "").lower()]
+                        validation_errors = []
+                        for issue in issues:
+                            if isinstance(issue, dict) and "validation" in issue.get("type", "").lower():
+                                validation_errors.append(issue)
+                            elif isinstance(issue, str) and "validation" in issue.lower():
+                                validation_errors.append(issue)
                         
                         if len(validation_errors) == 0:
                             self.log_test("Alternative Dish - No Validation Errors", True, 
