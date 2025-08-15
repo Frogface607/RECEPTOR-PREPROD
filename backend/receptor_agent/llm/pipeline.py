@@ -442,6 +442,13 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         # Шаг 2: Нормализуем черновик до финального TechCardV2 с constraints
         normalized_data = normalize_to_v2(draft_data, constraints if constraints else None)
         
+        # Шаг 2.5: ВАЖНО - Инициализируем nutrition и cost как пустые объекты перед валидацией
+        # Это предотвращает validation errors "Input should be a valid dictionary"
+        if normalized_data.get("nutrition") is None:
+            normalized_data["nutrition"] = NutritionV2().model_dump()
+        if normalized_data.get("cost") is None:
+            normalized_data["cost"] = CostV2().model_dump()
+        
         # Собираем ID подрецептов из нормализованных данных
         sub_recipe_ids = collect_sub_recipe_ids(normalized_data)
         
