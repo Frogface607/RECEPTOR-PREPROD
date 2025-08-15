@@ -5591,9 +5591,9 @@ async def _export_project_to_pdf(export_data: dict) -> str:
 # IIKo INTEGRATION ENDPOINTS
 # ============================================
 
-@api_router.get("/iiko/health")
-async def iiko_health_check():
-    """Health check endpoint for IIKo API connectivity"""
+@api_router.get("/iiko/health-legacy")
+async def iiko_health_check_legacy():
+    """Legacy health check endpoint for IIKo API connectivity"""
     try:
         # Check if we're using iikoServer API or legacy Cloud API
         if isinstance(iiko_auth_manager, IikoServerAuthManager):
