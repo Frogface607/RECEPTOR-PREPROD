@@ -3250,6 +3250,364 @@ function App() {
     setAutoMappingResults(updatedResults);
   };
 
+  // ============== EXPORT WIZARD FUNCTIONS (IK-02B-FE/03) ==============
+  
+  const startExportWizard = () => {
+    if (!tcV2) {
+      setExportMessage({ type: 'error', text: 'Нет техкарты для экспорта' });
+      return;
+    }
+
+    // Create backup for undo
+    setTcV2Backup(JSON.parse(JSON.stringify(tcV2)));
+    
+    // Reset wizard state
+    setExportWizardStep(1);
+    setExportWizardData({
+      preCheckResults: null,
+      autoMappingResults: null,
+      coverageBefore: null,
+      coverageAfter: null,
+      exportUrl: null,
+      stepTimings: { start: Date.now() }
+    });
+    setExportMessage({ type: '', text: '' });
+    
+    // Perform pre-checks
+    performPreChecks();
+    
+    setShowExportWizard(true);
+  };
+
+  const performPreChecks = () => {
+    const startTime = Date.now();
+    
+    try {
+      const results = {
+        iikoConnected: iikoRmsConnection.status === 'connected',
+        iikoItemsCount: iikoRmsConnection.products_count || 0,
+        priceCoverage: tcV2.costMeta?.coveragePct || 0,
+        nutritionCoverage: tcV2.nutritionMeta?.coveragePct || 0,
+        issuesCount: tcV2.issues?.length || 0,
+        ingredientsCount: tcV2.ingredients?.length || 0,
+        ingredientsWithoutSku: tcV2.ingredients?.filter(ing => !ing.skuId).length || 0,
+        blockers: [],
+        warnings: []
+      };
+      
+      // Check for blockers
+      if (!results.iikoConnected) {
+        results.blockers.push('Нет подключения к iiko RMS');
+      }
+      
+      if (tcV2.status !== 'success' && tcV2.issues?.some(issue => 
+        issue.type === 'ruleError' || issue.type === 'missingAnchor'
+      )) {
+        results.blockers.push('Критические ошибки в техкарте');
+      }
+      
+      // Check for warnings
+      if (tcV2.ingredients?.some(ing => ing.unit !== ing.expectedUnit)) {
+        results.warnings.push('Несоответствие единиц измерения');
+      }
+      
+      if (results.priceCoverage < 90) {
+        results.warnings.push(`Низкое покрытие цен: ${results.priceCoverage}%`);
+      }
+      
+      if (results.nutritionCoverage < 90) {
+        results.warnings.push(`Низкое покрытие БЖУ: ${results.nutritionCoverage}%`);
+      }
+      
+      setExportWizardData(prev => ({
+        ...prev,
+        preCheckResults: results,
+        coverageBefore: {
+          price: results.priceCoverage,
+          nutrition: results.nutritionCoverage
+        },
+        stepTimings: { 
+          ...prev.stepTimings, 
+          preCheck: Date.now() - startTime 
+        }
+      }));
+      
+    } catch (error) {
+      console.error('Pre-check error:', error);
+      setExportMessage({ 
+        type: 'error', 
+        text: `Ошибка предпроверки: ${error.message}` 
+      });
+    }
+  };
+
+  const runExportAutoMapping = async () => {
+    setIsExportProcessing(true);
+    setExportMessage({ type: 'info', text: '🔄 Выполняется автомаппинг...' });
+    
+    const startTime = Date.now();
+    
+    try {
+      // Reuse auto-mapping logic from IK-02B-FE/02
+      const mappingResults = [];
+      
+      for (let i = 0; i < tcV2.ingredients.length; i++) {
+        const ingredient = tcV2.ingredients[i];
+        
+        // Skip if ingredient already has SKU (preserve existing)
+        if (ingredient.skuId) {
+          mappingResults.push({
+            index: i,
+            ingredient: ingredient,
+            currentSku: ingredient.skuId,
+            suggestion: null,
+            confidence: 0,
+            status: 'skipped',
+            reason: 'Уже есть SKU'
+          });
+          continue;
+        }
+        
+        try {
+          const response = await axios.get(`${API}/v1/techcards.v2/catalog-search`, {
+            params: {
+              q: ingredient.name,
+              source: 'rms',
+              limit: 5
+            }
+          });
+          
+          const candidates = response.data.items || [];
+          
+          if (candidates.length > 0) {
+            const bestCandidate = candidates[0];
+            const confidence = Math.round((bestCandidate.match_score || 0) * 100);
+            
+            mappingResults.push({
+              index: i,
+              ingredient: ingredient,
+              suggestion: bestCandidate,
+              confidence: confidence,
+              status: confidence >= 90 ? 'auto_accept' : 'low_confidence',
+              unitMismatch: ingredient.unit !== bestCandidate.unit
+            });
+          } else {
+            mappingResults.push({
+              index: i,
+              ingredient: ingredient,
+              suggestion: null,
+              confidence: 0,
+              status: 'no_match'
+            });
+          }
+        } catch (error) {
+          mappingResults.push({
+            index: i,
+            ingredient: ingredient,
+            suggestion: null,
+            confidence: 0,
+            status: 'error'
+          });
+        }
+      }
+      
+      // Apply auto-accepted mappings
+      const autoAcceptedResults = mappingResults.filter(r => r.status === 'auto_accept');
+      
+      if (autoAcceptedResults.length > 0) {
+        const updatedTcV2 = { ...tcV2 };
+        
+        autoAcceptedResults.forEach(result => {
+          if (result.suggestion) {
+            updatedTcV2.ingredients[result.index] = {
+              ...updatedTcV2.ingredients[result.index],
+              skuId: result.suggestion.sku_id,
+              source: 'rms'
+            };
+          }
+        });
+        
+        setTcV2(updatedTcV2);
+        
+        // Perform recalculation
+        await performRecalculation(updatedTcV2);
+        
+        // Update coverage after mapping
+        const coverageAfter = {
+          price: updatedTcV2.costMeta?.coveragePct || 0,
+          nutrition: updatedTcV2.nutritionMeta?.coveragePct || 0
+        };
+        
+        setExportWizardData(prev => ({
+          ...prev,
+          autoMappingResults: mappingResults,
+          coverageAfter: coverageAfter,
+          stepTimings: { 
+            ...prev.stepTimings, 
+            autoMapping: Date.now() - startTime 
+          }
+        }));
+        
+        setExportMessage({ 
+          type: 'success', 
+          text: `✅ Автомаппинг завершен: ${autoAcceptedResults.length} позиций замаплено` 
+        });
+      } else {
+        setExportWizardData(prev => ({
+          ...prev,
+          autoMappingResults: mappingResults,
+          coverageAfter: prev.coverageBefore,
+          stepTimings: { 
+            ...prev.stepTimings, 
+            autoMapping: Date.now() - startTime 
+          }
+        }));
+        
+        setExportMessage({ 
+          type: 'warning', 
+          text: '⚠ Автомаппинг не нашел подходящих совпадений' 
+        });
+      }
+      
+      // Auto-advance to next step
+      setExportWizardStep(3);
+      
+    } catch (error) {
+      console.error('Export auto-mapping error:', error);
+      setExportMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка автомаппинга: ${error.message}` 
+      });
+    } finally {
+      setIsExportProcessing(false);
+    }
+  };
+
+  const openGostPreview = async () => {
+    const startTime = Date.now();
+    
+    try {
+      setExportMessage({ type: 'info', text: '🔄 Подготовка ГОСТ-превью...' });
+      
+      const response = await fetch(`${API}/v1/techcards.v2/print`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tcV2)
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        
+        setExportWizardData(prev => ({
+          ...prev,
+          stepTimings: { 
+            ...prev.stepTimings, 
+            gostPreview: Date.now() - startTime 
+          }
+        }));
+        
+        setExportMessage({ 
+          type: 'success', 
+          text: '✅ ГОСТ-превью открыто в новой вкладке' 
+        });
+      } else {
+        throw new Error('Ошибка генерации ГОСТ-превью');
+      }
+      
+    } catch (error) {
+      console.error('GOST preview error:', error);
+      setExportMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка ГОСТ-превью: ${error.message}` 
+      });
+    }
+  };
+
+  const performIikoExport = async () => {
+    const startTime = Date.now();
+    
+    try {
+      setIsExportProcessing(true);
+      setExportMessage({ type: 'info', text: '🔄 Создание файла для iiko...' });
+      
+      const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tcV2)
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        // Trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `iiko_ttk_${tcV2.name?.replace(/\s+/g, '_') || 'techcard'}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setExportWizardData(prev => ({
+          ...prev,
+          exportUrl: url,
+          stepTimings: { 
+            ...prev.stepTimings, 
+            export: Date.now() - startTime 
+          }
+        }));
+        
+        setExportMessage({ 
+          type: 'success', 
+          text: '✅ Файл экспортирован! Импортируйте его в iikoWeb → Технологические карты → Импорт' 
+        });
+        
+        // Auto-advance to final step
+        setExportWizardStep(4);
+        
+      } else {
+        throw new Error('Ошибка создания файла экспорта');
+      }
+      
+    } catch (error) {
+      console.error('iiko export error:', error);
+      setExportMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка экспорта: ${error.message}` 
+      });
+    } finally {
+      setIsExportProcessing(false);
+    }
+  };
+
+  const undoExportChanges = async () => {
+    if (!tcV2Backup) {
+      setExportMessage({ type: 'error', text: 'Нет данных для отката' });
+      return;
+    }
+
+    setExportMessage({ type: 'info', text: '🔄 Откат изменений...' });
+    
+    try {
+      setTcV2(tcV2Backup);
+      await performRecalculation(tcV2Backup);
+      
+      setExportMessage({ 
+        type: 'success', 
+        text: '✅ Изменения отменены' 
+      });
+      
+    } catch (error) {
+      console.error('Export undo error:', error);
+      setExportMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка отката: ${error.message}` 
+      });
+    }
+  };
+
   // ============== NEW CATEGORY MANAGEMENT FUNCTIONS ==============
   
   const fetchAllIikoCategories = async (organizationId) => {
