@@ -281,7 +281,10 @@ class TechCardV2ValidationTester:
                     
                     # Test 3.4: Stale price issues generation
                     issues = data.get("issues", [])
-                    stale_price_issues = [issue for issue in issues if issue.get("type") == "stalePrice"]
+                    stale_price_issues = []
+                    for issue in issues:
+                        if isinstance(issue, dict) and issue.get("type") == "stalePrice":
+                            stale_price_issues.append(issue)
                     
                     # This is optional - stale prices may or may not be present
                     if len(stale_price_issues) > 0:
