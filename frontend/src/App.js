@@ -3142,19 +3142,6 @@ function App() {
     setAutoMappingResults(updatedResults);
   };
 
-  const performRecalculation = async (tcV2Data) => {
-    try {
-      const response = await axios.post(`${API}/v1/techcards.v2/recalc`, tcV2Data);
-      if (response.data) {
-        return response.data;
-      }
-      throw new Error('Empty response from recalc API');
-    } catch (error) {
-      console.error('Recalculation error:', error);
-      throw error;
-    }
-  };
-
   const applyAutoMappingChanges = async () => {
     const acceptedResults = autoMappingResults.filter(r => r.status === 'accepted' || r.status === 'auto_accept');
     
