@@ -51,7 +51,7 @@ class RmsProductSearchResponse(BaseModel):
     name: str = Field(description="Product name")
     article: Optional[str] = Field(None, description="Product article")
     unit: str = Field(description="Product unit")
-    price_per_unit: float = Field(description="Price per unit")
+    price_per_unit: Optional[float] = Field(None, description="Price per unit")
     currency: str = Field(description="Price currency")
     asOf: str = Field(description="Sync date")
     match_score: float = Field(description="Match score (0-1)")
