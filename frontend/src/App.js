@@ -47,6 +47,20 @@ function App() {
   const [autoMappingMessage, setAutoMappingMessage] = useState({ type: '', text: '' });
   const [preserveExistingSku, setPreserveExistingSku] = useState(true);
   const [tcV2Backup, setTcV2Backup] = useState(null); // For undo functionality
+  
+  // Export wizard states (IK-02B-FE/03)
+  const [showExportWizard, setShowExportWizard] = useState(false);
+  const [exportWizardStep, setExportWizardStep] = useState(1); // 1-4
+  const [exportWizardData, setExportWizardData] = useState({
+    preCheckResults: null,
+    autoMappingResults: null,
+    coverageBefore: null,
+    coverageAfter: null,
+    exportUrl: null,
+    stepTimings: {}
+  });
+  const [isExportProcessing, setIsExportProcessing] = useState(false);
+  const [exportMessage, setExportMessage] = useState({ type: '', text: '' });
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
