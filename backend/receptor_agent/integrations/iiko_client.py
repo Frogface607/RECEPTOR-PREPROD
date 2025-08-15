@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 from pyiikocloudapi import IikoTransport
-from pyiikocloudapi.models import OrganizationsModel, NomenclatureModel
+from pyiikocloudapi.models import BaseOrganizationsModel, BaseNomenclatureModel
 from requests.exceptions import RequestException, Timeout, ConnectionError
 import traceback
 
