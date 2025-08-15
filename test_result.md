@@ -2214,11 +2214,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "IikoClient Class Implementation (IK-02 Backend)"
-    - "IK-02 REST Endpoints Implementation (IK-02 API)"
-    - "IK-02 Database Collections (IK-02 DB)"
-    - "IK-02 Catalog Search Enhancement (IK-02 Search)"
-    - "IK-02 Ingredient Matching System (IK-02 Matcher)"
+    - "IikoRmsClient Class Implementation (IK-02B RMS Backend)"
+    - "IK-02B RMS REST Endpoints Implementation (IK-02B RMS API)"
+    - "IK-02B RMS Database Collections (IK-02B RMS DB)"
+    - "IK-02B RMS Catalog Search Enhancement (IK-02B RMS Search)"
+    - "IK-02B RMS Auto-Mapping System (IK-02B RMS Mapper)"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
