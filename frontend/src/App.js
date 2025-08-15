@@ -4686,6 +4686,52 @@ function App() {
     }
   };
 
+  const handleIikoCsvExport = async () => {
+    if (!tcV2) {
+      setGenerationError('Сначала создайте техкарту');
+      setGenerationStatus('error');
+      return;
+    }
+
+    try {
+      console.log('Sending IIKo CSV export request to V2 endpoint');
+      const response = await fetch(`${API}/v1/techcards.v2/export/iiko.csv`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tcV2)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Handle ZIP file download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `iiko_export_${(tcV2.meta?.title || 'techcard').replace(/\s+/g, '_')}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      console.log('IIKo CSV export ZIP file downloaded successfully');
+      
+      // Show success message
+      setGenerationError(null);
+      setGenerationStatus('success');
+
+    } catch (error) {
+      console.error('Error exporting to IIKo CSV:', error);
+      setGenerationError('Ошибка при экспорте CSV в iiko: ' + error.message);
+      setGenerationStatus('error');
+    }
+  };
+
   const generateMenu = async () => {
     try {
       setIsGenerating(true);
