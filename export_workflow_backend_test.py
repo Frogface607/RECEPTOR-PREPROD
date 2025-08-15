@@ -301,8 +301,8 @@ class ExportWorkflowTester:
                     gost_indicators = [
                         "ТЕХНОЛОГИЧЕСКАЯ КАРТА",
                         "Говядина тушеная с овощами",
-                        "Ингредиенты",
-                        "Процесс приготовления"
+                        "СОСТАВ И РАСХОД СЫРЬЯ",
+                        "ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС"
                     ]
                     
                     missing_indicators = [indicator for indicator in gost_indicators 
