@@ -405,13 +405,14 @@ def search_catalog(
         # Объединяем результаты с приоритетом: Price → iiko → USDA → остальные
         all_results = price_results + iiko_results + usda_results + catalog_results
         
-        # Сортируем по релевантности: Price → USDA → точные совпадения → остальные
+        # Сортируем по релевантности: Price → iiko → USDA → точные совпадения → остальные
         def sort_key(x):
             source_priority = {
-                "user": 0, "catalog": 1, "bootstrap": 2,  # Price sources 
-                "usda": 3,                                  # USDA
-                "catalog": 4                               # Other catalog
-            }.get(x.get("source", "unknown"), 5)
+                "user": 0, "catalog": 1, "bootstrap": 2,  # Price sources
+                "iiko": 3,                                  # iiko
+                "usda": 4,                                  # USDA
+                "catalog": 5                               # Other catalog
+            }.get(x.get("source", "unknown"), 6)
             name_match = 0 if query in x["name"].lower() else 1
             return (source_priority, name_match, -len(x["name"]), x["name"].lower())
         
