@@ -62,6 +62,28 @@ function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);
   
+  // iiko RMS integration states (IK-02B-FE/01)
+  const [showIikoRmsModal, setShowIikoRmsModal] = useState(false);
+  const [iikoRmsConnection, setIikoRmsConnection] = useState({
+    status: 'not_connected', // 'not_connected', 'connected', 'error'
+    host: '',
+    login: '',
+    organization_name: '',
+    last_connection: null,
+    sync_status: 'never_synced', // 'never_synced', 'syncing', 'completed', 'failed'
+    products_count: 0,
+    last_sync: null,
+    error_message: ''
+  });
+  const [iikoRmsCredentials, setIikoRmsCredentials] = useState({
+    host: 'edison-bar.iiko.it',
+    login: '',
+    password: ''
+  });
+  const [isConnectingIikoRms, setIsConnectingIikoRms] = useState(false);
+  const [isSyncingIikoRms, setIsSyncingIikoRms] = useState(false);
+  const [iikoRmsMessage, setIikoRmsMessage] = useState({ type: '', text: '' });
+  
   // Inline editing states for Task 0.1
   const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
   const [editingData, setEditingData] = useState({});
