@@ -3190,24 +3190,15 @@ function App() {
 
     setAutoMappingMessage({ type: 'info', text: '🔄 Откат изменений...' });
     
-    try {
-      setTcV2(tcV2Backup);
-      await performRecalculation(tcV2Backup);
-      
-      setAutoMappingMessage({ 
-        type: 'success', 
-        text: '✅ Изменения отменены. Техкарта восстановлена.' 
-      });
-      
-      setTcV2Backup(null);
-      
-    } catch (error) {
-      console.error('Undo error:', error);
-      setAutoMappingMessage({ 
-        type: 'error', 
-        text: `❌ Ошибка отката: ${error.message}` 
-      });
-    }
+    setTcV2(tcV2Backup);
+    await performRecalculation(tcV2Backup);
+    
+    setAutoMappingMessage({ 
+      type: 'success', 
+      text: '✅ Изменения отменены. Техкарта восстановлена.' 
+    });
+    
+    setTcV2Backup(null);
   };
 
   const getFilteredAutoMappingResults = () => {
