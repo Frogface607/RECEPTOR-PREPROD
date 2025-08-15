@@ -6665,6 +6665,8 @@ if os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on")
     app.include_router(haccp_v2_router, prefix="/api/v1", tags=["haccp.v2"])
     from receptor_agent.routes.iiko_v2 import router as iiko_v2_router
     app.include_router(iiko_v2_router, tags=["iikoCloud.v2"])
+    from receptor_agent.routes.iiko_rms_v2 import router as iiko_rms_v2_router
+    app.include_router(iiko_rms_v2_router, tags=["iikoRMS.v2"])
 
 # Add a catch-all OPTIONS handler for CORS preflight
 @app.options("/{full_path:path}")
