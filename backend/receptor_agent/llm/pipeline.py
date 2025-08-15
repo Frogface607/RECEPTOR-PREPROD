@@ -2,7 +2,7 @@ from __future__ import annotations
 import os, json
 from typing import Dict, Any, List, Set
 from pydantic import BaseModel
-from receptor_agent.techcards_v2.schemas import TechCardV2
+from receptor_agent.techcards_v2.schemas import TechCardV2, NutritionV2, CostV2
 from receptor_agent.techcards_v2.validators import validate_card
 from receptor_agent.techcards_v2.strict_validator import validate_techcard_v2, create_draft_response
 from receptor_agent.techcards_v2.normalize import normalize_card
