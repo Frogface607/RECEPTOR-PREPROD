@@ -402,8 +402,8 @@ def search_catalog(
             
             catalog_results = list(all_items.values())
         
-        # Объединяем результаты с приоритетом: Price → USDA → остальные
-        all_results = price_results + usda_results + catalog_results
+        # Объединяем результаты с приоритетом: Price → iiko → USDA → остальные
+        all_results = price_results + iiko_results + usda_results + catalog_results
         
         # Сортируем по релевантности: Price → USDA → точные совпадения → остальные
         def sort_key(x):
