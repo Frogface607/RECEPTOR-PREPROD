@@ -13,7 +13,7 @@ import httpx
 import asyncio
 
 # Get backend URL from environment
-BACKEND_URL = "https://ai-recipe-pro.preview.emergentagent.com/api"
+BACKEND_URL = "https://chef-tech-cards.preview.emergentagent.com/api"
 
 # IIKo credentials from user
 IIKO_LOGIN = "Sergey"

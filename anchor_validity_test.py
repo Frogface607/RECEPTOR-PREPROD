@@ -38,7 +38,7 @@ except ImportError as e:
     BACKEND_IMPORTS_AVAILABLE = False
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://ai-recipe-pro.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://chef-tech-cards.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class AnchorValidityTester:

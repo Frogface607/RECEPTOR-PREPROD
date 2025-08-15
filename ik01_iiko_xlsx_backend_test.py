@@ -14,7 +14,7 @@ from typing import Dict, List, Any, Tuple
 import tempfile
 
 # Backend URL from environment
-BACKEND_URL = "https://79c78f83-f996-4516-a100-f9b16f891225.preview.emergentagent.com/api"
+BACKEND_URL = "https://chef-tech-cards.preview.emergentagent.com/api"
 
 class IK01IikoXLSXTester:
     """Comprehensive tester for IK-01 iiko XLSX Export implementation"""

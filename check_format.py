@@ -6,7 +6,7 @@ import requests
 import json
 
 def test_tech_card_content():
-    base_url = "https://ai-recipe-pro.preview.emergentagent.com/api"
+    base_url = "https://chef-tech-cards.preview.emergentagent.com/api"
     
     # Register user
     data = {

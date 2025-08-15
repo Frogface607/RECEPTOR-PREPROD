@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://ai-recipe-pro.preview.emergentagent.com/api"
+BACKEND_URL = "https://chef-tech-cards.preview.emergentagent.com/api"
 
 def print_test_header(test_name):
     """Print formatted test header"""
