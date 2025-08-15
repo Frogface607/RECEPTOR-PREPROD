@@ -14211,6 +14211,177 @@ function App() {
         </div>
       )}
 
+      {/* iiko RMS Integration Modal (IK-02B-FE/01) */}
+      {showIikoRmsModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-purple-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">🏪 iiko RMS</h2>
+                  <p className="text-gray-400">Подключение к системе ресторана для синхронизации номенклатуры</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowIikoRmsModal(false);
+                    setIikoRmsMessage({ type: '', text: '' });
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Message Banner */}
+              {iikoRmsMessage.text && (
+                <div className={`p-4 rounded-xl border ${
+                  iikoRmsMessage.type === 'success' ? 'bg-green-900/50 border-green-400/30 text-green-300' :
+                  iikoRmsMessage.type === 'error' ? 'bg-red-900/50 border-red-400/30 text-red-300' :
+                  'bg-blue-900/50 border-blue-400/30 text-blue-300'
+                }`}>
+                  {iikoRmsMessage.text}
+                </div>
+              )}
+              
+              {/* Connection Status */}
+              <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600/50">
+                <h3 className="text-lg font-semibold text-purple-300 mb-3">📊 Статус подключения</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Статус:</span>
+                    <span className={`font-semibold ${
+                      iikoRmsConnection.status === 'connected' ? 'text-green-300' :
+                      iikoRmsConnection.status === 'error' ? 'text-red-300' :
+                      'text-gray-300'
+                    }`}>
+                      {iikoRmsConnection.status === 'connected' ? '✅ Подключено' :
+                       iikoRmsConnection.status === 'error' ? '❌ Ошибка' :
+                       '⚪ Не подключено'}
+                    </span>
+                  </div>
+                  {iikoRmsConnection.organization_name && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Организация:</span>
+                      <span className="text-white">{iikoRmsConnection.organization_name}</span>
+                    </div>
+                  )}
+                  {iikoRmsConnection.last_connection && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Подключение:</span>
+                      <span className="text-white">{new Date(iikoRmsConnection.last_connection).toLocaleString('ru-RU')}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Синхронизация:</span>
+                    <span className={`font-semibold ${
+                      iikoRmsConnection.sync_status === 'completed' ? 'text-green-300' :
+                      iikoRmsConnection.sync_status === 'syncing' ? 'text-yellow-300' :
+                      iikoRmsConnection.sync_status === 'failed' ? 'text-red-300' :
+                      'text-gray-300'
+                    }`}>
+                      {iikoRmsConnection.sync_status === 'completed' ? '✅ Завершена' :
+                       iikoRmsConnection.sync_status === 'syncing' ? '🔄 Выполняется' :
+                       iikoRmsConnection.sync_status === 'failed' ? '❌ Ошибка' :
+                       '⚪ Не выполнялась'}
+                    </span>
+                  </div>
+                  {iikoRmsConnection.products_count > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Позиций в каталоге:</span>
+                      <span className="text-white font-semibold">{iikoRmsConnection.products_count.toLocaleString('ru-RU')}</span>
+                    </div>
+                  )}
+                  {iikoRmsConnection.last_sync && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Последняя синхронизация:</span>
+                      <span className="text-white">{new Date(iikoRmsConnection.last_sync).toLocaleString('ru-RU')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Connection Form */}
+              <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600/50">
+                <h3 className="text-lg font-semibold text-purple-300 mb-3">🔗 Настройки подключения</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Хост сервера iiko RMS
+                    </label>
+                    <input
+                      type="text"
+                      value={iikoRmsCredentials.host}
+                      onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, host: e.target.value }))}
+                      placeholder="edison-bar.iiko.it"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Логин
+                    </label>
+                    <input
+                      type="text"
+                      value={iikoRmsCredentials.login}
+                      onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, login: e.target.value }))}
+                      placeholder="Введите логин"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Пароль
+                    </label>
+                    <input
+                      type="password"
+                      value={iikoRmsCredentials.password}
+                      onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Введите пароль"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={connectToIikoRms}
+                      disabled={isConnectingIikoRms || !iikoRmsCredentials.host || !iikoRmsCredentials.login || !iikoRmsCredentials.password}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                    >
+                      {isConnectingIikoRms ? '⏳ Подключение...' : '🔗 Подключить'}
+                    </button>
+                    
+                    <button
+                      onClick={syncIikoRmsNomenclature}
+                      disabled={isSyncingIikoRms || iikoRmsConnection.status !== 'connected'}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                    >
+                      {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизировать'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Security Notice */}
+              <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🔒</span>
+                  <div className="text-sm text-yellow-300">
+                    <div className="font-semibold">Безопасность данных</div>
+                    <div className="text-yellow-400/80">
+                      Пароль не сохраняется в браузере. Подключение происходит напрямую к вашему серверу iiko RMS.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Debug Panel - show if debug=1 in URL */}
       {isDebugMode && (
         <div className="fixed bottom-4 right-4 bg-gray-900/95 backdrop-blur-lg border border-purple-400/30 rounded-lg p-3 text-xs font-mono max-w-sm">
