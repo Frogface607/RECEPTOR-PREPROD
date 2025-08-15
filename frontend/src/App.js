@@ -15473,6 +15473,371 @@ function App() {
         </div>
       )}
 
+      {/* Export Wizard Modal (IK-02B-FE/03) */}
+      {showExportWizard && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-emerald-400/20">
+            {/* Header with Progress */}
+            <div className="bg-gray-800/95 backdrop-blur-lg border-b border-emerald-400/20 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-emerald-300 mb-2">🚀 Экспорт в iiko (1 клик)</h2>
+                  <p className="text-gray-400">Автомаппинг → ГОСТ-превью → XLSX экспорт</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowExportWizard(false);
+                    setExportWizardStep(1);
+                    setExportMessage({ type: '', text: '' });
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              
+              {/* Progress Line */}
+              <div className="flex items-center space-x-4">
+                {[1, 2, 3, 4].map((step) => (
+                  <div key={step} className="flex items-center flex-1">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                      exportWizardStep > step ? 'bg-emerald-600 text-white' :
+                      exportWizardStep === step ? 'bg-emerald-500 text-white' :
+                      'bg-gray-600 text-gray-300'
+                    }`}>
+                      {exportWizardStep > step ? '✓' : step}
+                    </div>
+                    <div className={`ml-2 text-sm font-medium ${
+                      exportWizardStep >= step ? 'text-emerald-300' : 'text-gray-400'
+                    }`}>
+                      {step === 1 && 'Проверки'}
+                      {step === 2 && 'Автомаппинг'}
+                      {step === 3 && 'ГОСТ-превью'}
+                      {step === 4 && 'Экспорт'}
+                    </div>
+                    {step < 4 && (
+                      <div className={`flex-1 h-0.5 ml-4 ${
+                        exportWizardStep > step ? 'bg-emerald-600' : 'bg-gray-600'
+                      }`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Message Banner */}
+            {exportMessage.text && (
+              <div className={`p-4 border-b border-gray-600/50 ${
+                exportMessage.type === 'success' ? 'bg-green-900/30 text-green-300' :
+                exportMessage.type === 'error' ? 'bg-red-900/30 text-red-300' :
+                exportMessage.type === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
+                'bg-blue-900/30 text-blue-300'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span>{exportMessage.text}</span>
+                  {tcV2Backup && exportWizardStep >= 2 && (
+                    <button
+                      onClick={undoExportChanges}
+                      className="ml-4 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                    >
+                      ↶ Откатить изменения
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Step Content */}
+            <div className="flex-1 overflow-auto p-6">
+              {/* Step 1: Pre-checks */}
+              {exportWizardStep === 1 && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-emerald-300">📋 Предпроверки</h3>
+                  
+                  {exportWizardData.preCheckResults && (
+                    <div className="space-y-4">
+                      {/* Status Cards */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                          <div className="text-sm text-gray-400">iiko RMS</div>
+                          <div className={`font-bold ${exportWizardData.preCheckResults.iikoConnected ? 'text-green-300' : 'text-red-300'}`}>
+                            {exportWizardData.preCheckResults.iikoConnected ? '✅ Подключен' : '❌ Не подключен'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {exportWizardData.preCheckResults.iikoItemsCount} позиций
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                          <div className="text-sm text-gray-400">Цены</div>
+                          <div className={`font-bold ${exportWizardData.preCheckResults.priceCoverage >= 80 ? 'text-green-300' : 'text-yellow-300'}`}>
+                            {exportWizardData.preCheckResults.priceCoverage}%
+                          </div>
+                          <div className="text-xs text-gray-500">покрытие</div>
+                        </div>
+                        
+                        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                          <div className="text-sm text-gray-400">БЖУ</div>
+                          <div className={`font-bold ${exportWizardData.preCheckResults.nutritionCoverage >= 80 ? 'text-green-300' : 'text-yellow-300'}`}>
+                            {exportWizardData.preCheckResults.nutritionCoverage}%
+                          </div>
+                          <div className="text-xs text-gray-500">покрытие</div>
+                        </div>
+                        
+                        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                          <div className="text-sm text-gray-400">SKU</div>
+                          <div className={`font-bold ${exportWizardData.preCheckResults.ingredientsWithoutSku === 0 ? 'text-green-300' : 'text-orange-300'}`}>
+                            {exportWizardData.preCheckResults.ingredientsWithoutSku} без SKU
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            из {exportWizardData.preCheckResults.ingredientsCount}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Blockers */}
+                      {exportWizardData.preCheckResults.blockers.length > 0 && (
+                        <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-4">
+                          <div className="font-bold text-red-300 mb-2">🚫 Блокирующие проблемы:</div>
+                          <ul className="text-red-400 space-y-1">
+                            {exportWizardData.preCheckResults.blockers.map((blocker, index) => (
+                              <li key={index}>• {blocker}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {/* Warnings */}
+                      {exportWizardData.preCheckResults.warnings.length > 0 && (
+                        <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-4">
+                          <div className="font-bold text-yellow-300 mb-2">⚠ Предупреждения:</div>
+                          <ul className="text-yellow-400 space-y-1">
+                            {exportWizardData.preCheckResults.warnings.map((warning, index) => (
+                              <li key={index}>• {warning}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Step 2: Auto-mapping */}
+              {exportWizardStep === 2 && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-emerald-300">🔄 Автомаппинг</h3>
+                  
+                  {exportWizardData.autoMappingResults ? (
+                    <div className="space-y-4">
+                      <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <div className="text-2xl font-bold text-green-300">
+                              {exportWizardData.autoMappingResults.filter(r => r.status === 'auto_accept').length}
+                            </div>
+                            <div className="text-sm text-gray-400">Автоматически</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-yellow-300">
+                              {exportWizardData.autoMappingResults.filter(r => r.status === 'low_confidence').length}
+                            </div>
+                            <div className="text-sm text-gray-400">Требует проверки</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-red-300">
+                              {exportWizardData.autoMappingResults.filter(r => r.status === 'no_match').length}
+                            </div>
+                            <div className="text-sm text-gray-400">Без совпадений</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {exportWizardData.coverageAfter && (
+                        <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-4">
+                          <div className="text-blue-300 font-medium mb-2">📊 Изменение покрытия:</div>
+                          <div className="flex space-x-6">
+                            <div>
+                              <span className="text-gray-400">Цены: </span>
+                              <span className="text-blue-200">
+                                {exportWizardData.coverageBefore?.price || 0}% → {exportWizardData.coverageAfter.price}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">БЖУ: </span>
+                              <span className="text-blue-200">
+                                {exportWizardData.coverageBefore?.nutrition || 0}% → {exportWizardData.coverageAfter.nutrition}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-3xl mb-4">🔄</div>
+                      <div className="text-gray-400">Автомаппинг будет выполнен автоматически</div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Step 3: GOST Preview */}
+              {exportWizardStep === 3 && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-emerald-300">📄 ГОСТ-превью</h3>
+                  
+                  <div className="bg-gray-700/50 rounded-lg p-6 border border-gray-600/50">
+                    <div className="text-center space-y-4">
+                      <div className="text-6xl">📄</div>
+                      <div className="text-lg text-white">Готово к предпросмотру</div>
+                      <div className="text-gray-400">
+                        Откройте ГОСТ-печать для проверки данных перед экспортом
+                      </div>
+                      
+                      <button
+                        onClick={openGostPreview}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                      >
+                        📖 Открыть ГОСТ-печать
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Data Sources Info */}
+                  {tcV2 && (
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600/50">
+                      <div className="text-sm text-gray-400 mb-2">Источники данных:</div>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {tcV2.nutritionMeta && (
+                          <span className="bg-green-600 text-white px-2 py-1 rounded">
+                            БЖУ: {tcV2.nutritionMeta.source || 'Mixed'}
+                          </span>
+                        )}
+                        {tcV2.costMeta && (
+                          <span className="bg-yellow-600 text-white px-2 py-1 rounded">
+                            Цены: {tcV2.costMeta.source || 'Mixed'}
+                          </span>
+                        )}
+                        {tcV2.costMeta?.asOf && (
+                          <span className="bg-gray-600 text-white px-2 py-1 rounded">
+                            Обновлено: {new Date(tcV2.costMeta.asOf).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Step 4: Export */}
+              {exportWizardStep === 4 && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-emerald-300">📦 Экспорт завершен</h3>
+                  
+                  <div className="bg-green-900/30 border border-green-400/30 rounded-lg p-6">
+                    <div className="text-center space-y-4">
+                      <div className="text-6xl">✅</div>
+                      <div className="text-xl text-green-300 font-bold">Файл готов!</div>
+                      <div className="text-green-400">
+                        Файл экспортирован и готов к импорту в iikoWeb
+                      </div>
+                      
+                      <div className="bg-green-800/50 rounded-lg p-4 text-left">
+                        <div className="font-medium text-green-300 mb-2">📋 Инструкция по импорту:</div>
+                        <ol className="text-green-400 text-sm space-y-1 list-decimal list-inside">
+                          <li>Откройте iikoWeb → Администрирование</li>
+                          <li>Перейдите в раздел "Технологические карты"</li>
+                          <li>Нажмите "Импорт справочника"</li>
+                          <li>Выберите скачанный XLSX файл</li>
+                          <li>Проверьте результаты импорта</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <button
+                      onClick={() => handleIikoCSVExport()}
+                      className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mr-4"
+                    >
+                      📁 Альтернатива: CSV/ZIP
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Actions Panel */}
+            <div className="border-t border-gray-600/50 p-4 bg-gray-700/30">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-400">
+                  {exportWizardData.stepTimings.start && (
+                    <span>Время выполнения: {Math.round((Date.now() - exportWizardData.stepTimings.start) / 1000)}с</span>
+                  )}
+                </div>
+                
+                <div className="flex space-x-3">
+                  {exportWizardStep > 1 && exportWizardStep < 4 && (
+                    <button
+                      onClick={() => setExportWizardStep(exportWizardStep - 1)}
+                      className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      ← Назад
+                    </button>
+                  )}
+                  
+                  {exportWizardStep === 1 && exportWizardData.preCheckResults?.blockers.length === 0 && (
+                    <button
+                      onClick={() => {
+                        setExportWizardStep(2);
+                        runExportAutoMapping();
+                      }}
+                      disabled={isExportProcessing}
+                      className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      {isExportProcessing ? '⏳ Обработка...' : 'Запустить автомаппинг →'}
+                    </button>
+                  )}
+                  
+                  {exportWizardStep === 1 && exportWizardData.preCheckResults?.blockers.length > 0 && (
+                    <button
+                      onClick={() => setMappingModalOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      Открыть ручной маппинг
+                    </button>
+                  )}
+                  
+                  {exportWizardStep === 3 && (
+                    <button
+                      onClick={performIikoExport}
+                      disabled={isExportProcessing}
+                      className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      {isExportProcessing ? '⏳ Создание файла...' : 'Создать XLSX файл →'}
+                    </button>
+                  )}
+                  
+                  {exportWizardStep === 4 && (
+                    <button
+                      onClick={() => {
+                        setShowExportWizard(false);
+                        setExportWizardStep(1);
+                        setExportMessage({ type: '', text: '' });
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      ✅ Готово
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Debug Panel - show if debug=1 in URL */}
       {isDebugMode && (
         <div className="fixed bottom-4 right-4 bg-gray-900/95 backdrop-blur-lg border border-purple-400/30 rounded-lg p-3 text-xs font-mono max-w-sm">
