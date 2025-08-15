@@ -34,6 +34,9 @@ function App() {
   const [priceSearchQuery, setPriceSearchQuery] = useState('');
   const [priceSearchResults, setPriceSearchResults] = useState([]);
   const [isSearchingPrice, setIsSearchingPrice] = useState(false);
+  const [iikoSearchQuery, setIikoSearchQuery] = useState('');
+  const [iikoSearchResults, setIikoSearchResults] = useState([]);
+  const [isSearchingIiko, setIsSearchingIiko] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
