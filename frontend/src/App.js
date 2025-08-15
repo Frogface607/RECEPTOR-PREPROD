@@ -8898,6 +8898,60 @@ function App() {
                   </div>
                 </div>
                 
+                {/* AUTO-MAPPING STATUS BANNER (IK-02B-FE/02) */}
+                {autoMappingMessage.text && (
+                  <div className={`mb-4 p-4 rounded-lg border ${
+                    autoMappingMessage.type === 'success' ? 'bg-green-900/30 border-green-400/30 text-green-300' :
+                    autoMappingMessage.type === 'error' ? 'bg-red-900/30 border-red-400/30 text-red-300' :
+                    'bg-blue-900/30 border-blue-400/30 text-blue-300'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span>{autoMappingMessage.text}</span>
+                      {tcV2Backup && (
+                        <button
+                          onClick={undoAutoMappingChanges}
+                          className="ml-4 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                        >
+                          ↶ Отменить изменения
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* COVERAGE SUMMARY BANNER */}
+                {tcV2 && (costMeta || nutritionMeta) && (
+                  <div className="mb-4 bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
+                    <div className="flex flex-wrap items-center gap-4 text-sm">
+                      {costMeta && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400">💰 Покрытие цен:</span>
+                          <span className={`font-bold ${costMeta.coveragePct >= 80 ? 'text-green-300' : costMeta.coveragePct >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>
+                            {costMeta.coveragePct}%
+                          </span>
+                          <span className="text-gray-500">({costMeta.source})</span>
+                        </div>
+                      )}
+                      {nutritionMeta && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400">📊 Покрытие БЖУ:</span>
+                          <span className={`font-bold ${nutritionMeta.coveragePct >= 80 ? 'text-green-300' : nutritionMeta.coveragePct >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>
+                            {nutritionMeta.coveragePct}%
+                          </span>
+                        </div>
+                      )}
+                      {tcV2.ingredients && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400">⚠ Без SKU:</span>
+                          <span className="text-orange-300 font-bold">
+                            {tcV2.ingredients.filter(ing => !ing.skuId).length}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* STATUS BANNERS */}
                 {generationStatus === 'error' && generationError && (
                   <div className="mb-6 bg-red-900/30 border border-red-500/50 rounded-lg p-4">
