@@ -353,8 +353,8 @@ def generate_draft(profile: ProfileInput, courses: int = 1) -> Dict[str, Any]:
             "shelfLife_hours": 48.0,
             "servingTemp_c": 65.0
         },
-        "nutrition": {"per100g": None, "perPortion": None},
-        "cost": {"rawCost": None, "costPerPortion": None},
+        "nutrition": NutritionV2().model_dump(),
+        "cost": CostV2().model_dump(),
         "printNotes": []
     }
 
