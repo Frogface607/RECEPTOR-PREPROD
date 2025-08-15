@@ -62,7 +62,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "P1-Prices Implementation (Task P1-Prices)"
+##     - "IK-02B-FE/03 One-click Export Wizard (IK-02B-FE/03 Frontend Export)"
 ##   stuck_tasks:
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
