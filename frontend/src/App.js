@@ -1704,6 +1704,7 @@ function App() {
 
   // Debounced Price search
   const [priceSearchTimeout, setPriceSearchTimeout] = useState(null);
+  const [iikoSearchTimeout, setIikoSearchTimeout] = useState(null);
   const debouncedPriceSearch = (query) => {
     if (priceSearchTimeout) {
       clearTimeout(priceSearchTimeout);
