@@ -99,7 +99,11 @@ class IikoRmsClient:
                 "pass": password_hash
             }
             
-            response = self.session.get(auth_url, params=auth_params, timeout=self.timeout)
+            # Use simple headers for authentication (RMS server doesn't accept JSON headers)
+            auth_headers = {
+                'User-Agent': 'Receptor-iiko-RMS-Client/1.0'
+            }
+            response = requests.get(auth_url, params=auth_params, headers=auth_headers, timeout=self.timeout)
             
             if response.status_code == 200:
                 session_key = response.text.strip()
