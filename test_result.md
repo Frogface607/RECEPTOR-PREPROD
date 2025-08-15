@@ -247,6 +247,66 @@ frontend:
         agent: "testing"
         comment: "🚨 IK-02 RECALC INTEGRATION NOT IMPLEMENTED: Missing costMeta.source='iiko' handling, stale price warnings for asOf > 30 days, and recalc workflow after iiko SKU assignment as specified in IK-02 review."
 
+  - task: "IikoRmsClient Class Implementation (IK-02B RMS Backend)"
+    implemented: true
+    working: "NA"
+    file: "backend/receptor_agent/integrations/iiko_rms_client.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IK-02B RMS CLIENT IMPLEMENTED: Created comprehensive IikoRmsClient class for direct server integration with edison-bar.iiko.it. Implemented SHA1 authentication, session management, retry mechanisms with exponential backoff, health check functionality. Methods include authenticate(), get_organizations(), fetch_nomenclature(), _fetch_product_groups() with multiple endpoint fallbacks. Client handles unit normalization (kg→g, l→ml), price calculation, product data parsing. Environment configured with IIKO_RMS_HOST, LOGIN, PASSWORD. Ready for backend testing."
+
+  - task: "IK-02B RMS REST Endpoints Implementation (IK-02B RMS API)"
+    implemented: true
+    working: "NA"
+    file: "backend/receptor_agent/routes/iiko_rms_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IK-02B RMS API ENDPOINTS IMPLEMENTED: Created complete REST API for RMS integration with endpoints POST /api/v1/iiko/rms/connect (establishes connection with credentials), POST /api/v1/iiko/rms/select-org (selects organization), POST /api/v1/iiko/rms/sync/nomenclature (syncs products/groups), GET /api/v1/iiko/rms/products/search (enhanced fuzzy search), GET /api/v1/iiko/rms/connection/status (connection info), GET /api/v1/iiko/rms/health (health check). All endpoints include proper request/response models, comprehensive error handling, and service integration. Router registered in server.py. Ready for backend testing."
+
+  - task: "IK-02B RMS Database Collections (IK-02B RMS DB)"
+    implemented: true
+    working: "NA"
+    file: "backend/receptor_agent/integrations/iiko_rms_models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IK-02B RMS DATABASE MODELS IMPLEMENTED: Created comprehensive MongoDB models for RMS integration - IikoRmsCredentials (encrypted credentials with session management), IikoRmsProduct (normalized products with pricing and search optimization), IikoRmsGroup (product categories), IikoRmsSyncStatus (sync operation tracking), IikoRmsMapping (ingredient to product mappings). Defined proper indexes for performance including text search on name_normalized, organization filters, connection status tracking. Models include Pydantic validation, field descriptions, and MongoDB collection configurations. Ready for backend testing."
+
+  - task: "IK-02B RMS Catalog Search Enhancement (IK-02B RMS Search)"
+    implemented: true
+    working: "NA"
+    file: "backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IK-02B RMS CATALOG SEARCH ENHANCED: Extended GET /api/v1/techcards.v2/catalog-search endpoint with source=rms parameter support (highest priority after price sources). Added RMS product search integration that queries organization products using IikoRmsService.search_rms_products(), returns results with enhanced match scores, prices, articles, and metadata. Results properly integrated with existing sources with priority: Price → RMS → iiko → USDA → catalog. Response includes rms_count field and proper source attribution. Enhanced fuzzy matching with fuzzywuzzy library. Ready for backend testing."
+
+  - task: "IK-02B RMS Auto-Mapping System (IK-02B RMS Mapper)"
+    implemented: true
+    working: "NA"
+    file: "backend/receptor_agent/integrations/iiko_rms_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IK-02B RMS AUTO-MAPPING SYSTEM IMPLEMENTED: Created intelligent auto-mapping system in IikoRmsService._generate_auto_mappings() that uses anchors_map.json for synonym matching and fuzzywuzzy for similarity scoring. Implements exact match (score 1.0) → synonym matching → fuzzy matching (threshold 0.85) algorithm. Auto-approves high confidence matches (≥0.95), stores mappings with match scores and types (auto/manual). Search system uses MongoDB aggregation pipeline with multiple matching strategies and enhanced scoring. Integrates with sync workflow to auto-generate mappings after nomenclature sync. Ready for backend testing."
+
   - task: "Price Coverage Chip and UI Integration (Task P1-UI)"
     implemented: false
     working: "NA"
