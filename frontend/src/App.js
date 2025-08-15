@@ -3007,6 +3007,252 @@ function App() {
     }
   };
 
+  // ============== AUTO-MAPPING FUNCTIONS (IK-02B-FE/02) ==============
+  
+  const startAutoMapping = async () => {
+    if (!tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
+      setAutoMappingMessage({ type: 'error', text: 'Нет ингредиентов для автомаппинга' });
+      return;
+    }
+
+    if (iikoRmsConnection.status !== 'connected' || iikoRmsConnection.products_count === 0) {
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: 'Подключитесь к iiko RMS и выполните синхронизацию номенклатуры' 
+      });
+      return;
+    }
+
+    // Create backup for undo
+    setTcV2Backup(JSON.parse(JSON.stringify(tcV2)));
+    
+    setIsAutoMapping(true);
+    setAutoMappingMessage({ type: 'info', text: '🔄 Поиск совпадений в номенклатуре iiko...' });
+    
+    const mappingResults = [];
+    
+    try {
+      for (let i = 0; i < tcV2.ingredients.length; i++) {
+        const ingredient = tcV2.ingredients[i];
+        
+        // Skip if preserve existing SKU is enabled and ingredient already has SKU
+        if (preserveExistingSku && ingredient.skuId) {
+          mappingResults.push({
+            index: i,
+            ingredient: ingredient,
+            currentSku: ingredient.skuId,
+            currentSource: ingredient.source || 'unknown',
+            suggestion: null,
+            confidence: 0,
+            status: 'skipped',
+            reason: 'Уже есть SKU'
+          });
+          continue;
+        }
+        
+        // Search for candidates
+        try {
+          const response = await axios.get(`${API}/v1/techcards.v2/catalog-search`, {
+            params: {
+              q: ingredient.name,
+              source: 'rms',
+              limit: 5
+            }
+          });
+          
+          const candidates = response.data.items || [];
+          
+          if (candidates.length > 0) {
+            const bestCandidate = candidates[0];
+            const confidence = Math.round((bestCandidate.match_score || 0) * 100);
+            
+            // Check for unit mismatch
+            const unitMismatch = ingredient.unit !== bestCandidate.unit;
+            
+            mappingResults.push({
+              index: i,
+              ingredient: ingredient,
+              currentSku: ingredient.skuId || null,
+              currentSource: ingredient.source || null,
+              suggestion: bestCandidate,
+              confidence: confidence,
+              status: confidence >= 90 ? 'auto_accept' : confidence >= 75 ? 'review' : 'low_confidence',
+              unitMismatch: unitMismatch,
+              issues: unitMismatch ? ['unitMismatch'] : []
+            });
+          } else {
+            mappingResults.push({
+              index: i,
+              ingredient: ingredient,
+              currentSku: ingredient.skuId || null,
+              currentSource: ingredient.source || null,
+              suggestion: null,
+              confidence: 0,
+              status: 'no_match',
+              reason: 'Совпадения не найдены'
+            });
+          }
+        } catch (error) {
+          console.error(`Error searching for ${ingredient.name}:`, error);
+          mappingResults.push({
+            index: i,
+            ingredient: ingredient,
+            currentSku: ingredient.skuId || null,
+            currentSource: ingredient.source || null,
+            suggestion: null,
+            confidence: 0,
+            status: 'error',
+            reason: 'Ошибка поиска'
+          });
+        }
+      }
+      
+      setAutoMappingResults(mappingResults);
+      
+      // Calculate stats
+      const autoAcceptCount = mappingResults.filter(r => r.status === 'auto_accept').length;
+      const reviewCount = mappingResults.filter(r => r.status === 'review').length;
+      const noMatchCount = mappingResults.filter(r => r.status === 'no_match').length;
+      
+      setAutoMappingMessage({ 
+        type: 'success', 
+        text: `✅ Анализ завершен: ${autoAcceptCount} автоматических, ${reviewCount} на проверку, ${noMatchCount} без совпадений` 
+      });
+      
+      setShowAutoMappingModal(true);
+      
+    } catch (error) {
+      console.error('Auto-mapping error:', error);
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка автомаппинга: ${error.message}` 
+      });
+    } finally {
+      setIsAutoMapping(false);
+    }
+  };
+
+  const acceptAutoMappingSuggestion = (resultIndex, accept = true) => {
+    const updatedResults = [...autoMappingResults];
+    if (accept && updatedResults[resultIndex].suggestion) {
+      updatedResults[resultIndex].status = 'accepted';
+    } else {
+      updatedResults[resultIndex].status = 'rejected';
+    }
+    setAutoMappingResults(updatedResults);
+  };
+
+  const applyAutoMappingChanges = async () => {
+    const acceptedResults = autoMappingResults.filter(r => r.status === 'accepted' || r.status === 'auto_accept');
+    
+    if (acceptedResults.length === 0) {
+      setAutoMappingMessage({ type: 'error', text: 'Нет изменений для применения' });
+      return;
+    }
+
+    setAutoMappingMessage({ type: 'info', text: '🔄 Применение изменений...' });
+    
+    // Update tcV2 with new SKUs
+    const updatedTcV2 = { ...tcV2 };
+    let changesCount = 0;
+    
+    acceptedResults.forEach(result => {
+      if (result.suggestion) {
+        updatedTcV2.ingredients[result.index] = {
+          ...updatedTcV2.ingredients[result.index],
+          skuId: result.suggestion.sku_id,
+          source: 'rms'
+        };
+        changesCount++;
+      }
+    });
+    
+    // Apply changes and recalculate
+    setTcV2(updatedTcV2);
+    
+    try {
+      await performRecalculation(updatedTcV2);
+      
+      setAutoMappingMessage({ 
+        type: 'success', 
+        text: `✅ Применено ${changesCount} изменений. Покрытие цен обновлено!` 
+      });
+      
+      setShowAutoMappingModal(false);
+      setAutoMappingResults([]);
+      
+    } catch (error) {
+      console.error('Recalc error after auto-mapping:', error);
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка пересчета: ${error.message}` 
+      });
+    }
+  };
+
+  const undoAutoMappingChanges = async () => {
+    if (!tcV2Backup) {
+      setAutoMappingMessage({ type: 'error', text: 'Нет данных для отката' });
+      return;
+    }
+
+    setAutoMappingMessage({ type: 'info', text: '🔄 Откат изменений...' });
+    
+    try {
+      setTcV2(tcV2Backup);
+      await performRecalculation(tcV2Backup);
+      
+      setAutoMappingMessage({ 
+        type: 'success', 
+        text: '✅ Изменения отменены. Техкарта восстановлена.' 
+      });
+      
+      setTcV2Backup(null);
+      
+    } catch (error) {
+      console.error('Undo error:', error);
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка отката: ${error.message}` 
+      });
+    }
+  };
+
+  const getFilteredAutoMappingResults = () => {
+    let filtered = autoMappingResults;
+    
+    // Apply filter
+    switch (autoMappingFilter) {
+      case 'no_sku':
+        filtered = filtered.filter(r => !r.currentSku);
+        break;
+      case 'low_confidence':
+        filtered = filtered.filter(r => r.confidence > 0 && r.confidence < 90);
+        break;
+      default:
+        break;
+    }
+    
+    // Apply search
+    if (autoMappingSearch) {
+      filtered = filtered.filter(r => 
+        r.ingredient.name.toLowerCase().includes(autoMappingSearch.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  };
+
+  const acceptAllHighConfidence = () => {
+    const updatedResults = autoMappingResults.map(result => {
+      if (result.status === 'auto_accept' || (result.confidence >= 90 && result.suggestion)) {
+        return { ...result, status: 'accepted' };
+      }
+      return result;
+    });
+    setAutoMappingResults(updatedResults);
+  };
+
   // ============== NEW CATEGORY MANAGEMENT FUNCTIONS ==============
   
   const fetchAllIikoCategories = async (organizationId) => {
