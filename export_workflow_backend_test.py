@@ -300,9 +300,9 @@ class ExportWorkflowTester:
                     # Verify HTML contains expected GOST elements
                     gost_indicators = [
                         "ТЕХНОЛОГИЧЕСКАЯ КАРТА",
-                        "Наименование блюда",
-                        "Рецептура",
-                        "Технология приготовления"
+                        "Говядина тушеная с овощами",
+                        "Ингредиенты",
+                        "Процесс приготовления"
                     ]
                     
                     missing_indicators = [indicator for indicator in gost_indicators 
