@@ -9209,6 +9209,14 @@ function App() {
                       {isAutoMapping ? '⏳ Анализ...' : 'Автомаппинг (iiko)'}
                     </button>
                     <button 
+                      onClick={startExportWizard}
+                      disabled={!tcV2 || iikoRmsConnection.status !== 'connected' || isExportProcessing}
+                      className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="🚀 Полный цикл: автомаппинг → ГОСТ-превью → экспорт в iiko"
+                    >
+                      {isExportProcessing ? '⏳ Обработка...' : 'Экспорт в iiko (1 клик)'}
+                    </button>
+                    <button 
                       onClick={() => navigator.clipboard.writeText(techCard)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
                       title="📋 Скопировать техкарту в буфер обмена для вставки в другие приложения"
