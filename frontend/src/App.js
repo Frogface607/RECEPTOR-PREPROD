@@ -37,6 +37,16 @@ function App() {
   const [iikoSearchQuery, setIikoSearchQuery] = useState('');
   const [iikoSearchResults, setIikoSearchResults] = useState([]);
   const [isSearchingIiko, setIsSearchingIiko] = useState(false);
+  
+  // Auto-mapping states (IK-02B-FE/02)
+  const [showAutoMappingModal, setShowAutoMappingModal] = useState(false);
+  const [autoMappingResults, setAutoMappingResults] = useState([]);
+  const [autoMappingFilter, setAutoMappingFilter] = useState('all'); // 'all', 'no_sku', 'low_confidence'
+  const [autoMappingSearch, setAutoMappingSearch] = useState('');
+  const [isAutoMapping, setIsAutoMapping] = useState(false);
+  const [autoMappingMessage, setAutoMappingMessage] = useState({ type: '', text: '' });
+  const [preserveExistingSku, setPreserveExistingSku] = useState(true);
+  const [tcV2Backup, setTcV2Backup] = useState(null); // For undo functionality
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
