@@ -270,6 +270,16 @@ def get_iiko_client() -> IikoClient:
     global _iiko_client
     
     if _iiko_client is None:
+        # Ensure environment variables are loaded
+        from dotenv import load_dotenv
+        from pathlib import Path
+        
+        # Try to load .env file from backend directory
+        backend_dir = Path(__file__).parent.parent.parent
+        env_file = backend_dir / '.env'
+        if env_file.exists():
+            load_dotenv(env_file)
+        
         api_login = os.getenv('IIKO_API_LOGIN')
         if not api_login:
             raise IikoAPIError("IIKO_API_LOGIN environment variable not set")
