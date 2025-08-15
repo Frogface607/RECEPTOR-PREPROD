@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Test configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://chef-tech-cards.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menu-automapper.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 IIKO_API_LOGIN = "261d9ff06a3746b19c92de45a89c969b"
 

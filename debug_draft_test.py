@@ -6,7 +6,7 @@ Debug draft test
 import requests
 import json
 
-BACKEND_URL = "https://chef-tech-cards.preview.emergentagent.com/api"
+BACKEND_URL = "https://menu-automapper.preview.emergentagent.com/api"
 
 def create_draft_techcard():
     """Create draft TechCardV2 with validation issues"""
