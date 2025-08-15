@@ -361,6 +361,44 @@ def search_catalog(
             except Exception as e:
                 print(f"iiko search error: {e}")
         
+        # iiko RMS search results (if needed)
+        rms_results = []
+        if source in ("rms", "all"):
+            try:
+                from ..integrations.iiko_rms_service import get_iiko_rms_service
+                rms_service = get_iiko_rms_service()
+                
+                # Get RMS connection status
+                connection_status = rms_service.get_rms_connection_status()
+                if connection_status.get("status") == "connected" and connection_status.get("organization_id"):
+                    organization_id = connection_status["organization_id"]
+                    
+                    # Search products in RMS
+                    rms_products = rms_service.search_rms_products(organization_id, query, limit)
+                    
+                    for product in rms_products:
+                        rms_results.append({
+                            "name": product["name"],
+                            "canonical_id": None,
+                            "fdc_id": None,
+                            "sku_id": product["sku_id"],
+                            "category": product.get("group_name", "rms"),
+                            "unit": product["unit"],
+                            "price": product["price_per_unit"],
+                            "has_nutrition": False,
+                            "nutrition_preview": None,
+                            "source": "rms",
+                            "currency": product["currency"],
+                            "asOf": product["asOf"],
+                            "match_score": product["match_score"],
+                            "article": product.get("article"),
+                            "product_type": product.get("product_type", "product"),
+                            "active": product.get("active", True)
+                        })
+                        
+            except Exception as e:
+                print(f"RMS search error: {e}")
+        
         # Каталоги цен и питания (если нужны)
         catalog_results = []
         if source in ("nutrition", "all"):
