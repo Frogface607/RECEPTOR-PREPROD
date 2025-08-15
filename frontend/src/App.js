@@ -2792,6 +2792,184 @@ function App() {
     }
   };
 
+  // ============== IIKO RMS INTEGRATION FUNCTIONS (IK-02B-FE/01) ==============
+  
+  const connectToIikoRms = async () => {
+    if (!iikoRmsCredentials.host || !iikoRmsCredentials.login || !iikoRmsCredentials.password) {
+      setIikoRmsMessage({ type: 'error', text: 'Заполните все поля для подключения' });
+      return;
+    }
+
+    setIsConnectingIikoRms(true);
+    setIikoRmsMessage({ type: '', text: '' });
+    
+    try {
+      const response = await axios.post(`${API}/v1/iiko/rms/connect`, {
+        host: iikoRmsCredentials.host,
+        login: iikoRmsCredentials.login,
+        password: iikoRmsCredentials.password,
+        user_id: currentUser?.id || 'anonymous'
+      });
+
+      if (response.data.status === 'connected') {
+        const organizations = response.data.organizations || [];
+        const orgName = organizations[0]?.name || 'Неизвестная организация';
+        
+        setIikoRmsConnection({
+          status: 'connected',
+          host: iikoRmsCredentials.host,
+          login: iikoRmsCredentials.login,
+          organization_name: orgName,
+          last_connection: new Date().toISOString(),
+          sync_status: 'never_synced',
+          products_count: 0,
+          last_sync: null,
+          error_message: ''
+        });
+        
+        setIikoRmsMessage({ 
+          type: 'success', 
+          text: `✅ Подключение успешно! Организация: ${orgName}` 
+        });
+        
+        // Check connection status
+        await checkIikoRmsStatus();
+      } else {
+        throw new Error(response.data.error || 'Неизвестная ошибка подключения');
+      }
+    } catch (error) {
+      console.error('iiko RMS connect error:', error);
+      const errorMsg = error.response?.data?.detail || error.message || 'Ошибка подключения к серверу iiko RMS';
+      
+      setIikoRmsConnection(prev => ({
+        ...prev,
+        status: 'error',
+        error_message: errorMsg
+      }));
+      
+      setIikoRmsMessage({ type: 'error', text: `❌ ${errorMsg}` });
+    } finally {
+      setIsConnectingIikoRms(false);
+    }
+  };
+
+  const syncIikoRmsNomenclature = async () => {
+    if (iikoRmsConnection.status !== 'connected') {
+      setIikoRmsMessage({ type: 'error', text: 'Сначала установите подключение к серверу iiko RMS' });
+      return;
+    }
+
+    setIsSyncingIikoRms(true);
+    setIikoRmsMessage({ type: 'info', text: '🔄 Синхронизация номенклатуры...' });
+    
+    setIikoRmsConnection(prev => ({
+      ...prev,
+      sync_status: 'syncing'
+    }));
+    
+    try {
+      const response = await axios.post(`${API}/v1/iiko/rms/sync/nomenclature?organization_id=default`, {
+        force: false
+      });
+
+      if (response.data.status === 'completed') {
+        const stats = response.data.stats || {};
+        const productsCount = stats.products_processed || 0;
+        
+        setIikoRmsConnection(prev => ({
+          ...prev,
+          sync_status: 'completed',
+          products_count: productsCount,
+          last_sync: new Date().toISOString(),
+          error_message: ''
+        }));
+        
+        setIikoRmsMessage({ 
+          type: 'success', 
+          text: `✅ Синхронизация завершена! Получено продуктов: ${productsCount}` 
+        });
+      } else if (response.data.status === 'already_running') {
+        setIikoRmsMessage({ 
+          type: 'info', 
+          text: '⏳ Синхронизация уже выполняется...' 
+        });
+        
+        // Poll for completion
+        setTimeout(() => checkIikoRmsStatus(), 2000);
+      } else {
+        throw new Error(response.data.error || 'Неизвестная ошибка синхронизации');
+      }
+    } catch (error) {
+      console.error('iiko RMS sync error:', error);
+      const errorMsg = error.response?.data?.detail || error.message || 'Ошибка синхронизации номенклатуры';
+      
+      setIikoRmsConnection(prev => ({
+        ...prev,
+        sync_status: 'failed',
+        error_message: errorMsg
+      }));
+      
+      setIikoRmsMessage({ type: 'error', text: `❌ ${errorMsg}` });
+    } finally {
+      setIsSyncingIikoRms(false);
+    }
+  };
+
+  const checkIikoRmsStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/v1/iiko/rms/connection/status?user_id=${currentUser?.id || 'anonymous'}`);
+      
+      if (response.data.status === 'connected') {
+        setIikoRmsConnection(prev => ({
+          ...prev,
+          status: 'connected',
+          host: response.data.host || prev.host,
+          login: response.data.login || prev.login,
+          organization_name: response.data.organization_name || prev.organization_name,
+          last_connection: response.data.last_connection || prev.last_connection
+        }));
+        
+        // Also get sync status
+        const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default`);
+        if (syncResponse.data.status) {
+          setIikoRmsConnection(prev => ({
+            ...prev,
+            sync_status: syncResponse.data.status,
+            products_count: syncResponse.data.stats?.products_processed || 0,
+            last_sync: syncResponse.data.completed_at || prev.last_sync
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error checking iiko RMS status:', error);
+    }
+  };
+
+  const performIikoSearch = async (query) => {
+    if (!query.trim()) {
+      setIikoSearchResults([]);
+      return;
+    }
+
+    setIsSearchingIiko(true);
+    try {
+      const response = await axios.get(`${API}/v1/techcards.v2/catalog-search`, {
+        params: {
+          q: query,
+          source: 'rms',
+          limit: 10
+        }
+      });
+
+      setIikoSearchResults(response.data.items || []);
+    } catch (error) {
+      console.error('iiko search error:', error);
+      setIikoSearchResults([]);
+    } finally {
+      setIsSearchingIiko(false);
+    }
+  };
+
   // ============== NEW CATEGORY MANAGEMENT FUNCTIONS ==============
   
   const fetchAllIikoCategories = async (organizationId) => {
