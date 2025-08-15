@@ -4071,16 +4071,49 @@ function App() {
                   {displayIngredients.map((ingredient, index) => (
                     <tr key={ingredient.id} className={index % 2 === 0 ? 'bg-gray-700/30' : 'bg-gray-600/30'}>
                       <td className="py-3 px-4 text-gray-200 border-r border-gray-600">
-                        <input
-                          type="text"
-                          value={ingredient.name}
-                          onChange={(e) => {
-                            const newIngredients = [...displayIngredients];
-                            newIngredients[index] = { ...newIngredients[index], name: e.target.value };
-                            setCurrentIngredients(newIngredients);
-                          }}
-                          className="w-full bg-transparent border-none outline-none text-gray-200 hover:bg-gray-700/50 rounded px-2 py-1"
-                        />
+                        <div className="space-y-1">
+                          <input
+                            type="text"
+                            value={ingredient.name}
+                            onChange={(e) => {
+                              const newIngredients = [...displayIngredients];
+                              newIngredients[index] = { ...newIngredients[index], name: e.target.value };
+                              setCurrentIngredients(newIngredients);
+                            }}
+                            className="w-full bg-transparent border-none outline-none text-gray-200 hover:bg-gray-700/50 rounded px-2 py-1"
+                          />
+                          {/* Source badges */}
+                          <div className="flex flex-wrap gap-1">
+                            {ingredient.skuId ? (
+                              // Determine source from skuId pattern or ingredient metadata
+                              ingredient.source === 'rms' || ingredient.skuId.includes('rms_') ? (
+                                <span className="bg-purple-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                                  iiko
+                                </span>
+                              ) : ingredient.source === 'usda' || ingredient.canonical_id ? (
+                                <span className="bg-green-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                                  USDA
+                                </span>
+                              ) : ingredient.source === 'user' ? (
+                                <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                                  USER
+                                </span>
+                              ) : ingredient.source === 'catalog' ? (
+                                <span className="bg-yellow-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                                  CAT
+                                </span>
+                              ) : (
+                                <span className="bg-gray-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                                  BOOT
+                                </span>
+                              )
+                            ) : (
+                              <span className="bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                                ⚠ no map
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-center border-r border-gray-600">
                         <input
