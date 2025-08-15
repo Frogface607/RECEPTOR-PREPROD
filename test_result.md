@@ -322,6 +322,18 @@ frontend:
         agent: "testing"
         comment: "🎯 IK-02B RMS AUTO-MAPPING SYSTEM COMPREHENSIVE TESTING COMPLETED: Conducted detailed testing of auto-mapping system as specified in review request. ✅ _GENERATE_AUTO_MAPPINGS() METHOD WORKING: Auto-mapping system successfully triggered after nomenclature sync of 3155 products. System uses anchors_map.json integration for synonym matching and fuzzywuzzy library for similarity scoring with 0.85 threshold. ✅ ANCHORS_MAP.JSON INTEGRATION VERIFIED: System loads anchors map from /app/backend/data/anchors_map.json for canonical ingredient matching. Synonym matching algorithm checks exact matches first, then fuzzy matching with fuzzywuzzy.ratio() for similarity scoring. ✅ FUZZY MATCHING WITH FUZZYWUZZY WORKING: Enhanced MongoDB aggregation pipeline provides multiple matching strategies - exact name match (score 1.0), exact article match (score 0.95), name starts with query (score 0.9), name contains query (score 0.7). Fuzzy scoring with fuzz.ratio() enhances match accuracy. ✅ SEARCH_RMS_PRODUCTS() METHOD VERIFIED: Enhanced search method uses MongoDB aggregation with $match, $addFields, $sort, $limit stages. Returns products with proper match scores, sorted by relevance. Successfully found products for test queries with accurate scoring. ✅ AUTO-APPROVAL FOR HIGH CONFIDENCE MATCHES: System auto-approves mappings with match scores ≥0.95 for high confidence matches. Lower confidence matches (≥0.85) stored for manual review. Mapping type properly set to 'auto' for generated mappings. ✅ INTEGRATION WITH SYNC WORKFLOW: Auto-mapping generation automatically triggered after successful nomenclature synchronization. System processes all 3155 synced products for potential mappings with existing ingredient database. 🎉 ALL REVIEW REQUIREMENTS SUCCESSFULLY VERIFIED - Auto-mapping system provides intelligent ingredient matching with anchors_map.json integration, fuzzywuzzy similarity scoring, and auto-approval for high confidence matches as specified."
 
+  - task: "IK-02B-FE/03 One-click Export Wizard (IK-02B-FE/03 Frontend Export)"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ IK-02B-FE/03 ONE-CLICK EXPORT WIZARD COMPLETED: Successfully implemented complete 4-step export wizard for 'One-click: Automapping → GOST-preview → iiko XLSX' workflow. Fixed critical function name mismatch (handleIikoCSVExport vs handleIikoCsvExport). Complete implementation includes: 1) Pre-checks step with status cards for iiko RMS connection, price/nutrition coverage, SKU mapping with blockers/warnings, 2) Auto-mapping step with results display, coverage comparison, and progress tracking, 3) GOST preview step with preview button and data source info, 4) Final export step with completion message and import instructions. All supporting functions implemented: startExportWizard, runExportAutoMapping, openGostPreview, performIikoExport, undoExportChanges. Export button properly enabled only when tcV2 exists and iiko RMS connected. Ready for backend testing to verify complete workflow integration."
+
   - task: "Price Coverage Chip and UI Integration (Task P1-UI)"
     implemented: false
     working: "NA"
