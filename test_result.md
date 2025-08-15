@@ -111,7 +111,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Задача P1-Prices — «Единый провайдер цен + покрытие и маппинг в UI (v1)». Цель: сделать цены таким же «первоклассным» источником, как USDA для БЖУ: детерминированные расчёты себестоимости, чип покрытия с источником, быстрый маппинг skuId в UI. Изменения: 1) Backend — единый провайдер цен (PriceProvider класс со стратегией источников: user → catalog → bootstrap → llm-fallback), 2) Интеграция в cost_calculator, 3) Расширение поиска каталога для маппинга цен, 4) UI — чип цен и маппинг (💰 Цены {coveragePct}% • {User|Catalog|Bootstrap|Mixed} с цветами и tooltip), 5) Экспорт в iiko."
+user_problem_statement: "IK-01 — Экспорт техкарты в iiko Excel (ТТК по шаблону iikoWeb). Цель: по нажатию кнопки в UI выгружать один XLSX-файл, совместимый с окном «Импорт справочника (технологические карты)» в iikoWeb. Требования: 1) Backend — новый модуль backend/receptor_agent/exports/iiko_xlsx.py, 2) Новый эндпоинт POST /api/v1/techcards.v2/export/iiko.xlsx, 3) Использование шаблона iiko из backend/data/iiko_templates/ttk.xlsx, 4) Маппинг строк с полями: Артикул блюда, Наименование блюда, Артикул продукта, Наименование продукта, Брутто, Потери %, Нетто, Ед., Выход готового продукта, Норма закладки, Метод списания, Технология приготовления, 5) Frontend — кнопка «ЭКСПОРТ В IIKO (XLSX, ТТК)» рядом с нынешними экспортами."
 
 backend:
   - task: "Unified Price Provider Implementation (Task P1-Backend)"
