@@ -1615,6 +1615,7 @@ function App() {
       performCatalogSearch(ingredientName);
       debouncedUsdaSearch(ingredientName);
       debouncedPriceSearch(ingredientName);
+      debouncedIikoSearch(ingredientName);
     }
   };
 
