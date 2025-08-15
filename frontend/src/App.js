@@ -27,7 +27,7 @@ function App() {
   const [catalogSearchResults, setCatalogSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [mappingActiveTab, setMappingActiveTab] = useState('all'); // 'all', 'usda', 'price', 'catalog'
+  const [mappingActiveTab, setMappingActiveTab] = useState('all'); // 'all', 'usda', 'price', 'iiko', 'catalog'
   const [usdaSearchQuery, setUsdaSearchQuery] = useState('');
   const [usdaSearchResults, setUsdaSearchResults] = useState([]);
   const [isSearchingUsda, setIsSearchingUsda] = useState(false);
