@@ -8920,26 +8920,23 @@ function App() {
                 )}
                 
                 {/* COVERAGE SUMMARY BANNER */}
-                {tcV2 && (tcV2.costMeta || tcV2.nutritionMeta) && (() => {
-                  const costMeta = tcV2.costMeta || {};
-                  const nutritionMeta = tcV2.nutritionMeta || {};
-                  return (
+                {tcV2 && (tcV2.costMeta || tcV2.nutritionMeta || tcV2.ingredients) && (
                   <div className="mb-4 bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
                     <div className="flex flex-wrap items-center gap-4 text-sm">
-                      {costMeta && (
+                      {tcV2.costMeta && (
                         <div className="flex items-center space-x-2">
                           <span className="text-gray-400">💰 Покрытие цен:</span>
-                          <span className={`font-bold ${costMeta.coveragePct >= 80 ? 'text-green-300' : costMeta.coveragePct >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>
-                            {costMeta.coveragePct}%
+                          <span className={`font-bold ${tcV2.costMeta.coveragePct >= 80 ? 'text-green-300' : tcV2.costMeta.coveragePct >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>
+                            {tcV2.costMeta.coveragePct}%
                           </span>
-                          <span className="text-gray-500">({costMeta.source})</span>
+                          <span className="text-gray-500">({tcV2.costMeta.source})</span>
                         </div>
                       )}
-                      {nutritionMeta && (
+                      {tcV2.nutritionMeta && (
                         <div className="flex items-center space-x-2">
                           <span className="text-gray-400">📊 Покрытие БЖУ:</span>
-                          <span className={`font-bold ${nutritionMeta.coveragePct >= 80 ? 'text-green-300' : nutritionMeta.coveragePct >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>
-                            {nutritionMeta.coveragePct}%
+                          <span className={`font-bold ${tcV2.nutritionMeta.coveragePct >= 80 ? 'text-green-300' : tcV2.nutritionMeta.coveragePct >= 50 ? 'text-yellow-300' : 'text-red-300'}`}>
+                            {tcV2.nutritionMeta.coveragePct}%
                           </span>
                         </div>
                       )}
