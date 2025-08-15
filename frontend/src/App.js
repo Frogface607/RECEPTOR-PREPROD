@@ -8262,6 +8262,13 @@ function App() {
                     >
                       ЭКСПОРТ В IIKO
                     </button>
+                    <button 
+                      onClick={handleIikoCsvExport}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="📄 iiko CSV (для импорта): ZIP с products.csv и recipes.csv готовыми для загрузки в iiko"
+                    >
+                      iiko CSV (для импорта)
+                    </button>
                   </div>
                 </div>
                 
