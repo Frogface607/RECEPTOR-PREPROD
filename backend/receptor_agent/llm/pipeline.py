@@ -460,14 +460,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         
         if is_valid and validated_card:
             # ВАЖНО: Обнуляем nutrition и cost, пришедшие от LLM (единый источник истины - калькуляторы)
-            card_dict = validated_card.model_dump()
-            
-            # Присваиваем пустые объекты вместо None чтобы избежать validation errors
-            card_dict["nutrition"] = NutritionV2().model_dump()
-            card_dict["cost"] = CostV2().model_dump()
-            
-            # Пересоздаем карту с пустыми полями для калькуляторов
-            validated_card = TechCardV2.model_validate(card_dict)
+            # Это уже сделано перед валидацией, поэтому просто используем validated_card
             
             # Шаг 3.5: Анкерная валидность (только если есть constraints)
             content_issues = []
