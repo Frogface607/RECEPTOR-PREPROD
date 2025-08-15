@@ -13693,8 +13693,9 @@ function App() {
             
             {/* Loading State */}
             {((mappingActiveTab === 'usda' && isSearchingUsda) || 
-              (mappingActiveTab === 'price' && isSearchingPrice) || 
-              (mappingActiveTab !== 'usda' && mappingActiveTab !== 'price' && isSearching)) && (
+              (mappingActiveTab === 'price' && isSearchingPrice) ||
+              (mappingActiveTab === 'iiko' && isSearchingIiko) ||
+              (mappingActiveTab !== 'usda' && mappingActiveTab !== 'price' && mappingActiveTab !== 'iiko' && isSearching)) && (
               <div className="text-center py-4 text-gray-400">
                 🔍 Поиск...
               </div>
