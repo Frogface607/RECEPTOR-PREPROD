@@ -241,7 +241,7 @@ def search_catalog(
                     "price": "float|null",
                     "has_nutrition": "boolean",
                     "nutrition_preview": "string|null",
-                    "source": "usda|catalog|bootstrap|price"
+                    "source": "usda|catalog|bootstrap|price|iiko"
                 }
             ]
         }
