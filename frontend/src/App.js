@@ -59,6 +59,7 @@ function App() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   // Upload states for Task 1.2
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showDataModal, setShowDataModal] = useState(false);
   const [uploadType, setUploadType] = useState('prices'); // 'prices' | 'nutrition'
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadPreview, setUploadPreview] = useState(null);
