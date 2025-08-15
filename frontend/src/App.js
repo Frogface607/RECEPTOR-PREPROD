@@ -571,6 +571,11 @@ function App() {
     }
   }, [typingIndex, fullText]);
 
+  // Load iiko RMS status on component mount (IK-02B-FE/01)
+  useEffect(() => {
+    checkIikoRmsStatus();
+  }, []);
+
   // Animated loading messages
   const getLoadingMessages = (type) => {
     const messages = {
