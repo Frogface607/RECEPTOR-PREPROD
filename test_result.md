@@ -114,6 +114,66 @@
 user_problem_statement: "IK-02 — iikoCloud Connector (READ-ONLY) + автоподстановка SKU в техкарты. Цель: Подключить Receptor к iikoCloud (по apiLogin), подтянуть номенклатуру организации и дать пользователю автомаппинг ингредиентов ТК на iiko-артикулы. Источник цен помечается как iiko, покрытие/устаревание считаются, пересчёт cost/nutrition работает. Требования: 1) Backend — класс IikoClient с методами get_access_token(), list_organizations(), fetch_nomenclature(), 2) REST-эндпоинты POST /api/iiko/connect, GET /api/iiko/organizations, POST /api/iiko/select-org, POST /api/iiko/sync/nomenclature, 3) Расширение GET /api/v1/techcards.v2/catalog-search источником source=iiko, 4) Коллекция БД iiko_products с индексами, 5) Матчер кандидатов (exact → synonyms → fuzzy) с match_score, 6) Frontend — раздел Настройки → Интеграции → iikoCloud, 7) В техкарте бейдж SKU iiko у ингредиента и новая вкладка iiko в маппинг-модале."
 
 backend:
+  - task: "IikoClient Class Implementation (IK-02 Backend)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/integrations/iiko_client.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 IIKOCLOUD CONNECTOR NOT IMPLEMENTED: Testing agent analysis shows that the IikoClient class with methods get_access_token(api_login), list_organizations(token), fetch_nomenclature(token, org_id) has NOT been implemented yet. Current codebase has iikoOffice/iikoServer integration but NOT the iikoCloud integration specified in IK-02 review."
+
+  - task: "IK-02 REST Endpoints Implementation (IK-02 API)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/routes/iiko_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 API ENDPOINTS NOT IMPLEMENTED: Required REST endpoints missing - POST /api/iiko/connect, GET /api/iiko/organizations, POST /api/iiko/select-org, POST /api/iiko/sync/nomenclature. Current endpoints are for iikoOffice integration, not iikoCloud as specified in IK-02."
+
+  - task: "IK-02 Database Collections (IK-02 DB)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/models/iiko_models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 DATABASE COLLECTIONS NOT IMPLEMENTED: Missing iiko_tokens and iiko_products MongoDB collections with required schemas and indexes as specified in IK-02 review."
+
+  - task: "IK-02 Catalog Search Enhancement (IK-02 Search)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 CATALOG SEARCH NOT ENHANCED: GET /api/v1/techcards.v2/catalog-search endpoint missing source=iiko parameter support and iiko products matching functionality as specified in IK-02 review."
+
+  - task: "IK-02 Ingredient Matching System (IK-02 Matcher)"
+    implemented: false
+    working: "NA"
+    file: "backend/receptor_agent/integrations/iiko_matcher.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🚨 IK-02 MATCHING SYSTEM NOT IMPLEMENTED: Missing match_iiko_candidates() function with exact → synonyms → fuzzy matching algorithm and match_score calculation as specified in IK-02 review."
+
   - task: "Unified Price Provider Implementation (Task P1-Backend)"
     implemented: false
     working: "NA"
