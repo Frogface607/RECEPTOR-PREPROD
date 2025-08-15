@@ -102,12 +102,12 @@ class IikoRmsService:
                 session_expires_at=datetime.now(timezone.utc) + timedelta(hours=2)
             )
             
-            # Upsert credentials - exclude _id to avoid conflicts
+            # Upsert credentials using update_one with $set to avoid _id conflicts
             query = {"user_id": user_id} if user_id else {"host": host, "login": login}
             credentials_data = credentials.model_dump(by_alias=True, exclude={"_id"})
-            self.credentials.replace_one(
+            self.credentials.update_one(
                 query,
-                credentials_data,
+                {"$set": credentials_data},
                 upsert=True
             )
             
