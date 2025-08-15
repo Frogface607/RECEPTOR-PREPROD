@@ -139,6 +139,42 @@ def export_tc_v2_to_iiko(card: TechCardV2):
         print(f"iiko export error: {e}")
         raise HTTPException(500, f"Export failed: {str(e)}")
 
+@router.post("/techcards.v2/export/iiko.xlsx")
+def export_tc_v2_to_iiko_ttk_xlsx(card: TechCardV2):
+    """Экспорт техкарты в формат iiko XLSX (ТТК по шаблону iikoWeb)"""
+    if not _flag():
+        raise HTTPException(404, "feature disabled")
+    
+    try:
+        from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
+        
+        # Генерируем XLSX файл для импорта ТТК
+        xlsx_buffer, issues = create_iiko_ttk_xlsx(card)
+        
+        # Создаем безопасное имя файла  
+        import re
+        safe_title = re.sub(r'[^\w\s-]', '', card.meta.title)  # Remove special chars
+        safe_title = re.sub(r'[а-яё]', '', safe_title, flags=re.IGNORECASE)  # Remove Cyrillic  
+        safe_title = re.sub(r'\s+', '_', safe_title.strip())  # Replace spaces with underscores
+        if not safe_title:  # If title becomes empty, use default
+            safe_title = "techcard"
+        filename = f"iiko_ttk_{safe_title}.xlsx"
+        
+        # Логируем issues если есть (особенно noSku warnings)
+        if issues:
+            print(f"iiko TTK XLSX export issues: {issues}")
+        
+        xlsx_buffer.seek(0)
+        return StreamingResponse(
+            iter([xlsx_buffer.read()]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    
+    except Exception as e:
+        print(f"iiko TTK XLSX export error: {e}")
+        raise HTTPException(500, f"Export failed: {str(e)}")
+
 @router.post("/techcards.v2/export/iiko.csv")
 def export_tc_v2_to_iiko_csv(card: TechCardV2):
     """Экспорт техкарты в формат iiko CSV (ZIP с products.csv и recipes.csv для импорта)"""
