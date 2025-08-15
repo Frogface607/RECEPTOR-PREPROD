@@ -1747,6 +1747,14 @@ function App() {
 
     setTcV2(updatedTcV2);
     setMappingModalOpen(false);
+    
+    // Clear search states
+    setUsdaSearchQuery('');
+    setUsdaSearchResults([]);
+    setPriceSearchQuery('');
+    setPriceSearchResults([]);
+    setIikoSearchQuery('');
+    setIikoSearchResults([]);
 
     // Perform recalculation
     await performRecalculation(updatedTcV2);
