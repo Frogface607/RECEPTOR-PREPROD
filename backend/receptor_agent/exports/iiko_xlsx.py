@@ -99,7 +99,7 @@ def normalize_unit_to_grams(value: float, unit: str, ingredient_name: str = "") 
     # По умолчанию возвращаем как есть
     return value
 
-def generate_technology_text(process_steps: List[Dict]) -> str:
+def generate_technology_text(process_steps) -> str:
     """
     Генерирует текст технологии из шагов процесса
     Формат: #{n}. {action} [t={temp_c}°C] [{time_min} мин] [{equipment}]
@@ -110,23 +110,38 @@ def generate_technology_text(process_steps: List[Dict]) -> str:
     technology_lines = []
     
     for step in process_steps:
-        step_num = step.get('n', len(technology_lines) + 1)
-        action = step.get('action', 'Действие не указано')
+        # Handle both dict and object types
+        if hasattr(step, 'n'):
+            step_num = step.n
+            action = getattr(step, 'action', 'Действие не указано')
+            temp_c = getattr(step, 'temp_c', None)
+            time_min = getattr(step, 'time_min', None)
+            equipment = getattr(step, 'equipment', None)
+        else:
+            step_num = step.get('n', len(technology_lines) + 1)
+            action = step.get('action', 'Действие не указано')
+            temp_c = step.get('temp_c')
+            time_min = step.get('time_min')
+            equipment = step.get('equipment')
         
         # Базовая строка
         line = f"#{step_num}. {action}"
         
         # Добавляем температуру если есть
-        if step.get('temp_c'):
-            line += f" [t={step['temp_c']}°C]"
+        if temp_c:
+            line += f" [t={temp_c}°C]"
         
         # Добавляем время если есть
-        if step.get('time_min'):
-            line += f" [{step['time_min']} мин]"
+        if time_min:
+            line += f" [{time_min} мин]"
         
         # Добавляем оборудование если есть
-        if step.get('equipment'):
-            line += f" [{step['equipment']}]"
+        if equipment:
+            if isinstance(equipment, list):
+                equipment_str = ', '.join(equipment)
+            else:
+                equipment_str = str(equipment)
+            line += f" [{equipment_str}]"
         
         technology_lines.append(line)
     
