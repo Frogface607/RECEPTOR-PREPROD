@@ -13850,6 +13850,60 @@ function App() {
         </div>
       )}
 
+      {/* Data Options Modal (IK-02B-FE/01) */}
+      {showDataModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-lg border border-purple-400/20">
+            {/* Header */}
+            <div className="bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">📂 ДАННЫЕ</h2>
+                  <p className="text-gray-400">Выберите источник данных для техкарт</p>
+                </div>
+                <button
+                  onClick={() => setShowDataModal(false)}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            {/* Options */}
+            <div className="p-6 space-y-4">
+              <button
+                onClick={() => {
+                  setShowDataModal(false);
+                  setShowUploadModal(true);
+                }}
+                className="w-full bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center space-x-3"
+              >
+                <span className="text-2xl">📤</span>
+                <div className="text-left">
+                  <div className="text-lg">Загрузить файлы</div>
+                  <div className="text-sm opacity-90">Прайсы и данные по БЖУ из CSV/JSON</div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowDataModal(false);
+                  setShowIikoRmsModal(true);
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center space-x-3"
+              >
+                <span className="text-2xl">🏪</span>
+                <div className="text-left">
+                  <div className="text-lg">Подключить iiko RMS</div>
+                  <div className="text-sm opacity-90">Синхронизация с системой ресторана</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Upload Data Modal (Task 1.2) */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
