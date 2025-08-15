@@ -462,6 +462,7 @@ def search_catalog(
             "items": sorted_items,
             "total_found": len(all_results),
             "price_count": len(price_results),
+            "rms_count": len(rms_results),
             "iiko_count": len(iiko_results),
             "usda_count": len(usda_results),
             "catalog_count": len(catalog_results)
