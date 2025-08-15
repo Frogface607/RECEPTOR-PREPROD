@@ -95,7 +95,7 @@ class ExportWorkflowTester:
                         ingredients = card.get("ingredients", [])
                         if len(ingredients) > 0:
                             ingredient = ingredients[0]
-                            required_ingredient_fields = ["name", "quantity", "unit"]
+                            required_ingredient_fields = ["name", "brutto_g", "unit"]
                             missing_ingredient_fields = [field for field in required_ingredient_fields 
                                                        if field not in ingredient]
                             
