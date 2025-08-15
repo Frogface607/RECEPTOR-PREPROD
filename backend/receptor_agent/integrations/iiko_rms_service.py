@@ -104,7 +104,7 @@ class IikoRmsService:
             
             # Upsert credentials using update_one with $set to avoid _id conflicts
             query = {"user_id": user_id} if user_id else {"host": host, "login": login}
-            credentials_data = credentials.model_dump(by_alias=True, exclude={"_id"})
+            credentials_data = credentials.model_dump(by_alias=True, exclude={"id"})
             self.credentials.update_one(
                 query,
                 {"$set": credentials_data},
