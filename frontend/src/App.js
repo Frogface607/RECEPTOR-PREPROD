@@ -1715,6 +1715,16 @@ function App() {
     setPriceSearchTimeout(timeout);
   };
 
+  const debouncedIikoSearch = (query) => {
+    if (iikoSearchTimeout) {
+      clearTimeout(iikoSearchTimeout);
+    }
+    const timeout = setTimeout(() => {
+      performIikoSearch(query);
+    }, 250);
+    setIikoSearchTimeout(timeout);
+  };
+
   const handleAssignIngredientMapping = async (catalogItem) => {
     if (!tcV2 || mappingIngredientIndex === null) return;
 
