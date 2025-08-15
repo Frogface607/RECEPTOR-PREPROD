@@ -8920,7 +8920,10 @@ function App() {
                 )}
                 
                 {/* COVERAGE SUMMARY BANNER */}
-                {tcV2 && (costMeta || nutritionMeta) && (
+                {tcV2 && (tcV2.costMeta || tcV2.nutritionMeta) && (() => {
+                  const costMeta = tcV2.costMeta || {};
+                  const nutritionMeta = tcV2.nutritionMeta || {};
+                  return (
                   <div className="mb-4 bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
                     <div className="flex flex-wrap items-center gap-4 text-sm">
                       {costMeta && (
