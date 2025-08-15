@@ -1725,7 +1725,8 @@ function App() {
           return {
             ...ing,
             canonical_id: catalogItem.canonical_id || ing.canonical_id || null,
-            skuId: catalogItem.sku_id || catalogItem.skuId || ing.skuId || null
+            skuId: catalogItem.sku_id || catalogItem.skuId || ing.skuId || null,
+            source: catalogItem.source || ing.source || null
           };
         }
         return ing;
