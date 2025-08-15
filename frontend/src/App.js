@@ -6400,9 +6400,9 @@ function App() {
                   IIKo
                 </button>
                 <button
-                  onClick={() => setShowUploadModal(true)}
+                  onClick={() => setShowDataModal(true)}
                   className="text-yellow-300 hover:text-yellow-200 font-semibold text-sm sm:text-base transition-colors"
-                  title="📂 Загрузить прайсы и данные по БЖУ"
+                  title="📂 Загрузить прайсы, данные по БЖУ или подключить iiko RMS"
                 >
                   ДАННЫЕ
                 </button>
