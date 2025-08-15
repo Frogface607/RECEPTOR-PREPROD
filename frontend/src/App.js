@@ -8315,6 +8315,13 @@ function App() {
                     >
                       iiko CSV (для импорта)
                     </button>
+                    <button 
+                      onClick={handleIikoTtkXlsxExport}
+                      className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+                      title="📋 ЭКСПОРТ В IIKO (XLSX, ТТК): технологическая карта в формате для импорта в iikoWeb"
+                    >
+                      ЭКСПОРТ В IIKO (XLSX, ТТК)
+                    </button>
                   </div>
                 </div>
                 
