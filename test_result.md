@@ -2115,6 +2115,7 @@ frontend:
 
 test_plan:
   current_focus:
+    - "IIKo CSV Export Feature (Task iiko-csv-export)"
     - "Price Provider Implementation (Task P1-Prices)"
     - "Price Provider UI Integration (Task P1-Prices-UI)"
   stuck_tasks:
