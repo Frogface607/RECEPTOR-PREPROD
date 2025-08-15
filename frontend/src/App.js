@@ -15129,6 +15129,12 @@ function App() {
               <div>iiko Connected: {iikoRmsConnection.status === 'connected' ? 'yes' : 'no'}</div>
               <div>iiko Items: {iikoRmsConnection.products_count || 0}</div>
               <div>Last Sync: {iikoRmsConnection.last_sync ? new Date(iikoRmsConnection.last_sync).toLocaleTimeString() : 'never'}</div>
+              <div>Auto-mapped Count: {autoMappingResults.filter(r => r.status === 'accepted' || r.status === 'auto_accept').length}</div>
+              <div>Confidence Stats: {autoMappingResults.length > 0 ? 
+                `≥90%: ${autoMappingResults.filter(r => r.confidence >= 90).length}, ` +
+                `75-89%: ${autoMappingResults.filter(r => r.confidence >= 75 && r.confidence < 90).length}, ` +
+                `<75%: ${autoMappingResults.filter(r => r.confidence > 0 && r.confidence < 75).length}`
+                : 'none'}</div>
             </div>
           </div>
         </div>
