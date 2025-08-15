@@ -30,3 +30,5 @@ xlsxwriter>=3.2.0
 openpyxl>=3.1.0
 pyiikocloudapi>=0.0.26
 httpx>=0.28.1
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.12.2
