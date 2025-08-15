@@ -133,9 +133,9 @@ class IikoRmsService:
                 
                 query = {"user_id": user_id} if user_id else {"host": host, "login": login}
                 credentials_data = credentials.model_dump(by_alias=True, exclude={"_id"})
-                self.credentials.replace_one(
+                self.credentials.update_one(
                     query,
-                    credentials_data,
+                    {"$set": credentials_data},
                     upsert=True
                 )
             except:
