@@ -2115,9 +2115,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "IIKo CSV Export Feature (Task iiko-csv-export)"
-    - "Price Provider Implementation (Task P1-Prices)"
-    - "Price Provider UI Integration (Task P1-Prices-UI)"
+    - "IK-01 iiko XLSX Export Feature (Task IK-01)"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
