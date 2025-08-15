@@ -53,10 +53,11 @@ class ExportWorkflowTester:
         try:
             # Test with a sample dish like "Говядина тушеная с овощами"
             payload = {
-                "dish_name": "Говядина тушеная с овощами",
+                "name": "Говядина тушеная с овощами",
                 "cuisine": "русская",
-                "portions": 4,
-                "description": "Классическое блюдо русской кухни с тушеной говядиной и овощами"
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             response = self.session.post(f"{API_BASE}/v1/techcards.v2/generate", 
