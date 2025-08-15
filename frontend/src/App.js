@@ -3170,24 +3170,16 @@ function App() {
     // Apply changes and recalculate
     setTcV2(updatedTcV2);
     
-    try {
-      await performRecalculation(updatedTcV2);
-      
-      setAutoMappingMessage({ 
-        type: 'success', 
-        text: `✅ Применено ${changesCount} изменений. Покрытие цен обновлено!` 
-      });
-      
-      setShowAutoMappingModal(false);
-      setAutoMappingResults([]);
-      
-    } catch (error) {
-      console.error('Recalc error after auto-mapping:', error);
-      setAutoMappingMessage({ 
-        type: 'error', 
-        text: `❌ Ошибка пересчета: ${error.message}` 
-      });
-    }
+    // Use the existing recalculation function
+    await performRecalculation(updatedTcV2);
+    
+    setAutoMappingMessage({ 
+      type: 'success', 
+      text: `✅ Применено ${changesCount} изменений. Покрытие цен обновлено!` 
+    });
+    
+    setShowAutoMappingModal(false);
+    setAutoMappingResults([]);
   };
 
   const undoAutoMappingChanges = async () => {
