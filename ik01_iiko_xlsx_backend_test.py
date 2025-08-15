@@ -108,21 +108,21 @@ class IK01IikoXLSXTester:
                     "n": 1,
                     "action": "Нарезать говядину кубиками",
                     "time_min": 10,
-                    "equipment": "нож"
+                    "equipment": ["нож"]
                 },
                 {
                     "n": 2,
                     "action": "Обжарить говядину до золотистой корочки",
                     "temp_c": 180,
                     "time_min": 15,
-                    "equipment": "сковорода"
+                    "equipment": ["сковорода"]
                 },
                 {
                     "n": 3,
                     "action": "Добавить овощи и тушить",
                     "temp_c": 160,
                     "time_min": 45,
-                    "equipment": "сковорода"
+                    "equipment": ["сковорода"]
                 }
             ],
             "storage": {
