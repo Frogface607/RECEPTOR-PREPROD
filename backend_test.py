@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-Backend Testing for P1-Prices Implementation (Task P1-Prices)
-Testing unified price provider system with hierarchical source strategy
+Backend Testing for iiko CSV Export Implementation
+Testing iiko CSV export functionality as specified in review request
 """
 
 import requests
 import json
 import sys
 import os
+import zipfile
+import csv
+import io
 from datetime import datetime
 from typing import Dict, List, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://ai-recipe-pro.preview.emergentagent.com/api"
+BACKEND_URL = "https://79c78f83-f996-4516-a100-f9b16f891225.preview.emergentagent.com/api"
 
 class P1PricesBackendTester:
     """Comprehensive tester for P1-Prices implementation"""
