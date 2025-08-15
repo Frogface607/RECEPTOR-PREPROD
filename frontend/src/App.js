@@ -14545,6 +14545,11 @@ function App() {
               <div>First Issue: {generationIssues[0]?.type || generationIssues[0] || 'none'}</div>
             )}
             <div>Last Request: {window.__lastGenerationDebug?.requestTime ? `${window.__lastGenerationDebug.requestTime}ms` : 'none'}</div>
+            <div className="border-t border-gray-700 pt-1 mt-1">
+              <div>iiko Connected: {iikoRmsConnection.status === 'connected' ? 'yes' : 'no'}</div>
+              <div>iiko Items: {iikoRmsConnection.products_count || 0}</div>
+              <div>Last Sync: {iikoRmsConnection.last_sync ? new Date(iikoRmsConnection.last_sync).toLocaleTimeString() : 'never'}</div>
+            </div>
           </div>
         </div>
       )}
