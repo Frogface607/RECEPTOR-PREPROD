@@ -1702,8 +1702,14 @@ try:
     logger.info("Using iikoServer API integration")
 except Exception as e:
     logger.warning(f"iikoServer API failed, falling back to Cloud API: {e}")
-    iiko_auth_manager = IikoAuthManager()
-    iiko_service = IikoIntegrationService(iiko_auth_manager)
+    try:
+        iiko_auth_manager = IikoAuthManager()
+        iiko_service = IikoIntegrationService(iiko_auth_manager)
+    except Exception as e2:
+        logger.warning(f"Cloud API also failed: {e2}")
+        # Create dummy service to prevent errors
+        iiko_auth_manager = None
+        iiko_service = None
 
 # Create the main app without a prefix
 app = FastAPI()
