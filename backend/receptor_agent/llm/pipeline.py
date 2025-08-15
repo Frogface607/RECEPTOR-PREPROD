@@ -456,7 +456,6 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             card_dict = validated_card.model_dump()
             
             # Присваиваем пустые объекты вместо None чтобы избежать validation errors
-            from .schemas import NutritionV2, CostV2
             card_dict["nutrition"] = NutritionV2().model_dump()
             card_dict["cost"] = CostV2().model_dump()
             
