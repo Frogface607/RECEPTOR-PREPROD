@@ -325,6 +325,42 @@ def search_catalog(
             except Exception as e:
                 print(f"Price search error: {e}")
         
+        # iiko search results (if needed)
+        iiko_results = []
+        if source in ("iiko", "all"):
+            try:
+                from ..integrations.iiko_service import get_iiko_service
+                iiko_service = get_iiko_service()
+                
+                # Get organizations from token record
+                organizations = iiko_service.get_organizations()
+                if organizations:
+                    organization_id = organizations[0]["id"]  # Use first organization
+                    
+                    # Search products in iiko
+                    iiko_products = iiko_service.search_products(organization_id, query, limit)
+                    
+                    for product in iiko_products:
+                        iiko_results.append({
+                            "name": product["name"],
+                            "canonical_id": None,
+                            "fdc_id": None,
+                            "sku_id": product["sku_id"],
+                            "category": product.get("group_name", "iiko"),
+                            "unit": product["unit"],
+                            "price": product["price_per_unit"],
+                            "has_nutrition": False,
+                            "nutrition_preview": None,
+                            "source": "iiko",
+                            "currency": product["currency"],
+                            "asOf": product["asOf"],
+                            "match_score": product["match_score"],
+                            "article": product.get("article")
+                        })
+                        
+            except Exception as e:
+                print(f"iiko search error: {e}")
+        
         # Каталоги цен и питания (если нужны)
         catalog_results = []
         if source in ("nutrition", "all"):
