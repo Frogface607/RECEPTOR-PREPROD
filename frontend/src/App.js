@@ -14868,6 +14868,248 @@ function App() {
         </div>
       )}
 
+      {/* Auto-Mapping Modal (IK-02B-FE/02) */}
+      {showAutoMappingModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-purple-400/20">
+            {/* Header */}
+            <div className="bg-gray-800/95 backdrop-blur-lg border-b border-purple-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-300 mb-2">🏪 Автомаппинг из iiko RMS</h2>
+                  <p className="text-gray-400">Сопоставление ингредиентов с номенклатурой ресторана</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAutoMappingModal(false);
+                    setAutoMappingResults([]);
+                    setAutoMappingMessage({ type: '', text: '' });
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            {/* Message Banner */}
+            {autoMappingMessage.text && (
+              <div className={`p-4 border-b border-gray-600/50 ${
+                autoMappingMessage.type === 'success' ? 'bg-green-900/30 text-green-300' :
+                autoMappingMessage.type === 'error' ? 'bg-red-900/30 text-red-300' :
+                'bg-blue-900/30 text-blue-300'
+              }`}>
+                {autoMappingMessage.text}
+              </div>
+            )}
+            
+            {/* Filters */}
+            <div className="p-4 border-b border-gray-600/50 bg-gray-700/30">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setAutoMappingFilter('all')}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      autoMappingFilter === 'all' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Все
+                  </button>
+                  <button
+                    onClick={() => setAutoMappingFilter('no_sku')}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      autoMappingFilter === 'no_sku' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Только без SKU
+                  </button>
+                  <button
+                    onClick={() => setAutoMappingFilter('low_confidence')}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      autoMappingFilter === 'low_confidence' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Низкая уверенность (&lt;90%)
+                  </button>
+                </div>
+                
+                <input
+                  type="text"
+                  value={autoMappingSearch}
+                  onChange={(e) => setAutoMappingSearch(e.target.value)}
+                  placeholder="Поиск по названию ингредиента..."
+                  className="flex-1 min-w-0 px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none text-sm"
+                />
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="preserveExistingSku"
+                    checked={preserveExistingSku}
+                    onChange={(e) => setPreserveExistingSku(e.target.checked)}
+                    className="w-4 h-4 text-purple-600 bg-gray-800 border-gray-600 rounded focus:ring-purple-500 focus:ring-2"
+                  />
+                  <label htmlFor="preserveExistingSku" className="text-sm text-gray-300">
+                    Не перезаписывать SKU
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            {/* Results Table */}
+            <div className="flex-1 overflow-auto">
+              <div className="p-4 space-y-2">
+                {getFilteredAutoMappingResults().map((result, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg border transition-colors ${
+                      result.status === 'accepted' ? 'bg-green-900/20 border-green-500/30' :
+                      result.status === 'auto_accept' ? 'bg-blue-900/20 border-blue-500/30' :
+                      result.status === 'rejected' ? 'bg-red-900/20 border-red-500/30' :
+                      result.status === 'error' ? 'bg-red-900/30 border-red-500/50' :
+                      result.status === 'skipped' ? 'bg-gray-900/30 border-gray-600/50' :
+                      'bg-gray-800/50 border-gray-600/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      {/* Ingredient Info */}
+                      <div className="flex-1 min-w-0 mr-4">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <div className="font-medium text-white">
+                            {result.ingredient.name}
+                            <span className="text-gray-400 ml-2 text-sm">({result.ingredient.unit})</span>
+                          </div>
+                          {result.currentSku && (
+                            <span className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
+                              Текущий: {result.currentSku}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {result.suggestion ? (
+                          <div className="flex items-center space-x-4 text-sm">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-purple-300 font-medium">
+                                {result.suggestion.name}
+                              </div>
+                              <div className="text-gray-400">
+                                SKU: {result.suggestion.sku_id} • {result.suggestion.unit}
+                                {result.suggestion.category && (
+                                  <span className="ml-2">• {result.suggestion.category}</span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                result.confidence >= 90 ? 'bg-green-600 text-white' :
+                                result.confidence >= 75 ? 'bg-yellow-600 text-white' :
+                                'bg-red-600 text-white'
+                              }`}>
+                                {result.confidence}%
+                              </span>
+                              
+                              <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs">
+                                iiko
+                              </span>
+                              
+                              {result.issues && result.issues.length > 0 && (
+                                <span className="bg-yellow-600 text-white px-2 py-1 rounded text-xs">
+                                  ⚠ {result.unitMismatch ? 'unit' : 'issue'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-gray-500 text-sm">
+                            {result.reason || 'Совпадения не найдены'}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="flex space-x-2">
+                        {result.suggestion && result.status !== 'skipped' && (
+                          <>
+                            <button
+                              onClick={() => acceptAutoMappingSuggestion(index, true)}
+                              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                                result.status === 'accepted' || result.status === 'auto_accept'
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-gray-600 hover:bg-green-600 text-gray-200 hover:text-white'
+                              }`}
+                            >
+                              ✓ Принять
+                            </button>
+                            <button
+                              onClick={() => acceptAutoMappingSuggestion(index, false)}
+                              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                                result.status === 'rejected'
+                                  ? 'bg-red-600 text-white'
+                                  : 'bg-gray-600 hover:bg-red-600 text-gray-200 hover:text-white'
+                              }`}
+                            >
+                              ✗ Отклонить
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {getFilteredAutoMappingResults().length === 0 && (
+                  <div className="text-center py-12 text-gray-400">
+                    <div className="text-3xl mb-4">🔍</div>
+                    <div className="text-lg">Нет результатов для отображения</div>
+                    <div className="text-sm text-gray-500 mt-2">
+                      Попробуйте изменить фильтры или выполнить автомаппинг
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Actions Panel */}
+            <div className="border-t border-gray-600/50 p-4 bg-gray-700/30">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-400">
+                  {autoMappingResults.filter(r => r.status === 'accepted' || r.status === 'auto_accept').length} из {autoMappingResults.length} позиций будет изменено
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    onClick={acceptAllHighConfidence}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                  >
+                    Принять всё (≥90%)
+                  </button>
+                  
+                  <button
+                    onClick={applyAutoMappingChanges}
+                    disabled={autoMappingResults.filter(r => r.status === 'accepted' || r.status === 'auto_accept').length === 0}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors"
+                  >
+                    Применить выбранное
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowAutoMappingModal(false);
+                      setAutoMappingResults([]);
+                      setAutoMappingMessage({ type: '', text: '' });
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                  >
+                    Отменить
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Debug Panel - show if debug=1 in URL */}
       {isDebugMode && (
         <div className="fixed bottom-4 right-4 bg-gray-900/95 backdrop-blur-lg border border-purple-400/30 rounded-lg p-3 text-xs font-mono max-w-sm">
