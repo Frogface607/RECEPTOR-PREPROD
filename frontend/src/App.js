@@ -13717,7 +13717,7 @@ function App() {
                   value={iikoSearchQuery}
                   onChange={(e) => {
                     setIikoSearchQuery(e.target.value);
-                    performIikoSearch(e.target.value);
+                    debouncedIikoSearch(e.target.value);
                   }}
                   placeholder="Поиск в номенклатуре iiko RMS..."
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
