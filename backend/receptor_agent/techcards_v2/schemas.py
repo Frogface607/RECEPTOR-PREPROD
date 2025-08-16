@@ -12,14 +12,16 @@ class SubRecipeRefV2(BaseModel):
     title: str = Field(..., min_length=1, description="Название подрецепта для отображения")
 
 class MetaV2(BaseModel):
+    model_config = ConfigDict(extra="forbid")  # GX-01-FINAL: запрещаем лишние ключи
+    
     id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str = Field(..., min_length=2, max_length=200)
     version: str = Field(default="2.0")
     createdAt: datetime = Field(default_factory=datetime.now)
     cuisine: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
-    # GX-01: Инструментирование времени выполнения
-    timings: Optional[Dict[str, float]] = Field(default=None, description="Метрики времени выполнения pipeline (ms)")
+    # GX-01-FINAL: безопасная сериализация timings
+    timings: Dict[str, float] = Field(default_factory=dict, description="Метрики времени выполнения pipeline (ms)")
 
 class YieldV2(BaseModel):
     perPortion_g: float = Field(..., gt=0)
