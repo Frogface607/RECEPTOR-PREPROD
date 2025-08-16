@@ -434,7 +434,7 @@ class GX01FinalTester:
         """Запускает полное тестирование GX-01-FINAL"""
         self.log("🚀 Starting GX-01-FINAL comprehensive testing...")
         
-        # 1. КОНТРАКТ ОТВЕТА СТАБИЛЕН - тестируем разные блюда
+        # 1. КОНТРАКТ ОТВЕТА СТАБИЛЕН - тестируем разные блюда как указано в review
         test_dishes = [
             "Борщ украинский",
             "Цезарь салат", 
@@ -466,6 +466,10 @@ class GX01FinalTester:
         self.log("6️⃣ Testing sanitize purity...")
         sanitize_ok = self.test_sanitize_purity()
         
+        # 7. ДОПОЛНИТЕЛЬНЫЕ ПРОВЕРКИ ИЗ REVIEW REQUEST
+        self.log("7️⃣ Additional acceptance criteria checks...")
+        additional_ok = self.test_additional_criteria()
+        
         # Итоговый отчет
         self.log("📋 GX-01-FINAL TEST SUMMARY:")
         self.log("=" * 50)
@@ -485,6 +489,7 @@ class GX01FinalTester:
         self.log(f"🦴 Skeleton-fallback: {'✅' if skeleton_ok else '❌'}")
         self.log(f"🔍 Validation errors: {'✅' if validation_ok else '❌'}")
         self.log(f"🧹 Sanitize purity: {'✅' if sanitize_ok else '❌'}")
+        self.log(f"📋 Additional criteria: {'✅' if additional_ok else '❌'}")
         
         # Общий результат
         all_tests_passed = (
@@ -493,7 +498,8 @@ class GX01FinalTester:
             normalize_ok and
             skeleton_ok and
             validation_ok and
-            sanitize_ok
+            sanitize_ok and
+            additional_ok
         )
         
         if all_tests_passed:
@@ -502,6 +508,49 @@ class GX01FinalTester:
         else:
             self.log("❌ Some GX-01-FINAL acceptance criteria failed")
             return False
+    
+    def test_additional_criteria(self):
+        """Дополнительные проверки из review request"""
+        self.log("📋 Testing additional acceptance criteria...")
+        
+        issues_found = []
+        
+        # Проверяем что все responses имеют правильный Content-Type
+        for result in self.results:
+            content_type = result.get("content_type", "")
+            if "application/json; charset=utf-8" not in content_type:
+                issues_found.append(f"{result['dish']}: Wrong Content-Type: {content_type}")
+        
+        # Проверяем что все timings в разумных пределах
+        for result in self.results:
+            if result["success"]:
+                response_data = result.get("response_data", {})
+                card = response_data.get("card", {})
+                timings = card.get("meta", {}).get("timings", {})
+                
+                # Проверяем что total_ms соответствует измеренному времени
+                total_ms = timings.get("total_ms", 0)
+                measured_ms = result.get("duration_ms", 0)
+                
+                # Допускаем разницу до 1000ms (сетевые задержки)
+                if abs(total_ms - measured_ms) > 1000:
+                    issues_found.append(f"{result['dish']}: Timing mismatch: total_ms={total_ms}, measured={measured_ms}")
+        
+        # Проверяем что статус никогда не "failed"
+        for result in self.results:
+            response_data = result.get("response_data", {})
+            status = response_data.get("status")
+            if status == "failed":
+                issues_found.append(f"{result['dish']}: Status is 'failed' (should be 'success' or 'draft')")
+        
+        if issues_found:
+            self.log("❌ Additional criteria issues:")
+            for issue in issues_found:
+                self.log(f"   {issue}")
+            return False
+        else:
+            self.log("✅ All additional criteria passed")
+            return True
 
 def main():
     """Основная функция тестирования"""
