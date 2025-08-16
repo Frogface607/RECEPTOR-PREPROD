@@ -389,6 +389,7 @@ def search_catalog(
                             "nutrition_preview": None,
                             "source": "rms",
                             "currency": product["currency"],
+                            "vat_pct": product.get("vat_pct", 0.0),  # IK-03: VAT support
                             "asOf": product["asOf"],
                             "match_score": product["match_score"],
                             "article": product.get("article"),
