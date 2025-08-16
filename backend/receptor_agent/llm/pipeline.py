@@ -649,8 +649,13 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     
                 # Добавляем timings
                 timings["total_ms"] = int((time.time() - start_total) * 1000)
-                if hasattr(draft_card, 'meta') and draft_card.meta:
-                    draft_card.meta.timings = timings
+                
+                # Обновляем meta с timings
+                draft_card_dict = draft_card.model_dump()
+                if "meta" not in draft_card_dict:
+                    draft_card_dict["meta"] = {}
+                draft_card_dict["meta"]["timings"] = timings
+                draft_card = TechCardV2.model_validate(draft_card_dict)
                     
             except Exception as validation_error:
                 validation_issues.append(f"Failed to create draft card: {str(validation_error)}")
