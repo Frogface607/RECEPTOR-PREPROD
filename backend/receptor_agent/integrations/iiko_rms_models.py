@@ -154,6 +154,7 @@ IIKO_RMS_PRODUCTS_COLLECTION = "iiko_rms_products"
 IIKO_RMS_GROUPS_COLLECTION = "iiko_rms_groups"
 IIKO_RMS_SYNC_STATUS_COLLECTION = "iiko_rms_sync_status"
 IIKO_RMS_MAPPINGS_COLLECTION = "iiko_rms_mappings"
+IIKO_RMS_PRICES_COLLECTION = "iiko_prices"  # IK-03: New collection for pricing data
 
 # MongoDB indexes for performance
 IIKO_RMS_PRODUCTS_INDEXES = [
