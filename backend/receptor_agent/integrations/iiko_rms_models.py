@@ -198,3 +198,12 @@ IIKO_RMS_MAPPINGS_INDEXES = [
     {"keys": [("approved", 1)], "name": "approved_1"},
     {"keys": [("created_by", 1)], "name": "created_by_1"}
 ]
+
+# IK-03: Indexes for pricing data collection
+IIKO_RMS_PRICES_INDEXES = [
+    {"keys": [("skuId", 1)], "name": "skuId_1"},  # Primary lookup by SKU
+    {"keys": [("organization_id", 1), ("skuId", 1)], "name": "org_sku_compound"},  # Organization-scoped lookup
+    {"keys": [("name", "text")], "name": "name_search"},  # Text search by product name
+    {"keys": [("as_of", -1)], "name": "as_of_-1"},  # Sort by freshness
+    {"keys": [("active", 1), ("as_of", -1)], "name": "active_freshness"}  # Active products by freshness
+]
