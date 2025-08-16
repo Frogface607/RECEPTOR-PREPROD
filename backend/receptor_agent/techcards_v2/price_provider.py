@@ -287,6 +287,7 @@ class PriceProvider:
         
         # Search all sources in priority order
         all_sources = [
+            (self.iiko_prices, "iiko"),
             (self.user_prices, "user"),
             (self.catalog_prices, "catalog"), 
             (self.bootstrap_prices, "bootstrap")
