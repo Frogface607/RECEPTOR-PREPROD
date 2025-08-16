@@ -592,10 +592,15 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 validation_issues.append(f"Card sanitization error: {str(e)}")
             timings["sanitize_ms"] = int((time.time() - start_sanitize) * 1000)
             
-            # GX-01: Добавляем timings в meta
+            # GX-01: Добавляем timings в meta перед созданием final card
             timings["total_ms"] = int((time.time() - start_total) * 1000)
-            if hasattr(validated_card, 'meta') and validated_card.meta:
-                validated_card.meta.timings = timings
+            
+            # Обновляем meta с timings перед финальной обработкой
+            validated_card_dict = validated_card.model_dump()
+            if "meta" not in validated_card_dict:
+                validated_card_dict["meta"] = {}
+            validated_card_dict["meta"]["timings"] = timings
+            validated_card = TechCardV2.model_validate(validated_card_dict)
             
             # Объединяем все issues
             all_issues = (validation_issues + skeleton_issues +
