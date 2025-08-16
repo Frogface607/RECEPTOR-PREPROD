@@ -11,9 +11,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class PriceProvider:
-    """Unified price provider with strategy sources: user → catalog → bootstrap → llm-fallback"""
+    """
+    IK-03: Unified price provider with enhanced strategy sources: 
+    iiko (RMS) → dev-catalog → bootstrap → llm-fallback
+    """
     
     def __init__(self):
+        self.iiko_prices = {}  # IK-03: iiko RMS prices (highest priority)
         self.user_prices = {}  # MongoDB user prices (if available)
         self.catalog_prices = {}  # price_catalog.dev.json
         self.bootstrap_prices = {}  # prices_ru.demo.csv
