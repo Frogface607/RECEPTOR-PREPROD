@@ -2319,11 +2319,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "IikoRmsClient Class Implementation (IK-02B RMS Backend)"
-    - "IK-02B RMS REST Endpoints Implementation (IK-02B RMS API)"
-    - "IK-02B RMS Database Collections (IK-02B RMS DB)"
-    - "IK-02B RMS Catalog Search Enhancement (IK-02B RMS Search)"
-    - "IK-02B RMS Auto-Mapping System (IK-02B RMS Mapper)"
+    - "GX-01 Stabilization Generation V2 (GX-01 Backend)"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
