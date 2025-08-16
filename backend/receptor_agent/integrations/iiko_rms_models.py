@@ -101,6 +101,8 @@ class IikoRmsPrice(BaseModel):
     
     class Config:
         populate_by_name = True
+
+class IikoRmsSyncStatus(BaseModel):
     """Model for tracking RMS synchronization operations"""
     id: str = Field(default_factory=lambda: str(uuid4()), alias="_id")
     organization_id: str = Field(description="Organization ID")
