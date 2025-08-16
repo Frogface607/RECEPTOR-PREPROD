@@ -15,7 +15,7 @@ from fuzzywuzzy import fuzz
 
 from .iiko_rms_client import IikoRmsClient, get_iiko_rms_client, IikoRmsAPIError
 from .iiko_rms_models import (
-    IikoRmsCredentials, IikoRmsProduct, IikoRmsGroup, IikoRmsSyncStatus, IikoRmsMapping,
+    IikoRmsCredentials, IikoRmsProduct, IikoRmsGroup, IikoRmsSyncStatus, IikoRmsMapping, IikoRmsPrice,  # IK-03: Added IikoRmsPrice
     IikoRmsConnectionStatus,
     IIKO_RMS_CREDENTIALS_COLLECTION, IIKO_RMS_PRODUCTS_COLLECTION,
     IIKO_RMS_GROUPS_COLLECTION, IIKO_RMS_SYNC_STATUS_COLLECTION, IIKO_RMS_MAPPINGS_COLLECTION,
