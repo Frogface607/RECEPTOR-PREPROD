@@ -251,18 +251,20 @@ def _create_skeleton_techcard(profile: ProfileInput, error_reason: str = "LLM un
     Создает детерминированный skeleton TechCardV2 при сбое LLM
     GX-01: Жёсткий фоллбек для предсказуемости
     """
+    import uuid
+    from datetime import datetime
+    
     # Обрезаем title до 80 символов
     title = profile.name[:80] if len(profile.name) > 80 else profile.name
     
     return {
         "meta": {
+            "id": str(uuid.uuid4()),
             "title": title,
             "version": "2.0", 
+            "createdAt": datetime.now().isoformat(),
             "cuisine": profile.cuisine or "международная",
             "tags": [],
-            "id": None,
-            "created": None,
-            "updated": None,
             "timings": {}  # Будет заполнено в run_pipeline
         },
         "portions": 1,  # GX-01: portions=1
