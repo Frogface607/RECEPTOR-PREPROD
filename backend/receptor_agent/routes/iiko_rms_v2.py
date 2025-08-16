@@ -245,6 +245,61 @@ async def get_rms_connection_status(user_id: Optional[str] = Query(None, descrip
         logger.error(f"Error getting RMS connection status: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+# IK-03: Price synchronization endpoint
+@router.post("/sync/prices", response_model=SyncRmsPricesResponse)
+async def sync_rms_prices(
+    request: SyncRmsPricesRequest = SyncRmsPricesRequest(),
+    background_tasks: BackgroundTasks = None
+):
+    """
+    IK-03: Synchronize pricing data from iiko RMS
+    Idempotent operation that fetches purchase prices and VAT rates
+    """
+    try:
+        logger.info(f"Starting RMS price synchronization for organization: {request.organization_id}")
+        
+        service = get_iiko_rms_service()
+        
+        # Check if sync is needed (unless forced)
+        if not request.force:
+            # Could add logic to check last sync time and skip if recent
+            pass
+        
+        # Perform synchronization
+        result = service.sync_prices(organization_id=request.organization_id)
+        
+        if result["status"] == "success":
+            logger.info(f"✅ RMS price sync completed successfully")
+            return SyncRmsPricesResponse(
+                status=result["status"],
+                organization_id=result["organization_id"],
+                items_processed=result["items_processed"],
+                items_created=result["items_created"],
+                items_updated=result["items_updated"],
+                sync_timestamp=result["sync_timestamp"],
+                message=result["message"]
+            )
+        elif result["status"] == "no_data":
+            return SyncRmsPricesResponse(
+                status="no_data",
+                organization_id=request.organization_id,
+                items_processed=0,
+                items_created=0,
+                items_updated=0,
+                sync_timestamp=datetime.now().isoformat(),
+                message="No pricing data available from iiko RMS"
+            )
+        else:
+            # Error case
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Price sync failed: {result.get('error', 'Unknown error')}"
+            )
+        
+    except Exception as e:
+        logger.error(f"Error during RMS price synchronization: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Price sync failed: {str(e)}")
+
 @router.get("/sync/status")
 async def get_rms_sync_status(organization_id: str = Query(description="Organization ID")):
     """
