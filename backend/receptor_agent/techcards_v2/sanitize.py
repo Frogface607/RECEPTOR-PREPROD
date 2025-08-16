@@ -3,7 +3,10 @@
 Решает проблемы с null-значениями, строками вместо чисел, неправильными типами
 """
 import re
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from receptor_agent.techcards_v2.schemas import TechCardV2
 
 
 def sanitize_card_v2(card_dict: Dict[str, Any]) -> Dict[str, Any]:
