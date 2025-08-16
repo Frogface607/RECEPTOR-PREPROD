@@ -46,6 +46,20 @@ class SyncRmsNomenclatureResponse(BaseModel):
     sync_id: str = Field(description="Sync operation ID")
     stats: Optional[Dict[str, int]] = Field(None, description="Sync statistics")
 
+# IK-03: Price sync request/response models
+class SyncRmsPricesRequest(BaseModel):
+    organization_id: str = Field(default="default", description="Organization ID for price sync")
+    force: bool = Field(default=False, description="Force sync even if recently synced")
+
+class SyncRmsPricesResponse(BaseModel):
+    status: str = Field(description="Sync status")
+    organization_id: str = Field(description="Organization ID")
+    items_processed: int = Field(description="Number of price items processed")
+    items_created: int = Field(description="Number of new price records created")
+    items_updated: int = Field(description="Number of price records updated")
+    sync_timestamp: str = Field(description="Sync completion timestamp")
+    message: str = Field(description="Sync result message")
+
 class RmsProductSearchResponse(BaseModel):
     sku_id: str = Field(description="Product SKU ID")
     name: str = Field(description="Product name")
