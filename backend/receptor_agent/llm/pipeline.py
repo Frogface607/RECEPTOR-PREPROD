@@ -156,7 +156,7 @@ def extract_anchors(dish_name: str, cuisine: str = None) -> Dict[str, Any]:
 def generate_draft_v2(profile: ProfileInput, constraints: Dict[str, Any] = None) -> Dict[str, Any]:
     """Генерация чернового JSON с помощью нового промпта v2 и constraints"""
     if not _use_llm():
-        return _get_fallback_draft(profile)
+        return _create_skeleton_techcard(profile, "LLM disabled")
         
     try:
         # Загружаем промпты v2
@@ -187,7 +187,7 @@ def generate_draft_v2(profile: ProfileInput, constraints: Dict[str, Any] = None)
         
         user_prompt = _format_template(user_template, **template_params)
         
-        # Вызываем LLM с настройками для качественной генерации  
+        # GX-01: Вызываем LLM с новыми параметрами timeout_ms=20000, stage="draft"
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt,
@@ -195,12 +195,14 @@ def generate_draft_v2(profile: ProfileInput, constraints: Dict[str, Any] = None)
             temperature=0.2,
             top_p=0.9,
             presence_penalty=0,
-            frequency_penalty=0
+            frequency_penalty=0,
+            timeout_ms=20000,  # GX-01: 20 секунд timeout
+            stage="draft"      # GX-01: логирование стадии
         )
         
     except Exception as e:
-        print(f"Error in generate_draft_v2: {e}")
-        return _get_fallback_draft(profile)
+        print(f"❌ generate_draft_v2 failed: {e}")
+        return _create_skeleton_techcard(profile, f"Draft generation failed: {str(e)}")
 
 def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = None) -> Dict[str, Any]:
     """Нормализация черновика до финального TechCardV2 с constraints"""
@@ -226,6 +228,7 @@ def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = No
         use_4o = os.environ.get('USE_4O_FOR_NORMALIZE', 'false').lower() == 'true'
         model = "gpt-4o" if use_4o else "gpt-4o-mini"
         
+        # GX-01: Вызываем LLM с новыми параметрами timeout_ms=20000, stage="normalize"
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt, 
@@ -234,11 +237,13 @@ def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = No
             temperature=0.2,
             top_p=0.9,
             presence_penalty=0,
-            frequency_penalty=0
+            frequency_penalty=0,
+            timeout_ms=20000,  # GX-01: 20 секунд timeout
+            stage="normalize"  # GX-01: логирование стадии
         )
         
     except Exception as e:
-        print(f"Error in normalize_to_v2: {e}")
+        print(f"❌ normalize_to_v2 failed: {e}")
         return draft_json
 
 def _create_skeleton_techcard(profile: ProfileInput, error_reason: str = "LLM unavailable") -> Dict[str, Any]:
