@@ -241,6 +241,58 @@ def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = No
         print(f"Error in normalize_to_v2: {e}")
         return draft_json
 
+def _create_skeleton_techcard(profile: ProfileInput, error_reason: str = "LLM unavailable") -> Dict[str, Any]:
+    """
+    Создает детерминированный skeleton TechCardV2 при сбое LLM
+    GX-01: Жёсткий фоллбек для предсказуемости
+    """
+    # Обрезаем title до 80 символов
+    title = profile.name[:80] if len(profile.name) > 80 else profile.name
+    
+    return {
+        "meta": {
+            "title": title,
+            "version": "2.0", 
+            "cuisine": profile.cuisine or "международная",
+            "tags": [],
+            "id": None,
+            "created": None,
+            "updated": None,
+            "timings": {}  # Будет заполнено в run_pipeline
+        },
+        "portions": 1,  # GX-01: portions=1
+        "yield": {
+            "perPortion_g": 250.0,  # GX-01: 250г на порцию
+            "perBatch_g": 250.0     # GX-01: 250г на batch (1 порция)
+        },
+        "ingredients": [],  # GX-01: пустой список ингредиентов
+        "process": [
+            {
+                "n": 1,
+                "action": "Подготовка сырья", # GX-01: минимальный процесс
+                "time_min": None,
+                "temp_c": None,
+                "equipment": None,
+                "details": None
+            }
+        ],
+        "storage": {
+            "conditions": "Комнатная температура",
+            "shelfLife_hours": 24.0,
+            "servingTemp_c": 20.0
+        },
+        "nutrition": NutritionV2().model_dump(),  # Пустое питание
+        "cost": CostV2().model_dump(),           # Пустая стоимость  
+        "printNotes": [],
+        "issues": [
+            {
+                "type": "llmUnavailable",
+                "hint": f"Повторите генерацию или отредактируйте вручную. Причина: {error_reason}",
+                "meta": {}
+            }
+        ]
+    }
+
 def _get_fallback_draft(profile: ProfileInput) -> Dict[str, Any]:
     """Fallback черновик при отключенном LLM"""
     return {
