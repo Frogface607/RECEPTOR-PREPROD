@@ -194,14 +194,16 @@ class PriceProvider:
 
     def resolve(self, ingredient) -> Optional[Dict]:
         """
-        Resolve price for ingredient using priority: skuId → canonical_id → fuzzy name
+        IK-03: Resolve price for ingredient using enhanced priority: 
+        skuId → canonical_id → fuzzy name with iiko RMS as top priority
         
         Returns:
             {
-                "price_per_g": float,   # RUB per gram
-                "source": "user"|"catalog"|"bootstrap"|"llm", 
+                "price_per_g": float,   # RUB per gram (normalized)
+                "source": "iiko"|"user"|"catalog"|"bootstrap"|"llm", 
                 "asOf": "YYYY-MM-DD",
-                "skuId": Optional[str]
+                "skuId": Optional[str],
+                "vat_pct": Optional[float]  # IK-03: VAT rate if available
             } | None
         """
         self._load_sources()
