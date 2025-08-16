@@ -72,6 +72,10 @@ class IikoRmsService:
             for index in IIKO_RMS_MAPPINGS_INDEXES:
                 self.mappings.create_index(index["keys"], name=index["name"])
             
+            # IK-03: Prices indexes
+            for index in IIKO_RMS_PRICES_INDEXES:
+                self.prices.create_index(index["keys"], name=index["name"])
+            
             logger.info("RMS database indexes created successfully")
             
         except Exception as e:
