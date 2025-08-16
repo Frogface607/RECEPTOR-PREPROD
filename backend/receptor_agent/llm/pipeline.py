@@ -1,8 +1,8 @@
 from __future__ import annotations
-import os, json
+import os, json, time
 from typing import Dict, Any, List, Set
 from pydantic import BaseModel
-from receptor_agent.techcards_v2.schemas import TechCardV2, NutritionV2, CostV2
+from receptor_agent.techcards_v2.schemas import TechCardV2, NutritionV2, CostV2, MetaV2
 from receptor_agent.techcards_v2.validators import validate_card
 from receptor_agent.techcards_v2.strict_validator import validate_techcard_v2, create_draft_response
 from receptor_agent.techcards_v2.normalize import normalize_card
@@ -32,7 +32,7 @@ class ProfileInput(BaseModel):
 class PipelineResult(BaseModel):
     card: TechCardV2 | None = None
     issues: List[str] = []
-    status: str = "success"  # "success", "draft", "failed"
+    status: str = "success"  # "success", "draft", никогда не "failed"
     raw_data: Dict[str, Any] | None = None
 
 def collect_sub_recipe_ids(tech_card_data: Dict[str, Any]) -> Set[str]:
@@ -113,6 +113,92 @@ def _format_template(template: str, **kwargs) -> str:
     
     return result
 
+def _create_skeleton_techcard(profile: ProfileInput, error_reason: str = "LLM unavailable") -> Dict[str, Any]:
+    """
+    Создает детерминированный skeleton TechCardV2 при сбое LLM
+    GX-01-FINAL: Жёсткий фоллбек для предсказуемости
+    """
+    import uuid
+    from datetime import datetime
+    
+    # Обрезаем title до 80 символов
+    title = profile.name[:80] if len(profile.name) > 80 else profile.name
+    
+    return {
+        "meta": {
+            "id": str(uuid.uuid4()),
+            "title": title,
+            "version": "2.0", 
+            "createdAt": datetime.now().isoformat(),
+            "cuisine": profile.cuisine or "международная",
+            "tags": [],
+            "timings": {}  # Будет заполнено в конце pipeline
+        },
+        "portions": 1,  # GX-01-FINAL: portions=1
+        "yield": {
+            "perPortion_g": 250.0,  # GX-01-FINAL: 250г на порцию
+            "perBatch_g": 250.0     # GX-01-FINAL: 250г на batch (1 порция)
+        },
+        "ingredients": [],  # GX-01-FINAL: пустой список ингредиентов
+        "process": [
+            {
+                "n": 1,
+                "action": "Подготовка сырья", # GX-01-FINAL: минимальный процесс
+                "time_min": None,
+                "temp_c": None,
+                "equipment": None,
+                "details": None
+            }
+        ],
+        "storage": {
+            "conditions": "Комнатная температура",
+            "shelfLife_hours": 24.0,
+            "servingTemp_c": 20.0
+        },
+        "nutrition": NutritionV2().model_dump(),  # Пустое питание
+        "cost": CostV2().model_dump(),           # Пустая стоимость  
+        "printNotes": [],
+        "issues": [error_reason]  # Будет преобразовано в список строк в pipeline
+    }
+
+def _create_minimal_fallback(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    GX-01-FINAL: Создает минимальную карту из кривых данных normalize
+    """
+    import uuid
+    from datetime import datetime
+    
+    fallback = {
+        "meta": data.get("meta", {
+            "id": str(uuid.uuid4()),
+            "title": "Fallback техкарта",
+            "version": "2.0", 
+            "createdAt": datetime.now().isoformat(),
+            "cuisine": "международная",
+            "tags": [],
+            "timings": {}
+        }),
+        "portions": max(1, data.get("portions", 1)),  # >= 1
+        "yield": {
+            "perPortion_g": max(1.0, data.get("yield", {}).get("perPortion_g", 250.0)),
+            "perBatch_g": max(1.0, data.get("yield", {}).get("perBatch_g", 250.0))
+        },
+        "ingredients": data.get("ingredients", []),  # может быть пустым
+        "process": data.get("process") or [
+            {"n": 1, "action": "Подготовка сырья", "time_min": None, "temp_c": None, "equipment": None, "details": None}
+        ],
+        "storage": data.get("storage", {
+            "conditions": "Комнатная температура",
+            "shelfLife_hours": 24.0,
+            "servingTemp_c": 20.0
+        }),
+        "nutrition": NutritionV2().model_dump(),
+        "cost": CostV2().model_dump(),
+        "printNotes": data.get("printNotes", [])
+    }
+    
+    return fallback
+
 def extract_anchors(dish_name: str, cuisine: str = None) -> Dict[str, Any]:
     """Извлечение якорей из названия блюда через LLM"""
     if not _use_llm():
@@ -187,17 +273,19 @@ def generate_draft_v2(profile: ProfileInput, constraints: Dict[str, Any] = None)
         
         user_prompt = _format_template(user_template, **template_params)
         
-        # GX-01: Вызываем LLM с новыми параметрами timeout_ms=20000, stage="draft"
+        # GX-01-FINAL: draft с gpt-4o-mini, max_tokens≈900, локальный SLA ≤ 12s
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt,
             json_schema=TECHCARD_CORE_SCHEMA,
+            model="gpt-4o-mini",
+            max_tokens=900,
             temperature=0.2,
             top_p=0.9,
             presence_penalty=0,
             frequency_penalty=0,
-            timeout_ms=20000,  # GX-01: 20 секунд timeout
-            stage="draft"      # GX-01: логирование стадии
+            timeout_ms=12000,  # GX-01-FINAL: локальный SLA ≤ 12s
+            stage="draft"      # GX-01-FINAL: логирование стадии
         )
         
     except Exception as e:
@@ -224,82 +312,26 @@ def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = No
         
         user_prompt = _format_template(user_template, **template_params)
         
-        # Определяем модель: gpt-4o для сложных случаев
-        use_4o = os.environ.get('USE_4O_FOR_NORMALIZE', 'false').lower() == 'true'
-        model = "gpt-4o" if use_4o else "gpt-4o-mini"
-        
-        # GX-01: Вызываем LLM с новыми параметрами timeout_ms=20000, stage="normalize"
+        # GX-01-FINAL: normalize с gpt-4o, max_tokens≈600, локальный SLA ≤ 10s
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt, 
             json_schema=TECHCARD_CORE_SCHEMA,
-            model=model,
+            model="gpt-4o",
+            max_tokens=600,
             temperature=0.2,
             top_p=0.9,
             presence_penalty=0,
             frequency_penalty=0,
-            timeout_ms=20000,  # GX-01: 20 секунд timeout
-            stage="normalize"  # GX-01: логирование стадии
+            timeout_ms=10000,  # GX-01-FINAL: локальный SLA ≤ 10s
+            stage="normalize"  # GX-01-FINAL: логирование стадии
         )
         
     except Exception as e:
         print(f"❌ normalize_to_v2 failed: {e}")
         return draft_json
 
-def _create_skeleton_techcard(profile: ProfileInput, error_reason: str = "LLM unavailable") -> Dict[str, Any]:
-    """
-    Создает детерминированный skeleton TechCardV2 при сбое LLM
-    GX-01: Жёсткий фоллбек для предсказуемости
-    """
-    import uuid
-    from datetime import datetime
-    
-    # Обрезаем title до 80 символов
-    title = profile.name[:80] if len(profile.name) > 80 else profile.name
-    
-    return {
-        "meta": {
-            "id": str(uuid.uuid4()),
-            "title": title,
-            "version": "2.0", 
-            "createdAt": datetime.now().isoformat(),
-            "cuisine": profile.cuisine or "международная",
-            "tags": [],
-            "timings": {}  # Будет заполнено в run_pipeline
-        },
-        "portions": 1,  # GX-01: portions=1
-        "yield": {
-            "perPortion_g": 250.0,  # GX-01: 250г на порцию
-            "perBatch_g": 250.0     # GX-01: 250г на batch (1 порция)
-        },
-        "ingredients": [],  # GX-01: пустой список ингредиентов
-        "process": [
-            {
-                "n": 1,
-                "action": "Подготовка сырья", # GX-01: минимальный процесс
-                "time_min": None,
-                "temp_c": None,
-                "equipment": None,
-                "details": None
-            }
-        ],
-        "storage": {
-            "conditions": "Комнатная температура",
-            "shelfLife_hours": 24.0,
-            "servingTemp_c": 20.0
-        },
-        "nutrition": NutritionV2().model_dump(),  # Пустое питание
-        "cost": CostV2().model_dump(),           # Пустая стоимость  
-        "printNotes": [],
-        "issues": [
-            {
-                "type": "llmUnavailable",
-                "hint": f"Повторите генерацию или отредактируйте вручную. Причина: {error_reason}",
-                "meta": {}
-            }
-        ]
-    }
-
+# Старые функции (сохранены для совместимости)
 def _get_fallback_draft(profile: ProfileInput) -> Dict[str, Any]:
     """Fallback черновик при отключенном LLM"""
     return {
@@ -455,255 +487,202 @@ def critique(card: TechCardV2) -> List[str]:
     except Exception:
         return issues
 
-def collect_sub_recipe_ids(tech_card_data: Dict[str, Any]) -> Set[str]:
-    """Собираем все ID подрецептов из техкарты"""
-    sub_recipe_ids = set()
-    ingredients = tech_card_data.get("ingredients", [])
-    for ingredient in ingredients:
-        sub_recipe = ingredient.get("subRecipe")
-        if sub_recipe and "id" in sub_recipe:
-            sub_recipe_ids.add(sub_recipe["id"])
-    return sub_recipe_ids
-
-async def fetch_sub_recipes_cache(sub_recipe_ids: Set[str]) -> Dict[str, TechCardV2]:
-    """
-    Получаем подрецепты по ID из базы данных
-    
-    TODO: В будущем это должно извлекать TechCardV2 из MongoDB
-    Пока возвращаем пустой кеш для избежания ошибок
-    """
-    # Заглушка для подрецептов - в будущем здесь будет обращение к БД
-    sub_recipes_cache = {}
-    
-    # TODO: Реализовать получение подрецептов из базы данных:
-    # from motor.motor_asyncio import AsyncIOMotorClient
-    # for sub_recipe_id in sub_recipe_ids:
-    #     doc = await db.techcards_v2.find_one({"meta.id": sub_recipe_id})
-    #     if doc:
-    #         sub_recipes_cache[sub_recipe_id] = TechCardV2.model_validate(doc)
-    
-    return sub_recipes_cache
-
 def run_pipeline(profile: ProfileInput) -> PipelineResult:
     """
-    GX-01: Стабилизированная генерация с инструментированием и фоллбек-механизмами
+    GX-01-FINAL: Полностью стабилизированная генерация с локальными timings и мягким fallback
     Генерация техкарты с анкерной валидностью, правилами шефа и строгой валидацией TechCardV2
     """
-    # GX-01: Инструментирование времени выполнения
-    import time
-    start_total = time.time()
+    # GX-01-FINAL: Локальный сбор timings, присваиваем один раз в конце
+    start_total = time.perf_counter()
     timings = {}
+    all_issues = []
     
     try:
         # Шаг 0: Извлекаем якоря из названия блюда (только если включена строгая проверка)
         constraints = {}
-        strict_anchors = os.environ.get('STRICT_ANCHORS', 'false').lower() == 'true'  # GX-01: по умолчанию false
+        strict_anchors = os.environ.get('STRICT_ANCHORS', 'false').lower() == 'true'  # GX-01-FINAL: по умолчанию false
         
         if strict_anchors:
             constraints = extract_anchors(profile.name, profile.cuisine)
             print(f"Extracted anchors: {constraints}")
         
         # Шаг 1: Генерируем черновик с новым промптом v2 и constraints
-        start_draft = time.time()
+        start_draft = time.perf_counter()
         draft_data = generate_draft_v2(profile, constraints if constraints else None)
-        timings["llm_draft_ms"] = int((time.time() - start_draft) * 1000)
+        timings["llm_draft_ms"] = int((time.perf_counter() - start_draft) * 1000)
         
-        # Проверяем на skeleton (fallback) - если это skeleton, возвращаем как draft
-        if "issues" in draft_data and any(issue.get("type") == "llmUnavailable" for issue in draft_data.get("issues", [])):
-            print("🔄 Skeleton techcard created due to LLM failure - proceeding with draft")
-            # Убираем issues из draft_data перед валидацией
+        # Проверяем на skeleton (fallback) - если это skeleton, обрабатываем issues
+        skeleton_mode = False
+        if "issues" in draft_data:
+            skeleton_mode = True
             skeleton_issues = draft_data.pop("issues", [])
-            skeleton_data = draft_data
-        else:
-            skeleton_issues = []
-            skeleton_data = None
+            all_issues.extend(skeleton_issues)
+            print("🔄 Skeleton techcard created due to LLM failure - proceeding with draft")
         
         # Шаг 2: Нормализуем черновик до финального TechCardV2 с constraints
-        start_normalize = time.time()
+        start_normalize = time.perf_counter()
         normalized_data = normalize_to_v2(draft_data, constraints if constraints else None)
-        timings["llm_normalize_ms"] = int((time.time() - start_normalize) * 1000)
+        timings["llm_normalize_ms"] = int((time.perf_counter() - start_normalize) * 1000)
         
-        # Шаг 2.5: ВАЖНО - Инициализируем nutrition и cost как пустые объекты перед валидацией
-        if normalized_data.get("nutrition") is None:
-            normalized_data["nutrition"] = NutritionV2().model_dump()
-        if normalized_data.get("cost") is None:
-            normalized_data["cost"] = CostV2().model_dump()
+        # GX-01-FINAL: Жёсткий «слепок» после normalize - безопасная валидация
+        start_validate = time.perf_counter()
+        try:
+            # Пробуем создать TechCardV2 из нормализованных данных
+            temp_card = TechCardV2.model_validate(normalized_data)
+            validated_card = temp_card
+            validation_issues = []
+            normalize_fallback = False
+        except Exception as validation_error:
+            print(f"⚠️ Normalize validation failed: {validation_error}")
+            # GX-01-FINAL: Мягкий fallback - создаем минимальную карту
+            fallback_data = _create_minimal_fallback(normalized_data)
+            try:
+                validated_card = TechCardV2.model_validate(fallback_data)
+                validation_issues = [f"normalizeShape: {str(validation_error)}"]
+                all_issues.extend(validation_issues)
+                normalize_fallback = True
+                print("🔄 Created minimal fallback card after normalize failure")
+            except Exception as fallback_error:
+                # Критическая ошибка - используем skeleton
+                print(f"❌ Fallback failed: {fallback_error}")
+                skeleton_data = _create_skeleton_techcard(profile, f"Normalize and fallback failed: {str(fallback_error)}")
+                skeleton_issues = skeleton_data.pop("issues", [])
+                validated_card = TechCardV2.model_validate(skeleton_data)
+                validation_issues = [f"criticalFallback: {str(fallback_error)}"]
+                all_issues.extend(validation_issues + skeleton_issues)
+                normalize_fallback = True
+                skeleton_mode = True
         
-        # Собираем ID подрецептов из нормализованных данных
-        sub_recipe_ids = collect_sub_recipe_ids(normalized_data)
+        timings["validate_ms"] = int((time.perf_counter() - start_validate) * 1000)
+        
+        # Собираем ID подрецептов из валидированных данных
+        sub_recipe_ids = collect_sub_recipe_ids(validated_card.model_dump())
         sub_recipes_cache = {}  # Временная заглушка
         
-        # Шаг 3: СТРОГАЯ ВАЛИДАЦИЯ TechCardV2
-        start_validate = time.time()
-        is_valid, validation_issues, validated_card = validate_techcard_v2(normalized_data)
-        timings["validate_ms"] = int((time.time() - start_validate) * 1000)
+        # Шаг 3.5: Анкерная валидность (только если есть constraints)
+        start_content = time.perf_counter()
+        content_issues = []
+        if constraints and strict_anchors:
+            content_issues = run_content_check(validated_card, constraints)
+        timings["contentcheck_ms"] = int((time.perf_counter() - start_content) * 1000)
         
-        if is_valid and validated_card:
-            # Шаг 3.5: Анкерная валидность (только если есть constraints)
-            start_content = time.time()
-            content_issues = []
-            if constraints and strict_anchors:
-                content_issues = run_content_check(validated_card, constraints)
-            timings["contentcheck_ms"] = int((time.time() - start_content) * 1000)
-            
-            # Шаг 4: Правила шефа (rule-based sanity checks) - GX-01: смягчены для skeleton
-            start_chef = time.time()
-            chef_rule_issues = run_chef_rules(validated_card)
-            
-            # GX-01: Смягчение блокирующих правил для skeleton режима
-            if skeleton_data is not None:
-                # В skeleton режиме stepsMin3 не блокирует (warning вместо error)
-                for issue in chef_rule_issues:
-                    if issue.get("type") == "ruleError:stepsMin3":
-                        issue["type"] = "ruleWarning:stepsMin3"  # понижаем до warning
-                        
-            timings["chef_rules_ms"] = int((time.time() - start_chef) * 1000)
-            
-            # Шаг 5: Пост-проверка качества генерации
-            start_postcheck = time.time()
-            postcheck_issues = postcheck_v2(validated_card)
-            timings["postcheck_ms"] = int((time.time() - start_postcheck) * 1000)
-            
-            # Шаг 6: ВСЕГДА выполняем калькуляторы (единый источник истины)
-            start_cost = time.time()
-            try:
-                validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
-            except Exception as e:
-                validation_issues.append(f"Cost calculation error: {str(e)}")
-            timings["cost_ms"] = int((time.time() - start_cost) * 1000)
-            
-            start_nutrition = time.time()
-            try:
-                validated_card = calculate_nutrition_for_tech_card(validated_card, sub_recipes_cache)
-            except Exception as e:
-                validation_issues.append(f"Nutrition calculation error: {str(e)}")
-            timings["nutrition_ms"] = int((time.time() - start_nutrition) * 1000)
-            
-            # Шаг 7: САНИТАЙЗЕР - приводим к строгому формату
-            start_sanitize = time.time()
-            try:
-                sanitized_dict = sanitize_card_v2(validated_card.model_dump())
-                validated_card = TechCardV2.model_validate(sanitized_dict)
-                
-                if not validate_sanitized_card(sanitized_dict):
-                    validation_issues.append("Card sanitization validation failed")
+        # Шаг 4: Правила шефа (rule-based sanity checks) - GX-01-FINAL: смягчены для skeleton
+        start_chef = time.perf_counter()
+        chef_rule_issues = run_chef_rules(validated_card)
+        
+        # GX-01-FINAL: Смягчение блокирующих правил для skeleton режима
+        if skeleton_mode:
+            # В skeleton режиме stepsMin3 не блокирует (warning вместо error)
+            for issue in chef_rule_issues:
+                if issue.get("type") == "ruleError:stepsMin3":
+                    issue["type"] = "ruleWarning:stepsMin3"  # понижаем до warning
                     
-            except Exception as e:
-                validation_issues.append(f"Card sanitization error: {str(e)}")
-            timings["sanitize_ms"] = int((time.time() - start_sanitize) * 1000)
-            
-            # GX-01: Добавляем timings в meta перед созданием final card
-            timings["total_ms"] = int((time.time() - start_total) * 1000)
-            
-            # Обновляем meta с timings перед финальной обработкой
-            validated_card_dict = validated_card.model_dump()
-            if "meta" not in validated_card_dict:
-                validated_card_dict["meta"] = {}
-            validated_card_dict["meta"]["timings"] = timings
-            validated_card = TechCardV2.model_validate(validated_card_dict)
-            
-            # Объединяем все issues
-            all_issues = (validation_issues + skeleton_issues +
-                         [issue.get("hint", "") for issue in content_issues] +
-                         [issue.get("hint", "") for issue in chef_rule_issues] + 
-                         [issue.get("hint", "") for issue in postcheck_issues])
-            
-            # Проверяем наличие критических ошибок
-            has_critical_content_errors_flag = has_critical_content_errors(content_issues)
-            has_critical_chef_errors_flag = has_critical_rule_errors(chef_rule_issues)
-            
-            # GX-01: Контракт ответов - всегда возвращаем success/draft, никогда failed
-            if has_critical_content_errors_flag or has_critical_chef_errors_flag or skeleton_data is not None:
-                # Есть критические ошибки или skeleton → draft
-                return PipelineResult(
-                    card=validated_card,
-                    issues=all_issues,
-                    status="draft"
-                )
-            elif content_issues or chef_rule_issues or postcheck_issues:
-                # Есть некритические предупреждения → draft
-                return PipelineResult(
-                    card=validated_card,
-                    issues=all_issues,
-                    status="draft"
-                )
-            else:
-                # Нет проблем → успешная генерация
-                return PipelineResult(
-                    card=validated_card,
-                    issues=all_issues,
-                    status="success"
-                )
-        else:
-            # Ошибки валидации - создаем fallback draft с расчетами
-            draft_card = None
-            try:
-                draft_card = TechCardV2.model_validate(normalized_data)
-                
-                # Добавляем базовые расчеты для draft карты
-                try:
-                    draft_card = calculate_cost_for_tech_card(draft_card, sub_recipes_cache)
-                    draft_card = calculate_nutrition_for_tech_card(draft_card, sub_recipes_cache)
-                except Exception:
-                    pass  # Игнорируем ошибки расчетов для draft
-                    
-                # Добавляем timings
-                timings["total_ms"] = int((time.time() - start_total) * 1000)
-                
-                # Обновляем meta с timings
-                draft_card_dict = draft_card.model_dump()
-                if "meta" not in draft_card_dict:
-                    draft_card_dict["meta"] = {}
-                draft_card_dict["meta"]["timings"] = timings
-                draft_card = TechCardV2.model_validate(draft_card_dict)
-                    
-            except Exception as validation_error:
-                validation_issues.append(f"Failed to create draft card: {str(validation_error)}")
-            
+        timings["chef_rules_ms"] = int((time.perf_counter() - start_chef) * 1000)
+        
+        # Шаг 5: Пост-проверка качества генерации
+        start_postcheck = time.perf_counter()
+        postcheck_issues = postcheck_v2(validated_card)
+        timings["postcheck_ms"] = int((time.perf_counter() - start_postcheck) * 1000)
+        
+        # Шаг 6: ВСЕГДА выполняем калькуляторы (единый источник истины)
+        start_cost = time.perf_counter()
+        try:
+            validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
+        except Exception as e:
+            all_issues.append(f"Cost calculation error: {str(e)}")
+        timings["cost_ms"] = int((time.perf_counter() - start_cost) * 1000)
+        
+        start_nutrition = time.perf_counter()
+        try:
+            validated_card = calculate_nutrition_for_tech_card(validated_card, sub_recipes_cache)
+        except Exception as e:
+            all_issues.append(f"Nutrition calculation error: {str(e)}")
+        timings["nutrition_ms"] = int((time.perf_counter() - start_nutrition) * 1000)
+        
+        # Шаг 7: САНИТАЙЗЕР - приводим к строгому формату
+        start_sanitize = time.perf_counter()
+        try:
+            # GX-01-FINAL: sanitize_card_v2 должна быть чистой функцией
+            validated_card = sanitize_card_v2(validated_card)
+        except Exception as e:
+            all_issues.append(f"Card sanitization error: {str(e)}")
+        timings["sanitize_ms"] = int((time.perf_counter() - start_sanitize) * 1000)
+        
+        # GX-01-FINAL: Собираем timings локально, присваиваем один раз
+        timings["total_ms"] = int((time.perf_counter() - start_total) * 1000)
+        
+        # Обновляем meta с timings - безопасная сериализация
+        validated_card = validated_card.model_copy(update={
+            "meta": validated_card.meta.model_copy(update={"timings": timings})
+        })
+        
+        # Объединяем все issues
+        all_issues.extend([issue.get("hint", "") for issue in content_issues])
+        all_issues.extend([issue.get("hint", "") for issue in chef_rule_issues])
+        all_issues.extend([issue.get("hint", "") for issue in postcheck_issues])
+        
+        # Проверяем наличие критических ошибок
+        has_critical_content_errors_flag = has_critical_content_errors(content_issues)
+        has_critical_chef_errors_flag = has_critical_rule_errors(chef_rule_issues)
+        
+        # GX-01-FINAL: Контракт ответов - всегда возвращаем success/draft, никогда failed
+        if (has_critical_content_errors_flag or has_critical_chef_errors_flag or 
+            skeleton_mode or normalize_fallback):
+            # Есть критические ошибки или fallback → draft
             return PipelineResult(
-                card=draft_card,
-                issues=validation_issues + skeleton_issues,
-                status="draft",
-                raw_data=normalized_data
+                card=validated_card,
+                issues=all_issues,
+                status="draft"
+            )
+        elif content_issues or chef_rule_issues or postcheck_issues or all_issues:
+            # Есть некритические предупреждения → draft
+            return PipelineResult(
+                card=validated_card,
+                issues=all_issues,
+                status="draft"
+            )
+        else:
+            # Нет проблем → успешная генерация
+            return PipelineResult(
+                card=validated_card,
+                issues=all_issues,
+                status="success"
             )
             
     except Exception as e:
-        # GX-01: Критическая ошибка в pipeline - создаем skeleton fallback
+        # GX-01-FINAL: Критическая ошибка в pipeline - создаем skeleton fallback
         print(f"❌ Critical pipeline error: {e}")
         try:
-            skeleton_card = _create_skeleton_techcard(profile, f"Pipeline error: {str(e)}")
-            # Убираем issues для валидации
-            skeleton_issues = skeleton_card.pop("issues", [])
+            timings["total_ms"] = int((time.perf_counter() - start_total) * 1000)
             
-            fallback_card = TechCardV2.model_validate(skeleton_card)
+            skeleton_card_data = _create_skeleton_techcard(profile, f"Pipeline error: {str(e)}")
+            skeleton_issues = skeleton_card_data.pop("issues", [])
             
-            # Добавляем базовые расчеты и timings
+            fallback_card = TechCardV2.model_validate(skeleton_card_data)
+            
+            # Добавляем базовые расчеты и timings для fallback
             try:
                 fallback_card = calculate_cost_for_tech_card(fallback_card, {})
                 fallback_card = calculate_nutrition_for_tech_card(fallback_card, {})
             except Exception:
                 pass
                 
-            timings["total_ms"] = int((time.time() - start_total) * 1000)
-            
-            # Обновляем meta с timings для fallback card
-            fallback_card_dict = fallback_card.model_dump()
-            if "meta" not in fallback_card_dict:
-                fallback_card_dict["meta"] = {}
-            fallback_card_dict["meta"]["timings"] = timings
-            fallback_card = TechCardV2.model_validate(fallback_card_dict)
+            # Обновляем meta с timings
+            fallback_card = fallback_card.model_copy(update={
+                "meta": fallback_card.meta.model_copy(update={"timings": timings})
+            })
             
             return PipelineResult(
                 card=fallback_card,
-                issues=[f"Pipeline error: {str(e)}"] + [issue.get("hint", "") for issue in skeleton_issues],
-                status="draft"  # GX-01: никогда не возвращаем failed
+                issues=[f"Pipeline error: {str(e)}"] + skeleton_issues,
+                status="draft"  # GX-01-FINAL: никогда не возвращаем failed
             )
         except Exception as fallback_error:
-            # Последний fallback
-            timings["total_ms"] = int((time.time() - start_total) * 1000)
+            # Последний fallback без карты
+            timings["total_ms"] = int((time.perf_counter() - start_total) * 1000)
             return PipelineResult(
                 card=None,
                 issues=[f"Critical fallback failure: {str(fallback_error)}"],
-                status="draft",  # GX-01: даже при критической ошибке возвращаем draft
+                status="draft",  # GX-01-FINAL: даже при критической ошибке возвращаем draft
                 raw_data={"timings": timings}
             )
