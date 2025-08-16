@@ -522,13 +522,16 @@ class NutritionCalculator:
 def calculate_nutrition_for_tech_card(tech_card: TechCardV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> TechCardV2:
     """
     Функция-обертка для расчета питательности техкарты
-    Возвращает обновленную техкарту с заполненными полями nutrition и nutritionMeta
+    GX-01-FINAL: Возвращает обновленную техкарту с заполненными полями nutrition и nutritionMeta
     """
     calculator = NutritionCalculator()
     nutrition, nutrition_meta, nutrition_issues = calculator.calculate_tech_card_nutrition(tech_card, sub_recipes_cache)
     
-    # Обновляем техкарту с рассчитанной питательностью и метаданными
-    tech_card.nutrition = nutrition
-    tech_card.nutritionMeta = nutrition_meta
+    # GX-01-FINAL: Создаем новую техкарту с обновленной питательностью (чистая функция)
+    updated_tech_card = tech_card.model_copy(update={
+        "nutrition": nutrition,
+        "nutritionMeta": nutrition_meta
+    })
     
-    return tech_card
+    # Issues обрабатываются в pipeline, не здесь
+    return updated_tech_card
