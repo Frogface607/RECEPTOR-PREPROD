@@ -20,12 +20,13 @@ def get_client() -> Optional[OpenAI]:
 
 @retry(
     reraise=True,
-    stop=stop_after_attempt(2),  # max_retries=1 означает 1 retry = 2 попытки всего
+    stop=stop_after_attempt(2),  # retries=1 означает 1 retry = 2 попытки всего
     wait=wait_exponential(multiplier=1, min=0.5, max=1.5),  # 500→1500 мс
     retry=retry_if_exception_type((APITimeoutError, RateLimitError))
 )
 def call_structured(system: str, user: str, json_schema: Dict[str, Any], 
                    model: Optional[str] = None, timeout_ms: Optional[int] = None,
+                   max_tokens: Optional[int] = None,
                    temperature: Optional[float] = None, top_p: Optional[float] = None,
                    presence_penalty: Optional[float] = None, frequency_penalty: Optional[float] = None,
                    stage: str = "llm_call") -> Dict[str, Any]:
@@ -35,6 +36,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
     Args:
         stage: Название стадии для логирования ("draft", "normalize", etc.)
         timeout_ms: Таймаут в миллисекундах (default: 20000)
+        max_tokens: Максимум токенов для ответа
     """
     cli = get_client()
     if cli is None:
@@ -44,10 +46,10 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
     
     try:
         mdl = model or os.getenv("TECHCARDS_V2_MODEL", "gpt-4o-mini")
-        # GX-01: timeout_ms=20000 по умолчанию
+        # GX-01-FINAL: timeout_ms=20000 по умолчанию
         timeout_seconds = (timeout_ms or 20000) / 1000.0
         
-        print(f"🔄 {stage}: Starting LLM call with timeout {timeout_seconds}s")
+        print(f"🔄 {stage}: Starting LLM call (model={mdl}) with timeout {timeout_seconds}s")
 
         # Chat Completions API + response_format json_schema (Structured Outputs)
         params = {
@@ -66,6 +68,10 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                 }
             }
         }
+        
+        # GX-01-FINAL: добавляем max_tokens если указано
+        if max_tokens:
+            params["max_tokens"] = max_tokens
         
         # Добавляем дополнительные параметры если они указаны
         if temperature is not None:
