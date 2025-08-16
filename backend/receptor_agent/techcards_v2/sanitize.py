@@ -9,36 +9,40 @@ if TYPE_CHECKING:
     from receptor_agent.techcards_v2.schemas import TechCardV2
 
 
-def sanitize_card_v2(card_dict: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_card_v2(card: 'TechCardV2') -> 'TechCardV2':
     """
-    Принудительная нормализация карточки TechCardV2
+    GX-01-FINAL: Чистая функция - принудительная нормализация карточки TechCardV2
+    Принимает TechCardV2, возвращает новый объект TechCardV2 без in-place модификаций
     
     Args:
-        card_dict: Словарь техкарты (обычно из model_dump())
+        card: Экземпляр TechCardV2
         
     Returns:
-        Dict: Санитизированная техкарта с правильными типами
+        TechCardV2: Санитизированная техкарта с правильными типами
     """
-    # Создаем копию для безопасности
-    sanitized = card_dict.copy()
+    from receptor_agent.techcards_v2.schemas import TechCardV2
+    
+    # GX-01-FINAL: Создаем новый объект, не мутируем входной
+    card_dict = card.model_dump()
     
     # 1. Нормализация nutrition
-    sanitized["nutrition"] = sanitize_nutrition(sanitized.get("nutrition"))
+    card_dict["nutrition"] = sanitize_nutrition(card_dict.get("nutrition"))
     
     # 2. Нормализация cost  
-    sanitized["cost"] = sanitize_cost(sanitized.get("cost"))
+    card_dict["cost"] = sanitize_cost(card_dict.get("cost"))
     
     # 3. Нормализация meta полей
-    if "nutritionMeta" in sanitized:
-        sanitized["nutritionMeta"] = sanitize_meta(sanitized["nutritionMeta"])
+    if "nutritionMeta" in card_dict:
+        card_dict["nutritionMeta"] = sanitize_meta(card_dict["nutritionMeta"])
     
-    if "costMeta" in sanitized:
-        sanitized["costMeta"] = sanitize_meta(sanitized["costMeta"])
+    if "costMeta" in card_dict:
+        card_dict["costMeta"] = sanitize_meta(card_dict["costMeta"])
     
     # 4. Удаление лишних полей (только известные ключи схемы)
-    sanitized = remove_unknown_fields(sanitized)
+    card_dict = remove_unknown_fields(card_dict)
     
-    return sanitized
+    # 5. GX-01-FINAL: Создаем новый объект TechCardV2
+    return TechCardV2.model_validate(card_dict)
 
 
 def sanitize_nutrition(nutrition: Any) -> Dict[str, Any]:
