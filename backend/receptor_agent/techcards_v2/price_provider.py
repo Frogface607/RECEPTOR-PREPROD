@@ -398,9 +398,9 @@ class PriceProvider:
                         "canonical_id": price_data.get("canonical_id")
                     })
         
-        # Sort by priority: user > catalog > bootstrap, then by name similarity
+        # Sort by priority: iiko > user > catalog > bootstrap, then by name similarity
         def sort_key(item):
-            source_priority = {"user": 0, "catalog": 1, "bootstrap": 2}.get(item["source"], 3)
+            source_priority = {"iiko": 0, "user": 1, "catalog": 2, "bootstrap": 3}.get(item["source"], 4)
             name_similarity = 100 - fuzz.ratio(query_lower, item["name"].lower())
             return (source_priority, name_similarity)
         
