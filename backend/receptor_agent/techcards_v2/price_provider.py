@@ -261,7 +261,12 @@ class PriceProvider:
 
     def _find_by_canonical_id(self, canonical_id: str) -> Optional[Dict]:
         """Find price by canonical_id in all sources"""
-        # Search in user prices first
+        # Search in iiko prices first (highest priority)
+        for price_data in self.iiko_prices.values():
+            if price_data.get("canonical_id") == canonical_id:
+                return price_data
+        
+        # Search in user prices
         for price_data in self.user_prices.values():
             if price_data.get("canonical_id") == canonical_id:
                 return price_data
