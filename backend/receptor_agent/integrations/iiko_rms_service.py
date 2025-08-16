@@ -44,6 +44,7 @@ class IikoRmsService:
         self.groups: Collection = self.db[IIKO_RMS_GROUPS_COLLECTION]
         self.sync_status: Collection = self.db[IIKO_RMS_SYNC_STATUS_COLLECTION]
         self.mappings: Collection = self.db[IIKO_RMS_MAPPINGS_COLLECTION]
+        self.prices: Collection = self.db[IIKO_RMS_PRICES_COLLECTION]  # IK-03: Prices collection
         
         # Create indexes
         self._create_indexes()
