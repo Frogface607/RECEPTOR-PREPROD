@@ -58,7 +58,43 @@ class PriceProvider:
                 logger.warning(f"Failed to load bootstrap prices: {e}")
                 
         self.loaded = True
-        logger.info(f"PriceProvider loaded: {len(self.user_prices)} user, {len(self.catalog_prices)} catalog, {len(self.bootstrap_prices)} bootstrap prices")
+        logger.info(f"Price provider loaded: iiko={len(self.iiko_prices)}, user={len(self.user_prices)}, catalog={len(self.catalog_prices)}, bootstrap={len(self.bootstrap_prices)}")
+    
+    def _load_iiko_prices(self):
+        """IK-03: Load prices from iiko RMS integration"""
+        try:
+            from ..integrations.iiko_rms_service import get_iiko_rms_service
+            
+            # Get iiko RMS service
+            rms_service = get_iiko_rms_service()
+            
+            # Fetch prices from cache (organization_id could be made configurable)
+            prices = rms_service.get_prices(organization_id="default", active_only=True)
+            
+            for price in prices:
+                # Normalize name for matching
+                name_normalized = self._normalize_name(price["name"])
+                
+                # Create price entry with IK-03 fields
+                price_entry = {
+                    "price_per_g": price["price_per_unit"],  # Already normalized to g/ml
+                    "unit": price["unit"],  # g, ml, or pcs
+                    "currency": price.get("currency", "RUB"),
+                    "vat_pct": price.get("vat_pct", 0.0),  # IK-03: VAT support
+                    "source": "iiko",
+                    "sku_id": price["skuId"],
+                    "article": price.get("article"),
+                    "as_of": price["as_of"],
+                    "active": price.get("active", True)
+                }
+                
+                self.iiko_prices[name_normalized] = price_entry
+            
+            logger.info(f"Loaded {len(self.iiko_prices)} prices from iiko RMS")
+            
+        except Exception as e:
+            logger.warning(f"Failed to load iiko RMS prices (graceful fallback): {e}")
+            # Graceful degradation - continue without iiko prices
 
     def _load_user_prices(self):
         """Load user prices from MongoDB (graceful fallback if unavailable)"""
