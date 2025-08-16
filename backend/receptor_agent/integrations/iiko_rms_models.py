@@ -78,7 +78,29 @@ class IikoRmsGroup(BaseModel):
     class Config:
         populate_by_name = True
 
-class IikoRmsSyncStatus(BaseModel):
+class IikoRmsPrice(BaseModel):
+    """
+    IK-03: Model for storing iiko RMS pricing data 
+    Separate collection for pricing to enable efficient price lookups
+    """
+    id: str = Field(default_factory=lambda: str(uuid4()), alias="_id")
+    skuId: str = Field(description="Product SKU/ID from iiko RMS")
+    name: str = Field(description="Product name")
+    article: Optional[str] = Field(None, description="Product article/code")
+    unit: str = Field(description="Normalized unit (g/ml/pcs)")
+    original_unit: str = Field(description="Original unit from iiko RMS")
+    price_per_unit: float = Field(description="Purchase price per normalized unit") 
+    currency: str = Field(default="RUB", description="Price currency")
+    vat_pct: float = Field(default=0.0, description="VAT rate percentage")
+    source: str = Field(default="iiko", description="Price source")
+    active: bool = Field(default=True, description="Product active status")
+    organization_id: str = Field(default="default", description="Organization this price belongs to")
+    as_of: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Price fetch timestamp")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    class Config:
+        populate_by_name = True
     """Model for tracking RMS synchronization operations"""
     id: str = Field(default_factory=lambda: str(uuid4()), alias="_id")
     organization_id: str = Field(description="Organization ID")
