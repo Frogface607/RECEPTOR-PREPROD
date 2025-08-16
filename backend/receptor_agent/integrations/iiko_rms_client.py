@@ -289,6 +289,55 @@ class IikoRmsClient:
             logger.error(f"Error fetching nomenclature: {str(e)}")
             raise IikoRmsAPIError(f"Failed to fetch nomenclature: {str(e)}")
     
+    def fetch_prices(self, organization_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        IK-03: Fetch pricing data from iiko RMS server
+        Returns pricing information with VAT and units
+        """
+        try:
+            # Reuse existing nomenclature fetch logic but focus on pricing
+            nomenclature_data = self.fetch_nomenclature(organization_id)
+            
+            prices = []
+            products = nomenclature_data.get('products', [])
+            
+            logger.info(f"Processing pricing data for {len(products)} products from iiko RMS")
+            
+            for product in products:
+                # Only include products with pricing information
+                if product.get('purchase_price') or product.get('price'):
+                    price_data = {
+                        "skuId": product.get('id'),
+                        "name": product.get('name'),
+                        "article": product.get('article', ''),
+                        "unit": product.get('unit', 'pcs'),
+                        "original_unit": product.get('original_unit', product.get('unit', 'pcs')),
+                        "price_per_unit": product.get('purchase_price_per_unit') or product.get('price_per_unit'),
+                        "currency": product.get('currency', 'RUB'),
+                        "vat_pct": product.get('vat_pct', 0.0),
+                        "source": "iiko",
+                        "active": product.get('active', True)
+                    }
+                    
+                    # Only add if we have a valid price
+                    if price_data["price_per_unit"] and price_data["price_per_unit"] > 0:
+                        prices.append(price_data)
+            
+            result = {
+                "prices": prices,
+                "organization_id": organization_id or "default",
+                "fetched_at": datetime.now().isoformat(),
+                "total_count": len(prices)
+            }
+            
+            logger.info(f"✅ Successfully processed {len(prices)} price entries from iiko RMS")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Failed to fetch prices from iiko RMS: {str(e)}")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            raise IikoRmsAPIError(f"Price fetch failed: {str(e)}")
+    
     def _fetch_product_groups(self, session_key: str, organization_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Fetch product groups/categories"""
         possible_endpoints = [
