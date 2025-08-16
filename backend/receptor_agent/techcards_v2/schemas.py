@@ -18,6 +18,8 @@ class MetaV2(BaseModel):
     createdAt: datetime = Field(default_factory=datetime.now)
     cuisine: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
+    # GX-01: Инструментирование времени выполнения
+    timings: Optional[Dict[str, float]] = Field(default=None, description="Метрики времени выполнения pipeline (ms)")
 
 class YieldV2(BaseModel):
     perPortion_g: float = Field(..., gt=0)
