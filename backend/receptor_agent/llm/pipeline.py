@@ -685,8 +685,13 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                 pass
                 
             timings["total_ms"] = int((time.time() - start_total) * 1000)
-            if hasattr(fallback_card, 'meta') and fallback_card.meta:
-                fallback_card.meta.timings = timings
+            
+            # Обновляем meta с timings для fallback card
+            fallback_card_dict = fallback_card.model_dump()
+            if "meta" not in fallback_card_dict:
+                fallback_card_dict["meta"] = {}
+            fallback_card_dict["meta"]["timings"] = timings
+            fallback_card = TechCardV2.model_validate(fallback_card_dict)
             
             return PipelineResult(
                 card=fallback_card,
