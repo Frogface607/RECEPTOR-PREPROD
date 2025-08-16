@@ -96,6 +96,10 @@ class PriceProvider:
             logger.warning(f"Failed to load iiko RMS prices (graceful fallback): {e}")
             # Graceful degradation - continue without iiko prices
 
+    def _normalize_name(self, name: str) -> str:
+        """Normalize ingredient name for consistent matching"""
+        return name.strip().lower()
+
     def _load_user_prices(self):
         """Load user prices from MongoDB (graceful fallback if unavailable)"""
         try:
