@@ -15868,6 +15868,15 @@ function App() {
               <div>First Issue: {generationIssues[0]?.type || generationIssues[0] || 'none'}</div>
             )}
             <div>Last Request: {window.__lastGenerationDebug?.requestTime ? `${window.__lastGenerationDebug.requestTime}ms` : 'none'}</div>
+            {/* GX-01: Show timings from TechCard meta */}
+            {tcV2?.meta?.timings && (
+              <div className="border-t border-gray-700 pt-1 mt-1">
+                <div className="text-purple-300 font-bold">⏱️ Timings:</div>
+                <div>Draft: {tcV2.meta.timings.llm_draft_ms || '-'}ms</div>
+                <div>Normalize: {tcV2.meta.timings.llm_normalize_ms || '-'}ms</div>
+                <div>Total: {tcV2.meta.timings.total_ms || '-'}ms</div>
+              </div>
+            )}
             <div className="border-t border-gray-700 pt-1 mt-1">
               <div>iiko Connected: {iikoRmsConnection.status === 'connected' ? 'yes' : 'no'}</div>
               <div>iiko Items: {iikoRmsConnection.products_count || 0}</div>
