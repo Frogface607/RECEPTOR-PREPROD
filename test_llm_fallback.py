@@ -62,8 +62,11 @@ def test_llm_fallback():
                 
                 issues = data.get('issues', [])
                 print(f"Issues count: {len(issues)}")
-                for issue in issues:
-                    print(f"  Issue: {issue.get('type')} - {issue.get('level')} - {issue.get('message', '')}")
+                for i, issue in enumerate(issues):
+                    if isinstance(issue, dict):
+                        print(f"  Issue {i}: {issue.get('type')} - {issue.get('level')} - {issue.get('message', '')}")
+                    else:
+                        print(f"  Issue {i}: {issue} (type: {type(issue)})")
                 
             except json.JSONDecodeError as e:
                 print(f"JSON decode error: {e}")
