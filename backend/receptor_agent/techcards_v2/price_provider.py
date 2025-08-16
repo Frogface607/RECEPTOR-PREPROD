@@ -24,16 +24,19 @@ class PriceProvider:
         self.loaded = False
         
     def _load_sources(self):
-        """Load price data from all sources"""
+        """Load price data from all sources with IK-03 iiko RMS support"""
         if self.loaded:
             return
             
         current_dir = Path(__file__).parent.parent.parent
         
-        # 1. Load user prices from MongoDB (graceful fallback if unavailable)
+        # IK-03: 1. Load iiko RMS prices (highest priority)
+        self._load_iiko_prices()
+        
+        # 2. Load user prices from MongoDB (graceful fallback if unavailable)
         self._load_user_prices()
         
-        # 2. Load catalog prices
+        # 3. Load catalog prices
         catalog_path = current_dir / "data" / "price_catalog.dev.json"
         if catalog_path.exists():
             try:
@@ -43,7 +46,7 @@ class PriceProvider:
             except Exception as e:
                 logger.warning(f"Failed to load catalog prices: {e}")
         
-        # 3. Load bootstrap prices  
+        # 4. Load bootstrap prices  
         bootstrap_path = current_dir / "data" / "bootstrap" / "prices_ru.demo.csv"
         if bootstrap_path.exists():
             try:
