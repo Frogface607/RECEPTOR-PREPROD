@@ -339,7 +339,7 @@ class IikoRmsClient:
         return []
     
     def _normalize_product(self, raw_product: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Normalize product data from iiko RMS format"""
+        """Normalize product data from iiko RMS format with IK-03 pricing support"""
         try:
             # Extract basic product information
             product_id = raw_product.get('id', '')
@@ -353,12 +353,46 @@ class IikoRmsClient:
             group_id = raw_product.get('category', raw_product.get('group', raw_product.get('groupId', '')))
             unit = raw_product.get('unit', raw_product.get('measureUnit', 'pcs'))
             
-            # Price information
+            # IK-03: Enhanced price information extraction
             price = None
+            purchase_price = None  # IK-03: закупочная цена
+            
+            # Try multiple fields for price information
+            if 'purchasePrice' in raw_product:
+                purchase_price = float(raw_product['purchasePrice'])
+            elif 'purchase_price' in raw_product:
+                purchase_price = float(raw_product['purchase_price'])
+            elif 'cost' in raw_product:
+                purchase_price = float(raw_product['cost'])
+            elif 'price' in raw_product:
+                # Fallback to regular price if no purchase price
+                purchase_price = float(raw_product['price'])
+            
             if 'price' in raw_product:
                 price = float(raw_product['price'])
-            elif 'cost' in raw_product:
-                price = float(raw_product['cost'])
+            elif purchase_price:
+                price = purchase_price  # Fallback
+            
+            # IK-03: VAT information extraction
+            vat_pct = 0.0  # Default VAT
+            if 'vat' in raw_product:
+                vat_pct = float(raw_product.get('vat', 0))
+            elif 'vatRate' in raw_product:
+                vat_pct = float(raw_product.get('vatRate', 0))
+            elif 'tax' in raw_product:
+                vat_pct = float(raw_product.get('tax', 0))
+            elif 'taxRate' in raw_product:
+                vat_pct = float(raw_product.get('taxRate', 0))
+            
+            # IK-03: Try to get VAT from category/group if not on product
+            if vat_pct == 0.0 and group_id:
+                # This could be enhanced later to fetch group VAT rates
+                pass
+            
+            # Currency extraction (IK-03: expect RUB)
+            currency = raw_product.get('currency', 'RUB')
+            if currency not in ['RUB', 'руб', 'рублей']:
+                currency = 'RUB'  # Force RUB for consistency
             
             # Normalize unit to standard format
             unit_mapping = {
@@ -378,8 +412,13 @@ class IikoRmsClient:
             elif unit.lower() in ['l', 'л', 'liter', 'litre']:
                 unit_coefficient = 1000.0  # l to ml
             
-            # Calculate price per normalized unit
+            # IK-03: Calculate normalized purchase price per unit
+            purchase_price_per_unit = None
             price_per_unit = None
+            
+            if purchase_price:
+                purchase_price_per_unit = purchase_price / unit_coefficient if unit_coefficient > 1 else purchase_price
+            
             if price:
                 price_per_unit = price / unit_coefficient if unit_coefficient > 1 else price
             
@@ -389,14 +428,30 @@ class IikoRmsClient:
                 "article": article,
                 "group_id": str(group_id) if group_id else None,
                 "unit": normalized_unit,
+                "original_unit": unit,  # IK-03: keep original for reference
                 "unit_coefficient": unit_coefficient,
+                # IK-03: Enhanced pricing fields
                 "price": price,
                 "price_per_unit": price_per_unit,
+                "purchase_price": purchase_price,
+                "purchase_price_per_unit": purchase_price_per_unit,
+                "currency": currency,
+                "vat_pct": vat_pct,
+                # Basic fields
                 "active": raw_product.get('active', True),
                 "description": raw_product.get('description', ''),
                 "barcode": raw_product.get('barcode', ''),
                 "type": raw_product.get('type', 'product')
             }
+            
+            return product
+            
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Failed to parse numeric values in product {raw_product.get('name', 'unknown')}: {str(e)}")
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to normalize product {raw_product.get('name', 'unknown')}: {str(e)}")
+            return None
             
             return product
             
