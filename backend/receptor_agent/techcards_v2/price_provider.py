@@ -390,11 +390,11 @@ class PriceProvider:
                     results.append({
                         "source": source_name,
                         "name": name,
-                        "skuId": price_data.get("skuId"),
+                        "skuId": price_data.get("sku_id") or price_data.get("skuId"),
                         "unit": unit,
                         "price_per_unit": round(price_per_unit, 2),
-                        "currency": "RUB",
-                        "asOf": price_data.get("asOf"),
+                        "currency": price_data.get("currency", "RUB"),
+                        "asOf": price_data.get("as_of") or price_data.get("asOf"),
                         "canonical_id": price_data.get("canonical_id")
                     })
         
