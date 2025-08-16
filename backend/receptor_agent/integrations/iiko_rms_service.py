@@ -653,6 +653,145 @@ class IikoRmsService:
         except Exception as e:
             logger.error(f"Error getting RMS sync status: {str(e)}")
             return {"status": "error", "error": str(e)}
+    
+    def sync_prices(self, organization_id: str = "default") -> Dict[str, Any]:
+        """
+        IK-03: Synchronize pricing data from iiko RMS
+        Idempotent operation - can be called multiple times safely
+        """
+        try:
+            logger.info(f"Starting price synchronization for organization: {organization_id}")
+            
+            # Get RMS client
+            rms_client = self._get_rms_client(organization_id)
+            
+            # Fetch pricing data from RMS
+            pricing_data = rms_client.fetch_prices(organization_id)
+            prices = pricing_data.get("prices", [])
+            
+            if not prices:
+                logger.warning("No pricing data received from iiko RMS")
+                return {"status": "no_data", "message": "No pricing data available"}
+            
+            # Batch upsert pricing data
+            batch_operations = []
+            sync_timestamp = datetime.now(timezone.utc)
+            
+            for price_item in prices:
+                try:
+                    # Create price document
+                    price_doc = IikoRmsPrice(
+                        skuId=price_item["skuId"],
+                        name=price_item["name"],
+                        article=price_item.get("article"),
+                        unit=price_item["unit"],
+                        original_unit=price_item["original_unit"],
+                        price_per_unit=float(price_item["price_per_unit"]),
+                        currency=price_item.get("currency", "RUB"),
+                        vat_pct=float(price_item.get("vat_pct", 0.0)),
+                        source="iiko",
+                        active=price_item.get("active", True),
+                        organization_id=organization_id,
+                        as_of=sync_timestamp,
+                        updated_at=sync_timestamp
+                    )
+                    
+                    # Prepare upsert operation
+                    filter_query = {
+                        "skuId": price_doc.skuId,
+                        "organization_id": organization_id
+                    }
+                    
+                    update_doc = price_doc.model_dump(by_alias=True, exclude={"id"})
+                    
+                    batch_operations.append({
+                        "replaceOne": {
+                            "filter": filter_query,
+                            "replacement": update_doc,
+                            "upsert": True
+                        }
+                    })
+                    
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Skipping invalid price data for {price_item.get('name', 'unknown')}: {str(e)}")
+                    continue
+            
+            # Execute batch operations
+            if batch_operations:
+                result = self.prices.bulk_write(batch_operations)
+                
+                # Update sync status
+                sync_status = IikoRmsSyncStatus(
+                    organization_id=organization_id,
+                    sync_type="prices",
+                    status="completed",
+                    last_sync=sync_timestamp,
+                    items_processed=len(prices),
+                    items_created=result.upserted_count,
+                    items_updated=result.modified_count,
+                    errors=[]
+                )
+                
+                self.sync_status.replace_one(
+                    {"organization_id": organization_id, "sync_type": "prices"},
+                    sync_status.model_dump(by_alias=True, exclude={"id"}),
+                    upsert=True
+                )
+                
+                logger.info(f"✅ Price sync completed: {result.upserted_count} new, {result.modified_count} updated")
+                
+                return {
+                    "status": "success",
+                    "organization_id": organization_id,
+                    "items_processed": len(prices),
+                    "items_created": result.upserted_count,
+                    "items_updated": result.modified_count,
+                    "sync_timestamp": sync_timestamp.isoformat(),
+                    "message": f"Successfully synced {len(prices)} price records"
+                }
+            else:
+                logger.warning("No valid price records to sync")
+                return {"status": "no_valid_data", "message": "No valid price records to sync"}
+                
+        except IikoRmsAPIError as e:
+            logger.error(f"RMS API error during price sync: {str(e)}")
+            return {"status": "api_error", "error": str(e)}
+        except Exception as e:
+            logger.error(f"Error during price synchronization: {str(e)}")
+            return {"status": "error", "error": str(e)}
+    
+    def get_prices(self, skuId: Optional[str] = None, organization_id: str = "default", 
+                  active_only: bool = True) -> List[Dict[str, Any]]:
+        """
+        IK-03: Get pricing data from local cache
+        Used by PriceProvider for cost calculations
+        """
+        try:
+            # Build query
+            query = {"organization_id": organization_id}
+            
+            if skuId:
+                query["skuId"] = skuId
+                
+            if active_only:
+                query["active"] = True
+            
+            # Get prices sorted by freshness
+            prices_cursor = self.prices.find(query).sort("as_of", DESCENDING)
+            
+            prices = []
+            for price_doc in prices_cursor:
+                # Convert MongoDB document to dict and clean up
+                price = dict(price_doc)
+                if "_id" in price:
+                    del price["_id"]  # Remove MongoDB ObjectId
+                prices.append(price)
+            
+            return prices
+            
+        except Exception as e:
+            logger.error(f"Error retrieving prices: {str(e)}")
+            return []
 
 # Global RMS service instance
 _iiko_rms_service: Optional[IikoRmsService] = None
