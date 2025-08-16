@@ -1041,6 +1041,21 @@ function App() {
           )}
         </div>
 
+        {/* GX-01: LLM Unavailable Banner */}
+        {issues.some(issue => issue?.type === 'llmUnavailable' || issue?.includes?.('llmUnavailable') || (typeof issue === 'string' && issue.includes('llmUnavailable'))) && (
+          <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <div className="font-bold text-yellow-300">Генерация недоступна</div>
+                <div className="text-yellow-400 text-sm mt-1">
+                  Вы можете: (а) маппить SKU из iiko, (б) отредактировать ингредиенты вручную, (в) экспортировать ТТК
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ВЫХОД И ПОРЦИИ */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-900/20 rounded-lg p-4 text-center">
