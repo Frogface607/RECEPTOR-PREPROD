@@ -14,22 +14,19 @@ from .price_provider import PriceProvider
 def calculate_cost_for_tech_card(tech_card: TechCardV2, sub_recipes_cache: Dict[str, TechCardV2] = None) -> TechCardV2:
     """
     Функция-обертка для расчета стоимости техкарты с использованием PriceProvider
-    Возвращает обновленную техкарту с заполненными полями cost и costMeta
+    GX-01-FINAL: Возвращает обновленную техкарту с заполненными полями cost и costMeta
     """
     calculator = CostCalculator()
     cost, cost_meta, cost_issues = calculator.calculate_tech_card_cost(tech_card, sub_recipes_cache)
     
-    # Обновляем техкарту с рассчитанной стоимостью и метаданными
-    tech_card.cost = cost
-    tech_card.costMeta = cost_meta
+    # GX-01-FINAL: Создаем новую техкарту с обновленной стоимостью (чистая функция)
+    updated_tech_card = tech_card.model_copy(update={
+        "cost": cost,
+        "costMeta": cost_meta
+    })
     
-    # Добавляем issues к общему списку (если есть)
-    if cost_issues:
-        if not hasattr(tech_card, 'issues') or tech_card.issues is None:
-            tech_card.issues = []
-        tech_card.issues.extend(cost_issues)
-    
-    return tech_card
+    # Issues обрабатываются в pipeline, не здесь
+    return updated_tech_card
 
 class CostCalculator:
     """Калькулятор себестоимости для техкарт с использованием PriceProvider"""
