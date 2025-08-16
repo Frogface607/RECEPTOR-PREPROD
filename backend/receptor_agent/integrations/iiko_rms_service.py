@@ -663,7 +663,7 @@ class IikoRmsService:
             logger.info(f"Starting price synchronization for organization: {organization_id}")
             
             # Get RMS client
-            rms_client = self._get_rms_client(organization_id)
+            rms_client = self._get_rms_client_for_org(organization_id)
             
             # Fetch pricing data from RMS
             pricing_data = rms_client.fetch_prices(organization_id)
