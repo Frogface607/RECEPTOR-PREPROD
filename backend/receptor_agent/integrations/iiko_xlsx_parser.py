@@ -259,6 +259,10 @@ class IikoXlsxParser:
             if not ingredient_name:
                 continue
             
+            # Skip meta-information rows (dish info mixed with ingredients)
+            if self._is_meta_row(ingredient_name, row, column_map):
+                continue
+            
             self.parsed_rows += 1
             
             # Parse ingredient data
@@ -274,6 +278,35 @@ class IikoXlsxParser:
             })
         
         return ingredients
+    
+    def _is_meta_row(self, ingredient_name: str, row, column_map: Dict[str, int]) -> bool:
+        """Check if this row contains meta information instead of ingredient data"""
+        # Check if ingredient name contains meta keywords
+        meta_keywords = [
+            "название блюда", "dish name", "наименование блюда",
+            "артикул блюда", "dish code", "код блюда", 
+            "выход готового", "total yield", "готовый продукт",
+            "технология", "technology", "приготовление",
+            "порций", "portions", "норма закладки"
+        ]
+        
+        ingredient_lower = ingredient_name.lower()
+        for keyword in meta_keywords:
+            if keyword in ingredient_lower:
+                return True
+        
+        # Check if brutto/netto values look like meta data (very large or text)
+        brutto_col = column_map.get("brutto")
+        if brutto_col is not None and brutto_col < len(row):
+            brutto_val = row[brutto_col].value
+            if brutto_val:
+                brutto_str = str(brutto_val).strip()
+                # If it contains non-numeric text like "800 г", it's likely meta
+                if any(unit in brutto_str.lower() for unit in ["г", "g", "кг", "kg", "л", "l"]):
+                    if not brutto_str.replace(".", "").replace(",", "").replace(" ", "").replace("г", "").replace("g", "").replace("кг", "").replace("kg", "").replace("л", "").replace("l", "").isdigit():
+                        return True
+        
+        return False
     
     def _parse_single_ingredient(self, row, column_map: Dict[str, int], row_idx: int) -> Optional[Dict[str, Any]]:
         """Parse single ingredient row"""
