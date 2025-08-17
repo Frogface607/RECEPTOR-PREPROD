@@ -188,7 +188,7 @@ class IikoXlsxParser:
         """Extract meta information from worksheet (dish name, code, etc.)"""
         meta = {}
         
-        # Look for meta info in rows before header or in specific columns
+        # Look for meta info in rows before header 
         for row_idx in range(1, header_row):
             for cell in worksheet[row_idx]:
                 value = str(cell.value or "").strip()
@@ -213,6 +213,45 @@ class IikoXlsxParser:
                     next_cell = worksheet.cell(row_idx, cell.column + 1)
                     if next_cell.value:
                         meta["technology"] = str(next_cell.value).strip()
+        
+        # Also look for meta info in rows AFTER header but BEFORE ingredients start
+        # Find first row with actual ingredient data
+        first_ingredient_row = None
+        for row_idx in range(header_row + 1, min(header_row + 10, worksheet.max_row + 1)):  # Search max 10 rows
+            row = worksheet[row_idx]
+            ingredient_name_col = column_map.get("ingredient_name", 0)
+            if ingredient_name_col < len(row) and row[ingredient_name_col].value:
+                ingredient_name = str(row[ingredient_name_col].value).strip()
+                if ingredient_name and not self._is_meta_row(ingredient_name, row, column_map):
+                    first_ingredient_row = row_idx
+                    break
+        
+        # Search for meta in rows between header and first ingredient
+        if first_ingredient_row:
+            for row_idx in range(header_row + 1, first_ingredient_row):
+                for cell in worksheet[row_idx]:
+                    value = str(cell.value or "").strip()
+                    if not value:
+                        continue
+                        
+                    # Try to identify meta information by patterns
+                    if any(keyword in value.lower() for keyword in ["название", "name", "блюд"]):
+                        # Next cell might contain the dish name
+                        next_cell = worksheet.cell(row_idx, cell.column + 1)
+                        if next_cell.value:
+                            meta["dish_name"] = str(next_cell.value).strip()
+                            
+                    elif any(keyword in value.lower() for keyword in ["артикул", "код", "code"]):
+                        # Next cell might contain the dish code
+                        next_cell = worksheet.cell(row_idx, cell.column + 1)
+                        if next_cell.value:
+                            meta["dish_code"] = str(next_cell.value).strip()
+                            
+                    elif any(keyword in value.lower() for keyword in ["технология", "technology", "приготовления"]):
+                        # Next cell might contain the technology
+                        next_cell = worksheet.cell(row_idx, cell.column + 1)
+                        if next_cell.value:
+                            meta["technology"] = str(next_cell.value).strip()
         
         # Also check if meta info is in the same row as ingredients (common in some templates)
         if "dish_name" in column_map:
