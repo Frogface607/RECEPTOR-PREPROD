@@ -53,23 +53,6 @@ class SyncRmsPricesRequest(BaseModel):
     organization_id: str = Field(default="default", description="Organization ID for price sync")
     force: bool = Field(default=False, description="Force sync even if recently synced")
 
-# IK-04/01: XLSX Import models
-class IikoXlsxImportIssue(BaseModel):
-    code: str = Field(description="Issue code")
-    level: str = Field(description="Issue level: warning, error, info") 
-    msg: str = Field(description="Issue message")
-
-class IikoXlsxImportMeta(BaseModel):
-    source: str = Field(default="iiko-xlsx", description="Import source")
-    parsed_rows: int = Field(description="Number of rows parsed")
-    filename: str = Field(default="import.xlsx", description="Original filename")
-
-class IikoXlsxImportResponse(BaseModel):
-    status: str = Field(description="Import status: success, draft")
-    techcard: Dict[str, Any] = Field(description="Parsed TechCardV2 structure")
-    issues: List[IikoXlsxImportIssue] = Field(default_factory=list, description="Parsing issues")
-    meta: IikoXlsxImportMeta = Field(description="Import metadata")
-
 class SyncRmsPricesResponse(BaseModel):
     status: str = Field(description="Sync status")
     organization_id: str = Field(description="Organization ID")
