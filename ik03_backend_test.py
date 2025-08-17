@@ -21,7 +21,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://fb644a53-2ff0-4085-acbe-5adf10a8e9f1.preview.emergentagent.com/api"
+BACKEND_URL = "https://techcard-sync.preview.emergentagent.com/api"
 
 class IK03BackendTester:
     def __init__(self):

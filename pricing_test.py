@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://menu-automapper.preview.emergentagent.com/api"
+BACKEND_URL = "https://techcard-sync.preview.emergentagent.com/api"
 
 def extract_ingredient_prices(tech_card_content):
     """Extract ingredient prices from tech card content"""

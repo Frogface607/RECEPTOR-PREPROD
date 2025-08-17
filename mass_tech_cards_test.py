@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://menu-automapper.preview.emergentagent.com/api"
+BACKEND_URL = "https://techcard-sync.preview.emergentagent.com/api"
 
 def test_mass_tech_card_generation():
     """Test the Mass Tech Card Generation endpoint for Phase 3"""

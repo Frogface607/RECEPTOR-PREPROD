@@ -8,7 +8,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://fb644a53-2ff0-4085-acbe-5adf10a8e9f1.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://techcard-sync.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_llm_fallback():
