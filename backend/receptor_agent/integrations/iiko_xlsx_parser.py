@@ -223,6 +223,14 @@ class IikoXlsxParser:
                 if dish_code_cell.value:
                     meta["dish_code"] = str(dish_code_cell.value).strip()
         
+        # Extract technology text from the technology column
+        if "technology" in column_map:
+            first_data_row = header_row + 1
+            if first_data_row <= worksheet.max_row:
+                tech_cell = worksheet.cell(first_data_row, column_map["technology"] + 1)
+                if tech_cell.value:
+                    meta["technology"] = str(tech_cell.value).strip()
+        
         # Set defaults if not found
         if "dish_name" not in meta:
             meta["dish_name"] = "Imported Dish"
