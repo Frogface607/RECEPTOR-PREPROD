@@ -625,7 +625,7 @@ class IikoXlsxParser:
             processes.append({
                 "n": idx,
                 "action": action,
-                "time_min": time_min,
+                "time_min": time_min if time_min is not None else 1.0,  # Default 1 minute if no time/temp
                 "temp_c": temp_c,
                 "equipment": None,  # Could be extracted with more sophisticated parsing
                 "details": None
