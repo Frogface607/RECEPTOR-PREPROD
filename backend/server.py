@@ -6667,6 +6667,9 @@ if os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on")
     app.include_router(iiko_v2_router, tags=["iikoCloud.v2"])
     from receptor_agent.routes.iiko_rms_v2 import router as iiko_rms_v2_router
     app.include_router(iiko_rms_v2_router, tags=["iikoRMS.v2"])
+    # IK-04/01: XLSX Import router
+    from receptor_agent.routes.iiko_xlsx_import import router as iiko_xlsx_import_router
+    app.include_router(iiko_xlsx_import_router, tags=["iikoXLSX.import"])
 
 # Add a catch-all OPTIONS handler for CORS preflight
 @app.options("/{full_path:path}")
