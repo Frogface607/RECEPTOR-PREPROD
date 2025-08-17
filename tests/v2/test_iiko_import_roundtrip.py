@@ -390,42 +390,6 @@ class TestIikoXlsxRoundTrip:
             print(f"❌ {total - passed} tests failed - requires attention")
             
         return passed == total
-        """Run all round-trip golden tests"""
-        print("🔄 Starting IK-04/03 Round-trip Golden Tests...")
-        print("=" * 50)
-        
-        tests = [
-            self.test_import_roundtrip_basic,
-            self.test_import_units_conversion, 
-            self.test_import_process_parsing,
-            self.test_import_fixtures_roundtrip
-        ]
-        
-        passed = 0
-        total = len(tests)
-        
-        for test in tests:
-            try:
-                if test():
-                    passed += 1
-            except Exception as e:
-                print(f"❌ Test {test.__name__} FAILED: {e}")
-                continue
-        
-        print("=" * 50)
-        print(f"📊 Test Results: {passed}/{total} tests passed")
-        
-        if passed == total:
-            print("🎉 ALL ROUND-TRIP GOLDEN TESTS PASSED!")
-            print("✅ iiko XLSX ↔ TechCardV2 compatibility confirmed")
-            print("✅ SKU preservation verified")  
-            print("✅ Units conversion working")
-            print("✅ Process parsing functional")
-            print("✅ Ready for iikoWeb integration")
-        else:
-            print(f"❌ {total - passed} tests failed - requires attention")
-            
-        return passed == total
 
 if __name__ == "__main__":
     tester = TestIikoXlsxRoundTrip()
