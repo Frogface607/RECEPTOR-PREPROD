@@ -464,7 +464,7 @@ class IikoXlsxParser:
     
     def _parse_technology(self, technology_text: str) -> List[Dict[str, Any]]:
         """Parse technology text into process steps (minimum 3 steps required)"""
-        if not technology_text:
+        if not technology_text or not technology_text.strip():
             # IK-04/01: Generate minimum 3 steps as required by TechCardV2 schema
             return [
                 {
@@ -517,21 +517,36 @@ class IikoXlsxParser:
         elif len(steps_raw) > 8:
             # Combine some steps to fit within 8 step limit
             combined_steps = []
-            chunk_size = len(steps_raw) // 6  # Target ~6 steps
+            chunk_size = max(1, len(steps_raw) // 6)  # Target ~6 steps, min chunk_size=1
             for i in range(0, len(steps_raw), chunk_size):
                 chunk = steps_raw[i:i + chunk_size]
                 combined_steps.append(". ".join(chunk))
             steps_raw = combined_steps[:8]
         
         processes = []
+        default_actions = [
+            "Подготовка ингредиентов и оборудования",
+            "Обработка основных ингредиентов", 
+            "Окончательное приготовление и подача"
+        ]
+        
         for idx, step_text in enumerate(steps_raw, 1):
+            # Handle empty or very short steps
+            action = step_text.strip()
+            if not action or len(action) <= 2:
+                # Use default action for empty/very short steps
+                if idx <= len(default_actions):
+                    action = default_actions[idx - 1]
+                else:
+                    action = f"Дополнительный этап приготовления №{idx}"
+            
             # Extract time and temperature using regex
             time_min = self._extract_time_from_text(step_text)
             temp_c = self._extract_temperature_from_text(step_text)
             
             processes.append({
                 "n": idx,
-                "action": step_text.strip(),
+                "action": action,
                 "time_min": time_min,
                 "temp_c": temp_c,
                 "equipment": None,  # Could be extracted with more sophisticated parsing
