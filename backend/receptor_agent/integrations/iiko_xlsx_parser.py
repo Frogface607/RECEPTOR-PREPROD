@@ -557,22 +557,28 @@ class IikoXlsxParser:
     
     def _extract_time_from_text(self, text: str) -> Optional[float]:
         """Extract cooking time from text using regex"""
-        # Patterns for time: "15 мин", "30минут", "1-2 часа"
+        # Patterns for time: "15 мин", "30минут", "1-2 часа", "3-5 мин"
         time_patterns = [
-            r'(\d{1,3})\s*мин',
-            r'(\d{1,3})\s*минут',
-            r'(\d{1,3})\s*min',
-            r'(\d{1,2})\s*час',  # Hours
-            r'(\d{1,2})\s*hour'
+            r'(\d{1,3})-(\d{1,3})\s*мин',      # Range: "3-5 мин" - take first value
+            r'(\d{1,3})-(\d{1,3})\s*минут',    # Range: "3-5 минут"
+            r'(\d{1,3})\s*мин',                # Single: "20 мин"
+            r'(\d{1,3})\s*минут',              # Single: "20 минут"
+            r'(\d{1,3})\s*min',                # Single: "20 min"
+            r'(\d{1,2})-(\d{1,2})\s*час',      # Range hours: "1-2 часа"
+            r'(\d{1,2})\s*час',                # Single hours: "1 час"
+            r'(\d{1,2})\s*hour'                # Single hours: "1 hour"
         ]
         
         for pattern in time_patterns:
             match = re.search(pattern, text.lower())
             if match:
+                # For range patterns, take the first (minimum) value
                 time_val = int(match.group(1))
+                
                 # Convert hours to minutes if needed
                 if "час" in pattern or "hour" in pattern:
                     time_val *= 60
+                    
                 return float(time_val)
         
         return None
