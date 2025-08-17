@@ -265,7 +265,95 @@ class TestIikoXlsxRoundTrip:
         print("✅ Process parsing test PASSED")
         return True
     
-    def run_all_tests(self):
+    def test_import_fixtures_roundtrip(self):
+        """Test round-trip with realistic fixtures: hot.xlsx, cold.xlsx, sauce.xlsx"""
+        print("\n=== Test: Fixtures Round-trip ===")
+        
+        fixtures_dir = Path(__file__).parent.parent / "fixtures" / "iiko_xlsx"
+        test_fixtures = ["hot.xlsx", "cold.xlsx", "sauce.xlsx"]
+        
+        for fixture_name in test_fixtures:
+            fixture_path = fixtures_dir / fixture_name
+            
+            if not fixture_path.exists():
+                print(f"⚠️ Skipping {fixture_name} - fixture not found")
+                continue
+            
+            print(f"\n--- Testing {fixture_name} ---")
+            
+            # Step 1: Import XLSX → TechCardV2
+            with open(fixture_path, 'rb') as f:
+                xlsx_bytes = f.read()
+            
+            parse_result = self.parser.parse_xlsx_to_techcard(xlsx_bytes, fixture_name)
+            assert parse_result["techcard"], f"Failed to parse {fixture_name} to TechCardV2"
+            print(f"✓ Parsed {fixture_name}: {parse_result['meta']['parsed_rows']} rows")
+            
+            # Step 2: Validate TechCardV2 structure
+            techcard = TechCardV2.model_validate(parse_result["techcard"])
+            assert techcard, f"TechCardV2 validation failed for {fixture_name}"
+            print(f"✓ TechCardV2 validated: {techcard.meta.title}")
+            
+            # Step 3: Export TechCardV2 → iiko XLSX
+            export_bytes = export_techcard_to_iiko_xlsx(techcard)
+            assert export_bytes and len(export_bytes) > 1000, f"Export produced empty or too small file for {fixture_name}"
+            print(f"✓ Exported to XLSX: {len(export_bytes)} bytes")
+            
+            # Step 4: Verify exported XLSX structure
+            with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
+                tmp_file.write(export_bytes)
+                tmp_file.flush()
+                
+                # Load exported XLSX and verify
+                exported_wb = openpyxl.load_workbook(tmp_file.name, data_only=True)
+                ws = exported_wb.active
+                
+                # Verify headers exist
+                assert ws.cell(1, 1).value is not None, f"Missing headers in exported XLSX for {fixture_name}"
+                print(f"✓ Exported XLSX has headers: {[ws.cell(1, c).value for c in range(1, 6)]}")
+                
+                # Clean up
+                os.unlink(tmp_file.name)
+            
+            # Step 5: Check for appropriate issues
+            issues = parse_result["issues"]
+            error_issues = [i for i in issues if i.get("level") == "error"]
+            assert len(error_issues) == 0, f"Found error issues in {fixture_name}: {error_issues}"
+            
+            warning_issues = [i for i in issues if i.get("level") == "warning"]
+            print(f"✓ Issues: {len(warning_issues)} warnings, 0 errors")
+            
+            # Step 6: Verify SKU preservation
+            original_skus = set()
+            for ing in techcard.ingredients:
+                if ing.skuId and not ing.skuId.startswith("GENERATED_"):
+                    original_skus.add(ing.skuId)
+            
+            print(f"✓ SKUs preserved: {len(original_skus)} original SKUs")
+            
+            # Step 7: Check specific fixture characteristics
+            if fixture_name == "hot.xlsx":
+                # Should have temperature extraction
+                temps = [s.temp_c for s in techcard.process if s.temp_c and s.temp_c > 50]
+                assert len(temps) > 0, f"No cooking temperatures found in {fixture_name}"
+                print(f"✓ Cooking temperatures extracted: {temps}°C")
+                
+            elif fixture_name == "cold.xlsx":
+                # Should have no high temperatures
+                temps = [s.temp_c for s in techcard.process if s.temp_c and s.temp_c > 50]
+                assert len(temps) == 0, f"Unexpected cooking temperatures in {fixture_name}: {temps}°C"
+                print(f"✓ No cooking temperatures (cold preparation)")
+                
+            elif fixture_name == "sauce.xlsx":
+                # Should have density conversion warnings
+                density_issues = [i for i in issues if "density" in i.get("code", "").lower()]
+                assert len(density_issues) > 0, f"Expected density conversion warnings in {fixture_name}"
+                print(f"✓ Density conversions: {len(density_issues)} warnings")
+            
+            print(f"✅ {fixture_name} round-trip PASSED")
+        
+        print("✅ All fixtures round-trip test PASSED")
+        return True
         """Run all round-trip golden tests"""
         print("🔄 Starting IK-04/03 Round-trip Golden Tests...")
         print("=" * 50)
