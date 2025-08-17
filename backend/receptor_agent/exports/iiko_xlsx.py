@@ -315,3 +315,12 @@ def create_iiko_ttk_xlsx(card: TechCardV2) -> Tuple[BytesIO, List[Dict[str, Any]
     excel_buffer.seek(0)
     
     return excel_buffer, issues
+
+
+def export_techcard_to_iiko_xlsx(card: TechCardV2) -> bytes:
+    """
+    Wrapper function for round-trip tests compatibility
+    Returns just the Excel bytes
+    """
+    buffer, issues = create_iiko_ttk_xlsx(card)
+    return buffer.getvalue()
