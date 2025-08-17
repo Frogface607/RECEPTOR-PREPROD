@@ -622,10 +622,19 @@ class IikoXlsxParser:
             time_min = self._extract_time_from_text(step_text)
             temp_c = self._extract_temperature_from_text(step_text)
             
+            # Ensure each step has either time_min or temp_c (TechCardV2 requirement)
+            if time_min is None and temp_c is None:
+                # For preparation steps, use room temperature
+                if idx == 1 or "подготов" in action.lower() or "приправ" in action.lower():
+                    temp_c = 20.0  # Room temperature
+                else:
+                    # For cooking steps, use default cooking temperature
+                    temp_c = 60.0  # Default cooking temperature
+            
             processes.append({
                 "n": idx,
                 "action": action,
-                "time_min": time_min if time_min is not None else 1.0,  # Default 1 minute if no time/temp
+                "time_min": time_min,
                 "temp_c": temp_c,
                 "equipment": None,  # Could be extracted with more sophisticated parsing
                 "details": None
