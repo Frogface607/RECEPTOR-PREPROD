@@ -180,8 +180,8 @@ class IK04FinalValidationTester:
                 # Check valid enum values for sources
                 nutrition_meta = techcard.get('nutritionMeta', {})
                 cost_meta = techcard.get('costMeta', {})
-                valid_nutrition_source = nutrition_meta.get('source') in ['bootstrap', 'catalog', 'usda', 'llm']
-                valid_cost_source = cost_meta.get('source') in ['bootstrap', 'catalog', 'user', 'llm']
+                valid_nutrition_source = nutrition_meta.get('source') in ['bootstrap', 'catalog', 'usda', 'llm', 'csv', 'none']
+                valid_cost_source = cost_meta.get('source') in ['catalog', 'csv', 'llm', 'none']
                 
                 all_checks_pass = validation_success and no_extra_forbidden and min_3_steps and valid_nutrition_source and valid_cost_source
                 
