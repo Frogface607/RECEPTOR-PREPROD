@@ -628,12 +628,20 @@ class IikoXlsxParser:
             is_thermal = any(word in action.lower() for word in thermal_words)
             
             if is_thermal and time_min is None and temp_c is None:
-                # For thermal steps without time/temp, provide defaults
+                # For thermal steps without time/temp, provide both defaults to avoid validation issues
                 if idx == 1 or "подготов" in action.lower() or "приправ" in action.lower():
                     temp_c = 20.0  # Room temperature for preparation
+                    time_min = 5.0  # 5 minutes for preparation
                 else:
-                    # For cooking steps, use default cooking temperature or time
+                    # For cooking steps, use default cooking temperature and time
                     temp_c = 60.0  # Default cooking temperature
+                    time_min = 10.0  # Default cooking time
+            elif is_thermal and time_min is None:
+                # If we have temp_c but no time_min, set default time
+                time_min = 1.0  # Minimal default time
+            elif is_thermal and temp_c is None:
+                # If we have time_min but no temp_c, set default temperature
+                temp_c = 60.0  # Default cooking temperature
             
             processes.append({
                 "n": idx,
