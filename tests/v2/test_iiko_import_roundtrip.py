@@ -361,7 +361,8 @@ class TestIikoXlsxRoundTrip:
         tests = [
             self.test_import_roundtrip_basic,
             self.test_import_units_conversion, 
-            self.test_import_process_parsing
+            self.test_import_process_parsing,
+            self.test_import_fixtures_roundtrip
         ]
         
         passed = 0
