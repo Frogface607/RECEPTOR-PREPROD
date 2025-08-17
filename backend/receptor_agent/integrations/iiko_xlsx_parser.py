@@ -455,16 +455,35 @@ class IikoXlsxParser:
         return None
     
     def _parse_technology(self, technology_text: str) -> List[Dict[str, Any]]:
-        """Parse technology text into process steps"""
+        """Parse technology text into process steps (minimum 3 steps required)"""
         if not technology_text:
-            return [{
-                "n": 1,
-                "action": "Приготовление согласно технологии",
-                "time_min": None,
-                "temp_c": None,
-                "equipment": None,
-                "details": None
-            }]
+            # IK-04/01: Generate minimum 3 steps as required by TechCardV2 schema
+            return [
+                {
+                    "n": 1,
+                    "action": "Подготовка ингредиентов и оборудования",
+                    "time_min": None,
+                    "temp_c": None,
+                    "equipment": None,
+                    "details": None
+                },
+                {
+                    "n": 2,
+                    "action": "Обработка основных ингредиентов",
+                    "time_min": None,
+                    "temp_c": None,
+                    "equipment": None,
+                    "details": None
+                },
+                {
+                    "n": 3,
+                    "action": "Окончательное приготовление и подача",
+                    "time_min": None,
+                    "temp_c": None,
+                    "equipment": None,
+                    "details": None
+                }
+            ]
         
         # Split by line breaks and periods
         steps_raw = re.split(r'[.\n\r]+', technology_text.strip())
@@ -473,9 +492,22 @@ class IikoXlsxParser:
         if not steps_raw:
             steps_raw = [technology_text.strip()]
         
-        # Ensure we have between 1 and 8 steps
-        if len(steps_raw) > 8:
-            # Combine some steps
+        # Ensure we have between 3 and 8 steps (TechCardV2 requirement)
+        if len(steps_raw) < 3:
+            # Expand to 3 steps by splitting the existing content
+            if len(steps_raw) == 1:
+                # Single step - split into preparation, main process, finishing
+                main_step = steps_raw[0]
+                steps_raw = [
+                    "Подготовка ингредиентов",
+                    main_step,
+                    "Оформление и подача"
+                ]
+            elif len(steps_raw) == 2:
+                # Two steps - add preparation step
+                steps_raw.insert(0, "Подготовка ингредиентов")
+        elif len(steps_raw) > 8:
+            # Combine some steps to fit within 8 step limit
             combined_steps = []
             chunk_size = len(steps_raw) // 6  # Target ~6 steps
             for i in range(0, len(steps_raw), chunk_size):
