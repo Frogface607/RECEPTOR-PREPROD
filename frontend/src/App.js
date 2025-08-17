@@ -6159,6 +6159,8 @@ function App() {
     setShowCategoryViewer(false);
     setShowAllCategoriesModal(false);
     setShowAssemblyChartsModal(false);
+    // IK-04/02: Close XLSX import modal
+    setShowXlsxImportModal(false);
     setShowCreateAssemblyChartModal(false);
   }, []);
 
