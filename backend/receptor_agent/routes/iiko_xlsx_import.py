@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 
 from ..integrations.iiko_xlsx_parser import IikoXlsxParser, IikoXlsxParseError
-from ..techcards_v2.schemas import TechCardV2
+from ..techcards_v2.schemas import TechCardV2, NutritionV2, CostV2
 
 logger = logging.getLogger(__name__)
 
