@@ -360,6 +360,15 @@ function App() {
   // Menu View Mode states
   const [menuViewMode, setMenuViewMode] = useState('customer'); // 'customer' or 'business'
 
+  // IK-04/02: XLSX Import states
+  const [showXlsxImportModal, setShowXlsxImportModal] = useState(false);
+  const [xlsxFile, setXlsxFile] = useState(null);
+  const [xlsxPreview, setXlsxPreview] = useState(null);
+  const [xlsxImportProgress, setXlsxImportProgress] = useState(false);
+  const [xlsxImportResults, setXlsxImportResults] = useState(null);
+  const [xlsxAutoMapping, setXlsxAutoMapping] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
   // HACCP Pro states
   const [haccpProEnabled, setHaccpProEnabled] = useState(false);
   const [currentTechCardHaccp, setCurrentTechCardHaccp] = useState(null);
