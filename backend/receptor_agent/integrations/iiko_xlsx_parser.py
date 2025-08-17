@@ -207,6 +207,12 @@ class IikoXlsxParser:
                     next_cell = worksheet.cell(row_idx, cell.column + 1)
                     if next_cell.value:
                         meta["dish_code"] = str(next_cell.value).strip()
+                        
+                elif any(keyword in value.lower() for keyword in ["технология", "technology", "приготовления"]):
+                    # Next cell might contain the technology
+                    next_cell = worksheet.cell(row_idx, cell.column + 1)
+                    if next_cell.value:
+                        meta["technology"] = str(next_cell.value).strip()
         
         # Also check if meta info is in the same row as ingredients (common in some templates)
         if "dish_name" in column_map:
