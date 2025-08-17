@@ -5,12 +5,14 @@ Provides direct access to iiko RMS server for nomenclature and operations
 
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks, UploadFile, File
 from pydantic import BaseModel, Field
 from datetime import datetime
 
 from ..integrations.iiko_rms_service import get_iiko_rms_service, IikoRmsAPIError
 from ..integrations.iiko_rms_client import get_iiko_rms_client
+from ..integrations.iiko_xlsx_parser import IikoXlsxParser, IikoXlsxParseError  # IK-04/01: XLSX Parser
+from ..techcards_v2.schemas import TechCardV2
 
 logger = logging.getLogger(__name__)
 
