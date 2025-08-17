@@ -628,8 +628,8 @@ class IikoXlsxParser:
                 "servingTemp_c": 65.0
             },
             "nutrition": {
-                "per100g": {"kcal": 0.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 0.0},
-                "perPortion": {"kcal": 0.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 0.0}
+                "per100g": {"kcal": 0.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 0.0, "fiber_g": 0.0, "sugar_g": 0.0, "sodium_mg": 0.0},
+                "perPortion": {"kcal": 0.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 0.0, "fiber_g": 0.0, "sugar_g": 0.0, "sodium_mg": 0.0}
             },
             "nutritionMeta": {
                 "source": "calculation_needed",
