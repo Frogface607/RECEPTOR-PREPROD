@@ -15990,6 +15990,255 @@ function App() {
         </div>
       )}
 
+      {/* IK-04/02: XLSX Import Modal */}
+      {showXlsxImportModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-green-400/20">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800/95 backdrop-blur-lg border-b border-green-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-green-300 mb-2">📊 Импорт ТТК (iiko XLSX)</h2>
+                  <p className="text-gray-400">Загрузите XLSX файл техкарты из iiko</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowXlsxImportModal(false);
+                    resetXlsxImport();
+                  }}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {!xlsxImportResults ? (
+                <>
+                  {/* File Drop Zone */}
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                      isDragOver 
+                        ? 'border-green-400 bg-green-900/20' 
+                        : 'border-gray-600 hover:border-green-400'
+                    }`}
+                    onDrop={handleXlsxFileDrop}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragOver(true);
+                    }}
+                    onDragLeave={() => setIsDragOver(false)}
+                  >
+                    {!xlsxFile ? (
+                      <>
+                        <div className="text-4xl mb-4">📊</div>
+                        <p className="text-lg font-bold text-green-300 mb-2">
+                          Перетащите XLSX файл сюда
+                        </p>
+                        <p className="text-gray-400 mb-4">
+                          или выберите файл техкарты из iiko
+                        </p>
+                        <label className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg cursor-pointer transition-colors">
+                          📁 Выбрать файл
+                          <input
+                            type="file"
+                            accept=".xlsx,.xls"
+                            onChange={handleXlsxFileDrop}
+                            className="hidden"
+                          />
+                        </label>
+                        <div className="text-xs text-gray-500 mt-2">
+                          Поддерживаются форматы: XLSX, XLS
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-3xl mb-4">✅</div>
+                        <p className="text-lg font-bold text-green-300 mb-2">
+                          Файл выбран
+                        </p>
+                        {xlsxPreview && (
+                          <div className="bg-gray-900/50 rounded-lg p-4 text-left">
+                            <div className="text-green-300 font-bold mb-2">{xlsxPreview.fileName}</div>
+                            <div className="text-gray-400 text-sm space-y-1">
+                              <div>Размер: {xlsxPreview.fileSize}</div>
+                              <div>Тип: {xlsxPreview.type}</div>
+                              <div>Изменён: {xlsxPreview.lastModified}</div>
+                            </div>
+                            {xlsxPreview.error && (
+                              <div className="text-red-400 text-sm mt-2">
+                                ⚠️ {xlsxPreview.error}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <button
+                          onClick={() => {
+                            setXlsxFile(null);
+                            setXlsxPreview(null);
+                          }}
+                          className="mt-4 text-gray-400 hover:text-red-400 underline transition-colors"
+                        >
+                          Выбрать другой файл
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Options */}
+                  {xlsxFile && (
+                    <div className="bg-gray-900/50 rounded-lg p-4">
+                      <h3 className="text-lg font-bold text-green-300 mb-3">⚙️ Опции импорта</h3>
+                      
+                      <label className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={xlsxAutoMapping}
+                          onChange={(e) => setXlsxAutoMapping(e.target.checked)}
+                          className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                        />
+                        <div>
+                          <div className="text-white font-medium">Сразу подтянуть цены из iiko</div>
+                          <div className="text-gray-400 text-sm">Автоматически выполнить маппинг и пересчёт после импорта</div>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Import Button */}
+                  {xlsxFile && (
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => {
+                          setShowXlsxImportModal(false);
+                          resetXlsxImport();
+                        }}
+                        className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                      >
+                        Отмена
+                      </button>
+                      <button
+                        onClick={importXlsxTechcard}
+                        disabled={xlsxImportProgress}
+                        className={`font-bold py-3 px-6 rounded-lg transition-colors ${
+                          xlsxImportProgress
+                            ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                            : 'bg-green-600 hover:bg-green-700 text-white'
+                        }`}
+                      >
+                        {xlsxImportProgress ? '⏳ Импортирую...' : '📥 Импортировать'}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Import Results */
+                <div className="space-y-6">
+                  {xlsxImportResults.status === 'success' && (
+                    <div className="bg-green-900/30 border border-green-400/30 rounded-lg p-6">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <span className="text-2xl">✅</span>
+                        <div>
+                          <div className="text-lg font-bold text-green-300">
+                            Импорт успешно завершён!
+                          </div>
+                          <div className="text-green-400">
+                            Импортировано из iiko XLSX • блюдо: {xlsxImportResults.techcard?.meta?.title} • 
+                            SKU: {xlsxImportResults.techcard?.ingredients?.filter(ing => ing.skuId).length || 0} • 
+                            ингредиентов: {xlsxImportResults.techcard?.ingredients?.length || 0}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {xlsxImportResults.status === 'draft' && (
+                    <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-6">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <span className="text-2xl">⚠️</span>
+                        <div>
+                          <div className="text-lg font-bold text-yellow-300">
+                            Импорт завершён с предупреждениями
+                          </div>
+                          <div className="text-yellow-400">
+                            Техкарта создана, но требует проверки
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {xlsxImportResults.status === 'error' && (
+                    <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-6">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <span className="text-2xl">❌</span>
+                        <div>
+                          <div className="text-lg font-bold text-red-300">
+                            Ошибка импорта
+                          </div>
+                          <div className="text-red-400">
+                            Не удалось импортировать файл
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Issues Details */}
+                  {xlsxImportResults.issues && xlsxImportResults.issues.length > 0 && (
+                    <div className="bg-gray-900/50 rounded-lg p-4">
+                      <details>
+                        <summary className="text-gray-300 font-bold cursor-pointer hover:text-white">
+                          Показать детали ({xlsxImportResults.issues.length} {xlsxImportResults.issues.length === 1 ? 'предупреждение' : 'предупреждений'})
+                        </summary>
+                        <div className="mt-4 space-y-2">
+                          {xlsxImportResults.issues.map((issue, index) => (
+                            <div 
+                              key={index}
+                              className={`text-sm p-3 rounded ${
+                                issue.level === 'error' ? 'bg-red-900/30 text-red-300' :
+                                issue.level === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
+                                'bg-blue-900/30 text-blue-300'
+                              }`}
+                            >
+                              <span className="font-bold">{issue.code}:</span> {issue.msg}
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    </div>
+                  )}
+
+                  {/* Meta Information */}
+                  {xlsxImportResults.meta && (
+                    <div className="bg-gray-900/50 rounded-lg p-4 text-sm text-gray-400">
+                      <div>Обработано строк: {xlsxImportResults.meta.parsed_rows}</div>
+                      <div>Источник: {xlsxImportResults.meta.source}</div>
+                      <div>Файл: {xlsxImportResults.meta.filename}</div>
+                    </div>
+                  )}
+
+                  {/* Close Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => {
+                        setShowXlsxImportModal(false);
+                        resetXlsxImport();
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      ✅ Готово
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Debug Panel - show if debug=1 in URL */}
       {isDebugMode && (
         <div className="fixed bottom-4 right-4 bg-gray-900/95 backdrop-blur-lg border border-purple-400/30 rounded-lg p-3 text-xs font-mono max-w-sm">
