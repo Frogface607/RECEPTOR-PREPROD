@@ -6016,6 +6016,117 @@ function App() {
     return () => clearTimeout(timeout);
   }, [FEATURE_HACCP, haccpProEnabled, techCard, isAutoGeneratingHaccp]);
 
+  // IK-04/02: XLSX Import Functions
+  const handleXlsxFileDrop = async (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+    if (files.length > 0) {
+      const file = files[0];
+      
+      // Validate file type
+      if (!file.name.toLowerCase().endsWith('.xlsx') && !file.name.toLowerCase().endsWith('.xls')) {
+        alert('Пожалуйста, выберите XLSX файл');
+        return;
+      }
+      
+      setXlsxFile(file);
+      await generateXlsxPreview(file);
+    }
+  };
+
+  const generateXlsxPreview = async (file) => {
+    try {
+      // Simple preview - just show file info for now
+      // Full XLSX parsing would require additional libraries
+      setXlsxPreview({
+        fileName: file.name,
+        fileSize: (file.size / 1024).toFixed(1) + ' KB',
+        lastModified: new Date(file.lastModified).toLocaleDateString(),
+        type: 'Excel файл техкарты iiko'
+      });
+    } catch (error) {
+      console.error('Error generating XLSX preview:', error);
+      setXlsxPreview({
+        fileName: file.name,
+        fileSize: (file.size / 1024).toFixed(1) + ' KB',
+        error: 'Не удалось создать предпросмотр'
+      });
+    }
+  };
+
+  const importXlsxTechcard = async () => {
+    if (!xlsxFile) return;
+    
+    setXlsxImportProgress(true);
+    setXlsxImportResults(null);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', xlsxFile);
+      
+      const response = await fetch(`${API}/v1/iiko/import/ttk.xlsx`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      setXlsxImportResults(result);
+      
+      if (result.status === 'success' || result.status === 'draft') {
+        // Success - set the imported techcard
+        setTcV2(result.techcard);
+        
+        // Auto-mapping if enabled
+        if (xlsxAutoMapping && result.status === 'success') {
+          try {
+            await performRecalculation();
+          } catch (recalcError) {
+            console.warn('Auto recalculation after import failed:', recalcError);
+          }
+        }
+        
+        // Close modal after short delay to show success
+        setTimeout(() => {
+          setShowXlsxImportModal(false);
+          resetXlsxImport();
+        }, 2000);
+        
+      } else {
+        // Handle error status
+        console.error('XLSX import failed:', result);
+      }
+      
+    } catch (error) {
+      console.error('XLSX import error:', error);
+      setXlsxImportResults({
+        status: 'error',
+        issues: [{
+          code: 'importFailed',
+          level: 'error',
+          msg: `Ошибка импорта: ${error.message}`
+        }],
+        meta: { source: 'error' }
+      });
+    } finally {
+      setXlsxImportProgress(false);
+    }
+  };
+
+  const resetXlsxImport = () => {
+    setXlsxFile(null);
+    setXlsxPreview(null);
+    setXlsxImportProgress(false);
+    setXlsxImportResults(null);
+    setXlsxAutoMapping(false);
+    setIsDragOver(false);
+  };
+
   // централизованная функция закрытия модалок
   const closeAllModals = React.useCallback(() => {
     console.log('closeAllModals called'); // DEBUG
