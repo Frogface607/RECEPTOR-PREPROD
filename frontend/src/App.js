@@ -14759,6 +14759,21 @@ function App() {
                 </div>
               </button>
               
+              {/* IK-04/02: XLSX Import Button */}
+              <button
+                onClick={() => {
+                  setShowDataModal(false);
+                  setShowXlsxImportModal(true);
+                }}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center space-x-3"
+              >
+                <span className="text-2xl">📊</span>
+                <div className="text-left">
+                  <div className="text-lg">Импорт ТТК (iiko XLSX)</div>
+                  <div className="text-sm opacity-90">Загрузить техкарту из iiko XLSX файла</div>
+                </div>
+              </button>
+              
               <button
                 onClick={() => {
                   setShowDataModal(false);
