@@ -623,12 +623,16 @@ class IikoXlsxParser:
             temp_c = self._extract_temperature_from_text(step_text)
             
             # Ensure each step has either time_min or temp_c (TechCardV2 requirement)
-            if time_min is None and temp_c is None:
-                # For preparation steps, use room temperature
+            # Check if action contains thermal words
+            thermal_words = ['жарить', 'варить', 'готовить', 'тушить', 'запекать', 'кипятить']
+            is_thermal = any(word in action.lower() for word in thermal_words)
+            
+            if is_thermal and time_min is None and temp_c is None:
+                # For thermal steps without time/temp, provide defaults
                 if idx == 1 or "подготов" in action.lower() or "приправ" in action.lower():
-                    temp_c = 20.0  # Room temperature
+                    temp_c = 20.0  # Room temperature for preparation
                 else:
-                    # For cooking steps, use default cooking temperature
+                    # For cooking steps, use default cooking temperature or time
                     temp_c = 60.0  # Default cooking temperature
             
             processes.append({
