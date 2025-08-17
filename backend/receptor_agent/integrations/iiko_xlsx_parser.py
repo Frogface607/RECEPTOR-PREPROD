@@ -664,7 +664,7 @@ class IikoXlsxParser:
                 "perPortion": {"kcal": 0.0, "proteins_g": 0.0, "fats_g": 0.0, "carbs_g": 0.0, "fiber_g": 0.0, "sugar_g": 0.0, "sodium_mg": 0.0}
             },
             "nutritionMeta": {
-                "source": "bootstrap",  # Valid enum value instead of "calculation_needed"
+                "source": "bootstrap",  # Valid enum value for nutrition
                 "coveragePct": 0.0
             },
             "cost": {
@@ -674,7 +674,7 @@ class IikoXlsxParser:
                 "vat_pct": None
             },
             "costMeta": {
-                "source": "bootstrap",  # Valid enum value instead of "calculation_needed"
+                "source": "none",  # Valid enum value for cost (bootstrap not allowed)
                 "coveragePct": 0.0,
                 "asOf": datetime.now().strftime("%Y-%m-%d")
             },
