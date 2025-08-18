@@ -711,7 +711,7 @@ class IikoXlsxParser:
                 temp_val = float(match.group(1))
                 
                 # Convert Fahrenheit to Celsius if needed
-                if "[FfФф]" in pattern:
+                if "Фф]" in pattern or "Ff]" in pattern:
                     temp_val = round((temp_val - 32) * 5.0 / 9.0, 1)
                 
                 return temp_val
