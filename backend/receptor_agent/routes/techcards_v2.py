@@ -3,7 +3,8 @@ import io
 import json
 import os
 import traceback
-from fastapi import APIRouter, HTTPException, Query
+import logging
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
 from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
 from receptor_agent.techcards_v2.schemas import TechCardV2
