@@ -605,7 +605,7 @@ async def validate_techcard_quality(request: Request):
         raise HTTPException(500, f"Quality validation failed: {str(e)}")
 
 
-@router.post("/normalize")
+@router.post("/techcards.v2/normalize")
 async def normalize_techcard_ranges(request: Request):
     """
     GX-02: Normalize range values (0-4 → numbers) in TechCard
