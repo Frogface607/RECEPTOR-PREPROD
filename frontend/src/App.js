@@ -6399,14 +6399,25 @@ function App() {
   const importXlsxTechcard = async () => {
     if (!xlsxFile) return;
     
+    // UX-Polish: Reset states and start progress tracking
     setXlsxImportProgress(true);
     setXlsxImportResults(null);
+    setXlsxImportErrors([]);
+    setXlsxImportWarnings([]);
     
     try {
+      // Stage 1: Parsing XLSX
+      setXlsxImportStage('parsing');
+      await new Promise(resolve => setTimeout(resolve, 500)); // UI feedback delay
+      
       const formData = new FormData();
       formData.append('file', xlsxFile);
       
-      const response = await fetch(`${API}/v1/iiko/import/ttk.xlsx`, {
+      // Stage 2: Validation
+      setXlsxImportStage('validation');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const response = await fetch(`${BACKEND_URL}/api/v1/iiko/import/ttk.xlsx`, {
         method: 'POST',
         body: formData
       });
@@ -6415,7 +6426,26 @@ function App() {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
+      // Stage 3: Conversions  
+      setXlsxImportStage('conversions');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       const result = await response.json();
+      
+      // Stage 4: Tech extraction
+      setXlsxImportStage('extraction');
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
+      // Process issues into errors and warnings
+      const issues = result.issues || [];
+      const errors = issues.filter(issue => issue.level === 'error');
+      const warnings = issues.filter(issue => issue.level === 'warning');
+      
+      setXlsxImportErrors(errors);
+      setXlsxImportWarnings(warnings);
+      
+      // Stage 5: Done
+      setXlsxImportStage('done');
       setXlsxImportResults(result);
       
       if (result.status === 'success' || result.status === 'draft') {
@@ -6431,11 +6461,11 @@ function App() {
           }
         }
         
-        // Close modal after short delay to show success
+        // Close modal after showing results
         setTimeout(() => {
           setShowXlsxImportModal(false);
           resetXlsxImport();
-        }, 2000);
+        }, 3000);
         
       } else {
         // Handle error status
@@ -6444,15 +6474,41 @@ function App() {
       
     } catch (error) {
       console.error('XLSX import error:', error);
+      setXlsxImportStage('error');
+      
+      // Create user-friendly error message
+      let errorMessage = `Ошибка импорта: ${error.message}`;
+      let errorSuggestion = '';
+      
+      if (error.message.includes('HTTP 413') || error.message.includes('too large')) {
+        errorMessage = 'Файл слишком большой';
+        errorSuggestion = 'Попробуйте файл размером менее 10 МБ';
+      } else if (error.message.includes('HTTP 415') || error.message.includes('Unsupported')) {
+        errorMessage = 'Неподдерживаемый формат файла';
+        errorSuggestion = 'Убедитесь что файл имеет расширение .xlsx';
+      } else if (error.message.includes('HTTP 422')) {
+        errorMessage = 'Некорректная структура файла';
+        errorSuggestion = 'Проверьте что файл содержит данные техкарты в правильном формате';
+      }
+      
       setXlsxImportResults({
         status: 'error',
         issues: [{
           code: 'importFailed',
           level: 'error',
-          msg: `Ошибка импорта: ${error.message}`
+          msg: errorMessage,
+          suggestion: errorSuggestion
         }],
         meta: { source: 'error' }
       });
+      
+      setXlsxImportErrors([{
+        code: 'importFailed',
+        level: 'error', 
+        msg: errorMessage,
+        suggestion: errorSuggestion
+      }]);
+      
     } finally {
       setXlsxImportProgress(false);
     }
