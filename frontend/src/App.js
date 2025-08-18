@@ -3594,6 +3594,26 @@ function App() {
       return;
     }
     
+    // UX-Polish: Log mapping action for audit
+    const mappingAction = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      action: 'accept_high_confidence',
+      user: currentUser?.email || 'unknown',
+      techcard: tcV2?.meta?.title || 'untitled',
+      ingredients_count: highConfidenceResults.length,
+      ingredients: highConfidenceResults.map(r => ({
+        name: r.ingredient_name,
+        sku_id: r.suggestion.sku_id,
+        confidence: r.confidence
+      })),
+      undoable: true
+    };
+    
+    // Save to action log
+    setMappingActionLog(prev => [mappingAction, ...prev.slice(0, 9)]); // Keep last 10 actions
+    setLastMappingAction(mappingAction);
+    
     // Update results to accepted status
     const updatedResults = autoMappingResults.map(result => {
       if (highConfidenceResults.some(hr => hr.ingredient_name === result.ingredient_name)) {
@@ -3604,14 +3624,56 @@ function App() {
     
     setAutoMappingResults(updatedResults);
     
-    // Update message with acceptance info
+    // UX-Polish: Show success toast with specific count
     setAutoMappingMessage({ 
       type: 'success', 
       text: `✅ Принято ${highConfidenceResults.length} высоко-уверенных совпадений (≥90%)` 
     });
     
-    // Log for debugging
-    console.log('GX-02: Accepted high confidence mappings:', highConfidenceResults.length);
+    // Optional: Show toast notification (would need toast system)
+    console.log(`🎯 UX-Polish: Accepted ${highConfidenceResults.length} high-confidence mappings`);
+    
+    // Update localStorage for "last export" tracking  
+    localStorage.setItem('lastMappingAction', JSON.stringify({
+      timestamp: mappingAction.timestamp,
+      count: highConfidenceResults.length,
+      techcard: tcV2?.meta?.title
+    }));
+  };
+
+  // UX-Polish: Undo last mapping action
+  const undoLastMappingAction = () => {
+    if (!lastMappingAction || !lastMappingAction.undoable) {
+      setAutoMappingMessage({ 
+        type: 'warning', 
+        text: '⚠️ Нет действий для отмены' 
+      });
+      return;
+    }
+    
+    // Find ingredients from last action and revert their status
+    const ingredientsToUndo = lastMappingAction.ingredients.map(ing => ing.name);
+    
+    const updatedResults = autoMappingResults.map(result => {
+      if (ingredientsToUndo.includes(result.ingredient_name) && result.status === 'accepted') {
+        // Revert to original status based on confidence
+        const originalStatus = result.confidence >= 90 ? 'auto_accept' : 'review';
+        return { ...result, status: originalStatus };
+      }
+      return result;
+    });
+    
+    setAutoMappingResults(updatedResults);
+    
+    // Mark action as undone
+    setLastMappingAction({ ...lastMappingAction, undoable: false });
+    
+    setAutoMappingMessage({ 
+      type: 'info', 
+      text: `↩️ Отменено принятие ${lastMappingAction.ingredients_count} ингредиентов` 
+    });
+    
+    console.log('🔄 UX-Polish: Undid last mapping action:', lastMappingAction.ingredients_count);
   };
 
   // ============== EXPORT WIZARD FUNCTIONS (IK-02B-FE/03) ==============
