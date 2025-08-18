@@ -221,6 +221,7 @@ class TestIikoImportProcess:
             self.test_temperature_extraction,
             self.test_time_extraction, 
             self.test_complex_technology_parsing,
+            self.test_advanced_patterns_parsing,
             self.test_edge_cases
         ]
         
