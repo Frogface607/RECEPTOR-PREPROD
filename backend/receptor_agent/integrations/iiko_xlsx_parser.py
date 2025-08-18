@@ -656,16 +656,20 @@ class IikoXlsxParser:
     
     def _extract_time_from_text(self, text: str) -> Optional[float]:
         """Extract cooking time from text using regex"""
-        # Patterns for time: "15 мин", "30минут", "1-2 часа", "3-5 мин"
+        # Enhanced patterns for time with support for ranges and complex formats
         time_patterns = [
-            r'(\d{1,3})-(\d{1,3})\s*мин',      # Range: "3-5 мин" - take first value
-            r'(\d{1,3})-(\d{1,3})\s*минут',    # Range: "3-5 минут"
-            r'(\d{1,3})\s*мин',                # Single: "20 мин"
-            r'(\d{1,3})\s*минут',              # Single: "20 минут"
-            r'(\d{1,3})\s*min',                # Single: "20 min"
-            r'(\d{1,2})-(\d{1,2})\s*час',      # Range hours: "1-2 часа"
-            r'(\d{1,2})\s*час',                # Single hours: "1 час"
-            r'(\d{1,2})\s*hour'                # Single hours: "1 hour"
+            # Range patterns (take minimum value)
+            r'(\d{1,3})\s*[-–]\s*(\d{1,3})\s*мин',        # "3-5 мин" → 3.0
+            r'(\d{1,3})\s*[-–]\s*(\d{1,3})\s*минут',      # "3-5 минут" → 3.0  
+            r'(\d{1,3})\s*[-–]\s*(\d{1,3})\s*min',        # "3-5 min" → 3.0
+            # Single value patterns
+            r'(\d{1,3})\s*мин',                           # "20 мин" → 20.0
+            r'(\d{1,3})\s*минут',                         # "20 минут" → 20.0
+            r'(\d{1,3})\s*min',                           # "20 min" → 20.0
+            # Hour patterns (range and single)
+            r'(\d{1,2})\s*[-–]\s*(\d{1,2})\s*час',        # "1-2 часа" → 60.0 (first * 60)
+            r'(\d{1,2})\s*час',                           # "1 час" → 60.0
+            r'(\d{1,2})\s*hour'                           # "1 hour" → 60.0
         ]
         
         for pattern in time_patterns:
