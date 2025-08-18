@@ -309,11 +309,12 @@ class UXPolishTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check if synonyms are returned
-                if isinstance(data, dict) and len(data) > 0:
+                # Check if synonyms are returned - updated for actual API response
+                synonyms_preview = data.get('synonyms_preview', {})
+                if isinstance(synonyms_preview, dict) and len(synonyms_preview) > 0:
                     # Look for key Russian ingredients
                     key_ingredients = ['яйца', 'молоко', 'говядина']
-                    found_ingredients = [ing for ing in key_ingredients if ing in data]
+                    found_ingredients = [ing for ing in key_ingredients if ing in synonyms_preview]
                     
                     if found_ingredients:
                         self.log_result("RU-Synonyms - Key Ingredients", True, f"Found synonyms for: {', '.join(found_ingredients)}")
@@ -321,11 +322,12 @@ class UXPolishTester:
                         self.log_result("RU-Synonyms - Key Ingredients", False, "Key Russian ingredients not found in synonyms")
                     
                     # Check synonym structure
-                    sample_key = list(data.keys())[0]
-                    sample_synonyms = data[sample_key]
+                    sample_key = list(synonyms_preview.keys())[0]
+                    sample_synonyms = synonyms_preview[sample_key]
                     
                     if isinstance(sample_synonyms, list) and len(sample_synonyms) > 0:
-                        self.log_result("RU-Synonyms - Structure", True, f"Proper synonym structure with {len(data)} groups")
+                        total_groups = data.get('total_groups', 0)
+                        self.log_result("RU-Synonyms - Structure", True, f"Proper synonym structure with {total_groups} groups")
                     else:
                         self.log_result("RU-Synonyms - Structure", False, "Invalid synonym structure")
                         
