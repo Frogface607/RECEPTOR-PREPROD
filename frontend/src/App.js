@@ -369,6 +369,12 @@ function App() {
   const [xlsxAutoMapping, setXlsxAutoMapping] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  // GX-02: Quality Validation states
+  const [qualityScore, setQualityScore] = useState(null);
+  const [qualityBanners, setQualityBanners] = useState([]);
+  const [isValidatingQuality, setIsValidatingQuality] = useState(false);
+  const [autoNormalize, setAutoNormalize] = useState(true); // Auto-normalize ranges
+
   // HACCP Pro states
   const [haccpProEnabled, setHaccpProEnabled] = useState(false);
   const [currentTechCardHaccp, setCurrentTechCardHaccp] = useState(null);
