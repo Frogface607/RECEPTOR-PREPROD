@@ -3211,7 +3211,7 @@ function App() {
         setShowAutoMappingModal(true);
         console.log('GX-02: Enhanced mapping completed:', stats);
       } else {
-        throw new Error(mappingData?.message || 'Unknown mapping error');
+        throw new Error(result.mapping_results?.message || 'Unknown mapping error');
       }
 
     } catch (error) {
