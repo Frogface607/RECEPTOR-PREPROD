@@ -568,3 +568,99 @@ def export_tc_v2(card: TechCardV2):
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="techcard_v2_export.zip"'}
     )
+
+
+# GX-02: Quality Validation Endpoints
+@router.post("/validate/quality")
+async def validate_techcard_quality(request: Request):
+    """
+    GX-02: Validate TechCard quality and get improvement suggestions
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        # Initialize quality validator
+        validator = QualityValidator()
+        
+        # Validate and normalize
+        normalized_card, issues = validator.validate_techcard(techcard_data)
+        quality_score = validator.get_quality_score(issues)
+        fix_banners = validator.generate_fix_banners(issues)
+        
+        return {
+            "status": "success",
+            "normalized_techcard": normalized_card,
+            "quality_score": quality_score,
+            "validation_issues": issues,
+            "fix_banners": fix_banners,
+            "is_production_ready": quality_score["is_production_ready"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Quality validation error: {e}")
+        raise HTTPException(500, f"Quality validation failed: {str(e)}")
+
+
+@router.post("/normalize")
+async def normalize_techcard_ranges(request: Request):
+    """
+    GX-02: Normalize range values (0-4 → numbers) in TechCard
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        # Initialize quality validator
+        validator = QualityValidator()
+        
+        # Only normalize ranges, skip other validations
+        normalized_card, range_issues = validator._normalize_ranges(techcard_data)
+        
+        return {
+            "status": "success",
+            "normalized_techcard": normalized_card,
+            "normalization_issues": range_issues
+        }
+        
+    except Exception as e:
+        logger.error(f"Normalization error: {e}")
+        raise HTTPException(500, f"Normalization failed: {str(e)}")
+
+
+@router.post("/quality/score")
+async def get_quality_score(request: Request):
+    """
+    GX-02: Get quality score without modifying TechCard
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        # Initialize quality validator
+        validator = QualityValidator()
+        
+        # Run validation without normalization
+        _, issues = validator.validate_techcard(techcard_data)
+        quality_score = validator.get_quality_score(issues)
+        fix_banners = validator.generate_fix_banners(issues)
+        
+        return {
+            "status": "success",
+            "quality_score": quality_score,
+            "fix_banners": fix_banners,
+            "validation_issues": issues
+        }
+        
+    except Exception as e:
+        logger.error(f"Quality score calculation error: {e}")
+        raise HTTPException(500, f"Quality score calculation failed: {str(e)}")
