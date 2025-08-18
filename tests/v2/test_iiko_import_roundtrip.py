@@ -352,6 +352,8 @@ class TestIikoXlsxRoundTrip:
             
             print(f"✅ {fixture_name} round-trip PASSED")
         
+        print("✅ All fixtures round-trip test PASSED") 
+        return True
     def run_all_tests(self):
         """Run all round-trip golden tests"""
         print("🔄 Starting IK-04/03 Round-trip Golden Tests...")
