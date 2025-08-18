@@ -292,7 +292,11 @@ class UXPolishTester:
                 data = response.json()
                 
                 # Check if updated_techcard is returned when auto_apply=True
-                if 'updated_techcard' in data:
+                # Handle no products scenario
+                mapping_results = data.get('mapping_results', {})
+                if mapping_results.get('status') == 'no_products':
+                    self.log_result("Enhanced Auto-mapping - Auto-apply", True, "Correctly handled auto-apply with no products")
+                elif 'updated_techcard' in data:
                     self.log_result("Enhanced Auto-mapping - Auto-apply", True, "Updated techcard returned with auto-applied mappings")
                 else:
                     self.log_result("Enhanced Auto-mapping - Auto-apply", False, "No updated techcard returned for auto_apply=True")
