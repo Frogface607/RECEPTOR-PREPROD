@@ -9669,12 +9669,12 @@ function App() {
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                     <button 
-                      onClick={startAutoMapping}
+                      onClick={startEnhancedAutoMapping}
                       disabled={isAutoMapping || iikoRmsConnection.status !== 'connected'}
                       className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="🏪 Автоматически сопоставить ингредиенты с номенклатурой iiko RMS"
+                      title="🏪 Улучшенный автомаппинг с RU-синонимами (GX-02)"
                     >
-                      {isAutoMapping ? '⏳ Анализ...' : 'Автомаппинг (iiko)'}
+                      {isAutoMapping ? '⏳ Анализ...' : 'Автомаппинг Pro (GX-02)'}
                     </button>
                     <button 
                       onClick={startExportWizard}
