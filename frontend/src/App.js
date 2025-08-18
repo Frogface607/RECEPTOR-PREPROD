@@ -3270,6 +3270,122 @@ function App() {
     return filtered;
   };
 
+  // GX-02: Quality Validation Functions
+  const validateTechCardQuality = async (techcard = null) => {
+    setIsValidatingQuality(true);
+    const cardToValidate = techcard || tcV2;
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/v1/techcards.v2/validate/quality`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ techcard: cardToValidate })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      setQualityScore(result.quality_score);
+      setQualityBanners(result.fix_banners || []);
+      
+      // Auto-normalize if enabled and needed
+      if (autoNormalize && result.normalized_techcard && !result.is_production_ready) {
+        const normalizationIssues = result.validation_issues.filter(i => i.type === 'rangeNormalized');
+        if (normalizationIssues.length > 0) {
+          setTcV2(result.normalized_techcard);
+          console.log('GX-02: Auto-normalized', normalizationIssues.length, 'range values');
+        }
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error('Quality validation error:', error);
+      setQualityBanners([{
+        type: 'error',
+        title: 'Ошибка валидации',
+        icon: '🚨',
+        color: 'red',
+        messages: [`Не удалось проверить качество: ${error.message}`],
+        action: 'Повторить попытку'
+      }]);
+    } finally {
+      setIsValidatingQuality(false);
+    }
+  };
+
+  const normalizeTechCardRanges = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/v1/techcards.v2/normalize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ techcard: tcV2 })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.normalized_techcard) {
+        setTcV2(result.normalized_techcard);
+        
+        const normalizedCount = result.normalization_issues?.length || 0;
+        if (normalizedCount > 0) {
+          // Show success message
+          const message = `✅ Нормализовано ${normalizedCount} значений диапазонов`;
+          // You can add a success banner here
+          console.log('GX-02:', message);
+        }
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error('Normalization error:', error);
+      throw error;
+    }
+  };
+
+  const getQualityScoreOnly = async (techcard = null) => {
+    const cardToValidate = techcard || tcV2;
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/v1/techcards.v2/quality/score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ techcard: cardToValidate })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      console.error('Quality score error:', error);
+      throw error;
+    }
+  };
+
+  // Auto-validate quality when tcV2 changes
+  React.useEffect(() => {
+    if (tcV2 && tcV2.ingredients && tcV2.ingredients.length > 0) {
+      // Debounced quality validation
+      const timer = setTimeout(() => {
+        validateTechCardQuality();
+      }, 1000); // 1 second delay to avoid too frequent calls
+      
+      return () => clearTimeout(timer);
+    }
+  }, [tcV2]);
+
   const acceptAllHighConfidence = () => {
     const updatedResults = autoMappingResults.map(result => {
       if (result.status === 'auto_accept' || (result.confidence >= 90 && result.suggestion)) {
