@@ -690,6 +690,8 @@ class IikoXlsxParser:
         """Extract cooking temperature from text using regex"""
         # Enhanced patterns for temperature with support for ranges and complex formats
         temp_patterns = [
+            # Fahrenheit conversion (must be first to avoid °F being caught by °)
+            r'(\d{2,3})\s*°\s*[FfФф]',                      # "350°F" → 176.7 (converted)
             # Range patterns (take minimum value)
             r'(\d{2,3})\s*[-–]\s*(\d{2,3})\s*°\s*[CcСс]',   # "170-180°C" → 170.0
             r'(\d{2,3})\s*[-–]\s*(\d{2,3})\s*°',            # "170-180°" → 170.0
@@ -700,8 +702,6 @@ class IikoXlsxParser:
             r'(\d{2,3})\s*°\s*[CcСс]',                      # "200°C" → 200.0
             r'(\d{2,3})\s*°',                               # "200°" → 200.0
             r'(\d{2,3})\s*градус',                          # "200 градусов" → 200.0
-            # Fahrenheit conversion
-            r'(\d{2,3})\s*°\s*[FfФф]',                      # "350°F" → 176.7 (converted)
         ]
         
         for pattern in temp_patterns:
