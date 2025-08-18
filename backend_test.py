@@ -222,8 +222,8 @@ class UXPolishTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check response structure
-                required_fields = ['status', 'results', 'stats', 'coverage']
+                # Check response structure - updated for actual API response
+                required_fields = ['status', 'mapping_results']
                 missing_fields = [field for field in required_fields if field not in data]
                 
                 if missing_fields:
@@ -232,7 +232,8 @@ class UXPolishTester:
                     self.log_result("Enhanced Auto-mapping - Response Structure", True, "All required fields present")
                 
                 # Check Russian ingredient matching
-                results = data.get('results', [])
+                mapping_results = data.get('mapping_results', {})
+                results = mapping_results.get('results', [])
                 russian_matches = [r for r in results if r.get('confidence', 0) >= 0.90]
                 
                 if russian_matches:
@@ -241,7 +242,7 @@ class UXPolishTester:
                     self.log_result("Enhanced Auto-mapping - Russian Ingredients", False, "No high-confidence Russian ingredient matches")
                 
                 # Check confidence scoring and thresholds
-                stats = data.get('stats', {})
+                stats = mapping_results.get('stats', {})
                 auto_accept_count = stats.get('auto_accept', 0)
                 review_count = stats.get('review', 0)
                 
@@ -251,7 +252,7 @@ class UXPolishTester:
                     self.log_result("Enhanced Auto-mapping - Confidence Thresholds", False, "No matches found with proper confidence categorization")
                 
                 # Check coverage calculation
-                coverage = data.get('coverage', {})
+                coverage = mapping_results.get('coverage', {})
                 if 'potential_coverage_pct' in coverage:
                     coverage_pct = coverage['potential_coverage_pct']
                     self.log_result("Enhanced Auto-mapping - Coverage Calculation", True, f"Coverage: {coverage_pct}%")
