@@ -31,7 +31,7 @@ class IikoXlsxParser:
         "technology": ["технология приготовления", "technology", "cooking technology", "процесс приготовления", "приготовление"],
         
         # Ingredient information
-        "ingredient_code": ["артикул продукта", "product code", "ingredient code", "sku", "артикул", "код продукта"],
+        "ingredient_code": ["артикул продукта", "product code", "ingredient code", "sku", "код продукта"],
         "ingredient_name": ["наименование продукта", "product name", "ingredient name", "продукт", "ингредиент"],
         "brutto": ["брутто", "gross", "brutto weight", "масса брутто"],
         "netto": ["нетто", "net", "netto weight", "масса нетто"],
