@@ -687,22 +687,34 @@ class IikoXlsxParser:
         return None
     
     def _extract_temperature_from_text(self, text: str) -> Optional[float]:
-        """Extract temperature from text using regex"""
-        # Patterns: "180°C", "200 градусов", "350°F"
+        """Extract cooking temperature from text using regex"""
+        # Enhanced patterns for temperature with support for ranges and complex formats
         temp_patterns = [
-            r'(\d{1,3})°C',
-            r'(\d{1,3})\s*градус',
-            r'(\d{1,3})°F'  # Fahrenheit (will convert)
+            # Range patterns (take minimum value)
+            r'(\d{2,3})\s*[-–]\s*(\d{2,3})\s*°\s*[CcСс]',   # "170-180°C" → 170.0
+            r'(\d{2,3})\s*[-–]\s*(\d{2,3})\s*°',            # "170-180°" → 170.0
+            r'(\d{2,3})\s*[-–]\s*(\d{2,3})\s*градус',       # "170-180 градусов" → 170.0
+            # Complex t= format
+            r't\s*=\s*(\d{2,3})\s*°?\s*[CcСс]?',            # "t=85°C" → 85.0
+            # Single value patterns  
+            r'(\d{2,3})\s*°\s*[CcСс]',                      # "200°C" → 200.0
+            r'(\d{2,3})\s*°',                               # "200°" → 200.0
+            r'(\d{2,3})\s*градус',                          # "200 градусов" → 200.0
+            # Fahrenheit conversion
+            r'(\d{2,3})\s*°\s*[FfФф]',                      # "350°F" → 176.7 (converted)
         ]
         
         for pattern in temp_patterns:
-            match = re.search(pattern, text)
+            match = re.search(pattern, text.lower())
             if match:
-                temp_val = int(match.group(1))
-                # Convert Fahrenheit to Celsius
-                if "°F" in pattern:
-                    temp_val = (temp_val - 32) * 5 / 9
-                return float(round(temp_val))
+                # For range patterns, take the first (minimum) value
+                temp_val = float(match.group(1))
+                
+                # Convert Fahrenheit to Celsius if needed
+                if "[FfФф]" in pattern:
+                    temp_val = round((temp_val - 32) * 5.0 / 9.0, 1)
+                
+                return temp_val
         
         return None
     
