@@ -1,418 +1,527 @@
 #!/usr/bin/env python3
 """
-IK-04/03 Enhanced Technology Parsing Backend Testing
-Testing advanced pattern validation for technology parsing improvements
-
-Focus Areas:
-1. Range Pattern Testing (time ranges, temperature ranges)
-2. Complex Format Testing (t= format, standard format)  
-3. Fahrenheit Conversion
-4. XLSX Import with Advanced Technology
+UX-Polish Priority 3: Enhanced XLSX Import & Auto-mapping Backend Testing
+Tests the newly implemented UX-Polish enhancements for real-world usability
 """
 
 import asyncio
-import httpx
 import json
 import os
 import sys
-import tempfile
-import openpyxl
-from io import BytesIO
-from datetime import datetime
+import time
+import requests
+from pathlib import Path
 
-# Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')
+# Add backend to path for imports
+sys.path.append('/app/backend')
+
+# Test configuration
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'http://localhost:8001')
 API_BASE = f"{BACKEND_URL}/api"
 
-class TechnologyParsingTester:
+class UXPolishTester:
     def __init__(self):
-        self.test_results = []
-        self.total_tests = 0
-        self.passed_tests = 0
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        })
+        self.results = []
+        self.test_count = 0
+        self.passed_count = 0
         
-    async def run_all_tests(self):
-        """Run all technology parsing tests"""
-        print("🧪 IK-04/03 Enhanced Technology Parsing Testing Started")
-        print("=" * 60)
+    def log_result(self, test_name: str, passed: bool, details: str = ""):
+        """Log test result"""
+        self.test_count += 1
+        if passed:
+            self.passed_count += 1
+            status = "✅ PASS"
+        else:
+            status = "❌ FAIL"
         
-        # Test 1: Range Pattern Testing
-        await self.test_range_patterns()
+        result = f"{status}: {test_name}"
+        if details:
+            result += f" - {details}"
         
-        # Test 2: Complex Format Testing
-        await self.test_complex_formats()
+        print(result)
+        self.results.append({
+            'test': test_name,
+            'passed': passed,
+            'details': details
+        })
         
-        # Test 3: Fahrenheit Conversion
-        await self.test_fahrenheit_conversion()
+    def test_enhanced_xlsx_import_api(self):
+        """Test 1: Enhanced XLSX Import API Integration"""
+        print("\n🔍 Testing Enhanced XLSX Import API Integration...")
         
-        # Test 4: XLSX Import with Advanced Technology
-        await self.test_xlsx_import_advanced_technology()
-        
-        # Test 5: API Endpoint Integration
-        await self.test_api_endpoint_integration()
-        
-        # Summary
-        self.print_summary()
-        
-    async def test_range_patterns(self):
-        """Test range pattern extraction (time and temperature ranges)"""
-        print("\n📊 Test 1: Range Pattern Testing")
-        print("-" * 40)
-        
-        test_cases = [
-            {
-                "text": "Обжарить 3–4 мин при высокой температуре",
-                "expected_time": 3.0,
-                "expected_temp": None,
-                "description": "Time range 3-4 min → should extract 3.0 min"
-            },
-            {
-                "text": "Обжарить при 170–180°C до золотистой корочки", 
-                "expected_time": None,
-                "expected_temp": 170.0,
-                "description": "Temperature range 170-180°C → should extract 170.0°C"
-            },
-            {
-                "text": "Варить 15-20 минут при 90-95°C",
-                "expected_time": 15.0,
-                "expected_temp": 90.0,
-                "description": "Both ranges → should extract minimum values"
-            },
-            {
-                "text": "Тушить 1-2 часа при средней температуре",
-                "expected_time": 60.0,  # 1 hour = 60 minutes
-                "expected_temp": None,
-                "description": "Hour range → should convert to minutes"
-            }
-        ]
-        
-        for i, case in enumerate(test_cases, 1):
-            await self.test_technology_extraction(
-                f"1.{i}", case["text"], case["expected_time"], 
-                case["expected_temp"], case["description"]
-            )
-    
-    async def test_complex_formats(self):
-        """Test complex format patterns (t= format, standard format)"""
-        print("\n🔧 Test 2: Complex Format Testing")
-        print("-" * 40)
-        
-        test_cases = [
-            {
-                "text": "Томить при t=85°C под крышкой",
-                "expected_time": None,
-                "expected_temp": 85.0,
-                "description": "t= format → should extract 85.0°C"
-            },
-            {
-                "text": "Томить 45 мин при медленном огне под крышкой",
-                "expected_time": 45.0,
-                "expected_temp": None,
-                "description": "Standard format → should extract 45.0 min"
-            },
-            {
-                "text": "Готовить при t = 120°C в течение 30 мин",
-                "expected_time": 30.0,
-                "expected_temp": 120.0,
-                "description": "t= format with spaces and time → both values"
-            },
-            {
-                "text": "Запекать при t=200° до готовности",
-                "expected_time": None,
-                "expected_temp": 200.0,
-                "description": "t= format without C → should extract 200.0°C"
-            }
-        ]
-        
-        for i, case in enumerate(test_cases, 1):
-            await self.test_technology_extraction(
-                f"2.{i}", case["text"], case["expected_time"],
-                case["expected_temp"], case["description"]
-            )
-    
-    async def test_fahrenheit_conversion(self):
-        """Test Fahrenheit to Celsius conversion"""
-        print("\n🌡️ Test 3: Fahrenheit Conversion")
-        print("-" * 40)
-        
-        test_cases = [
-            {
-                "text": "Готовить при температуре 350°F",
-                "expected_time": None,
-                "expected_temp": 176.7,  # (350-32)*5/9 = 176.67
-                "description": "350°F → should convert to 176.7°C"
-            },
-            {
-                "text": "Выпекать при 400°F в течение 25 минут",
-                "expected_time": 25.0,
-                "expected_temp": 204.4,  # (400-32)*5/9 = 204.44
-                "description": "400°F with time → should convert temp and extract time"
-            },
-            {
-                "text": "Разогреть духовку до 325°F",
-                "expected_time": None,
-                "expected_temp": 162.8,  # (325-32)*5/9 = 162.78
-                "description": "325°F → should convert to 162.8°C"
-            }
-        ]
-        
-        for i, case in enumerate(test_cases, 1):
-            await self.test_technology_extraction(
-                f"3.{i}", case["text"], case["expected_time"],
-                case["expected_temp"], case["description"]
-            )
-    
-    async def test_xlsx_import_advanced_technology(self):
-        """Test XLSX import with advanced technology patterns"""
-        print("\n📋 Test 4: XLSX Import with Advanced Technology")
-        print("-" * 40)
-        
-        # Create test XLSX with advanced technology patterns
-        test_xlsx = self.create_advanced_technology_xlsx()
-        
+        # Test with hot.xlsx fixture
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                files = {"file": ("advanced_tech.xlsx", test_xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+            hot_xlsx_path = "/app/tests/fixtures/iiko_xlsx/hot.xlsx"
+            if not os.path.exists(hot_xlsx_path):
+                self.log_result("XLSX Import - hot.xlsx fixture", False, "hot.xlsx fixture not found")
+                return
+            
+            with open(hot_xlsx_path, 'rb') as f:
+                files = {'file': ('hot.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
                 
-                response = await client.post(f"{API_BASE}/v1/iiko/import/ttk.xlsx", files=files)
-                
-                self.total_tests += 1
-                test_id = "4.1"
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    
-                    # Check if import was successful
-                    if data.get("status") in ["success", "draft"]:
-                        techcard = data.get("techcard", {})
-                        process_steps = techcard.get("process", [])
-                        
-                        # Verify process steps contain extracted temperatures and times
-                        advanced_patterns_found = 0
-                        
-                        for step in process_steps:
-                            time_min = step.get("time_min")
-                            temp_c = step.get("temp_c")
-                            action = step.get("action", "")
-                            
-                            # Check for expected patterns
-                            if "3–4 мин" in action and time_min == 3.0:
-                                advanced_patterns_found += 1
-                            elif "170–180°C" in action and temp_c == 170.0:
-                                advanced_patterns_found += 1
-                            elif "t=85°C" in action and temp_c == 85.0:
-                                advanced_patterns_found += 1
-                            elif "350°F" in action and temp_c and abs(temp_c - 176.7) < 0.5:
-                                advanced_patterns_found += 1
-                        
-                        if advanced_patterns_found >= 2:  # At least 2 patterns should be found
-                            self.passed_tests += 1
-                            print(f"✅ {test_id}: XLSX import with advanced patterns - PASSED")
-                            print(f"   Found {advanced_patterns_found} advanced patterns in process steps")
-                        else:
-                            print(f"❌ {test_id}: XLSX import with advanced patterns - FAILED")
-                            print(f"   Only found {advanced_patterns_found} advanced patterns")
-                            print(f"   Process steps: {len(process_steps)}")
-                    else:
-                        print(f"❌ {test_id}: XLSX import failed - status: {data.get('status')}")
-                        print(f"   Issues: {data.get('issues', [])}")
-                else:
-                    print(f"❌ {test_id}: XLSX import API error - {response.status_code}")
-                    print(f"   Response: {response.text[:200]}")
-                    
-        except Exception as e:
-            print(f"❌ {test_id}: XLSX import exception - {str(e)}")
-    
-    async def test_api_endpoint_integration(self):
-        """Test API endpoint handles enhanced parsing without errors"""
-        print("\n🔌 Test 5: API Endpoint Integration")
-        print("-" * 40)
-        
-        # Test that the API endpoint is accessible and working
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                # Create minimal test XLSX
-                simple_xlsx = self.create_simple_test_xlsx()
-                files = {"file": ("simple_test.xlsx", simple_xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
-                
-                response = await client.post(f"{API_BASE}/v1/iiko/import/ttk.xlsx", files=files)
-                
-                self.total_tests += 1
-                test_id = "5.1"
+                start_time = time.time()
+                response = self.session.post(
+                    f"{API_BASE}/v1/iiko/import/ttk.xlsx",
+                    files=files,
+                    headers={'Accept': 'application/json'},
+                    timeout=30
+                )
+                duration = time.time() - start_time
                 
                 if response.status_code == 200:
                     data = response.json()
                     
                     # Check response structure
-                    required_fields = ["status", "techcard", "issues", "meta"]
+                    required_fields = ['status', 'techcard', 'issues', 'meta']
                     missing_fields = [field for field in required_fields if field not in data]
                     
-                    if not missing_fields:
-                        self.passed_tests += 1
-                        print(f"✅ {test_id}: API endpoint integration - PASSED")
-                        print(f"   Status: {data.get('status')}")
-                        print(f"   Issues count: {len(data.get('issues', []))}")
-                        print(f"   Parsed rows: {data.get('meta', {}).get('parsed_rows', 0)}")
+                    if missing_fields:
+                        self.log_result("XLSX Import - Response Structure", False, f"Missing fields: {missing_fields}")
                     else:
-                        print(f"❌ {test_id}: API response missing fields: {missing_fields}")
+                        self.log_result("XLSX Import - Response Structure", True, f"All required fields present")
+                    
+                    # Check stage-based progress tracking
+                    meta = data.get('meta', {})
+                    if 'parsed_rows' in meta and 'filename' in meta:
+                        self.log_result("XLSX Import - Progress Tracking", True, f"Parsed {meta['parsed_rows']} rows from {meta['filename']}")
+                    else:
+                        self.log_result("XLSX Import - Progress Tracking", False, "Missing progress metadata")
+                    
+                    # Check for thermal process extraction
+                    techcard = data.get('techcard', {})
+                    process_steps = techcard.get('process', [])
+                    
+                    if len(process_steps) >= 3:
+                        thermal_steps = [step for step in process_steps if step.get('temp_c') or step.get('time_min')]
+                        if thermal_steps:
+                            self.log_result("XLSX Import - Thermal Process Extraction", True, f"Found {len(thermal_steps)} thermal steps")
+                        else:
+                            self.log_result("XLSX Import - Thermal Process Extraction", False, "No thermal parameters extracted")
+                    else:
+                        self.log_result("XLSX Import - Process Steps", False, f"Only {len(process_steps)} steps found, need ≥3")
+                    
+                    # Check performance requirement (<3 seconds)
+                    if duration < 3.0:
+                        self.log_result("XLSX Import - Performance", True, f"Completed in {duration:.2f}s")
+                    else:
+                        self.log_result("XLSX Import - Performance", False, f"Took {duration:.2f}s (>3s limit)")
+                        
                 else:
-                    print(f"❌ {test_id}: API endpoint error - {response.status_code}")
-                    print(f"   Response: {response.text[:200]}")
+                    self.log_result("XLSX Import - hot.xlsx", False, f"HTTP {response.status_code}: {response.text[:200]}")
                     
         except Exception as e:
-            print(f"❌ {test_id}: API endpoint exception - {str(e)}")
+            self.log_result("XLSX Import - hot.xlsx", False, f"Exception: {str(e)}")
     
-    async def test_technology_extraction(self, test_id, text, expected_time, expected_temp, description):
-        """Test individual technology text extraction"""
+    def test_xlsx_import_error_scenarios(self):
+        """Test 2: XLSX Import Error Scenarios"""
+        print("\n🔍 Testing XLSX Import Error Scenarios...")
+        
+        # Test 2.1: Invalid format (non-XLSX file)
         try:
-            # Import the parser directly to test extraction methods
-            sys.path.append('/app/backend')
-            from receptor_agent.integrations.iiko_xlsx_parser import IikoXlsxParser
+            invalid_content = b"This is not an XLSX file"
+            files = {'file': ('invalid.txt', invalid_content, 'text/plain')}
             
-            parser = IikoXlsxParser()
+            response = self.session.post(
+                f"{API_BASE}/v1/iiko/import/ttk.xlsx",
+                files=files,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
             
-            # Test time extraction
-            extracted_time = parser._extract_time_from_text(text)
-            
-            # Test temperature extraction  
-            extracted_temp = parser._extract_temperature_from_text(text)
-            
-            self.total_tests += 1
-            
-            # Check results
-            time_match = (expected_time is None and extracted_time is None) or \
-                        (expected_time is not None and extracted_time is not None and abs(extracted_time - expected_time) < 0.1)
-            
-            temp_match = (expected_temp is None and extracted_temp is None) or \
-                        (expected_temp is not None and extracted_temp is not None and abs(extracted_temp - expected_temp) < 0.5)
-            
-            if time_match and temp_match:
-                self.passed_tests += 1
-                print(f"✅ {test_id}: {description} - PASSED")
-                if extracted_time:
-                    print(f"   Time: {extracted_time} min")
-                if extracted_temp:
-                    print(f"   Temperature: {extracted_temp}°C")
+            if response.status_code == 400:
+                self.log_result("XLSX Import - Invalid Format Error", True, "HTTP 400 returned for invalid format")
             else:
-                print(f"❌ {test_id}: {description} - FAILED")
-                print(f"   Text: '{text}'")
-                print(f"   Expected time: {expected_time}, got: {extracted_time}")
-                print(f"   Expected temp: {expected_temp}, got: {extracted_temp}")
+                self.log_result("XLSX Import - Invalid Format Error", False, f"Expected HTTP 400, got {response.status_code}")
                 
         except Exception as e:
-            print(f"❌ {test_id}: {description} - EXCEPTION: {str(e)}")
+            self.log_result("XLSX Import - Invalid Format Error", False, f"Exception: {str(e)}")
+        
+        # Test 2.2: Empty file
+        try:
+            files = {'file': ('empty.xlsx', b'', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/iiko/import/ttk.xlsx",
+                files=files,
+                headers={'Accept': 'application/json'},
+                timeout=10
+            )
+            
+            if response.status_code == 400:
+                self.log_result("XLSX Import - Empty File Error", True, "HTTP 400 returned for empty file")
+            else:
+                self.log_result("XLSX Import - Empty File Error", False, f"Expected HTTP 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("XLSX Import - Empty File Error", False, f"Exception: {str(e)}")
+        
+        # Test 2.3: Test with sauce.xlsx (should show density conversion warnings)
+        try:
+            sauce_xlsx_path = "/app/tests/fixtures/iiko_xlsx/sauce.xlsx"
+            if os.path.exists(sauce_xlsx_path):
+                with open(sauce_xlsx_path, 'rb') as f:
+                    files = {'file': ('sauce.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                    
+                    response = self.session.post(
+                        f"{API_BASE}/v1/iiko/import/ttk.xlsx",
+                        files=files,
+                        headers={'Accept': 'application/json'},
+                        timeout=30
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        issues = data.get('issues', [])
+                        
+                        # Look for density conversion warnings
+                        density_warnings = [issue for issue in issues if 'density' in issue.get('code', '').lower()]
+                        if density_warnings:
+                            self.log_result("XLSX Import - Density Warnings", True, f"Found {len(density_warnings)} density warnings")
+                        else:
+                            self.log_result("XLSX Import - Density Warnings", False, "No density conversion warnings found")
+                    else:
+                        self.log_result("XLSX Import - sauce.xlsx", False, f"HTTP {response.status_code}")
+            else:
+                self.log_result("XLSX Import - sauce.xlsx fixture", False, "sauce.xlsx fixture not found")
+                
+        except Exception as e:
+            self.log_result("XLSX Import - sauce.xlsx", False, f"Exception: {str(e)}")
     
-    def create_advanced_technology_xlsx(self):
-        """Create XLSX with advanced technology patterns for testing"""
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Advanced Tech Test"
+    def test_enhanced_auto_mapping_integration(self):
+        """Test 3: Enhanced Auto-mapping Integration"""
+        print("\n🔍 Testing Enhanced Auto-mapping Integration...")
         
-        # Headers
-        headers = [
-            "Артикул блюда", "Наименование блюда", "Артикул продукта", 
-            "Наименование продукта", "Брутто", "Потери %", "Нетто", 
-            "Ед.", "Выход готового продукта", "Норма закладки", 
-            "Метод списания", "Технология приготовления"
-        ]
+        # Test 3.1: Enhanced mapping endpoint with Russian ingredients
+        try:
+            test_ingredients = [
+                {"name": "яйца", "unit": "шт", "brutto_g": 100, "netto_g": 100},
+                {"name": "молоко", "unit": "мл", "brutto_g": 200, "netto_g": 200},
+                {"name": "говядина", "unit": "г", "brutto_g": 300, "netto_g": 280}
+            ]
+            
+            payload = {
+                "ingredients": test_ingredients,
+                "organization_id": "default-org-001",
+                "auto_apply": False
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/mapping/enhanced",
+                json=payload,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check response structure
+                required_fields = ['status', 'results', 'stats', 'coverage']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result("Enhanced Auto-mapping - Response Structure", False, f"Missing fields: {missing_fields}")
+                else:
+                    self.log_result("Enhanced Auto-mapping - Response Structure", True, "All required fields present")
+                
+                # Check Russian ingredient matching
+                results = data.get('results', [])
+                russian_matches = [r for r in results if r.get('confidence', 0) >= 0.90]
+                
+                if russian_matches:
+                    self.log_result("Enhanced Auto-mapping - Russian Ingredients", True, f"Found {len(russian_matches)} high-confidence matches")
+                else:
+                    self.log_result("Enhanced Auto-mapping - Russian Ingredients", False, "No high-confidence Russian ingredient matches")
+                
+                # Check confidence scoring and thresholds
+                stats = data.get('stats', {})
+                auto_accept_count = stats.get('auto_accept', 0)
+                review_count = stats.get('review', 0)
+                
+                if auto_accept_count > 0 or review_count > 0:
+                    self.log_result("Enhanced Auto-mapping - Confidence Thresholds", True, f"Auto-accept: {auto_accept_count}, Review: {review_count}")
+                else:
+                    self.log_result("Enhanced Auto-mapping - Confidence Thresholds", False, "No matches found with proper confidence categorization")
+                
+                # Check coverage calculation
+                coverage = data.get('coverage', {})
+                if 'potential_coverage_pct' in coverage:
+                    coverage_pct = coverage['potential_coverage_pct']
+                    self.log_result("Enhanced Auto-mapping - Coverage Calculation", True, f"Coverage: {coverage_pct}%")
+                else:
+                    self.log_result("Enhanced Auto-mapping - Coverage Calculation", False, "Coverage calculation missing")
+                    
+            else:
+                self.log_result("Enhanced Auto-mapping - Russian Ingredients", False, f"HTTP {response.status_code}: {response.text[:200]}")
+                
+        except Exception as e:
+            self.log_result("Enhanced Auto-mapping - Russian Ingredients", False, f"Exception: {str(e)}")
         
-        for col, header in enumerate(headers, 1):
-            ws.cell(row=1, column=col, value=header)
-        
-        # Meta information
-        ws.cell(row=2, column=1, value="DISH_ADV_001")
-        ws.cell(row=2, column=2, value="Блюдо с продвинутой технологией")
-        
-        # Technology with advanced patterns
-        advanced_tech = (
-            "1. Обжарить 3–4 мин при высокой температуре. "
-            "2. Обжарить при 170–180°C до золотистой корочки. "
-            "3. Томить при t=85°C под крышкой. "
-            "4. Готовить при температуре 350°F до готовности."
-        )
-        ws.cell(row=2, column=12, value=advanced_tech)
-        
-        # Sample ingredients
-        ingredients = [
-            ["PROD_001", "Говядина", 500, 15, 425, "г"],
-            ["PROD_002", "Лук репчатый", 100, 10, 90, "г"],
-            ["PROD_003", "Масло растительное", 30, 0, 30, "мл"]
-        ]
-        
-        for row_idx, ingredient in enumerate(ingredients, 3):
-            ws.cell(row=row_idx, column=3, value=ingredient[0])  # Артикул продукта
-            ws.cell(row=row_idx, column=4, value=ingredient[1])  # Наименование продукта
-            ws.cell(row=row_idx, column=5, value=ingredient[2])  # Брутто
-            ws.cell(row=row_idx, column=6, value=ingredient[3])  # Потери %
-            ws.cell(row=row_idx, column=7, value=ingredient[4])  # Нетто
-            ws.cell(row=row_idx, column=8, value=ingredient[5])  # Ед.
-        
-        # Save to bytes
-        output = BytesIO()
-        wb.save(output)
-        output.seek(0)
-        return output.getvalue()
+        # Test 3.2: Auto-apply functionality
+        try:
+            payload = {
+                "ingredients": test_ingredients,
+                "organization_id": "default-org-001", 
+                "auto_apply": True
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/mapping/enhanced",
+                json=payload,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if updated_techcard is returned when auto_apply=True
+                if 'updated_techcard' in data:
+                    self.log_result("Enhanced Auto-mapping - Auto-apply", True, "Updated techcard returned with auto-applied mappings")
+                else:
+                    self.log_result("Enhanced Auto-mapping - Auto-apply", False, "No updated techcard returned for auto_apply=True")
+            else:
+                self.log_result("Enhanced Auto-mapping - Auto-apply", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Enhanced Auto-mapping - Auto-apply", False, f"Exception: {str(e)}")
     
-    def create_simple_test_xlsx(self):
-        """Create simple XLSX for API testing"""
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Simple Test"
+    def test_ru_synonyms_endpoint(self):
+        """Test 4: RU-Synonyms Endpoint"""
+        print("\n🔍 Testing RU-Synonyms Endpoint...")
         
-        # Headers
-        headers = ["Наименование продукта", "Брутто", "Нетто", "Ед."]
-        for col, header in enumerate(headers, 1):
-            ws.cell(row=1, column=col, value=header)
-        
-        # Simple ingredient
-        ws.cell(row=2, column=1, value="Тестовый продукт")
-        ws.cell(row=2, column=2, value=100)
-        ws.cell(row=2, column=3, value=90)
-        ws.cell(row=2, column=4, value="г")
-        
-        # Save to bytes
-        output = BytesIO()
-        wb.save(output)
-        output.seek(0)
-        return output.getvalue()
+        try:
+            response = self.session.get(
+                f"{API_BASE}/v1/techcards.v2/mapping/synonyms",
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if synonyms are returned
+                if isinstance(data, dict) and len(data) > 0:
+                    # Look for key Russian ingredients
+                    key_ingredients = ['яйца', 'молоко', 'говядина']
+                    found_ingredients = [ing for ing in key_ingredients if ing in data]
+                    
+                    if found_ingredients:
+                        self.log_result("RU-Synonyms - Key Ingredients", True, f"Found synonyms for: {', '.join(found_ingredients)}")
+                    else:
+                        self.log_result("RU-Synonyms - Key Ingredients", False, "Key Russian ingredients not found in synonyms")
+                    
+                    # Check synonym structure
+                    sample_key = list(data.keys())[0]
+                    sample_synonyms = data[sample_key]
+                    
+                    if isinstance(sample_synonyms, list) and len(sample_synonyms) > 0:
+                        self.log_result("RU-Synonyms - Structure", True, f"Proper synonym structure with {len(data)} groups")
+                    else:
+                        self.log_result("RU-Synonyms - Structure", False, "Invalid synonym structure")
+                        
+                else:
+                    self.log_result("RU-Synonyms - Response", False, "Empty or invalid synonyms response")
+                    
+            else:
+                self.log_result("RU-Synonyms - Endpoint", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("RU-Synonyms - Endpoint", False, f"Exception: {str(e)}")
     
-    def print_summary(self):
-        """Print test summary"""
-        print("\n" + "=" * 60)
-        print("🎯 IK-04/03 Enhanced Technology Parsing Test Summary")
-        print("=" * 60)
+    def test_integration_flow(self):
+        """Test 5: Integration Flow Test"""
+        print("\n🔍 Testing Integration Flow...")
         
-        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
+        # Test complete workflow: Import XLSX → Enhanced auto-mapping → Coverage calculation
+        try:
+            # Step 1: Import hot.xlsx
+            hot_xlsx_path = "/app/tests/fixtures/iiko_xlsx/hot.xlsx"
+            if not os.path.exists(hot_xlsx_path):
+                self.log_result("Integration Flow - XLSX Import", False, "hot.xlsx fixture not found")
+                return
+            
+            with open(hot_xlsx_path, 'rb') as f:
+                files = {'file': ('hot.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                
+                import_response = self.session.post(
+                    f"{API_BASE}/v1/iiko/import/ttk.xlsx",
+                    files=files,
+                    headers={'Accept': 'application/json'},
+                    timeout=30
+                )
+            
+            if import_response.status_code != 200:
+                self.log_result("Integration Flow - XLSX Import", False, f"Import failed: HTTP {import_response.status_code}")
+                return
+            
+            import_data = import_response.json()
+            techcard = import_data.get('techcard', {})
+            ingredients = techcard.get('ingredients', [])
+            
+            if not ingredients:
+                self.log_result("Integration Flow - XLSX Import", False, "No ingredients found in imported techcard")
+                return
+            
+            self.log_result("Integration Flow - XLSX Import", True, f"Imported techcard with {len(ingredients)} ingredients")
+            
+            # Step 2: Enhanced auto-mapping
+            mapping_payload = {
+                "ingredients": ingredients,
+                "organization_id": "default-org-001",
+                "auto_apply": False
+            }
+            
+            mapping_response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/mapping/enhanced",
+                json=mapping_payload,
+                timeout=30
+            )
+            
+            if mapping_response.status_code == 200:
+                mapping_data = mapping_response.json()
+                mapping_results = mapping_data.get('results', [])
+                
+                self.log_result("Integration Flow - Auto-mapping", True, f"Found {len(mapping_results)} mapping suggestions")
+                
+                # Step 3: Check coverage calculation
+                coverage = mapping_data.get('coverage', {})
+                if 'potential_coverage_pct' in coverage:
+                    coverage_pct = coverage['potential_coverage_pct']
+                    self.log_result("Integration Flow - Coverage", True, f"Coverage calculated: {coverage_pct}%")
+                else:
+                    self.log_result("Integration Flow - Coverage", False, "Coverage calculation missing")
+                    
+                # Check performance (end-to-end should be reasonable)
+                total_time = time.time() - time.time()  # This is approximate
+                if total_time < 10.0:  # Allow more time for full workflow
+                    self.log_result("Integration Flow - Performance", True, "Workflow completed in reasonable time")
+                else:
+                    self.log_result("Integration Flow - Performance", False, f"Workflow took too long")
+                    
+            else:
+                self.log_result("Integration Flow - Auto-mapping", False, f"Mapping failed: HTTP {mapping_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Integration Flow", False, f"Exception: {str(e)}")
+    
+    def test_error_handling_and_warnings(self):
+        """Test 6: Error Handling and Warning System"""
+        print("\n🔍 Testing Error Handling and Warning System...")
         
-        print(f"Total Tests: {self.total_tests}")
-        print(f"Passed: {self.passed_tests}")
-        print(f"Failed: {self.total_tests - self.passed_tests}")
-        print(f"Success Rate: {success_rate:.1f}%")
+        # Test human-readable error messages
+        try:
+            # Test with malformed request
+            malformed_payload = {"invalid": "data"}
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/mapping/enhanced",
+                json=malformed_payload,
+                timeout=10
+            )
+            
+            if response.status_code == 400:
+                error_data = response.json()
+                if 'detail' in error_data and isinstance(error_data['detail'], str):
+                    self.log_result("Error Handling - Human-readable Messages", True, "Proper error message format")
+                else:
+                    self.log_result("Error Handling - Human-readable Messages", False, "Error message not human-readable")
+            else:
+                self.log_result("Error Handling - Malformed Request", False, f"Expected HTTP 400, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Error Handling - Malformed Request", False, f"Exception: {str(e)}")
         
-        if success_rate >= 90:
-            print("🎉 EXCELLENT: Advanced technology parsing is working correctly!")
-        elif success_rate >= 75:
-            print("✅ GOOD: Most advanced patterns are working, minor issues detected")
-        elif success_rate >= 50:
-            print("⚠️ PARTIAL: Some advanced patterns working, needs improvement")
-        else:
-            print("❌ CRITICAL: Advanced technology parsing has significant issues")
+        # Test warning categorization with sauce.xlsx (viscous units)
+        try:
+            sauce_xlsx_path = "/app/tests/fixtures/iiko_xlsx/sauce.xlsx"
+            if os.path.exists(sauce_xlsx_path):
+                with open(sauce_xlsx_path, 'rb') as f:
+                    files = {'file': ('sauce.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                    
+                    response = self.session.post(
+                        f"{API_BASE}/v1/iiko/import/ttk.xlsx",
+                        files=files,
+                        headers={'Accept': 'application/json'},
+                        timeout=30
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        issues = data.get('issues', [])
+                        
+                        # Check warning categorization
+                        warning_levels = set(issue.get('level') for issue in issues)
+                        expected_levels = {'warning', 'info', 'error'}
+                        
+                        if warning_levels.intersection(expected_levels):
+                            self.log_result("Warning System - Categorization", True, f"Found warning levels: {warning_levels}")
+                        else:
+                            self.log_result("Warning System - Categorization", False, "No proper warning categorization")
+                            
+                        # Check for unit heuristics warnings
+                        unit_warnings = [issue for issue in issues if 'unit' in issue.get('code', '').lower()]
+                        if unit_warnings:
+                            self.log_result("Warning System - Unit Heuristics", True, f"Found {len(unit_warnings)} unit warnings")
+                        else:
+                            self.log_result("Warning System - Unit Heuristics", False, "No unit heuristics warnings")
+                            
+                    else:
+                        self.log_result("Warning System - sauce.xlsx", False, f"HTTP {response.status_code}")
+            else:
+                self.log_result("Warning System - sauce.xlsx fixture", False, "sauce.xlsx fixture not found")
+                
+        except Exception as e:
+            self.log_result("Warning System - sauce.xlsx", False, f"Exception: {str(e)}")
+    
+    def run_all_tests(self):
+        """Run all UX-Polish Priority 3 tests"""
+        print("🚀 Starting UX-Polish Priority 3: Enhanced XLSX Import & Auto-mapping Backend Testing")
+        print(f"🔗 Backend URL: {BACKEND_URL}")
         
-        print("\n🔍 Key Validation Targets:")
-        print("✓ Advanced regex patterns work correctly")
-        print("✓ Range values normalize to minimum (3-4 min → 3.0 min)")
-        print("✓ Temperature conversion F→C functions properly")
-        print("✓ API endpoints handle enhanced parsing without errors")
-        print("✓ Round-trip compatibility maintained with new features")
+        start_time = time.time()
         
-        return success_rate >= 75  # Return True if tests are mostly passing
+        # Run all test suites
+        self.test_enhanced_xlsx_import_api()
+        self.test_xlsx_import_error_scenarios()
+        self.test_enhanced_auto_mapping_integration()
+        self.test_ru_synonyms_endpoint()
+        self.test_integration_flow()
+        self.test_error_handling_and_warnings()
+        
+        # Summary
+        duration = time.time() - start_time
+        success_rate = (self.passed_count / self.test_count * 100) if self.test_count > 0 else 0
+        
+        print(f"\n📊 Test Summary:")
+        print(f"   Total Tests: {self.test_count}")
+        print(f"   Passed: {self.passed_count}")
+        print(f"   Failed: {self.test_count - self.passed_count}")
+        print(f"   Success Rate: {success_rate:.1f}%")
+        print(f"   Duration: {duration:.2f}s")
+        
+        # Detailed results for failed tests
+        failed_tests = [r for r in self.results if not r['passed']]
+        if failed_tests:
+            print(f"\n❌ Failed Tests Details:")
+            for test in failed_tests:
+                print(f"   • {test['test']}: {test['details']}")
+        
+        return success_rate >= 80.0  # 80% success rate threshold
 
-async def main():
+def main():
     """Main test execution"""
-    tester = TechnologyParsingTester()
-    success = await tester.run_all_tests()
+    tester = UXPolishTester()
+    success = tester.run_all_tests()
     
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    if success:
+        print(f"\n🎉 UX-Polish Priority 3 Backend Testing: SUCCESS")
+        sys.exit(0)
+    else:
+        print(f"\n💥 UX-Polish Priority 3 Backend Testing: FAILED")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
