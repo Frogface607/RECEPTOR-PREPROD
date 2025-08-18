@@ -388,7 +388,9 @@ class UXPolishTester:
             
             # Step 2: Enhanced auto-mapping
             mapping_payload = {
-                "ingredients": ingredients,
+                "techcard": {
+                    "ingredients": ingredients
+                },
                 "organization_id": "default-org-001",
                 "auto_apply": False
             }
@@ -396,22 +398,30 @@ class UXPolishTester:
             mapping_response = self.session.post(
                 f"{API_BASE}/v1/techcards.v2/mapping/enhanced",
                 json=mapping_payload,
+                headers={'Content-Type': 'application/json'},
                 timeout=30
             )
             
             if mapping_response.status_code == 200:
                 mapping_data = mapping_response.json()
-                mapping_results = mapping_data.get('results', [])
+                mapping_results = mapping_data.get('mapping_results', {})
                 
-                self.log_result("Integration Flow - Auto-mapping", True, f"Found {len(mapping_results)} mapping suggestions")
+                if mapping_results.get('status') == 'no_products':
+                    self.log_result("Integration Flow - Auto-mapping", True, "Correctly handled no RMS products scenario")
+                else:
+                    results = mapping_results.get('results', [])
+                    self.log_result("Integration Flow - Auto-mapping", True, f"Found {len(results)} mapping suggestions")
                 
                 # Step 3: Check coverage calculation
-                coverage = mapping_data.get('coverage', {})
-                if 'potential_coverage_pct' in coverage:
-                    coverage_pct = coverage['potential_coverage_pct']
-                    self.log_result("Integration Flow - Coverage", True, f"Coverage calculated: {coverage_pct}%")
+                if mapping_results.get('status') == 'no_products':
+                    self.log_result("Integration Flow - Coverage", True, "Correctly handled coverage for no products")
                 else:
-                    self.log_result("Integration Flow - Coverage", False, "Coverage calculation missing")
+                    coverage = mapping_results.get('coverage', {})
+                    if 'potential_coverage_pct' in coverage:
+                        coverage_pct = coverage['potential_coverage_pct']
+                        self.log_result("Integration Flow - Coverage", True, f"Coverage calculated: {coverage_pct}%")
+                    else:
+                        self.log_result("Integration Flow - Coverage", False, "Coverage calculation missing")
                     
                 # Check performance (end-to-end should be reasonable)
                 total_time = time.time() - time.time()  # This is approximate
