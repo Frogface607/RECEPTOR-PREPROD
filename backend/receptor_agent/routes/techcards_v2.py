@@ -4,8 +4,9 @@ import json
 import os
 import traceback
 import logging
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request, BackgroundTask
 from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
+from typing import Optional
 from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
 from receptor_agent.techcards_v2.schemas import TechCardV2
 from receptor_agent.techcards_v2.validators import validate_card
