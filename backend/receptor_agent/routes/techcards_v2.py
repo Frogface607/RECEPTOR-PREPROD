@@ -634,7 +634,7 @@ async def normalize_techcard_ranges(request: Request):
         raise HTTPException(500, f"Normalization failed: {str(e)}")
 
 
-@router.post("/quality/score")
+@router.post("/techcards.v2/quality/score")
 async def get_quality_score(request: Request):
     """
     GX-02: Get quality score without modifying TechCard
