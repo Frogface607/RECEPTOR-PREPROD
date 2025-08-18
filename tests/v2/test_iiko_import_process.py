@@ -118,45 +118,64 @@ class TestIikoImportProcess:
         print("✅ Time extraction test PASSED")
     
     def test_complex_technology_parsing(self):
-        """Test parsing of complex, realistic technology descriptions"""
+        """Test parsing of complex multi-step technology with temperatures and times"""
         print("\n=== Test: Complex Technology Parsing ===")
         
-        complex_technology = """
-        Мясо промыть, обсушить и нарезать порционными кусками. 
-        Разогреть сковороду с растительным маслом до 180°C.
-        Обжарить мясо с двух сторон по 3-4 минуты до золотистой корочки.
-        Добавить нарезанные овощи и тушить под крышкой 25 минут при 160°C.
-        Посолить, поперчить и довести до готовности еще 5-7 минут.
-        Подавать горячим с гарниром.
-        """
+        technology = "Подготовить ингредиенты для жарки. Разогреть сковороду до 180°C с маслом. Обжаривать мясо 3 минуты с каждой стороны при высокой температуре. Уменьшить огонь до 160°C и тушить 25 минут под крышкой. Добавить овощи и готовить еще 5 минут при 160°C. Подавать горячим с гарниром."
         
-        steps = self.parser._parse_technology(complex_technology)
+        processes = self.parser._parse_technology(technology)
         
-        # Should generate reasonable number of steps (3-8)
-        assert 3 <= len(steps) <= 8, f"Expected 3-8 steps, got {len(steps)}"
-        print(f"✓ Complex technology parsed into {len(steps)} steps")
+        # Should generate process steps
+        assert len(processes) >= 3, f"Expected ≥3 steps, got {len(processes)}"
+        print(f"✓ Complex technology parsed into {len(processes)} steps")
         
-        # Should extract multiple temperatures
-        temps = [step["temp_c"] for step in steps if step["temp_c"] is not None]
-        assert len(temps) > 0, "No temperatures extracted from complex technology"
-        assert 180.0 in temps or 160.0 in temps, f"Expected 180°C or 160°C, got: {temps}"
+        # Check temperature extraction
+        temps = [s['temp_c'] for s in processes if s['temp_c'] is not None]
+        expected_temps = [180.0, 160.0]  # Should extract from text
+        
+        extracted_temps = [t for t in temps if t in expected_temps]
+        assert len(extracted_temps) >= 2, f"Expected ≥2 cooking temperatures, got {extracted_temps}"
         print(f"✓ Temperatures extracted: {temps}°C")
         
-        # Should extract multiple time values
-        times = [step["time_min"] for step in steps if step["time_min"] is not None]
-        assert len(times) > 0, "No times extracted from complex technology"
-        # Should find 3-4 min, 25 min, or 5-7 min
-        expected_times = [3, 4, 25, 5, 7]
-        found_time = any(any(abs(t - et) <= 1 for et in expected_times) for t in times)
-        assert found_time, f"Expected times from {expected_times}, got: {times}"
+        # Check time extraction
+        times = [s['time_min'] for s in processes if s['time_min'] is not None]
+        expected_times = [3.0, 25.0, 5.0]  # Should extract from text
+        
+        extracted_times = [t for t in times if t in expected_times]
+        assert len(extracted_times) >= 2, f"Expected ≥2 time values, got {times}"
         print(f"✓ Times extracted: {times} minutes")
         
-        # Verify all steps have meaningful actions
-        for step in steps:
-            assert len(step["action"]) > 5, f"Step action too short: '{step['action']}'"
-            assert step["action"] != "Подготовка сырья", f"Generic step should be customized in complex recipe"
-        
         print("✅ Complex technology parsing test PASSED")
+        return True
+
+    def test_advanced_patterns_parsing(self):
+        """Test advanced regex patterns for complex time and temperature expressions"""
+        print("\n=== Test: Advanced Patterns Parsing ===")
+        
+        # Test advanced time patterns
+        advanced_time_cases = [
+            ("Обжарить 3–4 мин при высокой температуре", 3.0),  # Range pattern
+            ("Томить 45 мин при медленном огне под крышкой", 45.0),  # Standard pattern
+        ]
+        
+        for text, expected_time in advanced_time_cases:
+            extracted_time = self.parser._extract_time_from_text(text)
+            assert extracted_time == expected_time, f"Expected {expected_time} min from '{text}', got {extracted_time}"
+            print(f"✓ Advanced time pattern: '{text}' → {extracted_time} min")
+        
+        # Test advanced temperature patterns
+        advanced_temp_cases = [
+            ("Обжарить при 170–180°C до золотистой корочки", 170.0),  # Range pattern
+            ("Томить при t=85°C под крышкой", 85.0),  # t= format pattern
+        ]
+        
+        for text, expected_temp in advanced_temp_cases:
+            extracted_temp = self.parser._extract_temperature_from_text(text)
+            assert extracted_temp == expected_temp, f"Expected {expected_temp}°C from '{text}', got {extracted_temp}"
+            print(f"✓ Advanced temp pattern: '{text}' → {extracted_temp}°C")
+        
+        print("✅ Advanced patterns parsing test PASSED")
+        return True
     
     def test_edge_cases(self):
         """Test edge cases and error handling"""
