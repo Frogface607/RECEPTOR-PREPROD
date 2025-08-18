@@ -375,6 +375,15 @@ function App() {
   const [isValidatingQuality, setIsValidatingQuality] = useState(false);
   const [autoNormalize, setAutoNormalize] = useState(true); // Auto-normalize ranges
 
+  // UX-Polish: Enhanced XLSX Import states
+  const [xlsxImportStage, setXlsxImportStage] = useState('idle'); // idle, parsing, validation, conversions, extraction, done
+  const [xlsxImportErrors, setXlsxImportErrors] = useState([]);
+  const [xlsxImportWarnings, setXlsxImportWarnings] = useState([]);
+  
+  // UX-Polish: Auto-mapping enhancement states  
+  const [mappingActionLog, setMappingActionLog] = useState([]);
+  const [lastMappingAction, setLastMappingAction] = useState(null);
+
   // HACCP Pro states
   const [haccpProEnabled, setHaccpProEnabled] = useState(false);
   const [currentTechCardHaccp, setCurrentTechCardHaccp] = useState(null);
