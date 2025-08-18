@@ -1071,6 +1071,91 @@ function App() {
           </div>
         )}
 
+        {/* GX-02: Quality Validation Banners */}
+        {qualityBanners && qualityBanners.length > 0 && (
+          <div className="space-y-3 mb-6">
+            {qualityBanners.map((banner, index) => (
+              <div key={index} className={`border rounded-lg p-4 ${
+                banner.type === 'error' 
+                  ? 'bg-red-900/30 border-red-400/30'
+                  : banner.type === 'warning'
+                  ? 'bg-yellow-900/30 border-yellow-400/30'
+                  : 'bg-blue-900/30 border-blue-400/30'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl flex-shrink-0">{banner.icon}</span>
+                  <div className="flex-1">
+                    <div className={`font-bold mb-2 ${
+                      banner.type === 'error' 
+                        ? 'text-red-300'
+                        : banner.type === 'warning'
+                        ? 'text-yellow-300'
+                        : 'text-blue-300'
+                    }`}>
+                      {banner.title}
+                    </div>
+                    
+                    {banner.messages && banner.messages.length > 0 && (
+                      <div className="space-y-1 mb-3">
+                        {banner.messages.map((message, msgIndex) => (
+                          <div key={msgIndex} className={`text-sm ${
+                            banner.type === 'error' 
+                              ? 'text-red-400'
+                              : banner.type === 'warning'
+                              ? 'text-yellow-400'
+                              : 'text-blue-400'
+                          }`}>
+                            {message}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {banner.action && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            if (banner.type === 'error') {
+                              validateTechCardQuality();
+                            } else {
+                              normalizeTechCardRanges();
+                            }
+                          }}
+                          disabled={isValidatingQuality}
+                          className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                            banner.type === 'error'
+                              ? 'bg-red-600 hover:bg-red-700 text-white'
+                              : 'bg-yellow-600 hover:bg-yellow-700 text-black'
+                          } ${isValidatingQuality ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {isValidatingQuality ? '⏳' : banner.action}
+                        </button>
+                        
+                        {/* Quality Score Display */}
+                        {qualityScore && (
+                          <div className="ml-auto">
+                            <div className={`text-xs px-2 py-1 rounded-full font-bold ${
+                              qualityScore.level === 'excellent' 
+                                ? 'bg-green-600 text-white'
+                                : qualityScore.level === 'good'
+                                ? 'bg-blue-600 text-white'
+                                : qualityScore.level === 'needs_improvement'
+                                ? 'bg-yellow-600 text-black'
+                                : 'bg-red-600 text-white'
+                            }`}>
+                              Качество: {qualityScore.score}%
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* ВЫХОД И ПОРЦИИ */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-900/20 rounded-lg p-4 text-center">
