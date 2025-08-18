@@ -16722,28 +16722,96 @@ function App() {
                     </div>
                   )}
 
-                  {/* Issues Details */}
-                  {xlsxImportResults.issues && xlsxImportResults.issues.length > 0 && (
-                    <div className="bg-gray-900/50 rounded-lg p-4">
-                      <details>
-                        <summary className="text-gray-300 font-bold cursor-pointer hover:text-white">
-                          Показать детали ({xlsxImportResults.issues.length} {xlsxImportResults.issues.length === 1 ? 'предупреждение' : 'предупреждений'})
-                        </summary>
-                        <div className="mt-4 space-y-2">
-                          {xlsxImportResults.issues.map((issue, index) => (
-                            <div 
-                              key={index}
-                              className={`text-sm p-3 rounded ${
-                                issue.level === 'error' ? 'bg-red-900/30 text-red-300' :
-                                issue.level === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
-                                'bg-blue-900/30 text-blue-300'
-                              }`}
-                            >
-                              <span className="font-bold">{issue.code}:</span> {issue.msg}
-                            </div>
-                          ))}
+                  {/* UX-Polish: Enhanced Issues Display */}
+                  {(xlsxImportErrors.length > 0 || xlsxImportWarnings.length > 0 || (xlsxImportResults.issues && xlsxImportResults.issues.length > 0)) && (
+                    <div className="space-y-4">
+                      {/* Errors */}
+                      {xlsxImportErrors.length > 0 && (
+                        <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-4">
+                          <div className="flex items-center space-x-2 mb-3">
+                            <span className="text-xl">❌</span>
+                            <span className="font-bold text-red-300">Критические ошибки ({xlsxImportErrors.length})</span>
+                          </div>
+                          <div className="space-y-2">
+                            {xlsxImportErrors.map((error, index) => (
+                              <div key={index} className="bg-red-800/30 rounded p-3">
+                                <div className="font-medium text-red-300">
+                                  {error.msg || error.message || 'Неизвестная ошибка'}
+                                </div>
+                                {error.suggestion && (
+                                  <div className="text-red-400 text-sm mt-1">
+                                    💡 {error.suggestion}
+                                  </div>
+                                )}
+                                {error.row && error.column && (
+                                  <div className="text-red-500 text-xs mt-1">
+                                    📍 Строка {error.row}, колонка {error.column}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </details>
+                      )}
+
+                      {/* Warnings */}  
+                      {xlsxImportWarnings.length > 0 && (
+                        <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-4">
+                          <div className="flex items-center space-x-2 mb-3">
+                            <span className="text-xl">⚠️</span>
+                            <span className="font-bold text-yellow-300">Предупреждения ({xlsxImportWarnings.length})</span>
+                          </div>
+                          <div className="space-y-2">
+                            {xlsxImportWarnings.map((warning, index) => (
+                              <div key={index} className="bg-yellow-800/30 rounded p-3">
+                                <div className="font-medium text-yellow-300">
+                                  {warning.msg || warning.message}
+                                </div>
+                                {warning.suggestion && (
+                                  <div className="text-yellow-400 text-sm mt-1">
+                                    💡 {warning.suggestion}
+                                  </div>
+                                )}
+                                {warning.code === 'densityAssumed' && (
+                                  <div className="text-yellow-500 text-xs mt-1">
+                                    🧪 Плотность: {warning.ingredient} (мл→г конверсия)
+                                  </div>
+                                )}
+                                {warning.code === 'unitHeuristicApplied' && (
+                                  <div className="text-yellow-500 text-xs mt-1">
+                                    📏 Вес штуки: {warning.ingredient} (шт→г конверсия)
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Legacy issues fallback */}
+                      {xlsxImportResults.issues && xlsxImportResults.issues.length > 0 && xlsxImportErrors.length === 0 && xlsxImportWarnings.length === 0 && (
+                        <div className="bg-gray-900/50 rounded-lg p-4">
+                          <details>
+                            <summary className="text-gray-300 font-bold cursor-pointer hover:text-white">
+                              Показать детали ({xlsxImportResults.issues.length} {xlsxImportResults.issues.length === 1 ? 'предупреждение' : 'предупреждений'})
+                            </summary>
+                            <div className="mt-4 space-y-2">
+                              {xlsxImportResults.issues.map((issue, index) => (
+                                <div 
+                                  key={index}
+                                  className={`text-sm p-3 rounded ${
+                                    issue.level === 'error' ? 'bg-red-900/30 text-red-300' :
+                                    issue.level === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
+                                    'bg-blue-900/30 text-blue-300'
+                                  }`}
+                                >
+                                  <span className="font-bold">{issue.code}:</span> {issue.msg}
+                                </div>
+                              ))}
+                            </div>
+                          </details>
+                        </div>
+                      )}
                     </div>
                   )}
 
