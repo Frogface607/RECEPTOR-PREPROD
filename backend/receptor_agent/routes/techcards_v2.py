@@ -600,6 +600,8 @@ async def validate_techcard_quality(request: Request):
             "is_production_ready": quality_score["is_production_ready"]
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Quality validation error: {e}")
         raise HTTPException(500, f"Quality validation failed: {str(e)}")
