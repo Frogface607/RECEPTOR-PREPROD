@@ -22,8 +22,8 @@ API_BASE = f"{BACKEND_URL}/api"
 class UXPolishTester:
     def __init__(self):
         self.session = requests.Session()
+        # Don't set default Content-Type as it interferes with file uploads
         self.session.headers.update({
-            'Content-Type': 'application/json',
             'Accept': 'application/json'
         })
         self.results = []
