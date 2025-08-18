@@ -631,6 +631,8 @@ async def normalize_techcard_ranges(request: Request):
             "normalization_issues": range_issues
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Normalization error: {e}")
         raise HTTPException(500, f"Normalization failed: {str(e)}")
