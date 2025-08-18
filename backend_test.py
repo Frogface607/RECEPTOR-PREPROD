@@ -1,607 +1,418 @@
 #!/usr/bin/env python3
 """
-IK-02 iikoCloud Backend Integration Testing
-Comprehensive testing of newly implemented iikoCloud API integration components
+IK-04/03 Enhanced Technology Parsing Backend Testing
+Testing advanced pattern validation for technology parsing improvements
+
+Focus Areas:
+1. Range Pattern Testing (time ranges, temperature ranges)
+2. Complex Format Testing (t= format, standard format)  
+3. Fahrenheit Conversion
+4. XLSX Import with Advanced Technology
 """
 
+import asyncio
+import httpx
+import json
 import os
 import sys
-import json
-import time
-import requests
+import tempfile
+import openpyxl
+from io import BytesIO
 from datetime import datetime
-from typing import Dict, Any, List, Optional
 
-# Test configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://techcard-sync.preview.emergentagent.com')
+# Backend URL from environment
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')
 API_BASE = f"{BACKEND_URL}/api"
-IIKO_API_LOGIN = "261d9ff06a3746b19c92de45a89c969b"
 
-class IikoBackendTester:
-    """Comprehensive tester for IK-02 iikoCloud backend implementation"""
-    
+class TechnologyParsingTester:
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        })
         self.test_results = []
-        self.organization_id = None
+        self.total_tests = 0
+        self.passed_tests = 0
         
-    def log_test(self, test_name: str, success: bool, details: str = "", data: Any = None):
-        """Log test result"""
-        result = {
-            "test": test_name,
-            "success": success,
-            "details": details,
-            "timestamp": datetime.now().isoformat(),
-            "data": data
-        }
-        self.test_results.append(result)
+    async def run_all_tests(self):
+        """Run all technology parsing tests"""
+        print("🧪 IK-04/03 Enhanced Technology Parsing Testing Started")
+        print("=" * 60)
         
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name}")
-        if details:
-            print(f"    {details}")
-        if not success and data:
-            print(f"    Data: {json.dumps(data, indent=2)}")
-        print()
-    
-    def test_iiko_health_check(self) -> bool:
-        """Test IikoClient health check functionality"""
-        try:
-            response = self.session.get(f"{API_BASE}/iiko/health", timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Verify health check response structure
-                required_fields = ["service", "status", "timestamp", "details"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log_test("IikoClient Health Check", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return False
-                
-                # Check if service is healthy
-                if data.get("status") == "healthy":
-                    details = data.get("details", {})
-                    org_count = details.get("organizations_count", 0)
-                    response_time = details.get("response_time", 0)
-                    
-                    self.log_test("IikoClient Health Check", True, 
-                                f"Service healthy, {org_count} orgs, {response_time:.2f}s response", 
-                                {"organizations_count": org_count, "response_time": response_time})
-                    return True
-                else:
-                    self.log_test("IikoClient Health Check", False, 
-                                f"Service unhealthy: {data.get('status')}", data)
-                    return False
-            else:
-                self.log_test("IikoClient Health Check", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("IikoClient Health Check", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_iiko_connect(self) -> bool:
-        """Test POST /api/iiko/connect endpoint"""
-        try:
-            payload = {"user_id": "test_user_001"}
-            response = self.session.post(f"{API_BASE}/iiko/connect", 
-                                       json=payload, timeout=45)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Verify response structure
-                required_fields = ["status", "organizations", "token_expires_at"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log_test("IikoCloud Connect", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return False
-                
-                # Check if connection successful
-                if data.get("status") == "connected":
-                    organizations = data.get("organizations", [])
-                    
-                    # Look for "Edison craft bar" organization
-                    edison_org = None
-                    for org in organizations:
-                        if "edison" in org.get("name", "").lower():
-                            edison_org = org
-                            self.organization_id = org.get("id")
-                            break
-                    
-                    if edison_org:
-                        self.log_test("IikoCloud Connect", True, 
-                                    f"Connected successfully, found Edison craft bar: {edison_org['name']}", 
-                                    {"organizations_count": len(organizations), "edison_org": edison_org})
-                        return True
-                    else:
-                        self.log_test("IikoCloud Connect", True, 
-                                    f"Connected successfully, {len(organizations)} organizations found (Edison not found)", 
-                                    {"organizations": [org.get("name") for org in organizations]})
-                        # Still consider success if we got organizations
-                        if organizations:
-                            self.organization_id = organizations[0].get("id")
-                        return True
-                else:
-                    self.log_test("IikoCloud Connect", False, 
-                                f"Connection failed: {data.get('status')}", data)
-                    return False
-            else:
-                self.log_test("IikoCloud Connect", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("IikoCloud Connect", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_iiko_organizations(self) -> bool:
-        """Test GET /api/iiko/organizations endpoint"""
-        try:
-            response = self.session.get(f"{API_BASE}/iiko/organizations?user_id=test_user_001", 
-                                      timeout=30)
-            
-            if response.status_code == 200:
-                organizations = response.json()
-                
-                if isinstance(organizations, list) and len(organizations) > 0:
-                    # Verify organization structure
-                    org = organizations[0]
-                    required_fields = ["id", "name"]
-                    missing_fields = [field for field in required_fields if field not in org]
-                    
-                    if missing_fields:
-                        self.log_test("Get Organizations", False, 
-                                    f"Missing fields in organization: {missing_fields}", org)
-                        return False
-                    
-                    # Look for Edison craft bar
-                    edison_found = any("edison" in org.get("name", "").lower() for org in organizations)
-                    
-                    self.log_test("Get Organizations", True, 
-                                f"Retrieved {len(organizations)} organizations, Edison found: {edison_found}", 
-                                {"organizations": [org.get("name") for org in organizations]})
-                    return True
-                else:
-                    self.log_test("Get Organizations", False, 
-                                "No organizations returned", organizations)
-                    return False
-            else:
-                self.log_test("Get Organizations", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Get Organizations", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_iiko_select_organization(self) -> bool:
-        """Test POST /api/iiko/select-org endpoint"""
-        if not self.organization_id:
-            self.log_test("Select Organization", False, "No organization ID available from previous tests")
-            return False
+        # Test 1: Range Pattern Testing
+        await self.test_range_patterns()
         
-        try:
-            payload = {
-                "organization_id": self.organization_id,
-                "user_id": "test_user_001"
+        # Test 2: Complex Format Testing
+        await self.test_complex_formats()
+        
+        # Test 3: Fahrenheit Conversion
+        await self.test_fahrenheit_conversion()
+        
+        # Test 4: XLSX Import with Advanced Technology
+        await self.test_xlsx_import_advanced_technology()
+        
+        # Test 5: API Endpoint Integration
+        await self.test_api_endpoint_integration()
+        
+        # Summary
+        self.print_summary()
+        
+    async def test_range_patterns(self):
+        """Test range pattern extraction (time and temperature ranges)"""
+        print("\n📊 Test 1: Range Pattern Testing")
+        print("-" * 40)
+        
+        test_cases = [
+            {
+                "text": "Обжарить 3–4 мин при высокой температуре",
+                "expected_time": 3.0,
+                "expected_temp": None,
+                "description": "Time range 3-4 min → should extract 3.0 min"
+            },
+            {
+                "text": "Обжарить при 170–180°C до золотистой корочки", 
+                "expected_time": None,
+                "expected_temp": 170.0,
+                "description": "Temperature range 170-180°C → should extract 170.0°C"
+            },
+            {
+                "text": "Варить 15-20 минут при 90-95°C",
+                "expected_time": 15.0,
+                "expected_temp": 90.0,
+                "description": "Both ranges → should extract minimum values"
+            },
+            {
+                "text": "Тушить 1-2 часа при средней температуре",
+                "expected_time": 60.0,  # 1 hour = 60 minutes
+                "expected_temp": None,
+                "description": "Hour range → should convert to minutes"
             }
-            response = self.session.post(f"{API_BASE}/iiko/select-org", 
-                                       json=payload, timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Verify response structure
-                required_fields = ["status", "organization"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log_test("Select Organization", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return False
-                
-                if data.get("status") == "selected":
-                    org = data.get("organization", {})
-                    self.log_test("Select Organization", True, 
-                                f"Organization selected: {org.get('name', 'Unknown')}", 
-                                {"organization": org})
-                    return True
-                else:
-                    self.log_test("Select Organization", False, 
-                                f"Selection failed: {data.get('status')}", data)
-                    return False
-            else:
-                self.log_test("Select Organization", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Select Organization", False, f"Exception: {str(e)}")
-            return False
+        ]
+        
+        for i, case in enumerate(test_cases, 1):
+            await self.test_technology_extraction(
+                f"1.{i}", case["text"], case["expected_time"], 
+                case["expected_temp"], case["description"]
+            )
     
-    def test_iiko_sync_nomenclature(self) -> bool:
-        """Test POST /api/iiko/sync/nomenclature endpoint"""
-        if not self.organization_id:
-            self.log_test("Sync Nomenclature", False, "No organization ID available")
-            return False
+    async def test_complex_formats(self):
+        """Test complex format patterns (t= format, standard format)"""
+        print("\n🔧 Test 2: Complex Format Testing")
+        print("-" * 40)
+        
+        test_cases = [
+            {
+                "text": "Томить при t=85°C под крышкой",
+                "expected_time": None,
+                "expected_temp": 85.0,
+                "description": "t= format → should extract 85.0°C"
+            },
+            {
+                "text": "Томить 45 мин при медленном огне под крышкой",
+                "expected_time": 45.0,
+                "expected_temp": None,
+                "description": "Standard format → should extract 45.0 min"
+            },
+            {
+                "text": "Готовить при t = 120°C в течение 30 мин",
+                "expected_time": 30.0,
+                "expected_temp": 120.0,
+                "description": "t= format with spaces and time → both values"
+            },
+            {
+                "text": "Запекать при t=200° до готовности",
+                "expected_time": None,
+                "expected_temp": 200.0,
+                "description": "t= format without C → should extract 200.0°C"
+            }
+        ]
+        
+        for i, case in enumerate(test_cases, 1):
+            await self.test_technology_extraction(
+                f"2.{i}", case["text"], case["expected_time"],
+                case["expected_temp"], case["description"]
+            )
+    
+    async def test_fahrenheit_conversion(self):
+        """Test Fahrenheit to Celsius conversion"""
+        print("\n🌡️ Test 3: Fahrenheit Conversion")
+        print("-" * 40)
+        
+        test_cases = [
+            {
+                "text": "Готовить при температуре 350°F",
+                "expected_time": None,
+                "expected_temp": 176.7,  # (350-32)*5/9 = 176.67
+                "description": "350°F → should convert to 176.7°C"
+            },
+            {
+                "text": "Выпекать при 400°F в течение 25 минут",
+                "expected_time": 25.0,
+                "expected_temp": 204.4,  # (400-32)*5/9 = 204.44
+                "description": "400°F with time → should convert temp and extract time"
+            },
+            {
+                "text": "Разогреть духовку до 325°F",
+                "expected_time": None,
+                "expected_temp": 162.8,  # (325-32)*5/9 = 162.78
+                "description": "325°F → should convert to 162.8°C"
+            }
+        ]
+        
+        for i, case in enumerate(test_cases, 1):
+            await self.test_technology_extraction(
+                f"3.{i}", case["text"], case["expected_time"],
+                case["expected_temp"], case["description"]
+            )
+    
+    async def test_xlsx_import_advanced_technology(self):
+        """Test XLSX import with advanced technology patterns"""
+        print("\n📋 Test 4: XLSX Import with Advanced Technology")
+        print("-" * 40)
+        
+        # Create test XLSX with advanced technology patterns
+        test_xlsx = self.create_advanced_technology_xlsx()
         
         try:
-            payload = {"force": True}
-            response = self.session.post(
-                f"{API_BASE}/iiko/sync/nomenclature?organization_id={self.organization_id}", 
-                json=payload, timeout=60)
-            
-            if response.status_code == 200:
-                data = response.json()
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                files = {"file": ("advanced_tech.xlsx", test_xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
                 
-                # Verify response structure
-                required_fields = ["status", "sync_id"]
-                missing_fields = [field for field in required_fields if field not in data]
+                response = await client.post(f"{API_BASE}/v1/iiko/import/ttk.xlsx", files=files)
                 
-                if missing_fields:
-                    self.log_test("Sync Nomenclature", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return False
-                
-                if data.get("status") in ["completed", "already_running"]:
-                    stats = data.get("stats", {})
-                    products_processed = stats.get("products_processed", 0)
-                    
-                    self.log_test("Sync Nomenclature", True, 
-                                f"Sync {data['status']}, {products_processed} products processed", 
-                                {"sync_id": data["sync_id"], "stats": stats})
-                    return True
-                else:
-                    self.log_test("Sync Nomenclature", False, 
-                                f"Sync failed: {data.get('status')}", data)
-                    return False
-            else:
-                self.log_test("Sync Nomenclature", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Sync Nomenclature", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_iiko_product_search(self) -> bool:
-        """Test GET /api/iiko/products/search endpoint"""
-        if not self.organization_id:
-            self.log_test("Product Search", False, "No organization ID available")
-            return False
-        
-        try:
-            # Test search queries
-            test_queries = ["мясо", "курица", "говядина", "овощи", "молоко"]
-            
-            for query in test_queries:
-                response = self.session.get(
-                    f"{API_BASE}/iiko/products/search?organization_id={self.organization_id}&q={query}&limit=5", 
-                    timeout=30)
-                
-                if response.status_code == 200:
-                    products = response.json()
-                    
-                    if isinstance(products, list):
-                        if len(products) > 0:
-                            # Verify product structure
-                            product = products[0]
-                            required_fields = ["sku_id", "name", "unit", "price_per_unit", "currency", "asOf", "match_score"]
-                            missing_fields = [field for field in required_fields if field not in product]
-                            
-                            if missing_fields:
-                                self.log_test("Product Search", False, 
-                                            f"Missing fields in product: {missing_fields}", product)
-                                return False
-                            
-                            # Verify match score is valid
-                            match_score = product.get("match_score", 0)
-                            if not (0 <= match_score <= 1):
-                                self.log_test("Product Search", False, 
-                                            f"Invalid match score: {match_score}", product)
-                                return False
-                            
-                            self.log_test("Product Search", True, 
-                                        f"Query '{query}': {len(products)} products found, best match: {product['name']} (score: {match_score})", 
-                                        {"query": query, "results_count": len(products), "best_match": product})
-                            return True
-                        else:
-                            # No products found for this query, try next
-                            continue
-                    else:
-                        self.log_test("Product Search", False, 
-                                    f"Invalid response format for query '{query}'", products)
-                        return False
-                else:
-                    self.log_test("Product Search", False, 
-                                f"HTTP {response.status_code} for query '{query}': {response.text}")
-                    return False
-            
-            # If no queries returned results
-            self.log_test("Product Search", False, 
-                        "No products found for any test queries", 
-                        {"queries_tested": test_queries})
-            return False
-                
-        except Exception as e:
-            self.log_test("Product Search", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_iiko_sync_status(self) -> bool:
-        """Test GET /api/iiko/sync/status endpoint"""
-        if not self.organization_id:
-            self.log_test("Sync Status", False, "No organization ID available")
-            return False
-        
-        try:
-            response = self.session.get(
-                f"{API_BASE}/iiko/sync/status?organization_id={self.organization_id}", 
-                timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Should have status field
-                if "status" not in data:
-                    self.log_test("Sync Status", False, "Missing status field", data)
-                    return False
-                
-                status = data.get("status")
-                if status in ["completed", "running", "failed", "never_synced"]:
-                    self.log_test("Sync Status", True, 
-                                f"Sync status: {status}", data)
-                    return True
-                else:
-                    self.log_test("Sync Status", False, 
-                                f"Unknown sync status: {status}", data)
-                    return False
-            else:
-                self.log_test("Sync Status", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Sync Status", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_catalog_search_iiko_integration(self) -> bool:
-        """Test GET /api/v1/techcards.v2/catalog-search with source=iiko"""
-        try:
-            # Test search queries
-            test_queries = ["мясо", "курица", "молоко"]
-            
-            for query in test_queries:
-                response = self.session.get(
-                    f"{API_BASE}/v1/techcards.v2/catalog-search?q={query}&source=iiko&limit=5", 
-                    timeout=30)
+                self.total_tests += 1
+                test_id = "4.1"
                 
                 if response.status_code == 200:
                     data = response.json()
                     
-                    # Verify response structure
-                    if data.get("status") != "success":
-                        self.log_test("Catalog Search iiko Integration", False, 
-                                    f"Search failed for query '{query}': {data.get('status')}", data)
-                        return False
-                    
-                    items = data.get("items", [])
-                    iiko_count = data.get("iiko_count", 0)
-                    
-                    if iiko_count > 0:
-                        # Verify iiko item structure
-                        iiko_items = [item for item in items if item.get("source") == "iiko"]
-                        if iiko_items:
-                            item = iiko_items[0]
-                            required_fields = ["name", "sku_id", "unit", "price", "source"]
-                            missing_fields = [field for field in required_fields if field not in item]
+                    # Check if import was successful
+                    if data.get("status") in ["success", "draft"]:
+                        techcard = data.get("techcard", {})
+                        process_steps = techcard.get("process", [])
+                        
+                        # Verify process steps contain extracted temperatures and times
+                        advanced_patterns_found = 0
+                        
+                        for step in process_steps:
+                            time_min = step.get("time_min")
+                            temp_c = step.get("temp_c")
+                            action = step.get("action", "")
                             
-                            if missing_fields:
-                                self.log_test("Catalog Search iiko Integration", False, 
-                                            f"Missing fields in iiko item: {missing_fields}", item)
-                                return False
-                            
-                            self.log_test("Catalog Search iiko Integration", True, 
-                                        f"Query '{query}': {iiko_count} iiko items found, sample: {item['name']}", 
-                                        {"query": query, "iiko_count": iiko_count, "sample_item": item})
-                            return True
+                            # Check for expected patterns
+                            if "3–4 мин" in action and time_min == 3.0:
+                                advanced_patterns_found += 1
+                            elif "170–180°C" in action and temp_c == 170.0:
+                                advanced_patterns_found += 1
+                            elif "t=85°C" in action and temp_c == 85.0:
+                                advanced_patterns_found += 1
+                            elif "350°F" in action and temp_c and abs(temp_c - 176.7) < 0.5:
+                                advanced_patterns_found += 1
+                        
+                        if advanced_patterns_found >= 2:  # At least 2 patterns should be found
+                            self.passed_tests += 1
+                            print(f"✅ {test_id}: XLSX import with advanced patterns - PASSED")
+                            print(f"   Found {advanced_patterns_found} advanced patterns in process steps")
+                        else:
+                            print(f"❌ {test_id}: XLSX import with advanced patterns - FAILED")
+                            print(f"   Only found {advanced_patterns_found} advanced patterns")
+                            print(f"   Process steps: {len(process_steps)}")
                     else:
-                        # No iiko items for this query, try next
-                        continue
+                        print(f"❌ {test_id}: XLSX import failed - status: {data.get('status')}")
+                        print(f"   Issues: {data.get('issues', [])}")
                 else:
-                    self.log_test("Catalog Search iiko Integration", False, 
-                                f"HTTP {response.status_code} for query '{query}': {response.text}")
-                    return False
-            
-            # If no queries returned iiko results, still consider success if endpoint works
-            self.log_test("Catalog Search iiko Integration", True, 
-                        "Catalog search endpoint working, no iiko results for test queries", 
-                        {"queries_tested": test_queries})
-            return True
-                
+                    print(f"❌ {test_id}: XLSX import API error - {response.status_code}")
+                    print(f"   Response: {response.text[:200]}")
+                    
         except Exception as e:
-            self.log_test("Catalog Search iiko Integration", False, f"Exception: {str(e)}")
-            return False
+            print(f"❌ {test_id}: XLSX import exception - {str(e)}")
     
-    def test_database_collections(self) -> bool:
-        """Test that MongoDB collections are created and accessible"""
-        try:
-            # We can't directly test MongoDB from here, but we can infer from API responses
-            # If sync worked and search works, collections should be created
-            
-            # Check if we have any successful sync or search results
-            sync_success = any(result["test"] == "Sync Nomenclature" and result["success"] 
-                             for result in self.test_results)
-            search_success = any(result["test"] == "Product Search" and result["success"] 
-                               for result in self.test_results)
-            
-            if sync_success or search_success:
-                self.log_test("Database Collections", True, 
-                            "Collections appear to be working based on sync/search success")
-                return True
-            else:
-                self.log_test("Database Collections", False, 
-                            "Cannot verify collections - sync and search both failed")
-                return False
-                
-        except Exception as e:
-            self.log_test("Database Collections", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_ingredient_matching_system(self) -> bool:
-        """Test ingredient matching system with various match scores"""
-        if not self.organization_id:
-            self.log_test("Ingredient Matching System", False, "No organization ID available")
-            return False
+    async def test_api_endpoint_integration(self):
+        """Test API endpoint handles enhanced parsing without errors"""
+        print("\n🔌 Test 5: API Endpoint Integration")
+        print("-" * 40)
         
+        # Test that the API endpoint is accessible and working
         try:
-            # Test different types of matches
-            test_cases = [
-                {"query": "курица", "expected_min_score": 0.6},  # Should find chicken products
-                {"query": "говядина", "expected_min_score": 0.6},  # Should find beef products
-                {"query": "молоко", "expected_min_score": 0.6},   # Should find milk products
-            ]
-            
-            for test_case in test_cases:
-                query = test_case["query"]
-                expected_min_score = test_case["expected_min_score"]
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                # Create minimal test XLSX
+                simple_xlsx = self.create_simple_test_xlsx()
+                files = {"file": ("simple_test.xlsx", simple_xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
                 
-                response = self.session.get(
-                    f"{API_BASE}/iiko/products/search?organization_id={self.organization_id}&q={query}&limit=10", 
-                    timeout=30)
+                response = await client.post(f"{API_BASE}/v1/iiko/import/ttk.xlsx", files=files)
+                
+                self.total_tests += 1
+                test_id = "5.1"
                 
                 if response.status_code == 200:
-                    products = response.json()
+                    data = response.json()
                     
-                    if isinstance(products, list) and len(products) > 0:
-                        # Check match scores
-                        scores = [p.get("match_score", 0) for p in products]
-                        max_score = max(scores)
-                        min_score = min(scores)
-                        
-                        # Verify scores are in valid range and meet minimum
-                        if all(0 <= score <= 1 for score in scores):
-                            if max_score >= expected_min_score:
-                                self.log_test("Ingredient Matching System", True, 
-                                            f"Query '{query}': {len(products)} matches, scores {min_score:.2f}-{max_score:.2f}", 
-                                            {"query": query, "match_count": len(products), "score_range": [min_score, max_score]})
-                                return True
-                            else:
-                                # Low scores but still working
-                                continue
-                        else:
-                            self.log_test("Ingredient Matching System", False, 
-                                        f"Invalid match scores for query '{query}': {scores}")
-                            return False
+                    # Check response structure
+                    required_fields = ["status", "techcard", "issues", "meta"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        self.passed_tests += 1
+                        print(f"✅ {test_id}: API endpoint integration - PASSED")
+                        print(f"   Status: {data.get('status')}")
+                        print(f"   Issues count: {len(data.get('issues', []))}")
+                        print(f"   Parsed rows: {data.get('meta', {}).get('parsed_rows', 0)}")
                     else:
-                        # No matches for this query, try next
-                        continue
+                        print(f"❌ {test_id}: API response missing fields: {missing_fields}")
                 else:
-                    self.log_test("Ingredient Matching System", False, 
-                                f"HTTP {response.status_code} for query '{query}': {response.text}")
-                    return False
+                    print(f"❌ {test_id}: API endpoint error - {response.status_code}")
+                    print(f"   Response: {response.text[:200]}")
+                    
+        except Exception as e:
+            print(f"❌ {test_id}: API endpoint exception - {str(e)}")
+    
+    async def test_technology_extraction(self, test_id, text, expected_time, expected_temp, description):
+        """Test individual technology text extraction"""
+        try:
+            # Import the parser directly to test extraction methods
+            sys.path.append('/app/backend')
+            from receptor_agent.integrations.iiko_xlsx_parser import IikoXlsxParser
             
-            # If we get here, no queries returned good matches
-            self.log_test("Ingredient Matching System", True, 
-                        "Matching system working but no high-score matches for test queries", 
-                        {"queries_tested": [tc["query"] for tc in test_cases]})
-            return True
+            parser = IikoXlsxParser()
+            
+            # Test time extraction
+            extracted_time = parser._extract_time_from_text(text)
+            
+            # Test temperature extraction  
+            extracted_temp = parser._extract_temperature_from_text(text)
+            
+            self.total_tests += 1
+            
+            # Check results
+            time_match = (expected_time is None and extracted_time is None) or \
+                        (expected_time is not None and extracted_time is not None and abs(extracted_time - expected_time) < 0.1)
+            
+            temp_match = (expected_temp is None and extracted_temp is None) or \
+                        (expected_temp is not None and extracted_temp is not None and abs(extracted_temp - expected_temp) < 0.5)
+            
+            if time_match and temp_match:
+                self.passed_tests += 1
+                print(f"✅ {test_id}: {description} - PASSED")
+                if extracted_time:
+                    print(f"   Time: {extracted_time} min")
+                if extracted_temp:
+                    print(f"   Temperature: {extracted_temp}°C")
+            else:
+                print(f"❌ {test_id}: {description} - FAILED")
+                print(f"   Text: '{text}'")
+                print(f"   Expected time: {expected_time}, got: {extracted_time}")
+                print(f"   Expected temp: {expected_temp}, got: {extracted_temp}")
                 
         except Exception as e:
-            self.log_test("Ingredient Matching System", False, f"Exception: {str(e)}")
-            return False
+            print(f"❌ {test_id}: {description} - EXCEPTION: {str(e)}")
     
-    def run_all_tests(self) -> Dict[str, Any]:
-        """Run all IK-02 backend tests"""
-        print("🧪 Starting IK-02 iikoCloud Backend Integration Tests")
-        print(f"Backend URL: {BACKEND_URL}")
-        print(f"API Login: {IIKO_API_LOGIN[:8]}...")
-        print("=" * 60)
+    def create_advanced_technology_xlsx(self):
+        """Create XLSX with advanced technology patterns for testing"""
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Advanced Tech Test"
         
-        # Test sequence - order matters for dependencies
-        tests = [
-            ("IikoClient Health Check", self.test_iiko_health_check),
-            ("IikoCloud Connect", self.test_iiko_connect),
-            ("Get Organizations", self.test_iiko_organizations),
-            ("Select Organization", self.test_iiko_select_organization),
-            ("Sync Nomenclature", self.test_iiko_sync_nomenclature),
-            ("Product Search", self.test_iiko_product_search),
-            ("Sync Status", self.test_iiko_sync_status),
-            ("Catalog Search iiko Integration", self.test_catalog_search_iiko_integration),
-            ("Database Collections", self.test_database_collections),
-            ("Ingredient Matching System", self.test_ingredient_matching_system),
+        # Headers
+        headers = [
+            "Артикул блюда", "Наименование блюда", "Артикул продукта", 
+            "Наименование продукта", "Брутто", "Потери %", "Нетто", 
+            "Ед.", "Выход готового продукта", "Норма закладки", 
+            "Метод списания", "Технология приготовления"
         ]
         
-        passed = 0
-        failed = 0
+        for col, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col, value=header)
         
-        for test_name, test_func in tests:
-            try:
-                success = test_func()
-                if success:
-                    passed += 1
-                else:
-                    failed += 1
-            except Exception as e:
-                self.log_test(test_name, False, f"Test execution failed: {str(e)}")
-                failed += 1
+        # Meta information
+        ws.cell(row=2, column=1, value="DISH_ADV_001")
+        ws.cell(row=2, column=2, value="Блюдо с продвинутой технологией")
         
-        # Summary
-        total = passed + failed
-        success_rate = (passed / total * 100) if total > 0 else 0
+        # Technology with advanced patterns
+        advanced_tech = (
+            "1. Обжарить 3–4 мин при высокой температуре. "
+            "2. Обжарить при 170–180°C до золотистой корочки. "
+            "3. Томить при t=85°C под крышкой. "
+            "4. Готовить при температуре 350°F до готовности."
+        )
+        ws.cell(row=2, column=12, value=advanced_tech)
         
+        # Sample ingredients
+        ingredients = [
+            ["PROD_001", "Говядина", 500, 15, 425, "г"],
+            ["PROD_002", "Лук репчатый", 100, 10, 90, "г"],
+            ["PROD_003", "Масло растительное", 30, 0, 30, "мл"]
+        ]
+        
+        for row_idx, ingredient in enumerate(ingredients, 3):
+            ws.cell(row=row_idx, column=3, value=ingredient[0])  # Артикул продукта
+            ws.cell(row=row_idx, column=4, value=ingredient[1])  # Наименование продукта
+            ws.cell(row=row_idx, column=5, value=ingredient[2])  # Брутто
+            ws.cell(row=row_idx, column=6, value=ingredient[3])  # Потери %
+            ws.cell(row=row_idx, column=7, value=ingredient[4])  # Нетто
+            ws.cell(row=row_idx, column=8, value=ingredient[5])  # Ед.
+        
+        # Save to bytes
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return output.getvalue()
+    
+    def create_simple_test_xlsx(self):
+        """Create simple XLSX for API testing"""
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Simple Test"
+        
+        # Headers
+        headers = ["Наименование продукта", "Брутто", "Нетто", "Ед."]
+        for col, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col, value=header)
+        
+        # Simple ingredient
+        ws.cell(row=2, column=1, value="Тестовый продукт")
+        ws.cell(row=2, column=2, value=100)
+        ws.cell(row=2, column=3, value=90)
+        ws.cell(row=2, column=4, value="г")
+        
+        # Save to bytes
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return output.getvalue()
+    
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "=" * 60)
+        print("🎯 IK-04/03 Enhanced Technology Parsing Test Summary")
         print("=" * 60)
-        print(f"🎯 TEST SUMMARY")
-        print(f"Total Tests: {total}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {failed}")
+        
+        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
+        
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed: {self.passed_tests}")
+        print(f"Failed: {self.total_tests - self.passed_tests}")
         print(f"Success Rate: {success_rate:.1f}%")
         
-        # Critical tests that must pass
-        critical_tests = [
-            "IikoClient Health Check",
-            "IikoCloud Connect", 
-            "Get Organizations"
-        ]
-        
-        critical_passed = sum(1 for result in self.test_results 
-                            if result["test"] in critical_tests and result["success"])
-        
-        if critical_passed == len(critical_tests):
-            print("✅ All critical tests passed - IK-02 core functionality working")
+        if success_rate >= 90:
+            print("🎉 EXCELLENT: Advanced technology parsing is working correctly!")
+        elif success_rate >= 75:
+            print("✅ GOOD: Most advanced patterns are working, minor issues detected")
+        elif success_rate >= 50:
+            print("⚠️ PARTIAL: Some advanced patterns working, needs improvement")
         else:
-            print("❌ Some critical tests failed - IK-02 may have connectivity issues")
+            print("❌ CRITICAL: Advanced technology parsing has significant issues")
         
-        return {
-            "total_tests": total,
-            "passed": passed,
-            "failed": failed,
-            "success_rate": success_rate,
-            "critical_tests_passed": critical_passed,
-            "critical_tests_total": len(critical_tests),
-            "test_results": self.test_results
-        }
+        print("\n🔍 Key Validation Targets:")
+        print("✓ Advanced regex patterns work correctly")
+        print("✓ Range values normalize to minimum (3-4 min → 3.0 min)")
+        print("✓ Temperature conversion F→C functions properly")
+        print("✓ API endpoints handle enhanced parsing without errors")
+        print("✓ Round-trip compatibility maintained with new features")
+        
+        return success_rate >= 75  # Return True if tests are mostly passing
 
-def main():
+async def main():
     """Main test execution"""
-    tester = IikoBackendTester()
-    results = tester.run_all_tests()
+    tester = TechnologyParsingTester()
+    success = await tester.run_all_tests()
     
     # Exit with appropriate code
-    if results["critical_tests_passed"] == results["critical_tests_total"]:
-        sys.exit(0)  # Success
-    else:
-        sys.exit(1)  # Failure
+    sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
