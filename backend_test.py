@@ -204,8 +204,11 @@ class UXPolishTester:
                 {"name": "говядина", "unit": "г", "brutto_g": 300, "netto_g": 280}
             ]
             
+            # Correct format: techcard with ingredients
             payload = {
-                "ingredients": test_ingredients,
+                "techcard": {
+                    "ingredients": test_ingredients
+                },
                 "organization_id": "default-org-001",
                 "auto_apply": False
             }
