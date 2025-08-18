@@ -2382,7 +2382,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "GX-01 Stabilization Generation V2 (GX-01 Backend)"
+    - "GX-02 Quality Validator API Implementation (GX-02 Backend)"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
