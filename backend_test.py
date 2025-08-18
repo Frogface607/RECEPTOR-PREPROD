@@ -268,7 +268,9 @@ class UXPolishTester:
         # Test 3.2: Auto-apply functionality
         try:
             payload = {
-                "ingredients": test_ingredients,
+                "techcard": {
+                    "ingredients": test_ingredients
+                },
                 "organization_id": "default-org-001", 
                 "auto_apply": True
             }
