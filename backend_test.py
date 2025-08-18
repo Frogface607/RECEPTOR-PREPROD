@@ -128,10 +128,10 @@ class UXPolishTester:
             invalid_content = b"This is not an XLSX file"
             files = {'file': ('invalid.txt', invalid_content, 'text/plain')}
             
+            # Remove Content-Type header for file upload
             response = self.session.post(
                 f"{API_BASE}/v1/iiko/import/ttk.xlsx",
                 files=files,
-                headers={'Accept': 'application/json'},
                 timeout=10
             )
             
