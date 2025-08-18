@@ -3472,13 +3472,48 @@ function App() {
   }, [tcV2]);
 
   const acceptAllHighConfidence = () => {
+    // GX-02: Enhanced "Принять ≥90%" with proper state management
+    if (!autoMappingResults || autoMappingResults.length === 0) {
+      setAutoMappingMessage({ 
+        type: 'warning', 
+        text: '⚠️ Нет результатов автомаппинга для принятия' 
+      });
+      return;
+    }
+    
+    // Filter high confidence results that can be accepted
+    const highConfidenceResults = autoMappingResults.filter(result => 
+      (result.status === 'auto_accept' || result.confidence >= 90) && 
+      result.suggestion &&
+      result.status !== 'accepted'  // Don't re-accept already accepted
+    );
+    
+    if (highConfidenceResults.length === 0) {
+      setAutoMappingMessage({ 
+        type: 'info', 
+        text: '📋 Все высоко-уверенные совпадения уже приняты' 
+      });
+      return;
+    }
+    
+    // Update results to accepted status
     const updatedResults = autoMappingResults.map(result => {
-      if (result.status === 'auto_accept' || (result.confidence >= 90 && result.suggestion)) {
+      if (highConfidenceResults.some(hr => hr.ingredient_name === result.ingredient_name)) {
         return { ...result, status: 'accepted' };
       }
       return result;
     });
+    
     setAutoMappingResults(updatedResults);
+    
+    // Update message with acceptance info
+    setAutoMappingMessage({ 
+      type: 'success', 
+      text: `✅ Принято ${highConfidenceResults.length} высоко-уверенных совпадений (≥90%)` 
+    });
+    
+    // Log for debugging
+    console.log('GX-02: Accepted high confidence mappings:', highConfidenceResults.length);
   };
 
   // ============== EXPORT WIZARD FUNCTIONS (IK-02B-FE/03) ==============
