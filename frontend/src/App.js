@@ -16055,13 +16055,24 @@ function App() {
                   {autoMappingResults.filter(r => r.status === 'accepted' || r.status === 'auto_accept').length} из {autoMappingResults.length} позиций будет изменено
                 </div>
                 
-                <div className="flex space-x-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={acceptAllHighConfidence}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
                   >
                     Принять всё (≥90%)
                   </button>
+
+                  {/* UX-Polish: Undo button */}
+                  {lastMappingAction && lastMappingAction.undoable && (
+                    <button
+                      onClick={undoLastMappingAction}
+                      className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                      title="Отменить последнее массовое принятие"
+                    >
+                      ↩️ Undo ({lastMappingAction.ingredients_count})
+                    </button>
+                  )}
                   
                   <button
                     onClick={applyAutoMappingChanges}
