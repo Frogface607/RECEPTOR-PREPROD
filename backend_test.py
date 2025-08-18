@@ -65,10 +65,12 @@ class UXPolishTester:
                 files = {'file': ('hot.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
                 
                 start_time = time.time()
+                # Remove Content-Type header for file upload
+                headers = {'Accept': 'application/json'}
                 response = self.session.post(
                     f"{API_BASE}/v1/iiko/import/ttk.xlsx",
                     files=files,
-                    headers={'Accept': 'application/json'},
+                    headers=headers,
                     timeout=30
                 )
                 duration = time.time() - start_time
