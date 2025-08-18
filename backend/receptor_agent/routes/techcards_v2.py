@@ -571,7 +571,7 @@ def export_tc_v2(card: TechCardV2):
 
 
 # GX-02: Quality Validation Endpoints
-@router.post("/validate/quality")
+@router.post("/techcards.v2/validate/quality")
 async def validate_techcard_quality(request: Request):
     """
     GX-02: Validate TechCard quality and get improvement suggestions
