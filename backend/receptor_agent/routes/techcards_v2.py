@@ -802,3 +802,241 @@ async def get_ru_synonyms():
     except Exception as e:
         logger.error(f"Get synonyms error: {e}")
         raise HTTPException(500, f"Get synonyms failed: {str(e)}")
+
+
+# Export Wizard v1: Enhanced Export Endpoints
+@router.post("/export/iiko.xlsx")
+async def enhanced_export_iiko_xlsx(request: Request):
+    """
+    Export Wizard v1: Enhanced export with validation and tracking
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        # Step 1: Pre-export validation using GX-02 quality validator
+        from ..techcards_v2.quality_validator import QualityValidator
+        validator = QualityValidator()
+        
+        normalized_card, validation_issues = validator.validate_techcard(techcard_data)
+        quality_score = validator.get_quality_score(validation_issues)
+        
+        # Check for blocking errors
+        blocking_errors = [i for i in validation_issues if i.get('level') == 'error']
+        
+        if blocking_errors:
+            # Block export due to critical validation errors
+            return {
+                "status": "blocked",
+                "message": "Экспорт заблокирован из-за критических ошибок валидации",
+                "blocking_errors": blocking_errors,
+                "quality_score": quality_score,
+                "can_auto_fix": len([e for e in blocking_errors if e.get('type') in ['rangeNormalized', 'yieldInconsistent']]) > 0
+            }
+        
+        # Step 2: Export XLSX
+        from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
+        excel_buffer, export_issues = create_iiko_ttk_xlsx(normalized_card)
+        
+        # Step 3: Track export
+        organization_id = body.get('organization_id', 'default')
+        user_email = body.get('user_email', 'unknown')
+        techcard_id = body.get('techcard_id', 'temp')
+        
+        from ..integrations.export_tracking_service import get_export_tracking_service
+        tracking_service = get_export_tracking_service()
+        
+        # Record successful export
+        ingredients_count = len(techcard_data.get('ingredients', []))
+        file_size = len(excel_buffer.getvalue())
+        
+        tracking_result = tracking_service.record_export(
+            organization_id=organization_id,
+            techcard_id=techcard_id,
+            techcard_title=techcard_data.get('meta', {}).get('title', 'Untitled'),
+            user_email=user_email,
+            export_type="iiko_xlsx_enhanced",
+            ingredients_count=ingredients_count,
+            file_size_bytes=file_size,
+            result="success"
+        )
+        
+        # Return file
+        return StreamingResponse(
+            iter([excel_buffer.getvalue()]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="techcard_{techcard_id}_export.xlsx"'},
+            background=BackgroundTask(
+                lambda: logger.info(f"Export completed: {tracking_result['export_id']}")
+            )
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Enhanced export error: {e}")
+        
+        # Record failed export
+        try:
+            organization_id = body.get('organization_id', 'default')
+            user_email = body.get('user_email', 'unknown')
+            techcard_id = body.get('techcard_id', 'temp')
+            
+            tracking_service = get_export_tracking_service()
+            tracking_service.record_export(
+                organization_id=organization_id,
+                techcard_id=techcard_id,
+                techcard_title=techcard_data.get('meta', {}).get('title', 'Untitled') if techcard_data else 'Unknown',
+                user_email=user_email,
+                export_type="iiko_xlsx_enhanced",
+                result="failed",
+                error_message=str(e)
+            )
+        except:
+            pass  # Don't let tracking errors break the main error response
+            
+        raise HTTPException(500, f"Enhanced export failed: {str(e)}")
+
+
+@router.get("/export/last")
+async def get_last_export(organization_id: str = "default", techcard_id: Optional[str] = None):
+    """
+    Export Wizard v1: Get last export information
+    """
+    try:
+        from ..integrations.export_tracking_service import get_export_tracking_service
+        tracking_service = get_export_tracking_service()
+        
+        last_export = tracking_service.get_last_export(organization_id, techcard_id)
+        
+        return {
+            "status": "success",
+            "last_export": last_export
+        }
+        
+    except Exception as e:
+        logger.error(f"Get last export error: {e}")
+        raise HTTPException(500, f"Get last export failed: {str(e)}")
+
+
+@router.get("/export/history")
+async def get_export_history(organization_id: str = "default", limit: int = 10):
+    """
+    Export Wizard v1: Get export history
+    """
+    try:
+        from ..integrations.export_tracking_service import get_export_tracking_service
+        tracking_service = get_export_tracking_service()
+        
+        history = tracking_service.get_export_history(organization_id, limit)
+        stats = tracking_service.export_stats(organization_id, days_back=7)
+        
+        return {
+            "status": "success",
+            "history": history,
+            "stats": stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Get export history error: {e}")
+        raise HTTPException(500, f"Get export history failed: {str(e)}")
+
+
+@router.post("/export/auto-fix")
+async def auto_fix_export_issues(request: Request):
+    """
+    Export Wizard v1: Auto-fix blocking export issues
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        # Apply quality validator with normalization
+        from ..techcards_v2.quality_validator import QualityValidator
+        validator = QualityValidator()
+        
+        normalized_card, validation_issues = validator.validate_techcard(techcard_data)
+        
+        # Count auto-fixes applied
+        auto_fixes = len([i for i in validation_issues if i.get('type') == 'rangeNormalized'])
+        
+        # Re-validate after normalization
+        _, post_fix_issues = validator.validate_techcard(normalized_card)
+        remaining_errors = [i for i in post_fix_issues if i.get('level') == 'error']
+        
+        return {
+            "status": "success",
+            "fixed_techcard": normalized_card,
+            "auto_fixes_applied": auto_fixes,
+            "remaining_errors": remaining_errors,
+            "is_export_ready": len(remaining_errors) == 0,
+            "message": f"Применено {auto_fixes} автоисправлений. " + 
+                      (f"Осталось {len(remaining_errors)} ошибок." if remaining_errors else "Готов к экспорту!")
+        }
+        
+    except Exception as e:
+        logger.error(f"Auto-fix export issues error: {e}")
+        raise HTTPException(500, f"Auto-fix failed: {str(e)}")
+
+
+@router.get("/export/instructions")
+async def get_export_instructions():
+    """
+    Export Wizard v1: Get iikoWeb import instructions
+    """
+    instructions = {
+        "title": "Как импортировать в iikoWeb",
+        "steps": [
+            {
+                "number": 1,
+                "title": "Открыть iikoWeb",
+                "description": "Войдите в административную панель iikoWeb под учетной записью с правами администратора",
+                "details": "Убедитесь что у вас есть права на управление номенклатурой и техническими картами"
+            },
+            {
+                "number": 2, 
+                "title": "Перейти в раздел импорта ТТК",
+                "description": "Найдите раздел 'Номенклатура' → 'Технические карты' → 'Импорт'",
+                "details": "Обычно находится в главном меню под разделом управления номенклатурой"
+            },
+            {
+                "number": 3,
+                "title": "Загрузить файл и проверить протокол",
+                "description": "Выберите скачанный XLSX файл, нажмите 'Импорт' и дождитесь обработки",
+                "details": "После импорта обязательно проверьте протокол на наличие ошибок или предупреждений"
+            }
+        ],
+        "tips": [
+            "Файл должен быть в формате .xlsx (Excel)",
+            "Не изменяйте структуру файла после экспорта", 
+            "Проверьте что все SKU артикулы существуют в iiko",
+            "При ошибках импорта обратитесь к протоколу импорта iikoWeb"
+        ],
+        "copyable_text": """Инструкция по импорту ТТК в iikoWeb:
+
+1. Открыть iikoWeb
+   Войдите в административную панель iikoWeb под учетной записью с правами администратора
+
+2. Перейти в раздел импорта ТТК  
+   Найдите раздел 'Номенклатура' → 'Технические карты' → 'Импорт'
+
+3. Загрузить файл и проверить протокол
+   Выберите скачанный XLSX файл, нажмите 'Импорт' и дождитесь обработки
+
+Важно:
+• Файл должен быть в формате .xlsx (Excel)
+• Не изменяйте структуру файла после экспорта
+• Проверьте что все SKU артикулы существуют в iiko
+• При ошибках импорта обратитесь к протоколу импорта iikoWeb"""
+    }
+    
+    return {
+        "status": "success",
+        "instructions": instructions
+    }
