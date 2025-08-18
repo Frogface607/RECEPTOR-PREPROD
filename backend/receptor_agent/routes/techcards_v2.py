@@ -18,6 +18,7 @@ from receptor_agent.exports.iiko_exporter import export_techcard_to_iiko
 from receptor_agent.exports.html import generate_print_html
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 def _flag() -> bool:
     return os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on")
