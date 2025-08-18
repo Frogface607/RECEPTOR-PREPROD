@@ -3136,7 +3136,96 @@ function App() {
     }
   };
 
-  // ============== AUTO-MAPPING FUNCTIONS (IK-02B-FE/02) ==============
+  // ============== ENHANCED AUTO-MAPPING FUNCTIONS (GX-02) ==============
+  
+  const startEnhancedAutoMapping = async () => {
+    if (!tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
+      setAutoMappingMessage({ type: 'error', text: 'Нет ингредиентов для автомаппинга' });
+      return;
+    }
+
+    // Check iiko RMS connection  
+    if (!iikoRmsConnected) {
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: '🔗 Требуется подключение к iiko RMS для автомаппинга. Перейдите в ДАННЫЕ → iiko RMS.' 
+      });
+      return;
+    }
+
+    setIsAutoMapping(true);
+    setAutoMappingMessage({ type: 'info', text: '🔄 Запуск улучшенного автомаппинга с RU-синонимами...' });
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/v1/techcards.v2/mapping/enhanced`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          techcard: tcV2,
+          organization_id: 'default',  // Would come from RMS connection in production
+          auto_apply: false  // Don't auto-apply, let user review
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.status === 'success' && result.mapping_results) {
+        const mappingData = result.mapping_results;
+        
+        // Transform results for UI
+        const mappingResults = mappingData.results.map(result => ({
+          ingredient_name: result.ingredient_name,
+          original_unit: result.original_unit,
+          status: result.status, // 'auto_accept', 'review', or 'no_match' 
+          confidence: Math.round(result.confidence * 100), // Convert to percentage
+          match_type: result.match_type,
+          suggestion: result.suggestion ? {
+            sku_id: result.suggestion.sku_id,
+            name: result.suggestion.name,
+            article: result.suggestion.article,
+            unit: result.suggestion.unit,
+            price_per_unit: result.suggestion.price_per_unit,
+            currency: result.suggestion.currency,
+            group_name: result.suggestion.group_name,
+            source: result.suggestion.source
+          } : null,
+          alternatives: result.alternatives || []
+        }));
+
+        setAutoMappingResults(mappingResults);
+
+        // Set comprehensive success message with stats
+        const stats = mappingData.stats;
+        const coverage = mappingData.coverage;
+        setAutoMappingMessage({ 
+          type: 'success', 
+          text: `✅ Найдено ${mappingResults.length} совпадений. ` +
+                `Автопринятие: ${stats.auto_accept}, На проверку: ${stats.review}. ` +
+                `Потенциальное покрытие: ${coverage.potential_coverage_pct}%`
+        });
+
+        setShowAutoMappingModal(true);
+        console.log('GX-02: Enhanced mapping completed:', stats);
+      } else {
+        throw new Error(mappingData?.message || 'Unknown mapping error');
+      }
+
+    } catch (error) {
+      console.error('Enhanced auto-mapping error:', error);
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка улучшенного автомаппинга: ${error.message}` 
+      });
+    } finally {
+      setIsAutoMapping(false);
+    }
+  };
+
+  // ============== LEGACY AUTO-MAPPING FUNCTIONS (IK-02B-FE/02) ==============
   
   const startAutoMapping = async () => {
     if (!tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
