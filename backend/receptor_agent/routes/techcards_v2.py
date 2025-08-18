@@ -665,6 +665,8 @@ async def get_quality_score(request: Request):
             "validation_issues": issues
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Quality score calculation error: {e}")
         raise HTTPException(500, f"Quality score calculation failed: {str(e)}")
