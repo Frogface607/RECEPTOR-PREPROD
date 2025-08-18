@@ -670,3 +670,134 @@ async def get_quality_score(request: Request):
     except Exception as e:
         logger.error(f"Quality score calculation error: {e}")
         raise HTTPException(500, f"Quality score calculation failed: {str(e)}")
+
+
+# GX-02: Enhanced Auto-mapping Endpoints  
+@router.post("/techcards.v2/mapping/enhanced")
+async def enhanced_auto_mapping(request: Request):
+    """
+    GX-02: Enhanced auto-mapping with RU-synonyms and confidence scoring
+    ≥0.90 автопринятие; 0.70–0.89 на проверку
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        ingredients = techcard_data.get('ingredients', [])
+        if not ingredients:
+            raise HTTPException(400, "no ingredients to map")
+        
+        # Get organization ID (defaulting for now)
+        organization_id = body.get('organization_id', 'default')
+        
+        # Initialize enhanced mapping service
+        from ..integrations.enhanced_mapping_service import get_enhanced_mapping_service
+        mapping_service = get_enhanced_mapping_service()
+        
+        # Perform enhanced auto-mapping
+        mapping_result = mapping_service.enhanced_auto_mapping(ingredients, organization_id)
+        
+        # Auto-apply high confidence mappings if requested
+        auto_apply = body.get('auto_apply', False)
+        if auto_apply and mapping_result["status"] == "success":
+            updated_techcard = mapping_service.apply_auto_accepted_mappings(
+                techcard_data, mapping_result["results"]
+            )
+            mapping_result["updated_techcard"] = updated_techcard
+        
+        return {
+            "status": "success",
+            "mapping_results": mapping_result,
+            "auto_applied": auto_apply
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Enhanced auto-mapping error: {e}")
+        raise HTTPException(500, f"Enhanced auto-mapping failed: {str(e)}")
+
+
+@router.post("/techcards.v2/mapping/apply")
+async def apply_mapping_changes(request: Request):
+    """
+    GX-02: Apply user-selected mapping changes to TechCard
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        mapping_decisions = body.get('mapping_decisions', {})  # {ingredient_name: "accepted"/"rejected"}
+        
+        if not techcard_data:
+            raise HTTPException(400, "techcard data required")
+        
+        if not mapping_decisions:
+            raise HTTPException(400, "no mapping decisions provided")
+        
+        # Apply mapping changes
+        updated_card = techcard_data.copy()
+        ingredients = updated_card.get("ingredients", [])
+        
+        applied_count = 0
+        for ingredient in ingredients:
+            ingredient_name = ingredient.get("name", "").strip()
+            decision = mapping_decisions.get(ingredient_name)
+            
+            if decision and isinstance(decision, dict) and decision.get("action") == "accept":
+                suggestion = decision.get("suggestion", {})
+                if suggestion.get("sku_id") and not ingredient.get("skuId"):
+                    ingredient["skuId"] = suggestion["sku_id"]
+                    applied_count += 1
+        
+        # Save user decisions for future learning
+        organization_id = body.get('organization_id', 'default')
+        
+        # Note: This would be expanded to save to database for learning
+        logger.info(f"Applied {applied_count} mapping changes for organization {organization_id}")
+        
+        return {
+            "status": "success",
+            "updated_techcard": updated_card,
+            "applied_count": applied_count,
+            "message": f"Применено {applied_count} изменений маппинга"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Apply mapping changes error: {e}")
+        raise HTTPException(500, f"Apply mapping changes failed: {str(e)}")
+
+
+@router.get("/techcards.v2/mapping/synonyms")
+async def get_ru_synonyms():
+    """
+    GX-02: Get Russian synonyms dictionary for frontend preview
+    """
+    try:
+        from ..integrations.enhanced_mapping_service import get_enhanced_mapping_service
+        mapping_service = get_enhanced_mapping_service()
+        
+        # Return limited set for preview (don't expose all internal synonyms)
+        preview_synonyms = {}
+        count = 0
+        for canonical, synonyms in mapping_service.ru_synonyms.items():
+            if count < 10:  # Limit for API response size
+                preview_synonyms[canonical] = synonyms[:5]  # Max 5 synonyms per item
+                count += 1
+            else:
+                break
+        
+        return {
+            "status": "success",
+            "synonyms_preview": preview_synonyms,
+            "total_groups": len(mapping_service.ru_synonyms),
+            "message": f"Загружено {len(mapping_service.ru_synonyms)} групп синонимов"
+        }
+        
+    except Exception as e:
+        logger.error(f"Get synonyms error: {e}")
+        raise HTTPException(500, f"Get synonyms failed: {str(e)}")
