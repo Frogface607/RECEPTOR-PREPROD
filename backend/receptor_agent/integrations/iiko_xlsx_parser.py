@@ -35,7 +35,7 @@ class IikoXlsxParser:
         "ingredient_name": ["наименование продукта", "product name", "ingredient name", "продукт", "ингредиент"],
         "brutto": ["брутто", "gross", "brutto weight", "масса брутто"],
         "netto": ["нетто", "net", "netto weight", "масса нетто"],
-        "unit": ["единица измерения", "unit", "measure", "ед. изм.", "ед.изм"],
+        "unit": ["единица измерения", "unit", "measure", "ед. изм.", "ед.изм", "ед."],
         "loss": ["потери", "loss", "потери %", "loss %", "процент потерь"],
         "portion_norm": ["норма закладки", "portion norm", "норма", "закладка", "на порцию"]
     }
