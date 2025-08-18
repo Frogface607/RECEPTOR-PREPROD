@@ -150,7 +150,6 @@ class UXPolishTester:
             response = self.session.post(
                 f"{API_BASE}/v1/iiko/import/ttk.xlsx",
                 files=files,
-                headers={'Accept': 'application/json'},
                 timeout=10
             )
             
