@@ -6521,6 +6521,11 @@ function App() {
     setXlsxImportResults(null);
     setXlsxAutoMapping(false);
     setIsDragOver(false);
+    
+    // UX-Polish: Reset enhanced states
+    setXlsxImportStage('idle');
+    setXlsxImportErrors([]);
+    setXlsxImportWarnings([]);
   };
 
   // централизованная функция закрытия модалок
