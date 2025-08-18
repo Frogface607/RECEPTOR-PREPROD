@@ -16595,6 +16595,79 @@ function App() {
                       </button>
                     </div>
                   )}
+
+                  {/* UX-Polish: Progress with stages */}
+                  {xlsxImportProgress && (
+                    <div className="bg-gray-900/50 rounded-lg p-6">
+                      <div className="text-lg font-bold text-blue-300 mb-4">🔄 Импорт в процессе...</div>
+                      
+                      <div className="space-y-3">
+                        {/* Stage 1: Parsing */}
+                        <div className={`flex items-center space-x-3 ${
+                          xlsxImportStage === 'parsing' ? 'text-blue-400' : 
+                          ['validation', 'conversions', 'extraction', 'done'].includes(xlsxImportStage) ? 'text-green-400' : 'text-gray-500'
+                        }`}>
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {xlsxImportStage === 'parsing' ? '⏳' : 
+                             ['validation', 'conversions', 'extraction', 'done'].includes(xlsxImportStage) ? '✅' : '⭕'}
+                          </div>
+                          <span>Parsing XLSX структуры</span>
+                        </div>
+
+                        {/* Stage 2: Validation */}
+                        <div className={`flex items-center space-x-3 ${
+                          xlsxImportStage === 'validation' ? 'text-blue-400' : 
+                          ['conversions', 'extraction', 'done'].includes(xlsxImportStage) ? 'text-green-400' : 'text-gray-500'
+                        }`}>
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {xlsxImportStage === 'validation' ? '⏳' : 
+                             ['conversions', 'extraction', 'done'].includes(xlsxImportStage) ? '✅' : '⭕'}
+                          </div>
+                          <span>Validation данных</span>
+                        </div>
+
+                        {/* Stage 3: Conversions */}
+                        <div className={`flex items-center space-x-3 ${
+                          xlsxImportStage === 'conversions' ? 'text-blue-400' : 
+                          ['extraction', 'done'].includes(xlsxImportStage) ? 'text-green-400' : 'text-gray-500'
+                        }`}>
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {xlsxImportStage === 'conversions' ? '⏳' : 
+                             ['extraction', 'done'].includes(xlsxImportStage) ? '✅' : '⭕'}
+                          </div>
+                          <span>Conversions единиц (кг→г, мл→г)</span>
+                        </div>
+
+                        {/* Stage 4: Tech extraction */}
+                        <div className={`flex items-center space-x-3 ${
+                          xlsxImportStage === 'extraction' ? 'text-blue-400' : 
+                          xlsxImportStage === 'done' ? 'text-green-400' : 'text-gray-500'
+                        }`}>
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {xlsxImportStage === 'extraction' ? '⏳' : 
+                             xlsxImportStage === 'done' ? '✅' : '⭕'}
+                          </div>
+                          <span>Tech extraction (технология, процессы)</span>
+                        </div>
+
+                        {/* Stage 5: Done */}
+                        <div className={`flex items-center space-x-3 ${
+                          xlsxImportStage === 'done' ? 'text-green-400' : 'text-gray-500'
+                        }`}>
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {xlsxImportStage === 'done' ? '✅' : '⭕'}
+                          </div>
+                          <span>Done - готово!</span>
+                        </div>
+                      </div>
+
+                      {xlsxImportStage === 'error' && (
+                        <div className="mt-4 text-red-400">
+                          ❌ Произошла ошибка при импорте
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 /* Import Results */
