@@ -3145,7 +3145,7 @@ function App() {
     }
 
     // Check iiko RMS connection  
-    if (!iikoRmsConnected) {
+    if (iikoRmsConnection.status !== 'connected') {
       setAutoMappingMessage({ 
         type: 'error', 
         text: '🔗 Требуется подключение к iiko RMS для автомаппинга. Перейдите в ДАННЫЕ → iiko RMS.' 
