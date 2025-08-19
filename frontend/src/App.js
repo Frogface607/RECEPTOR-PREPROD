@@ -10241,77 +10241,141 @@ function App() {
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-                    {/* iiko RMS Connection Status Indicator */}
+                    {/* P1: Enhanced iiko Connection Header */}
                     <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                       iikoRmsConnection.status === 'connected' ? 'bg-green-600/20 text-green-300 border border-green-400/30' :
                       iikoRmsConnection.status === 'needs_reconnection' ? 'bg-yellow-600/20 text-yellow-300 border border-yellow-400/30' :
                       iikoRmsConnection.status === 'error' ? 'bg-red-600/20 text-red-300 border border-red-400/30' :
                       'bg-gray-600/20 text-gray-300 border border-gray-400/30'
                     }`}>
-                      {iikoRmsConnection.status === 'connected' ? '✅ iiko подключено' :
-                       iikoRmsConnection.status === 'needs_reconnection' ? '⚠️ Нужно переподключиться' :
-                       iikoRmsConnection.status === 'error' ? '❌ Ошибка iiko' :
-                       '⚪ iiko не подключено'}
+                      {iikoRmsConnection.status === 'connected' ? (
+                        <span>
+                          ✅ Подключено к iiko
+                          {localStorage.getItem('lastMappingAction') && (() => {
+                            try {
+                              const lastAction = JSON.parse(localStorage.getItem('lastMappingAction'));
+                              const time = new Date(lastAction.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                              return ` · Последний экспорт ${time}`;
+                            } catch {
+                              return '';
+                            }
+                          })()}
+                        </span>
+                      ) : iikoRmsConnection.status === 'needs_reconnection' ? '⚠️ Нужно переподключиться' :
+                        iikoRmsConnection.status === 'error' ? '❌ Ошибка iiko' :
+                        '⚪ iiko не подключено'}
                     </div>
-                    
+                  </div>
+                  
+                  {/* P1: Basic Mode - 5 Core Actions Only */}
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    {/* 1. Автомаппинг (iiko) */}
                     <button 
                       onClick={debouncedStartAutoMapping}
                       disabled={isAutoMapping || iikoRmsConnection.status !== 'connected'}
-                      className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="🏪 P0-2: Безопасный автомаппинг с санитизацией + 600ms debounce"
+                      className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
+                      title="Автоматическое сопоставление ингредиентов с номенклатурой iiko"
                     >
-                      {isAutoMapping ? '⏳ Анализ...' : 'Автомаппинг Pro (P0-2)'}
+                      {isAutoMapping ? '⏳ Анализ...' : '🤖 Автомаппинг'}
                     </button>
+                    
+                    {/* 2. Назначить SKU вручную (лупа) */}
+                    <button 
+                      onClick={() => setShowTechCardModal(true)}
+                      disabled={!tcV2}
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
+                      title="Ручное назначение SKU для ингредиентов"
+                    >
+                      🔍 Назначить SKU
+                    </button>
+                    
+                    {/* 3. Экспорт iiko XLSX (Golden) */}
                     <button 
                       onClick={startExportWizard}
                       disabled={!tcV2 || iikoRmsConnection.status !== 'connected' || isExportProcessing}
-                      className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="🚀 Полный цикл: автомаппинг → ГОСТ-превью → экспорт в iiko"
+                      className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
+                      title="Экспорт готовой техкарты в формат iiko XLSX"
                     >
-                      {isExportProcessing ? '⏳ Обработка...' : 'Экспорт в iiko (1 клик)'}
+                      {isExportProcessing ? '⏳ Обработка...' : '📊 Экспорт iiko XLSX'}
                     </button>
+                    
+                    {/* 4. Импорт TTK (XLSX) */}
                     <button 
-                      onClick={() => navigator.clipboard.writeText(techCard)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="📋 Скопировать техкарту в буфер обмена для вставки в другие приложения"
+                      onClick={() => setShowXLSXImportModal(true)}
+                      className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
+                      title="Импорт технологической карты из XLSX файла"
                     >
-                      КОПИРОВАТЬ
+                      📥 Импорт TTK
                     </button>
+                    
+                    {/* 5. Синхронизация цен */}
                     <button 
-                      onClick={handlePrintTechCard}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="📄 Экспортировать техкарту в PDF без цен для печати на кухне"
+                      onClick={() => setShowIikoRmsModal(true)}
+                      className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
+                      title="Синхронизация цен и номенклатуры с iiko RMS"
                     >
-                      ЭКСПОРТ В PDF
+                      🔄 Синхронизация
                     </button>
-                    <button 
-                      onClick={handleGostPrint}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="🏛️ ГОСТ-печать A4: технологическая карта в официальном формате с таблицами и подписями"
-                    >
-                      ГОСТ-ПЕЧАТЬ
-                    </button>
-                    <button 
-                      onClick={handleIikoExport}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="📊 Экспорт в iiko: XLSX с листами Products и Recipes для импорта в систему iiko"
-                    >
-                      ЭКСПОРТ В IIKO
-                    </button>
-                    <button 
-                      onClick={handleIikoCsvExport}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="📄 iiko CSV (для импорта): ZIP с products.csv и recipes.csv готовыми для загрузки в iiko"
-                    >
-                      iiko CSV (для импорта)
-                    </button>
-                    <button 
-                      onClick={handleIikoTtkXlsxExport}
-                      className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="📋 ЭКСПОРТ В IIKO (XLSX, ТТК): технологическая карта в формате для импорта в iikoWeb"
-                    >
-                      ЭКСПОРТ В IIKO (XLSX, ТТК)
-                    </button>
+                    
+                    {/* P1: Advanced Actions Dropdown */}
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowAdvancedActions(!showAdvancedActions)}
+                        className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
+                        title="Дополнительные действия и экспорты"
+                      >
+                        ⚙️ Дополнительно ▾
+                      </button>
+                      
+                      {showAdvancedActions && (
+                        <div className="absolute right-0 top-full mt-2 w-64 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50">
+                          <div className="p-2 space-y-1">
+                            <button 
+                              onClick={() => { navigator.clipboard.writeText(techCard); setShowAdvancedActions(false); }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              title="Скопировать техкарту в буфер обмена"
+                            >
+                              📋 Копировать техкарту
+                            </button>
+                            <button 
+                              onClick={() => { handlePrintTechCard(); setShowAdvancedActions(false); }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              title="Экспорт в PDF для печати"
+                            >
+                              📄 Экспорт в PDF
+                            </button>
+                            <button 
+                              onClick={() => { handleGostPrint(); setShowAdvancedActions(false); }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              title="ГОСТ-печать A4"
+                            >
+                              🏛️ ГОСТ-печать
+                            </button>
+                            <button 
+                              onClick={() => { handleIikoExport(); setShowAdvancedActions(false); }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              title="Legacy экспорт в iiko"
+                            >
+                              📊 Legacy iiko Export
+                            </button>
+                            <button 
+                              onClick={() => { handleIikoCsvExport(); setShowAdvancedActions(false); }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              title="iiko CSV для импорта"
+                            >
+                              📄 iiko CSV (ZIP)
+                            </button>
+                            <button 
+                              onClick={() => { handleIikoTtkXlsxExport(); setShowAdvancedActions(false); }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              title="Альтернативный XLSX экспорт"
+                            >
+                              📋 Alt XLSX Export
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
