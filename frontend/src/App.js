@@ -10303,7 +10303,7 @@ function App() {
                     
                     {/* 4. Импорт TTK (XLSX) */}
                     <button 
-                      onClick={() => setShowXLSXImportModal(true)}
+                      onClick={() => setShowXlsxImportModal(true)}
                       className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
                       title="Импорт технологической карты из XLSX файла"
                     >
