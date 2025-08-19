@@ -174,10 +174,8 @@ class StandardPortionDoDTest:
         """Generate TechCard using the API"""
         try:
             payload = {
-                "title": test_case["name"],
-                "description": test_case["description"],
-                "cuisine": "русская",
-                "difficulty": "medium"
+                "name": test_case["name"],
+                "cuisine": "русская"
             }
             
             response = requests.post(
@@ -188,8 +186,11 @@ class StandardPortionDoDTest:
             
             if response.status_code == 200:
                 data = response.json()
-                if data.get("success") and data.get("techcard"):
-                    return data["techcard"]
+                if data.get("status") == "success" and data.get("card"):
+                    return data["card"]
+                elif data.get("status") == "draft" and data.get("card"):
+                    print("   ⚠️ Generated in DRAFT mode")
+                    return data["card"]
             
             print(f"❌ TechCard generation failed: {response.status_code} - {response.text[:200]}")
             return None
