@@ -566,20 +566,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             content_issues = run_content_check(validated_card, constraints)
         timings["contentcheck_ms"] = int((time.perf_counter() - start_content) * 1000)
         
-        # Шаг 4: Правила шефа (rule-based sanity checks) - GX-01-FINAL: смягчены для skeleton
-        start_chef = time.perf_counter()
-        chef_rule_issues = run_chef_rules(validated_card)
-        
-        # GX-01-FINAL: Смягчение блокирующих правил для skeleton режима
-        if skeleton_mode:
-            # В skeleton режиме stepsMin3 не блокирует (warning вместо error)
-            for issue in chef_rule_issues:
-                if issue.get("type") == "ruleError:stepsMin3":
-                    issue["type"] = "ruleWarning:stepsMin3"  # понижаем до warning
-                    
-        timings["chef_rules_ms"] = int((time.perf_counter() - start_chef) * 1000)
-        
-        # Шаг 5: ВСЕГДА выполняем калькуляторы (единый источник истины)
+        # Шаг 4: ВСЕГДА выполняем калькуляторы (единый источник истины)
         start_cost = time.perf_counter()
         try:
             validated_card = calculate_cost_for_tech_card(validated_card, sub_recipes_cache)
@@ -594,7 +581,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             all_issues.append(f"Nutrition calculation error: {str(e)}")
         timings["nutrition_ms"] = int((time.perf_counter() - start_nutrition) * 1000)
         
-        # Шаг 6: СТАНДАРТНАЯ ПОРЦИЯ - нормализация на 1 порцию (ПЕРЕД проверками качества)
+        # Шаг 5: СТАНДАРТНАЯ ПОРЦИЯ - нормализация на 1 порцию (ПЕРЕД всеми проверками)
         start_normalize_portion = time.perf_counter()
         try:
             from receptor_agent.techcards_v2.portion_normalizer import get_portion_normalizer
@@ -622,7 +609,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             
         timings["portion_normalize_ms"] = int((time.perf_counter() - start_normalize_portion) * 1000)
         
-        # Шаг 7: САНИТАЙЗЕР - приводим к строгому формату (ПОСЛЕ нормализации)
+        # Шаг 6: САНИТАЙЗЕР - приводим к строгому формату (ПОСЛЕ нормализации)
         start_sanitize = time.perf_counter()
         try:
             # GX-01-FINAL: sanitize_card_v2 должна быть чистой функцией
@@ -630,6 +617,17 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         except Exception as e:
             all_issues.append(f"Card sanitization error: {str(e)}")
         timings["sanitize_ms"] = int((time.perf_counter() - start_sanitize) * 1000)
+        
+        # Шаг 7: Правила шефа (rule-based sanity checks) - ПОСЛЕ нормализации
+        start_chef = time.perf_counter()
+        chef_rule_issues = run_chef_rules(validated_card)
+        
+        # GX-01-FINAL: Смягчение блокирующих правил для skeleton режима
+        if skeleton_mode:
+            # В skeleton режиме stepsMin3 не блокирует (warning вместо error)
+            for issue in chef_rule_issues:
+                if issue.get("type") == "ruleError:stepsMin3":
+                    issue["type"] = "ruleWarning:stepsMin3"  # понижаем до warning
         
         # Шаг 8: Пост-проверка качества генерации (ПОСЛЕ нормализации и санитизации)
         start_postcheck = time.perf_counter()
