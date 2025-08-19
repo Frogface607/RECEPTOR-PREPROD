@@ -102,9 +102,8 @@ class PortionNormalizer:
             if 'yield' not in normalized_card:
                 normalized_card['yield'] = {}
             
-            normalized_card['yield']['perPortion'] = target_yield
-            normalized_card['yield']['perBatch'] = target_yield  # т.к. 1 порция
-            normalized_card['yield']['unit'] = target_unit
+            normalized_card['yield']['perPortion_g'] = float(target_yield)
+            normalized_card['yield']['perBatch_g'] = float(target_yield)  # т.к. 1 порция
             
             # Записываем мета-информацию для аудита
             if 'meta' not in normalized_card:
