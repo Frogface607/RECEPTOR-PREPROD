@@ -2537,6 +2537,7 @@ frontend:
 
 test_plan:
   current_focus:
+    - "P1: iiko Basic Mode UI Redesign"
     - "P0: Ingredient Modal Search — wire to iiko"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
