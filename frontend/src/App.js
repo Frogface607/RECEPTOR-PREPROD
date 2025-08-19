@@ -3932,8 +3932,14 @@ function App() {
     }
   }, [tcV2]);
 
+  // P0-2: Safe "Принять ≥90%" with comprehensive protection
   const acceptAllHighConfidence = () => {
-    // P0: Safe-Automap + Sanitize - Enhanced "Принять ≥90%" with proper state management
+    // P0-2: Block if already processing
+    if (isAutoMapping) {
+      console.warn('P0-2: Auto-mapping already in progress, ignoring accept request');
+      return;
+    }
+    
     if (!autoMappingResults || autoMappingResults.length === 0) {
       setAutoMappingMessage({ 
         type: 'warning', 
@@ -3942,17 +3948,24 @@ function App() {
       return;
     }
     
-    // P0: Sanitize and filter high confidence results
+    // P0-2: Comprehensive sanitization and filtering
     const highConfidenceResults = autoMappingResults.filter(result => {
-      // P0: Sanitize - ensure result and suggestion exist
-      if (!result || typeof result !== 'object') return false;
-      if (!result.suggestion || !result.suggestion.sku_id || !result.suggestion.name) return false;
+      // P0-2: Sanitize - ensure result exists and has required fields
+      if (!result || typeof result !== 'object') {
+        console.warn('P0-2: Filtered invalid result in accept:', result);
+        return false;
+      }
+      if (!result.suggestion || !result.suggestion.sku_id || !result.suggestion.name) {
+        console.warn('P0-2: Filtered result without valid suggestion:', result);
+        return false;
+      }
       
       return (result.status === 'auto_accept' || result.confidence >= 90) && 
-             result.status !== 'accepted';  // Don't re-accept already accepted
+             result.status !== 'accepted';
     });
     
     if (highConfidenceResults.length === 0) {
+      // P0-2: Show specific empty-state toast
       setAutoMappingMessage({ 
         type: 'info', 
         text: '📋 Нет позиций ≥90% или все высоко-уверенные совпадения уже приняты' 
@@ -3960,11 +3973,11 @@ function App() {
       return;
     }
     
-    // P0: Debounce protection - disable buttons during processing
+    // P0-2: Block buttons during processing
     setIsAutoMapping(true);
     
     try {
-      // UX-Polish: Log mapping action for audit
+      // P0-2: Enhanced logging for audit
       const mappingAction = {
         id: Date.now(),
         timestamp: new Date().toISOString(),
@@ -3975,49 +3988,77 @@ function App() {
         ingredients: highConfidenceResults.map(r => ({
           name: r.ingredient_name,
           sku_id: r.suggestion?.sku_id,
-          confidence: r.confidence
+          confidence: r.confidence,
+          unit_mismatch: r.suggestion?.unit_mismatch || false
         })),
         undoable: true
       };
       
-      // Save to action log
-      setMappingActionLog(prev => [mappingAction, ...prev.slice(0, 9)]); // Keep last 10 actions
-      setLastMappingAction(mappingAction);
-      
-      // Update results to accepted status
-      const updatedResults = autoMappingResults.map(result => {
-        if (highConfidenceResults.some(hr => hr.ingredient_name === result.ingredient_name)) {
-          return { ...result, status: 'accepted' };
+      // P0-2: Safe state updates with error handling
+      try {
+        setMappingActionLog(prev => [mappingAction, ...prev.slice(0, 9)]);
+        setLastMappingAction(mappingAction);
+        
+        // Update results to accepted status
+        const updatedResults = autoMappingResults.map(result => {
+          if (highConfidenceResults.some(hr => hr.ingredient_name === result.ingredient_name)) {
+            return { ...result, status: 'accepted' };
+          }
+          return result;
+        });
+        
+        setAutoMappingResults(updatedResults);
+        
+        // P0-2: Success toast with unit mismatch info
+        const unitMismatchCount = highConfidenceResults.filter(r => r.suggestion?.unit_mismatch).length;
+        let successText = `✅ Принято ${highConfidenceResults.length} высоко-уверенных совпадений (≥90%)`;
+        
+        if (unitMismatchCount > 0) {
+          successText += ` (⚠️ ${unitMismatchCount} с несовпадением единиц)`;
         }
-        return result;
-      });
-      
-      setAutoMappingResults(updatedResults);
-      
-      // P0: Show success toast with specific count
-      setAutoMappingMessage({ 
-        type: 'success', 
-        text: `✅ Принято ${highConfidenceResults.length} высоко-уверенных совпадений (≥90%)` 
-      });
-      
-      // Optional: Show toast notification (would need toast system)
-      console.log(`🎯 UX-Polish: Accepted ${highConfidenceResults.length} high-confidence mappings`);
-      
-      // Update localStorage for "last export" tracking  
-      localStorage.setItem('lastMappingAction', JSON.stringify({
-        timestamp: mappingAction.timestamp,
-        count: highConfidenceResults.length,
-        techcard: tcV2?.meta?.title
-      }));
+        
+        setAutoMappingMessage({ 
+          type: 'success', 
+          text: successText
+        });
+        
+        // P0-2: Safe localStorage update
+        try {
+          localStorage.setItem('lastMappingAction', JSON.stringify({
+            timestamp: mappingAction.timestamp,
+            count: highConfidenceResults.length,
+            techcard: tcV2?.meta?.title
+          }));
+        } catch (storageError) {
+          console.warn('P0-2: localStorage save failed:', storageError);
+        }
+        
+        console.log(`🎯 P0-2: Safely accepted ${highConfidenceResults.length} high-confidence mappings`);
+        
+      } catch (stateError) {
+        console.error('P0-2: State update error:', stateError);
+        setAutoMappingMessage({ 
+          type: 'error', 
+          text: `❌ Ошибка обновления состояния: ${stateError.message}` 
+        });
+      }
       
     } catch (error) {
-      console.error('Error accepting high confidence mappings:', error);
+      console.error('P0-2: Error in acceptAllHighConfidence:', error);
+      
+      // P0-2: Log accept_failed event
+      console.log('📊 accept_failed:', {
+        error: error.message,
+        results_count: highConfidenceResults.length,
+        timestamp: new Date().toISOString()
+      });
+      
       setAutoMappingMessage({ 
         type: 'error', 
         text: `❌ Ошибка принятия совпадений: ${error.message}` 
       });
     } finally {
-      // P0: Re-enable buttons
+      // P0-2: Always re-enable buttons
       setIsAutoMapping(false);
     }
   };
