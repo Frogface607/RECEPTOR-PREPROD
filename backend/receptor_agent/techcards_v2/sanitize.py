@@ -196,6 +196,25 @@ def remove_unknown_fields(card_dict: Dict[str, Any]) -> Dict[str, Any]:
     return filtered
 
 
+def remove_unknown_fields_internal(card_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Удаляет неизвестные поля, используя внутренние имена полей (yield_ вместо yield)
+    """
+    # Известные поля верхнего уровня TechCardV2 с внутренними именами
+    known_fields = {
+        "meta", "portions", "yield_", "ingredients", "process", "storage", 
+        "allergens", "notes", "nutrition", "cost", "nutritionMeta", "costMeta", "issues"
+    }
+    
+    # Фильтруем только известные поля
+    filtered = {}
+    for key, value in card_dict.items():
+        if key in known_fields:
+            filtered[key] = value
+    
+    return filtered
+
+
 def validate_sanitized_card(card_dict: Dict[str, Any]) -> bool:
     """
     Проверка что карточка корректно санитизирована
