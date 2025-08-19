@@ -16267,6 +16267,33 @@ function App() {
                         </div>
                       </div>
                       
+                      {/* Last Export Info */}
+                      {exportWizardData.lastExport && (
+                        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm text-gray-400">📊 Последний экспорт</div>
+                            <div className="text-xs text-gray-500">
+                              {exportWizardData.lastExport.human_time}
+                            </div>
+                          </div>
+                          <div className="text-sm text-emerald-300">
+                            {exportWizardData.lastExport.techcard_title}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {exportWizardData.lastExport.ingredients_count} ингредиентов • {Math.round(exportWizardData.lastExport.file_size_bytes / 1024)} KB
+                          </div>
+                        </div>
+                      )}
+                      
+                      {!exportWizardData.lastExport && (
+                        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+                          <div className="text-sm text-gray-400">📊 Последний экспорт</div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            Экспорты ещё не выполнялись
+                          </div>
+                        </div>
+                      )}
+                      
                       {/* Blockers */}
                       {exportWizardData.preCheckResults.blockers.length > 0 && (
                         <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-4">
