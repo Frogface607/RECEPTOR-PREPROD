@@ -15537,7 +15537,7 @@ function App() {
                   )}
                 </>
               ) : mappingActiveTab === 'iiko' ? (
-                // iiko RMS Results
+                // P0: iiko RMS Results - Enhanced format {name · unit · score%}
                 <>
                   {iikoSearchResults.map((item, index) => (
                     <div
@@ -15547,9 +15547,16 @@ function App() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="font-bold text-white">{item.name}</div>
-                          <div className="text-sm text-gray-400">
-                            <span className="bg-purple-600 text-white px-2 py-0.5 rounded text-xs mr-2">iiko RMS</span>
+                          {/* P0: Enhanced display format {name · unit · score%} */}
+                          <div className="font-bold text-white">
+                            {item.name}
+                            <span className="text-gray-400 font-normal text-sm ml-2">
+                              · {item.unit} · {Math.round((item.match_score || 0) * 100)}%
+                            </span>
+                          </div>
+                          
+                          <div className="text-sm text-gray-400 mt-1">
+                            <span className="bg-purple-600 text-white px-2 py-0.5 rounded text-xs mr-2">iiko</span>
                             {item.price > 0 && (
                               <span className="text-green-300 font-bold">
                                 {item.price}₽/{item.unit}
@@ -15559,34 +15566,38 @@ function App() {
                               <span className="text-gray-400 ml-2">{item.category}</span>
                             )}
                           </div>
-                          {item.article && (
-                            <div className="text-xs text-blue-300 mt-1">
-                              Артикул: {item.article}
-                            </div>
-                          )}
-                          {item.sku_id && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              SKU: {item.sku_id}
-                            </div>
-                          )}
-                          {item.asOf && (
-                            <div className="text-xs text-purple-300 mt-1">
-                              Синхронизировано: {item.asOf}
-                            </div>
-                          )}
-                          {item.match_score !== undefined && (
-                            <div className="text-xs text-yellow-300 mt-1">
-                              Совпадение: {Math.round(item.match_score * 100)}%
-                            </div>
-                          )}
+                          
+                          {/* Additional metadata */}
+                          <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                            {item.article && (
+                              <div>Артикул: {item.article}</div>
+                            )}
+                            {item.sku_id && (
+                              <div>SKU: {item.sku_id.substring(0, 8)}...</div>
+                            )}
+                            {item.product_type && (
+                              <div className="text-purple-300">
+                                Тип: {item.product_type === 'DISH' ? 'Блюдо' : 
+                                     item.product_type === 'GOODS' ? 'Товар' : 
+                                     item.product_type === 'PREPARED' ? 'Заготовка' : 
+                                     item.product_type}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-purple-400 text-xs">
-                          🏪 iiko
+                        <div className="text-purple-400 text-xs flex flex-col items-center">
+                          <div>🏪 iiko</div>
+                          {item.match_score && (
+                            <div className="text-yellow-300 font-bold mt-1">
+                              {Math.round(item.match_score * 100)}%
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))}
                   
+                  {/* P0: Enhanced empty-state with specific suggestions */}
                   {!isSearchingIiko && iikoSearchQuery && iikoSearchResults.length === 0 && (
                     <div className="text-center py-6 text-gray-400">
                       <div className="text-2xl mb-2">🔍</div>
@@ -15597,6 +15608,14 @@ function App() {
                           'Попробуйте: картоф, картофель свежий, картошка'
                         }
                       </div>
+                      
+                      {/* P0: Debug info in empty state */}
+                      {iikoSearchBadge.error && (
+                        <div className="mt-2 p-2 bg-red-900/20 rounded text-red-300 text-xs">
+                          Ошибка: {iikoSearchBadge.error}
+                        </div>
+                      )}
+                      
                       {/* P0: Enhanced empty-state suggestions */}
                       <div className="mt-4 p-3 bg-blue-900/20 rounded-lg text-left text-xs">
                         <div className="font-medium text-blue-300 mb-2">💡 Советы по поиску:</div>
@@ -15604,6 +15623,7 @@ function App() {
                           <li>• <strong>картоф</strong> → найдет "Картофель", "Картошка"</li>
                           <li>• <strong>молоко 3.2</strong> → найдет продукты с жирностью 3,2%</li>
                           <li>• <strong>яйцо</strong> → найдет "Яйцо куриное С1"</li>
+                          <li>• <strong>куриный</strong> → найдет "Куриный попкорн", "Фарш куриный"</li>
                         </ul>
                       </div>
                       <button
