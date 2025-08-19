@@ -15490,14 +15490,21 @@ function App() {
                   {!isSearchingIiko && iikoSearchQuery && iikoSearchResults.length === 0 && (
                     <div className="text-center py-6 text-gray-400">
                       <div className="text-2xl mb-2">🔍</div>
-                      <div>Ничего не найдено в iiko RMS для "{iikoSearchQuery}"</div>
+                      <div>Ничего не найдено в iiko для "{iikoSearchQuery}"</div>
                       <div className="text-sm text-gray-500 mt-2">
                         {iikoRmsConnection.status !== 'connected' ? 
-                          'Подключитесь к серверу iiko RMS в разделе ДАННЫЕ' :
-                          iikoRmsConnection.products_count === 0 ?
-                          'Выполните синхронизацию номенклатуры' :
-                          'Попробуйте изменить поисковый запрос'
+                          'Требуется подключение к iiko RMS' :
+                          'Попробуйте: картоф, картофель свежий, картошка'
                         }
+                      </div>
+                      {/* P0: Enhanced empty-state suggestions */}
+                      <div className="mt-4 p-3 bg-blue-900/20 rounded-lg text-left text-xs">
+                        <div className="font-medium text-blue-300 mb-2">💡 Советы по поиску:</div>
+                        <ul className="text-blue-400 space-y-1">
+                          <li>• <strong>картоф</strong> → найдет "Картофель", "Картошка"</li>
+                          <li>• <strong>молоко 3.2</strong> → найдет продукты с жирностью 3,2%</li>
+                          <li>• <strong>яйцо</strong> → найдет "Яйцо куриное С1"</li>
+                        </ul>
                       </div>
                       <button
                         onClick={() => setMappingModalOpen(false)}
