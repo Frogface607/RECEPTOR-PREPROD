@@ -15970,21 +15970,52 @@ function App() {
                   </div>
                   
                   <div className="flex space-x-3">
-                    <button
-                      onClick={connectToIikoRms}
-                      disabled={isConnectingIikoRms || !iikoRmsCredentials.host || !iikoRmsCredentials.login || !iikoRmsCredentials.password}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
-                    >
-                      {isConnectingIikoRms ? '⏳ Подключение...' : '🔗 Подключить'}
-                    </button>
-                    
-                    <button
-                      onClick={syncIikoRmsNomenclature}
-                      disabled={isSyncingIikoRms || iikoRmsConnection.status !== 'connected'}
-                      className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
-                    >
-                      {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизировать'}
-                    </button>
+                    {iikoRmsConnection.status === 'connected' || iikoRmsConnection.status === 'needs_reconnection' ? (
+                      <>
+                        <button
+                          onClick={connectToIikoRms}
+                          disabled={isConnectingIikoRms || !iikoRmsCredentials.host || !iikoRmsCredentials.login || !iikoRmsCredentials.password}
+                          className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                        >
+                          {isConnectingIikoRms ? '⏳ Переподключение...' : 
+                           iikoRmsConnection.status === 'needs_reconnection' ? '🔄 Переподключить' : '🔗 Обновить'}
+                        </button>
+                        
+                        <button
+                          onClick={syncIikoRmsNomenclature}
+                          disabled={isSyncingIikoRms || iikoRmsConnection.status !== 'connected'}
+                          className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                        >
+                          {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизировать'}
+                        </button>
+                        
+                        <button
+                          onClick={disconnectFromIikoRms}
+                          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300"
+                          title="Забыть подключение"
+                        >
+                          🗑️
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={connectToIikoRms}
+                          disabled={isConnectingIikoRms || !iikoRmsCredentials.host || !iikoRmsCredentials.login || !iikoRmsCredentials.password}
+                          className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                        >
+                          {isConnectingIikoRms ? '⏳ Подключение...' : '🔗 Подключить'}
+                        </button>
+                        
+                        <button
+                          onClick={syncIikoRmsNomenclature}
+                          disabled={isSyncingIikoRms || iikoRmsConnection.status !== 'connected'}
+                          className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                        >
+                          {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизировать'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
