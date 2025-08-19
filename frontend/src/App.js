@@ -3332,6 +3332,7 @@ function App() {
       return;
     }
 
+    // P0: Debounce 600ms, disable buttons during request
     setIsAutoMapping(true);
     setAutoMappingMessage({ type: 'info', text: '🔄 Запуск улучшенного автомаппинга с RU-синонимами...' });
 
@@ -3347,7 +3348,7 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
@@ -3355,50 +3356,96 @@ function App() {
       if (result.status === 'success' && result.mapping_results) {
         const mappingData = result.mapping_results;
         
-        // Transform results for UI
-        const mappingResults = mappingData.results.map(result => ({
+        // P0: Sanitize response - filter null/empty objects; name/productId mandatory
+        const sanitizedResults = (mappingData.results || []).filter(result => {
+          if (!result || typeof result !== 'object') return false;
+          if (!result.ingredient_name || !result.ingredient_name.trim()) return false;
+          if (result.suggestion && (!result.suggestion.sku_id || !result.suggestion.name)) return false;
+          return true;
+        }).map(result => ({
           ingredient_name: result.ingredient_name,
-          original_unit: result.original_unit,
-          status: result.status, // 'auto_accept', 'review', or 'no_match' 
-          confidence: Math.round(result.confidence * 100), // Convert to percentage
-          match_type: result.match_type,
+          original_unit: result.original_unit || 'г',
+          status: result.status || 'no_match', // 'auto_accept', 'review', or 'no_match' 
+          confidence: Math.round((result.confidence || 0) * 100), // Convert to percentage
+          match_type: result.match_type || 'unknown',
           suggestion: result.suggestion ? {
             sku_id: result.suggestion.sku_id,
-            name: result.suggestion.name,
-            article: result.suggestion.article,
-            unit: result.suggestion.unit,
-            price_per_unit: result.suggestion.price_per_unit,
-            currency: result.suggestion.currency,
-            group_name: result.suggestion.group_name,
-            source: result.suggestion.source
+            name: result.suggestion.name || 'Unnamed Product',
+            article: result.suggestion.article || '',
+            unit: result.suggestion.unit || 'г',
+            price_per_unit: result.suggestion.price_per_unit || 0,
+            currency: result.suggestion.currency || 'RUB',
+            group_name: result.suggestion.group_name || '',
+            source: result.suggestion.source || 'iiko'
           } : null,
-          alternatives: result.alternatives || []
+          alternatives: Array.isArray(result.alternatives) ? result.alternatives : []
         }));
 
-        setAutoMappingResults(mappingResults);
+        setAutoMappingResults(sanitizedResults);
 
         // Set comprehensive success message with stats
-        const stats = mappingData.stats;
-        const coverage = mappingData.coverage;
-        setAutoMappingMessage({ 
-          type: 'success', 
-          text: `✅ Найдено ${mappingResults.length} совпадений. ` +
-                `Автопринятие: ${stats.auto_accept}, На проверку: ${stats.review}. ` +
-                `Потенциальное покрытие: ${coverage.potential_coverage_pct}%`
-        });
+        const stats = mappingData.stats || { auto_accept: 0, review: 0, no_match: 0 };
+        const coverage = mappingData.coverage || { potential_coverage_pct: 0 };
+        
+        // P0: Check if no candidates ≥0.90 — show empty-state with suggestions
+        if (stats.auto_accept === 0 && stats.review === 0) {
+          setAutoMappingMessage({ 
+            type: 'warning', 
+            text: '📋 Нет позиций ≥90%. Попробуйте: уточнить жирность, заменить "зелень" на "петрушка/укроп", проверить единицы.' 
+          });
+          
+          // P0: Show empty-state with suggestions
+          setAutoMappingResults([]);
+          
+          // P0: Log mapping_empty event
+          console.log('📊 mapping_empty:', {
+            ingredients_count: tcV2.ingredients.length,
+            organization: 'default',
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          setAutoMappingMessage({ 
+            type: 'success', 
+            text: `✅ Найдено ${sanitizedResults.length} совпадений. ` +
+                  `Автопринятие: ${stats.auto_accept}, На проверку: ${stats.review}. ` +
+                  `Потенциальное покрытие: ${coverage.potential_coverage_pct}%`
+          });
+        }
 
         setShowAutoMappingModal(true);
         console.log('GX-02: Enhanced mapping completed:', stats);
+        
+      } else if (result.status === 'no_products') {
+        // P0: Handle no products scenario gracefully
+        setAutoMappingMessage({ 
+          type: 'warning', 
+          text: '📋 Номенклатура iiko не найдена. Выполните синхронизацию.' 
+        });
+        setAutoMappingResults([]);
+        setShowAutoMappingModal(true);
+        
       } else {
-        throw new Error(result.mapping_results?.message || 'Unknown mapping error');
+        throw new Error(result.mapping_results?.message || result.message || 'Unknown mapping error');
       }
 
     } catch (error) {
       console.error('Enhanced auto-mapping error:', error);
+      
+      // P0: Log mapping_failed event (without crashing UI)
+      console.log('📊 mapping_failed:', {
+        error: error.message,
+        ingredients_count: tcV2?.ingredients?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+      
       setAutoMappingMessage({ 
         type: 'error', 
         text: `❌ Ошибка улучшенного автомаппинга: ${error.message}` 
       });
+      
+      // P0: Set empty results to prevent "Cannot read properties of undefined ('name')" errors
+      setAutoMappingResults([]);
+      
     } finally {
       setIsAutoMapping(false);
     }
