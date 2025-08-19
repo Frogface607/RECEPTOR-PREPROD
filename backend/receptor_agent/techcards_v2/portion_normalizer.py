@@ -169,7 +169,8 @@ class PortionNormalizer:
         sum_netto = 0.0
         
         for ingredient in ingredients:
-            netto = ingredient.get('netto', 0)
+            # Поддерживаем оба варианта названий полей
+            netto = ingredient.get('netto_g') or ingredient.get('netto', 0)
             if isinstance(netto, (int, float)) and netto > 0:
                 sum_netto += netto
         
@@ -184,12 +185,16 @@ class PortionNormalizer:
         for ingredient in ingredients:
             scaled_ingredient = ingredient.copy()
             
-            # Масштабируем brutto
-            if 'brutto' in scaled_ingredient and isinstance(scaled_ingredient['brutto'], (int, float)):
+            # Масштабируем brutto (поддерживаем оба варианта названий)
+            if 'brutto_g' in scaled_ingredient and isinstance(scaled_ingredient['brutto_g'], (int, float)):
+                scaled_ingredient['brutto_g'] = round(scaled_ingredient['brutto_g'] * scale_factor, 1)
+            elif 'brutto' in scaled_ingredient and isinstance(scaled_ingredient['brutto'], (int, float)):
                 scaled_ingredient['brutto'] = round(scaled_ingredient['brutto'] * scale_factor, 1)
             
-            # Масштабируем netto
-            if 'netto' in scaled_ingredient and isinstance(scaled_ingredient['netto'], (int, float)):
+            # Масштабируем netto (поддерживаем оба варианта названий)
+            if 'netto_g' in scaled_ingredient and isinstance(scaled_ingredient['netto_g'], (int, float)):
+                scaled_ingredient['netto_g'] = round(scaled_ingredient['netto_g'] * scale_factor, 1)
+            elif 'netto' in scaled_ingredient and isinstance(scaled_ingredient['netto'], (int, float)):
                 scaled_ingredient['netto'] = round(scaled_ingredient['netto'] * scale_factor, 1)
             
             # loss_pct остается неизменным (как и требуется)
