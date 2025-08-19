@@ -12,6 +12,7 @@ from enum import Enum
 class IikoRmsConnectionStatus(str, Enum):
     CONNECTED = "connected"
     DISCONNECTED = "disconnected"
+    NEEDS_RECONNECTION = "needs_reconnection" 
     ERROR = "error"
 
 class IikoRmsCredentials(BaseModel):
