@@ -357,7 +357,7 @@ def search_catalog(
                             "nutrition_preview": None,
                             "source": "iiko",
                             "currency": product["currency"],
-                            "asOf": product["asOf"],
+                            "asOf": product["asOf"].isoformat() if hasattr(product["asOf"], 'isoformat') else str(product["asOf"]),
                             "match_score": product["match_score"],
                             "article": product.get("article")
                         })
