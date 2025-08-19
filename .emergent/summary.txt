@@ -1,96 +1,109 @@
 <analysis>
-The previous AI engineer systematically progressed through developing the AI-Menu-Designer application. Initial work focused on core functionalities, including a robust Golden Test suite, a complete frontend migration to TechCardV2, and integration of nutritional value displays. Subsequently, the engineer refined the backend generation flow, synchronized the API for V2, implemented inline ingredient mapping, and integrated sub-recipes into TechCardV2 calculations. A significant portion of work involved data management, specifically bootstrapping catalogs and creating UI for catalog uploads, along with major UI fixes for inline editing, mapping, and sub-recipe integration on the frontend. More recently, efforts concentrated on enhancing AI generation quality through a two-step LLM prompt chain, rule-based chef sanity checks, anchor validity, and rigid normalization of nutrition and cost data (Task C2). The final major task completed was **Задача D1: USDA FDC → канонический каталог БЖУ + интеграция**, which involved creating an SQLite database for USDA data, mapping it to canonical IDs, integrating it into the nutrition calculator (USDA as primary source), and extending the catalog search API.
+The previous AI engineer successfully brought the AI-Menu-Designer application from an MVP to a robust state, focusing on iiko integration and TechCard processing. Initial work established a direct iiko RMS connection for real-time nomenclature and pricing. Subsequent efforts stabilized LLM-driven TechCard generation via timeouts and fallbacks.
+
+The core of the recent work revolved around the IK-04/03 Round-trip golden task, which involved comprehensive backend and frontend development for iiko XLSX import and export. This included implementing a robust XLSX parser (), enhancing export capabilities (), and ensuring data integrity through extensive unit and round-trip tests. Critical fixes addressed SKU preservation, technology parsing (including time/temperature extraction and range patterns), and TechCardV2 schema validation.
+
+After achieving 100% success on IK-04/03 tests and backend validation, the focus shifted to GX-02 + Mapping Sprint. This involved building a Quality Validator with API endpoints and UI integration, and enhancing the auto-mapping system with RU-synonyms and confidence scoring. The trajectory ends with the engineer starting the Export Wizard v1 — Finish task, specifically setting up backend endpoints for export tracking.
 </analysis>
 
 <product_requirements>
-The AI-Menu-Designer application aims to automate menu generation for the HoReCa sector, evolving from Receptor Pro. Its core function is creating technical cards, managing costs, and deep integration with the IIKo API, despite IIKo's lack of direct API support for DISH products. The application features a menu creation wizard and standardizes measurements to grams. It supports comprehensive IIKo integration for automated tech card/price list upload, stock tracking, sales analytics, and real-time pricing. The application utilizes a TechCards v2 system for strict validation (brutto/netto/loss, allergens, HACCP), an LLM pipeline using  with structured outputs and safe fallbacks, and flexible export capabilities (CSV, XLSX, PDF, ZIP). It includes a code-based cost and nutrition calculator, GOST A4 printing, and a golden test suite for CI/CD. Recent enhancements focus on enabling sub-recipes, robust catalog management, inline editing, and improving LLM generation quality and data consistency, particularly by integrating USDA nutrition data.
+The AI-Menu-Designer aims to automate menu generation for the HoReCa sector, focusing on creating technical cards, managing costs, and integrating with iiko. Initially using iikoCloud, it transitioned to direct iiko RMS server integration for real-time product nomenclature and pricing, enabling auto-mapping of ingredients to iiko SKUs and streamlining TechCard export to iikoWeb.
+
+Key functionalities implemented and refined include:
+1.  **Direct iiko RMS integration**: For live nomenclature and pricing.
+2.  **Auto-mapping wizard**: Maps ingredients to iiko SKUs with preview/undo.
+3.  **One-click Export Workflow**: Guided process with pre-checks, auto-mapping, GOST preview, and iiko XLSX export.
+4.  **Stabilized TechCard Generation**: Robust LLM integration with retries, timeouts, and fallback to ensure consistent output.
+5.  **iiko Price Integration**: Pulls purchase prices and VAT from iiko RMS for accurate cost calculations.
+6.  **iiko XLSX Import**: Imports existing iiko XLSX technical cards, converting them to  format while preserving SKUs and calculations.
+7.  **Quality Validator (GX-02)**: Ensures TechCard data quality, including yield validation, netto sum, range normalization, and UI banners for issues.
+8.  **Enhanced Auto-mapping**: Utilizes iiko Server API for catalog sync and a RU-synonym dictionary for improved fuzzy matching and confidence-based auto-acceptance.
+9.  **UX Polish**: Improving import/export workflows with drag'n'drop, progress indicators, clear errors, and an undo feature for mapping.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack**: React.js, FastAPI, MongoDB.
--   **AI/LLM**: OpenAI (), structured outputs, multi-step LLM pipelines, prompt engineering.
--   **Deployment**: Supervisor, Kubernetes.
--   **Data Processing**: Pydantic, SQLite, Pandas, Fuzzywuzzy.
--   **UI/UX**: React state management, inline editing, modals.
--   **Quality Assurance**: Golden Tests, rule-based sanity checks, unit testing.
+-   **Full-stack**: React.js (frontend), FastAPI (backend), MongoDB (database).
+-   **AI/LLM**: OpenAI (gpt-4o-mini) with robust error handling (timeouts, retries, skeleton fallback).
+-   **Data Management**: Pydantic for data models, Pandas for data processing, Fuzzywuzzy for matching.
+-   **Integration**: Direct iiko RMS API for real-time nomenclature and pricing; iiko XLSX for import/export.
+-   **Deployment**: Supervisor, Kubernetes, environment variables.
+-   **Testing**: Unit, E2E, and Golden Tests (especially for round-trip data integrity).
 </key_technical_concepts>
 
 <code_architecture>
-The application employs a React frontend, FastAPI backend, and MongoDB database.
+The application features a React frontend, a FastAPI backend, and a MongoDB database.
 
 
 
--   **/app/backend/server.py**: Main FastAPI application entry point.
-    -   **Changes**: Added  endpoint.
--   **/app/backend/receptor_agent/techcards_v2/schemas.py**: Defines  and related Pydantic models.
-    -   **Changes**: Added  to . Modified  and  schemas for non-null defaults.  schema updated to include , , and .
--   **/app/backend/receptor_agent/techcards_v2/cost_calculator.py**: Logic for cost calculations.
-    -   **Changes**: Updated to handle  costs. Modified  to prioritize  then .
--   **/app/backend/receptor_agent/techcards_v2/nutrition_calculator.py**: Logic for nutritional value calculations.
-    -   **Changes**: Updated to handle  nutrition. Modified  to prioritize **USDA**, then , then . Implemented USDA search logic (direct  or fuzzy match on ) and updated  to set  (source, coverage, asOf). Added logic for  mass conversion using  from USDA.
--   **/app/backend/receptor_agent/exports/html.py**: Generates GOST A4 print HTML.
-    -   **Changes**: Updated to display BJU from  (including coverage percentage).
--   **/app/backend/receptor_agent/llm/pipeline.py**: Orchestrates LLM and calculation pipeline.
-    -   **Changes**: Fixed  for draft status. Implemented two-step LLM chain ( -> ), integrated , , . Passes  to calculators. Manages status transitions. Integrated anchor extraction. Uses  after calculators, and sets / to  before calculators.
--   **/app/backend/receptor_agent/routes/techcards_v2.py**: Exposes API endpoints for tech cards.
-    -   **Changes**:  now returns standardized JSON. Added  and . Changed  to .  expanded to support optional  parameter (usda|price|nutrition|all) and returns USDA candidates with preview.
--   **/app/backend/receptor_agent/llm/clients/openai_client.py**: Client for OpenAI API calls.
-    -   **Changes**: Modified  to accept .
--   **/app/backend/receptor_agent/llm/prompts/v2/**: New directory for v2-specific LLM prompts.
-    -   **Created**: , , , , , .
--   **/app/backend/receptor_agent/techcards_v2/postcheck_v2.py**: Performs post-generation validation checks.
-    -   **Created**: Contains code-based rules for output quality.
--   **/app/backend/receptor_agent/techcards_v2/chef_rules_consts.py**: Stores constants for chef rules.
-    -   **Created**: Defines values like , .
--   **/app/backend/receptor_agent/techcards_v2/chef_rules.py**: Implements deterministic chef rules.
-    -   **Created**: Contains rules like , .
--   **/app/backend/receptor_agent/techcards_v2/contentcheck_v2.py**: Content-based checks for anchor validity.
-    -   **Created**: Checks for , , .
--   **/app/backend/receptor_agent/techcards_v2/sanitize.py**: New module for strict data normalization.
-    -   **Created**: Implements  to force data types, round numbers, fill missing keys with defaults/zeros for  and , and remove extra fields.
--   **/app/backend/data/bootstrap/**: Directory for demo catalog data.
-    -   **Created**:  and .
--   **/app/backend/data/anchors_map.json**: Mapping for canonical ingredient names.
-    -   **Created**: Stores RU/EN synonyms for anchor mapping.
--   **/app/backend/data/usda/**: New directory for USDA integration.
-    -   **Created**:  (SQLite database for USDA FoodData Central data),  (source attribution),  (mapping our canonical IDs to USDA s), and  (script to populate  with a minimal dev slice).
--   **/app/.github/workflows/golden-tests.yml**: GitHub Actions workflow.
-    -   **Created**: Runs  as CI gate.
--   **/app/golden/techcards/**: Directory for golden TechCardV2 JSONs.
-    -   **Created**: Contains 10 reference  JSONs for golden tests.
--   **/app/golden_tests.py**: Test runner for golden files.
-    -   **Created**: Performs validation, yield consistency, data integrity checks.
--   **/app/tests/test_chef_rules.py**: Unit tests for chef rules.
-    -   **Created**: Contains tests for .
--   **/app/frontend/src/App.js**: Main frontend component.
-    -   **Changes**: Switched generation/export to V2 APIs. Refactored rendering to . Enforced V2-only rendering. Unified PDF export with GOST print. Added  display. Implemented new React states for generation statuses, debug info, error/draft banners, inline ingredient mapping, and inline editing logic. Added ДАННЫЕ button, and modals for price/nutrition catalog uploads and sub-recipe selection. Modified UI to display anchor validity issues.
--   **/app/frontend/src/config/featureFlags.js**: Centralizes frontend feature flags.
-    -   **Changes**: Added .
--   **/app/frontend/.env**: Frontend environment variables.
-    -   **Changes**: Added .
+-   **/app/backend/receptor_agent/techcards_v2/quality_validator.py (NEW)**:
+    -   **Summary**: New module for validating the quality of TechCardV2 objects.
+    -   **Changes**: Implements checks for yield, netto sum vs. yield, and normalizes range-based inputs (e.g., 0-4 to a single number). It also generates issues/warnings for UI display.
+-   **/app/backend/receptor_agent/exports/iiko_xlsx.py**:
+    -   **Summary**: Handles the export of TechCardV2 objects into iiko XLSX format.
+    -   **Changes**: Added  function to facilitate the round-trip testing and general export functionality, ensuring compatibility with iikoWeb.
+-   **/app/backend/receptor_agent/integrations/iiko_xlsx_parser.py (NEW)**:
+    -   **Summary**: New module designed to parse incoming iiko XLSX files and convert their content into  objects.
+    -   **Changes**: Critical for the import functionality. Initially implemented to extract dish name, ingredients (SKUs, units, netto), yield, portions, and process steps. Extensive modifications were made to correctly handle meta-information (e.g., technology descriptions with time/temperature) located both before and after header rows, ensuring SKU preservation, and converting advanced technology patterns (ranges, Fahrenheit) while applying default process steps where time/temperature were missing. This file was heavily refined to ensure robust parsing and data integrity.
+-   **/app/backend/receptor_agent/integrations/enhanced_mapping_service.py (NEW)**:
+    -   **Summary**: Manages the improved auto-mapping logic, including catalog synchronization and fuzzy matching with Russian synonyms.
+    -   **Changes**: Implements logic for syncing product catalogs from iiko Server API, building a local index, and providing confidence-scored suggestions for ingredient mapping.
+-   **/app/backend/receptor_agent/integrations/export_tracking_service.py (NEW)**:
+    -   **Summary**: Service to track the last successful exports of TechCards.
+    -   **Changes**: Initial creation to store timestamps of exports per organization and TechCard for UI display and auditing.
+-   **/app/backend/receptor_agent/routes/techcards_v2.py**:
+    -   **Summary**: FastAPI router for TechCardV2-related API endpoints.
+    -   **Changes**: Integrated new  endpoints () and new  endpoints, also added preliminary endpoints related to .
+-   **/app/frontend/src/App.js**:
+    -   **Summary**: The main React component orchestrating all UI interactions and data flows.
+    -   **Changes**: Significantly updated for multiple features:
+        -   **IK-04/02 (XLSX Import UI)**: Added  state, a dedicated button, and functions (, , ) with enhanced progress indicators and detailed error/warning display for the XLSX import workflow.
+        -   **GX-02 (Quality Validator UI)**: Integrated state and functions to display quality banners and messages returned by the new quality validator backend.
+        -   **Enhanced Auto-mapping UI**: Improved the Принять ≥90% functionality, adding loading states, toast notifications, and an undo button for auto-mapping changes.
+        -   **Export Wizard UI**: Prepared for showing last export timestamp and iikoWeb import memo (though these are pending in current work).
+-   **/app/tests/fixtures/iiko_xlsx/ (NEW)**:
+    -   **Summary**: Directory to store sample iiko XLSX files for comprehensive testing.
+    -   **Changes**: Created, and , ,  were generated to cover different import scenarios (thermal processes, cold dishes, viscous units).
+-   **/app/tests/v2/test_iiko_import_roundtrip.py (NEW)**:
+    -   **Summary**: Tests the end-to-end import-export round-trip for iiko XLSX files.
+    -   **Changes**: New file. Key tests ensure SKU preservation, data integrity, and idempotency after import, recalculation, and re-export, including using the new fixture files. Corrected module import paths.
+-   **/app/tests/v2/test_iiko_import_units.py (NEW)**:
+    -   **Summary**: Tests various unit conversion scenarios during iiko XLSX import.
+    -   **Changes**: New file. Validates correct handling of units (kg→g, l→ml) and density-based conversions (ml→g) for specific ingredients. Corrected module import paths.
+-   **/app/tests/v2/test_iiko_import_process.py (NEW)**:
+    -   **Summary**: Tests the parsing and extraction of technology steps, including time and temperature.
+    -   **Changes**: New file. Validates the correct parsing of process actions, minimum step count, extraction of  and  from free-text technology fields, and handling of advanced patterns (ranges, Fahrenheit). Corrected module import paths.
+-   **/app/tests/v2/test_quality_validator.py (NEW)**:
+    -   **Summary**: Tests the backend  module.
+    -   **Changes**: New file. Contains tests for yield validation, netto sum, range normalization, and error detection logic.
+-   **/app/tests/v2/test_enhanced_mapping.py (NEW)**:
+    -   **Summary**: Tests the backend .
+    -   **Changes**: New file. Includes tests for RU-synonym loading, confidence scoring, auto-application of suggestions, and coverage calculation.
 </code_architecture>
 
 <pending_tasks>
--   IIKo Integration - Create Product/Dish: Implement direct creation of DISH type nomenclature elements if IIKo API support becomes available.
--   IIKo Integration - Real Sales Data: Implement retrieval of sales data via IIKo's OLAP reports (currently paused).
--   AI-Menu-Designer - Phase 4 (Modularity & Monetization): Develop specialized menu modules and integrate updated token/subscription system.
--   AI-Menu-Designer - UI/UX Refinement: Further enhance the beauty and detailed interface (general task).
--   Frontend: FE-01C - Markers of criticality and diff for HACCP audit (optional, deferred).
--   Frontend: Patch #1C - Temporary redirect from 4 clicks master.
+-   **Export Wizard v1 — Finish (Priority 3, concluding)**:
+    -   Display Last Export timestamp (backend storage and UI).
+    -   Include How to import into iikoWeb memo with copy button.
+    -   Block export button if GX-02 quality validator returns critical errors; show errors and Fix automatically option.
+    -   Audit logging for export operations.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer completed **Задача D1 — «USDA FDC → канонический каталог БЖУ + интеграция»**. The goal was to significantly increase  (to ≥75%) by integrating USDA FoodData Central. This involved several key steps:
+Immediately prior to this summary, the AI engineer completed the GX-02 + Mapping Sprint initiatives. This involved:
 
-1.  **USDA Data Storage**: A new SQLite database () was created with , , and  tables. A minimal development slice of approximately 400 items (meat, fish, vegetables, grains, dairy, oils, sauces) was successfully populated into this database using . A  file was also created for attribution.
-2.  **Canonical Mapping**: A  file was created to map canonical ingredient IDs to USDA s, including synonyms for fuzzy searching.
-3.  **Nutrition Calculator Integration**: The  was updated. It now prioritizes USDA as the primary source for nutritional data, falling back to the existing dev catalog, then bootstrap. The calculator uses  from USDA for  conversions where available. It also populates  fields (, , ).
-4.  **Catalog Search API Extension**: The  endpoint in  was extended to accept an optional  parameter, allowing for searches specifically within USDA data and returning relevant candidates with  previews.
-5.  **Sanitizer/Pipeline Order**: The existing pipeline in  ensures that  and  fields are cleared before calculation and then rigorously sanitized by  afterwards, maintaining data consistency.
+1.  **GX-02 Quality Validator**:
+    *   **Backend**:  was created to implement checks for  being mandatory,  sum approximating  (within 2-3% tolerance), and normalizing range inputs (e.g., 0-4 to a single number). New API endpoints () were added in .
+    *   **Frontend**:  was updated to integrate and display quality banners based on the validator's output, allowing users to see what to fix warnings/errors directly on the TechCard.
+    *   **Testing**:  was created and passed all 6/6 unit tests. Backend API testing confirmed 100% success for quality validation, range normalization, scoring, and error detection.
 
-The backend integration and testing for USDA data retrieval and nutrition calculation showed  was achieved. The user explicitly confirmed поехали for this task and, after its completion, provided the next assignment.
+2.  **Enhanced Catalog-sync + Auto-mapping**:
+    *   **Backend**:  was created to handle catalog synchronization from iiko Server API and to build a local index for improved fuzzy matching. A mini-dictionary of 30 common RU-synonyms was implemented. New API endpoints were created and integrated (likely into ).
+    *   **Frontend**:  was modified to enhance the Принять ≥90% (Accept ≥90%) button, including dynamic states (idle, finding, applying, done/error), toast notifications for accepted ingredients, and improved handling of empty states with suggestions. The UI now triggers the enhanced auto-mapping logic.
+    *   **Testing**:  was created and passed all 6/6 unit tests. Backend API testing confirmed 100% success for RU-Synonyms, enhanced mapping with correct confidence scoring (≥0.90 auto-accept, 0.70-0.89 review), and coverage calculation.
+
+The engineer is currently initiating the **Export Wizard v1 — Finish** task. This involves setting up the backend to track the last successful export of a TechCard, specifically by creating the  and adding relevant API endpoints for this functionality. The trajectory ends with the agent about to update the frontend to integrate these new export tracking endpoints.
 </current_work>
 
 <optional_next_step>
-The next step is to implement **Задача D1-UI — «USDA в UI: чип источника + поиск/маппинг + ГОСТ-примечание»**.
+The next step is to continue with the Export Wizard v1 — Finish task, focusing on updating the frontend in  to integrate the new export tracking endpoints.
 </optional_next_step>

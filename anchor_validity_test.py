@@ -38,7 +38,7 @@ except ImportError as e:
     BACKEND_IMPORTS_AVAILABLE = False
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://techcard-sync.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://iiko-mapper.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class AnchorValidityTester:

@@ -10,7 +10,7 @@ import sys
 from typing import Dict, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://13cf29f6-26ab-4a72-af4a-a3f268dda1fd.preview.emergentagent.com/api/v1/techcards.v2"
+BACKEND_URL = "https://iiko-mapper.preview.emergentagent.com/api/v1/techcards.v2"
 
 def test_quality_validation_endpoint():
     """Test POST /api/v1/techcards.v2/validate/quality"""

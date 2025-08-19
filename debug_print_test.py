@@ -6,7 +6,7 @@ Debug test for GOST print functionality
 import requests
 import json
 
-BACKEND_URL = "https://techcard-sync.preview.emergentagent.com/api"
+BACKEND_URL = "https://iiko-mapper.preview.emergentagent.com/api"
 
 def create_minimal_valid_techcard():
     """Create minimal valid TechCardV2"""
