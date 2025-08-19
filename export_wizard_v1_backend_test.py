@@ -269,15 +269,14 @@ class ExportWizardV1Tester:
 
         # Test 2: Export with invalid TechCard - should be blocked
         try:
-            payload = {
-                "techcard": INVALID_TECHCARD,
-                "organization_id": self.organization_id,
-                "user_email": self.user_email,
-                "techcard_id": f"{self.techcard_id}_invalid"
-            }
-            
+            # Send TechCard directly, not nested in payload
             response = self.session.post(f"{API_BASE}/export/iiko.xlsx", 
-                                       json=payload)
+                                       json=INVALID_TECHCARD,
+                                       params={
+                                           "organization_id": self.organization_id,
+                                           "user_email": self.user_email,
+                                           "techcard_id": f"{self.techcard_id}_invalid"
+                                       })
             
             if response.status_code == 200:
                 data = response.json()
