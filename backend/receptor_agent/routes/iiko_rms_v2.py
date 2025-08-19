@@ -262,16 +262,20 @@ async def restore_rms_connection(user_id: Optional[str] = Query(None, descriptio
         raise HTTPException(status_code=500, detail=f"Failed to restore connection: {str(e)}")
 
 @router.get("/connection/status", response_model=RmsConnectionStatusResponse)
-async def get_rms_connection_status(user_id: Optional[str] = Query(None, description="User ID")):
+async def get_rms_connection_status(
+    user_id: Optional[str] = Query(None, description="User ID"),
+    auto_restore: bool = Query(True, description="Attempt auto-restore if session expired")
+):
     """
-    Get RMS connection status for user
+    Get RMS connection status for user with optional auto-restore
     Returns current connection information and session details
+    Supports sticky connection functionality with auto_restore parameter
     """
     try:
-        logger.info(f"Getting RMS connection status for user: {user_id}")
+        logger.info(f"Getting RMS connection status for user: {user_id}, auto_restore: {auto_restore}")
         
         service = get_iiko_rms_service()
-        status = service.get_rms_connection_status(user_id=user_id)
+        status = service.get_rms_connection_status(user_id=user_id, auto_restore=auto_restore)
         
         return RmsConnectionStatusResponse(
             status=status["status"],
