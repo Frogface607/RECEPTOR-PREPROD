@@ -3187,7 +3187,7 @@ function App() {
     }
   };
 
-  const checkIikoRmsStatus = async () => {
+  const checkIikoRmsStatus = async (attemptRestore = true) => {
     try {
       const response = await axios.get(`${API}/v1/iiko/rms/connection/status?user_id=${currentUser?.id || 'anonymous'}`);
       
@@ -3201,6 +3201,9 @@ function App() {
           last_connection: response.data.last_connection || prev.last_connection
         }));
         
+        // Set sticky connection flag
+        localStorage.setItem('iikoRmsConnected', 'true');
+        
         // Also get sync status
         const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default`);
         if (syncResponse.data.status) {
@@ -3211,9 +3214,50 @@ function App() {
             last_sync: syncResponse.data.completed_at || prev.last_sync
           }));
         }
+      } else if (response.data.status === 'needs_reconnection') {
+        setIikoRmsConnection(prev => ({
+          ...prev,
+          status: 'needs_reconnection',
+          host: response.data.host || prev.host,
+          login: response.data.login || prev.login,
+          error_message: 'Требуется повторная авторизация'
+        }));
+        
+        setIikoRmsMessage({ 
+          type: 'warning', 
+          text: '⚠️ Подключение к iiko требует повторной авторизации' 
+        });
+      } else if (response.data.status === 'not_connected' && attemptRestore) {
+        // Check if we had a connection before (sticky flag exists)
+        const wasConnected = localStorage.getItem('iikoRmsConnected');
+        if (wasConnected) {
+          // Try to restore connection
+          const restored = await restoreIikoRmsConnection();
+          if (!restored) {
+            // Clear sticky flag if restore failed
+            localStorage.removeItem('iikoRmsConnected');
+          }
+        }
+      } else {
+        // Clear sticky flag for other statuses
+        localStorage.removeItem('iikoRmsConnected');
       }
     } catch (error) {
       console.error('Error checking iiko RMS status:', error);
+      
+      // If we get 401/403, show needs reconnection
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setIikoRmsConnection(prev => ({
+          ...prev,
+          status: 'needs_reconnection',
+          error_message: 'Сессия истекла, требуется повторная авторизация'
+        }));
+        
+        setIikoRmsMessage({ 
+          type: 'warning', 
+          text: '⚠️ Сессия истекла. Нужно переподключиться к iiko' 
+        });
+      }
     }
   };
 
