@@ -242,7 +242,7 @@ class ExportWizardV1Tester:
         # Test 1: Export with valid TechCard - should succeed and track
         try:
             # Send TechCard directly, not nested in payload
-            response = self.session.post(f"{API_BASE}/export/iiko.xlsx", 
+            response = self.session.post(f"{API_BASE}/export/enhanced/iiko.xlsx", 
                                        json=SAMPLE_TECHCARD,
                                        params={
                                            "organization_id": self.organization_id,
