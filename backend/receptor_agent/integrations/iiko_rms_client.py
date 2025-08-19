@@ -80,6 +80,7 @@ class IikoRmsClient:
         """Construct full URL for API endpoint"""
         return f"https://{self.host}{path}"
     
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def authenticate(self) -> str:
         """
         Authenticate with iiko RMS server and get session key
