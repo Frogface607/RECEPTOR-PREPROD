@@ -599,16 +599,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             all_issues.append(f"Nutrition calculation error: {str(e)}")
         timings["nutrition_ms"] = int((time.perf_counter() - start_nutrition) * 1000)
         
-        # Шаг 7: САНИТАЙЗЕР - приводим к строгому формату
-        start_sanitize = time.perf_counter()
-        try:
-            # GX-01-FINAL: sanitize_card_v2 должна быть чистой функцией
-            validated_card = sanitize_card_v2(validated_card)
-        except Exception as e:
-            all_issues.append(f"Card sanitization error: {str(e)}")
-        timings["sanitize_ms"] = int((time.perf_counter() - start_sanitize) * 1000)
-        
-        # Шаг 8: СТАНДАРТНАЯ ПОРЦИЯ - нормализация на 1 порцию
+        # Шаг 7: СТАНДАРТНАЯ ПОРЦИЯ - нормализация на 1 порцию (ПЕРЕД санитайзером)
         start_normalize_portion = time.perf_counter()
         try:
             from receptor_agent.techcards_v2.portion_normalizer import get_portion_normalizer
@@ -635,6 +626,15 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             all_issues.append(f"Portion normalization error: {str(e)}")
             
         timings["portion_normalize_ms"] = int((time.perf_counter() - start_normalize_portion) * 1000)
+        
+        # Шаг 8: САНИТАЙЗЕР - приводим к строгому формату (ПОСЛЕ нормализации)
+        start_sanitize = time.perf_counter()
+        try:
+            # GX-01-FINAL: sanitize_card_v2 должна быть чистой функцией
+            validated_card = sanitize_card_v2(validated_card)
+        except Exception as e:
+            all_issues.append(f"Card sanitization error: {str(e)}")
+        timings["sanitize_ms"] = int((time.perf_counter() - start_sanitize) * 1000)
         
         # GX-01-FINAL: Собираем timings локально, присваиваем один раз
         timings["total_ms"] = int((time.perf_counter() - start_total) * 1000)
