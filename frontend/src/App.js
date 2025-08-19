@@ -3272,15 +3272,39 @@ function App() {
       const response = await axios.get(`${API}/v1/techcards.v2/catalog-search`, {
         params: {
           q: query,
-          source: 'rms',
-          limit: 10
+          source: 'iiko',  // P0: Default source is iiko
+          limit: 5  // P0: Return top-5 candidates even with low scores
         }
       });
 
-      setIikoSearchResults(response.data.items || []);
+      if (response.data.status === 'success') {
+        // P0: Sanitize response - filter null/empty objects
+        const sanitizedItems = (response.data.items || []).filter(item => 
+          item && 
+          item.name && 
+          item.name.trim() && 
+          (item.sku_id || item.canonical_id) // Require either sku_id or canonical_id
+        );
+        
+        setIikoSearchResults(sanitizedItems);
+        
+        // Update iiko badge info
+        if (response.data.iiko_badge) {
+          setIikoSearchBadge(response.data.iiko_badge);
+        }
+      } else {
+        // P0: Handle error response
+        console.warn('Search API returned error status:', response.data);
+        setIikoSearchResults([]);
+      }
     } catch (error) {
       console.error('iiko search error:', error);
+      
+      // P0: Show empty-state instead of crash
       setIikoSearchResults([]);
+      
+      // P0: Log error for debugging but don't crash UI
+      console.warn('Search failed, showing empty state. Error:', error.message);
     } finally {
       setIsSearchingIiko(false);
     }
