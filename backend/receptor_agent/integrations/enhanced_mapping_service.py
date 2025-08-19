@@ -178,6 +178,8 @@ class EnhancedMappingService:
             logger.warning(f"Failed to load custom synonyms: {e}")
         
         logger.info(f"Loaded {len(synonyms)} synonym groups with RU support")
+        return synonyms
+    
     def _build_product_index(self, rms_products: List[Dict[str, Any]]) -> Dict[str, Any]:
         """P0.3: Предрассчитать индекс продуктов для быстрого поиска"""
         start_time = time.time()
