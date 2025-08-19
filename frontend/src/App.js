@@ -16527,10 +16527,10 @@ function App() {
                               
                               if (response.ok) {
                                 const fixedData = await response.json();
-                                setTcV2(fixedData.techcard);
+                                setTcV2(fixedData.fixed_techcard);
                                 setExportMessage({ 
                                   type: 'success', 
-                                  text: '✅ Ошибки исправлены! Попробуйте экспорт снова.' 
+                                  text: `✅ ${fixedData.message}` 
                                 });
                               } else {
                                 throw new Error('Не удалось исправить ошибки');
