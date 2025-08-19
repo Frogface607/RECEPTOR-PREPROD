@@ -608,6 +608,34 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             all_issues.append(f"Card sanitization error: {str(e)}")
         timings["sanitize_ms"] = int((time.perf_counter() - start_sanitize) * 1000)
         
+        # Шаг 8: СТАНДАРТНАЯ ПОРЦИЯ - нормализация на 1 порцию
+        start_normalize_portion = time.perf_counter()
+        try:
+            from receptor_agent.techcards_v2.portion_normalizer import get_portion_normalizer
+            normalizer = get_portion_normalizer()
+            
+            # Применяем нормализацию порций
+            card_dict = validated_card.model_dump()
+            normalized_dict = normalizer.normalize_techcard(card_dict)
+            
+            # Создаем новый валидный TechCardV2 объект
+            validated_card = TechCardV2.model_validate(normalized_dict)
+            
+            # Проверяем корректность нормализации
+            validation_result = normalizer.validate_normalization(normalized_dict)
+            if not validation_result.get('valid', False):
+                all_issues.append(f"Portion normalization validation failed: {validation_result.get('error', 'Unknown error')}")
+            else:
+                # Логируем успешную нормализацию для аудита
+                scale_factor = validation_result.get('scale_factor', 0)
+                archetype = validation_result.get('archetype', 'unknown')
+                print(f"✅ Portion normalized: archetype={archetype}, scale_factor={scale_factor}")
+                
+        except Exception as e:
+            all_issues.append(f"Portion normalization error: {str(e)}")
+            
+        timings["portion_normalize_ms"] = int((time.perf_counter() - start_normalize_portion) * 1000)
+        
         # GX-01-FINAL: Собираем timings локально, присваиваем один раз
         timings["total_ms"] = int((time.perf_counter() - start_total) * 1000)
         
