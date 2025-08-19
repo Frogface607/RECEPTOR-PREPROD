@@ -93,7 +93,7 @@ function App() {
   // iiko RMS integration states (IK-02B-FE/01)
   const [showIikoRmsModal, setShowIikoRmsModal] = useState(false);
   const [iikoRmsConnection, setIikoRmsConnection] = useState({
-    status: 'not_connected', // 'not_connected', 'connected', 'error'
+    status: 'not_connected', // 'not_connected', 'connected', 'needs_reconnection', 'error'
     host: '',
     login: '',
     organization_name: '',
