@@ -178,7 +178,148 @@ class EnhancedMappingService:
             logger.warning(f"Failed to load custom synonyms: {e}")
         
         logger.info(f"Loaded {len(synonyms)} synonym groups with RU support")
-        return synonyms
+    def _build_product_index(self, rms_products: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """P0.3: Предрассчитать индекс продуктов для быстрого поиска"""
+        start_time = time.time()
+        
+        index = {
+            "by_normalized_name": {},  # normName -> [products]
+            "by_tokens": {},          # token -> [products] 
+            "by_synonyms": {},        # synonym -> [products]
+            "products_slim": {}       # product_id -> slim_product (payload diet)
+        }
+        
+        for product in rms_products:
+            product_id = str(product["_id"])
+            product_name = product["name"]
+            
+            # P0.3: Payload diet - только нужные поля
+            slim_product = {
+                "_id": product_id,
+                "name": product_name,
+                "unit": product.get("unit", "г"),
+                "price_per_unit": product.get("price_per_unit", 0.0),
+                "group_name": product.get("group_name", ""),
+                "article": product.get("article", "")
+            }
+            index["products_slim"][product_id] = slim_product
+            
+            # Нормализованное имя
+            norm_name = self._normalize_for_matching(product_name.lower())
+            if norm_name not in index["by_normalized_name"]:
+                index["by_normalized_name"][norm_name] = []
+            index["by_normalized_name"][norm_name].append(product_id)
+            
+            # Токены для частичного поиска
+            tokens = norm_name.split()
+            for token in tokens:
+                if len(token) > 2:  # Игнорировать короткие токены
+                    if token not in index["by_tokens"]:
+                        index["by_tokens"][token] = []
+                    index["by_tokens"][token].append(product_id)
+            
+            # Синонимы
+            product_lower = product_name.lower()
+            for canonical, synonyms in self.ru_synonyms.items():
+                for synonym in synonyms:
+                    if synonym.lower() in product_lower:
+                        if canonical not in index["by_synonyms"]:
+                            index["by_synonyms"][canonical] = []
+                        index["by_synonyms"][canonical].append(product_id)
+        
+        build_time = (time.time() - start_time) * 1000
+        logger.info(f"P0.3: Product index built in {build_time:.1f}ms for {len(rms_products)} products")
+        
+        return index
+    
+    def _get_cache_key(self, ingredient_name: str, organization_id: str) -> str:
+        """P0.3: Генерация ключа кэша"""
+        normalized = self._normalize_for_matching(ingredient_name.lower())
+        return hashlib.md5(f"{normalized}:{organization_id}".encode()).hexdigest()
+    
+    def _get_cached_result(self, cache_key: str) -> Optional[Dict[str, Any]]:
+        """P0.3: Получение результата из кэша с проверкой TTL"""
+        if cache_key in self._cache:
+            entry = self._cache[cache_key]
+            if time.time() - entry["timestamp"] < self._cache_ttl:
+                return entry["result"]
+            else:
+                # Expired entry
+                del self._cache[cache_key]
+        return None
+    
+    def _set_cached_result(self, cache_key: str, result: Dict[str, Any]):
+        """P0.3: Сохранение результата в LRU кэш"""
+        # LRU eviction if cache is full
+        if len(self._cache) >= self._cache_max_size:
+            oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k]["timestamp"])
+            del self._cache[oldest_key]
+        
+        self._cache[cache_key] = {
+            "result": result,
+            "timestamp": time.time()
+        }
+    
+    def _find_fast_matches(self, ingredient_name: str, index: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """P0.3: Быстрый поиск совпадений через индекс (вместо полного сканирования)"""
+        matches = []
+        ingredient_lower = ingredient_name.lower().strip()
+        norm_ingredient = self._normalize_for_matching(ingredient_lower)
+        
+        # Strategy 1: Exact normalized match (fastest)
+        if norm_ingredient in index["by_normalized_name"]:
+            for product_id in index["by_normalized_name"][norm_ingredient]:
+                product = index["products_slim"][product_id]
+                matches.append({
+                    "product": product,
+                    "confidence": 0.95,
+                    "match_type": "exact_normalized",
+                    "match_reason": "Точное нормализованное совпадение"
+                })
+        
+        # Strategy 2: Synonym matching
+        canonical_form = self._find_canonical_form(ingredient_lower)
+        if canonical_form and canonical_form in index["by_synonyms"]:
+            for product_id in index["by_synonyms"][canonical_form]:
+                if product_id not in [m["product"]["_id"] for m in matches]:
+                    product = index["products_slim"][product_id]
+                    matches.append({
+                        "product": product,
+                        "confidence": 0.90,
+                        "match_type": "synonym",
+                        "match_reason": f"Синоним: {canonical_form}"
+                    })
+        
+        # Strategy 3: Token-based partial matching (только если мало точных совпадений)
+        if len(matches) < 3:
+            tokens = norm_ingredient.split()
+            candidate_products = set()
+            
+            for token in tokens:
+                if len(token) > 2 and token in index["by_tokens"]:
+                    candidate_products.update(index["by_tokens"][token])
+            
+            # P0.3: Top-K резка ПЕРЕД скорингом (не после)
+            candidate_products = list(candidate_products)[:20]  # Топ-20 кандидатов для скоринга
+            
+            for product_id in candidate_products:
+                if product_id not in [m["product"]["_id"] for m in matches]:
+                    product = index["products_slim"][product_id] 
+                    
+                    # Быстрый fuzzy только для кандидатов
+                    score = fuzz.partial_ratio(ingredient_lower, product["name"].lower()) / 100.0
+                    
+                    if score >= 0.70:  # Минимальный порог
+                        matches.append({
+                            "product": product,
+                            "confidence": score,
+                            "match_type": "partial_fuzzy",
+                            "match_reason": f"Частичное совпадение: {score:.2f}"
+                        })
+        
+        # Сортировка по confidence и возврат топ-5
+        matches.sort(key=lambda x: x["confidence"], reverse=True)
+        return matches[:5]  # P0.3: Top-5 резка
     
     def enhanced_auto_mapping(self, ingredients: List[Dict[str, Any]], 
                             organization_id: str) -> Dict[str, Any]:
