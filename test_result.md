@@ -122,6 +122,18 @@
 user_problem_statement: "GX-02 Quality Validator API Implementation - Test the newly implemented GX-02 Quality Validator API endpoints and functionality: 1) Quality Validation Endpoint: POST /api/v1/techcards.v2/validate/quality, 2) Range Normalization Endpoint: POST /api/v1/techcards.v2/normalize, 3) Quality Score Endpoint: POST /api/v1/techcards.v2/quality/score. Test with valid/invalid TechCard data, range normalization, quality scoring, error handling, and performance requirements."
 
 backend:
+  - task: "P0.3: Automapping Performance ≤ 3s (batch-50)"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/integrations/enhanced_mapping_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "✅ P0.3 PERFORMANCE OPTIMIZATIONS IMPLEMENTED: Successfully implemented comprehensive performance optimizations for enhanced_mapping_service.py to achieve ≤3s target for batch-50 ingredients. IMPLEMENTED OPTIMIZATIONS: 1) Product indexing system (_build_product_index) with normalized names, tokens, and synonyms for O(1) lookups instead of O(n) scans, 2) LRU caching system with 24-hour TTL to cache mapping results and avoid repeated calculations, 3) Batch processing with ThreadPoolExecutor (8 workers) for parallel ingredient processing, 4) Fast indexed search (_find_fast_matches) replacing slow triple fuzzy matching, 5) Payload diet - only essential product fields in responses, 6) Top-K candidate reduction (20 candidates) before expensive fuzzy scoring, 7) Comprehensive performance instrumentation with timing metrics. ARCHITECTURE CHANGES: Replaced sequential _find_enhanced_matches with parallel _process_ingredient_fast, integrated caching at ingredient level, built product index once per request, reduced alternatives from 4 to 2 for payload optimization. Fixed missing return statement in _load_ru_synonyms method. Ready for backend testing to validate ≤3s performance target achievement."
+
   - task: "P0: SKU Search (iiko) — 0-hit bugfix & P0: Safe-Automap + Sanitize"
     implemented: true
     working: true
