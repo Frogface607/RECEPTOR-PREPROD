@@ -765,8 +765,11 @@ class IikoRmsService:
         
         return masked_message
     
-    def get_rms_connection_status(self, user_id: Optional[str] = None) -> Dict[str, Any]:
-        """Get RMS connection status"""
+    def get_rms_connection_status(self, user_id: Optional[str] = None, auto_restore: bool = True) -> Dict[str, Any]:
+        """
+        Get RMS connection status with optional auto-restore
+        Implements sticky connection functionality
+        """
         try:
             query = {"user_id": user_id} if user_id else {}
             credentials_record = self.credentials.find_one(
@@ -777,14 +780,41 @@ class IikoRmsService:
             if not credentials_record:
                 return {"status": "not_connected"}
             
+            # Check if we need to attempt auto-restore
+            if auto_restore and credentials_record.get("status") in [
+                IikoRmsConnectionStatus.CONNECTED, 
+                IikoRmsConnectionStatus.NEEDS_RECONNECTION
+            ]:
+                # Check if session might be expired
+                session_expires_at = credentials_record.get("session_expires_at")
+                if (not session_expires_at or 
+                    datetime.now(timezone.utc) >= session_expires_at - timedelta(minutes=5)):
+                    
+                    logger.info("Session expired or about to expire, attempting restore...")
+                    restore_result = self.restore_rms_connection(user_id)
+                    
+                    if restore_result["status"] == "restored":
+                        # Refresh credentials_record after successful restore
+                        credentials_record = self.credentials.find_one(
+                            query,
+                            sort=[("last_connection", DESCENDING)]
+                        )
+            
+            # Mask password in response
+            masked_login = credentials_record["login"][:3] + "***" if len(credentials_record["login"]) > 3 else "***"
+            
             return {
                 "status": credentials_record["status"],
                 "host": credentials_record["host"],
-                "login": credentials_record["login"][:3] + "***",
+                "login": masked_login,
                 "organization_id": credentials_record.get("organization_id"),
                 "organization_name": credentials_record.get("organization_name"),
                 "last_connection": credentials_record.get("last_connection"),
-                "session_expires_at": credentials_record.get("session_expires_at")
+                "session_expires_at": credentials_record.get("session_expires_at"),
+                "is_session_valid": (
+                    credentials_record.get("session_expires_at") and 
+                    datetime.now(timezone.utc) < credentials_record["session_expires_at"]
+                ) if credentials_record.get("session_expires_at") else False
             }
             
         except Exception as e:
