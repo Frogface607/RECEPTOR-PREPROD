@@ -80,14 +80,16 @@ class IikoRmsClient:
         """Construct full URL for API endpoint"""
         return f"https://{self.host}{path}"
     
-    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def authenticate(self) -> str:
         """
         Authenticate with iiko RMS server and get session key
         Uses SHA1 hash authentication method
         """
         try:
-            logger.info(f"Authenticating with iiko RMS server: {self.host}")
+            # Mask credentials in logs
+            masked_host = self.host
+            masked_login = self.login[:3] + "***" if len(self.login) > 3 else "***"
+            logger.info(f"Authenticating with iiko RMS server: {masked_host} (login: {masked_login})")
             
             # Step 1: Create SHA1 hash of password
             password_hash = hashlib.sha1(self.password.encode('utf-8')).hexdigest()
@@ -111,16 +113,25 @@ class IikoRmsClient:
                     self.session_key = session_key
                     self.session_expires_at = datetime.now() + timedelta(hours=2)
                     
+                    # Mask session key in logs
+                    masked_session = session_key[:6] + "***" + session_key[-4:] if len(session_key) > 10 else "***"
                     logger.info(f"✅ iiko RMS authentication successful")
-                    logger.info(f"Session key: {session_key[:20]}...")
+                    logger.info(f"Session key: {masked_session}")
                     return session_key
                 else:
-                    raise IikoRmsAPIError(f"Invalid session key received: {session_key}")
+                    raise IikoRmsAPIError(f"Invalid session key received")
+            elif response.status_code == 401:
+                raise IikoRmsAPIError("Authentication failed: Invalid credentials (401)")
+            elif response.status_code == 403:
+                raise IikoRmsAPIError("Authentication failed: Access denied (403)")
             else:
                 raise IikoRmsAPIError(
-                    f"Authentication failed: HTTP {response.status_code} - {response.text}"
+                    f"Authentication failed: HTTP {response.status_code}"
                 )
                 
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Network error during authentication: {str(e)}")
+            raise IikoRmsAPIError(f"Failed to authenticate: Network error")
         except Exception as e:
             logger.error(f"Authentication error: {str(e)}")
             raise IikoRmsAPIError(f"Failed to authenticate: {str(e)}")
