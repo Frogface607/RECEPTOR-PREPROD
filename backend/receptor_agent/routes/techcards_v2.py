@@ -805,7 +805,7 @@ async def get_ru_synonyms():
 
 
 # Export Wizard v1: Enhanced Export Endpoints
-@router.post("/techcards.v2/export/iiko.xlsx")
+@router.post("/techcards.v2/export/enhanced/iiko.xlsx")
 async def enhanced_export_iiko_xlsx(request: Request):
     """
     Export Wizard v1: Enhanced export with validation and tracking
