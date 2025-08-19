@@ -16442,18 +16442,113 @@ function App() {
                         Файл экспортирован и готов к импорту в iikoWeb
                       </div>
                       
-                      <div className="bg-green-800/50 rounded-lg p-4 text-left">
-                        <div className="font-medium text-green-300 mb-2">📋 Инструкция по импорту:</div>
-                        <ol className="text-green-400 text-sm space-y-1 list-decimal list-inside">
-                          <li>Откройте iikoWeb → Администрирование</li>
-                          <li>Перейдите в раздел "Технологические карты"</li>
-                          <li>Нажмите "Импорт справочника"</li>
-                          <li>Выберите скачанный XLSX файл</li>
-                          <li>Проверьте результаты импорта</li>
-                        </ol>
-                      </div>
+                      {/* Updated Last Export Info */}
+                      {exportWizardData.lastExport && (
+                        <div className="bg-green-800/30 rounded-lg p-3 text-sm">
+                          <div className="text-green-300">
+                            📊 Последний экспорт: {exportWizardData.lastExport.human_time}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
+                  
+                  {/* Enhanced iikoWeb Import Instructions */}
+                  <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="font-medium text-blue-300">📋 Инструкция по импорту в iikoWeb</div>
+                      <button
+                        onClick={() => {
+                          const instructions = `Импорт техкарты в iikoWeb:
+
+1. Откройте iikoWeb → Администрирование
+2. Перейдите в раздел "Технологические карты"
+3. Нажмите "Импорт справочника"
+4. Выберите скачанный XLSX файл
+5. Проверьте результаты импорта
+6. Сохраните изменения
+
+Примечания:
+- Убедитесь, что все ингредиенты присутствуют в номенклатуре
+- При необходимости создайте недостающие позиции в справочнике товаров
+- После импорта проверьте корректность расчета себестоимости`;
+                          
+                          navigator.clipboard.writeText(instructions).then(() => {
+                            setExportMessage({ 
+                              type: 'success', 
+                              text: '📋 Инструкция скопирована в буфер обмена!' 
+                            });
+                          });
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                      >
+                        📋 Копировать
+                      </button>
+                    </div>
+                    
+                    <ol className="text-blue-400 text-sm space-y-2 list-decimal list-inside">
+                      <li>Откройте <strong>iikoWeb → Администрирование</strong></li>
+                      <li>Перейдите в раздел <strong>"Технологические карты"</strong></li>
+                      <li>Нажмите <strong>"Импорт справочника"</strong></li>
+                      <li>Выберите скачанный XLSX файл</li>
+                      <li>Проверьте результаты импорта</li>
+                      <li>Сохраните изменения</li>
+                    </ol>
+                    
+                    <div className="mt-4 p-3 bg-blue-800/30 rounded text-xs text-blue-300">
+                      <strong>💡 Важно:</strong> Убедитесь, что все ингредиенты присутствуют в номенклатуре. 
+                      При необходимости создайте недостающие позиции в справочнике товаров.
+                    </div>
+                  </div>
+                  
+                  {/* Quality Validation Errors (if any) */}
+                  {exportWizardData.blockingErrors && exportWizardData.blockingErrors.length > 0 && (
+                    <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-4">
+                      <div className="font-bold text-red-300 mb-2">🚫 Критические ошибки валидации:</div>
+                      <ul className="text-red-400 space-y-1 text-sm">
+                        {exportWizardData.blockingErrors.map((error, index) => (
+                          <li key={index}>• {error.hint || error.type}</li>
+                        ))}
+                      </ul>
+                      {exportWizardData.canAutoFix && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              setExportMessage({ type: 'info', text: '🔄 Автоисправление ошибок...' });
+                              
+                              const response = await fetch(`${API}/v1/techcards.v2/export/auto-fix`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                  techcard: tcV2,
+                                  issues: exportWizardData.blockingErrors 
+                                })
+                              });
+                              
+                              if (response.ok) {
+                                const fixedData = await response.json();
+                                setTcV2(fixedData.techcard);
+                                setExportMessage({ 
+                                  type: 'success', 
+                                  text: '✅ Ошибки исправлены! Попробуйте экспорт снова.' 
+                                });
+                              } else {
+                                throw new Error('Не удалось исправить ошибки');
+                              }
+                            } catch (error) {
+                              setExportMessage({ 
+                                type: 'error', 
+                                text: `❌ Ошибка автоисправления: ${error.message}` 
+                              });
+                            }
+                          }}
+                          className="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+                        >
+                          🔧 Исправить автоматически
+                        </button>
+                      )}
+                    </div>
+                  )}
                   
                   <div className="text-center">
                     <button
