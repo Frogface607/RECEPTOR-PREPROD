@@ -324,11 +324,13 @@ class EnhancedMappingService:
     def enhanced_auto_mapping(self, ingredients: List[Dict[str, Any]], 
                             organization_id: str) -> Dict[str, Any]:
         """
-        Perform enhanced auto-mapping with Russian synonyms and confidence scoring
+        P0.3: Performance-optimized auto-mapping ≤3s for batch-50
+        Enhanced auto-mapping with Russian synonyms and confidence scoring
         GX-02: ≥0.90 автопринятие; 0.70–0.89 на проверку
         """
         try:
-            logger.info(f"Starting enhanced auto-mapping for {len(ingredients)} ingredients")
+            start_time = time.time()
+            logger.info(f"P0.3: Starting optimized auto-mapping for {len(ingredients)} ingredients")
             
             # Get RMS products for organization
             rms_products = list(self.rms_service.products.find({
@@ -344,68 +346,57 @@ class EnhancedMappingService:
                     "stats": {"total": 0, "auto_accept": 0, "review": 0, "no_match": 0}
                 }
             
-            logger.info(f"Found {len(rms_products)} RMS products for matching")
+            # P0.3: Build product index for fast search (one-time cost)
+            index_start = time.time()
+            self._product_index = self._build_product_index(rms_products)
+            index_time = (time.time() - index_start) * 1000
+            logger.info(f"P0.3: Product index built in {index_time:.1f}ms")
             
             mapping_results = []
             stats = {"total": len(ingredients), "auto_accept": 0, "review": 0, "no_match": 0}
             
-            # Process each ingredient
-            for ingredient in ingredients:
-                ingredient_name = ingredient.get("name", "").strip()
-                if not ingredient_name:
-                    continue
+            # P0.3: Batch processing with parallel execution
+            batch_start = time.time()
+            processed_ingredients = [ing for ing in ingredients 
+                                   if ing.get("name", "").strip() and not ing.get("skuId")]
+            
+            # Process ingredients in batches with threading
+            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                # Submit all ingredient processing tasks
+                future_to_ingredient = {
+                    executor.submit(self._process_ingredient_fast, ingredient, organization_id): ingredient
+                    for ingredient in processed_ingredients
+                }
                 
-                # Skip if already has SKU
-                if ingredient.get("skuId"):
-                    continue
-                
-                # Find best matches
-                matches = self._find_enhanced_matches(ingredient_name, rms_products)
-                
-                if matches:
-                    best_match = matches[0]  # Highest scored match
-                    
-                    # Determine mapping status based on confidence
-                    if best_match["confidence"] >= self.auto_accept_threshold:
-                        status = "auto_accept"
-                        stats["auto_accept"] += 1
-                    elif best_match["confidence"] >= self.review_threshold:
-                        status = "review"  
-                        stats["review"] += 1
-                    else:
-                        status = "no_match"
+                # Collect results as they complete
+                for future in as_completed(future_to_ingredient):
+                    ingredient = future_to_ingredient[future]
+                    try:
+                        result = future.result()
+                        if result:
+                            mapping_results.append(result)
+                            # Update stats
+                            if result["status"] == "auto_accept":
+                                stats["auto_accept"] += 1
+                            elif result["status"] == "review":
+                                stats["review"] += 1
+                    except Exception as exc:
+                        logger.error(f"P0.3: Ingredient {ingredient.get('name')} processing error: {exc}")
                         stats["no_match"] += 1
-                        continue  # Skip low confidence matches
-                    
-                    # Create mapping result
-                    mapping_result = {
-                        "ingredient_name": ingredient_name,
-                        "original_unit": ingredient.get("unit", "g"),
-                        "status": status,
-                        "confidence": best_match["confidence"],
-                        "match_type": best_match["match_type"],
-                        "suggestion": {
-                            "sku_id": best_match["product"]["_id"],
-                            "name": best_match["product"]["name"],
-                            "article": best_match["product"].get("article", ""),
-                            "unit": best_match["product"]["unit"],
-                            "price_per_unit": best_match["product"].get("price_per_unit", 0.0),
-                            "currency": "RUB",
-                            "group_name": best_match["product"].get("group_name"),
-                            "source": "rms_enhanced"
-                        },
-                        "alternatives": matches[1:4] if len(matches) > 1 else []  # Top 3 alternatives
-                    }
-                    
-                    mapping_results.append(mapping_result)
-                
-                else:
-                    stats["no_match"] += 1
+            
+            # Count no matches
+            stats["no_match"] = stats["total"] - len(mapping_results)
+            
+            batch_time = (time.time() - batch_start) * 1000
+            logger.info(f"P0.3: Batch processing completed in {batch_time:.1f}ms")
             
             # Sort results by confidence (highest first)
             mapping_results.sort(key=lambda x: x["confidence"], reverse=True)
             
             coverage_info = self._calculate_coverage(ingredients, mapping_results)
+            
+            total_time = (time.time() - start_time) * 1000
+            logger.info(f"P0.3: Total enhanced auto-mapping completed in {total_time:.1f}ms")
             
             return {
                 "status": "success",
@@ -413,6 +404,13 @@ class EnhancedMappingService:
                 "stats": stats,
                 "coverage": coverage_info,
                 "products_scanned": len(rms_products),
+                "performance": {
+                    "total_time_ms": round(total_time, 1),
+                    "index_time_ms": round(index_time, 1),
+                    "batch_time_ms": round(batch_time, 1),
+                    "ingredients_processed": len(processed_ingredients),
+                    "target_met": total_time <= 3000
+                },
                 "message": f"Найдено {len(mapping_results)} совпадений. " +
                           f"Автопринятие: {stats['auto_accept']}, На проверку: {stats['review']}"
             }
@@ -425,6 +423,62 @@ class EnhancedMappingService:
                 "results": [],
                 "stats": {"total": 0, "auto_accept": 0, "review": 0, "no_match": 0}
             }
+    
+    def _process_ingredient_fast(self, ingredient: Dict[str, Any], organization_id: str) -> Optional[Dict[str, Any]]:
+        """P0.3: Fast ingredient processing with caching and optimized search"""
+        ingredient_name = ingredient.get("name", "").strip()
+        if not ingredient_name:
+            return None
+            
+        # P0.3: Check cache first
+        cache_key = self._get_cache_key(ingredient_name, organization_id)
+        cached_result = self._get_cached_result(cache_key)
+        if cached_result:
+            # Update ingredient data in cached result
+            cached_result["ingredient_name"] = ingredient_name
+            cached_result["original_unit"] = ingredient.get("unit", "g")
+            return cached_result
+        
+        # P0.3: Use fast indexed search instead of full scan
+        matches = self._find_fast_matches(ingredient_name, self._product_index)
+        
+        if matches:
+            best_match = matches[0]  # Highest scored match
+            
+            # Determine mapping status based on confidence
+            if best_match["confidence"] >= self.auto_accept_threshold:
+                status = "auto_accept"
+            elif best_match["confidence"] >= self.review_threshold:
+                status = "review"  
+            else:
+                return None  # Skip low confidence matches
+            
+            # Create mapping result with slim product data
+            mapping_result = {
+                "ingredient_name": ingredient_name,
+                "original_unit": ingredient.get("unit", "g"),
+                "status": status,
+                "confidence": best_match["confidence"],
+                "match_type": best_match["match_type"],
+                "suggestion": {
+                    "sku_id": best_match["product"]["_id"],
+                    "name": best_match["product"]["name"],
+                    "article": best_match["product"].get("article", ""),
+                    "unit": best_match["product"]["unit"],
+                    "price_per_unit": best_match["product"].get("price_per_unit", 0.0),
+                    "currency": "RUB",
+                    "group_name": best_match["product"].get("group_name"),
+                    "source": "rms_enhanced"
+                },
+                "alternatives": matches[1:3] if len(matches) > 1 else []  # Top 2 alternatives (payload diet)
+            }
+            
+            # P0.3: Cache the result for future use
+            self._set_cached_result(cache_key, mapping_result.copy())
+            
+            return mapping_result
+        
+        return None
     
     def _find_enhanced_matches(self, ingredient_name: str, 
                               rms_products: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
