@@ -202,6 +202,9 @@ class PortionNormalizer:
             elif 'netto' in scaled_ingredient and isinstance(scaled_ingredient['netto'], (int, float)):
                 scaled_ingredient['netto'] = round(scaled_ingredient['netto'] * scale_factor, 1)
             
+            # ВАЖНО: обновляем единицу измерения на граммы, так как все значения теперь в граммах
+            scaled_ingredient['unit'] = 'g'
+            
             # loss_pct остается неизменным (как и требуется)
             
             scaled_ingredients.append(scaled_ingredient)
