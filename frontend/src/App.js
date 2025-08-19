@@ -1751,13 +1751,15 @@ function App() {
   const handleOpenIngredientMapping = (ingredientIndex) => {
     setMappingIngredientIndex(ingredientIndex);
     setMappingModalOpen(true);
-    setMappingActiveTab('all');
+    setMappingActiveTab('iiko'); // P0: Default to iiko source
     setCatalogSearchQuery('');
     setCatalogSearchResults([]);
     setUsdaSearchQuery('');
     setUsdaSearchResults([]);
     setPriceSearchQuery('');
     setPriceSearchResults([]);
+    setIikoSearchQuery('');
+    setIikoSearchResults([]);
     
     // Auto-fill search with ingredient name
     if (tcV2 && tcV2.ingredients && tcV2.ingredients[ingredientIndex]) {
