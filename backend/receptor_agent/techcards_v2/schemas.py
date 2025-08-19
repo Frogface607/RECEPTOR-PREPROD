@@ -22,6 +22,12 @@ class MetaV2(BaseModel):
     tags: Optional[List[str]] = Field(default_factory=list)
     # GX-01-FINAL: безопасная сериализация timings
     timings: Dict[str, float] = Field(default_factory=dict, description="Метрики времени выполнения pipeline (ms)")
+    
+    # Standard Portion by Default: поля для нормализации порций
+    scale_factor: Optional[float] = Field(default=None, description="Коэффициент масштабирования для нормализации порций")
+    archetype: Optional[str] = Field(default=None, description="Архетип блюда для нормализации порций")
+    original_sum_netto: Optional[float] = Field(default=None, description="Исходная сумма нетто до нормализации")
+    normalized: Optional[bool] = Field(default=None, description="Флаг что техкарта была нормализована")
 
 class YieldV2(BaseModel):
     perPortion_g: float = Field(..., gt=0)
