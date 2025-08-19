@@ -394,7 +394,7 @@ def search_catalog(
                             "source": "iiko",  # Always show as "iiko" source to user
                             "currency": product["currency"],
                             "vat_pct": product.get("vat_pct", 0.0),
-                            "asOf": product["asOf"],
+                            "asOf": product["asOf"].isoformat() if hasattr(product["asOf"], 'isoformat') else str(product["asOf"]),
                             "match_score": product["match_score"],
                             "article": product.get("article"),
                             "product_type": product.get("product_type", "product"),
