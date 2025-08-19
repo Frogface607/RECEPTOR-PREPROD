@@ -868,10 +868,7 @@ async def enhanced_export_iiko_xlsx(request: Request):
         return StreamingResponse(
             iter([excel_buffer.getvalue()]),
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f'attachment; filename="techcard_{techcard_id}_export.xlsx"'},
-            background=BackgroundTask(
-                lambda: logger.info(f"Export completed: {tracking_result['export_id']}")
-            )
+            headers={"Content-Disposition": f'attachment; filename="techcard_{techcard_id}_export.xlsx"'}
         )
         
     except HTTPException:
