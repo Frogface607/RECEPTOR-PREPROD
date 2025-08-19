@@ -533,10 +533,13 @@ class IikoRmsClient:
             organizations = self.get_organizations()
             total_time = time.time() - start_time
             
+            # Mask credentials in response
+            masked_login = self.login[:3] + "***" if len(self.login) > 3 else "***"
+            
             return {
                 "status": "healthy",
                 "host": self.host,
-                "login": self.login[:3] + "***",
+                "login": masked_login,
                 "session_valid": bool(session_key),
                 "organizations_count": len(organizations),
                 "auth_time": auth_time,
@@ -546,10 +549,11 @@ class IikoRmsClient:
             
         except Exception as e:
             logger.error(f"Health check failed: {str(e)}")
+            masked_login = self.login[:3] + "***" if len(self.login) > 3 else "***"
             return {
                 "status": "unhealthy",
                 "host": self.host,
-                "login": self.login[:3] + "***",
+                "login": masked_login,
                 "error": str(e),
                 "timestamp": datetime.now().isoformat()
             }
