@@ -3402,7 +3402,17 @@ function App() {
 
   // ============== ENHANCED AUTO-MAPPING FUNCTIONS (GX-02) ==============
   
-  // ============== P0-2: SAFE-AUTOMAP + SANITIZE ==============
+  // P1: Advanced actions dropdown with click-outside handling
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showAdvancedActions && !event.target.closest('.advanced-actions-dropdown')) {
+        setShowAdvancedActions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAdvancedActions]);
   
   // P0-2: Debounced auto-mapping with 600ms delay
   const [autoMappingDebounceTimer, setAutoMappingDebounceTimer] = useState(null);
