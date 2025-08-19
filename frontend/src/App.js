@@ -10255,12 +10255,12 @@ function App() {
                     </div>
                     
                     <button 
-                      onClick={startEnhancedAutoMapping}
+                      onClick={debouncedStartAutoMapping}
                       disabled={isAutoMapping || iikoRmsConnection.status !== 'connected'}
                       className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
-                      title="🏪 Улучшенный автомаппинг с RU-синонимами (GX-02)"
+                      title="🏪 P0-2: Безопасный автомаппинг с санитизацией + 600ms debounce"
                     >
-                      {isAutoMapping ? '⏳ Анализ...' : 'Автомаппинг Pro (GX-02)'}
+                      {isAutoMapping ? '⏳ Анализ...' : 'Автомаппинг Pro (P0-2)'}
                     </button>
                     <button 
                       onClick={startExportWizard}
