@@ -74,7 +74,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "P0.3: Automapping Performance ≤ 3s (batch-50)"
+##     - "Standard Portion by Default (no UI) Implementation"
 ##   stuck_tasks:
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
