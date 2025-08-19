@@ -324,7 +324,7 @@ def search_catalog(
                         "nutrition_preview": None,
                         "source": item["source"],
                         "currency": item.get("currency", "RUB"),
-                        "asOf": item.get("asOf")
+                        "asOf": item.get("asOf").isoformat() if hasattr(item.get("asOf"), 'isoformat') else str(item.get("asOf")) if item.get("asOf") else None
                     })
                     
             except Exception as e:
