@@ -919,7 +919,7 @@ async def get_last_export(organization_id: str = "default", techcard_id: Optiona
         raise HTTPException(500, f"Get last export failed: {str(e)}")
 
 
-@router.get("/export/history")
+@router.get("/techcards.v2/export/history")
 async def get_export_history(organization_id: str = "default", limit: int = 10):
     """
     Export Wizard v1: Get export history
