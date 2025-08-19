@@ -15372,16 +15372,32 @@ function App() {
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
                 />
               ) : mappingActiveTab === 'iiko' ? (
-                <input
-                  type="text"
-                  value={iikoSearchQuery}
-                  onChange={(e) => {
-                    setIikoSearchQuery(e.target.value);
-                    debouncedIikoSearch(e.target.value);
-                  }}
-                  placeholder="Поиск в номенклатуре iiko RMS..."
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
-                />
+                <div>
+                  <input
+                    type="text"
+                    value={iikoSearchQuery}
+                    onChange={(e) => {
+                      setIikoSearchQuery(e.target.value);
+                      debouncedIikoSearch(e.target.value);
+                    }}
+                    onCompositionEnd={(e) => {
+                      // P0: Handle RU input composition (IME)
+                      debouncedIikoSearch(e.target.value);
+                    }}
+                    placeholder="Поиск в номенклатуре iiko: картоф, яйцо, молоко 3.2..."
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
+                  />
+                  
+                  {/* P0: Debug badge under input */}
+                  {(iikoSearchQuery || iikoSearchBadge.count > 0) && (
+                    <div className="mt-2 text-xs text-gray-500 text-center">
+                      iiko · {iikoSearchBadge.count || 0} · org={iikoSearchBadge.orgId || 'default'} · 
+                      t={iikoSearchBadge.latency || 0}ms
+                      {iikoSearchBadge.connection_status && ` · ${iikoSearchBadge.connection_status}`}
+                      {iikoSearchBadge.error && ` · ERROR: ${iikoSearchBadge.error}`}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <input
                   type="text"
