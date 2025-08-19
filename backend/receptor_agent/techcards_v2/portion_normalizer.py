@@ -98,12 +98,12 @@ class PortionNormalizer:
             normalized_card['portions'] = 1
             normalized_card['ingredients'] = normalized_ingredients
             
-            # Обновляем yield
-            if 'yield' not in normalized_card:
-                normalized_card['yield'] = {}
+            # Обновляем yield (используем правильную схему TechCardV2)
+            if 'yield_' not in normalized_card:
+                normalized_card['yield_'] = {}
             
-            normalized_card['yield']['perPortion_g'] = float(target_yield)
-            normalized_card['yield']['perBatch_g'] = float(target_yield)  # т.к. 1 порция
+            normalized_card['yield_']['perPortion_g'] = float(target_yield)
+            normalized_card['yield_']['perBatch_g'] = float(target_yield)  # т.к. 1 порция
             
             # Записываем мета-информацию для аудита
             if 'meta' not in normalized_card:
