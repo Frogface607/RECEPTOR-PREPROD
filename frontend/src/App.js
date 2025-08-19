@@ -3002,6 +3002,9 @@ function App() {
           error_message: ''
         });
         
+        // Save connection for sticky behavior
+        localStorage.setItem('iikoRmsConnected', 'true');
+        
         setIikoRmsMessage({ 
           type: 'success', 
           text: `✅ Подключение успешно! Организация: ${orgName}` 
@@ -3025,6 +3028,100 @@ function App() {
       setIikoRmsMessage({ type: 'error', text: `❌ ${errorMsg}` });
     } finally {
       setIsConnectingIikoRms(false);
+    }
+  };
+
+  const disconnectFromIikoRms = async () => {
+    try {
+      setIikoRmsMessage({ type: 'info', text: '🔄 Отключение от iiko RMS...' });
+      
+      const response = await axios.post(`${API}/v1/iiko/rms/disconnect?user_id=${currentUser?.id || 'anonymous'}`);
+      
+      if (response.data.status === 'disconnected') {
+        setIikoRmsConnection({
+          status: 'not_connected',
+          host: '',
+          login: '',
+          organization_name: '',
+          last_connection: null,
+          sync_status: 'never_synced',
+          products_count: 0,
+          last_sync: null,
+          error_message: ''
+        });
+        
+        // Clear sticky connection flag
+        localStorage.removeItem('iikoRmsConnected');
+        
+        setIikoRmsMessage({ 
+          type: 'success', 
+          text: '✅ Подключение разорвано. Данные авторизации удалены.' 
+        });
+      }
+    } catch (error) {
+      console.error('iiko RMS disconnect error:', error);
+      setIikoRmsMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка отключения: ${error.message}` 
+      });
+    }
+  };
+
+  const restoreIikoRmsConnection = async () => {
+    try {
+      setIikoRmsMessage({ type: 'info', text: '🔄 Восстановление подключения...' });
+      
+      const response = await axios.post(`${API}/v1/iiko/rms/restore-connection?user_id=${currentUser?.id || 'anonymous'}`);
+      
+      if (response.data.status === 'restored') {
+        setIikoRmsConnection({
+          status: 'connected',
+          host: response.data.host,
+          login: response.data.login,
+          organization_name: response.data.organization_name,
+          last_connection: new Date().toISOString(),
+          sync_status: 'never_synced',
+          products_count: 0,
+          last_sync: null,
+          error_message: ''
+        });
+        
+        setIikoRmsMessage({ 
+          type: 'success', 
+          text: '✅ Подключение восстановлено!' 
+        });
+        
+        return true;
+      } else if (response.data.status === 'needs_reconnection') {
+        setIikoRmsConnection(prev => ({
+          ...prev,
+          status: 'needs_reconnection',
+          error_message: 'Требуется повторная авторизация'
+        }));
+        
+        setIikoRmsMessage({ 
+          type: 'warning', 
+          text: '⚠️ Нужно переподключиться. Сессия истекла.' 
+        });
+        
+        return false;
+      } else if (response.data.status === 'manually_disconnected') {
+        // Connection was manually disconnected, don't restore
+        return false;
+      } else {
+        setIikoRmsMessage({ 
+          type: 'error', 
+          text: `❌ Не удалось восстановить подключение: ${response.data.error || 'Unknown error'}` 
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('iiko RMS restore connection error:', error);
+      setIikoRmsMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка восстановления: ${error.message}` 
+      });
+      return false;
     }
   };
 
