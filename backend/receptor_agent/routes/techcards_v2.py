@@ -982,7 +982,7 @@ async def auto_fix_export_issues(request: Request):
         raise HTTPException(500, f"Auto-fix failed: {str(e)}")
 
 
-@router.get("/export/instructions")
+@router.get("/techcards.v2/export/instructions")
 async def get_export_instructions():
     """
     Export Wizard v1: Get iikoWeb import instructions
