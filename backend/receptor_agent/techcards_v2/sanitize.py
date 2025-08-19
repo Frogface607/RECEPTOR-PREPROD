@@ -25,6 +25,11 @@ def sanitize_card_v2(card: 'TechCardV2') -> 'TechCardV2':
     # GX-01-FINAL: Создаем новый объект, не мутируем входной
     card_dict = card.model_dump()
     
+    # DEBUG: Check yield field before processing
+    print(f"DEBUG sanitize: yield field present = {'yield' in card_dict}, yield_ field present = {'yield_' in card_dict}")
+    if 'yield' in card_dict:
+        print(f"DEBUG sanitize: yield content = {card_dict.get('yield')}")
+    
     # 1. Нормализация nutrition
     card_dict["nutrition"] = sanitize_nutrition(card_dict.get("nutrition"))
     
@@ -41,8 +46,16 @@ def sanitize_card_v2(card: 'TechCardV2') -> 'TechCardV2':
     # 4. Удаление лишних полей (только известные ключи схемы)
     card_dict = remove_unknown_fields(card_dict)
     
+    # DEBUG: Check yield field after filtering
+    print(f"DEBUG sanitize after filter: yield field present = {'yield' in card_dict}")
+    
     # 5. GX-01-FINAL: Создаем новый объект TechCardV2
-    return TechCardV2.model_validate(card_dict)
+    try:
+        return TechCardV2.model_validate(card_dict)
+    except Exception as e:
+        print(f"DEBUG sanitize validation error: {e}")
+        print(f"DEBUG card_dict keys: {list(card_dict.keys())}")
+        raise
 
 
 def sanitize_nutrition(nutrition: Any) -> Dict[str, Any]:
