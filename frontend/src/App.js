@@ -3401,6 +3401,30 @@ function App() {
 
   // ============== ENHANCED AUTO-MAPPING FUNCTIONS (GX-02) ==============
   
+  // ============== P0-2: SAFE-AUTOMAP + SANITIZE ==============
+  
+  // P0-2: Debounced auto-mapping with 600ms delay
+  const [autoMappingDebounceTimer, setAutoMappingDebounceTimer] = useState(null);
+  
+  const debouncedStartAutoMapping = useCallback(() => {
+    // P0-2: Clear existing timer
+    if (autoMappingDebounceTimer) {
+      clearTimeout(autoMappingDebounceTimer);
+    }
+    
+    // P0-2: Set new 600ms debounce timer
+    const timer = setTimeout(() => {
+      startEnhancedAutoMapping();
+    }, 600);
+    
+    setAutoMappingDebounceTimer(timer);
+    
+    // Cleanup function
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [autoMappingDebounceTimer]);
+  
   const startEnhancedAutoMapping = async () => {
     if (!tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
       setAutoMappingMessage({ type: 'error', text: 'Нет ингредиентов для автомаппинга' });
@@ -3416,9 +3440,9 @@ function App() {
       return;
     }
 
-    // P0: Debounce 600ms, disable buttons during request
+    // P0-2: Block buttons during request (disable state)
     setIsAutoMapping(true);
-    setAutoMappingMessage({ type: 'info', text: '🔄 Запуск улучшенного автомаппинга с RU-синонимами...' });
+    setAutoMappingMessage({ type: 'info', text: '🔄 Запуск безопасного автомаппинга с санитизацией...' });
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/v1/techcards.v2/mapping/enhanced`, {
@@ -3426,8 +3450,8 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           techcard: tcV2,
-          organization_id: 'default',  // Would come from RMS connection in production
-          auto_apply: false  // Don't auto-apply, let user review
+          organization_id: 'default',
+          auto_apply: false
         })
       });
 
@@ -3440,73 +3464,109 @@ function App() {
       if (result.status === 'success' && result.mapping_results) {
         const mappingData = result.mapping_results;
         
-        // P0: Sanitize response - filter null/empty objects; name/productId mandatory
-        const sanitizedResults = (mappingData.results || []).filter(result => {
-          if (!result || typeof result !== 'object') return false;
-          if (!result.ingredient_name || !result.ingredient_name.trim()) return false;
-          if (result.suggestion && (!result.suggestion.sku_id || !result.suggestion.name)) return false;
-          return true;
-        }).map(result => ({
-          ingredient_name: result.ingredient_name,
-          original_unit: result.original_unit || 'г',
-          status: result.status || 'no_match', // 'auto_accept', 'review', or 'no_match' 
-          confidence: Math.round((result.confidence || 0) * 100), // Convert to percentage
-          match_type: result.match_type || 'unknown',
-          suggestion: result.suggestion ? {
-            sku_id: result.suggestion.sku_id,
-            name: result.suggestion.name || 'Unnamed Product',
-            article: result.suggestion.article || '',
-            unit: result.suggestion.unit || 'г',
-            price_per_unit: result.suggestion.price_per_unit || 0,
-            currency: result.suggestion.currency || 'RUB',
-            group_name: result.suggestion.group_name || '',
-            source: result.suggestion.source || 'iiko'
-          } : null,
-          alternatives: Array.isArray(result.alternatives) ? result.alternatives : []
-        }));
+        // P0-2: COMPREHENSIVE SANITIZATION - ignore null/objects without name/productId
+        const sanitizedResults = (mappingData.results || [])
+          .filter(result => {
+            // P0-2: Filter out null, undefined, or non-object results
+            if (!result || typeof result !== 'object') {
+              console.warn('P0-2: Filtered out invalid result:', result);
+              return false;
+            }
+            
+            // P0-2: Require ingredient_name to exist and be non-empty
+            if (!result.ingredient_name || !result.ingredient_name.trim()) {
+              console.warn('P0-2: Filtered out result without ingredient_name:', result);
+              return false;
+            }
+            
+            // P0-2: If suggestion exists, ensure it has name and ID
+            if (result.suggestion) {
+              if (!result.suggestion.name || !result.suggestion.name.trim()) {
+                console.warn('P0-2: Filtered out suggestion without name:', result.suggestion);
+                return false;
+              }
+              if (!result.suggestion.sku_id && !result.suggestion.canonical_id) {
+                console.warn('P0-2: Filtered out suggestion without ID:', result.suggestion);
+                return false;
+              }
+            }
+            
+            return true;
+          })
+          .map(result => ({
+            ingredient_name: result.ingredient_name,
+            original_unit: result.original_unit || 'г',
+            status: result.status || 'no_match',
+            confidence: Math.round((result.confidence || 0) * 100),
+            match_type: result.match_type || 'unknown',
+            suggestion: result.suggestion ? {
+              sku_id: result.suggestion.sku_id,
+              name: result.suggestion.name || 'Unnamed Product',
+              article: result.suggestion.article || '',
+              unit: result.suggestion.unit || 'г',
+              price_per_unit: result.suggestion.price_per_unit || 0,
+              currency: result.suggestion.currency || 'RUB',
+              group_name: result.suggestion.group_name || '',
+              source: result.suggestion.source || 'iiko',
+              // P0-2: Unit mismatch handling - don't hide, show with label
+              unit_mismatch: result.original_unit !== result.suggestion.unit
+            } : null,
+            alternatives: Array.isArray(result.alternatives) ? result.alternatives.filter(alt => 
+              alt && alt.name && alt.name.trim() && (alt.sku_id || alt.canonical_id)
+            ) : []
+          }));
 
-        setAutoMappingResults(sanitizedResults);
-
-        // Set comprehensive success message with stats
+        // P0-2: Check for empty results and provide guidance
         const stats = mappingData.stats || { auto_accept: 0, review: 0, no_match: 0 };
         const coverage = mappingData.coverage || { potential_coverage_pct: 0 };
         
-        // P0: Check if no candidates ≥0.90 — show empty-state with suggestions
+        // P0-2: Enhanced empty-state logic
         if (stats.auto_accept === 0 && stats.review === 0) {
           setAutoMappingMessage({ 
             type: 'warning', 
             text: '📋 Нет позиций ≥90%. Попробуйте: уточнить жирность, заменить "зелень" на "петрушка/укроп", проверить единицы.' 
           });
           
-          // P0: Show empty-state with suggestions
           setAutoMappingResults([]);
+          setShowAutoMappingModal(true);
           
-          // P0: Log mapping_empty event
+          // P0-2: Log mapping_empty event (without UI crash)
           console.log('📊 mapping_empty:', {
             ingredients_count: tcV2.ingredients.length,
             organization: 'default',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            empty_reason: 'no_high_confidence_matches'
           });
+          
         } else {
+          setAutoMappingResults(sanitizedResults);
           setAutoMappingMessage({ 
             type: 'success', 
             text: `✅ Найдено ${sanitizedResults.length} совпадений. ` +
                   `Автопринятие: ${stats.auto_accept}, На проверку: ${stats.review}. ` +
                   `Потенциальное покрытие: ${coverage.potential_coverage_pct}%`
           });
+          setShowAutoMappingModal(true);
         }
 
-        setShowAutoMappingModal(true);
-        console.log('GX-02: Enhanced mapping completed:', stats);
+        console.log('P0-2: Safe auto-mapping completed:', stats);
         
       } else if (result.status === 'no_products') {
-        // P0: Handle no products scenario gracefully
+        // P0-2: Handle no products scenario gracefully
         setAutoMappingMessage({ 
           type: 'warning', 
           text: '📋 Номенклатура iiko не найдена. Выполните синхронизацию.' 
         });
         setAutoMappingResults([]);
         setShowAutoMappingModal(true);
+        
+        // P0-2: Log mapping_empty event
+        console.log('📊 mapping_empty:', {
+          ingredients_count: tcV2?.ingredients?.length || 0,
+          organization: 'default',
+          timestamp: new Date().toISOString(),
+          empty_reason: 'no_products_in_catalog'
+        });
         
       } else {
         throw new Error(result.mapping_results?.message || result.message || 'Unknown mapping error');
@@ -3515,22 +3575,24 @@ function App() {
     } catch (error) {
       console.error('Enhanced auto-mapping error:', error);
       
-      // P0: Log mapping_failed event (without crashing UI)
+      // P0-2: Log mapping_failed event (without crashing UI)
       console.log('📊 mapping_failed:', {
         error: error.message,
         ingredients_count: tcV2?.ingredients?.length || 0,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        stack: error.stack
       });
       
       setAutoMappingMessage({ 
         type: 'error', 
-        text: `❌ Ошибка улучшенного автомаппинга: ${error.message}` 
+        text: `❌ Ошибка автомаппинга: ${error.message}` 
       });
       
-      // P0: Set empty results to prevent "Cannot read properties of undefined ('name')" errors
+      // P0-2: Set empty results to prevent crashes
       setAutoMappingResults([]);
       
     } finally {
+      // P0-2: Always re-enable buttons
       setIsAutoMapping(false);
     }
   };
