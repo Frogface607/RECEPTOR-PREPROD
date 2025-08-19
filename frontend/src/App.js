@@ -15224,13 +15224,19 @@ function App() {
               </button>
               <button
                 onClick={() => setMappingActiveTab('iiko')}
-                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors relative ${
                   mappingActiveTab === 'iiko' 
                     ? 'bg-purple-600 text-white' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
                 🏪 iiko
+                {/* P0: iiko badge with count and update timestamp */}
+                {iikoSearchBadge.count > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full px-1 min-w-[18px] h-4 flex items-center justify-center">
+                    {iikoSearchBadge.count > 999 ? '999+' : iikoSearchBadge.count}
+                  </div>
+                )}
               </button>
               <button
                 onClick={() => setMappingActiveTab('catalog')}
@@ -15243,6 +15249,19 @@ function App() {
                 Каталоги
               </button>
             </div>
+            
+            {/* P0: iiko badge info display */}
+            {mappingActiveTab === 'iiko' && iikoSearchBadge.count > 0 && (
+              <div className="mb-3 text-xs text-gray-400 text-center">
+                iiko · {iikoSearchBadge.count.toLocaleString('ru-RU')} позиций · обновлено {
+                  iikoSearchBadge.last_sync ? 
+                    new Date(iikoSearchBadge.last_sync).toLocaleString('ru-RU', {
+                      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    }) : 
+                    'никогда'
+                }
+              </div>
+            )}
 
             {/* Search Input */}
             <div className="mb-4">
