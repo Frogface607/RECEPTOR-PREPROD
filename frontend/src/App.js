@@ -16499,12 +16499,12 @@ function App() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      {/* Ingredient Info */}
+                      {/* P0-2: Ingredient Info with enhanced display */}
                       <div className="flex-1 min-w-0 mr-4">
                         <div className="flex items-center space-x-3 mb-2">
                           <div className="font-medium text-white">
-                            {result.ingredient.name}
-                            <span className="text-gray-400 ml-2 text-sm">({result.ingredient.unit})</span>
+                            {result.ingredient_name}
+                            <span className="text-gray-400 ml-2 text-sm">({result.original_unit})</span>
                           </div>
                           {result.currentSku && (
                             <span className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
@@ -16521,8 +16521,8 @@ function App() {
                               </div>
                               <div className="text-gray-400">
                                 SKU: {result.suggestion.sku_id} • {result.suggestion.unit}
-                                {result.suggestion.category && (
-                                  <span className="ml-2">• {result.suggestion.category}</span>
+                                {result.suggestion.group_name && (
+                                  <span className="ml-2">• {result.suggestion.group_name}</span>
                                 )}
                               </div>
                             </div>
@@ -16540,9 +16540,10 @@ function App() {
                                 iiko
                               </span>
                               
-                              {result.issues && result.issues.length > 0 && (
-                                <span className="bg-yellow-600 text-white px-2 py-1 rounded text-xs">
-                                  ⚠ {result.unitMismatch ? 'unit' : 'issue'}
+                              {/* P0-2: Unit-mismatch display - не скрывать */}
+                              {result.suggestion.unit_mismatch && (
+                                <span className="bg-yellow-600 text-white px-2 py-1 rounded text-xs" title="Единица измерения не совпала">
+                                  ⚠ единица не совпала
                                 </span>
                               )}
                             </div>
