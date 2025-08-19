@@ -3975,18 +3975,10 @@ function App() {
       setIsExportProcessing(true);
       setExportMessage({ type: 'info', text: '🔄 Создание файла для iiko...' });
       
-      // Use enhanced export endpoint with tracking and validation
-      const exportPayload = {
-        techcard: tcV2,
-        organization_id: 'default',
-        user_email: 'user@example.com',
-        techcard_id: tcV2?.meta?.id || `temp_${Date.now()}`
-      };
-      
       const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(exportPayload)
+        body: JSON.stringify(tcV2)
       });
       
       if (!response.ok) {
