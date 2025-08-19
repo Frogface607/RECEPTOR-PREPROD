@@ -403,6 +403,186 @@ class IikoRmsService:
         
         return product
     
+    def search_rms_products_enhanced(self, organization_id: str, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Enhanced search for RMS products with RU-normalization and improved scoring
+        P0: SKU Search (iiko) — 0-hit bugfix implementation
+        """
+        try:
+            if not query.strip():
+                return []
+            
+            # Normalize query for better matching
+            normalized_query = self._normalize_ru_text(query.strip())
+            
+            # Get all active products for organization (remove hidden filters)
+            products_cursor = self.products.find({
+                "organization_id": organization_id,
+                # Remove hidden filters - don't filter by price or active status
+                # "active": True,  # Allow inactive products
+                # "price_per_unit": {"$gt": 0}  # Allow products without price
+            })
+            
+            products = list(products_cursor)
+            logger.info(f"Found {len(products)} total products for enhanced search")
+            
+            if not products:
+                return []
+            
+            matches = []
+            
+            # Enhanced matching with multiple strategies
+            for product in products:
+                product_name = product.get("name", "")
+                if not product_name:
+                    continue
+                
+                # Strategy 1: Normalized RU text matching
+                normalized_product_name = self._normalize_ru_text(product_name)
+                
+                # Strategy 2: Multi-level scoring
+                scores = []
+                
+                # Exact match
+                if normalized_query.lower() == normalized_product_name.lower():
+                    scores.append(1.0)
+                
+                # Substring match
+                elif normalized_query.lower() in normalized_product_name.lower():
+                    scores.append(0.95)
+                elif normalized_product_name.lower() in normalized_query.lower():
+                    scores.append(0.90)
+                
+                # Word-level matching
+                query_words = normalized_query.lower().split()
+                product_words = normalized_product_name.lower().split()
+                
+                word_matches = sum(1 for qw in query_words 
+                                 if any(qw in pw or pw in qw for pw in product_words))
+                
+                if word_matches > 0:
+                    word_score = min(0.85, 0.60 + (word_matches / len(query_words)) * 0.25)
+                    scores.append(word_score)
+                
+                # Lemmatization-based matching for common ingredients
+                lemmatized_score = self._lemmatized_match_score(normalized_query, normalized_product_name)
+                if lemmatized_score > 0.60:
+                    scores.append(lemmatized_score)
+                
+                # Use best score
+                if scores:
+                    best_score = max(scores)
+                    
+                    # Create result item
+                    match_item = {
+                        "_id": str(product["_id"]),
+                        "sku_id": str(product["_id"]),
+                        "name": product_name,
+                        "article": product.get("article", ""),
+                        "unit": product.get("unit", "г"),
+                        "group_name": product.get("group_name", ""),
+                        "price_per_unit": product.get("price_per_unit", 0.0),
+                        "currency": "RUB",
+                        "vat_pct": product.get("vat_pct", 0.0),
+                        "asOf": product.get("updated_at", datetime.now(timezone.utc)).isoformat(),
+                        "match_score": best_score,
+                        "product_type": product.get("product_type", "product"),
+                        "active": product.get("active", True)
+                    }
+                    
+                    matches.append(match_item)
+            
+            # Sort by match score (descending) and return top results
+            matches.sort(key=lambda x: x["match_score"], reverse=True)
+            
+            # Return top-5 candidates even with low scores (as per requirement)
+            result = matches[:max(5, limit)]
+            
+            logger.info(f"Enhanced search for '{query}' returned {len(result)} matches")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Enhanced RMS product search error: {str(e)}")
+            return []
+    
+    def _normalize_ru_text(self, text: str) -> str:
+        """
+        Normalize Russian text for better matching
+        P0: RU-нормализация (lower, ё→е, лемматизация)
+        """
+        if not text:
+            return ""
+        
+        # Convert to lowercase
+        normalized = text.lower().strip()
+        
+        # Replace ё with е
+        normalized = normalized.replace('ё', 'е')
+        
+        # Remove common noise words
+        noise_words = ['свежий', 'свежая', 'свежее', 'домашний', 'домашняя', 'домашнее', 
+                      'столовый', 'столовая', 'столовое', 'пищевой', 'пищевая', 'пищевое']
+        words = normalized.split()
+        words = [w for w in words if w not in noise_words]
+        normalized = ' '.join(words)
+        
+        # Remove extra spaces
+        normalized = ' '.join(normalized.split())
+        
+        return normalized
+    
+    def _lemmatized_match_score(self, query: str, product_name: str) -> float:
+        """
+        Simple lemmatization-based matching for common Russian ingredients
+        картоф → картофель, картошка
+        """
+        # Simple lemmatization rules for common ingredients
+        lemma_rules = {
+            'картоф': ['картофель', 'картошка', 'клубни'],
+            'молок': ['молоко', 'молочный'],
+            'яйц': ['яйцо', 'яйца', 'яичный'],
+            'мяс': ['мясо', 'мясной'],
+            'говяд': ['говядина', 'говяжий'],
+            'свин': ['свинина', 'свиной'],
+            'курин': ['курица', 'куриный'],
+            'сметан': ['сметана', 'сметановый'],
+            'творог': ['творог', 'творожный'],
+            'сыр': ['сыр', 'сырный'],
+            'масл': ['масло', 'масляный'],
+            'лук': ['лук', 'луковый'],
+            'морков': ['морковь', 'морковный'],
+            'помидор': ['помидор', 'томат', 'томатный'],
+            'огурц': ['огурец', 'огуречный'],
+            'капуст': ['капуста', 'капустный'],
+            'перец': ['перец', 'перечный'],
+            'чеснок': ['чеснок', 'чесночный'],
+            'петрушк': ['петрушка'],
+            'укроп': ['укроп'],
+            'базилик': ['базилик'],
+            'соль': ['соль', 'солёный', 'соленый'],
+            'сахар': ['сахар', 'сахарный']
+        }
+        
+        query_lower = query.lower()
+        product_lower = product_name.lower()
+        
+        # Check if query contains any lemma root
+        for lemma_root, variants in lemma_rules.items():
+            if lemma_root in query_lower:
+                # Check if product name contains any variant
+                if any(variant in product_lower for variant in variants):
+                    return 0.85  # High confidence for lemmatized matches
+                if lemma_root in product_lower:
+                    return 0.80
+        
+        # Check reverse: if product contains lemma root and query contains variant
+        for lemma_root, variants in lemma_rules.items():
+            if lemma_root in product_lower:
+                if any(variant in query_lower for variant in variants):
+                    return 0.85
+        
+        return 0.0
+    
     def search_rms_products(self, organization_id: str, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """
         Search RMS products in organization with intelligent matching
