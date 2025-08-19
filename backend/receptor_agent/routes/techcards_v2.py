@@ -868,7 +868,17 @@ async def enhanced_export_iiko_xlsx(request: Request):
         
         # Step 2: Export XLSX
         from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
-        excel_buffer, export_issues = create_iiko_ttk_xlsx(normalized_card)
+        from ..techcards_v2.schemas import TechCardV2
+        
+        # Создаем TechCardV2 объект из dict для экспорта
+        try:
+            techcard_obj = TechCardV2.model_validate(normalized_card)
+        except Exception as e:
+            logger.error(f"TechCardV2 validation error during export: {e}")
+            # Используем исходные данные если нормализация не прошла
+            techcard_obj = TechCardV2.model_validate(techcard_data)
+        
+        excel_buffer, export_issues = create_iiko_ttk_xlsx(techcard_obj)
         
         # Step 3: Track export
         organization_id = body.get('organization_id', 'default')
