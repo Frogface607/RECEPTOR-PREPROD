@@ -3678,7 +3678,7 @@ function App() {
 
   // ============== EXPORT WIZARD FUNCTIONS (IK-02B-FE/03) ==============
   
-  const startExportWizard = () => {
+  const startExportWizard = async () => {
     if (!tcV2) {
       setExportMessage({ type: 'error', text: 'Нет техкарты для экспорта' });
       return;
@@ -3695,14 +3695,31 @@ function App() {
       coverageBefore: null,
       coverageAfter: null,
       exportUrl: null,
-      stepTimings: { start: Date.now() }
+      stepTimings: { start: Date.now() },
+      lastExport: null
     });
     setExportMessage({ type: '', text: '' });
     
-    // Perform pre-checks
+    // Fetch last export info and perform pre-checks
+    await fetchLastExportInfo();
     performPreChecks();
     
     setShowExportWizard(true);
+  };
+
+  const fetchLastExportInfo = async () => {
+    try {
+      const response = await fetch(`${API}/v1/techcards.v2/export/last?organization_id=default&techcard_id=${tcV2?.meta?.id || 'temp'}`);
+      if (response.ok) {
+        const data = await response.json();
+        setExportWizardData(prev => ({
+          ...prev,
+          lastExport: data.last_export
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch last export info:', error);
+    }
   };
 
   const performPreChecks = () => {
