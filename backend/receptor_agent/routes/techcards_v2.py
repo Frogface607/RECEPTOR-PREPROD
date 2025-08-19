@@ -365,9 +365,9 @@ def search_catalog(
             except Exception as e:
                 print(f"iiko search error: {e}")
         
-        # iiko RMS search results (if needed)
+        # iiko RMS search results (if needed) with enhanced normalization
         rms_results = []
-        if source in ("rms", "all"):
+        if source in ("rms", "iiko", "all"):
             try:
                 from ..integrations.iiko_rms_service import get_iiko_rms_service
                 rms_service = get_iiko_rms_service()
@@ -377,8 +377,8 @@ def search_catalog(
                 if connection_status.get("status") == "connected" and connection_status.get("organization_id"):
                     organization_id = connection_status["organization_id"]
                     
-                    # Search products in RMS
-                    rms_products = rms_service.search_rms_products(organization_id, query, limit)
+                    # Enhanced search with RU-normalization
+                    rms_products = rms_service.search_rms_products_enhanced(organization_id, query, limit)
                     
                     for product in rms_products:
                         rms_results.append({
@@ -386,14 +386,14 @@ def search_catalog(
                             "canonical_id": None,
                             "fdc_id": None,
                             "sku_id": product["sku_id"],
-                            "category": product.get("group_name", "rms"),
+                            "category": product.get("group_name", "iiko"),
                             "unit": product["unit"],
                             "price": product["price_per_unit"],
                             "has_nutrition": False,
                             "nutrition_preview": None,
-                            "source": "rms",
+                            "source": "iiko",  # Always show as "iiko" source to user
                             "currency": product["currency"],
-                            "vat_pct": product.get("vat_pct", 0.0),  # IK-03: VAT support
+                            "vat_pct": product.get("vat_pct", 0.0),
                             "asOf": product["asOf"],
                             "match_score": product["match_score"],
                             "article": product.get("article"),
@@ -445,22 +445,30 @@ def search_catalog(
             
             catalog_results = list(all_items.values())
         
-        # Объединяем результаты с приоритетом: Price → RMS → iiko → USDA → остальные
-        all_results = price_results + rms_results + iiko_results + usda_results + catalog_results
+        # Объединяем результаты с приоритетом: iiko/RMS → Price → USDA → остальные
+        all_results = rms_results + price_results + usda_results + catalog_results
         
-        # Сортируем по релевантности: Price → RMS → iiko → USDA → точные совпадения → остальные
+        # Сортируем по релевантности: iiko/RMS приоритет, затем точные совпадения
         def sort_key(x):
             source_priority = {
-                "user": 0, "catalog": 1, "bootstrap": 2,  # Price sources
-                "rms": 3,                                   # iiko RMS (highest priority for real data)
-                "iiko": 4,                                  # iikoCloud
-                "usda": 5,                                  # USDA
-                "catalog": 6                               # Other catalog
-            }.get(x.get("source", "unknown"), 7)
+                "iiko": 0,                                  # iiko RMS (highest priority)
+                "rms": 0,                                   # Also iiko RMS
+                "catalog": 1, "bootstrap": 1, "user": 1,   # Price sources  
+                "usda": 2,                                  # USDA
+                "catalog": 3                               # Other catalog
+            }.get(x.get("source", "unknown"), 4)
+            
+            # Boost exact matches
             name_match = 0 if query in x["name"].lower() else 1
-            return (source_priority, name_match, -len(x["name"]), x["name"].lower())
+            score_boost = x.get("match_score", 0.5)  # Use match score from RMS
+            
+            return (source_priority, -score_boost, name_match, -len(x["name"]), x["name"].lower())
         
         sorted_items = sorted(all_results, key=sort_key)[:limit]
+        
+        # Get iiko product count for badge display
+        iiko_count = len(rms_results)
+        last_sync = connection_status.get("last_connection") if connection_status else None
         
         return JSONResponse(content={
             "status": "success", 
@@ -468,9 +476,15 @@ def search_catalog(
             "total_found": len(all_results),
             "price_count": len(price_results),
             "rms_count": len(rms_results),
-            "iiko_count": len(iiko_results),
+            "iiko_count": iiko_count,  # For UI badge
             "usda_count": len(usda_results),
-            "catalog_count": len(catalog_results)
+            "catalog_count": len(catalog_results),
+            "default_source": "iiko",
+            "iiko_badge": {
+                "count": iiko_count,
+                "last_sync": last_sync,
+                "connection_status": connection_status.get("status") if connection_status else "not_connected"
+            }
         }, headers={"Content-Type": "application/json; charset=utf-8"})
         
     except Exception as e:
