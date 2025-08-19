@@ -898,7 +898,7 @@ async def enhanced_export_iiko_xlsx(request: Request):
         raise HTTPException(500, f"Enhanced export failed: {str(e)}")
 
 
-@router.get("/export/last")
+@router.get("/techcards.v2/export/last")
 async def get_last_export(organization_id: str = "default", techcard_id: Optional[str] = None):
     """
     Export Wizard v1: Get last export information
