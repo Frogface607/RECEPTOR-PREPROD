@@ -3975,44 +3975,73 @@ function App() {
       setIsExportProcessing(true);
       setExportMessage({ type: 'info', text: '🔄 Создание файла для iiko...' });
       
+      // Use enhanced export endpoint with tracking and validation
+      const exportPayload = {
+        techcard: tcV2,
+        organization_id: 'default',
+        user_email: user.email || 'unknown@example.com',
+        techcard_id: tcV2?.meta?.id || `temp_${Date.now()}`
+      };
+      
       const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tcV2)
+        body: JSON.stringify(exportPayload)
       });
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+      if (!response.ok) {
+        const errorData = await response.json();
         
-        // Trigger download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `iiko_ttk_${tcV2.name?.replace(/\s+/g, '_') || 'techcard'}.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Handle blocked export due to validation errors
+        if (errorData.status === 'blocked') {
+          setExportMessage({ 
+            type: 'error', 
+            text: '❌ Экспорт заблокирован из-за критических ошибок валидации' 
+          });
+          
+          setExportWizardData(prev => ({
+            ...prev,
+            blockingErrors: errorData.blocking_errors,
+            qualityScore: errorData.quality_score,
+            canAutoFix: errorData.can_auto_fix
+          }));
+          
+          return;
+        }
         
-        setExportWizardData(prev => ({
-          ...prev,
-          exportUrl: url,
-          stepTimings: { 
-            ...prev.stepTimings, 
-            export: Date.now() - startTime 
-          }
-        }));
-        
-        setExportMessage({ 
-          type: 'success', 
-          text: '✅ Файл экспортирован! Импортируйте его в iikoWeb → Технологические карты → Импорт' 
-        });
-        
-        // Auto-advance to final step
-        setExportWizardStep(4);
-        
-      } else {
-        throw new Error('Ошибка создания файла экспорта');
+        throw new Error(errorData.message || 'Ошибка создания файла экспорта');
       }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `iiko_ttk_${tcV2.meta?.title?.replace(/\s+/g, '_') || 'techcard'}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Refresh last export info
+      await fetchLastExportInfo();
+      
+      setExportWizardData(prev => ({
+        ...prev,
+        exportUrl: url,
+        stepTimings: { 
+          ...prev.stepTimings, 
+          export: Date.now() - startTime 
+        }
+      }));
+      
+      setExportMessage({ 
+        type: 'success', 
+        text: '✅ Файл экспортирован! Импортируйте его в iikoWeb → Технологические карты → Импорт' 
+      });
+      
+      // Auto-advance to final step
+      setExportWizardStep(4);
       
     } catch (error) {
       console.error('iiko export error:', error);
