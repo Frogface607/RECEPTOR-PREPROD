@@ -23,7 +23,7 @@ from datetime import datetime
 
 class DeploymentTest:
     def __init__(self):
-        self.base_url = "https://iiko-mapper.preview.emergentagent.com/api"
+        self.base_url = "https://techcard-sync-1.preview.emergentagent.com/api"
         self.test_user_id = "test_user_deploy_123"
         self.test_dish_name = "Тестовое блюдо для проверки"
         self.test_city = "moskva"
