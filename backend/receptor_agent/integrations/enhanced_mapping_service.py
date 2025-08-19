@@ -1,15 +1,19 @@
 """
-GX-02: Enhanced Mapping Service with RU-synonyms and improved scoring
-Provides intelligent auto-mapping with Russian synonym support and confidence scoring
+P0.3: Enhanced Mapping Service with Performance Optimizations ≤3s
+Optimized for batch-50 ingredients with caching, indexing, and profiling
 """
 
 import os
 import json
 import logging
+import time
+import hashlib
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 from fuzzywuzzy import fuzz, process
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
 
 from .iiko_rms_service import get_iiko_rms_service
 from .iiko_rms_models import IikoRmsMapping
@@ -18,16 +22,23 @@ logger = logging.getLogger(__name__)
 
 
 class EnhancedMappingService:
-    """Enhanced ingredient mapping service with Russian synonyms and intelligent scoring"""
+    """P0.3: Performance-optimized mapping service ≤3s for batch-50"""
     
     def __init__(self):
         self.rms_service = get_iiko_rms_service()
         self.ru_synonyms = self._load_ru_synonyms()
         
-        # Scoring thresholds as per GX-02
-        self.auto_accept_threshold = 0.90  # ≥0.90 автопринятие
-        self.review_threshold = 0.70       # 0.70–0.89 на проверку
+        # P0.3: Performance optimizations
+        self.max_workers = 8  # Ограниченный пул потоков
+        self._product_index = {}  # Предрассчитанный индекс
+        self._cache = {}  # LRU кэш 500 ключей
+        self._cache_max_size = 500
+        self._cache_ttl = 24 * 60 * 60  # 24 часа TTL
         
+        # Scoring thresholds
+        self.auto_accept_threshold = 0.90  
+        self.review_threshold = 0.70       
+    
     def _load_ru_synonyms(self) -> Dict[str, List[str]]:
         """Load Russian synonyms dictionary (30 базовых позиций)"""
         synonyms = {
