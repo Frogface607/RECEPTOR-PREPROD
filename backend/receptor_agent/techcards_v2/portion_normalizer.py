@@ -139,19 +139,24 @@ class PortionNormalizer:
         
         # Теги
         tags = techcard.get('meta', {}).get('tags', [])
-        if tags:
-            text_sources.extend([tag.lower() for tag in tags])
+        if tags and isinstance(tags, list):
+            text_sources.extend([tag.lower() for tag in tags if isinstance(tag, str)])
         
         # Описание процесса
-        process_steps = techcard.get('process', {}).get('steps', [])
-        for step in process_steps:
-            if isinstance(step, dict):
-                action = step.get('action', '')
-                if action:
-                    text_sources.append(action.lower())
+        process = techcard.get('process', {})
+        if isinstance(process, dict):
+            process_steps = process.get('steps', [])
+            if isinstance(process_steps, list):
+                for step in process_steps:
+                    if isinstance(step, dict):
+                        action = step.get('action', '')
+                        if action:
+                            text_sources.append(action.lower())
         
         # Объединяем весь текст
         combined_text = ' '.join(text_sources)
+        
+        logger.info(f"Analyzing text for archetype: {combined_text[:100]}...")
         
         # Ищем совпадения по архетипам (в порядке приоритета)
         for archetype, keywords in self.ARCHETYPE_KEYWORDS.items():
