@@ -497,7 +497,8 @@ def search_catalog(
             "iiko_badge": {
                 "count": iiko_count,
                 "last_sync": last_sync,
-                "connection_status": connection_status.get("status") if connection_status else "not_connected"
+                "connection_status": connection_status.get("status") if connection_status else "not_connected",
+                "orgId": organization_id  # P0: Include orgId in badge for debugging
             }
         }, headers={"Content-Type": "application/json; charset=utf-8"})
         
