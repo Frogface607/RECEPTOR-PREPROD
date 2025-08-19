@@ -374,10 +374,15 @@ def search_catalog(
                 from ..integrations.iiko_rms_service import get_iiko_rms_service
                 rms_service = get_iiko_rms_service()
                 
-                # Get RMS connection status
+                # P0: Use provided orgId parameter, fallback to connection status
+                organization_id = orgId or "default"
+                
+                # Get RMS connection status to verify connectivity
                 connection_status = rms_service.get_rms_connection_status()
-                if connection_status.get("status") == "connected" and connection_status.get("organization_id"):
-                    organization_id = connection_status["organization_id"]
+                if connection_status.get("status") == "connected":
+                    # Override orgId with actual connected organization if available
+                    if connection_status.get("organization_id"):
+                        organization_id = connection_status["organization_id"]
                     
                     # Enhanced search with RU-normalization
                     rms_products = rms_service.search_rms_products_enhanced(organization_id, query, limit)
@@ -402,8 +407,11 @@ def search_catalog(
                             "product_type": product.get("product_type", "product"),
                             "active": product.get("active", True)
                         })
+                else:
+                    logger.warning(f"RMS connection not active: {connection_status.get('status', 'unknown')}")
                         
             except Exception as e:
+                logger.error(f"RMS search error: {str(e)}")
                 print(f"RMS search error: {e}")
         
         # Каталоги цен и питания (если нужны)
