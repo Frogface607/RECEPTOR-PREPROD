@@ -595,6 +595,176 @@ class IikoRmsService:
         except Exception as e:
             logger.error(f"Error generating auto-mappings: {str(e)}")
     
+    def disconnect_rms(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Disconnect from iiko RMS and clear stored credentials
+        Implements "Забыть подключение" functionality
+        """
+        try:
+            logger.info(f"Disconnecting iiko RMS for user: {user_id}")
+            
+            query = {"user_id": user_id} if user_id else {}
+            if not user_id:
+                # Clear all connections if no user specified
+                query = {"status": IikoRmsConnectionStatus.CONNECTED}
+            
+            # Update connection status to disconnected and clear session
+            result = self.credentials.update_many(
+                query,
+                {
+                    "$set": {
+                        "status": IikoRmsConnectionStatus.DISCONNECTED,
+                        "session_key": None,
+                        "session_expires_at": None,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                }
+            )
+            
+            logger.info(f"Disconnected {result.modified_count} RMS connections")
+            
+            return {
+                "status": "disconnected",
+                "connections_cleared": result.modified_count
+            }
+            
+        except Exception as e:
+            logger.error(f"Error disconnecting RMS: {str(e)}")
+            raise IikoRmsAPIError(f"Failed to disconnect: {str(e)}")
+    
+    def restore_rms_connection(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Attempt to restore iiko RMS connection using stored credentials
+        Used for sticky connection functionality
+        """
+        try:
+            logger.info(f"Attempting to restore RMS connection for user: {user_id}")
+            
+            # Find most recent connection for user
+            query = {"user_id": user_id} if user_id else {}
+            credentials_record = self.credentials.find_one(
+                query,
+                sort=[("last_connection", DESCENDING)]
+            )
+            
+            if not credentials_record:
+                return {"status": "no_stored_credentials"}
+            
+            if credentials_record.get("status") == IikoRmsConnectionStatus.DISCONNECTED:
+                return {"status": "manually_disconnected"}
+            
+            # Try to restore connection using stored credentials
+            try:
+                rms_client = IikoRmsClient(
+                    credentials_record["host"],
+                    credentials_record["login"], 
+                    credentials_record["password"]
+                )
+                
+                # Test connection by authenticating
+                session_key = rms_client.authenticate()
+                
+                # Get organizations to verify connection is fully working
+                organizations = rms_client.get_organizations()
+                
+                # Update credentials with new session
+                self.credentials.update_one(
+                    {"_id": credentials_record["_id"]},
+                    {
+                        "$set": {
+                            "status": IikoRmsConnectionStatus.CONNECTED,
+                            "session_key": session_key,
+                            "session_expires_at": datetime.now(timezone.utc) + timedelta(hours=2),
+                            "last_connection": datetime.now(timezone.utc),
+                            "updated_at": datetime.now(timezone.utc)
+                        }
+                    }
+                )
+                
+                logger.info("✅ RMS connection restored successfully")
+                
+                return {
+                    "status": "restored",
+                    "host": credentials_record["host"],
+                    "login": credentials_record["login"][:3] + "***",
+                    "organization_id": credentials_record.get("organization_id"),
+                    "organization_name": credentials_record.get("organization_name"),
+                    "organizations": organizations,
+                    "session_expires_at": (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+                }
+                
+            except IikoRmsAPIError as api_error:
+                # Handle specific API errors (401, 403, etc.)
+                if "401" in str(api_error) or "403" in str(api_error):
+                    # Mark as needs reconnection
+                    self.credentials.update_one(
+                        {"_id": credentials_record["_id"]},
+                        {
+                            "$set": {
+                                "status": IikoRmsConnectionStatus.NEEDS_RECONNECTION,
+                                "updated_at": datetime.now(timezone.utc)
+                            }
+                        }
+                    )
+                    
+                    return {
+                        "status": "needs_reconnection",
+                        "error": "Authentication expired. Please reconnect.",
+                        "host": credentials_record["host"],
+                        "login": credentials_record["login"][:3] + "***"
+                    }
+                else:
+                    # Other API errors
+                    self.credentials.update_one(
+                        {"_id": credentials_record["_id"]},
+                        {
+                            "$set": {
+                                "status": IikoRmsConnectionStatus.ERROR,
+                                "updated_at": datetime.now(timezone.utc)
+                            }
+                        }
+                    )
+                    
+                    return {
+                        "status": "connection_error",
+                        "error": str(api_error),
+                        "host": credentials_record["host"],
+                        "login": credentials_record["login"][:3] + "***"
+                    }
+                    
+        except Exception as e:
+            logger.error(f"Error restoring RMS connection: {str(e)}")
+            return {
+                "status": "restore_error",
+                "error": str(e)
+            }
+    
+    def mask_credentials_in_logs(self, message: str) -> str:
+        """
+        Mask sensitive credentials in log messages
+        Prevents password/session key exposure in logs
+        """
+        import re
+        
+        # Mask patterns for common credentials
+        patterns = [
+            (r'password["\s]*[:=]["\s]*([^"\s,}]+)', r'password": "***"'),
+            (r'pass["\s]*[:=]["\s]*([^"\s,}]+)', r'pass": "***"'),
+            (r'session_key["\s]*[:=]["\s]*([^"\s,}]+)', r'session_key": "***"'),
+            (r'key["\s]*[:=]["\s]*([a-zA-Z0-9]{20,})', r'key": "***"'),
+            # Mask long alphanumeric strings that might be tokens
+            (r'([a-zA-Z0-9]{30,})', lambda m: m.group(1)[:6] + "***" + m.group(1)[-4:] if len(m.group(1)) > 10 else "***")
+        ]
+        
+        masked_message = message
+        for pattern, replacement in patterns:
+            if callable(replacement):
+                masked_message = re.sub(pattern, replacement, masked_message)
+            else:
+                masked_message = re.sub(pattern, replacement, masked_message)
+        
+        return masked_message
+    
     def get_rms_connection_status(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Get RMS connection status"""
         try:
