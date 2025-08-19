@@ -221,6 +221,46 @@ async def search_rms_products(
         logger.error(f"Error searching RMS products: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+@router.post("/disconnect")
+async def disconnect_rms(user_id: Optional[str] = Query(None, description="User ID")):
+    """
+    Disconnect from iiko RMS and clear stored credentials
+    Implements "Забыть подключение" functionality
+    """
+    try:
+        logger.info(f"Disconnecting RMS for user: {user_id}")
+        
+        service = get_iiko_rms_service()
+        result = service.disconnect_rms(user_id=user_id)
+        
+        return {
+            "status": result["status"],
+            "connections_cleared": result["connections_cleared"],
+            "message": "Connection cleared successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error disconnecting RMS: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")
+
+@router.post("/restore-connection")
+async def restore_rms_connection(user_id: Optional[str] = Query(None, description="User ID")):
+    """
+    Attempt to restore iiko RMS connection using stored credentials
+    Used for sticky connection functionality on app startup
+    """
+    try:
+        logger.info(f"Attempting to restore RMS connection for user: {user_id}")
+        
+        service = get_iiko_rms_service()
+        result = service.restore_rms_connection(user_id=user_id)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error restoring RMS connection: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to restore connection: {str(e)}")
+
 @router.get("/connection/status", response_model=RmsConnectionStatusResponse)
 async def get_rms_connection_status(user_id: Optional[str] = Query(None, description="User ID")):
     """
