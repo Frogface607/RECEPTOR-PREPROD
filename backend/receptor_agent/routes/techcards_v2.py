@@ -470,6 +470,10 @@ def search_catalog(
         # Get iiko product count for badge display
         iiko_count = len(rms_results)
         last_sync = connection_status.get("last_connection") if connection_status else None
+        if last_sync and hasattr(last_sync, 'isoformat'):
+            last_sync = last_sync.isoformat()
+        elif last_sync:
+            last_sync = str(last_sync)
         
         return JSONResponse(content={
             "status": "success", 
