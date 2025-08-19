@@ -817,7 +817,11 @@ class IikoRmsService:
                 "session_expires_at": credentials_record.get("session_expires_at"),
                 "is_session_valid": (
                     credentials_record.get("session_expires_at") and 
-                    datetime.now(timezone.utc) < credentials_record["session_expires_at"]
+                    datetime.now(timezone.utc) < (
+                        credentials_record["session_expires_at"].replace(tzinfo=timezone.utc) 
+                        if credentials_record["session_expires_at"] and not credentials_record["session_expires_at"].tzinfo 
+                        else credentials_record["session_expires_at"]
+                    )
                 ) if credentials_record.get("session_expires_at") else False
             }
             
