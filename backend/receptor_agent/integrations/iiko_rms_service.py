@@ -787,6 +787,10 @@ class IikoRmsService:
             ]:
                 # Check if session might be expired
                 session_expires_at = credentials_record.get("session_expires_at")
+                if session_expires_at and not session_expires_at.tzinfo:
+                    # Make session_expires_at timezone-aware if it's naive
+                    session_expires_at = session_expires_at.replace(tzinfo=timezone.utc)
+                
                 if (not session_expires_at or 
                     datetime.now(timezone.utc) >= session_expires_at - timedelta(minutes=5)):
                     
