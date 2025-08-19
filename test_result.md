@@ -70,7 +70,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "IK-02B-FE/03 One-click Export Wizard (IK-02B-FE/03 Frontend Export)"
+##     - "P0.3: Automapping Performance ≤ 3s (batch-50)"
 ##   stuck_tasks:
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
