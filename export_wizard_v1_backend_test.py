@@ -23,18 +23,18 @@ API_BASE = f"{BACKEND_URL}/api/v1/techcards.v2"
 SAMPLE_TECHCARD = {
     "meta": {
         "title": "Говядина тушеная с овощами",
-        "description": "Классическое блюдо русской кухни",
-        "category": "Горячие блюда",
-        "portions": 4,
-        "difficulty": "medium",
-        "cookingTime_min": 120,
-        "tags": ["мясо", "овощи", "тушение"]
+        "version": "2.0"
+    },
+    "portions": 4,
+    "yield": {
+        "perPortion_g": 200.0,
+        "perBatch_g": 800.0
     },
     "ingredients": [
         {
             "name": "говядина",
             "brutto_g": 600.0,
-            "unit": "г",
+            "unit": "g",
             "loss_pct": 15.0,
             "netto_g": 510.0,
             "skuId": "beef_001"
@@ -42,7 +42,7 @@ SAMPLE_TECHCARD = {
         {
             "name": "лук репчатый",
             "brutto_g": 200.0,
-            "unit": "г", 
+            "unit": "g", 
             "loss_pct": 10.0,
             "netto_g": 180.0,
             "skuId": "onion_001"
@@ -50,26 +50,10 @@ SAMPLE_TECHCARD = {
         {
             "name": "морковь",
             "brutto_g": 150.0,
-            "unit": "г",
+            "unit": "g",
             "loss_pct": 20.0,
             "netto_g": 120.0,
             "skuId": "carrot_001"
-        },
-        {
-            "name": "растительное масло",
-            "brutto_g": 30.0,
-            "unit": "мл",
-            "loss_pct": 0.0,
-            "netto_g": 27.0,
-            "skuId": "oil_001"
-        },
-        {
-            "name": "соль",
-            "brutto_g": 8.0,
-            "unit": "г",
-            "loss_pct": 0.0,
-            "netto_g": 8.0,
-            "skuId": "salt_001"
         }
     ],
     "process": [
@@ -95,23 +79,11 @@ SAMPLE_TECHCARD = {
             "equipment": "кастрюля с крышкой"
         }
     ],
-    "yield": {
-        "perPortion_g": 200.0,
-        "perBatch_g": 800.0,
-        "description": "Готовое блюдо"
-    },
-    "cost": {
-        "perPortion_rub": 125.50,
-        "perBatch_rub": 502.00,
-        "currency": "RUB"
-    },
-    "nutrition": {
-        "per100g": {
-            "kcal": 185.5,
-            "protein_g": 18.2,
-            "fat_g": 8.5,
-            "carbs_g": 6.8
-        }
+    "storage": {
+        "temp_c": 4,
+        "humidity_pct": 85,
+        "shelf_life_days": 3,
+        "conditions": "В холодильнике при температуре +2...+6°C"
     }
 }
 
