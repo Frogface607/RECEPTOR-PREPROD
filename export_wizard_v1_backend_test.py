@@ -241,15 +241,14 @@ class ExportWizardV1Tester:
         
         # Test 1: Export with valid TechCard - should succeed and track
         try:
-            payload = {
-                "techcard": SAMPLE_TECHCARD,
-                "organization_id": self.organization_id,
-                "user_email": self.user_email,
-                "techcard_id": self.techcard_id
-            }
-            
+            # Send TechCard directly, not nested in payload
             response = self.session.post(f"{API_BASE}/export/iiko.xlsx", 
-                                       json=payload)
+                                       json=SAMPLE_TECHCARD,
+                                       params={
+                                           "organization_id": self.organization_id,
+                                           "user_email": self.user_email,
+                                           "techcard_id": self.techcard_id
+                                       })
             
             if response.status_code == 200:
                 # Check if it's an Excel file
