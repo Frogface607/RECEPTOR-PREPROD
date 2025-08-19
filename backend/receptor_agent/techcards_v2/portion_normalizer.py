@@ -219,7 +219,10 @@ class PortionNormalizer:
         try:
             ingredients = techcard.get('ingredients', [])
             sum_netto = self._calculate_sum_netto(ingredients)
-            target_yield = techcard.get('yield', {}).get('perPortion_g', 0)
+            
+            # Поддерживаем оба варианта: прямой yield и алиас yield_
+            yield_data = techcard.get('yield_') or techcard.get('yield', {})
+            target_yield = yield_data.get('perPortion_g', 0) if isinstance(yield_data, dict) else 0
             
             if target_yield > 0:
                 difference_pct = abs(sum_netto - target_yield) / target_yield * 100
