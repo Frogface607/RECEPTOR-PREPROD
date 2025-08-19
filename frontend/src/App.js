@@ -3982,26 +3982,7 @@ function App() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        
-        // Handle blocked export due to validation errors
-        if (errorData.status === 'blocked') {
-          setExportMessage({ 
-            type: 'error', 
-            text: '❌ Экспорт заблокирован из-за критических ошибок валидации' 
-          });
-          
-          setExportWizardData(prev => ({
-            ...prev,
-            blockingErrors: errorData.blocking_errors,
-            qualityScore: errorData.quality_score,
-            canAutoFix: errorData.can_auto_fix
-          }));
-          
-          return;
-        }
-        
-        throw new Error(errorData.message || 'Ошибка создания файла экспорта');
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const blob = await response.blob();
