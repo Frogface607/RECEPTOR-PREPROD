@@ -10329,7 +10329,7 @@ function App() {
                     </button>
                     
                     {/* P1: Advanced Actions Dropdown */}
-                    <div className="relative">
+                    <div className="relative advanced-actions-dropdown">
                       <button 
                         onClick={() => setShowAdvancedActions(!showAdvancedActions)}
                         className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
@@ -10343,42 +10343,49 @@ function App() {
                           <div className="p-2 space-y-1">
                             <button 
                               onClick={() => { navigator.clipboard.writeText(techCard); setShowAdvancedActions(false); }}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              disabled={!techCard}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
                               title="Скопировать техкарту в буфер обмена"
                             >
                               📋 Копировать техкарту
                             </button>
                             <button 
                               onClick={() => { handlePrintTechCard(); setShowAdvancedActions(false); }}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              disabled={!tcV2}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
                               title="Экспорт в PDF для печати"
                             >
                               📄 Экспорт в PDF
                             </button>
                             <button 
                               onClick={() => { handleGostPrint(); setShowAdvancedActions(false); }}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              disabled={!tcV2}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
                               title="ГОСТ-печать A4"
                             >
                               🏛️ ГОСТ-печать
                             </button>
+                            <hr className="border-gray-600 my-1" />
                             <button 
                               onClick={() => { handleIikoExport(); setShowAdvancedActions(false); }}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              disabled={!tcV2}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
                               title="Legacy экспорт в iiko"
                             >
                               📊 Legacy iiko Export
                             </button>
                             <button 
                               onClick={() => { handleIikoCsvExport(); setShowAdvancedActions(false); }}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              disabled={!tcV2}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
                               title="iiko CSV для импорта"
                             >
                               📄 iiko CSV (ZIP)
                             </button>
                             <button 
                               onClick={() => { handleIikoTtkXlsxExport(); setShowAdvancedActions(false); }}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-sm text-white transition-colors"
+                              disabled={!tcV2}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
                               title="Альтернативный XLSX экспорт"
                             >
                               📋 Alt XLSX Export
