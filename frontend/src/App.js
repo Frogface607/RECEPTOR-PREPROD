@@ -3979,7 +3979,7 @@ function App() {
       const exportPayload = {
         techcard: tcV2,
         organization_id: 'default',
-        user_email: user.email || 'unknown@example.com',
+        user_email: 'user@example.com',
         techcard_id: tcV2?.meta?.id || `temp_${Date.now()}`
       };
       
