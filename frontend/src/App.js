@@ -9960,6 +9960,19 @@ function App() {
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                    {/* iiko RMS Connection Status Indicator */}
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      iikoRmsConnection.status === 'connected' ? 'bg-green-600/20 text-green-300 border border-green-400/30' :
+                      iikoRmsConnection.status === 'needs_reconnection' ? 'bg-yellow-600/20 text-yellow-300 border border-yellow-400/30' :
+                      iikoRmsConnection.status === 'error' ? 'bg-red-600/20 text-red-300 border border-red-400/30' :
+                      'bg-gray-600/20 text-gray-300 border border-gray-400/30'
+                    }`}>
+                      {iikoRmsConnection.status === 'connected' ? '✅ iiko подключено' :
+                       iikoRmsConnection.status === 'needs_reconnection' ? '⚠️ Нужно переподключиться' :
+                       iikoRmsConnection.status === 'error' ? '❌ Ошибка iiko' :
+                       '⚪ iiko не подключено'}
+                    </div>
+                    
                     <button 
                       onClick={startEnhancedAutoMapping}
                       disabled={isAutoMapping || iikoRmsConnection.status !== 'connected'}
