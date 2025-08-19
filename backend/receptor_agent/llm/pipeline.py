@@ -610,12 +610,10 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         timings["portion_normalize_ms"] = int((time.perf_counter() - start_normalize_portion) * 1000)
         
         # Шаг 6: САНИТАЙЗЕР - приводим к строгому формату (ПОСЛЕ нормализации)
-        # ВРЕМЕННО ОТКЛЮЧЕН ДЛЯ ОТЛАДКИ
         start_sanitize = time.perf_counter()
         try:
-            # SKIP: sanitizer temporarily disabled for debugging
-            print("DEBUG: Sanitizer temporarily disabled")
-            # validated_card = sanitize_card_v2(validated_card)
+            # GX-01-FINAL: sanitize_card_v2 должна быть чистой функцией
+            validated_card = sanitize_card_v2(validated_card)
         except Exception as e:
             all_issues.append(f"Card sanitization error: {str(e)}")
         timings["sanitize_ms"] = int((time.perf_counter() - start_sanitize) * 1000)
