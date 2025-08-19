@@ -222,7 +222,8 @@ def export_tc_v2_to_iiko_csv(card: TechCardV2):
 def search_catalog(
     q: str = Query(..., description="Search query"), 
     limit: int = Query(10, ge=1, le=50),
-    source: str = Query("all", description="Data source: usda, price, nutrition, iiko, rms, all")
+    source: str = Query("iiko", description="Data source: iiko, usda, price, nutrition, rms, all"),
+    orgId: Optional[str] = Query("default", description="Organization ID for iiko RMS search")  # P0: Add orgId parameter
 ):
     """
     Поиск по объединенному каталогу цен, питания и USDA для маппинга ингредиентов.
