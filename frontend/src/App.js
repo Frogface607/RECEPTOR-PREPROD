@@ -56,7 +56,6 @@ function App() {
   // Export wizard states (IK-02B-FE/03)
   const [showExportWizard, setShowExportWizard] = useState(false);
   const [showAdvancedActions, setShowAdvancedActions] = useState(false); // P1: Advanced actions dropdown
-  const [showTechCardModal, setShowTechCardModal] = useState(false); // P1: Tech card modal
   const [exportWizardStep, setExportWizardStep] = useState(1); // 1-4
   const [exportWizardData, setExportWizardData] = useState({
     preCheckResults: null,
