@@ -3268,50 +3268,132 @@ function App() {
     }
   };
 
+  // ============== P0: INGREDIENT MODAL SEARCH - wire to iiko ==============
+  
+  // P0: RU input normalization function
+  const normalizeRuInput = (input) => {
+    if (!input) return '';
+    
+    return input
+      .trim()                    // Remove spaces
+      .toLowerCase()             // Convert to lowercase  
+      .replace(/ё/g, 'е')        // ё→е normalization
+      .replace(/\s+/g, ' ')      // Collapse multiple spaces
+      .trim();                   // Final trim
+  };
+  
+  // P0: Unified iiko search hook
+  const useIikoSearch = (orgId = 'default') => {
+    const performSearch = async (query, options = {}) => {
+      const startTime = Date.now();
+      
+      if (!query.trim()) {
+        return {
+          success: true,
+          items: [],
+          badge: { count: 0, latency: 0, orgId }
+        };
+      }
+
+      try {
+        // P0: Normalize input on frontend
+        const normalizedQuery = normalizeRuInput(query);
+        
+        const response = await axios.get(`${API}/v1/techcards.v2/catalog-search`, {
+          params: {
+            q: normalizedQuery,
+            source: 'iiko',          // P0: Always use iiko source
+            orgId: orgId,            // P0: Always send orgId
+            limit: options.limit || 5
+          }
+        });
+
+        const latency = Date.now() - startTime;
+
+        if (response.data.status === 'success') {
+          // P0: Sanitize response - filter elements without name/productId
+          const sanitizedItems = (response.data.items || []).filter(item => 
+            item && 
+            item.name && 
+            item.name.trim() && 
+            (item.sku_id || item.canonical_id) // Require ID
+          );
+          
+          return {
+            success: true,
+            items: sanitizedItems,
+            badge: {
+              count: response.data.iiko_count || 0,
+              total_found: response.data.total_found || 0,
+              latency,
+              orgId,
+              connection_status: response.data.iiko_badge?.connection_status || 'unknown'
+            },
+            raw_response: response.data
+          };
+        } else {
+          console.warn('Search API returned error status:', response.data);
+          return {
+            success: false,
+            items: [],
+            badge: { count: 0, latency, orgId },
+            error: response.data.message || 'API error'
+          };
+        }
+      } catch (error) {
+        const latency = Date.now() - startTime;
+        console.error('iiko search error:', error);
+        
+        return {
+          success: false,
+          items: [],
+          badge: { count: 0, latency, orgId },
+          error: error.message
+        };
+      }
+    };
+    
+    return { performSearch };
+  };
+
+  // P0: Enhanced performIikoSearch using unified hook
   const performIikoSearch = async (query) => {
     if (!query.trim()) {
       setIikoSearchResults([]);
+      setIikoSearchBadge({ count: 0, latency: 0, orgId: 'default', connection_status: 'not_connected' });
       return;
     }
 
     setIsSearchingIiko(true);
+    
     try {
-      const response = await axios.get(`${API}/v1/techcards.v2/catalog-search`, {
-        params: {
-          q: query,
-          source: 'iiko',  // P0: Default source is iiko
-          limit: 5  // P0: Return top-5 candidates even with low scores
-        }
-      });
-
-      if (response.data.status === 'success') {
-        // P0: Sanitize response - filter null/empty objects
-        const sanitizedItems = (response.data.items || []).filter(item => 
-          item && 
-          item.name && 
-          item.name.trim() && 
-          (item.sku_id || item.canonical_id) // Require either sku_id or canonical_id
-        );
-        
-        setIikoSearchResults(sanitizedItems);
-        
-        // Update iiko badge info
-        if (response.data.iiko_badge) {
-          setIikoSearchBadge(response.data.iiko_badge);
-        }
+      const { performSearch } = useIikoSearch('default');
+      const result = await performSearch(query, { limit: 5 });
+      
+      if (result.success) {
+        setIikoSearchResults(result.items);
+        setIikoSearchBadge(result.badge);
       } else {
-        // P0: Handle error response
-        console.warn('Search API returned error status:', response.data);
+        // P0: Show empty-state on error
         setIikoSearchResults([]);
+        setIikoSearchBadge({
+          count: 0,
+          latency: result.badge.latency,
+          orgId: 'default',
+          connection_status: 'error',
+          error: result.error
+        });
       }
     } catch (error) {
-      console.error('iiko search error:', error);
-      
-      // P0: Show empty-state instead of crash
+      console.error('Unified iiko search error:', error);
       setIikoSearchResults([]);
-      
-      // P0: Log error for debugging but don't crash UI
-      console.warn('Search failed, showing empty state. Error:', error.message);
+      setIikoSearchBadge({ 
+        count: 0, 
+        latency: 0, 
+        orgId: 'default', 
+        connection_status: 'error',
+        error: error.message 
+      });
     } finally {
       setIsSearchingIiko(false);
     }
