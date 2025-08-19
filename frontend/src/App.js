@@ -36,6 +36,11 @@ function App() {
   const [isSearchingPrice, setIsSearchingPrice] = useState(false);
   const [iikoSearchQuery, setIikoSearchQuery] = useState('');
   const [iikoSearchResults, setIikoSearchResults] = useState([]);
+  const [iikoSearchBadge, setIikoSearchBadge] = useState({
+    count: 0,
+    last_sync: null,
+    connection_status: 'not_connected'
+  });
   const [isSearchingIiko, setIsSearchingIiko] = useState(false);
   
   // Auto-mapping states (IK-02B-FE/02)
