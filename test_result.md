@@ -2494,7 +2494,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "GX-02 Quality Validator API Implementation (GX-02 Backend)"
+    - "P0: Ingredient Modal Search — wire to iiko"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
