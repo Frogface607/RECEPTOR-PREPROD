@@ -312,6 +312,18 @@ backend:
         comment: "PARTIAL IMPLEMENTATION: catalog-search endpoint has basic price support but missing full P1-Prices specification. Missing proper source=price response format with {source, name, skuId, unit, price_per_unit, currency, asOf} structure and priority-based sorting."
 
 frontend:
+  - task: "P1: iiko Basic Mode UI Redesign"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "P1: iiko Basic Mode UI Redesign implementation found in frontend/src/App.js lines 10281-10397. Features implemented: 1) Enhanced header with connection status and last export time (lines 10255-10278), 2) 5 core actions: Автомаппинг, Назначить SKU, Экспорт iiko XLSX, Импорт TTK, Синхронизация (lines 10283-10329), 3) Advanced dropdown with 6 actions: Копировать техкарту, Экспорт в PDF, ГОСТ-печать, Legacy iiko Export, iiko CSV (ZIP), Alt XLSX Export (lines 10331-10396). Ready for comprehensive UI testing to verify DoD compliance and functionality."
+
   - task: "P0-2: Safe-Automap + Sanitize"
     implemented: true
     working: true
