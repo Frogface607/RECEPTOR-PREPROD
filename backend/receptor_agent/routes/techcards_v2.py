@@ -942,7 +942,7 @@ async def get_export_history(organization_id: str = "default", limit: int = 10):
         raise HTTPException(500, f"Get export history failed: {str(e)}")
 
 
-@router.post("/export/auto-fix")
+@router.post("/techcards.v2/export/auto-fix")
 async def auto_fix_export_issues(request: Request):
     """
     Export Wizard v1: Auto-fix blocking export issues
