@@ -15879,10 +15879,12 @@ function App() {
                     <span className="text-gray-400">Статус:</span>
                     <span className={`font-semibold ${
                       iikoRmsConnection.status === 'connected' ? 'text-green-300' :
+                      iikoRmsConnection.status === 'needs_reconnection' ? 'text-yellow-300' :
                       iikoRmsConnection.status === 'error' ? 'text-red-300' :
                       'text-gray-300'
                     }`}>
                       {iikoRmsConnection.status === 'connected' ? '✅ Подключено' :
+                       iikoRmsConnection.status === 'needs_reconnection' ? '⚠️ Нужно переподключиться' :
                        iikoRmsConnection.status === 'error' ? '❌ Ошибка' :
                        '⚪ Не подключено'}
                     </span>
