@@ -91,15 +91,18 @@ SAMPLE_TECHCARD = {
 INVALID_TECHCARD = {
     "meta": {
         "title": "Блюдо с ошибками",
-        "description": "Тестовое блюдо для проверки валидации",
-        "category": "Тест",
-        "portions": 2
+        "version": "2.0"
+    },
+    "portions": 2,
+    "yield": {
+        "perPortion_g": 100.0,
+        "perBatch_g": 200.0
     },
     "ingredients": [
         {
             "name": "ингредиент без SKU",
             "brutto_g": 100.0,
-            "unit": "г",
+            "unit": "g",
             "loss_pct": 10.0,
             "netto_g": 90.0
             # Missing skuId - should cause validation error
@@ -114,8 +117,13 @@ INVALID_TECHCARD = {
             "equipment": "руки"
         }
         # Only 1 step - should cause validation error (min 3 required)
-    ]
-    # Missing yield - should cause critical validation error
+    ],
+    "storage": {
+        "temp_c": 4,
+        "humidity_pct": 85,
+        "shelf_life_days": 1,
+        "conditions": "В холодильнике"
+    }
 }
 
 class ExportWizardV1Tester:
