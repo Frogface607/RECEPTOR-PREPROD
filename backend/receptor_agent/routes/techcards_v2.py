@@ -1330,8 +1330,8 @@ async def export_preflight_check(request: dict):
                         # Проверяем наличие кода продукта
                         product = rms_service.products.find_one({"_id": sku_id})
                         if not product or not product.get('article'):
-                            # Проверяем в pricing
-                            pricing = rms_service.pricing.find_one({"skuId": sku_id})
+                            # Проверяем в prices
+                            pricing = rms_service.prices.find_one({"skuId": sku_id})
                             if not pricing or not pricing.get('article'):
                                 products_without_codes.append(ingredient_name)
             
