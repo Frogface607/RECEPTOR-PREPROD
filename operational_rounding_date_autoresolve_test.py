@@ -698,7 +698,7 @@ class IntegrationTester:
                         "brutto_g": 50.0,
                         "netto_g": 50.0,
                         "loss_pct": 0.0,
-                        "unit": "г",
+                        "unit": "g",
                         "product_code": "77777"
                     }
                 ],
