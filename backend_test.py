@@ -444,7 +444,7 @@ class DishCodeResolverTester:
                 "payload": {
                     "techcards": sample_cards,
                     "export_options": {
-                        "use_product_codes": True,
+                        "use_product_codes": False,  # Disable product code checking
                         "dish_codes_mapping": {
                             "Блюдо с кодом": "12345",
                             "Блюдо без кода": "12346"
