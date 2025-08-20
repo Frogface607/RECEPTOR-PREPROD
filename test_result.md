@@ -133,6 +133,18 @@
 
 user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)"
 
+  - task: "A. Hotfix & Migration: код вместо GUID везде"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/techcards_v2/schemas.py, backend/receptor_agent/migrations/migrate_product_codes.py, backend/receptor_agent/exports/iiko_xlsx.py, frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 A. HOTFIX & MIGRATION IMPLEMENTED: Successfully implemented comprehensive GUID → product code migration system. SCHEMA UPDATES: Added product_code field to IngredientV2 schema to store numeric iiko codes separately from GUID skuId. MIGRATION SCRIPT: Created /backend/receptor_agent/migrations/migrate_product_codes.py with dry-run capability, RMS integration for code lookup, comprehensive statistics tracking, and safe batch processing. FRONTEND UPDATES: Modified handleAssignIngredientMapping to save product_code from catalogItem.article, updated ingredient display to show 'Артикул: XXXXX' badge instead of raw GUID, changed table header from 'SKU' to 'Артикул (iiko)' for clarity. EXPORT LOGIC: Updated iiko XLSX export to prioritize saved product_code over RMS lookup, maintaining fallback to get_product_code_from_rms for backward compatibility. DUAL FIELD STRATEGY: Both skuId (GUID) and product_code (numeric) are stored for complete mapping data and backward compatibility. Ready for backend testing to validate end-to-end workflow and migration script functionality."
+
   - task: "G. Багфикс экспорта: TypeError 'str' object has no attribute 'get'"
     implemented: true
     working: true
