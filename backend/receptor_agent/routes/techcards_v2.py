@@ -1213,7 +1213,7 @@ async def export_enhanced_dual_iiko_xlsx(request: dict):
         all_issues = []
         
         for card in cards:
-            excel_buffer, issues = create_iiko_ttk_xlsx(card, export_options)
+            excel_buffer, issues = create_iiko_ttk_xlsx(card, export_options, rms_service)
             main_files_data.append(excel_buffer.getvalue())
             all_issues.extend(issues)
         
