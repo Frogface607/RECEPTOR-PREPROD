@@ -1189,6 +1189,112 @@ async def export_enhanced_dual_iiko_xlsx(request: dict):
         raise HTTPException(500, f"Enhanced dual export failed: {str(e)}")
 
 
+@router.post("/techcards.v2/export/preflight-check")
+async def export_preflight_check(request: dict):
+    """
+    Feature 3: Pre-flight warnings перед экспортом
+    
+    Body:
+    {
+        "techcards": [TechCardV2, ...],
+        "export_options": {
+            "use_product_codes": true,
+            "dish_codes_mapping": {"Салат Цезарь": "12345"}
+        },
+        "organization_id": "default"
+    }
+    
+    Returns:
+    {
+        "status": "ready|warnings",
+        "warnings": [
+            {
+                "type": "missing_dish_codes|missing_product_codes",
+                "items": ["Блюдо без кода", ...],
+                "action": "Создать коды|Проверить маппинг"
+            }
+        ]
+    }
+    """
+    try:
+        techcards_data = request.get('techcards', [])
+        export_options = request.get('export_options', {})
+        organization_id = request.get('organization_id', 'default')
+        
+        if not techcards_data:
+            raise HTTPException(400, "techcards required")
+        
+        # Валидируем техкарты
+        cards = []
+        for card_data in techcards_data:
+            try:
+                card = TechCardV2.model_validate(card_data)
+                cards.append(card)
+            except Exception as e:
+                logger.warning(f"Invalid techcard skipped: {e}")
+        
+        warnings = []
+        
+        # Проверка кодов блюд
+        dish_codes_mapping = export_options.get('dish_codes_mapping', {})
+        dishes_without_codes = []
+        
+        for card in cards:
+            dish_name = card.meta.title
+            if not dish_codes_mapping.get(dish_name):
+                dishes_without_codes.append(dish_name)
+        
+        if dishes_without_codes:
+            warnings.append({
+                "type": "missing_dish_codes",
+                "title": "Блюда без кода iiko",
+                "items": dishes_without_codes,
+                "action": "Найти в iiko или создать коды",
+                "severity": "warning"
+            })
+        
+        # Проверка кодов продуктов (если включен флаг use_product_codes)
+        use_product_codes = export_options.get('use_product_codes', True)
+        if use_product_codes:
+            from ..integrations.iiko_rms_service import get_iiko_rms_service
+            rms_service = get_iiko_rms_service()
+            
+            products_without_codes = []
+            
+            for card in cards:
+                for ingredient in card.ingredients:
+                    if ingredient.skuId:
+                        # Проверяем наличие кода продукта
+                        product = rms_service.products.find_one({"_id": ingredient.skuId})
+                        if not product or not product.get('article'):
+                            # Проверяем в pricing
+                            pricing = rms_service.pricing.find_one({"skuId": ingredient.skuId})
+                            if not pricing or not pricing.get('article'):
+                                products_without_codes.append(ingredient.name)
+            
+            if products_without_codes:
+                warnings.append({
+                    "type": "missing_product_codes", 
+                    "title": "Ингредиенты без кода товара",
+                    "items": list(set(products_without_codes)),  # Убираем дубликаты
+                    "action": "Проверить маппинг или каталог iiko",
+                    "severity": "warning"
+                })
+        
+        status = "warnings" if warnings else "ready"
+        
+        return {
+            "status": status,
+            "warnings": warnings,
+            "cards_checked": len(cards),
+            "export_ready": status == "ready"
+        }
+        
+    except Exception as e:
+        logger.error(f"Preflight check error: {e}")
+        raise HTTPException(500, f"Preflight check failed: {str(e)}")
+
+
 @router.post("/techcards.v2/export/auto-fix")
 async def auto_fix_export_issues(request: Request):
     """
