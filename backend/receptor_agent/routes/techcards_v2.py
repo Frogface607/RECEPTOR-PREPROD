@@ -1060,6 +1060,8 @@ async def find_dish_codes(request: dict):
             "results": results
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Find dish codes error: {e}")
         raise HTTPException(500, f"Find dish codes failed: {str(e)}")
