@@ -135,6 +135,18 @@
 
 user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)"
 
+  - task: "D. Dish Code Resolver (актуализировать)"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/techcards_v2.py, backend/receptor_agent/exports/iiko_xlsx.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 D. DISH CODE RESOLVER ACTUALIZATION COMPLETED: Successfully actualized and enhanced Dish Code Resolver functionality for proper dish code management. EXISTING ENDPOINTS VALIDATED: POST /dish-codes/find searches dishes by name in iiko RMS with confidence scoring, POST /dish-codes/generate creates sequential dish codes with proper width and leading zeros. DUAL EXPORT INTEGRATION: Fixed argument order in create_dish_skeletons_xlsx() call within enhanced-dual export endpoint, ensured proper ZIP generation with both Dish-Skeletons.xlsx and iiko_TTK.xlsx files. DISH SKELETONS FORMAT: Validated XLSX structure with correct headers (Артикул, Наименование, Тип, Ед. выпуска, Выход), proper text formatting for codes (@), extraction of dish data from TechCardV2 objects. PRE-FLIGHT WARNINGS: Integrated missing dish codes detection in preflight-check endpoint with actionable warnings. WORKFLOW SUPPORT: Complete dish workflow - find existing codes → generate new codes → create Dish-Skeletons.xlsx → dual export with both skeletons and TTK files. Ready for backend testing to validate actualized Dish Code Resolver functionality and dual export workflow."
+
   - task: "C. Product Skeletons (когда маппинг не нашёлся)"
     implemented: true
     working: true
