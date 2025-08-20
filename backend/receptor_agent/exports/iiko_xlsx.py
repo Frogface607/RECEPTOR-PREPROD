@@ -152,7 +152,8 @@ def generate_technology_text(process_steps) -> str:
     
     return technology_text
 
-def create_iiko_ttk_xlsx(card: TechCardV2) -> Tuple[BytesIO, List[Dict[str, Any]]]:
+def create_iiko_ttk_xlsx(card: TechCardV2, 
+                        export_options: Dict[str, Any] = None) -> Tuple[BytesIO, List[Dict[str, Any]]]:
     """
     Создает XLSX файл для импорта ТТК в iiko
     
