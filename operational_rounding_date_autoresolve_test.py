@@ -90,6 +90,13 @@ class OperationalRoundingTester:
                     "time_min": 3,
                     "temp_c": 20,
                     "equipment": ["венчик"]
+                },
+                {
+                    "n": 3,
+                    "action": "Готовить до готовности",
+                    "time_min": 10,
+                    "temp_c": 180,
+                    "equipment": ["сковорода"]
                 }
             ],
             "storage": {
