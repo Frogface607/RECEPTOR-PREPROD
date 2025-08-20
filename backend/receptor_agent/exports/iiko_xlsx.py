@@ -548,7 +548,7 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
                     "type": "noProductCode",
                     "name": ingredient.name,
                     "hint": f"Продукт не найден в iiko RMS или отсутствует код товара. Сгенерирован: {product_code}",
-                    "dish": card.meta.title
+                    "dish": working_card.meta.title
                 })
         else:
             # Используем GUID как есть (legacy режим)
