@@ -605,7 +605,7 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
                     "type": "subRecipeNoCode",
                     "name": ingredient.name,
                     "hint": "Sub-recipe missing dish_code",
-                    "dish": working_card.meta.title
+                    "dish": dish_title
                 })
         
         # Конвертируем единицы в граммы
