@@ -204,6 +204,7 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     # Feature A: Product Code toggle (по умолчанию включен)
     use_product_codes = export_options.get('use_product_codes', True)
     dish_codes_mapping = export_options.get('dish_codes_mapping', {})
+    rms_service = export_options.get('rms_service')  # Для получения кодов продуктов
     
     if not Workbook:
         raise ImportError("openpyxl is required for Excel export. Install with: pip install openpyxl")
