@@ -987,6 +987,208 @@ async def get_export_history(organization_id: str = "default", limit: int = 10):
         raise HTTPException(500, f"Get export history failed: {str(e)}")
 
 
+# ======================================
+# Feature B: Dish Code Resolver & Skeletons
+# ======================================
+
+@router.post("/techcards.v2/dish-codes/find")
+async def find_dish_codes(request: dict):
+    """
+    Feature B: Найти коды блюд в iiko RMS по названиям
+    
+    Body:
+    {
+        "dish_names": ["Салат Цезарь", "Стейк с овощами"],
+        "organization_id": "default"
+    }
+    
+    Returns:
+    {
+        "results": [
+            {
+                "dish_name": "Салат Цезарь", 
+                "status": "found|not_found|error",
+                "dish_code": "12345",
+                "confidence": 0.9
+            }
+        ]
+    }
+    """
+    try:
+        dish_names = request.get('dish_names', [])
+        organization_id = request.get('organization_id', 'default')
+        
+        if not dish_names:
+            raise HTTPException(400, "dish_names required")
+        
+        # Получаем RMS сервис
+        from ..integrations.iiko_rms_service import get_iiko_rms_service
+        rms_service = get_iiko_rms_service()
+        
+        results = []
+        for dish_name in dish_names:
+            search_result = find_dish_in_iiko_rms(dish_name, rms_service)
+            results.append({
+                "dish_name": dish_name,
+                **search_result
+            })
+        
+        return {
+            "status": "success",
+            "results": results
+        }
+        
+    except Exception as e:
+        logger.error(f"Find dish codes error: {e}")
+        raise HTTPException(500, f"Find dish codes failed: {str(e)}")
+
+
+@router.post("/techcards.v2/dish-codes/generate")
+async def generate_dish_codes_api(request: dict):
+    """
+    Feature B: Сгенерировать свободные коды для новых блюд
+    
+    Body:
+    {
+        "dish_names": ["Новое блюдо 1", "Новое блюдо 2"],
+        "organization_id": "default",
+        "width": 5
+    }
+    
+    Returns:
+    {
+        "generated_codes": {
+            "Новое блюдо 1": "10001",
+            "Новое блюдо 2": "10002"
+        }
+    }
+    """
+    try:
+        dish_names = request.get('dish_names', [])
+        organization_id = request.get('organization_id', 'default')
+        width = request.get('width', 5)
+        
+        if not dish_names:
+            raise HTTPException(400, "dish_names required")
+        
+        # Получаем RMS сервис
+        from ..integrations.iiko_rms_service import get_iiko_rms_service
+        rms_service = get_iiko_rms_service()
+        
+        generated_codes = generate_dish_codes(dish_names, rms_service, width)
+        
+        return {
+            "status": "success",
+            "generated_codes": generated_codes
+        }
+        
+    except Exception as e:
+        logger.error(f"Generate dish codes error: {e}")
+        raise HTTPException(500, f"Generate dish codes failed: {str(e)}")
+
+
+@router.post("/techcards.v2/export/enhanced-dual/iiko.xlsx")
+async def export_enhanced_dual_iiko_xlsx(request: dict):
+    """
+    Feature A & B: Enhanced export with product codes and dish skeletons
+    
+    Body:
+    {
+        "techcards": [TechCardV2, ...],
+        "export_options": {
+            "use_product_codes": true,
+            "dish_codes_mapping": {"Салат Цезарь": "12345"}
+        },
+        "organization_id": "default",
+        "user_email": "user@example.com"
+    }
+    
+    Returns: ZIP file with 2 XLSX files:
+    - Dish-Skeletons.xlsx
+    - iiko_TTK.xlsx
+    """
+    try:
+        techcards_data = request.get('techcards', [])
+        export_options = request.get('export_options', {})
+        organization_id = request.get('organization_id', 'default')
+        user_email = request.get('user_email', 'system')
+        
+        if not techcards_data:
+            raise HTTPException(400, "techcards required")
+        
+        # Валидируем техкарты
+        cards = []
+        for card_data in techcards_data:
+            try:
+                card = TechCardV2.model_validate(card_data)
+                cards.append(card)
+            except Exception as e:
+                logger.warning(f"Invalid techcard skipped: {e}")
+        
+        if not cards:
+            raise HTTPException(400, "No valid techcards provided")
+        
+        # Получаем RMS сервис для кодов продуктов
+        from ..integrations.iiko_rms_service import get_iiko_rms_service
+        rms_service = get_iiko_rms_service()
+        export_options['rms_service'] = rms_service
+        
+        # Создаем файлы
+        files_data = {}
+        
+        # 1. Dish-Skeletons.xlsx
+        dish_codes_mapping = export_options.get('dish_codes_mapping', {})
+        if dish_codes_mapping:
+            skeletons_buffer = create_dish_skeletons_xlsx(dish_codes_mapping, cards)
+            files_data['Dish-Skeletons.xlsx'] = skeletons_buffer.getvalue()
+        
+        # 2. iiko TTK.xlsx (основной файл)
+        main_files_data = []
+        all_issues = []
+        
+        for card in cards:
+            excel_buffer, issues = create_iiko_ttk_xlsx(card, export_options)
+            main_files_data.append(excel_buffer.getvalue())
+            all_issues.extend(issues)
+        
+        # Объединяем все техкарты в один файл или создаем отдельные
+        if len(main_files_data) == 1:
+            files_data['iiko_TTK.xlsx'] = main_files_data[0]
+        else:
+            for i, file_data in enumerate(main_files_data):
+                files_data[f'iiko_TTK_{i+1}.xlsx'] = file_data
+        
+        # Создаем ZIP архив
+        from receptor_agent.exports.zipper import make_zip
+        zip_buffer = make_zip(files_data)
+        
+        # Трекинг экспорта
+        try:
+            from ..integrations.export_tracking_service import get_export_tracking_service
+            tracking_service = get_export_tracking_service()
+            
+            for card in cards:
+                tracking_service.track_export(
+                    techcard_id=card.meta.id,
+                    organization_id=organization_id,
+                    user_email=user_email,
+                    export_type="iiko_xlsx_enhanced_dual",
+                    issues=all_issues
+                )
+        except Exception as e:
+            logger.warning(f"Export tracking failed: {e}")
+        
+        return StreamingResponse(
+            io.BytesIO(zip_buffer),
+            media_type="application/zip",
+            headers={"Content-Disposition": "attachment; filename=iiko_export_enhanced.zip"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Enhanced dual export error: {e}")
+        raise HTTPException(500, f"Enhanced dual export failed: {str(e)}")
+
+
 @router.post("/techcards.v2/export/auto-fix")
 async def auto_fix_export_issues(request: Request):
     """
