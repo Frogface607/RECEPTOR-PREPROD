@@ -3429,12 +3429,7 @@ function App() {
     }, 600);
     
     setAutoMappingDebounceTimer(timer);
-    
-    // Cleanup function
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [autoMappingDebounceTimer]);
+  }, [autoMappingDebounceTimer]); // CRITICAL FIX: Remove cleanup function that caused issues
   
   const startEnhancedAutoMapping = async () => {
     if (!tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
