@@ -22,6 +22,37 @@ except ImportError:
 
 from receptor_agent.techcards_v2.schemas import TechCardV2
 
+def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
+    """
+    Feature A: Получить числовой код продукта из iiko RMS вместо GUID
+    
+    Args:
+        sku_id: GUID продукта из iiko
+        rms_service: Сервис для работы с iiko RMS (опционально)
+    
+    Returns:
+        Числовой код продукта или исходный sku_id если код не найден
+    """
+    if not sku_id or not rms_service:
+        return sku_id or ""
+    
+    try:
+        # Поиск в коллекции products
+        product = rms_service.products.find_one({"_id": sku_id})
+        if product and product.get('article'):
+            # Возвращаем article (числовой код) с сохранением ведущих нулей
+            return str(product['article']).zfill(5)  # Минимум 5 цифр с ведущими нулями
+        
+        # Поиск в коллекции pricing если нет в products
+        pricing = rms_service.pricing.find_one({"skuId": sku_id})
+        if pricing and pricing.get('article'):
+            return str(pricing['article']).zfill(5)
+            
+    except Exception as e:
+        print(f"Error getting product code for {sku_id}: {e}")
+    
+    return sku_id or ""
+
 # Путь к шаблону iiko
 TEMPLATE_PATH = Path(__file__).parent.parent / "data" / "iiko_templates" / "ttk.xlsx"
 
