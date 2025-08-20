@@ -127,7 +127,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "GX-02 Quality Validator API Implementation - Test the newly implemented GX-02 Quality Validator API endpoints and functionality: 1) Quality Validation Endpoint: POST /api/v1/techcards.v2/validate/quality, 2) Range Normalization Endpoint: POST /api/v1/techcards.v2/normalize, 3) Quality Score Endpoint: POST /api/v1/techcards.v2/quality/score. Test with valid/invalid TechCard data, range normalization, quality scoring, error handling, and performance requirements."
+user_problem_statement: "iiko IMPORT RELIABILITY — PRODUCT CODES & DISH SKELETONS TESTING - Comprehensive testing of the newly implemented iiko Import Reliability features to eliminate 'артикул не найден' errors in iikoWeb import. Test Feature A: Product Code Toggle (use_product_codes), Feature B: Dish Code Resolver + Skeletons (dual export), Feature 3: Pre-flight Warnings, API endpoints validation, Excel file formatting, performance requirements, and error handling."
 
 backend:
   - task: "P0.3: Automapping Performance ≤ 3s (batch-50)"
