@@ -584,16 +584,46 @@ def print_tc_v2(card: TechCardV2):
     return HTMLResponse(content=html_content, media_type="text/html")
 
 @router.post("/techcards.v2/export")
-def export_tc_v2(card: TechCardV2):
+def export_tc_v2(request: dict):
+    """
+    E. Operational Rounding v1: Экспорт техкарты с опциональным операционным округлением
+    
+    Body:
+    {
+        "card": TechCardV2,
+        "options": {
+            "operational_rounding": false
+        }
+    }
+    """
     if not _flag():
         raise HTTPException(404, "feature disabled")
+        
+    # Извлекаем данные из запроса
+    card_data = request.get('card')
+    options = request.get('options', {})
+    use_operational_rounding = options.get('operational_rounding', False)
+    
+    if not card_data:
+        raise HTTPException(400, "card is required")
+    
+    # Валидируем техкарту
+    try:
+        card = TechCardV2.model_validate(card_data)
+    except Exception as e:
+        raise HTTPException(400, f"Invalid techcard: {str(e)}")
+    
     # Валидация на всякий случай
     ok, issues = validate_card(card)
     if not ok:
         raise HTTPException(400, f"validation failed: {issues}")
+        
     csv_str = techcard_to_csv(card).encode("utf-8")
     xlsx_bin = techcard_to_xlsx(card)
-    pdf_bin = techcard_to_pdf(card)
+    
+    # E. Operational Rounding v1: PDF с операционным округлением
+    pdf_bin = techcard_to_pdf(card, use_operational_rounding=use_operational_rounding)
+    
     zip_bytes = make_zip({
         "techcard.csv": csv_str,
         "techcard.xlsx": xlsx_bin,
