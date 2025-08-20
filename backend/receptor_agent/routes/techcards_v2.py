@@ -1281,7 +1281,14 @@ async def export_preflight_check(request: dict):
         dishes_without_codes = []
         
         for card in cards:
-            dish_name = card.meta.title
+            # Поддерживаем как объекты TechCardV2, так и mock объекты
+            if hasattr(card, 'meta') and hasattr(card.meta, 'title'):
+                dish_name = card.meta.title
+            elif hasattr(card, 'meta') and isinstance(card.meta, dict):
+                dish_name = card.meta.get('title', 'Unknown Dish')
+            else:
+                dish_name = 'Unknown Dish'
+                
             if not dish_codes_mapping.get(dish_name):
                 dishes_without_codes.append(dish_name)
         
