@@ -390,12 +390,14 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     """
     Создать iiko XLSX файл для импорта технологических карт
     WITH iiko Import Reliability — Product Codes & Dish Skeletons
+    WITH Operational Rounding v1 (Export & Kitchen View)
     
     Args:
         card: Техкарта в формате TechCardV2
         export_options: Опции экспорта:
             - use_product_codes: bool = True - использовать коды товаров вместо GUID
             - dish_codes_mapping: Dict[str, str] - маппинг блюд к кодам
+            - operational_rounding: bool = True - применять операционное округление
     
     Returns:
         (BytesIO buffer, issues list)
@@ -407,6 +409,9 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     use_product_codes = export_options.get('use_product_codes', True)
     dish_codes_mapping = export_options.get('dish_codes_mapping', {})
     rms_service = export_options.get('rms_service')  # Для получения кодов продуктов
+    
+    # Operational Rounding v1: операционное округление (по умолчанию включено)
+    operational_rounding_enabled = export_options.get('operational_rounding', True)
     
     if not Workbook:
         raise ImportError("openpyxl is required for Excel export. Install with: pip install openpyxl")
