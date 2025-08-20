@@ -1365,6 +1365,166 @@ async def export_preflight_check(request: dict):
         raise HTTPException(500, f"Preflight check failed: {str(e)}")
 
 
+@router.post("/techcards.v2/product-codes/find-missing")
+async def find_missing_product_codes(request: dict):
+    """
+    C. Product Skeletons: Найти ингредиенты без кода продукта
+    
+    Body:
+    {
+        "techcards": [TechCardV2, ...],
+        "organization_id": "default"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "missing_products": [
+            {
+                "name": "Куриное филе",
+                "unit": "g",
+                "skuId": "guid-123",
+                "product_code": null
+            }
+        ],
+        "total_missing": 5
+    }
+    """
+    try:
+        techcards_data = request.get('techcards', [])
+        organization_id = request.get('organization_id', 'default')
+        
+        # Валидируем техкарты
+        cards = []
+        for card_data in techcards_data:
+            try:
+                card = TechCardV2.model_validate(card_data)
+                cards.append(card)
+            except Exception as e:
+                logger.warning(f"Invalid techcard skipped: {e}")
+        
+        # Получаем RMS сервис
+        from ..integrations.iiko_rms_service import get_iiko_rms_service
+        rms_service = get_iiko_rms_service()
+        
+        # Находим ингредиенты без маппинга
+        from ..exports.iiko_xlsx import find_missing_product_mappings
+        missing_products = find_missing_product_mappings(cards, rms_service)
+        
+        return {
+            "status": "success",
+            "missing_products": missing_products,
+            "total_missing": len(missing_products),
+            "cards_analyzed": len(cards)
+        }
+        
+    except Exception as e:
+        logger.error(f"Find missing product codes error: {e}")
+        raise HTTPException(500, f"Find missing product codes failed: {str(e)}")
+
+
+@router.post("/techcards.v2/product-codes/generate")
+async def generate_product_codes_api(request: dict):
+    """
+    C. Product Skeletons: Сгенерировать коды продуктов для ингредиентов
+    
+    Body:
+    {
+        "ingredient_names": ["Куриное филе", "Соль", "Перец"],
+        "start_code": 10000,
+        "code_width": 5,
+        "organization_id": "default"
+    }
+    
+    Returns:
+    {
+        "status": "success", 
+        "generated_codes": {
+            "Куриное филе": "10001",
+            "Соль": "10002",
+            "Перец": "10003"
+        },
+        "codes_generated": 3
+    }
+    """
+    try:
+        ingredient_names = request.get('ingredient_names', [])
+        start_code = request.get('start_code', 10000)
+        code_width = request.get('code_width', 5)
+        organization_id = request.get('organization_id', 'default')
+        
+        if not ingredient_names:
+            raise HTTPException(400, "ingredient_names list is required")
+        
+        # Получаем RMS сервис
+        from ..integrations.iiko_rms_service import get_iiko_rms_service
+        rms_service = get_iiko_rms_service()
+        
+        # Генерируем коды
+        from ..exports.iiko_xlsx import generate_product_codes
+        generated_codes = generate_product_codes(
+            ingredient_names=ingredient_names,
+            rms_service=rms_service,
+            start_code=start_code,
+            code_width=code_width
+        )
+        
+        return {
+            "status": "success",
+            "generated_codes": generated_codes,
+            "codes_generated": len(generated_codes),
+            "start_code": start_code,
+            "code_width": code_width
+        }
+        
+    except Exception as e:
+        logger.error(f"Generate product codes error: {e}")
+        raise HTTPException(500, f"Generate product codes failed: {str(e)}")
+
+
+@router.post("/techcards.v2/product-skeletons/export")
+async def export_product_skeletons(request: dict):
+    """
+    C. Product Skeletons: Экспорт Product-Skeletons.xlsx для импорта в iiko
+    
+    Body:
+    {
+        "missing_ingredients": [
+            {
+                "name": "Куриное филе",
+                "unit": "g"
+            }
+        ],
+        "generated_codes": {
+            "Куриное филе": "10001"
+        }
+    }
+    
+    Returns:
+        XLSX файл Product-Skeletons.xlsx
+    """
+    try:
+        missing_ingredients = request.get('missing_ingredients', [])
+        generated_codes = request.get('generated_codes', {})
+        
+        if not missing_ingredients:
+            raise HTTPException(400, "missing_ingredients list is required")
+        
+        # Создаем Product-Skeletons.xlsx
+        from ..exports.iiko_xlsx import create_product_skeletons_xlsx
+        excel_buffer = create_product_skeletons_xlsx(missing_ingredients, generated_codes)
+        
+        return StreamingResponse(
+            iter([excel_buffer.getvalue()]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": 'attachment; filename="Product-Skeletons.xlsx"'}
+        )
+        
+    except Exception as e:
+        logger.error(f"Export product skeletons error: {e}")
+        raise HTTPException(500, f"Export product skeletons failed: {str(e)}")
+
+
 @router.post("/techcards.v2/export/auto-fix")
 async def auto_fix_export_issues(request: Request):
     """
