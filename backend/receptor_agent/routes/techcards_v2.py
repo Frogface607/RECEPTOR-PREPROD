@@ -1174,7 +1174,7 @@ async def export_enhanced_dual_iiko_xlsx(request: dict):
         # 1. Dish-Skeletons.xlsx
         dish_codes_mapping = export_options.get('dish_codes_mapping', {})
         if dish_codes_mapping:
-            skeletons_buffer = create_dish_skeletons_xlsx(cards, dish_codes_mapping)
+            skeletons_buffer = create_dish_skeletons_xlsx(dish_codes_mapping, cards)
             files_data['Dish-Skeletons.xlsx'] = skeletons_buffer.getvalue()
         
         # 2. iiko TTK.xlsx (основной файл)
