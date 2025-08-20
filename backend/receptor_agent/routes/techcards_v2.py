@@ -872,7 +872,7 @@ async def enhanced_export_iiko_xlsx(request: Request):
                 "can_auto_fix": len([e for e in blocking_errors if e.get('type') in ['rangeNormalized', 'yieldInconsistent']]) > 0
             }
         
-        # Step 2: Export XLSX
+        # Step 2: Export XLSX with Feature A & B support
         from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
         from ..techcards_v2.schemas import TechCardV2
         
@@ -884,7 +884,22 @@ async def enhanced_export_iiko_xlsx(request: Request):
             # Используем исходные данные если нормализация не прошла
             techcard_obj = TechCardV2.model_validate(techcard_data)
         
-        excel_buffer, export_issues = create_iiko_ttk_xlsx(techcard_obj)
+        # Feature A & B: Подготовка опций экспорта
+        export_options = {
+            'use_product_codes': body.get('use_product_codes', True),  # Feature A: по умолчанию включен
+            'dish_codes_mapping': body.get('dish_codes_mapping', {}),  # Feature B: коды блюд
+            'rms_service': None  # Будет установлен ниже
+        }
+        
+        # Получаем RMS сервис для кодов продуктов
+        try:
+            from ..integrations.iiko_rms_service import get_iiko_rms_service
+            rms_service = get_iiko_rms_service()
+            export_options['rms_service'] = rms_service
+        except Exception as e:
+            logger.warning(f"Could not get RMS service for product codes: {e}")
+        
+        excel_buffer, export_issues = create_iiko_ttk_xlsx(techcard_obj, export_options)
         
         # Step 3: Track export
         organization_id = body.get('organization_id', 'default')
