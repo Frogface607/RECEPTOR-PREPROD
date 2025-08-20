@@ -574,13 +574,13 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         # Конвертируем единицы в граммы
         brutto_g = round(normalize_unit_to_grams(
             getattr(ingredient, 'brutto_g', 0), 
-            getattr(ingredient, 'unit', 'g'), 
+            getattr(ingredient, 'unit', 'г'), 
             ingredient.name
         ), 1)
         
         netto_g = round(normalize_unit_to_grams(
             getattr(ingredient, 'netto_g', 0), 
-            getattr(ingredient, 'unit', 'g'), 
+            getattr(ingredient, 'unit', 'г'), 
             ingredient.name
         ), 1)
         
