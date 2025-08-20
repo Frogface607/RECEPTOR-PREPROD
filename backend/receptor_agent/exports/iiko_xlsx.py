@@ -352,7 +352,12 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         
         # Записываем данные в ячейки
         for col, value in enumerate(row_data, 1):
-            ws.cell(row=row, column=col).value = value
+            cell = ws.cell(row=row, column=col)
+            cell.value = value
+            
+            # Feature A: Форматирование кодов продуктов и блюд как текст для сохранения ведущих нулей
+            if col in [1, 3]:  # Колонки "Артикул блюда" и "Артикул продукта"
+                cell.number_format = '@'  # Текстовый формат для сохранения ведущих нулей
         
         row += 1
     
