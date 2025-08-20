@@ -130,6 +130,42 @@
 user_problem_statement: "iiko IMPORT RELIABILITY — PRODUCT CODES & DISH SKELETONS TESTING - Comprehensive testing of the newly implemented iiko Import Reliability features to eliminate 'артикул не найден' errors in iikoWeb import. Test Feature A: Product Code Toggle (use_product_codes), Feature B: Dish Code Resolver + Skeletons (dual export), Feature 3: Pre-flight Warnings, API endpoints validation, Excel file formatting, performance requirements, and error handling."
 
 backend:
+  - task: "iiko Import Reliability - Feature A: Product Code Toggle"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/exports/iiko_xlsx.py, backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE A: PRODUCT CODE TOGGLE TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of Product Code Toggle functionality for iiko Import Reliability. ✅ PRODUCT CODES FEATURE OPERATIONAL: use_product_codes=true correctly uses product.code/article instead of GUID for 'Артикул продукта' field. Excel cell formatting as text (@) properly preserves leading zeros in code columns (1 and 3). Fallback to generated codes working when product codes unavailable. ✅ EXCEL FILE VALIDATION CONFIRMED: Code columns properly formatted as text (@) to preserve leading zeros, proper column headers and data structure validated, file size and format validation successful. ✅ RMS INTEGRATION WORKING: get_product_code_from_rms() function correctly retrieves numerical codes from iiko RMS products and prices collections. Proper fallback to generated codes when RMS codes unavailable. ✅ EXPORT OPTIONS INTEGRATION: Enhanced export endpoints correctly handle use_product_codes parameter, proper integration with dual export functionality. Feature A fully operational and ready for production use."
+
+  - task: "iiko Import Reliability - Feature B: Dish Code Resolver + Skeletons"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/exports/iiko_xlsx.py, backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE B: DISH CODE RESOLVER + SKELETONS TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of Dish Code Resolver and Skeletons functionality. ✅ API ENDPOINTS OPERATIONAL: POST /api/v1/techcards.v2/dish-codes/find successfully searches dish codes in iiko RMS by name with proper response structure (dish_name, status, dish_code, confidence). POST /api/v1/techcards.v2/dish-codes/generate generates sequential dish codes with proper width and leading zeros (5 digits). ✅ DUAL EXPORT WORKING: POST /api/v1/techcards.v2/export/enhanced-dual/iiko.xlsx produces proper ZIP archive with both Dish-Skeletons.xlsx and iiko_TTK.xlsx files. ZIP structure validated with correct file contents. ✅ DISH CODES INTEGRATION VERIFIED: Generated codes properly integrated into dual export, Dish-Skeletons.xlsx contains correct headers (Артикул, Наименование, Тип, Ед. выпуска, Выход), dish codes mapping working correctly. ✅ PERFORMANCE EXCELLENT: Dish code generation <2s for 10 dishes (0.051s achieved), enhanced export <10s for multi-card export. Feature B fully operational and ready for production use."
+
+  - task: "iiko Import Reliability - Feature 3: Pre-flight Warnings"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE 3: PRE-FLIGHT WARNINGS TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of Pre-flight Warnings system for export validation. ✅ PREFLIGHT CHECK ENDPOINT OPERATIONAL: POST /api/v1/techcards.v2/export/preflight-check correctly detects missing dish codes and missing product codes. Proper warning categorization with type, title, items, action, and severity fields. ✅ WARNING DETECTION WORKING: Missing dish codes detection functional - identifies dishes without codes in dish_codes_mapping. Missing product codes detection operational - checks for product codes when use_product_codes=true. User-friendly warnings with actionable CTAs provided. ✅ RESPONSE STRUCTURE VALIDATED: Proper response format with status (ready/warnings), warnings array, cards_checked count, export_ready flag. Warning messages provide clear guidance for resolution. ✅ PERFORMANCE EXCELLENT: Preflight check <3s for validation (0.056s achieved for 5 cards). Feature 3 fully operational and ready for production use."
+
   - task: "P0.3: Automapping Performance ≤ 3s (batch-50)"
     implemented: true
     working: true
