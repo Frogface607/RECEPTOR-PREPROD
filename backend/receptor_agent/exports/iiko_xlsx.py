@@ -428,16 +428,27 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     if operational_rounding_enabled:
         try:
             from receptor_agent.techcards_v2.operational_rounding import get_operational_rounder
+            logger.info("Applying operational rounding...")
             rounder = get_operational_rounder()
             
             # Конвертируем TechCardV2 в dict для округления
             card_dict = card.model_dump()
+            logger.info(f"Card dict keys: {list(card_dict.keys())}")
+            logger.info(f"Meta dict: {card_dict.get('meta', {})}")
+            
             rounding_result = rounder.round_techcard_ingredients(card_dict)
             
-            # Создаем новый TechCardV2 объект с округленными данными
+            # DEBUG: Проверяем результат округления
             rounded_dict = rounding_result['rounded_techcard']
+            logger.info(f"Rounded card keys: {list(rounded_dict.keys())}")
+            logger.info(f"Rounded meta: {rounded_dict.get('meta', {})}")
+            
+            # Создаем новый TechCardV2 объект с округленными данными
             working_card = TechCardV2.model_validate(rounded_dict)
             rounding_metadata = rounding_result['rounding_metadata']
+            
+            logger.info(f"Working card meta type: {type(working_card.meta)}")
+            logger.info(f"Working card meta: {working_card.meta}")
             
             # Логируем применение округления
             if rounding_metadata and rounding_metadata.get('items'):
@@ -456,6 +467,8 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
             
         except Exception as e:
             logger.error(f"Operational rounding error: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             # Продолжаем с исходной техкартой если округление не удалось
             issues.append({
                 "type": "roundingError",
