@@ -53,7 +53,7 @@ class OperationalRoundingTester:
                     "brutto_g": 123.456,  # Needs rounding
                     "netto_g": 120.789,   # Needs rounding
                     "loss_pct": 2.2,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-flour-guid",
                     "product_code": "12345"
                 },
@@ -62,7 +62,7 @@ class OperationalRoundingTester:
                     "brutto_g": 87.321,   # Needs rounding
                     "netto_g": 87.321,    # No loss
                     "loss_pct": 0.0,
-                    "unit": "мл",
+                    "unit": "ml",
                     "skuId": "test-milk-guid",
                     "product_code": "67890"
                 },
@@ -71,7 +71,7 @@ class OperationalRoundingTester:
                     "brutto_g": 45.678,   # Needs rounding
                     "netto_g": 43.210,    # Needs rounding
                     "loss_pct": 5.4,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-eggs-guid",
                     "product_code": "11111"
                 }
