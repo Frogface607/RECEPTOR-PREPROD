@@ -155,11 +155,25 @@ def generate_technology_text(process_steps) -> str:
 def create_iiko_ttk_xlsx(card: TechCardV2, 
                         export_options: Dict[str, Any] = None) -> Tuple[BytesIO, List[Dict[str, Any]]]:
     """
-    Создает XLSX файл для импорта ТТК в iiko
+    Создать iiko XLSX файл для импорта технологических карт
+    WITH iiko Import Reliability — Product Codes & Dish Skeletons
+    
+    Args:
+        card: Техкарта в формате TechCardV2
+        export_options: Опции экспорта:
+            - use_product_codes: bool = True - использовать коды товаров вместо GUID
+            - dish_codes_mapping: Dict[str, str] - маппинг блюд к кодам
     
     Returns:
-        Tuple[BytesIO, List[Dict]]: Excel файл и список issues
+        (BytesIO buffer, issues list)
     """
+    if not export_options:
+        export_options = {}
+    
+    # Feature A: Product Code toggle (по умолчанию включен)
+    use_product_codes = export_options.get('use_product_codes', True)
+    dish_codes_mapping = export_options.get('dish_codes_mapping', {})
+    
     if not Workbook:
         raise ImportError("openpyxl is required for Excel export. Install with: pip install openpyxl")
     
