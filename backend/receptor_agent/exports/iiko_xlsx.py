@@ -282,22 +282,25 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     
     for ingredient in card.ingredients:
         # Артикул продукта
-        # Feature A: Product Code toggle
+        # Feature A: Product Code toggle - использовать реальные коды товаров
         if use_product_codes:
-            product_code = ingredient.skuId
-            if not product_code:
-                # Генерируем артикул если отсутствует
+            # Получаем числовой код продукта из iiko RMS
+            product_code = get_product_code_from_rms(ingredient.skuId, rms_service)
+            
+            # Если это все еще GUID, значит код не найден
+            if not product_code or product_code == ingredient.skuId:
+                # Генерируем артикул если отсутствует код в iiko
                 ingredient_slug = generate_dish_slug(ingredient.name)
                 product_code = f"GENERATED_{ingredient_slug}"
                 issues.append({
-                    "type": "noSku",
+                    "type": "noProductCode",
                     "name": ingredient.name,
-                    "hint": f"Generated SKU: {product_code}",
+                    "hint": f"Продукт не найден в iiko RMS или отсутствует код товара. Сгенерирован: {product_code}",
                     "dish": card.meta.title
                 })
         else:
-            # Используем GUID вместо кодов товаров
-            product_code = getattr(ingredient, 'guid', ingredient.skuId or f"GUID_{generate_dish_slug(ingredient.name)}")
+            # Используем GUID как есть (legacy режим)
+            product_code = ingredient.skuId or f"GUID_{generate_dish_slug(ingredient.name)}"
         
         # Обработка подрецептов
         if hasattr(ingredient, 'subRecipe') and ingredient.subRecipe:
