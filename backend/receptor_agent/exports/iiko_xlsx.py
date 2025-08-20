@@ -421,6 +421,48 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     
     issues = []
     
+    # Operational Rounding v1: Применяем операционное округление если включено
+    working_card = card
+    rounding_metadata = None
+    
+    if operational_rounding_enabled:
+        try:
+            from receptor_agent.techcards_v2.operational_rounding import get_operational_rounder
+            rounder = get_operational_rounder()
+            
+            # Конвертируем TechCardV2 в dict для округления
+            card_dict = card.model_dump()
+            rounding_result = rounder.round_techcard_ingredients(card_dict)
+            
+            # Создаем новый TechCardV2 объект с округленными данными
+            rounded_dict = rounding_result['rounded_techcard']
+            working_card = TechCardV2.model_validate(rounded_dict)
+            rounding_metadata = rounding_result['rounding_metadata']
+            
+            # Логируем применение округления
+            if rounding_metadata and rounding_metadata.get('items'):
+                logger.info(f"Operational rounding applied to {len(rounding_metadata['items'])} ingredients, "
+                           f"delta: {rounding_metadata.get('delta_g', 0)}g")
+                
+                # Добавляем информацию в issues для отчета
+                if abs(rounding_metadata.get('delta_g', 0)) > 0.1:
+                    issues.append({
+                        "type": "operationalRounding",
+                        "message": f"Применено операционное округление: {len(rounding_metadata['items'])} ингредиентов, "
+                                 f"дельта: {rounding_metadata.get('delta_g', 0):+.1f}г",
+                        "severity": "info",
+                        "details": rounding_metadata
+                    })
+            
+        except Exception as e:
+            logger.error(f"Operational rounding error: {e}")
+            # Продолжаем с исходной техкартой если округление не удалось
+            issues.append({
+                "type": "roundingError",
+                "message": f"Ошибка операционного округления: {str(e)}",
+                "severity": "warning"
+            })
+    
     # Пытаемся загрузить шаблон, если не получается - создаем новый
     wb = None
     if TEMPLATE_PATH.exists():
