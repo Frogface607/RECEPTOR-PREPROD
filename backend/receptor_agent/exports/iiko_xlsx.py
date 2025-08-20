@@ -517,17 +517,17 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     dish_name = working_card.meta.title
     
     # Рассчитываем выход готового продукта
-    output_qty = getattr(card.yield_, 'perBatch_g', 0) if hasattr(card, 'yield_') and card.yield_ else 0
-    if not output_qty and hasattr(card, 'yield_') and card.yield_:
+    output_qty = getattr(working_card.yield_, 'perBatch_g', 0) if hasattr(working_card, 'yield_') and working_card.yield_ else 0
+    if not output_qty and hasattr(working_card, 'yield_') and working_card.yield_:
         # Если нет perBatch_g, рассчитываем из порций
-        portions = getattr(card, 'portions', 1)
-        per_portion = getattr(card.yield_, 'perPortion_g', 0)
+        portions = getattr(working_card, 'portions', 1)
+        per_portion = getattr(working_card.yield_, 'perPortion_g', 0)
         output_qty = portions * per_portion if per_portion else 0
     
     # Генерируем технологию приготовления
     technology_text = ""
-    if hasattr(card, 'process') and card.process:
-        technology_text = generate_technology_text(card.process)
+    if hasattr(working_card, 'process') and working_card.process:
+        technology_text = generate_technology_text(working_card.process)
     
     # Заполняем данные по ингредиентам
     row = 2  # Начинаем со второй строки (первая - заголовки)
