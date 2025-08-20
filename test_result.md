@@ -2614,8 +2614,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "P1: iiko Basic Mode UI Redesign"
-    - "P0: Ingredient Modal Search — wire to iiko"
+    - "iiko Import Reliability - Feature A: Product Code Toggle"
+    - "iiko Import Reliability - Feature B: Dish Code Resolver + Skeletons"
+    - "iiko Import Reliability - Feature 3: Pre-flight Warnings"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
