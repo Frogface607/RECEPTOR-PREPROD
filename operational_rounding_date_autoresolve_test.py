@@ -599,7 +599,7 @@ class IntegrationTester:
                         "brutto_g": 156.789,  # Needs rounding
                         "netto_g": 153.456,   # Needs rounding
                         "loss_pct": 2.1,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": "integration-flour-guid",
                         "product_code": "55555"
                     },
@@ -608,7 +608,7 @@ class IntegrationTester:
                         "brutto_g": 78.321,   # Needs rounding
                         "netto_g": 78.321,    # No loss
                         "loss_pct": 0.0,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": "integration-sugar-guid",
                         "product_code": "66666"
                     }
