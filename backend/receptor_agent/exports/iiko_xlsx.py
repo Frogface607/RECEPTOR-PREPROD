@@ -507,14 +507,14 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     
     # Генерируем данные для экспорта
     # Feature A: Use dish_codes_mapping if provided
-    dish_code = dish_codes_mapping.get(card.meta.title)
+    dish_code = dish_codes_mapping.get(working_card.meta.title)
     if not dish_code:
-        dish_code = card.meta.get('dish_code') if hasattr(card.meta, 'dish_code') else None
+        dish_code = working_card.meta.get('dish_code') if hasattr(working_card.meta, 'dish_code') else None
     if not dish_code:
-        dish_slug = generate_dish_slug(card.meta.title)
+        dish_slug = generate_dish_slug(working_card.meta.title)
         dish_code = f"DISH_{dish_slug}"
     
-    dish_name = card.meta.title
+    dish_name = working_card.meta.title
     
     # Рассчитываем выход готового продукта
     output_qty = getattr(card.yield_, 'perBatch_g', 0) if hasattr(card, 'yield_') and card.yield_ else 0
