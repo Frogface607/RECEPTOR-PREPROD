@@ -36,7 +36,8 @@ class YieldV2(BaseModel):
 class IngredientV2(BaseModel):
     name: str = Field(..., min_length=1)
     canonical_id: Optional[str] = None  # Для маппинга к каталогу питания
-    skuId: Optional[str] = None  # Для маппинга к каталогу цен/SKU
+    skuId: Optional[str] = None  # Для маппинга к каталогу цен/SKU (GUID)
+    product_code: Optional[str] = None  # A. Hotfix & Migration: числовой код продукта iiko (article)
     subRecipe: Optional[SubRecipeRefV2] = None  # Ссылка на подрецепт/полуфабрикат
     unit: UOM = "g"
     brutto_g: float = Field(..., ge=0)
