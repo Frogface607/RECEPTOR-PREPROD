@@ -1366,6 +1366,8 @@ async def export_preflight_check(request: dict):
             "export_ready": status == "ready"
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Preflight check error: {e}")
         raise HTTPException(500, f"Preflight check failed: {str(e)}")
