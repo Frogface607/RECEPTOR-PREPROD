@@ -271,8 +271,11 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         if hasattr(ingredient, 'subRecipe') and ingredient.subRecipe:
             # Для подрецептов используем их dish_code как артикул продукта
             sub_recipe_code = getattr(ingredient.subRecipe, 'dish_code', None)
-            if sub_recipe_code:
+            if sub_recipe_code and use_product_codes:
                 product_code = sub_recipe_code
+            elif not use_product_codes:
+                # Используем GUID для подрецептов
+                product_code = getattr(ingredient.subRecipe, 'guid', sub_recipe_code or f"SUBGUID_{generate_dish_slug(ingredient.name)}")
             else:
                 issues.append({
                     "type": "subRecipeNoCode",
