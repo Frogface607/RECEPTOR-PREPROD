@@ -87,9 +87,39 @@ class DishCodeResolverTester:
                 "perBatch_g": 240
             },
             "portions": 1,
+            "process": [
+                {
+                    "n": 1,
+                    "action": "Подготовить ингредиенты",
+                    "time_min": 5,
+                    "equipment": ["нож", "доска"]
+                },
+                {
+                    "n": 2,
+                    "action": "Нарезать куриное филе",
+                    "time_min": 3,
+                    "equipment": ["нож"]
+                },
+                {
+                    "n": 3,
+                    "action": "Обжарить курицу",
+                    "time_min": 10,
+                    "temp_c": 180,
+                    "equipment": ["сковорода"]
+                },
+                {
+                    "n": 4,
+                    "action": "Подать с салатом и сыром",
+                    "time_min": 2
+                }
+            ],
+            "storage": {
+                "conditions": "Хранить в холодильнике при температуре +2...+6°C",
+                "shelfLife_hours": 24,
+                "servingTemp_c": 65
+            },
             "nutrition": {"per100g": {}, "perPortion": {}},
-            "cost": {"per100g": {}, "perPortion": {}},
-            "process": {"steps": []}
+            "cost": {"per100g": {}, "perPortion": {}}
         }
         
     def test_dish_codes_find_endpoint(self):
