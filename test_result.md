@@ -135,6 +135,30 @@
 
 user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)"
 
+  - task: "E. Operational Rounding v1 (довести)"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/exports/pdf.py, backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 E. OPERATIONAL ROUNDING V1 PDF INTEGRATION COMPLETED: Successfully extended operational rounding functionality to PDF generation and Kitchen View. PDF ENHANCEMENT: Updated techcard_to_pdf() function to accept use_operational_rounding parameter (default: true), integrated OperationalRoundingService for PDF generation, applied rounding to ingredient quantities in PDF display, added visual indicator (* Количества округлены для удобства производства) when rounding applied. EXPORT ENDPOINT UPDATE: Modified POST /techcards.v2/export endpoint to accept options.operational_rounding parameter, updated request structure to support both card and options in request body, maintains backward compatibility while adding new functionality. PDF FORMATTING IMPROVEMENTS: Enhanced PDF layout with proper TechCardV2 schema compatibility, improved ingredient display with smart number formatting (removes unnecessary decimals), better spacing and page break handling, comprehensive meta information display. Ready for backend testing to validate operational rounding in PDF exports and Kitchen View display."
+
+  - task: "F. TTK Date Autoresolve (ошибка «на дату уже есть»)"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/exports/iiko_xlsx.py, backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 F. TTK DATE AUTORESOLVE IMPLEMENTATION COMPLETED: Successfully implemented automatic date conflict resolution for iiko tech card exports. CORE FUNCTIONALITY: Created resolve_ttk_date_conflict() function with intelligent date conflict detection through iiko RMS integration, automatic date shifting (today+1...+7 days) when conflicts detected, comprehensive fallback mechanisms when RMS unavailable. INTEGRATION: Added auto_resolve_date and base_date options to create_iiko_ttk_xlsx() export function, integrated date resolution into enhanced dual export workflow, maintains user control with optional auto-resolution toggle. CONFLICT DETECTION: Searches multiple iiko RMS collections (techcards, products) for existing tech cards on target date, handles various date formats and validation errors gracefully, provides detailed logging for debugging and audit trails. SMART LOGIC: Uses today as default base date if not specified, searches up to 7 days ahead for free dates, returns appropriate dates even when conflicts cannot be resolved completely. Ready for backend testing to validate date conflict resolution and export functionality."
+
   - task: "D. Dish Code Resolver (актуализировать)"
     implemented: true
     working: true
