@@ -343,10 +343,10 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     return excel_buffer, issues
 
 
-def export_techcard_to_iiko_xlsx(card: TechCardV2) -> bytes:
+def export_techcard_to_iiko_xlsx(card: TechCardV2, export_options: Dict[str, Any] = None) -> bytes:
     """
     Wrapper function for round-trip tests compatibility
     Returns just the Excel bytes
     """
-    buffer, issues = create_iiko_ttk_xlsx(card)
+    buffer, issues = create_iiko_ttk_xlsx(card, export_options)
     return buffer.getvalue()
