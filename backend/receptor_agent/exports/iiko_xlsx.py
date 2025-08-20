@@ -43,8 +43,8 @@ def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
             # Возвращаем article (числовой код) с сохранением ведущих нулей
             return str(product['article']).zfill(5)  # Минимум 5 цифр с ведущими нулями
         
-        # Поиск в коллекции pricing если нет в products
-        pricing = rms_service.pricing.find_one({"skuId": sku_id})
+        # Поиск в коллекции prices если нет в products
+        pricing = rms_service.prices.find_one({"skuId": sku_id})
         if pricing and pricing.get('article'):
             return str(pricing['article']).zfill(5)
             
