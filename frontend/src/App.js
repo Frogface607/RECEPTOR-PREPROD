@@ -3504,28 +3504,37 @@ function App() {
             
             return true;
           })
-          .map(result => ({
-            ingredient_name: result.ingredient_name,
-            original_unit: result.original_unit || 'г',
-            status: result.status || 'no_match',
-            confidence: Math.round((result.confidence || 0) * 100),
-            match_type: result.match_type || 'unknown',
-            suggestion: result.suggestion ? {
-              sku_id: result.suggestion.sku_id,
-              name: result.suggestion.name || 'Unnamed Product',
-              article: result.suggestion.article || '',
-              unit: result.suggestion.unit || 'г',
-              price_per_unit: result.suggestion.price_per_unit || 0,
-              currency: result.suggestion.currency || 'RUB',
-              group_name: result.suggestion.group_name || '',
-              source: result.suggestion.source || 'iiko',
-              // P0-2: Unit mismatch handling - don't hide, show with label
-              unit_mismatch: result.original_unit !== result.suggestion.unit
-            } : null,
-            alternatives: Array.isArray(result.alternatives) ? result.alternatives.filter(alt => 
-              alt && alt.name && alt.name.trim() && (alt.sku_id || alt.canonical_id)
-            ) : []
-          }));
+          .map((result, index) => {
+            // CRITICAL FIX: Find the ingredient index in tcV2 by name matching
+            const ingredientIndex = tcV2.ingredients.findIndex(ing => 
+              ing.name && ing.name.toLowerCase().trim() === result.ingredient_name.toLowerCase().trim()
+            );
+            
+            return {
+              ingredient_name: result.ingredient_name,
+              original_unit: result.original_unit || 'г',
+              status: result.status || 'no_match',
+              confidence: Math.round((result.confidence || 0) * 100),
+              match_type: result.match_type || 'unknown',
+              index: ingredientIndex, // CRITICAL FIX: Add ingredient index for applying changes
+              suggestion: result.suggestion ? {
+                sku_id: result.suggestion.sku_id,
+                name: result.suggestion.name || 'Unnamed Product',
+                article: result.suggestion.article || '',
+                unit: result.suggestion.unit || 'г',
+                price_per_unit: result.suggestion.price_per_unit || 0,
+                currency: result.suggestion.currency || 'RUB',
+                group_name: result.suggestion.group_name || '',
+                source: result.suggestion.source || 'iiko',
+                // P0-2: Unit mismatch handling - don't hide, show with label
+                unit_mismatch: result.original_unit !== result.suggestion.unit
+              } : null,
+              alternatives: Array.isArray(result.alternatives) ? result.alternatives.filter(alt => 
+                alt && alt.name && alt.name.trim() && (alt.sku_id || alt.canonical_id)
+              ) : []
+            };
+          })
+          .filter(result => result.index >= 0); // CRITICAL FIX: Only keep results with valid ingredient index
 
         // P0-2: Check for empty results and provide guidance
         const stats = mappingData.stats || { auto_accept: 0, review: 0, no_match: 0 };
