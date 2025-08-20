@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Tuple
 import re
 import os
+import logging
 
 # Используем openpyxl для работы с Excel
 try:
