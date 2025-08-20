@@ -3757,31 +3757,57 @@ function App() {
 
     setAutoMappingMessage({ type: 'info', text: '🔄 Применение изменений...' });
     
-    // Update tcV2 with new SKUs
-    const updatedTcV2 = { ...tcV2 };
-    let changesCount = 0;
-    
-    acceptedResults.forEach(result => {
-      if (result.suggestion) {
-        updatedTcV2.ingredients[result.index] = {
-          ...updatedTcV2.ingredients[result.index],
-          skuId: result.suggestion.sku_id,
-          source: 'rms'
-        };
-        changesCount++;
+    try {
+      // CRITICAL FIX: Validate tcV2 and ingredients before processing
+      if (!tcV2 || !tcV2.ingredients || !Array.isArray(tcV2.ingredients)) {
+        throw new Error('Техкарта не найдена или повреждена');
       }
-    });
-    
-    // Apply changes and recalculate
-    setTcV2(updatedTcV2);
-    
-    // Use the existing recalculation function
-    await performRecalculation(updatedTcV2);
-    
-    setAutoMappingMessage({ 
-      type: 'success', 
-      text: `✅ Применено ${changesCount} изменений. Покрытие цен обновлено!` 
-    });
+      
+      // Update tcV2 with new SKUs
+      const updatedTcV2 = { ...tcV2 };
+      let changesCount = 0;
+      
+      acceptedResults.forEach(result => {
+        // CRITICAL FIX: Validate result data before applying
+        if (result.suggestion && 
+            typeof result.index === 'number' && 
+            result.index >= 0 && 
+            result.index < updatedTcV2.ingredients.length &&
+            updatedTcV2.ingredients[result.index]) {
+          
+          updatedTcV2.ingredients[result.index] = {
+            ...updatedTcV2.ingredients[result.index],
+            skuId: result.suggestion.sku_id,
+            source: 'rms'
+          };
+          changesCount++;
+        } else {
+          console.warn('Skipped invalid result:', result);
+        }
+      });
+      
+      if (changesCount === 0) {
+        throw new Error('Не удалось применить изменения - некорректные данные');
+      }
+      
+      // Apply changes and recalculate
+      setTcV2(updatedTcV2);
+      
+      // Use the existing recalculation function
+      await performRecalculation(updatedTcV2);
+      
+      setAutoMappingMessage({ 
+        type: 'success', 
+        text: `✅ Применено ${changesCount} изменений. Покрытие цен обновлено!` 
+      });
+      
+    } catch (error) {
+      console.error('Apply auto-mapping changes error:', error);
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: `❌ Ошибка применения изменений: ${error.message}` 
+      });
+    }
     
     setShowAutoMappingModal(false);
     setAutoMappingResults([]);
