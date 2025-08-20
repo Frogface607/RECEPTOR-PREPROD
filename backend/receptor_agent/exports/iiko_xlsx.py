@@ -573,10 +573,14 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         # Артикул продукта
         # Feature A: Product Code toggle - использовать реальные коды товаров
         if use_product_codes:
-            # Получаем числовой код продукта из iiko RMS
-            product_code = get_product_code_from_rms(ingredient.skuId, rms_service)
+            # A. Hotfix & Migration: Сначала пытаемся использовать уже сохраненный product_code
+            product_code = getattr(ingredient, 'product_code', None)
             
-            # Если это все еще GUID, значит код не найден
+            # Если нет сохраненного кода, получаем из RMS по skuId
+            if not product_code and ingredient.skuId:
+                product_code = get_product_code_from_rms(ingredient.skuId, rms_service)
+            
+            # Если это все еще GUID или нет кода, генерируем
             if not product_code or product_code == ingredient.skuId:
                 # Генерируем артикул если отсутствует код в iiko
                 ingredient_slug = generate_dish_slug(ingredient.name)
