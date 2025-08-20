@@ -52,9 +52,7 @@ class DishCodeResolverTester:
         return {
             "meta": {
                 "id": f"test-{dish_name.lower().replace(' ', '-')}",
-                "title": dish_name,
-                "description": f"Test techcard for {dish_name}",
-                "created_at": "2025-01-27T10:00:00Z"
+                "title": dish_name
             },
             "ingredients": [
                 {
@@ -62,7 +60,7 @@ class DishCodeResolverTester:
                     "brutto_g": 200,
                     "netto_g": 180,
                     "loss_pct": 10,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-chicken-guid-001"
                 },
                 {
@@ -70,7 +68,7 @@ class DishCodeResolverTester:
                     "brutto_g": 50,
                     "netto_g": 45,
                     "loss_pct": 10,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-lettuce-guid-002"
                 },
                 {
@@ -78,7 +76,7 @@ class DishCodeResolverTester:
                     "brutto_g": 30,
                     "netto_g": 30,
                     "loss_pct": 0,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-cheese-guid-003"
                 }
             ],
@@ -118,8 +116,21 @@ class DishCodeResolverTester:
                 "shelfLife_hours": 24,
                 "servingTemp_c": 65
             },
-            "nutrition": {"per100g": {}, "perPortion": {}},
-            "cost": {"per100g": {}, "perPortion": {}}
+            "nutrition": {
+                "per100g": {
+                    "kcal": 150.0,
+                    "proteins_g": 20.0,
+                    "fats_g": 5.0,
+                    "carbs_g": 8.0
+                },
+                "perPortion": {
+                    "kcal": 360.0,
+                    "proteins_g": 48.0,
+                    "fats_g": 12.0,
+                    "carbs_g": 19.2
+                }
+            },
+            "cost": {}
         }
         
     def test_dish_codes_find_endpoint(self):
