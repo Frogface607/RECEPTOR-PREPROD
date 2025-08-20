@@ -23,6 +23,7 @@ except ImportError:
     load_workbook = None
 
 from receptor_agent.techcards_v2.schemas import TechCardV2
+from receptor_agent.integrations.iiko_rms_service import IikoRmsService
 
 logger = logging.getLogger(__name__)
 
