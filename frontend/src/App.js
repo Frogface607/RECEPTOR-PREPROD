@@ -1325,7 +1325,7 @@ function App() {
                     <th className="text-center py-2 text-purple-300">Потери %</th>
                     <th className="text-center py-2 text-purple-300">Нетто</th>
                     <th className="text-center py-2 text-purple-300">Ед.изм</th>
-                    <th className="text-center py-2 text-purple-300">SKU</th>
+                    <th className="text-center py-2 text-purple-300">Артикул (iiko)</th>
                     <th className="text-center py-2 text-purple-300">Действия</th>
                   </tr>
                 </thead>
