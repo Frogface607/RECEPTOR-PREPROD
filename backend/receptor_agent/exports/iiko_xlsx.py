@@ -870,6 +870,22 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     
     dish_name = dish_title
     
+    # F. TTK Date Autoresolve: Автоматический сдвиг даты при конфликте
+    auto_resolve_date = export_options.get('auto_resolve_date', True) if export_options else True
+    base_date = export_options.get('base_date') if export_options else None
+    
+    resolved_date = None
+    if auto_resolve_date:
+        resolved_date = resolve_ttk_date_conflict(
+            dish_name=dish_name,
+            base_date=base_date,
+            rms_service=rms_service,
+            max_days_ahead=7
+        )
+        logger.info(f"Resolved TTK date for '{dish_name}': {resolved_date}")
+    else:
+        resolved_date = base_date or datetime.now().strftime('%Y-%m-%d')
+    
     # Рассчитываем выход готового продукта
     output_qty = getattr(working_card.yield_, 'perBatch_g', 0) if hasattr(working_card, 'yield_') and working_card.yield_ else 0
     if not output_qty and hasattr(working_card, 'yield_') and working_card.yield_:
