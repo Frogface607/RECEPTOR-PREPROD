@@ -23,6 +23,8 @@ except ImportError:
 
 from receptor_agent.techcards_v2.schemas import TechCardV2
 
+logger = logging.getLogger(__name__)
+
 def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
     """
     Feature A: Получить числовой код продукта из iiko RMS вместо GUID
