@@ -52,7 +52,7 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 150,
                         "netto_g": 120,
                         "loss_pct": 20,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": "guid-chicken-123",  # Has GUID but no product_code
                         "product_code": None
                     },
@@ -61,7 +61,7 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 100,
                         "netto_g": 90,
                         "loss_pct": 10,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": None,  # No mapping at all
                         "product_code": None
                     },
@@ -70,7 +70,7 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 50,
                         "netto_g": 50,
                         "loss_pct": 0,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": "guid-parmesan-456",
                         "product_code": "12345"  # Has product_code - should not be missing
                     },
@@ -79,7 +79,7 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 30,
                         "netto_g": 30,
                         "loss_pct": 0,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": None,
                         "product_code": None
                     },
@@ -88,25 +88,44 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 40,
                         "netto_g": 40,
                         "loss_pct": 0,
-                        "unit": "мл",
+                        "unit": "ml",
                         "skuId": "guid-sauce-789",
                         "product_code": "00678"  # Has product_code with leading zeros
                     }
                 ],
-                "yield_": {
-                    "perPortion_g": 200,
-                    "perBatch_g": 200
+                "yield": {
+                    "perPortion_g": 370,
+                    "perBatch_g": 370
                 },
                 "portions": 1,
                 "process": [
                     {
                         "n": 1,
-                        "action": "Нарезать куриное филе",
+                        "action": "Нарезать куриное филе кубиками",
                         "temp_c": None,
                         "time_min": 5,
                         "equipment": ["нож", "доска"]
+                    },
+                    {
+                        "n": 2,
+                        "action": "Промыть и нарезать салат",
+                        "temp_c": None,
+                        "time_min": 3,
+                        "equipment": ["нож"]
+                    },
+                    {
+                        "n": 3,
+                        "action": "Смешать ингредиенты с соусом",
+                        "temp_c": None,
+                        "time_min": 2,
+                        "equipment": ["миска"]
                     }
-                ]
+                ],
+                "storage": {
+                    "conditions": "Хранить в холодильнике при температуре +2...+6°C",
+                    "shelfLife_hours": 24,
+                    "servingTemp_c": 8
+                }
             },
             {
                 "meta": {
@@ -119,7 +138,7 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 200,
                         "netto_g": 180,
                         "loss_pct": 10,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": None,  # No mapping
                         "product_code": None
                     },
@@ -128,7 +147,7 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 150,
                         "netto_g": 120,
                         "loss_pct": 20,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": None,
                         "product_code": None
                     },
@@ -137,17 +156,44 @@ class ProductSkeletonsTestSuite:
                         "brutto_g": 80,
                         "netto_g": 70,
                         "loss_pct": 12.5,
-                        "unit": "г",
+                        "unit": "g",
                         "skuId": "guid-carrot-999",
                         "product_code": None  # Has GUID but no product_code
                     }
                 ],
-                "yield_": {
-                    "perPortion_g": 330,
-                    "perBatch_g": 330
+                "yield": {
+                    "perPortion_g": 370,
+                    "perBatch_g": 370
                 },
                 "portions": 1,
-                "process": []
+                "process": [
+                    {
+                        "n": 1,
+                        "action": "Варить говядину в воде",
+                        "temp_c": 100,
+                        "time_min": 60,
+                        "equipment": ["кастрюля", "плита"]
+                    },
+                    {
+                        "n": 2,
+                        "action": "Нарезать и добавить овощи",
+                        "temp_c": None,
+                        "time_min": 10,
+                        "equipment": ["нож", "доска"]
+                    },
+                    {
+                        "n": 3,
+                        "action": "Варить до готовности",
+                        "temp_c": 90,
+                        "time_min": 30,
+                        "equipment": ["кастрюля"]
+                    }
+                ],
+                "storage": {
+                    "conditions": "Хранить в холодильнике при температуре +2...+6°C",
+                    "shelfLife_hours": 48,
+                    "servingTemp_c": 65
+                }
             }
         ]
     
