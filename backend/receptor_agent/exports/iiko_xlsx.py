@@ -532,7 +532,7 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     # Заполняем данные по ингредиентам
     row = 2  # Начинаем со второй строки (первая - заголовки)
     
-    for ingredient in card.ingredients:
+    for ingredient in working_card.ingredients:
         # Артикул продукта
         # Feature A: Product Code toggle - использовать реальные коды товаров
         if use_product_codes:
