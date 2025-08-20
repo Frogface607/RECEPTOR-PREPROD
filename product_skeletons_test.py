@@ -43,8 +43,7 @@ class ProductSkeletonsTestSuite:
         return [
             {
                 "meta": {
-                    "title": "Салат Цезарь с курицей",
-                    "description": "Классический салат с курицей"
+                    "title": "Салат Цезарь с курицей"
                 },
                 "ingredients": [
                     {
@@ -129,8 +128,7 @@ class ProductSkeletonsTestSuite:
             },
             {
                 "meta": {
-                    "title": "Борщ украинский",
-                    "description": "Традиционный борщ"
+                    "title": "Борщ украинский"
                 },
                 "ingredients": [
                     {
