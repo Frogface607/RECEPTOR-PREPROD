@@ -53,6 +53,208 @@ def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
     
     return sku_id or ""
 
+
+def find_dish_in_iiko_rms(dish_name: str, rms_service=None) -> Dict[str, Any]:
+    """
+    Feature B: Поиск блюда в iiko RMS по имени с нормализацией
+    
+    Args:
+        dish_name: Название блюда для поиска
+        rms_service: Сервис для работы с iiko RMS
+    
+    Returns:
+        {
+            'status': 'found' | 'not_found' | 'error',
+            'dish_code': str,
+            'dish_name': str,
+            'confidence': float
+        }
+    """
+    if not dish_name or not rms_service:
+        return {'status': 'error', 'message': 'Missing dish name or RMS service'}
+    
+    try:
+        # Нормализация названия для поиска (убираем лишние символы, приводим к нижнему регистру)
+        normalized_search = dish_name.lower().strip()
+        normalized_search = re.sub(r'[^\w\s]', '', normalized_search)  # Убираем пунктуацию
+        normalized_search = re.sub(r'\s+', ' ', normalized_search)     # Нормализуем пробелы
+        
+        # Поиск в коллекции products по типу "Блюдо"
+        dishes = list(rms_service.products.find({
+            "type": {"$in": ["Блюдо", "блюдо", "dish", "DISH"]},
+            "active": True
+        }))
+        
+        best_match = None
+        best_confidence = 0
+        
+        for dish in dishes:
+            dish_name_db = dish.get('name', '').lower().strip()
+            dish_name_db = re.sub(r'[^\w\s]', '', dish_name_db)
+            dish_name_db = re.sub(r'\s+', ' ', dish_name_db)
+            
+            # Простое совпадение по подстроке
+            if normalized_search in dish_name_db or dish_name_db in normalized_search:
+                confidence = 0.9
+            # Проверка на совпадение слов
+            elif len(set(normalized_search.split()) & set(dish_name_db.split())) > 0:
+                confidence = 0.7
+            else:
+                continue
+            
+            if confidence > best_confidence:
+                best_confidence = confidence
+                best_match = dish
+        
+        if best_match and best_confidence >= 0.7:
+            return {
+                'status': 'found',
+                'dish_code': str(best_match.get('article', best_match.get('code', ''))).zfill(5),
+                'dish_name': best_match.get('name', ''),
+                'confidence': best_confidence
+            }
+        
+        return {'status': 'not_found'}
+        
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}
+
+
+def generate_dish_codes(dish_names: List[str], rms_service=None, width: int = 5) -> Dict[str, str]:
+    """
+    Feature B: Генерация свободных числовых кодов для новых блюд
+    
+    Args:
+        dish_names: Список названий блюд для генерации кодов
+        rms_service: Сервис для работы с iiko RMS (для проверки занятых кодов)  
+        width: Ширина кода (количество цифр с ведущими нулями)
+    
+    Returns:
+        Dict[dish_name, generated_code]
+    """
+    if not dish_names:
+        return {}
+    
+    # Получаем список занятых кодов из базы
+    used_codes = set()
+    
+    if rms_service:
+        try:
+            # Собираем все коды из products
+            products = rms_service.products.find({}, {"article": 1, "code": 1})
+            for product in products:
+                code = product.get('article') or product.get('code')
+                if code and str(code).isdigit():
+                    used_codes.add(int(code))
+        except Exception as e:
+            print(f"Error getting used codes: {e}")
+    
+    # Генерируем свободные коды
+    generated_codes = {}
+    start_code = 10**(width-1)  # Минимальный код для заданной ширины (например, 10000 для width=5)
+    current_code = start_code
+    
+    for dish_name in dish_names:
+        # Ищем первый свободный код
+        while current_code in used_codes:
+            current_code += 1
+        
+        # Форматируем с ведущими нулями
+        formatted_code = str(current_code).zfill(width)
+        generated_codes[dish_name] = formatted_code
+        
+        # Помечаем как занятый
+        used_codes.add(current_code)
+        current_code += 1
+    
+    return generated_codes
+
+
+def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str], 
+                              cards: List[TechCardV2]) -> BytesIO:
+    """
+    Feature B: Создание файла Dish-Skeletons.xlsx для предварительного импорта блюд в iiko
+    
+    Args:
+        dish_codes_mapping: Маппинг {dish_name: dish_code}
+        cards: Список техкарт для извлечения данных о блюдах
+    
+    Returns:
+        BytesIO buffer с Excel файлом
+    """
+    if not Workbook:
+        raise ImportError("openpyxl is required for Excel export")
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Блюда"
+    
+    # Заголовки согласно требованиям
+    headers = [
+        "Артикул",           # Числовой код блюда
+        "Наименование",      # Название блюда  
+        "Тип",               # Всегда "Блюдо"
+        "Ед. выпуска",       # Единица измерения (г/мл)
+        "Выход"              # Выход готового продукта
+    ]
+    
+    # Записываем заголовки
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col)
+        cell.value = header
+        cell.font = Font(bold=True)
+    
+    # Заполняем данные по блюдам
+    row = 2
+    for card in cards:
+        dish_name = card.meta.title
+        dish_code = dish_codes_mapping.get(dish_name, '')
+        
+        if dish_code:
+            # Определяем выход и единицу
+            yield_g = card.yield_.perPortion_g if hasattr(card, 'yield_') else 200
+            unit = 'г'  # По умолчанию граммы
+            
+            row_data = [
+                dish_code,      # Артикул
+                dish_name,      # Наименование
+                "Блюдо",        # Тип
+                unit,           # Ед. выпуска
+                yield_g         # Выход
+            ]
+            
+            # Записываем данные
+            for col, value in enumerate(row_data, 1):
+                cell = ws.cell(row=row, column=col)
+                cell.value = value
+                
+                # Форматируем артикул как текст
+                if col == 1:  # Колонка "Артикул"
+                    cell.number_format = '@'
+            
+            row += 1
+    
+    # Автоширина колонок
+    for col in range(1, len(headers) + 1):
+        column_letter = get_column_letter(col)
+        max_length = 0
+        for row_cells in ws[f"{column_letter}1:{column_letter}{row-1}"]:
+            for cell in row_cells:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Сохраняем в буфер
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    
+    return buffer
+
 # Путь к шаблону iiko
 TEMPLATE_PATH = Path(__file__).parent.parent / "data" / "iiko_templates" / "ttk.xlsx"
 
