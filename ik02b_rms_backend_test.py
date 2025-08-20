@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Test configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://techcard-sync-1.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://iiko-connect.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 # RMS credentials from environment

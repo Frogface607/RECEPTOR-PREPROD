@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://techcard-sync-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://iiko-connect.preview.emergentagent.com/api"
 
 def main():
     """Test the FIXED FINANCES feature"""

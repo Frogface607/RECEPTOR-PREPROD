@@ -9,7 +9,7 @@ import json
 import time
 
 # Backend URL
-BACKEND_URL = "https://9ef4b947-102c-455e-bf3b-6f1890ad5246.preview.emergentagent.com"
+BACKEND_URL = "https://iiko-connect.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_user_exact_case():

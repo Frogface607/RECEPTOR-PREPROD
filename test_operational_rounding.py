@@ -10,7 +10,7 @@ import os
 import sys
 
 # Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://techcard-sync-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://iiko-connect.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1"
 
 

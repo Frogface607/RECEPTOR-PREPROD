@@ -13,7 +13,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://techcard-sync-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://iiko-connect.preview.emergentagent.com/api"
 TEST_USER_ID = "test_user_12345"
 
 def print_test_header(test_name):

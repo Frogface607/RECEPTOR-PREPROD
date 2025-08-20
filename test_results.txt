@@ -1,6 +1,6 @@
 ❌ Test failed with error: Page.goto: Timeout 30000ms exceeded.
 Call log:
-  - navigating to "https://techcard-sync-1.preview.emergentagent.com/", waiting until "load"
+  - navigating to "https://iiko-connect.preview.emergentagent.com/", waiting until "load"
 
 Traceback (most recent call last):
   File "<string>", line 91, in <module>
