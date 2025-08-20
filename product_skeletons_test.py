@@ -565,6 +565,11 @@ class ProductSkeletonsTestSuite:
         self.test_generate_codes_endpoint()
         self.test_export_skeletons_endpoint()
         
+        # Test specific functionality
+        self.test_ingredient_categorization()
+        self.test_code_uniqueness_and_rms_conflicts()
+        self.test_excel_formatting_preservation()
+        
         # Test complete workflow
         self.test_complete_workflow()
         
@@ -586,6 +591,232 @@ class ProductSkeletonsTestSuite:
                 print(f"    {result['details']}")
         
         return passed, total, self.test_results
+    
+    def test_ingredient_categorization(self):
+        """Test intelligent ingredient categorization logic"""
+        test_name = "Ingredient Categorization Logic"
+        start_time = time.time()
+        
+        try:
+            # Test ingredients with expected categories
+            test_ingredients = [
+                {"name": "Куриное филе", "unit": "г", "expected_category": "Мясо и рыба"},
+                {"name": "Говядина", "unit": "г", "expected_category": "Мясо и рыба"},
+                {"name": "Рыба семга", "unit": "г", "expected_category": "Мясо и рыба"},
+                {"name": "Молоко", "unit": "мл", "expected_category": "Молочные продукты"},
+                {"name": "Сыр пармезан", "unit": "г", "expected_category": "Молочные продукты"},
+                {"name": "Творог", "unit": "г", "expected_category": "Молочные продукты"},
+                {"name": "Морковь", "unit": "г", "expected_category": "Овощи"},
+                {"name": "Лук репчатый", "unit": "г", "expected_category": "Овощи"},
+                {"name": "Картофель", "unit": "г", "expected_category": "Овощи"},
+                {"name": "Мука пшеничная", "unit": "г", "expected_category": "Бакалея"},
+                {"name": "Сахар", "unit": "г", "expected_category": "Бакалея"},
+                {"name": "Соль", "unit": "г", "expected_category": "Бакалея"},
+                {"name": "Масло растительное", "unit": "мл", "expected_category": "Масла и соусы"},
+                {"name": "Соус томатный", "unit": "мл", "expected_category": "Масла и соусы"},
+                {"name": "Неизвестный ингредиент", "unit": "г", "expected_category": "Сырьё"}
+            ]
+            
+            # Generate codes for these ingredients
+            ingredient_names = [ing["name"] for ing in test_ingredients]
+            codes_payload = {
+                "ingredient_names": ingredient_names,
+                "start_code": 20000,
+                "code_width": 5,
+                "organization_id": "default"
+            }
+            
+            codes_response = self.session.post(
+                f"{API_BASE}/techcards.v2/product-codes/generate",
+                json=codes_payload,
+                timeout=30
+            )
+            
+            if codes_response.status_code != 200:
+                self.log_test(test_name, False, f"Failed to generate codes: {codes_response.status_code}", time.time() - start_time)
+                return
+            
+            generated_codes = codes_response.json()["generated_codes"]
+            
+            # Export skeletons to test categorization
+            export_payload = {
+                "missing_ingredients": [{"name": ing["name"], "unit": ing["unit"]} for ing in test_ingredients],
+                "generated_codes": generated_codes
+            }
+            
+            export_response = self.session.post(
+                f"{API_BASE}/techcards.v2/product-skeletons/export",
+                json=export_payload,
+                timeout=30
+            )
+            
+            response_time = time.time() - start_time
+            
+            if export_response.status_code == 200:
+                # Parse Excel and check categories
+                excel_data = BytesIO(export_response.content)
+                workbook = openpyxl.load_workbook(excel_data)
+                worksheet = workbook.active
+                
+                categorization_errors = []
+                data_rows = list(worksheet.iter_rows(min_row=2, values_only=True))
+                
+                for i, row in enumerate(data_rows):
+                    ingredient_name = row[1]  # Column B - Наименование
+                    actual_category = row[4]  # Column E - Группа
+                    
+                    # Find expected category
+                    expected_category = None
+                    for test_ing in test_ingredients:
+                        if test_ing["name"] == ingredient_name:
+                            expected_category = test_ing["expected_category"]
+                            break
+                    
+                    if expected_category and actual_category != expected_category:
+                        categorization_errors.append(f"{ingredient_name}: got '{actual_category}', expected '{expected_category}'")
+                
+                if categorization_errors:
+                    self.log_test(test_name, False, f"Categorization errors: {categorization_errors[:3]}", response_time)
+                else:
+                    self.log_test(test_name, True, f"All {len(test_ingredients)} ingredients categorized correctly", response_time)
+                    
+            else:
+                self.log_test(test_name, False, f"Export failed: HTTP {export_response.status_code}", response_time)
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test(test_name, False, f"Exception: {str(e)}", response_time)
+    
+    def test_code_uniqueness_and_rms_conflicts(self):
+        """Test code generation uniqueness and RMS conflict avoidance"""
+        test_name = "Code Generation Uniqueness & RMS Conflicts"
+        start_time = time.time()
+        
+        try:
+            # Generate a large batch of codes to test uniqueness
+            large_ingredient_list = [f"Test Ingredient {i:03d}" for i in range(1, 51)]  # 50 ingredients
+            
+            payload = {
+                "ingredient_names": large_ingredient_list,
+                "start_code": 30000,
+                "code_width": 5,
+                "organization_id": "default"
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/techcards.v2/product-codes/generate",
+                json=payload,
+                timeout=30
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                generated_codes = data["generated_codes"]
+                
+                # Test uniqueness
+                codes_list = list(generated_codes.values())
+                unique_codes = set(codes_list)
+                
+                if len(codes_list) != len(unique_codes):
+                    duplicates = [code for code in codes_list if codes_list.count(code) > 1]
+                    self.log_test(test_name, False, f"Duplicate codes found: {set(duplicates)}", response_time)
+                    return
+                
+                # Test sequential generation (codes should be sequential)
+                sorted_codes = sorted([int(code) for code in codes_list])
+                expected_sequence = list(range(sorted_codes[0], sorted_codes[0] + len(codes_list)))
+                
+                if sorted_codes != expected_sequence:
+                    self.log_test(test_name, False, "Codes are not sequential", response_time)
+                    return
+                
+                # Test proper formatting
+                format_errors = []
+                for ingredient, code in generated_codes.items():
+                    if len(code) != 5 or not code.isdigit():
+                        format_errors.append(f"{ingredient}: {code}")
+                
+                if format_errors:
+                    self.log_test(test_name, False, f"Format errors: {format_errors[:3]}", response_time)
+                else:
+                    self.log_test(test_name, True, 
+                                f"Generated {len(generated_codes)} unique, sequential codes with proper formatting", 
+                                response_time)
+                    
+            else:
+                self.log_test(test_name, False, f"HTTP {response.status_code}: {response.text}", response_time)
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test(test_name, False, f"Exception: {str(e)}", response_time)
+    
+    def test_excel_formatting_preservation(self):
+        """Test that Excel formatting preserves leading zeros in codes"""
+        test_name = "Excel Leading Zeros Preservation"
+        start_time = time.time()
+        
+        try:
+            # Test with codes that have leading zeros
+            test_codes = {
+                "Test Product 001": "00001",
+                "Test Product 002": "00123",
+                "Test Product 003": "01234",
+                "Test Product 004": "00000",
+                "Test Product 005": "99999"
+            }
+            
+            missing_ingredients = [
+                {"name": name, "unit": "г"} for name in test_codes.keys()
+            ]
+            
+            payload = {
+                "missing_ingredients": missing_ingredients,
+                "generated_codes": test_codes
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/techcards.v2/product-skeletons/export",
+                json=payload,
+                timeout=30
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                # Parse Excel and check formatting
+                excel_data = BytesIO(response.content)
+                workbook = openpyxl.load_workbook(excel_data)
+                worksheet = workbook.active
+                
+                formatting_errors = []
+                data_rows = list(worksheet.iter_rows(min_row=2))
+                
+                for i, row in enumerate(data_rows):
+                    code_cell = row[0]  # Column A - Артикул
+                    ingredient_name = row[1].value  # Column B - Наименование
+                    expected_code = test_codes[ingredient_name]
+                    
+                    # Check cell value
+                    if str(code_cell.value) != expected_code:
+                        formatting_errors.append(f"{ingredient_name}: cell value '{code_cell.value}' != expected '{expected_code}'")
+                    
+                    # Check cell number format (should be text '@' to preserve leading zeros)
+                    if code_cell.number_format != '@':
+                        formatting_errors.append(f"{ingredient_name}: number format '{code_cell.number_format}' should be '@'")
+                
+                if formatting_errors:
+                    self.log_test(test_name, False, f"Formatting errors: {formatting_errors[:3]}", response_time)
+                else:
+                    self.log_test(test_name, True, "Leading zeros preserved correctly with text formatting", response_time)
+                    
+            else:
+                self.log_test(test_name, False, f"HTTP {response.status_code}: {response.text}", response_time)
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test(test_name, False, f"Exception: {str(e)}", response_time)
 
 if __name__ == "__main__":
     test_suite = ProductSkeletonsTestSuite()
