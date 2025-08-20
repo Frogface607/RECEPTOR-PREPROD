@@ -1223,6 +1223,8 @@ async def export_enhanced_dual_iiko_xlsx(request: dict):
             headers={"Content-Disposition": "attachment; filename=iiko_export_enhanced.zip"}
         )
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Enhanced dual export error: {e}")
         raise HTTPException(500, f"Enhanced dual export failed: {str(e)}")
