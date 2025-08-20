@@ -1885,6 +1885,30 @@ function App() {
   const handleAssignIngredientMapping = async (catalogItem) => {
     if (!tcV2 || mappingIngredientIndex === null) return;
 
+    // A. Hotfix & Migration: Получаем product_code из catalogItem если доступен
+    let productCode = null;
+    
+    // Для iiko источников ищем article/code в объекте
+    if (catalogItem.source === 'iiko' && catalogItem.article) {
+      productCode = catalogItem.article;
+    } else if (catalogItem.product_code) {
+      productCode = catalogItem.product_code;
+    } else if (catalogItem.code) {
+      productCode = catalogItem.code;
+    }
+    
+    // Если у нас есть skuId но нет кода, пытаемся получить код через RMS
+    const skuId = catalogItem.sku_id || catalogItem.skuId;
+    if (skuId && !productCode && catalogItem.source === 'iiko') {
+      try {
+        // Дополнительный lookup кода по GUID через RMS если нужно
+        console.log(`Need to lookup product code for skuId: ${skuId}`);
+        // TODO: Можно добавить дополнительный API call для получения кода
+      } catch (error) {
+        console.warn('Could not lookup product code:', error);
+      }
+    }
+
     // Update tcV2 with mapping
     const updatedTcV2 = {
       ...tcV2,
@@ -1893,7 +1917,8 @@ function App() {
           return {
             ...ing,
             canonical_id: catalogItem.canonical_id || ing.canonical_id || null,
-            skuId: catalogItem.sku_id || catalogItem.skuId || ing.skuId || null,
+            skuId: skuId || ing.skuId || null,
+            product_code: productCode || ing.product_code || null, // A. Hotfix & Migration: сохраняем код продукта
             source: catalogItem.source || ing.source || null
           };
         }
