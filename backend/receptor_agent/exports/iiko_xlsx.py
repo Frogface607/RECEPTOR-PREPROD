@@ -507,14 +507,16 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     
     # Генерируем данные для экспорта
     # Feature A: Use dish_codes_mapping if provided
-    dish_code = dish_codes_mapping.get(working_card.meta.title)
+    dish_title = working_card.meta.title if hasattr(working_card.meta, 'title') else str(working_card.meta.get('title', 'Unknown Dish'))
+    dish_code = dish_codes_mapping.get(dish_title)
     if not dish_code:
-        dish_code = working_card.meta.get('dish_code') if hasattr(working_card.meta, 'dish_code') else None
+        meta_dict = working_card.meta.model_dump() if hasattr(working_card.meta, 'model_dump') else working_card.meta
+        dish_code = meta_dict.get('dish_code') if isinstance(meta_dict, dict) else None
     if not dish_code:
-        dish_slug = generate_dish_slug(working_card.meta.title)
+        dish_slug = generate_dish_slug(dish_title)
         dish_code = f"DISH_{dish_slug}"
     
-    dish_name = working_card.meta.title
+    dish_name = dish_title
     
     # Рассчитываем выход готового продукта
     output_qty = getattr(working_card.yield_, 'perBatch_g', 0) if hasattr(working_card, 'yield_') and working_card.yield_ else 0
