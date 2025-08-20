@@ -344,6 +344,18 @@ class TTKDateAutoresolveTester:
                     "action": "Тестовое действие",
                     "time_min": 10,
                     "temp_c": 180
+                },
+                {
+                    "n": 2,
+                    "action": "Дополнительное действие",
+                    "time_min": 5,
+                    "temp_c": 20
+                },
+                {
+                    "n": 3,
+                    "action": "Финальное действие",
+                    "time_min": 2,
+                    "temp_c": 25
                 }
             ]
         }
