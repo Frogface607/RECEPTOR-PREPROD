@@ -705,7 +705,8 @@ def generate_technology_text(process_steps) -> str:
     return technology_text
 
 def create_iiko_ttk_xlsx(card: TechCardV2, 
-                        export_options: Dict[str, Any] = None) -> Tuple[BytesIO, List[Dict[str, Any]]]:
+                        export_options: Dict[str, Any] = None,
+                        rms_service=None) -> Tuple[BytesIO, List[Dict[str, Any]]]:
     """
     Создать iiko XLSX файл для импорта технологических карт
     WITH iiko Import Reliability — Product Codes & Dish Skeletons
