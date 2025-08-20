@@ -131,6 +131,18 @@
 
 user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)"
 
+  - task: "G. Багфикс экспорта: TypeError 'str' object has no attribute 'get'"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/exports/iiko_xlsx.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 CRITICAL EXPORT BUGFIX IMPLEMENTED: Fixed TypeError 'str' object has no attribute 'get' in enhanced export process. ISSUE ANALYSIS: The error occurred when accessing working_card.meta.title in three locations (lines 523, 567, 587) where working_card.meta could potentially be a string instead of an object with .title attribute. ROOT CAUSE: After operational rounding process and TechCardV2.model_validate(rounded_dict), the meta field might become serialized differently causing attribute access errors. SOLUTION IMPLEMENTED: 1) Added comprehensive debugging and safe access pattern for working_card.meta.title with fallbacks for dict, string, and unexpected types, 2) Replaced direct working_card.meta.title access with dish_title variable in error reporting sections (lines 567, 587), 3) Added detailed logging to track meta object type throughout the process. Ready for backend testing to validate export functionality with operational rounding enabled."
+
 backend:
   - task: "iiko Import Reliability - Feature A: Product Code Toggle"
     implemented: true
