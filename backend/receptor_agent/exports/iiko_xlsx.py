@@ -520,7 +520,29 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     
     # Генерируем данные для экспорта
     # Feature A: Use dish_codes_mapping if provided
-    dish_title = working_card.meta.title if hasattr(working_card.meta, 'title') else str(working_card.meta.get('title', 'Unknown Dish'))
+    # DEBUG: Детальное логирование meta объекта для поиска проблемы с 'str' object has no attribute 'get'
+    logger.info(f"DEBUG working_card type: {type(working_card)}")
+    logger.info(f"DEBUG working_card.meta type: {type(working_card.meta)}")
+    logger.info(f"DEBUG working_card.meta repr: {repr(working_card.meta)}")
+    
+    try:
+        if hasattr(working_card.meta, 'title'):
+            dish_title = working_card.meta.title
+        elif isinstance(working_card.meta, dict):
+            dish_title = working_card.meta.get('title', 'Unknown Dish')
+        elif isinstance(working_card.meta, str):
+            # Если meta является строкой, используем её как название
+            dish_title = working_card.meta
+            logger.warning(f"working_card.meta is a string: {working_card.meta}")
+        else:
+            dish_title = str(working_card.meta)
+            logger.warning(f"working_card.meta is unexpected type {type(working_card.meta)}: {working_card.meta}")
+    except Exception as e:
+        logger.error(f"Error accessing working_card.meta.title: {e}")
+        logger.error(f"working_card.meta type: {type(working_card.meta)}")
+        logger.error(f"working_card.meta: {working_card.meta}")
+        dish_title = 'Unknown Dish'
+    
     dish_code = dish_codes_mapping.get(dish_title)
     if not dish_code:
         meta_dict = working_card.meta.model_dump() if hasattr(working_card.meta, 'model_dump') else working_card.meta
