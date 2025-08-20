@@ -888,6 +888,7 @@ async def enhanced_export_iiko_xlsx(request: Request):
         export_options = {
             'use_product_codes': body.get('use_product_codes', True),  # Feature A: по умолчанию включен
             'dish_codes_mapping': body.get('dish_codes_mapping', {}),  # Feature B: коды блюд
+            'operational_rounding': body.get('operational_rounding', True),  # Operational Rounding v1: по умолчанию включен
             'rms_service': None  # Будет установлен ниже
         }
         
