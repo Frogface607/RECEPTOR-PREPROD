@@ -1,6 +1,6 @@
 """
-iiko XLSX Export для ТТК (технологических карт)
-Экспорт TechCardV2 в формат, совместимый с «Импорт справочника (технологические карты)» iikoWeb
+iiko XLSX Export Module
+WITH iiko Import Reliability — Product Codes & Dish Skeletons
 """
 
 from __future__ import annotations
