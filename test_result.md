@@ -129,7 +129,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "iiko IMPORT RELIABILITY — PRODUCT CODES & DISH SKELETONS TESTING - Comprehensive testing of the newly implemented iiko Import Reliability features to eliminate 'артикул не найден' errors in iikoWeb import. Test Feature A: Product Code Toggle (use_product_codes), Feature B: Dish Code Resolver + Skeletons (dual export), Feature 3: Pre-flight Warnings, API endpoints validation, Excel file formatting, performance requirements, and error handling."
+user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)"
 
 backend:
   - task: "iiko Import Reliability - Feature A: Product Code Toggle"
