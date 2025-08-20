@@ -173,6 +173,244 @@ def generate_dish_codes(dish_names: List[str], rms_service=None, width: int = 5)
     return generated_codes
 
 
+def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]], 
+                                 generated_codes: Dict[str, str] = None) -> BytesIO:
+    """
+    C. Product Skeletons: Создать XLSX файл для импорта номенклатуры в iiko
+    
+    Args:
+        missing_ingredients: Список ингредиентов без маппинга
+        generated_codes: Маппинг название → сгенерированный код
+        
+    Returns:
+        BytesIO buffer с Product-Skeletons.xlsx
+    """
+    if not Workbook:
+        raise ImportError("openpyxl is required for Excel export. Install with: pip install openpyxl")
+    
+    if not generated_codes:
+        generated_codes = {}
+    
+    wb = Workbook()
+    ws = wb.active
+    
+    # Заголовки для iiko номенклатуры (минимальные поля)
+    headers = [
+        "Артикул",           # Column A - numeric code (text format)
+        "Наименование",      # Column B - product name  
+        "Ед. изм",          # Column C - unit of measure
+        "Тип",              # Column D - product type ("Товар")
+        "Группа",           # Column E - product group ("Сырьё")
+        "Штрихкод",         # Column F - barcode (optional, empty)
+        "Поставщик"         # Column G - supplier (optional, empty)
+    ]
+    
+    # Записываем заголовки
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+    
+    # Заполняем данные по ингредиентам
+    row = 2
+    
+    for ingredient in missing_ingredients:
+        ingredient_name = ingredient.get('name', 'Unknown Ingredient')
+        unit = ingredient.get('unit', 'г')
+        
+        # Получаем или генерируем код
+        product_code = generated_codes.get(ingredient_name)
+        if not product_code:
+            # Fallback - генерируем базовый код если не был предоставлен
+            product_code = f"{10000 + len(generated_codes):05d}"
+            generated_codes[ingredient_name] = product_code
+        
+        # Нормализуем единицу измерения для iiko
+        unit_mapping = {
+            'g': 'г',
+            'ml': 'мл', 
+            'l': 'л',
+            'kg': 'кг',
+            'pcs': 'шт',
+            'шт': 'шт',
+            'г': 'г',
+            'мл': 'мл',
+            'л': 'л',
+            'кг': 'кг'
+        }
+        normalized_unit = unit_mapping.get(unit.lower(), unit)
+        
+        # Определяем группу по типу ингредиента
+        ingredient_name_lower = ingredient_name.lower()
+        if any(word in ingredient_name_lower for word in ['мясо', 'курица', 'говядина', 'свинина', 'рыба', 'филе']):
+            group = 'Мясо и рыба'
+        elif any(word in ingredient_name_lower for word in ['молоко', 'сыр', 'творог', 'сливки', 'масло']):
+            group = 'Молочные продукты'
+        elif any(word in ingredient_name_lower for word in ['морковь', 'лук', 'картофель', 'капуста', 'помидор', 'огурец']):
+            group = 'Овощи'
+        elif any(word in ingredient_name_lower for word in ['мука', 'сахар', 'соль', 'перец', 'специи']):
+            group = 'Бакалея'
+        elif any(word in ingredient_name_lower for word in ['масло растительное', 'уксус', 'соус']):
+            group = 'Масла и соусы'
+        else:
+            group = 'Сырьё'  # По умолчанию
+        
+        # Записываем данные в строку
+        ws.cell(row=row, column=1, value=product_code).number_format = '@'  # Текстовый формат для кода
+        ws.cell(row=row, column=2, value=ingredient_name)
+        ws.cell(row=row, column=3, value=normalized_unit)
+        ws.cell(row=row, column=4, value="Товар")  # Тип продукта
+        ws.cell(row=row, column=5, value=group)
+        ws.cell(row=row, column=6, value="")  # Штрихкод пустой
+        ws.cell(row=row, column=7, value="")  # Поставщик пустой
+        
+        row += 1
+    
+    # Автоподгонка ширины колонок
+    for column in ws.columns:
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Сохраняем в BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    
+    logger.info(f"Created Product-Skeletons.xlsx with {len(missing_ingredients)} products")
+    
+    return buffer
+
+
+def find_missing_product_mappings(cards: List[TechCardV2], rms_service=None) -> List[Dict[str, Any]]:
+    """
+    C. Product Skeletons: Найти ингредиенты без маппинга к продуктам iiko
+    
+    Args:
+        cards: Список техкарт для анализа
+        rms_service: Сервис iiko RMS для проверки существования продуктов
+        
+    Returns:
+        Список ингредиентов без корректного маппинга
+    """
+    missing_ingredients = []
+    processed_names = set()  # Избегаем дубликатов
+    
+    for card in cards:
+        for ingredient in card.ingredients:
+            ingredient_name = ingredient.name
+            
+            # Пропускаем уже обработанные
+            if ingredient_name in processed_names:
+                continue
+                
+            processed_names.add(ingredient_name)
+            
+            # Проверяем наличие product_code или skuId
+            has_product_code = getattr(ingredient, 'product_code', None)
+            has_sku_id = getattr(ingredient, 'skuId', None)
+            
+            # Если есть product_code, считаем что маппинг есть
+            if has_product_code:
+                continue
+            
+            # Если есть skuId, проверяем его в RMS
+            if has_sku_id and rms_service:
+                try:
+                    # Проверяем в products
+                    product = rms_service.products.find_one({"_id": has_sku_id})
+                    if product and product.get('article'):
+                        continue  # Продукт найден с кодом
+                    
+                    # Проверяем в prices
+                    pricing = rms_service.prices.find_one({"skuId": has_sku_id})
+                    if pricing and pricing.get('article'):
+                        continue  # Продукт найден с кодом
+                        
+                except Exception:
+                    pass  # Ошибка доступа к RMS - считаем что маппинг отсутствует
+            
+            # Ингредиент без корректного маппинга
+            missing_ingredients.append({
+                'name': ingredient_name,
+                'unit': getattr(ingredient, 'unit', 'г'),
+                'skuId': has_sku_id,
+                'product_code': has_product_code
+            })
+    
+    logger.info(f"Found {len(missing_ingredients)} ingredients without product mapping")
+    
+    return missing_ingredients
+
+
+def generate_product_codes(ingredient_names: List[str], 
+                          rms_service=None, 
+                          start_code: int = 10000,
+                          code_width: int = 5) -> Dict[str, str]:
+    """
+    C. Product Skeletons: Генерация свободных кодов продуктов
+    
+    Args:
+        ingredient_names: Список названий ингредиентов
+        rms_service: Сервис RMS для проверки занятых кодов
+        start_code: Начальный код для генерации
+        code_width: Ширина кода (количество цифр)
+        
+    Returns:
+        Словарь название → сгенерированный код
+    """
+    generated_codes = {}
+    current_code = start_code
+    
+    # Получаем существующие коды из RMS для избежания дубликатов
+    existing_codes = set()
+    
+    if rms_service:
+        try:
+            # Получаем коды из products
+            for product in rms_service.products.find({}, {"article": 1}):
+                article = product.get('article')
+                if article:
+                    existing_codes.add(str(article).strip())
+            
+            # Получаем коды из prices
+            for price in rms_service.prices.find({}, {"article": 1}):
+                article = price.get('article')
+                if article:
+                    existing_codes.add(str(article).strip())
+                    
+            logger.info(f"Found {len(existing_codes)} existing product codes in RMS")
+            
+        except Exception as e:
+            logger.warning(f"Could not fetch existing codes from RMS: {e}")
+    
+    # Генерируем уникальные коды
+    for ingredient_name in ingredient_names:
+        # Ищем свободный код
+        while True:
+            code_str = str(current_code).zfill(code_width)
+            
+            if code_str not in existing_codes:
+                generated_codes[ingredient_name] = code_str
+                existing_codes.add(code_str)  # Добавляем в набор чтобы избежать дубликатов в текущей генерации
+                break
+                
+            current_code += 1
+        
+        current_code += 1
+    
+    logger.info(f"Generated {len(generated_codes)} unique product codes starting from {start_code:0{code_width}d}")
+    
+    return generated_codes
+
+
 def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str], 
                               cards: List[TechCardV2]) -> BytesIO:
     """
