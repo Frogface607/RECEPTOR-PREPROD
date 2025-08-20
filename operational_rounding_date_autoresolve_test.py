@@ -326,7 +326,7 @@ class TTKDateAutoresolveTester:
                     "brutto_g": 100.0,
                     "netto_g": 95.0,
                     "loss_pct": 5.0,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-ingredient-guid",
                     "product_code": "99999"
                 }
