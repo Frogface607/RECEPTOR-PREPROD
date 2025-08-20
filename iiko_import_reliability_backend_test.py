@@ -59,7 +59,7 @@ class IikoImportReliabilityTester:
             print(f"    {details}")
     
     def create_test_techcard(self, title: str, ingredients: List[Dict] = None) -> Dict:
-        """Create a test techcard with realistic data"""
+        """Create a test techcard with realistic data that matches TechCardV2 schema"""
         if ingredients is None:
             ingredients = [
                 {
@@ -67,7 +67,7 @@ class IikoImportReliabilityTester:
                     "brutto_g": 150.0,
                     "netto_g": 120.0,
                     "loss_pct": 20.0,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-chicken-sku-001"
                 },
                 {
@@ -75,7 +75,7 @@ class IikoImportReliabilityTester:
                     "brutto_g": 200.0,
                     "netto_g": 180.0,
                     "loss_pct": 10.0,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-potato-sku-002"
                 },
                 {
@@ -83,50 +83,74 @@ class IikoImportReliabilityTester:
                     "brutto_g": 50.0,
                     "netto_g": 45.0,
                     "loss_pct": 10.0,
-                    "unit": "г",
+                    "unit": "g",
                     "skuId": "test-onion-sku-003"
                 }
             ]
+        
+        # Calculate total netto for yield consistency
+        total_netto = sum(ing["netto_g"] for ing in ingredients)
         
         return {
             "meta": {
                 "title": title,
                 "id": f"test-{title.lower().replace(' ', '-')}",
-                "created_at": "2025-01-27T10:00:00Z"
+                "version": "2.0",
+                "createdAt": "2025-01-27T10:00:00Z"
             },
             "ingredients": ingredients,
-            "yield_": {
-                "perPortion_g": 240.0,
-                "perBatch_g": 240.0
+            "yield": {  # Note: not yield_ in JSON
+                "perPortion_g": total_netto,
+                "perBatch_g": total_netto
             },
             "portions": 1,
-            "process": {
-                "steps": [
-                    {
-                        "n": 1,
-                        "action": "Нарезать куриное филе кубиками",
-                        "temp_c": None,
-                        "time_min": 5,
-                        "equipment": ["нож", "доска"]
-                    },
-                    {
-                        "n": 2,
-                        "action": "Обжарить курицу на сковороде",
-                        "temp_c": 180,
-                        "time_min": 10,
-                        "equipment": ["сковорода"]
-                    },
-                    {
-                        "n": 3,
-                        "action": "Добавить овощи и тушить",
-                        "temp_c": 160,
-                        "time_min": 15,
-                        "equipment": ["сковорода"]
-                    }
-                ]
+            "process": [  # Array, not object with steps
+                {
+                    "n": 1,
+                    "action": "Нарезать куриное филе кубиками",
+                    "time_min": 5,
+                    "equipment": ["нож", "доска"]
+                },
+                {
+                    "n": 2,
+                    "action": "Обжарить курицу на сковороде",
+                    "temp_c": 180,
+                    "time_min": 10,
+                    "equipment": ["сковорода"]
+                },
+                {
+                    "n": 3,
+                    "action": "Добавить овощи и тушить",
+                    "temp_c": 160,
+                    "time_min": 15,
+                    "equipment": ["сковорода"]
+                }
+            ],
+            "storage": {
+                "conditions": "Хранить в холодильнике при температуре +2...+6°C",
+                "shelfLife_hours": 24.0,
+                "servingTemp_c": 65.0
             },
-            "nutrition": {"per100g": {}, "perPortion": {}},
-            "cost": {"per100g": {}, "perPortion": {}}
+            "nutrition": {
+                "per100g": {
+                    "kcal": 150.0,
+                    "proteins_g": 20.0,
+                    "fats_g": 5.0,
+                    "carbs_g": 10.0
+                },
+                "perPortion": {
+                    "kcal": 150.0 * total_netto / 100,
+                    "proteins_g": 20.0 * total_netto / 100,
+                    "fats_g": 5.0 * total_netto / 100,
+                    "carbs_g": 10.0 * total_netto / 100
+                }
+            },
+            "cost": {
+                "rawCost": 100.0,
+                "costPerPortion": 100.0,
+                "markup_pct": 200.0,
+                "vat_pct": 20.0
+            }
         }
 
     def test_dish_codes_find_endpoint(self):
