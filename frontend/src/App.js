@@ -3738,13 +3738,39 @@ function App() {
   };
 
   const acceptAutoMappingSuggestion = (resultIndex, accept = true) => {
-    const updatedResults = [...autoMappingResults];
-    if (accept && updatedResults[resultIndex].suggestion) {
-      updatedResults[resultIndex].status = 'accepted';
-    } else {
-      updatedResults[resultIndex].status = 'rejected';
+    try {
+      // CRITICAL FIX: Validate input parameters
+      if (!Array.isArray(autoMappingResults) || 
+          typeof resultIndex !== 'number' || 
+          resultIndex < 0 || 
+          resultIndex >= autoMappingResults.length) {
+        console.error('Invalid resultIndex or autoMappingResults:', { resultIndex, autoMappingResults });
+        return;
+      }
+      
+      const updatedResults = [...autoMappingResults];
+      
+      // CRITICAL FIX: Validate the result object exists
+      if (!updatedResults[resultIndex]) {
+        console.error('Result at index does not exist:', resultIndex);
+        return;
+      }
+      
+      if (accept && updatedResults[resultIndex].suggestion) {
+        updatedResults[resultIndex].status = 'accepted';
+      } else {
+        updatedResults[resultIndex].status = 'rejected';
+      }
+      
+      setAutoMappingResults(updatedResults);
+      
+    } catch (error) {
+      console.error('Error in acceptAutoMappingSuggestion:', error);
+      setAutoMappingMessage({ 
+        type: 'error', 
+        text: '❌ Ошибка при обработке выбора' 
+      });
     }
-    setAutoMappingResults(updatedResults);
   };
 
   const applyAutoMappingChanges = async () => {
