@@ -1302,16 +1302,31 @@ async def export_preflight_check(request: dict):
             
             products_without_codes = []
             
+            # Проверяем наличие кода продукта
             for card in cards:
-                for ingredient in card.ingredients:
-                    if ingredient.skuId:
+                ingredients = getattr(card, 'ingredients', [])
+                if not ingredients:
+                    continue
+                    
+                for ingredient in ingredients:
+                    # Поддерживаем как объекты, так и dict
+                    if hasattr(ingredient, 'skuId'):
+                        sku_id = ingredient.skuId
+                        ingredient_name = ingredient.name
+                    elif isinstance(ingredient, dict):
+                        sku_id = ingredient.get('skuId')
+                        ingredient_name = ingredient.get('name', 'Unknown')
+                    else:
+                        continue
+                    
+                    if sku_id:
                         # Проверяем наличие кода продукта
-                        product = rms_service.products.find_one({"_id": ingredient.skuId})
+                        product = rms_service.products.find_one({"_id": sku_id})
                         if not product or not product.get('article'):
                             # Проверяем в pricing
-                            pricing = rms_service.pricing.find_one({"skuId": ingredient.skuId})
+                            pricing = rms_service.pricing.find_one({"skuId": sku_id})
                             if not pricing or not pricing.get('article'):
-                                products_without_codes.append(ingredient.name)
+                                products_without_codes.append(ingredient_name)
             
             if products_without_codes:
                 warnings.append({
