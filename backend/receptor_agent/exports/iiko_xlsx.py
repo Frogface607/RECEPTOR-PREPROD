@@ -27,6 +27,82 @@ from receptor_agent.integrations.iiko_rms_service import IikoRmsService
 
 logger = logging.getLogger(__name__)
 
+
+def resolve_ttk_date_conflict(dish_name: str, 
+                             base_date: Optional[str] = None, 
+                             rms_service: Optional[IikoRmsService] = None,
+                             max_days_ahead: int = 7) -> str:
+    """
+    F. TTK Date Autoresolve: Разрешить конфликт дат техкарт в iiko
+    
+    Args:
+        dish_name: Название блюда
+        base_date: Базовая дата (YYYY-MM-DD), если не указана - берется today
+        rms_service: Сервис iiko RMS для проверки существующих ТК
+        max_days_ahead: Максимальное количество дней для поиска свободной даты
+        
+    Returns:
+        Свободная дата в формате YYYY-MM-DD
+    """
+    if not base_date:
+        base_date = datetime.now().strftime('%Y-%m-%d')
+    
+    try:
+        current_date = datetime.strptime(base_date, '%Y-%m-%d')
+    except ValueError:
+        # Если дата неправильная, используем сегодня
+        current_date = datetime.now()
+        base_date = current_date.strftime('%Y-%m-%d')
+    
+    # Если нет доступа к RMS, просто возвращаем базовую дату
+    if not rms_service:
+        logger.info(f"No RMS service available, using base date: {base_date}")
+        return base_date
+    
+    logger.info(f"Resolving TTK date conflict for dish '{dish_name}', base date: {base_date}")
+    
+    # Ищем свободную дату в течение max_days_ahead дней
+    for days_offset in range(max_days_ahead + 1):
+        check_date = current_date + timedelta(days=days_offset)
+        check_date_str = check_date.strftime('%Y-%m-%d')
+        
+        try:
+            # Проверяем существующие ТК в iiko RMS на эту дату
+            # Примерный запрос - может потребоваться адаптация под конкретный API iiko
+            existing_ttk = None
+            
+            # Пытаемся найти существующую ТК через различные коллекции
+            if hasattr(rms_service, 'techcards') and rms_service.techcards:
+                existing_ttk = rms_service.techcards.find_one({
+                    "name": dish_name,
+                    "date": check_date_str
+                })
+            
+            # Альтернативный поиск через products или другие коллекции
+            if not existing_ttk and hasattr(rms_service, 'products') and rms_service.products:
+                existing_ttk = rms_service.products.find_one({
+                    "name": dish_name,
+                    "techcard_date": check_date_str
+                })
+            
+            if not existing_ttk:
+                logger.info(f"Found free date for '{dish_name}': {check_date_str}")
+                return check_date_str
+            else:
+                logger.debug(f"Date {check_date_str} is occupied for dish '{dish_name}'")
+                
+        except Exception as e:
+            logger.warning(f"Error checking date {check_date_str} for dish '{dish_name}': {e}")
+            # При ошибке доступа к RMS используем эту дату
+            return check_date_str
+    
+    # Если не нашли свободную дату, возвращаем последнюю проверенную
+    final_date = (current_date + timedelta(days=max_days_ahead)).strftime('%Y-%m-%d')
+    logger.warning(f"Could not find free date for '{dish_name}' within {max_days_ahead} days, using: {final_date}")
+    
+    return final_date
+
+
 def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
     """
     Feature A: Получить числовой код продукта из iiko RMS вместо GUID
