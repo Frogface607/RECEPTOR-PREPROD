@@ -222,7 +222,10 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         ws = wb.active
     
     # Генерируем данные для экспорта
-    dish_code = card.meta.get('dish_code') if hasattr(card.meta, 'dish_code') else None
+    # Feature A: Use dish_codes_mapping if provided
+    dish_code = dish_codes_mapping.get(card.meta.title)
+    if not dish_code:
+        dish_code = card.meta.get('dish_code') if hasattr(card.meta, 'dish_code') else None
     if not dish_code:
         dish_slug = generate_dish_slug(card.meta.title)
         dish_code = f"DISH_{dish_slug}"
