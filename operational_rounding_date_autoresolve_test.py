@@ -638,6 +638,18 @@ class IntegrationTester:
                         "action": "Смешать ингредиенты",
                         "time_min": 8,
                         "temp_c": 25
+                    },
+                    {
+                        "n": 2,
+                        "action": "Дополнительная обработка",
+                        "time_min": 5,
+                        "temp_c": 20
+                    },
+                    {
+                        "n": 3,
+                        "action": "Финальная подготовка",
+                        "time_min": 3,
+                        "temp_c": 30
                     }
                 ]
             }
