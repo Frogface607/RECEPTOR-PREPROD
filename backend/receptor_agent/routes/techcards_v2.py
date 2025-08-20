@@ -847,6 +847,9 @@ async def enhanced_export_iiko_xlsx(request: Request):
     """
     try:
         body = await request.json()
+        logger.info(f"Enhanced export request body keys: {list(body.keys()) if isinstance(body, dict) else 'NOT_DICT'}")
+        logger.info(f"Body type: {type(body)}")
+        
         techcard_data = body.get('techcard')
         
         if not techcard_data:
