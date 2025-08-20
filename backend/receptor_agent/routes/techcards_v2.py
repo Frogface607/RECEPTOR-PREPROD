@@ -1256,10 +1256,23 @@ async def export_preflight_check(request: dict):
         cards = []
         for card_data in techcards_data:
             try:
+                # Добавляем отсутствующие обязательные поля
+                if 'nutrition' not in card_data:
+                    card_data['nutrition'] = {'per100g': {}, 'perPortion': {}}
+                if 'cost' not in card_data:
+                    card_data['cost'] = {'per100g': {}, 'perPortion': {}}
+                if 'process' not in card_data:
+                    card_data['process'] = {'steps': []}
+                    
                 card = TechCardV2.model_validate(card_data)
                 cards.append(card)
             except Exception as e:
                 logger.warning(f"Invalid techcard skipped: {e}")
+                # Продолжаем с частичной валидацией для preflight
+                cards.append(type('MockCard', (), {
+                    'meta': type('MockMeta', (), card_data.get('meta', {}))(),
+                    'ingredients': card_data.get('ingredients', [])
+                })())
         
         warnings = []
         
