@@ -1106,6 +1106,8 @@ async def generate_dish_codes_api(request: dict):
             "generated_codes": generated_codes
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Generate dish codes error: {e}")
         raise HTTPException(500, f"Generate dish codes failed: {str(e)}")
