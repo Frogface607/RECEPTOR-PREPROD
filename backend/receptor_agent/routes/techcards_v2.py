@@ -18,6 +18,12 @@ from receptor_agent.exports.pdf import techcard_to_pdf
 from receptor_agent.exports.zipper import make_zip
 from receptor_agent.exports.iiko_exporter import export_techcard_to_iiko
 from receptor_agent.exports.html import generate_print_html
+from receptor_agent.exports.iiko_xlsx import (
+    create_iiko_ttk_xlsx, 
+    find_dish_in_iiko_rms, 
+    generate_dish_codes, 
+    create_dish_skeletons_xlsx
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
