@@ -1528,7 +1528,18 @@ function App() {
                           )}
                         </td>
                         
-                        <td className="text-center py-2 text-gray-400 text-xs">{ing.skuId || '-'}</td>
+                        <td className="text-center py-2 text-gray-400 text-xs">
+                          {/* B. Terminology & UI: показываем Артикул (iiko) вместо GUID */}
+                          {ing.product_code ? (
+                            <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded text-xs font-mono">
+                              Артикул: {ing.product_code}
+                            </span>
+                          ) : ing.skuId ? (
+                            <span className="bg-gray-600/20 text-gray-400 px-2 py-1 rounded text-xs" title={`GUID: ${ing.skuId}`}>
+                              GUID
+                            </span>
+                          ) : '-'}
+                        </td>
                         <td className="text-center py-2">
                           <div className="flex justify-center gap-1">
                             <button
