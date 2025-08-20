@@ -940,6 +940,8 @@ async def enhanced_export_iiko_xlsx(request: Request):
         raise
     except Exception as e:
         logger.error(f"Enhanced export error: {e}")
+        import traceback
+        logger.error(f"Enhanced export traceback: {traceback.format_exc()}")
         
         # Record failed export
         try:
