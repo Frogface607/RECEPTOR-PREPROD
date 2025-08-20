@@ -1157,12 +1157,9 @@ async def export_enhanced_dual_iiko_xlsx(request: dict):
                 card = TechCardV2.model_validate(card_data)
                 cards.append(card)
             except Exception as e:
-                logger.warning(f"Invalid techcard skipped: {e}")
-                # Продолжаем с частичной валидацией для preflight
-                cards.append(type('MockCard', (), {
-                    'meta': type('MockMeta', (), card_data.get('meta', {}))(),
-                    'ingredients': card_data.get('ingredients', [])
-                })())
+                logger.warning(f"Invalid techcard skipped for enhanced dual export: {e}")
+                # Skip invalid cards for enhanced dual export
+                continue
         
         if not cards:
             raise HTTPException(400, "No valid techcards provided")
