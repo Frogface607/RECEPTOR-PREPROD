@@ -235,6 +235,19 @@ class QualityValidator:
         issues = []
         
         process_steps = techcard.get('process', [])
+        
+        # Safety check: make sure process_steps is a list
+        if not isinstance(process_steps, list):
+            issues.append({
+                "type": "processStepsInvalidFormat",
+                "level": "error",
+                "field": "process",
+                "message": "Process должен быть списком этапов",
+                "current_type": str(type(process_steps)),
+                "fix_suggestion": "Исправить формат process на список словарей"
+            })
+            return issues
+        
         if len(process_steps) < self.validation_rules["min_process_steps"]:
             issues.append({
                 "type": "processStepsInsufficient",
@@ -249,6 +262,19 @@ class QualityValidator:
         # Check step numbering
         for i, step in enumerate(process_steps):
             expected_n = i + 1
+            
+            # Safety check: make sure step is a dict
+            if not isinstance(step, dict):
+                issues.append({
+                    "type": "processStepInvalidFormat",
+                    "level": "error",
+                    "field": f"process[{i}]",
+                    "message": f"Этап {i+1} должен быть объектом, получен {type(step).__name__}",
+                    "current_value": str(step)[:100],
+                    "fix_suggestion": "Исправить формат этапа на объект с полями n, action, time_min, etc."
+                })
+                continue
+            
             actual_n = step.get('n', 0)
             
             if actual_n != expected_n:
@@ -256,10 +282,20 @@ class QualityValidator:
                     "type": "processStepNumbering",
                     "level": "warning",
                     "field": f"process[{i}].n",
-                    "message": f"Нарушена нумерация этапов: ожидается {expected_n}, указано {actual_n}",
-                    "expected_value": expected_n,
-                    "current_value": actual_n,
-                    "fix_suggestion": "Исправить нумерацию этапов"
+                    "message": f"Неправильная нумерация этапа: ожидается {expected_n}, получено {actual_n}",
+                    "expected": expected_n,
+                    "actual": actual_n,
+                    "fix_suggestion": f"Изменить номер этапа на {expected_n}"
+                })
+            
+            # Check required fields
+            if not step.get('action'):
+                issues.append({
+                    "type": "processStepMissingAction",
+                    "level": "error",
+                    "field": f"process[{i}].action",
+                    "message": f"Этап {expected_n}: отсутствует описание действия",
+                    "fix_suggestion": "Добавить описание действия для этапа"
                 })
         
         return issues
