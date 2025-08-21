@@ -409,37 +409,38 @@ class IikoRmsClient:
             if not product_id or not name:
                 return None
             
-            # HOTFIX: Debug артикулы - логируем все поля из iiko API
-            if 'свинин' in name.lower() or 'филе' in name.lower():
-                logger.info(f"🔍 DEBUG PRODUCT: {name}")
-                logger.info(f"  All fields from iiko API: {list(raw_product.keys())}")
-                for key, value in raw_product.items():
-                    if any(keyword in key.lower() for keyword in ['code', 'article', 'номер', 'артикул', 'barcode', 'sku']):
-                        logger.info(f"  {key}: {value} (type: {type(value)})")
-            
-            # Extract additional fields - проверяем различные возможные поля для артикула
+            # Extract additional fields - берем НОМЕНКЛАТУРНЫЙ КОД (num), а не код быстрого набора
             article = None
             
-            # Приоритет полей для поиска настоящего артикула
+            # ПРАВИЛЬНЫЙ приоритет полей для поиска АРТИКУЛА (номенклатурного кода)
             article_fields = [
-                'nomenclatureCode',     # Номенклатурный код
-                'productCode',          # Код продукта  
-                'itemCode',             # Код товара
-                'articleCode',          # Код артикула
-                'sku',                  # SKU
-                'article',              # Артикул (может быть код быстрого набора)
-                'code'                  # Код (обычно быстрого набора)
+                'num',                      # ✅ ОСНОВНОЕ поле артикула в iiko Server API
+                'article',                  # ✅ Альтернативное название номенклатурного кода  
+                'nomenclatureCode',         # ✅ Номенклатурный код
+                'productCode',              # ✅ Код продукта
+                'itemCode',                 # ✅ Код товара
             ]
             
             for field in article_fields:
                 if field in raw_product and raw_product[field]:
-                    article = raw_product[field]
-                    if 'свинин' in name.lower() or 'филе' in name.lower():
-                        logger.info(f"  Selected article from field '{field}': {article}")
-                    break
+                    article_value = str(raw_product[field]).strip()
+                    if article_value and article_value != '0':
+                        article = article_value
+                        if 'свинин' in name.lower() or 'филе' in name.lower():
+                            logger.info(f"  Selected ARTICLE from field '{field}': {article_value}")
+                        break
+            
+            # НЕ ИСПОЛЬЗУЕМ ДЛЯ АРТИКУЛА (это коды быстрого набора):
+            # - 'code' = код быстрого набора iikoFront  
+            # - 'orderItemId' = служебный код
+            
+            # Сохраняем код быстрого набора отдельно (для справки)
+            quick_dial_code = raw_product.get('code', raw_product.get('orderItemId', ''))
             
             if not article:
-                article = raw_product.get('article', raw_product.get('code', ''))
+                # Если артикул не найден, логируем для отладки
+                logger.warning(f"No article found for product '{name}', available fields: {list(raw_product.keys())}")
+                article = ""
             
             group_id = raw_product.get('category', raw_product.get('group', raw_product.get('groupId', '')))
             unit = raw_product.get('unit', raw_product.get('measureUnit', 'pcs'))
