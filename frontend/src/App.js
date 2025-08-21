@@ -50,7 +50,7 @@ function App() {
   const [autoMappingSearch, setAutoMappingSearch] = useState('');
   const [isAutoMapping, setIsAutoMapping] = useState(false);
   const [autoMappingMessage, setAutoMappingMessage] = useState({ type: '', text: '' });
-  const [preserveExistingSku, setPreserveExistingSku] = useState(true);
+  const [preserveExistingProductCode, setPreserveExistingProductCode] = useState(true);
   const [tcV2Backup, setTcV2Backup] = useState(null); // For undo functionality
   
   // Export wizard states (IK-02B-FE/03)
