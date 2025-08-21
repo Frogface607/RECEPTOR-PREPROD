@@ -68,13 +68,16 @@ class ProductCodeMigration:
     
     def get_product_code_from_rms(self, sku_id: str) -> Optional[str]:
         """
-        Получить числовой код продукта из iiko RMS по GUID
+        Получить АРТИКУЛ (номенклатурный код) продукта из iiko RMS по GUID
+        
+        ВАЖНО: Артикул != код быстрого набора!
+        Артикул (номенклатурный код) - пятизначное число с ведущими нулями (04637)
         
         Args:
             sku_id: GUID продукта
             
         Returns:
-            Числовой код продукта или None если не найден
+            Пятизначный артикул с ведущими нулями или None если не найден
         """
         if not sku_id or not self.rms_service:
             return None
@@ -82,23 +85,35 @@ class ProductCodeMigration:
         try:
             # Поиск в коллекции products
             product = self.rms_service.products.find_one({"_id": sku_id})
-            if product and product.get('article'):
-                article = str(product['article']).strip()
-                if article and article != '0':
-                    return article.zfill(5)  # Минимум 5 цифр с ведущими нулями
+            if product:
+                article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'productCode']
+                
+                for field in article_fields:
+                    if field in product and product[field]:
+                        article_value = str(product[field]).strip()
+                        
+                        # Проверяем что это именно артикул (5 цифр) и не пустой
+                        if article_value and article_value != '0' and article_value.isdigit() and len(article_value) <= 6:
+                            return article_value.zfill(5)
             
             # Поиск в коллекции prices
             pricing = self.rms_service.prices.find_one({"skuId": sku_id})
-            if pricing and pricing.get('article'):
-                article = str(pricing['article']).strip()
-                if article and article != '0':
-                    return article.zfill(5)
+            if pricing:
+                article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'productCode']
+                
+                for field in article_fields:
+                    if field in pricing and pricing[field]:
+                        article_value = str(pricing[field]).strip()
+                        
+                        # Проверяем что это именно артикул (5 цифр) и не пустой
+                        if article_value and article_value != '0' and article_value.isdigit() and len(article_value) <= 6:
+                            return article_value.zfill(5)
             
-            logger.debug(f"Product code not found for skuId: {sku_id}")
+            logger.debug(f"Product article not found for skuId: {sku_id}")
             return None
             
         except Exception as e:
-            logger.warning(f"Error getting product code for {sku_id}: {e}")
+            logger.warning(f"Error getting product article for {sku_id}: {e}")
             return None
     
     def migrate_techcard(self, techcard_doc: Dict[str, Any]) -> bool:
