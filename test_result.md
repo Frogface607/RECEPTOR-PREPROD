@@ -2821,8 +2821,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "PF-02: Preflight Orchestrator Implementation"
-    - "EX-03: Dual Export (ZIP) Implementation"
+    - "Phase 2: Preflight + Dual Export Implementation Complete"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
