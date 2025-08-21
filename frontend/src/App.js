@@ -4332,6 +4332,7 @@ function App() {
             index: i,
             ingredient: ingredient,
             currentSku: ingredient.skuId,
+            currentProductCode: ingredient.product_code,
             suggestion: null,
             confidence: 0,
             status: 'skipped',
