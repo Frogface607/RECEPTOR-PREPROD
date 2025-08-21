@@ -324,13 +324,13 @@ class DualExporter:
                 ingredients=[
                     IngredientV2(
                         name="Test Ingredient",
-                        netto=100.0,
-                        brutto=110.0,
+                        netto_g=100.0,
+                        brutto_g=110.0,
                         unit="g",
                         loss_pct=9.09
                     )
                 ],
-                yield_=YieldV2(perPortion_g=200.0),
+                yield_=YieldV2(perPortion_g=200.0, perBatch_g=200.0),
                 portions=1
             )
             
