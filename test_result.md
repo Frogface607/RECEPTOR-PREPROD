@@ -2791,7 +2791,8 @@ frontend:
 
 test_plan:
   current_focus:
-    - "AA-01: ArticleAllocator API Endpoints Implementation"
+    - "PF-02: Preflight Orchestrator Implementation"
+    - "EX-03: Dual Export (ZIP) Implementation"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
@@ -2800,7 +2801,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "🔧 AA-01 ARTICLEALLOCATOR BACKEND IMPLEMENTATION READY FOR TESTING: Completed implementation of comprehensive Article Allocator service with 5 API endpoints for article number management. 🎯 IMPLEMENTATION DETAILS: Core ArticleAllocator service already existed with full functionality (reservation system, caching, collision handling, MongoDB integration). Added 5 API endpoints to routes/techcards_v2.py: POST /articles/allocate (unique article allocation with 48h reservation), POST /articles/claim (permanent claiming for skeleton export), POST /articles/release (reservation cancellation with reason tracking), GET /articles/stats (allocation statistics by organization), GET /articles/width (article width with caching). ✅ FEATURES IMPLEMENTED: Complete request validation (article_type: dish/product, count limits 1-100, entity array validation), comprehensive error handling with proper HTTP status codes, detailed response structures with success/failure tracking, full integration with existing ArticleAllocator singleton service, proper async/await patterns throughout. 🎯 TESTING PRIORITY: Please focus testing on all 5 endpoints with various scenarios - article allocation for dishes and products, claiming/releasing workflows, statistics retrieval, width calculation, edge cases (invalid inputs, collision handling, large batches). Validate that MongoDB collections are created properly and TTL cleanup works. Test idempotency via entity_ids and organization-based isolation."
+    message: "🎯 PHASE 2: PREFLIGHT + DUAL EXPORT BACKEND IMPLEMENTATION READY FOR TESTING: Completed comprehensive Phase 2 implementation building on successful AA-01 ArticleAllocator foundation. 🔧 PF-02 PREFLIGHT ORCHESTRATOR: POST /api/v1/export/preflight endpoint with intelligent article discovery workflow (try iiko RMS first → allocate via AA-01 if missing), comprehensive dish/product processing with automatic categorization, TTK date conflict resolution (+1 to +7 days window), organization-based isolation, detailed response structure with missing items and generated articles. 🔧 EX-03 DUAL EXPORT (ZIP): POST /api/v1/export/zip endpoint creating intelligent ZIP with 1-3 files (iiko_TTK.xlsx always + conditional skeletons), proper Excel article formatting as text (@) with leading zeros, automatic article claiming after skeleton generation, memory-efficient streaming response, integration with operational rounding. ✅ TECHNICAL INTEGRATION: Full integration with existing AA-01 ArticleAllocator, proper async/await patterns, comprehensive error handling, structured logging, circular import avoidance, existing iiko RMS search integration. 🎯 TESTING PRIORITIES: Focus on preflight orchestration workflow (article discovery → allocation → categorization), ZIP generation with conditional file inclusion, article claiming after skeleton creation, Excel formatting validation, date conflict resolution, end-to-end workflow (preflight → export → claim). Test various scenarios: missing dishes/products, organization isolation, error handling, file format validation."
 
 agent_communication:
   - agent: "testing"
