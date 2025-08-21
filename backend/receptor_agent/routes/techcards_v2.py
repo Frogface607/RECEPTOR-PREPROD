@@ -1714,3 +1714,322 @@ async def get_export_instructions():
         "status": "success",
         "instructions": instructions
     }
+
+
+# =============================================================================
+# AA-01: ArticleAllocator API Endpoints
+# =============================================================================
+
+@router.post("/techcards.v2/articles/allocate")
+async def allocate_articles_api(request: Request):
+    """
+    AA-01: Allocate unique article numbers with reservation
+    
+    Body:
+    {
+        "article_type": "dish" | "product", 
+        "count": 5,
+        "organization_id": "org-123",
+        "entity_ids": ["dish-1", "dish-2", ...],  // Optional, for idempotency
+        "entity_names": ["Борщ", "Солянка", ...], // Optional, for display
+        "user_id": "user-456"                     // Optional, default "anonymous"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "allocated_articles": ["10001", "10002", "10003", "10004", "10005"],
+        "article_width": 5,
+        "reservations": [
+            {
+                "article": "10001",
+                "entity_id": "dish-1", 
+                "entity_name": "Борщ",
+                "status": "reserved",
+                "expires_at": "2024-01-15T10:00:00Z"
+            }
+        ]
+    }
+    """
+    try:
+        body = await request.json()
+        
+        # Validate required fields
+        article_type = body.get('article_type')
+        if article_type not in ['dish', 'product']:
+            raise HTTPException(400, "article_type must be 'dish' or 'product'")
+        
+        count = body.get('count', 1)
+        if count <= 0 or count > 100:
+            raise HTTPException(400, "count must be between 1 and 100")
+        
+        organization_id = body.get('organization_id', 'default')
+        entity_ids = body.get('entity_ids')
+        entity_names = body.get('entity_names')
+        user_id = body.get('user_id', 'anonymous')
+        
+        # Validate entity arrays length if provided
+        if entity_ids and len(entity_ids) != count:
+            raise HTTPException(400, "entity_ids length must match count")
+        if entity_names and len(entity_names) != count:
+            raise HTTPException(400, "entity_names length must match count")
+        
+        # Get ArticleAllocator service
+        from ..integrations.article_allocator import get_article_allocator, ArticleType
+        allocator = get_article_allocator()
+        
+        # Convert string to enum
+        article_type_enum = ArticleType.DISH if article_type == 'dish' else ArticleType.PRODUCT
+        
+        # Allocate articles
+        allocated_articles = allocator.allocate_articles(
+            article_type=article_type_enum,
+            count=count,
+            organization_id=organization_id,
+            entity_ids=entity_ids,
+            entity_names=entity_names,
+            user_id=user_id
+        )
+        
+        # Get width for response
+        article_width = allocator.get_article_width(organization_id)
+        
+        # Build reservation details for response
+        reservations = []
+        for i, article in enumerate(allocated_articles):
+            entity_id = entity_ids[i] if entity_ids else f"temp_{article_type}_{i}"
+            entity_name = entity_names[i] if entity_names else f"Temporary {article_type} {i+1}"
+            
+            reservations.append({
+                "article": article,
+                "entity_id": entity_id,
+                "entity_name": entity_name,
+                "status": "reserved",
+                "expires_at": (datetime.utcnow() + timedelta(hours=48)).isoformat() + "Z"
+            })
+        
+        return {
+            "status": "success",
+            "allocated_articles": allocated_articles,
+            "article_width": article_width,
+            "reservations": reservations,
+            "total_allocated": len(allocated_articles),
+            "organization_id": organization_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Article allocation error: {e}")
+        raise HTTPException(500, f"Article allocation failed: {str(e)}")
+
+
+@router.post("/techcards.v2/articles/claim")
+async def claim_articles_api(request: Request):
+    """
+    AA-01: Claim reserved articles (make them permanent for skeleton export)
+    
+    Body:
+    {
+        "articles": ["10001", "10002", "10003"],
+        "organization_id": "org-123"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "claim_results": {
+            "10001": true,
+            "10002": true, 
+            "10003": false
+        },
+        "claimed_count": 2,
+        "failed_count": 1
+    }
+    """
+    try:
+        body = await request.json()
+        
+        articles = body.get('articles', [])
+        if not articles:
+            raise HTTPException(400, "articles list is required")
+        
+        if len(articles) > 100:
+            raise HTTPException(400, "cannot claim more than 100 articles at once")
+        
+        organization_id = body.get('organization_id', 'default')
+        
+        # Get ArticleAllocator service
+        from ..integrations.article_allocator import get_article_allocator
+        allocator = get_article_allocator()
+        
+        # Claim articles
+        claim_results = allocator.claim_articles(articles, organization_id)
+        
+        # Count successes and failures
+        claimed_count = sum(1 for success in claim_results.values() if success)
+        failed_count = len(articles) - claimed_count
+        
+        return {
+            "status": "success",
+            "claim_results": claim_results,
+            "claimed_count": claimed_count,
+            "failed_count": failed_count,
+            "organization_id": organization_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Article claim error: {e}")
+        raise HTTPException(500, f"Article claim failed: {str(e)}")
+
+
+@router.post("/techcards.v2/articles/release")
+async def release_articles_api(request: Request):
+    """
+    AA-01: Release reserved articles by entity_id (cancel reservation)
+    
+    Body:
+    {
+        "entity_ids": ["dish-1", "dish-2", "temp_product_0"],
+        "organization_id": "org-123",
+        "reason": "export_cancelled"  // Optional
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "release_results": {
+            "dish-1": true,
+            "dish-2": true,
+            "temp_product_0": false
+        },
+        "released_count": 2,
+        "failed_count": 1
+    }
+    """
+    try:
+        body = await request.json()
+        
+        entity_ids = body.get('entity_ids', [])
+        if not entity_ids:
+            raise HTTPException(400, "entity_ids list is required")
+        
+        if len(entity_ids) > 100:
+            raise HTTPException(400, "cannot release more than 100 entities at once")
+        
+        organization_id = body.get('organization_id', 'default')
+        reason = body.get('reason', 'manual_release')
+        
+        # Get ArticleAllocator service
+        from ..integrations.article_allocator import get_article_allocator
+        allocator = get_article_allocator()
+        
+        # Release articles
+        release_results = allocator.release_articles(entity_ids, organization_id, reason)
+        
+        # Count successes and failures
+        released_count = sum(1 for success in release_results.values() if success)
+        failed_count = len(entity_ids) - released_count
+        
+        return {
+            "status": "success",
+            "release_results": release_results,
+            "released_count": released_count,
+            "failed_count": failed_count,
+            "organization_id": organization_id,
+            "reason": reason
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Article release error: {e}")
+        raise HTTPException(500, f"Article release failed: {str(e)}")
+
+
+@router.get("/techcards.v2/articles/stats/{organization_id}")
+async def get_article_stats(organization_id: str):
+    """
+    AA-01: Get article allocation statistics for organization
+    
+    Returns:
+    {
+        "status": "success",
+        "organization_id": "org-123",
+        "article_width": 5,
+        "stats": {
+            "total": 15,
+            "by_status": {
+                "reserved": 8,
+                "claimed": 5,
+                "released": 2
+            }
+        }
+    }
+    """
+    try:
+        # Get ArticleAllocator service
+        from ..integrations.article_allocator import get_article_allocator
+        allocator = get_article_allocator()
+        
+        # Get statistics
+        stats = allocator.get_allocation_stats(organization_id)
+        
+        return {
+            "status": "success",
+            "organization_id": organization_id,
+            "stats": stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Article stats error: {e}")
+        raise HTTPException(500, f"Article stats failed: {str(e)}")
+
+
+@router.get("/techcards.v2/articles/width/{organization_id}")
+async def get_article_width(organization_id: str):
+    """
+    AA-01: Get article width for organization (with caching)
+    
+    Returns:
+    {
+        "status": "success",
+        "organization_id": "org-123", 
+        "article_width": 5,
+        "strategy": "org_max_or_default",
+        "cached": true
+    }
+    """
+    try:
+        # Get ArticleAllocator service
+        from ..integrations.article_allocator import get_article_allocator
+        allocator = get_article_allocator()
+        
+        # Get width (utilizes caching internally)
+        width = allocator.get_article_width(organization_id)
+        
+        # Check if it's cached
+        cached_entry = allocator.width_cache.find_one({
+            "organization_id": organization_id,
+            "expires_at": {"$gt": datetime.utcnow()}
+        })
+        
+        return {
+            "status": "success",
+            "organization_id": organization_id,
+            "article_width": width,
+            "strategy": allocator.config["width_strategy"],
+            "cached": cached_entry is not None,
+            "config": {
+                "default_width": allocator.config["default_width"],
+                "min_width": allocator.config["min_width"], 
+                "max_width": allocator.config["max_width"],
+                "cache_ttl_hours": allocator.config["width_cache_ttl_hours"]
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Article width error: {e}")
+        raise HTTPException(500, f"Article width failed: {str(e)}")
