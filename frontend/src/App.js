@@ -16617,12 +16617,13 @@ function App() {
                     Все
                   </button>
                   <button
-                    onClick={() => setAutoMappingFilter('no_sku')}
+                    onClick={() => setAutoMappingFilter('no_product_code')}
                     className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                      autoMappingFilter === 'no_sku' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+                      autoMappingFilter === 'no_product_code' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
                     }`}
+                    title="B. Terminology & UI: Показать только ингредиенты без артикулов iiko"
                   >
-                    Только без SKU
+                    Только без артикулов
                   </button>
                   <button
                     onClick={() => setAutoMappingFilter('low_confidence')}
