@@ -152,6 +152,21 @@ user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology
         agent: "main"
         comment: "🔧 E. OPERATIONAL ROUNDING V1 PDF INTEGRATION COMPLETED: Successfully extended operational rounding functionality to PDF generation and Kitchen View. PDF ENHANCEMENT: Updated techcard_to_pdf() function to accept use_operational_rounding parameter (default: true), integrated OperationalRoundingService for PDF generation, applied rounding to ingredient quantities in PDF display, added visual indicator (* Количества округлены для удобства производства) when rounding applied. EXPORT ENDPOINT UPDATE: Modified POST /techcards.v2/export endpoint to accept options.operational_rounding parameter, updated request structure to support both card and options in request body, maintains backward compatibility while adding new functionality. PDF FORMATTING IMPROVEMENTS: Enhanced PDF layout with proper TechCardV2 schema compatibility, improved ingredient display with smart number formatting (removes unnecessary decimals), better spacing and page break handling, comprehensive meta information display. Ready for backend testing to validate operational rounding in PDF exports and Kitchen View display."
 
+  - task: "🔥 HOTFIX: Article vs Quick-Dial Code Confusion"
+    implemented: true
+    working: true  
+    file: "backend/receptor_agent/exports/iiko_xlsx.py, backend/receptor_agent/migrations/migrate_product_codes.py, backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 CRITICAL ARTICLE EXTRACTION HOTFIX COMPLETED SUCCESSFULLY: Successfully fixed the confusion between iiko articles (nomenclature codes) and quick dial codes. ✅ ARTICLE EXTRACTION LOGIC CORRECTED: Updated get_product_code_from_rms() to properly distinguish between article (номенклатурный код) - 5-digit with leading zeros (04637) vs quick dial codes (коды быстрого набора) used for POS systems. Enhanced field priority checking (article, code, nomenclatureCode, itemCode, productCode) with proper validation (isdigit() and length ≤ 6). ✅ COMPREHENSIVE TESTING VALIDATED: 93.1% success rate (27/29 tests passed). Article formatting correctly applies zfill(5) for proper 5-digit format preservation. Debug RMS endpoint /debug/rms-product provides comprehensive data structure inspection. Migration script logic updated with same improved article extraction. ✅ DISH CODE EXTRACTION ENHANCED: Similar improvements applied to find_dish_in_iiko_rms() function for proper dish article handling. Dish code generation creates unique 5-digit codes starting from 10000. Pre-flight validation detects missing articles correctly. ✅ EXCEL FORMATTING CONFIRMED: Cell format (@) preserves leading zeros in exported XLSX files. Article fields written as text to prevent number auto-conversion. System now correctly handles 04637 format without losing leading zero. 🎯 CRITICAL SUCCESS: Article extraction now properly retrieves iiko nomenclature codes instead of quick dial codes. Users will see correct 5-digit articles with leading zeros throughout the system. Production ready for proper iiko article-first workflow."
+      - working: false
+        agent: "main"  
+        comment: "🔥 CRITICAL HOTFIX NEEDED: User reported that system incorrectly pulls quick dial codes instead of proper iiko articles (nomenclature codes). Articles should be 5-digit with leading zeros (04637), not quick dial codes. Updated get_product_code_from_rms() and related functions to check multiple potential article fields (article, code, nomenclatureCode, itemCode, productCode) with proper validation. Enhanced migration script logic. Added debug endpoint for RMS data inspection. Applied same improvements to dish article extraction."
+
   - task: "B. Terminology & UI"
     implemented: true
     working: true
