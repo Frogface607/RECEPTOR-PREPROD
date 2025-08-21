@@ -2763,14 +2763,16 @@ frontend:
 
 test_plan:
   current_focus:
-    - "iiko Import Reliability - Feature A: Product Code Toggle"
-    - "iiko Import Reliability - Feature B: Dish Code Resolver + Skeletons"
-    - "iiko Import Reliability - Feature 3: Pre-flight Warnings"
+    - "AA-01: ArticleAllocator API Endpoints Implementation"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
   test_all: false
   test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "🔧 AA-01 ARTICLEALLOCATOR BACKEND IMPLEMENTATION READY FOR TESTING: Completed implementation of comprehensive Article Allocator service with 5 API endpoints for article number management. 🎯 IMPLEMENTATION DETAILS: Core ArticleAllocator service already existed with full functionality (reservation system, caching, collision handling, MongoDB integration). Added 5 API endpoints to routes/techcards_v2.py: POST /articles/allocate (unique article allocation with 48h reservation), POST /articles/claim (permanent claiming for skeleton export), POST /articles/release (reservation cancellation with reason tracking), GET /articles/stats (allocation statistics by organization), GET /articles/width (article width with caching). ✅ FEATURES IMPLEMENTED: Complete request validation (article_type: dish/product, count limits 1-100, entity array validation), comprehensive error handling with proper HTTP status codes, detailed response structures with success/failure tracking, full integration with existing ArticleAllocator singleton service, proper async/await patterns throughout. 🎯 TESTING PRIORITY: Please focus testing on all 5 endpoints with various scenarios - article allocation for dishes and products, claiming/releasing workflows, statistics retrieval, width calculation, edge cases (invalid inputs, collision handling, large batches). Validate that MongoDB collections are created properly and TTL cleanup works. Test idempotency via entity_ids and organization-based isolation."
 
 agent_communication:
   - agent: "testing"
