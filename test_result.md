@@ -150,6 +150,18 @@ user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology
         agent: "main"
         comment: "🔧 E. OPERATIONAL ROUNDING V1 PDF INTEGRATION COMPLETED: Successfully extended operational rounding functionality to PDF generation and Kitchen View. PDF ENHANCEMENT: Updated techcard_to_pdf() function to accept use_operational_rounding parameter (default: true), integrated OperationalRoundingService for PDF generation, applied rounding to ingredient quantities in PDF display, added visual indicator (* Количества округлены для удобства производства) when rounding applied. EXPORT ENDPOINT UPDATE: Modified POST /techcards.v2/export endpoint to accept options.operational_rounding parameter, updated request structure to support both card and options in request body, maintains backward compatibility while adding new functionality. PDF FORMATTING IMPROVEMENTS: Enhanced PDF layout with proper TechCardV2 schema compatibility, improved ingredient display with smart number formatting (removes unnecessary decimals), better spacing and page break handling, comprehensive meta information display. Ready for backend testing to validate operational rounding in PDF exports and Kitchen View display."
 
+  - task: "B. Terminology & UI"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "🎉 B. TERMINOLOGY & UI COMPREHENSIVE IMPLEMENTATION COMPLETED: Successfully replaced 'SKU' terminology with 'Артикул (iiko)' throughout the user interface and added helpful tooltips for clarity. ✅ TERMINOLOGY UPDATES: Updated table header from 'SKU' to 'Артикул (iiko)' with clear semantic meaning, replaced 'SKU' references in user messages with 'артикулы' (более понятные термины), updated auto-mapping filter from 'Только без SKU' to 'Только без артикулов', changed preservation checkbox from 'Не перезаписывать SKU' to 'Не перезаписывать артикулы (iiko)'. ✅ UI DISPLAY IMPROVEMENTS: Enhanced ingredient display to show 'Артикул: XXXXX' badge instead of raw GUID, updated auto-mapping results display to show 'Артикул: код' instead of 'Текущий: GUID', improved filter state variables (autoMappingFilter: 'no_product_code', preserveExistingProductCode), maintains support for both skuId (GUID) and product_code fields. ✅ TOOLTIP INTEGRATION: Added helpful tooltips explaining 'SKU — внутренний ID; для iiko используется Артикул/код', clear tooltips for user actions and buttons, contextual help for iiko-specific terminology. ✅ DATA STRUCTURE ENHANCEMENT: Updated auto-mapping results to include currentProductCode alongside currentSku, enhanced filtering logic to check both product_code and skuId fields, maintains backward compatibility while improving user experience. 🎯 EXCELLENT SUCCESS: Complete terminology harmonization achieved. Users now see clear 'Артикул (iiko)' terminology instead of confusing 'SKU' references. Interface is more intuitive for Russian iiko users."
+
   - task: "F. TTK Date Autoresolve (ошибка «на дату уже есть»)"
     implemented: true
     working: true
