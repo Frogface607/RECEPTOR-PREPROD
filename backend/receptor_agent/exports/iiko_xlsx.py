@@ -107,9 +107,7 @@ def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
     """
     Feature A: Получить АРТИКУЛ (номенклатурный код) продукта из iiko RMS вместо GUID
     
-    ВАЖНО: Артикул != код быстрого набора!
-    Артикул (номенклатурный код) - пятизначное число с ведущими нулями (04637)
-    Код быстрого набора - другой код для касс
+    ВАЖНО: Форматируем все артикулы как пятизначные с ведущими нулями (04637)
     
     Args:
         sku_id: GUID продукта из iiko
@@ -125,40 +123,48 @@ def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
         # Поиск в коллекции products
         product = rms_service.products.find_one({"_id": sku_id})
         if product:
-            # Проверяем различные поля где может быть артикул
-            article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'productCode']
+            # Ищем артикул в различных полях
+            article_fields = ['article', 'code', 'barcode']
             
             for field in article_fields:
                 if field in product and product[field]:
                     article_value = str(product[field]).strip()
                     
-                    # Проверяем что это именно артикул (5 цифр)
-                    if article_value.isdigit() and len(article_value) <= 6:
-                        # Форматируем как пятизначный код с ведущими нулями
-                        return article_value.zfill(5)
-            
-            # Логирование для отладки
-            print(f"DEBUG: Product {sku_id} fields: {list(product.keys())}")
+                    # Если это числовой код - форматируем как пятизначный
+                    if article_value and article_value.isdigit():
+                        formatted_article = article_value.zfill(5)
+                        print(f"DEBUG: Product {sku_id} - {product.get('name', 'Unknown')} - Found article: {article_value} -> {formatted_article}")
+                        return formatted_article
+                    
+                    # Если это не числовой код, но не пустой - возвращаем как есть
+                    elif article_value and article_value != '0':
+                        print(f"DEBUG: Product {sku_id} - Non-numeric article: {article_value}")
+                        return article_value
         
         # Поиск в коллекции prices если нет в products
         pricing = rms_service.prices.find_one({"skuId": sku_id})
         if pricing:
-            article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'productCode']
+            article_fields = ['article', 'code', 'barcode']
             
             for field in article_fields:
                 if field in pricing and pricing[field]:
                     article_value = str(pricing[field]).strip()
                     
-                    # Проверяем что это именно артикул (5 цифр)
-                    if article_value.isdigit() and len(article_value) <= 6:
-                        return article_value.zfill(5)
-            
-            # Логирование для отладки  
-            print(f"DEBUG: Pricing {sku_id} fields: {list(pricing.keys())}")
+                    # Если это числовой код - форматируем как пятизначный
+                    if article_value and article_value.isdigit():
+                        formatted_article = article_value.zfill(5)
+                        print(f"DEBUG: Pricing {sku_id} - Found article: {article_value} -> {formatted_article}")
+                        return formatted_article
+                    
+                    # Если это не числовой код, но не пустой - возвращаем как есть  
+                    elif article_value and article_value != '0':
+                        print(f"DEBUG: Pricing {sku_id} - Non-numeric article: {article_value}")
+                        return article_value
             
     except Exception as e:
         print(f"Error getting product article for {sku_id}: {e}")
     
+    print(f"DEBUG: No article found for {sku_id}, returning original")
     return sku_id or ""
 
 
