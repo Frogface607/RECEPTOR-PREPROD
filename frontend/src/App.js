@@ -1901,7 +1901,8 @@ function App() {
     
     // Для iiko источников ищем article/code в объекте
     if (catalogItem.source === 'iiko' && catalogItem.article) {
-      productCode = catalogItem.article;
+      // Форматируем артикул как пятизначный с ведущими нулями
+      productCode = String(catalogItem.article).padStart(5, '0');
     } else if (catalogItem.product_code) {
       productCode = catalogItem.product_code;
     } else if (catalogItem.code) {
