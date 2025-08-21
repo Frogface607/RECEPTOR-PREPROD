@@ -517,7 +517,8 @@ class IikoRmsClient:
             product = {
                 "id": str(product_id),
                 "name": name,
-                "article": article,
+                "article": article,  # Номенклатурный код (из 'num')
+                "quick_dial_code": quick_dial_code,  # Код быстрого набора (из 'code')
                 "group_id": str(group_id) if group_id else None,
                 "unit": normalized_unit,
                 "original_unit": unit,  # IK-03: keep original for reference
