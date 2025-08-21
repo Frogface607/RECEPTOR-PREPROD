@@ -522,7 +522,7 @@ class FinalArticleSystemTester:
                 logger.info("Step 2: Testing catalog search...")
                 search_response = await client.get(
                     f"{self.backend_url}/v1/techcards.v2/catalog-search",
-                    params={"query": "курица", "source": "iiko", "limit": 5}
+                    params={"q": "курица", "source": "iiko", "limit": 5}
                 )
                 
                 search_working = search_response.status_code in [200, 500]  # 500 acceptable with no RMS
