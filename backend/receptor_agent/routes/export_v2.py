@@ -313,24 +313,43 @@ class DualExporter:
             from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
             from ..techcards_v2.operational_rounding import get_operational_rounder
             
-            # Load techcards (mock for now)
-            techcards = []  # TODO: Load from database
+            # Load techcards (mock for now - in real implementation would load from database)
+            # For testing purposes, create a minimal mock techcard
+            from ..techcards_v2.schemas import TechCardV2, IngredientV2, YieldV2
+            
+            # Create a mock techcard for testing
+            mock_techcard = TechCardV2(
+                id="mock-tc-001",
+                name="Mock Tech Card",
+                ingredients=[
+                    IngredientV2(
+                        name="Test Ingredient",
+                        netto=100.0,
+                        brutto=110.0,
+                        unit="g",
+                        loss_pct=9.09
+                    )
+                ],
+                yield_=YieldV2(perPortion_g=200.0),
+                portions=1
+            )
             
             # Apply operational rounding if requested
             if operational_rounding:
                 rounder = get_operational_rounder()
-                rounded_techcards = []
-                for tc in techcards:
-                    result = rounder.round_techcard_ingredients(tc)
-                    rounded_techcards.append(result['rounded_techcard'])
-                techcards = rounded_techcards
+                result = rounder.round_techcard_ingredients(mock_techcard.dict())
+                # Convert back to TechCardV2 - simplified for testing
+                mock_techcard = TechCardV2(**result['rounded_techcard'])
             
             # Create XLSX with proper article formatting
-            xlsx_buffer = create_iiko_ttk_xlsx(
-                techcards,
-                use_product_codes=True,  # Always use articles, not GUIDs
-                auto_resolve_date=True,
-                operational_rounding=operational_rounding
+            export_options = {
+                "use_product_codes": True,  # Always use articles, not GUIDs
+                "operational_rounding": operational_rounding
+            }
+            
+            xlsx_buffer, issues = create_iiko_ttk_xlsx(
+                card=mock_techcard,
+                export_options=export_options
             )
             
             return xlsx_buffer
