@@ -105,14 +105,18 @@ def resolve_ttk_date_conflict(dish_name: str,
 
 def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
     """
-    Feature A: Получить числовой код продукта из iiko RMS вместо GUID
+    Feature A: Получить АРТИКУЛ (номенклатурный код) продукта из iiko RMS вместо GUID
+    
+    ВАЖНО: Артикул != код быстрого набора!
+    Артикул (номенклатурный код) - пятизначное число с ведущими нулями (04637)
+    Код быстрого набора - другой код для касс
     
     Args:
         sku_id: GUID продукта из iiko
         rms_service: Сервис для работы с iiko RMS (опционально)
     
     Returns:
-        Числовой код продукта или исходный sku_id если код не найден
+        Пятизначный артикул с ведущими нулями или исходный sku_id если код не найден
     """
     if not sku_id or not rms_service:
         return sku_id or ""
@@ -120,17 +124,40 @@ def get_product_code_from_rms(sku_id: str, rms_service=None) -> str:
     try:
         # Поиск в коллекции products
         product = rms_service.products.find_one({"_id": sku_id})
-        if product and product.get('article'):
-            # Возвращаем article (числовой код) с сохранением ведущих нулей
-            return str(product['article']).zfill(5)  # Минимум 5 цифр с ведущими нулями
+        if product:
+            # Проверяем различные поля где может быть артикул
+            article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'productCode']
+            
+            for field in article_fields:
+                if field in product and product[field]:
+                    article_value = str(product[field]).strip()
+                    
+                    # Проверяем что это именно артикул (5 цифр)
+                    if article_value.isdigit() and len(article_value) <= 6:
+                        # Форматируем как пятизначный код с ведущими нулями
+                        return article_value.zfill(5)
+            
+            # Логирование для отладки
+            print(f"DEBUG: Product {sku_id} fields: {list(product.keys())}")
         
         # Поиск в коллекции prices если нет в products
         pricing = rms_service.prices.find_one({"skuId": sku_id})
-        if pricing and pricing.get('article'):
-            return str(pricing['article']).zfill(5)
+        if pricing:
+            article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'productCode']
+            
+            for field in article_fields:
+                if field in pricing and pricing[field]:
+                    article_value = str(pricing[field]).strip()
+                    
+                    # Проверяем что это именно артикул (5 цифр)
+                    if article_value.isdigit() and len(article_value) <= 6:
+                        return article_value.zfill(5)
+            
+            # Логирование для отладки  
+            print(f"DEBUG: Pricing {sku_id} fields: {list(pricing.keys())}")
             
     except Exception as e:
-        print(f"Error getting product code for {sku_id}: {e}")
+        print(f"Error getting product article for {sku_id}: {e}")
     
     return sku_id or ""
 
