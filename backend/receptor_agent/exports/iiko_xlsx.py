@@ -215,9 +215,22 @@ def find_dish_in_iiko_rms(dish_name: str, rms_service=None) -> Dict[str, Any]:
                 best_match = dish
         
         if best_match and best_confidence >= 0.7:
+            # Получаем артикул блюда (номенклатурный код)
+            dish_article = None
+            article_fields = ['article', 'code', 'nomenclatureCode', 'itemCode', 'dishCode']
+            
+            for field in article_fields:
+                if field in best_match and best_match[field]:
+                    article_value = str(best_match[field]).strip()
+                    
+                    # Проверяем что это именно артикул (5 цифр)
+                    if article_value.isdigit() and len(article_value) <= 6:
+                        dish_article = article_value.zfill(5)
+                        break
+            
             return {
                 'status': 'found',
-                'dish_code': str(best_match.get('article', best_match.get('code', ''))).zfill(5),
+                'dish_code': dish_article or '',
                 'dish_name': best_match.get('name', ''),
                 'confidence': best_confidence
             }
