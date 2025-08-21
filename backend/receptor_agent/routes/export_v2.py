@@ -339,9 +339,9 @@ class DualExporter:
                     )
                 ],
                 process=[
-                    ProcessStepV2(n=1, action="Подготовить ингредиенты"),
-                    ProcessStepV2(n=2, action="Смешать компоненты"),
-                    ProcessStepV2(n=3, action="Готовить 10 минут", time_min=10.0)
+                    ProcessStepV2(n=1, action="Подготовить ингредиенты", time_min=5.0),
+                    ProcessStepV2(n=2, action="Смешать компоненты", time_min=3.0),
+                    ProcessStepV2(n=3, action="Готовить на среднем огне", time_min=10.0, temp_c=180.0)
                 ],
                 storage=StorageV2(
                     conditions="Хранить в холодильнике",
