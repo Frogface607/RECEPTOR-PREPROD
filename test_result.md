@@ -163,6 +163,29 @@ backend:
         agent: "main"
         comment: "🔧 AA-01 ARTICLEALLOCATOR API ENDPOINTS IMPLEMENTATION COMPLETED: Successfully implemented comprehensive ArticleAllocator API endpoints in techcards_v2.py routes. CORE ENDPOINTS ADDED: 5 complete API endpoints implemented - POST /articles/allocate (allocate unique article numbers with reservation system), POST /articles/claim (claim reserved articles for permanent skeleton export), POST /articles/release (release reserved articles by entity_id with reason tracking), GET /articles/stats/{organization_id} (get allocation statistics), GET /articles/width/{organization_id} (get article width with caching). COMPREHENSIVE VALIDATION: All endpoints include proper request validation (article_type enum validation, count limits 1-100, entity array length matching), comprehensive error handling with HTTPException responses, detailed response structures with success/failure counts. INTEGRATION FEATURES: Full integration with ArticleAllocator service singleton, proper enum conversion (string to ArticleType), reservation expiry calculation (48h TTL), idempotency support via entity_ids, organization-based width calculation with caching. TECHNICAL IMPLEMENTATION: Added missing timedelta import for datetime calculations, proper async/await patterns throughout, comprehensive request body validation, detailed API documentation with request/response examples. Ready for backend testing to validate complete ArticleAllocator workflow including allocation, claiming, release operations and statistics retrieval."
 
+  - task: "PF-02: Preflight Orchestrator Implementation"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 PF-02 PREFLIGHT ORCHESTRATOR IMPLEMENTATION COMPLETED: Successfully implemented comprehensive Preflight Orchestrator for Phase 2 with automatic article allocation and TTK date resolution. CORE FUNCTIONALITY: POST /api/v1/export/preflight endpoint with intelligent article discovery (try iiko RMS first, allocate if not found), comprehensive dish and product processing, TTK date conflict resolution (+1 to +7 days window), organization-based processing isolation. ARTICLE PROCESSING: Integrated with AA-01 ArticleAllocator for seamless article generation, separate dish and product processing workflows, intelligent ingredient categorization (Мясо и рыба, Молочные продукты, Овощи, Бакалея, Масла и соусы, Сырьё), idempotency support via entity names and IDs. INTEGRATION FEATURES: Full integration with existing iiko RMS search functions, fallback date resolution, comprehensive error handling, detailed response structure with missing items counts and generated articles. TECHNICAL IMPLEMENTATION: Async/await patterns throughout, proper import handling to avoid circular dependencies, comprehensive logging for debugging, structured response format matching user specification. Ready for backend testing to validate preflight orchestration, article allocation integration, and date resolution workflow."
+
+  - task: "EX-03: Dual Export (ZIP) Implementation"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 EX-03 DUAL EXPORT (ZIP) IMPLEMENTATION COMPLETED: Successfully implemented comprehensive Dual ZIP export system for Phase 2 with intelligent file generation. CORE FUNCTIONALITY: POST /api/v1/export/zip endpoint generates ZIP with 1-3 files (iiko_TTK.xlsx always, Dish-Skeletons.xlsx and Product-Skeletons.xlsx conditionally), proper article formatting as text (@) with leading zeros preservation, timestamp-based filename generation, article claiming after successful skeleton generation. ZIP GENERATION: Conditional file inclusion based on preflight results, proper Excel formatting for iiko compatibility, integration with existing XLSX generation functions, memory-efficient streaming response. ARTICLE MANAGEMENT: Automatic article claiming after skeleton generation, comprehensive error handling for each file creation step, integration with operational rounding service, fallback mechanisms for edge cases. TECHNICAL IMPLEMENTATION: Uses zipfile for proper ZIP creation, StreamingResponse for efficient file delivery, proper MIME type headers, comprehensive error logging and recovery, integration with existing export infrastructure. Ready for backend testing to validate ZIP generation, file inclusion logic, article claiming, and Excel formatting."
   - task: "E. Operational Rounding v1 (довести)"
     implemented: true
     working: true
