@@ -315,12 +315,13 @@ class DualExporter:
             
             # Load techcards (mock for now - in real implementation would load from database)
             # For testing purposes, create a minimal mock techcard
-            from ..techcards_v2.schemas import TechCardV2, IngredientV2, YieldV2
+            from ..techcards_v2.schemas import TechCardV2, IngredientV2, YieldV2, MetaV2, ProcessStepV2, StorageV2
             
             # Create a mock techcard for testing
             mock_techcard = TechCardV2(
-                id="mock-tc-001",
-                name="Mock Tech Card",
+                meta=MetaV2(title="Mock Tech Card"),
+                portions=1,
+                yield_=YieldV2(perPortion_g=200.0, perBatch_g=200.0),
                 ingredients=[
                     IngredientV2(
                         name="Test Ingredient",
@@ -328,10 +329,24 @@ class DualExporter:
                         brutto_g=110.0,
                         unit="g",
                         loss_pct=9.09
+                    ),
+                    IngredientV2(
+                        name="Test Ingredient 2",
+                        netto_g=100.0,
+                        brutto_g=105.0,
+                        unit="g",
+                        loss_pct=4.76
                     )
                 ],
-                yield_=YieldV2(perPortion_g=200.0, perBatch_g=200.0),
-                portions=1
+                process=[
+                    ProcessStepV2(n=1, action="Подготовить ингредиенты"),
+                    ProcessStepV2(n=2, action="Смешать компоненты"),
+                    ProcessStepV2(n=3, action="Готовить 10 минут", time_min=10.0)
+                ],
+                storage=StorageV2(
+                    conditions="Хранить в холодильнике",
+                    shelfLife_hours=24.0
+                )
             )
             
             # Apply operational rounding if requested
