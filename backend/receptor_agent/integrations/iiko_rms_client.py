@@ -409,8 +409,38 @@ class IikoRmsClient:
             if not product_id or not name:
                 return None
             
-            # Extract additional fields
-            article = raw_product.get('article', raw_product.get('code', ''))
+            # HOTFIX: Debug артикулы - логируем все поля из iiko API
+            if 'свинин' in name.lower() or 'филе' in name.lower():
+                logger.info(f"🔍 DEBUG PRODUCT: {name}")
+                logger.info(f"  All fields from iiko API: {list(raw_product.keys())}")
+                for key, value in raw_product.items():
+                    if any(keyword in key.lower() for keyword in ['code', 'article', 'номер', 'артикул', 'barcode', 'sku']):
+                        logger.info(f"  {key}: {value} (type: {type(value)})")
+            
+            # Extract additional fields - проверяем различные возможные поля для артикула
+            article = None
+            
+            # Приоритет полей для поиска настоящего артикула
+            article_fields = [
+                'nomenclatureCode',     # Номенклатурный код
+                'productCode',          # Код продукта  
+                'itemCode',             # Код товара
+                'articleCode',          # Код артикула
+                'sku',                  # SKU
+                'article',              # Артикул (может быть код быстрого набора)
+                'code'                  # Код (обычно быстрого набора)
+            ]
+            
+            for field in article_fields:
+                if field in raw_product and raw_product[field]:
+                    article = raw_product[field]
+                    if 'свинин' in name.lower() or 'филе' in name.lower():
+                        logger.info(f"  Selected article from field '{field}': {article}")
+                    break
+            
+            if not article:
+                article = raw_product.get('article', raw_product.get('code', ''))
+            
             group_id = raw_product.get('category', raw_product.get('group', raw_product.get('groupId', '')))
             unit = raw_product.get('unit', raw_product.get('measureUnit', 'pcs'))
             
