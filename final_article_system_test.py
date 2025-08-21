@@ -209,7 +209,7 @@ class FinalArticleSystemTester:
                 response = await client.get(
                     f"{self.backend_url}/v1/techcards.v2/catalog-search",
                     params={
-                        "query": "курица",
+                        "q": "курица",
                         "source": "iiko",
                         "limit": 10
                     }
