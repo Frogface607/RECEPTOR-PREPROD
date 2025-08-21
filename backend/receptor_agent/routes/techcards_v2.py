@@ -1560,6 +1560,65 @@ async def export_product_skeletons(request: dict):
         raise HTTPException(500, f"Export product skeletons failed: {str(e)}")
 
 
+@router.post("/techcards.v2/debug/rms-product")
+async def debug_rms_product(request: dict):
+    """
+    DEBUG: Проверить какие поля есть у продукта в iiko RMS
+    
+    Body:
+    {
+        "sku_id": "product-guid-from-iiko"
+    }
+    """
+    try:
+        sku_id = request.get('sku_id')
+        if not sku_id:
+            raise HTTPException(400, "sku_id is required")
+        
+        # Получаем RMS сервис
+        from ..integrations.iiko_rms_service import get_iiko_rms_service
+        rms_service = get_iiko_rms_service()
+        
+        result = {
+            "sku_id": sku_id,
+            "product_in_products": None,
+            "product_in_prices": None,
+            "extracted_article": None
+        }
+        
+        # Поиск в коллекции products
+        product = rms_service.products.find_one({"_id": sku_id})
+        if product:
+            result["product_in_products"] = {
+                "found": True,
+                "fields": list(product.keys()),
+                "data": product
+            }
+        
+        # Поиск в коллекции prices
+        pricing = rms_service.prices.find_one({"skuId": sku_id})
+        if pricing:
+            result["product_in_prices"] = {
+                "found": True,
+                "fields": list(pricing.keys()),
+                "data": pricing
+            }
+        
+        # Пробуем извлечь артикул нашей функцией
+        from ..exports.iiko_xlsx import get_product_code_from_rms
+        extracted_article = get_product_code_from_rms(sku_id, rms_service)
+        result["extracted_article"] = extracted_article
+        
+        return {
+            "status": "success",
+            "result": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Debug RMS product error: {e}")
+        raise HTTPException(500, f"Debug failed: {str(e)}")
+
+
 @router.post("/techcards.v2/export/auto-fix")
 async def auto_fix_export_issues(request: Request):
     """
