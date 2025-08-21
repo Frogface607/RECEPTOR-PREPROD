@@ -3899,8 +3899,8 @@ function App() {
     
     // Apply filter
     switch (autoMappingFilter) {
-      case 'no_sku':
-        filtered = filtered.filter(r => !r.currentSku);
+      case 'no_product_code':
+        filtered = filtered.filter(r => !r.currentSku && !r.currentProductCode);
         break;
       case 'low_confidence':
         filtered = filtered.filter(r => r.confidence > 0 && r.confidence < 90);
