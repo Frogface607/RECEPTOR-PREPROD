@@ -141,7 +141,22 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)"
+user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)
+
+CURRENT TASK: Complete AA-01 ArticleAllocator backend implementation with API endpoints for article allocation, claiming, releasing, and statistics management."
+
+backend:
+  - task: "AA-01: ArticleAllocator API Endpoints Implementation"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/techcards_v2.py, backend/receptor_agent/integrations/article_allocator.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 AA-01 ARTICLEALLOCATOR API ENDPOINTS IMPLEMENTATION COMPLETED: Successfully implemented comprehensive ArticleAllocator API endpoints in techcards_v2.py routes. CORE ENDPOINTS ADDED: 5 complete API endpoints implemented - POST /articles/allocate (allocate unique article numbers with reservation system), POST /articles/claim (claim reserved articles for permanent skeleton export), POST /articles/release (release reserved articles by entity_id with reason tracking), GET /articles/stats/{organization_id} (get allocation statistics), GET /articles/width/{organization_id} (get article width with caching). COMPREHENSIVE VALIDATION: All endpoints include proper request validation (article_type enum validation, count limits 1-100, entity array length matching), comprehensive error handling with HTTPException responses, detailed response structures with success/failure counts. INTEGRATION FEATURES: Full integration with ArticleAllocator service singleton, proper enum conversion (string to ArticleType), reservation expiry calculation (48h TTL), idempotency support via entity_ids, organization-based width calculation with caching. TECHNICAL IMPLEMENTATION: Added missing timedelta import for datetime calculations, proper async/await patterns throughout, comprehensive request body validation, detailed API documentation with request/response examples. Ready for backend testing to validate complete ArticleAllocator workflow including allocation, claiming, release operations and statistics retrieval."
 
   - task: "E. Operational Rounding v1 (довести)"
     implemented: true
