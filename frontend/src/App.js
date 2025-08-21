@@ -46,7 +46,7 @@ function App() {
   // Auto-mapping states (IK-02B-FE/02)
   const [showAutoMappingModal, setShowAutoMappingModal] = useState(false);
   const [autoMappingResults, setAutoMappingResults] = useState([]);
-  const [autoMappingFilter, setAutoMappingFilter] = useState('all'); // 'all', 'no_sku', 'low_confidence'
+  const [autoMappingFilter, setAutoMappingFilter] = useState('all'); // 'all', 'no_product_code', 'low_confidence'
   const [autoMappingSearch, setAutoMappingSearch] = useState('');
   const [isAutoMapping, setIsAutoMapping] = useState(false);
   const [autoMappingMessage, setAutoMappingMessage] = useState({ type: '', text: '' });
