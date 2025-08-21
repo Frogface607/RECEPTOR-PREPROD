@@ -345,9 +345,15 @@ class DualExporter:
             # Import here to avoid circular imports
             from ..exports.iiko_xlsx import create_dish_skeletons_xlsx
             
+            # Convert missing dishes to dish_codes_mapping format
+            dish_codes_mapping = {dish["name"]: dish["article"] for dish in missing_dishes}
+            
+            # Create empty cards list since we don't have actual techcards loaded
+            cards = []
+            
             xlsx_buffer = create_dish_skeletons_xlsx(
-                dishes=missing_dishes,
-                filename="Dish-Skeletons.xlsx"
+                dish_codes_mapping=dish_codes_mapping,
+                cards=cards
             )
             
             return xlsx_buffer
