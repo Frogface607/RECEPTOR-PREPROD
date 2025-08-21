@@ -3676,8 +3676,8 @@ function App() {
       for (let i = 0; i < tcV2.ingredients.length; i++) {
         const ingredient = tcV2.ingredients[i];
         
-        // Skip if preserve existing SKU is enabled and ingredient already has SKU
-        if (preserveExistingSku && ingredient.skuId) {
+        // Skip if preserve existing product code is enabled and ingredient already has product code
+        if (preserveExistingProductCode && (ingredient.skuId || ingredient.product_code)) {
           mappingResults.push({
             index: i,
             ingredient: ingredient,
