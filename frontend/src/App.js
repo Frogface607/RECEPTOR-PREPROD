@@ -16686,9 +16686,9 @@ function App() {
                             {result.ingredient_name}
                             <span className="text-gray-400 ml-2 text-sm">({result.original_unit})</span>
                           </div>
-                          {result.currentSku && (
-                            <span className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
-                              Текущий: {result.currentSku}
+                          {(result.currentSku || result.currentProductCode) && (
+                            <span className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs" title="B. Terminology & UI: Текущий артикул продукта в iiko">
+                              Артикул: {result.currentProductCode || result.currentSku || 'не назначен'}
                             </span>
                           )}
                         </div>
