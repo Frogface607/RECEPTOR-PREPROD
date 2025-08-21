@@ -3682,6 +3682,7 @@ function App() {
             index: i,
             ingredient: ingredient,
             currentSku: ingredient.skuId,
+            currentProductCode: ingredient.product_code,
             currentSource: ingredient.source || 'unknown',
             suggestion: null,
             confidence: 0,
