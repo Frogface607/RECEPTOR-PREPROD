@@ -192,6 +192,30 @@ backend:
       - working: false
         agent: "main"
         comment: "🔧 EX-03 DUAL EXPORT (ZIP) IMPLEMENTATION COMPLETED: Successfully implemented comprehensive Dual ZIP export system for Phase 2 with intelligent file generation. CORE FUNCTIONALITY: POST /api/v1/export/zip endpoint generates ZIP with 1-3 files (iiko_TTK.xlsx always, Dish-Skeletons.xlsx and Product-Skeletons.xlsx conditionally), proper article formatting as text (@) with leading zeros preservation, timestamp-based filename generation, article claiming after successful skeleton generation. ZIP GENERATION: Conditional file inclusion based on preflight results, proper Excel formatting for iiko compatibility, integration with existing XLSX generation functions, memory-efficient streaming response. ARTICLE MANAGEMENT: Automatic article claiming after skeleton generation, comprehensive error handling for each file creation step, integration with operational rounding service, fallback mechanisms for edge cases. TECHNICAL IMPLEMENTATION: Uses zipfile for proper ZIP creation, StreamingResponse for efficient file delivery, proper MIME type headers, comprehensive error logging and recovery, integration with existing export infrastructure. Ready for backend testing to validate ZIP generation, file inclusion logic, article claiming, and Excel formatting."
+
+  - task: "EX-04: Export System Status Endpoint"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ EX-04 EXPORT SYSTEM STATUS ENDPOINT OPERATIONAL: GET /api/v1/export/status endpoint working perfectly with comprehensive system health monitoring. Response includes all required fields (status, systems, features), system components status (preflight_orchestrator: operational, dual_exporter: operational, article_allocator: operational), feature availability flags (article_allocation: true, ttk_date_resolution: true, skeleton_generation: true, zip_export: true, article_claiming: true). Endpoint provides complete Phase 2 system readiness validation in 0.015s response time."
+
+  - task: "Phase 2: Minor Import/Schema Fixes"
+    implemented: true
+    working: true
+    file: "backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PHASE 2 IMPORT/SCHEMA FIXES COMPLETED: Fixed critical import issues in export_v2.py - corrected OperationalRoundingService import to use get_operational_rounder() function, fixed TechCardV2 schema validation by providing all required fields (meta, process, storage), updated function signatures to match actual implementations (create_dish_skeletons_xlsx, create_product_skeletons_xlsx), resolved Pydantic validation errors for IngredientV2 (brutto_g, netto_g fields). All Phase 2 components now working correctly with proper schema compliance."
   - task: "E. Operational Rounding v1 (довести)"
     implemented: true
     working: true
