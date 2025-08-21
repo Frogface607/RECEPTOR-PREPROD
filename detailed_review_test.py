@@ -8,7 +8,7 @@ import re
 
 class DetailedReviewTest:
     def __init__(self):
-        self.base_url = "https://iiko-connect.preview.emergentagent.com/api"
+        self.base_url = "https://iiko-menu-sync.preview.emergentagent.com/api"
         self.test_user_id = "test_user_123"
         self.test_email = "detailed_test@example.com"
         

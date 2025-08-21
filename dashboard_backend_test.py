@@ -14,7 +14,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://iiko-connect.preview.emergentagent.com/api"
+BACKEND_URL = "https://iiko-menu-sync.preview.emergentagent.com/api"
 
 def test_dashboard_user_registration():
     """Test 1: User registration with specific test user for Dashboard"""

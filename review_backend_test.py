@@ -25,7 +25,7 @@ from datetime import datetime
 class ReceptorReviewTest:
     def __init__(self):
         # Use the public endpoint from frontend/.env
-        self.base_url = "https://iiko-connect.preview.emergentagent.com/api"
+        self.base_url = "https://iiko-menu-sync.preview.emergentagent.com/api"
         
         # Test data as specified in review request
         self.test_user_id = "test_user_12345"

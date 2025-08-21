@@ -12,7 +12,7 @@ import sqlite3
 from typing import Dict, Any, List
 
 # Backend URL from environment
-BACKEND_URL = "https://iiko-connect.preview.emergentagent.com"
+BACKEND_URL = "https://iiko-menu-sync.preview.emergentagent.com"
 
 def test_usda_provider():
     """Test 1: USDA Provider Testing - USDANutritionProvider.find_nutrition_data()"""
