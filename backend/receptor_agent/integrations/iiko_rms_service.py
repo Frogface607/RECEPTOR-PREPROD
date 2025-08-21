@@ -388,7 +388,8 @@ class IikoRmsService:
             organization_id=organization_id,
             name=product_data["name"],
             name_normalized=name_normalized,
-            article=product_data.get("article"),
+            article=product_data.get("article"),  # Номенклатурный код (из 'num')
+            quick_dial_code=product_data.get("quick_dial_code"),  # Код быстрого набора (из 'code')
             group_id=product_data.get("group_id"),
             group_name=group_name,
             unit=product_data["unit"],
