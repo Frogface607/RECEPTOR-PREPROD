@@ -311,15 +311,19 @@ class DualExporter:
         try:
             # Import here to avoid circular imports
             from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
-            from ..techcards_v2.operational_rounding import OperationalRoundingService
+            from ..techcards_v2.operational_rounding import get_operational_rounder
             
             # Load techcards (mock for now)
             techcards = []  # TODO: Load from database
             
             # Apply operational rounding if requested
             if operational_rounding:
-                rounding_service = OperationalRoundingService()
-                techcards = [rounding_service.apply_rounding(tc) for tc in techcards]
+                rounder = get_operational_rounder()
+                rounded_techcards = []
+                for tc in techcards:
+                    result = rounder.round_techcard_ingredients(tc)
+                    rounded_techcards.append(result['rounded_techcard'])
+                techcards = rounded_techcards
             
             # Create XLSX with proper article formatting
             xlsx_buffer = create_iiko_ttk_xlsx(
