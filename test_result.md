@@ -587,6 +587,19 @@ backend:
         comment: "PARTIAL IMPLEMENTATION: catalog-search endpoint has basic price support but missing full P1-Prices specification. Missing proper source=price response format with {source, name, skuId, unit, price_per_unit, currency, asOf} structure and priority-based sorting."
 
 frontend:
+  - task: "FE-04-min: Export to iiko (2 steps) Frontend Implementation"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🎨 FE-04-MIN EXPORT TO iiko (2 STEPS) FRONTEND IMPLEMENTATION COMPLETED: Successfully implemented comprehensive Phase 3 frontend for seamless article-first workflow. CORE UI COMPONENTS: Export button 'Экспорт в iiko (2 шага)' with 4 states (idle, running_preflight, ready_zip, error), comprehensive preflight panel showing TTK date and skeleton counts, ZIP download section with file composition hints, enhanced search modal with article badges 'Артикул (iiko): 0xxxx', user-friendly error modal with specific messages. API INTEGRATION: Complete FE-04-1 flow (POST /api/v1/export/preflight → display results), FE-04-2 flow (POST /api/v1/export/zip → download + claim articles), proper state management preventing double-clicks, comprehensive error handling with friendly messages. ENHANCED SEARCH: Article number search support (4-6 digits for exact match), updated placeholders and tooltips, quick dial code tooltips indicating 'не используется в ТТК', search suggestions including article examples. KEYBOARD SHORTCUTS: E key hotkey for export (when not typing), proper modal state checking to prevent conflicts. ACCEPTANCE CRITERIA: Complete 2-step workflow implemented, preflight results display with skeleton counts, ZIP download with conditional file hints, article display in search modals, performance-optimized state management. Ready for frontend testing to validate complete Phase 3 E2E workflow integration."
+
+frontend:
   - task: "P1: iiko Basic Mode UI Redesign"
     implemented: true
     working: true
