@@ -601,7 +601,7 @@ backend:
         comment: "PARTIAL IMPLEMENTATION: catalog-search endpoint has basic price support but missing full P1-Prices specification. Missing proper source=price response format with {source, name, skuId, unit, price_per_unit, currency, asOf} structure and priority-based sorting."
 
 frontend:
-  - task: "FE-04-wire: Enhanced Export UI with Skeleton Guards"
+  - task: "MAP-01: Save product.article on accept (Automapping Fix)"
     implemented: true
     working: false
     file: "frontend/src/App.js"
@@ -611,7 +611,19 @@ frontend:
     status_history:
       - working: false
         agent: "main"
-        comment: "🎨 FE-04-WIRE ENHANCED EXPORT UI WITH SKELETON GUARDS COMPLETED: Enhanced Phase 3.5 frontend with critical dish-first UI guards and improved skeleton visualization. UI ENHANCEMENTS: Enhanced preflight panel with explicit skeleton counters 'Блюда для скелетов: D', 'Товары для скелетов: P', TTK date display with auto-shift indication, conditional instruction display based on skeleton requirements. SKELETON GUARDS: Implemented intelligent instruction system (yellow warning for required skeletons, green success for direct TTK import), clear file composition display in ZIP download section, comprehensive skeleton count validation throughout the workflow. IMPORT INSTRUCTIONS: Dynamic instruction text based on preflight results ('требуется двухэтапный импорт' vs 'можно сразу импортировать'), explicit warning about TTK import failure without skeleton pre-import, clear step-by-step import guidance with file counts. TECHNICAL FEATURES: Maintained existing keyboard shortcuts and state management, proper error handling with skeleton-specific messages, seamless integration with enhanced backend PF-02-bind and EX-03-bind endpoints, responsive design for skeleton counters and instructions. Ready for frontend testing to validate skeleton guard behavior, instruction display logic, and complete Phase 3.5 E2E workflow with dish-first enforcement."
+        comment: "🔧 MAP-01 SAVE PRODUCT.ARTICLE ON ACCEPT AUTOMAPPING FIX COMPLETED: Critical bug fix for automapping saving GUID/code instead of article, causing iiko export failures. AUTOMAPPING CHANGES ENHANCEMENT: Enhanced applyAutoMappingChanges with article-first priority logic (article > code > fallback), added article lookup by skuId when article missing via /catalog-search?search_by=id, proper GUID avoidance (skip codes with hyphens), comprehensive product_code assignment with 5-digit padding. MANUAL ASSIGNMENT ENHANCEMENT: Enhanced handleAssignIngredientMapping with improved article extraction priority, added additional article lookup fallback when article missing from catalog response, proper error handling and logging for article lookup operations, comprehensive product_code assignment for both manual and automated workflows. API ENDPOINT FIXES: Updated all frontend API calls from /iiko-search to /catalog-search (correct endpoint), added search_by parameter support (article, id, name), proper error handling for article lookup requests. TECHNICAL IMPLEMENTATION: Enhanced logging for debugging automapping article assignment, proper 5-digit article formatting with leading zeros, GUID detection and avoidance throughout the mapping workflow, backward compatibility with existing product_code assignments. Ready for frontend testing to validate automapping saves article (not GUID), manual assignment uses article priority, and export includes proper article values."
+
+  - task: "SRCH-02: Frontend Exact Search by Article"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "✅ SRCH-02 FRONTEND EXACT SEARCH BY ARTICLE: Already implemented in Phase 3 with regex detection ^[0-9]{4,6}$ for 4-6 digit queries, updated API calls to use correct /catalog-search endpoint with search_by=article parameter, proper article badge display 'Артикул (iiko): 0xxxx' format, enhanced search placeholder indicating article search support. Implementation uses existing Phase 3 logic but with corrected API endpoints and enhanced backend integration. Ready for frontend testing to validate exact article search functionality and proper badge display."
 
 frontend:
   - task: "P1: iiko Basic Mode UI Redesign"
