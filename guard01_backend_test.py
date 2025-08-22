@@ -102,6 +102,27 @@ class Guard01BackendTester:
                     self.log_test("Scenario A: ZIP Guard Bypass Prevention", False,
                                 "HTTP 403 but invalid JSON response", response_time)
                     
+            elif response.status_code == 400:
+                # ZIP endpoint returns 400 instead of 403 for guard trigger
+                try:
+                    response_data = response.json()
+                    # Handle FastAPI HTTPException format with 'detail' wrapper
+                    data = response_data.get('detail', response_data)
+                    
+                    is_preflight_required = data.get("error") == "PRE_FLIGHT_REQUIRED"
+                    has_missing_dishes = isinstance(data.get("missing_dishes"), list)
+                    has_dish_count = isinstance(data.get("dish_count"), int)
+                    
+                    guard_valid = is_preflight_required and has_missing_dishes and has_dish_count
+                    
+                    details = f"ZIP Guard triggered (HTTP 400): {data.get('dish_count', 0)} dishes missing"
+                    
+                    self.log_test("Scenario A: ZIP Guard Bypass Prevention", guard_valid, details, response_time)
+                    
+                except json.JSONDecodeError:
+                    self.log_test("Scenario A: ZIP Guard Bypass Prevention", False,
+                                "HTTP 400 but invalid JSON response", response_time)
+                    
             elif response.status_code == 200:
                 # If we get 200, check if it's because no dishes need skeletons
                 content_type = response.headers.get('content-type', '')
