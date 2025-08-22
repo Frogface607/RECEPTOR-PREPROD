@@ -291,6 +291,7 @@ class Phase35BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
+                print(f"DEBUG: ArticleAllocator response: {data}")  # Debug output
                 
                 if data.get("success") and data.get("allocated_articles"):
                     articles = data["allocated_articles"]
