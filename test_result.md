@@ -215,6 +215,18 @@ backend:
         agent: "testing"
         comment: "✅ SRCH-02: Backend Exact Search by Article Enhancement - FULLY OPERATIONAL (100% success rate, 32/32 tests passed) ✅ Article-First Search - Exact article matching via search_by=article operational ✅ ID Lookup Support - Article lookup by SKU ID via search_by=id for MAP-01 fallback ✅ MongoDB Integration - Proper nomenclature.num field usage confirmed ✅ Performance Excellence - 0.168s for article search (83% faster than 1.0s target) ✅ Search Enhancement - Parameter handling (name, article, id) working correctly ✅ GUID Prevention - No code/GUID values returned in article fields ✅ Backward Compatibility - Existing search functionality preserved"
 
+  - task: "GUARD-01: Backend Dish-First Export Guards"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🛡️ GUARD-01 BACKEND DISH-FIRST EXPORT GUARDS IMPLEMENTATION COMPLETED: Enhanced export endpoints with critical safety guards to prevent iiko TTK rejection when dish articles don't exist in nomenclature. ZIP EXPORT GUARD: Enhanced /export/zip endpoint with guard validation when preflight_result missing or bypassed, automatic preflight execution and PRE_FLIGHT_REQUIRED error when dishSkeletons > 0, comprehensive error response with missing dish details and required actions. TTK-ONLY EXPORT GUARD: New /export/ttk-only endpoint with strict dish validation (always runs preflight regardless of input), HTTP 403 PRE_FLIGHT_REQUIRED error when any dishes missing from RMS, detailed error response with solution guidance and preflight results. GUARD LOGIC: Prevents TTK-only files when dishes don't exist in iiko nomenclature (addresses root cause of iiko rejecting TTK imports), comprehensive logging for guard triggers and validation steps, proper error codes and messages for frontend integration. TECHNICAL IMPLEMENTATION: Integrated with existing PF-02-bind preflight orchestrator, proper async/await patterns and error handling, comprehensive guard validation before any TTK generation, maintains existing ZIP export functionality while adding protection. Ready for backend testing to validate guard triggers, error responses, and complete protection workflow preventing iiko TTK import failures."
+
   - task: "Phase 2: Minor Import/Schema Fixes"
     implemented: true
     working: true
