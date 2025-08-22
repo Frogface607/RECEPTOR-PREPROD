@@ -3920,7 +3920,7 @@ function App() {
             // MAP-01: If article missing, make additional request for article by id
             try {
               console.log(`MAP-01: Looking up article for skuId: ${suggestion.sku_id}`);
-              const response = await fetch(`${API}/v1/techcards.v2/iiko-search?q=${encodeURIComponent(suggestion.sku_id)}&search_by=id&limit=1`);
+              const response = await fetch(`${API}/v1/techcards.v2/catalog-search?q=${encodeURIComponent(suggestion.sku_id)}&search_by=id&source=iiko&limit=1`);
               const data = await response.json();
               
               if (data.status === 'success' && data.items.length > 0 && data.items[0].article) {
