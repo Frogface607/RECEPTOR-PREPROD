@@ -145,7 +145,7 @@
 
 user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)
 
-CURRENT PHASE: Phase 2 — Preflight + Dual Export (ZIP) with minimal FE - Seamless workflow for TechCard generation with automatic article allocation and dual ZIP export."
+CURRENT PHASE: Phase 3 — FE-04-min: Export to iiko (2 steps) - Complete E2E frontend integration for seamless article-first workflow with preflight orchestration and dual ZIP export."
 
 backend:
   - task: "AA-01: ArticleAllocator API Endpoints Implementation"
