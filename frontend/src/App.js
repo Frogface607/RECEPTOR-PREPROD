@@ -17807,12 +17807,34 @@ function App() {
                   )}
                   
                   {phase3ExportState === 'ready_zip' && (
-                    <button
-                      onClick={generateZipExport}
-                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
-                    >
-                      📦 Скачать ZIP
-                    </button>
+                    <div className="flex space-x-3">
+                      {/* Guard — dish-first rule: Always show ZIP download */}
+                      <button
+                        onClick={generateZipExport}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                      >
+                        📦 Скачать ZIP
+                      </button>
+                      
+                      {/* Guard — dish-first rule: Only show TTK-only if no dish skeletons needed */}
+                      {(!preflightResult || preflightResult.counts?.dishSkeletons === 0) && (
+                        <button
+                          onClick={downloadTtkOnly}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                          title="Скачать только файл ТТК (доступно когда все блюда существуют в iiko)"
+                        >
+                          📄 Только ТТК
+                        </button>
+                      )}
+                      
+                      {/* Guard — dish-first rule: Show warning when TTK-only blocked */}
+                      {preflightResult && preflightResult.counts?.dishSkeletons > 0 && (
+                        <div className="flex items-center text-yellow-400 text-sm">
+                          <span className="mr-2">⚠️</span>
+                          <span>TTK-only заблокирован: нужны скелеты блюд</span>
+                        </div>
+                      )}
+                    </div>
                   )}
                   
                   {phase3ExportState === 'error' && (
