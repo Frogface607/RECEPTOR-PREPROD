@@ -78,23 +78,44 @@ class PreflightOrchestrator:
         return []
     
     async def _process_dishes(self, techcards: List[TechCardV2], organization_id: str) -> Tuple[List[Dict], List[str]]:
-        """Process dishes and allocate missing articles"""
+        """
+        Phase 3.5: Process dishes with RMS existence check
+        
+        Logic:
+        1. For each techcard: if dish.article is empty OR doesn't exist in RMS
+        2. Try to find in iiko RMS first (by name)
+        3. If not found, allocate new article via AA-01
+        4. Add to Dish-Skeletons for export
+        """
         missing_dishes = []
         generated_articles = []
         
         for techcard in techcards:
             dish_article = getattr(techcard, 'article', None)
+            needs_skeleton = False
             
             if not dish_article:
-                # Try to find in iiko RMS first
+                # Case 1: No article at all
+                needs_skeleton = True
+                logger.info(f"Dish '{techcard.name}' has no article - needs skeleton")
+            else:
+                # Case 2: Has article but check if it exists in RMS
+                article_exists = await self._check_dish_article_in_rms(dish_article, organization_id)
+                if not article_exists:
+                    needs_skeleton = True
+                    logger.info(f"Dish '{techcard.name}' article '{dish_article}' not found in RMS - needs skeleton")
+            
+            if needs_skeleton:
+                # Try to find by name in iiko RMS first
                 found_article = await self._find_dish_in_iiko(techcard.name, organization_id)
                 
                 if found_article:
                     # Update techcard with found article
                     techcard.article = found_article
+                    logger.info(f"Found existing dish '{techcard.name}' in RMS with article '{found_article}'")
                 else:
-                    # Allocate new article
-                    entity_id = f"dish_{techcard.id}"
+                    # Allocate new article via AA-01
+                    entity_id = f"dish_{getattr(techcard, 'id', techcard.name.replace(' ', '_'))}"
                     allocated_articles = self.allocator.allocate_articles(
                         article_type=ArticleType.DISH,
                         count=1,
@@ -114,13 +135,15 @@ class PreflightOrchestrator:
                             yield_value = getattr(techcard.yield_, 'perPortion_g', 200)
                         
                         missing_dishes.append({
-                            "id": techcard.id,
+                            "id": getattr(techcard, 'id', entity_id),
                             "name": techcard.name,
                             "article": new_article,
                             "type": "dish",
                             "unit": "порц",
                             "yield": yield_value
                         })
+                        
+                        logger.info(f"Generated new article '{new_article}' for dish '{techcard.name}'")
         
         return missing_dishes, generated_articles
     
