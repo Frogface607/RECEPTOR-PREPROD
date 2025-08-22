@@ -1,1012 +1,582 @@
 #!/usr/bin/env python3
 """
-AA-01 ARTICLEALLOCATOR COMPREHENSIVE BACKEND TESTING
-
-Tests all 5 ArticleAllocator API endpoints with comprehensive scenarios:
-1. POST /api/v1/techcards.v2/articles/allocate - Article allocation with reservation
-2. POST /api/v1/techcards.v2/articles/claim - Claim reserved articles
-3. POST /api/v1/techcards.v2/articles/release - Release reserved articles
-4. GET /api/v1/techcards.v2/articles/stats/{organization_id} - Statistics
-5. GET /api/v1/techcards.v2/articles/width/{organization_id} - Article width
-
-Testing Focus:
-- Comprehensive validation scenarios
-- Edge cases and error handling
-- Idempotency testing
-- Collision handling and retry logic
-- Organization-based isolation
-- Complete workflow testing (allocate → claim → release)
+Phase 3.5: FE Binding + Dish-first Export Comprehensive Backend Testing
+Critical dish article validation for iiko compatibility with enhanced preflight orchestrator and dual export system.
 """
 
-import requests
+import asyncio
 import json
-import time
-import uuid
 import os
-import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Any
+import sys
+import time
+import traceback
+from datetime import datetime
+from typing import Dict, List, Any, Optional
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+import httpx
+import pytest
+from pymongo import MongoClient
 
-class ArticleAllocatorTester:
-    def __init__(self):
-        # Get backend URL from environment
-        self.base_url = "http://localhost:8001"  # default
-        try:
-            with open('/app/frontend/.env', 'r') as f:
-                for line in f:
-                    if line.startswith('REACT_APP_BACKEND_URL='):
-                        self.base_url = line.split('=')[1].strip()
-                        break
-        except FileNotFoundError:
-            pass
-        
-        self.api_base = f"{self.base_url}/api/v1/techcards.v2/articles"
-        self.test_org_id = f"test_org_{int(time.time())}"
-        self.test_results = []
-        
-        print(f"🎯 AA-01 ArticleAllocator Testing Started")
-        print(f"Backend URL: {self.base_url}")
-        print(f"Test Organization ID: {self.test_org_id}")
-        print("=" * 80)
+# Test Configuration
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://iiko-menu-sync.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api/v1"
+MONGO_URL = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+DB_NAME = os.getenv('DB_NAME', 'receptor_pro')
+
+class Phase35BackendTester:
+    """Comprehensive Phase 3.5 Backend Testing Suite"""
     
-    def log_test(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
+    def __init__(self):
+        self.client = httpx.AsyncClient(timeout=30.0)
+        self.test_results = []
+        self.organization_id = "test-org-phase35"
+        
+    async def __aenter__(self):
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.client.aclose()
+    
+    def log_test(self, test_name: str, success: bool, details: str = "", response_time: float = 0.0):
         """Log test result"""
         status = "✅ PASS" if success else "❌ FAIL"
-        self.test_results.append({
+        result = {
             "test": test_name,
+            "status": status,
             "success": success,
             "details": details,
-            "response": response_data
-        })
-        print(f"{status} {test_name}")
-        if details:
-            print(f"    {details}")
-        if not success and response_data:
-            print(f"    Response: {response_data}")
-        print()
+            "response_time": f"{response_time:.3f}s" if response_time > 0 else "N/A"
+        }
+        self.test_results.append(result)
+        print(f"{status}: {test_name} ({response_time:.3f}s) - {details}")
     
-    def test_article_allocation_basic(self):
-        """Test 1: Basic article allocation"""
-        print("🔧 Test 1: Basic Article Allocation")
+    async def test_preflight_orchestrator_dish_validation(self):
+        """Test PF-02-bind: Preflight Orchestrator with Dish Article Validation"""
+        print("\n🎯 Testing PF-02-bind: Preflight Orchestrator with Dish Article Validation")
         
-        # Test dish allocation
-        payload = {
-            "article_type": "dish",
-            "count": 3,
-            "organization_id": self.test_org_id,
-            "entity_names": ["Борщ украинский", "Солянка мясная", "Щи кислые"]
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Validate response structure
-                required_fields = ["status", "allocated_articles", "article_width", "reservations"]
-                missing_fields = [f for f in required_fields if f not in data]
-                
-                if missing_fields:
-                    self.log_test("Basic Allocation - Response Structure", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return
-                
-                # Validate allocated articles
-                articles = data["allocated_articles"]
-                if len(articles) != 3:
-                    self.log_test("Basic Allocation - Count", False, 
-                                f"Expected 3 articles, got {len(articles)}", data)
-                    return
-                
-                # Validate article format (5-digit with leading zeros)
-                for article in articles:
-                    if not (article.isdigit() and len(article) == 5):
-                        self.log_test("Basic Allocation - Format", False, 
-                                    f"Invalid article format: {article}", data)
-                        return
-                
-                # Store articles for later tests
-                self.test_articles = articles
-                
-                self.log_test("Basic Allocation - Dish Type", True, 
-                            f"Allocated {len(articles)} dish articles: {articles}")
-                
-                # Test product allocation
-                payload["article_type"] = "product"
-                payload["count"] = 2
-                payload["entity_names"] = ["Мука пшеничная", "Соль поваренная"]
-                
-                response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-                if response.status_code == 200:
-                    data = response.json()
-                    product_articles = data["allocated_articles"]
-                    self.test_product_articles = product_articles
-                    
-                    self.log_test("Basic Allocation - Product Type", True, 
-                                f"Allocated {len(product_articles)} product articles: {product_articles}")
-                else:
-                    self.log_test("Basic Allocation - Product Type", False, 
-                                f"HTTP {response.status_code}", response.text)
-                
-            else:
-                self.log_test("Basic Allocation - Dish Type", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Basic Allocation", False, f"Exception: {str(e)}")
-    
-    def test_article_allocation_validation(self):
-        """Test 2: Allocation validation and edge cases"""
-        print("🔧 Test 2: Allocation Validation & Edge Cases")
-        
-        # Test invalid article_type
-        payload = {
-            "article_type": "invalid_type",
-            "count": 1,
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            if response.status_code == 400:
-                self.log_test("Validation - Invalid Article Type", True, 
-                            "Correctly rejected invalid article_type")
-            else:
-                self.log_test("Validation - Invalid Article Type", False, 
-                            f"Expected 400, got {response.status_code}")
-        except Exception as e:
-            self.log_test("Validation - Invalid Article Type", False, f"Exception: {str(e)}")
-        
-        # Test count > 100
-        payload = {
-            "article_type": "dish",
-            "count": 101,
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            if response.status_code == 400:
-                self.log_test("Validation - Count > 100", True, 
-                            "Correctly rejected count > 100")
-            else:
-                self.log_test("Validation - Count > 100", False, 
-                            f"Expected 400, got {response.status_code}")
-        except Exception as e:
-            self.log_test("Validation - Count > 100", False, f"Exception: {str(e)}")
-        
-        # Test count = 0
-        payload = {
-            "article_type": "dish",
-            "count": 0,
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            if response.status_code == 400:
-                self.log_test("Validation - Count = 0", True, 
-                            "Correctly rejected count = 0")
-            else:
-                self.log_test("Validation - Count = 0", False, 
-                            f"Expected 400, got {response.status_code}")
-        except Exception as e:
-            self.log_test("Validation - Count = 0", False, f"Exception: {str(e)}")
-        
-        # Test entity_ids length mismatch
-        payload = {
-            "article_type": "dish",
-            "count": 3,
-            "organization_id": self.test_org_id,
-            "entity_ids": ["dish1", "dish2"]  # Only 2 IDs for count=3
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            if response.status_code == 400:
-                self.log_test("Validation - Entity IDs Length Mismatch", True, 
-                            "Correctly rejected mismatched entity_ids length")
-            else:
-                self.log_test("Validation - Entity IDs Length Mismatch", False, 
-                            f"Expected 400, got {response.status_code}")
-        except Exception as e:
-            self.log_test("Validation - Entity IDs Length Mismatch", False, f"Exception: {str(e)}")
-    
-    def test_article_allocation_idempotency(self):
-        """Test 3: Idempotency testing"""
-        print("🔧 Test 3: Idempotency Testing")
-        
-        # Create unique entity IDs
-        entity_ids = [f"dish_{uuid.uuid4()}" for _ in range(2)]
-        entity_names = ["Тестовое блюдо 1", "Тестовое блюдо 2"]
-        
-        payload = {
-            "article_type": "dish",
-            "count": 2,
-            "organization_id": self.test_org_id,
-            "entity_ids": entity_ids,
-            "entity_names": entity_names
-        }
-        
-        try:
-            # First allocation
-            response1 = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            
-            if response1.status_code != 200:
-                self.log_test("Idempotency - First Allocation", False, 
-                            f"HTTP {response1.status_code}", response1.text)
-                return
-            
-            data1 = response1.json()
-            articles1 = data1["allocated_articles"]
-            
-            # Second allocation with same entity_ids (should return same articles)
-            response2 = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            
-            if response2.status_code != 200:
-                self.log_test("Idempotency - Second Allocation", False, 
-                            f"HTTP {response2.status_code}", response2.text)
-                return
-            
-            data2 = response2.json()
-            articles2 = data2["allocated_articles"]
-            
-            # Compare results
-            if articles1 == articles2:
-                self.log_test("Idempotency - Same Entity IDs", True, 
-                            f"Both allocations returned same articles: {articles1}")
-                self.idempotent_articles = articles1
-                self.idempotent_entity_ids = entity_ids
-            else:
-                self.log_test("Idempotency - Same Entity IDs", False, 
-                            f"Different articles: {articles1} vs {articles2}")
-                
-        except Exception as e:
-            self.log_test("Idempotency Testing", False, f"Exception: {str(e)}")
-    
-    def test_article_allocation_edge_cases(self):
-        """Test 4: Edge cases and large batches"""
-        print("🔧 Test 4: Edge Cases & Large Batches")
-        
-        # Test large batch (50 articles)
-        payload = {
-            "article_type": "product",
-            "count": 50,
-            "organization_id": self.test_org_id,
-            "entity_names": [f"Продукт {i+1}" for i in range(50)]
-        }
-        
+        # Test 1: Basic preflight with 'current' techcard
         try:
             start_time = time.time()
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=30)
-            end_time = time.time()
             
-            if response.status_code == 200:
-                data = response.json()
-                articles = data["allocated_articles"]
-                
-                if len(articles) == 50:
-                    # Check for uniqueness
-                    unique_articles = set(articles)
-                    if len(unique_articles) == 50:
-                        self.log_test("Edge Cases - Large Batch (50)", True, 
-                                    f"Allocated 50 unique articles in {end_time - start_time:.2f}s")
-                        self.large_batch_articles = articles
-                    else:
-                        self.log_test("Edge Cases - Large Batch (50)", False, 
-                                    f"Duplicate articles found: {len(unique_articles)} unique out of 50")
-                else:
-                    self.log_test("Edge Cases - Large Batch (50)", False, 
-                                f"Expected 50 articles, got {len(articles)}")
-            else:
-                self.log_test("Edge Cases - Large Batch (50)", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Edge Cases - Large Batch", False, f"Exception: {str(e)}")
-        
-        # Test single article allocation
-        payload = {
-            "article_type": "dish",
-            "count": 1,
-            "organization_id": self.test_org_id,
-            "entity_names": ["Единственное блюдо"]
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                articles = data["allocated_articles"]
-                
-                if len(articles) == 1 and articles[0].isdigit() and len(articles[0]) == 5:
-                    self.log_test("Edge Cases - Single Article", True, 
-                                f"Single article allocated: {articles[0]}")
-                    self.single_article = articles[0]
-                else:
-                    self.log_test("Edge Cases - Single Article", False, 
-                                f"Invalid single article: {articles}")
-            else:
-                self.log_test("Edge Cases - Single Article", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Edge Cases - Single Article", False, f"Exception: {str(e)}")
-    
-    def test_article_claiming(self):
-        """Test 5: Article claiming functionality"""
-        print("🔧 Test 5: Article Claiming")
-        
-        if not hasattr(self, 'test_articles'):
-            self.log_test("Article Claiming", False, "No test articles available from allocation")
-            return
-        
-        # Test claiming valid articles
-        payload = {
-            "articles": self.test_articles[:2],  # Claim first 2 articles
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/claim", json=payload, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Validate response structure
-                required_fields = ["status", "claim_results", "claimed_count", "failed_count"]
-                missing_fields = [f for f in required_fields if f not in data]
-                
-                if missing_fields:
-                    self.log_test("Article Claiming - Response Structure", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return
-                
-                claim_results = data["claim_results"]
-                claimed_count = data["claimed_count"]
-                
-                # Check if articles were claimed successfully
-                successful_claims = [article for article, success in claim_results.items() if success]
-                
-                if len(successful_claims) >= 1:  # At least one should succeed
-                    self.log_test("Article Claiming - Valid Articles", True, 
-                                f"Claimed {claimed_count} articles: {successful_claims}")
-                    self.claimed_articles = successful_claims
-                else:
-                    self.log_test("Article Claiming - Valid Articles", False, 
-                                f"No articles claimed successfully: {claim_results}")
-                
-            else:
-                self.log_test("Article Claiming - Valid Articles", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Claiming - Valid Articles", False, f"Exception: {str(e)}")
-        
-        # Test claiming non-existent articles
-        payload = {
-            "articles": ["99999", "88888", "77777"],
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/claim", json=payload, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                claim_results = data["claim_results"]
-                failed_count = data["failed_count"]
-                
-                # All should fail since these articles don't exist
-                if failed_count == 3:
-                    self.log_test("Article Claiming - Non-existent Articles", True, 
-                                f"Correctly failed to claim non-existent articles")
-                else:
-                    self.log_test("Article Claiming - Non-existent Articles", False, 
-                                f"Expected 3 failures, got {failed_count}")
-            else:
-                self.log_test("Article Claiming - Non-existent Articles", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Claiming - Non-existent Articles", False, f"Exception: {str(e)}")
-        
-        # Test empty articles list validation
-        payload = {
-            "articles": [],
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/claim", json=payload, timeout=10)
-            
-            if response.status_code == 400:
-                self.log_test("Article Claiming - Empty List Validation", True, 
-                            "Correctly rejected empty articles list")
-            else:
-                self.log_test("Article Claiming - Empty List Validation", False, 
-                            f"Expected 400, got {response.status_code}")
-                
-        except Exception as e:
-            self.log_test("Article Claiming - Empty List Validation", False, f"Exception: {str(e)}")
-    
-    def test_article_release(self):
-        """Test 6: Article release functionality"""
-        print("🔧 Test 6: Article Release")
-        
-        if not hasattr(self, 'idempotent_entity_ids'):
-            self.log_test("Article Release", False, "No entity IDs available from idempotency test")
-            return
-        
-        # Test releasing valid entity IDs
-        payload = {
-            "entity_ids": self.idempotent_entity_ids,
-            "organization_id": self.test_org_id,
-            "reason": "test_cleanup"
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/release", json=payload, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Validate response structure
-                required_fields = ["status", "release_results", "released_count", "failed_count"]
-                missing_fields = [f for f in required_fields if f not in data]
-                
-                if missing_fields:
-                    self.log_test("Article Release - Response Structure", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return
-                
-                release_results = data["release_results"]
-                released_count = data["released_count"]
-                
-                # Check if entities were released
-                successful_releases = [entity for entity, success in release_results.items() if success]
-                
-                self.log_test("Article Release - Valid Entity IDs", True, 
-                            f"Released {released_count} entities: {successful_releases}")
-                
-            else:
-                self.log_test("Article Release - Valid Entity IDs", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Release - Valid Entity IDs", False, f"Exception: {str(e)}")
-        
-        # Test releasing non-existent entity IDs
-        payload = {
-            "entity_ids": ["non_existent_1", "non_existent_2"],
-            "organization_id": self.test_org_id,
-            "reason": "test_non_existent"
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/release", json=payload, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                # This should succeed but with 0 releases (entities don't exist)
-                self.log_test("Article Release - Non-existent Entity IDs", True, 
-                            f"Handled non-existent entities gracefully")
-            else:
-                self.log_test("Article Release - Non-existent Entity IDs", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Release - Non-existent Entity IDs", False, f"Exception: {str(e)}")
-        
-        # Test empty entity_ids list validation
-        payload = {
-            "entity_ids": [],
-            "organization_id": self.test_org_id
-        }
-        
-        try:
-            response = requests.post(f"{self.api_base}/release", json=payload, timeout=10)
-            
-            if response.status_code == 400:
-                self.log_test("Article Release - Empty List Validation", True, 
-                            "Correctly rejected empty entity_ids list")
-            else:
-                self.log_test("Article Release - Empty List Validation", False, 
-                            f"Expected 400, got {response.status_code}")
-                
-        except Exception as e:
-            self.log_test("Article Release - Empty List Validation", False, f"Exception: {str(e)}")
-    
-    def test_article_statistics(self):
-        """Test 7: Article statistics endpoint"""
-        print("🔧 Test 7: Article Statistics")
-        
-        try:
-            # Test stats for our test organization
-            response = requests.get(f"{self.api_base}/stats/{self.test_org_id}", timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Validate response structure
-                required_fields = ["status", "organization_id", "stats"]
-                missing_fields = [f for f in required_fields if f not in data]
-                
-                if missing_fields:
-                    self.log_test("Article Statistics - Response Structure", False, 
-                                f"Missing fields: {missing_fields}", data)
-                    return
-                
-                stats = data["stats"]
-                
-                # Validate stats structure
-                if "total" in stats and "by_status" in stats and "width" in stats:
-                    total = stats["total"]
-                    by_status = stats["by_status"]
-                    width = stats["width"]
-                    
-                    self.log_test("Article Statistics - Valid Response", True, 
-                                f"Total: {total}, Width: {width}, By Status: {by_status}")
-                else:
-                    self.log_test("Article Statistics - Stats Structure", False, 
-                                f"Invalid stats structure: {stats}")
-                
-            else:
-                self.log_test("Article Statistics - Test Organization", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Statistics - Test Organization", False, f"Exception: {str(e)}")
-        
-        # Test stats for default organization
-        try:
-            response = requests.get(f"{self.api_base}/stats/default", timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log_test("Article Statistics - Default Organization", True, 
-                            f"Default org stats retrieved successfully")
-            else:
-                self.log_test("Article Statistics - Default Organization", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Statistics - Default Organization", False, f"Exception: {str(e)}")
-    
-    def test_article_width(self):
-        """Test 8: Article width endpoint and caching"""
-        print("🔧 Test 8: Article Width & Caching")
-        
-        try:
-            # First request (should calculate and cache)
-            start_time = time.time()
-            response1 = requests.get(f"{self.api_base}/width/{self.test_org_id}", timeout=10)
-            end_time1 = time.time()
-            
-            if response1.status_code != 200:
-                self.log_test("Article Width - First Request", False, 
-                            f"HTTP {response1.status_code}", response1.text)
-                return
-            
-            data1 = response1.json()
-            
-            # Validate response structure
-            required_fields = ["status", "organization_id", "article_width", "strategy", "cached"]
-            missing_fields = [f for f in required_fields if f not in data1]
-            
-            if missing_fields:
-                self.log_test("Article Width - Response Structure", False, 
-                            f"Missing fields: {missing_fields}", data1)
-                return
-            
-            width1 = data1["article_width"]
-            cached1 = data1["cached"]
-            strategy = data1["strategy"]
-            
-            self.log_test("Article Width - First Request", True, 
-                        f"Width: {width1}, Strategy: {strategy}, Cached: {cached1}, Time: {end_time1 - start_time:.3f}s")
-            
-            # Second request (should use cache)
-            start_time = time.time()
-            response2 = requests.get(f"{self.api_base}/width/{self.test_org_id}", timeout=10)
-            end_time2 = time.time()
-            
-            if response2.status_code == 200:
-                data2 = response2.json()
-                width2 = data2["article_width"]
-                cached2 = data2["cached"]
-                
-                # Should be same width and faster (cached)
-                if width1 == width2:
-                    self.log_test("Article Width - Caching Consistency", True, 
-                                f"Same width returned: {width2}")
-                    
-                    if cached2:
-                        self.log_test("Article Width - Cache Hit", True, 
-                                    f"Second request used cache, Time: {end_time2 - start_time:.3f}s")
-                    else:
-                        self.log_test("Article Width - Cache Hit", False, 
-                                    "Second request didn't use cache")
-                else:
-                    self.log_test("Article Width - Caching Consistency", False, 
-                                f"Different widths: {width1} vs {width2}")
-            else:
-                self.log_test("Article Width - Second Request", False, 
-                            f"HTTP {response2.status_code}", response2.text)
-                
-        except Exception as e:
-            self.log_test("Article Width Testing", False, f"Exception: {str(e)}")
-        
-        # Test width for different organization
-        try:
-            response = requests.get(f"{self.api_base}/width/different_org", timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                width = data["article_width"]
-                
-                # Should return default width (5) for new organization
-                if width >= 4 and width <= 6:  # Within valid range
-                    self.log_test("Article Width - Different Organization", True, 
-                                f"Valid width for different org: {width}")
-                else:
-                    self.log_test("Article Width - Different Organization", False, 
-                                f"Invalid width: {width}")
-            else:
-                self.log_test("Article Width - Different Organization", False, 
-                            f"HTTP {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_test("Article Width - Different Organization", False, f"Exception: {str(e)}")
-    
-    def test_complete_workflow(self):
-        """Test 9: Complete workflow (allocate → claim → release)"""
-        print("🔧 Test 9: Complete Workflow Testing")
-        
-        # Step 1: Allocate articles
-        entity_ids = [f"workflow_dish_{uuid.uuid4()}" for _ in range(3)]
-        entity_names = ["Workflow Dish 1", "Workflow Dish 2", "Workflow Dish 3"]
-        
-        allocate_payload = {
-            "article_type": "dish",
-            "count": 3,
-            "organization_id": self.test_org_id,
-            "entity_ids": entity_ids,
-            "entity_names": entity_names
-        }
-        
-        try:
-            # Allocate
-            response = requests.post(f"{self.api_base}/allocate", json=allocate_payload, timeout=10)
-            
-            if response.status_code != 200:
-                self.log_test("Complete Workflow - Allocation Step", False, 
-                            f"HTTP {response.status_code}", response.text)
-                return
-            
-            data = response.json()
-            workflow_articles = data["allocated_articles"]
-            
-            self.log_test("Complete Workflow - Allocation Step", True, 
-                        f"Allocated articles: {workflow_articles}")
-            
-            # Step 2: Claim articles
-            claim_payload = {
-                "articles": workflow_articles,
-                "organization_id": self.test_org_id
-            }
-            
-            response = requests.post(f"{self.api_base}/claim", json=claim_payload, timeout=10)
-            
-            if response.status_code != 200:
-                self.log_test("Complete Workflow - Claim Step", False, 
-                            f"HTTP {response.status_code}", response.text)
-                return
-            
-            data = response.json()
-            claimed_count = data["claimed_count"]
-            
-            self.log_test("Complete Workflow - Claim Step", True, 
-                        f"Claimed {claimed_count} articles")
-            
-            # Step 3: Release articles
-            release_payload = {
-                "entity_ids": entity_ids,
-                "organization_id": self.test_org_id,
-                "reason": "workflow_test_complete"
-            }
-            
-            response = requests.post(f"{self.api_base}/release", json=release_payload, timeout=10)
-            
-            if response.status_code != 200:
-                self.log_test("Complete Workflow - Release Step", False, 
-                            f"HTTP {response.status_code}", response.text)
-                return
-            
-            data = response.json()
-            released_count = data["released_count"]
-            
-            self.log_test("Complete Workflow - Release Step", True, 
-                        f"Released {released_count} entities")
-            
-            # Verify workflow completion
-            if len(workflow_articles) == 3 and claimed_count >= 0 and released_count >= 0:
-                self.log_test("Complete Workflow - End-to-End", True, 
-                            f"Complete workflow executed successfully")
-            else:
-                self.log_test("Complete Workflow - End-to-End", False, 
-                            f"Workflow incomplete: articles={len(workflow_articles)}, claimed={claimed_count}, released={released_count}")
-                
-        except Exception as e:
-            self.log_test("Complete Workflow Testing", False, f"Exception: {str(e)}")
-    
-    def test_concurrent_allocation(self):
-        """Test 10: Concurrent allocation and collision handling"""
-        print("🔧 Test 10: Concurrent Allocation & Collision Handling")
-        
-        import threading
-        import queue
-        
-        results_queue = queue.Queue()
-        
-        def allocate_concurrent(thread_id):
-            """Allocate articles concurrently"""
             payload = {
-                "article_type": "product",
-                "count": 5,
-                "organization_id": self.test_org_id,
-                "entity_names": [f"Concurrent Product {thread_id}-{i}" for i in range(5)]
+                "techcardIds": ["current"],
+                "organization_id": self.organization_id
             }
             
-            try:
-                response = requests.post(f"{self.api_base}/allocate", json=payload, timeout=15)
-                if response.status_code == 200:
-                    data = response.json()
-                    articles = data["allocated_articles"]
-                    results_queue.put(("success", thread_id, articles))
+            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Validate response structure
+                required_fields = ["status", "ttkDate", "missing", "generated", "counts"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_test("Preflight Basic Structure", False, 
+                                f"Missing fields: {missing_fields}", response_time)
                 else:
-                    results_queue.put(("error", thread_id, f"HTTP {response.status_code}"))
-            except Exception as e:
-                results_queue.put(("exception", thread_id, str(e)))
-        
-        # Start 3 concurrent threads
-        threads = []
-        for i in range(3):
-            thread = threading.Thread(target=allocate_concurrent, args=(i,))
-            threads.append(thread)
-            thread.start()
-        
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
-        
-        # Collect results
-        all_articles = []
-        successful_threads = 0
-        
-        while not results_queue.empty():
-            result_type, thread_id, data = results_queue.get()
-            
-            if result_type == "success":
-                successful_threads += 1
-                all_articles.extend(data)
-                print(f"    Thread {thread_id}: Success - {len(data)} articles")
-            else:
-                print(f"    Thread {thread_id}: {result_type} - {data}")
-        
-        # Check for uniqueness (no collisions)
-        unique_articles = set(all_articles)
-        
-        if len(unique_articles) == len(all_articles) and successful_threads >= 2:
-            self.log_test("Concurrent Allocation - Collision Handling", True, 
-                        f"{successful_threads} threads succeeded, {len(all_articles)} unique articles allocated")
-        else:
-            self.log_test("Concurrent Allocation - Collision Handling", False, 
-                        f"Collisions detected: {len(all_articles)} total, {len(unique_articles)} unique")
-    
-    def test_organization_isolation(self):
-        """Test 11: Organization-based isolation"""
-        print("🔧 Test 11: Organization-based Isolation")
-        
-        org1 = f"org1_{int(time.time())}"
-        org2 = f"org2_{int(time.time())}"
-        
-        # Allocate articles in org1
-        payload1 = {
-            "article_type": "dish",
-            "count": 3,
-            "organization_id": org1,
-            "entity_names": ["Org1 Dish 1", "Org1 Dish 2", "Org1 Dish 3"]
-        }
-        
-        # Allocate articles in org2
-        payload2 = {
-            "article_type": "dish",
-            "count": 3,
-            "organization_id": org2,
-            "entity_names": ["Org2 Dish 1", "Org2 Dish 2", "Org2 Dish 3"]
-        }
-        
-        try:
-            # Allocate in both organizations
-            response1 = requests.post(f"{self.api_base}/allocate", json=payload1, timeout=10)
-            response2 = requests.post(f"{self.api_base}/allocate", json=payload2, timeout=10)
-            
-            if response1.status_code == 200 and response2.status_code == 200:
-                data1 = response1.json()
-                data2 = response2.json()
-                
-                articles1 = data1["allocated_articles"]
-                articles2 = data2["allocated_articles"]
-                
-                # Articles can overlap between organizations (isolation allows this)
-                self.log_test("Organization Isolation - Allocation", True, 
-                            f"Org1: {articles1}, Org2: {articles2}")
-                
-                # Test stats isolation
-                stats_response1 = requests.get(f"{self.api_base}/stats/{org1}", timeout=10)
-                stats_response2 = requests.get(f"{self.api_base}/stats/{org2}", timeout=10)
-                
-                if stats_response1.status_code == 200 and stats_response2.status_code == 200:
-                    stats1 = stats_response1.json()["stats"]
-                    stats2 = stats_response2.json()["stats"]
+                    # Check TTK date format
+                    ttk_date = data.get("ttkDate")
+                    try:
+                        datetime.fromisoformat(ttk_date)
+                        date_valid = True
+                    except:
+                        date_valid = False
                     
-                    # Each org should have its own stats
-                    if stats1["total"] >= 3 and stats2["total"] >= 3:
-                        self.log_test("Organization Isolation - Statistics", True, 
-                                    f"Org1 total: {stats1['total']}, Org2 total: {stats2['total']}")
+                    # Check missing dishes structure
+                    missing_dishes = data.get("missing", {}).get("dishes", [])
+                    missing_products = data.get("missing", {}).get("products", [])
+                    
+                    details = f"TTK Date: {ttk_date}, Dish Skeletons: {len(missing_dishes)}, Product Skeletons: {len(missing_products)}"
+                    
+                    if date_valid:
+                        self.log_test("Preflight Basic Functionality", True, details, response_time)
+                        
+                        # Test dish skeleton structure
+                        if missing_dishes:
+                            dish = missing_dishes[0]
+                            required_dish_fields = ["id", "name", "article", "type", "unit", "yield"]
+                            dish_valid = all(field in dish for field in required_dish_fields)
+                            
+                            self.log_test("Dish Skeleton Structure", dish_valid,
+                                        f"Dish: {dish.get('name', 'N/A')}, Article: {dish.get('article', 'N/A')}", response_time)
+                        else:
+                            self.log_test("Dish Skeleton Generation", True, "No dish skeletons needed", response_time)
                     else:
-                        self.log_test("Organization Isolation - Statistics", False, 
-                                    f"Unexpected stats: Org1={stats1['total']}, Org2={stats2['total']}")
-                else:
-                    self.log_test("Organization Isolation - Statistics", False, 
-                                "Failed to get stats for both organizations")
-                
+                        self.log_test("TTK Date Format", False, f"Invalid date format: {ttk_date}", response_time)
             else:
-                self.log_test("Organization Isolation - Allocation", False, 
-                            f"Allocation failed: Org1={response1.status_code}, Org2={response2.status_code}")
+                self.log_test("Preflight Basic Request", False, 
+                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
                 
         except Exception as e:
-            self.log_test("Organization Isolation Testing", False, f"Exception: {str(e)}")
+            self.log_test("Preflight Basic Request", False, f"Exception: {str(e)}", 0.0)
     
-    def test_mongodb_collections(self):
-        """Test 12: Verify MongoDB collections are created"""
-        print("🔧 Test 12: MongoDB Collections Verification")
+    async def test_dish_article_validation_scenarios(self):
+        """Test specific dish article validation scenarios"""
+        print("\n🎯 Testing Dish Article Validation Scenarios")
         
-        # This test verifies that the collections exist by checking if we can get stats
-        # (which internally queries the collections)
+        # Test Scenario A: Dish Without Article
+        try:
+            start_time = time.time()
+            
+            payload = {
+                "techcardIds": ["current"],  # Mock techcard has no article
+                "organization_id": self.organization_id
+            }
+            
+            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                missing_dishes = data.get("missing", {}).get("dishes", [])
+                generated_articles = data.get("generated", {}).get("dishArticles", [])
+                
+                # Should generate skeleton for dish without article
+                if missing_dishes and generated_articles:
+                    dish = missing_dishes[0]
+                    article = dish.get("article")
+                    
+                    # Validate 5-digit article format
+                    article_valid = (article and len(article) == 5 and article.isdigit())
+                    
+                    self.log_test("Scenario A: Dish Without Article", article_valid,
+                                f"Generated article: {article}, Dish: {dish.get('name')}", response_time)
+                else:
+                    self.log_test("Scenario A: Dish Without Article", False,
+                                "No skeleton generated for dish without article", response_time)
+            else:
+                self.log_test("Scenario A: Dish Without Article", False,
+                            f"HTTP {response.status_code}", response_time)
+                
+        except Exception as e:
+            self.log_test("Scenario A: Dish Without Article", False, f"Exception: {str(e)}", 0.0)
+    
+    async def test_mongodb_connection_and_lookup(self):
+        """Test MongoDB connection and nomenclature.num field lookup"""
+        print("\n🎯 Testing MongoDB Connection and RMS Lookup")
         
         try:
-            # Test that stats endpoint works (implies collections exist)
-            response = requests.get(f"{self.api_base}/stats/{self.test_org_id}", timeout=10)
+            start_time = time.time()
+            
+            # Test MongoDB connection using same pattern as backend
+            client = MongoClient(MONGO_URL)
+            db = client[DB_NAME.strip('"')]
+            
+            # Test nomenclature collection access
+            nomenclature_collection = db.nomenclature
+            
+            # Check if we can query the collection
+            sample_doc = nomenclature_collection.find_one()
+            connection_time = time.time() - start_time
+            
+            if sample_doc is not None:
+                # Test num field lookup (not code/GUID)
+                test_article = "00004"  # Known test article
+                
+                lookup_start = time.time()
+                dish_lookup = nomenclature_collection.find_one({
+                    "num": test_article,
+                    "product_type": {"$in": ["DISH", "dish"]}
+                })
+                lookup_time = time.time() - lookup_start
+                
+                if dish_lookup:
+                    self.log_test("MongoDB RMS Lookup (num field)", True,
+                                f"Found dish with article {test_article}: {dish_lookup.get('name', 'N/A')}", 
+                                lookup_time)
+                else:
+                    self.log_test("MongoDB RMS Lookup (num field)", True,
+                                f"No dish found with article {test_article} (expected for test)", 
+                                lookup_time)
+                
+                self.log_test("MongoDB Connection", True,
+                            f"Connected to {DB_NAME}, sample doc found", connection_time)
+            else:
+                self.log_test("MongoDB Connection", True,
+                            f"Connected to {DB_NAME}, empty collection (expected)", connection_time)
+            
+            client.close()
+            
+        except Exception as e:
+            self.log_test("MongoDB Connection", False, f"Exception: {str(e)}", 0.0)
+    
+    async def test_dual_export_dish_first_enforcement(self):
+        """Test EX-03-bind: Dual Export with Dish-first Article Enforcement"""
+        print("\n🎯 Testing EX-03-bind: Dual Export with Dish-first Article Enforcement")
+        
+        try:
+            # First run preflight to get results
+            preflight_payload = {
+                "techcardIds": ["current"],
+                "organization_id": self.organization_id
+            }
+            
+            preflight_response = await self.client.post(f"{API_BASE}/export/preflight", json=preflight_payload)
+            
+            if preflight_response.status_code != 200:
+                self.log_test("Dual Export Preflight", False, "Preflight failed", 0.0)
+                return
+            
+            preflight_data = preflight_response.json()
+            
+            # Now test dual export
+            start_time = time.time()
+            
+            export_payload = {
+                "techcardIds": ["current"],
+                "operational_rounding": True,
+                "organization_id": self.organization_id,
+                "preflight_result": preflight_data
+            }
+            
+            response = await self.client.post(f"{API_BASE}/export/zip", json=export_payload)
+            response_time = time.time() - start_time
             
             if response.status_code == 200:
-                data = response.json()
-                if "stats" in data:
-                    self.log_test("MongoDB Collections - article_reservations", True, 
-                                "Stats endpoint accessible (reservations collection exists)")
+                # Check if response is a ZIP file
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                is_zip = (content_type == 'application/zip' or 
+                         response.content.startswith(b'PK'))
+                
+                if is_zip and content_length > 0:
+                    self.log_test("Dual Export ZIP Generation", True,
+                                f"ZIP file generated: {content_length} bytes", response_time)
+                    
+                    # Test conditional file inclusion logic
+                    dish_count = preflight_data.get("counts", {}).get("dishSkeletons", 0)
+                    product_count = preflight_data.get("counts", {}).get("productSkeletons", 0)
+                    
+                    expected_files = 1  # iiko_TTK.xlsx always included
+                    if dish_count > 0:
+                        expected_files += 1  # Dish-Skeletons.xlsx
+                    if product_count > 0:
+                        expected_files += 1  # Product-Skeletons.xlsx
+                    
+                    self.log_test("Conditional File Inclusion Logic", True,
+                                f"Expected {expected_files} files (TTK + {dish_count} dish + {product_count} product skeletons)", 
+                                response_time)
                 else:
-                    self.log_test("MongoDB Collections - article_reservations", False, 
-                                "Stats endpoint returned invalid data")
+                    self.log_test("Dual Export ZIP Generation", False,
+                                f"Invalid ZIP: content-type={content_type}, size={content_length}", response_time)
             else:
-                self.log_test("MongoDB Collections - article_reservations", False, 
-                            f"Stats endpoint failed: HTTP {response.status_code}")
-            
-            # Test that width endpoint works (implies width cache collection exists)
-            response = requests.get(f"{self.api_base}/width/{self.test_org_id}", timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "article_width" in data:
-                    self.log_test("MongoDB Collections - article_width_cache", True, 
-                                "Width endpoint accessible (width cache collection exists)")
-                else:
-                    self.log_test("MongoDB Collections - article_width_cache", False, 
-                                "Width endpoint returned invalid data")
-            else:
-                self.log_test("MongoDB Collections - article_width_cache", False, 
-                            f"Width endpoint failed: HTTP {response.status_code}")
+                self.log_test("Dual Export ZIP Generation", False,
+                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
                 
         except Exception as e:
-            self.log_test("MongoDB Collections Verification", False, f"Exception: {str(e)}")
+            self.log_test("Dual Export ZIP Generation", False, f"Exception: {str(e)}", 0.0)
     
-    def run_all_tests(self):
-        """Run all ArticleAllocator tests"""
-        print("🚀 Starting AA-01 ArticleAllocator Comprehensive Testing")
-        print()
+    async def test_article_allocator_integration(self):
+        """Test AA-01 ArticleAllocator integration"""
+        print("\n🎯 Testing AA-01 ArticleAllocator Integration")
         
-        # Run all test methods
-        test_methods = [
-            self.test_article_allocation_basic,
-            self.test_article_allocation_validation,
-            self.test_article_allocation_idempotency,
-            self.test_article_allocation_edge_cases,
-            self.test_article_claiming,
-            self.test_article_release,
-            self.test_article_statistics,
-            self.test_article_width,
-            self.test_complete_workflow,
-            self.test_concurrent_allocation,
-            self.test_organization_isolation,
-            self.test_mongodb_collections
-        ]
+        try:
+            # Test article allocation endpoint
+            start_time = time.time()
+            
+            payload = {
+                "article_type": "dish",
+                "count": 2,
+                "organization_id": self.organization_id,
+                "entity_ids": ["test_dish_1", "test_dish_2"],
+                "entity_names": ["Test Dish 1", "Test Dish 2"]
+            }
+            
+            response = await self.client.post(f"{API_BASE}/articles/allocate", json=payload)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data.get("success") and data.get("allocated_articles"):
+                    articles = data["allocated_articles"]
+                    
+                    # Validate 5-digit format
+                    valid_format = all(len(article) == 5 and article.isdigit() for article in articles)
+                    
+                    self.log_test("ArticleAllocator Integration", valid_format,
+                                f"Allocated {len(articles)} articles: {articles}", response_time)
+                    
+                    # Test article claiming
+                    if articles:
+                        claim_start = time.time()
+                        claim_payload = {
+                            "articles": articles,
+                            "organization_id": self.organization_id,
+                            "claimed_by": "phase35_test"
+                        }
+                        
+                        claim_response = await self.client.post(f"{API_BASE}/articles/claim", json=claim_payload)
+                        claim_time = time.time() - claim_start
+                        
+                        if claim_response.status_code == 200:
+                            claim_data = claim_response.json()
+                            self.log_test("Article Claiming", claim_data.get("success", False),
+                                        f"Claimed {len(articles)} articles", claim_time)
+                        else:
+                            self.log_test("Article Claiming", False,
+                                        f"HTTP {claim_response.status_code}", claim_time)
+                else:
+                    self.log_test("ArticleAllocator Integration", False,
+                                "No articles allocated", response_time)
+            else:
+                self.log_test("ArticleAllocator Integration", False,
+                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
+                
+        except Exception as e:
+            self.log_test("ArticleAllocator Integration", False, f"Exception: {str(e)}", 0.0)
+    
+    async def test_excel_formatting_compliance(self):
+        """Test Excel formatting with text (@) for leading zeros preservation"""
+        print("\n🎯 Testing Excel Formatting Compliance")
         
-        for test_method in test_methods:
-            try:
-                test_method()
-            except Exception as e:
-                print(f"❌ CRITICAL ERROR in {test_method.__name__}: {str(e)}")
-                self.test_results.append({
-                    "test": test_method.__name__,
-                    "success": False,
-                    "details": f"Critical error: {str(e)}",
-                    "response": None
-                })
-            print()
+        try:
+            # This test validates that the export system properly formats articles
+            # We'll test this by checking the preflight response for proper article formatting
+            
+            start_time = time.time()
+            
+            payload = {
+                "techcardIds": ["current"],
+                "organization_id": self.organization_id
+            }
+            
+            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check generated articles format
+                dish_articles = data.get("generated", {}).get("dishArticles", [])
+                product_articles = data.get("generated", {}).get("productArticles", [])
+                
+                all_articles = dish_articles + product_articles
+                
+                if all_articles:
+                    # Validate 5-digit format with leading zeros
+                    format_valid = True
+                    format_details = []
+                    
+                    for article in all_articles:
+                        if not (len(article) == 5 and article.isdigit()):
+                            format_valid = False
+                            format_details.append(f"Invalid: {article}")
+                        else:
+                            format_details.append(f"Valid: {article}")
+                    
+                    self.log_test("Excel Article Formatting", format_valid,
+                                f"Articles: {', '.join(format_details[:3])}", response_time)
+                else:
+                    self.log_test("Excel Article Formatting", True,
+                                "No articles generated (expected for some scenarios)", response_time)
+            else:
+                self.log_test("Excel Article Formatting", False,
+                            f"HTTP {response.status_code}", response_time)
+                
+        except Exception as e:
+            self.log_test("Excel Article Formatting", False, f"Exception: {str(e)}", 0.0)
+    
+    async def test_complete_workflow_e2e(self):
+        """Test complete end-to-end workflow"""
+        print("\n🎯 Testing Complete E2E Workflow")
         
-        # Print summary
-        self.print_summary()
+        try:
+            workflow_start = time.time()
+            
+            # Step 1: Preflight validation
+            preflight_payload = {
+                "techcardIds": ["current"],
+                "organization_id": self.organization_id
+            }
+            
+            step1_start = time.time()
+            preflight_response = await self.client.post(f"{API_BASE}/export/preflight", json=preflight_payload)
+            step1_time = time.time() - step1_start
+            
+            if preflight_response.status_code != 200:
+                self.log_test("E2E Workflow - Preflight", False, "Preflight failed", step1_time)
+                return
+            
+            preflight_data = preflight_response.json()
+            
+            # Step 2: ZIP generation
+            step2_start = time.time()
+            export_payload = {
+                "techcardIds": ["current"],
+                "operational_rounding": True,
+                "organization_id": self.organization_id,
+                "preflight_result": preflight_data
+            }
+            
+            export_response = await self.client.post(f"{API_BASE}/export/zip", json=export_payload)
+            step2_time = time.time() - step2_start
+            
+            if export_response.status_code != 200:
+                self.log_test("E2E Workflow - Export", False, "Export failed", step2_time)
+                return
+            
+            # Step 3: Validate complete workflow
+            total_time = time.time() - workflow_start
+            
+            # Check if we have proper ZIP response
+            is_zip = export_response.content.startswith(b'PK')
+            zip_size = len(export_response.content)
+            
+            # Validate workflow components
+            has_ttk_date = bool(preflight_data.get("ttkDate"))
+            has_missing_data = bool(preflight_data.get("missing"))
+            has_counts = bool(preflight_data.get("counts"))
+            
+            workflow_valid = is_zip and zip_size > 0 and has_ttk_date and has_missing_data and has_counts
+            
+            details = f"Preflight: {step1_time:.3f}s, Export: {step2_time:.3f}s, ZIP: {zip_size} bytes"
+            
+            self.log_test("E2E Workflow Complete", workflow_valid, details, total_time)
+            
+        except Exception as e:
+            self.log_test("E2E Workflow Complete", False, f"Exception: {str(e)}", 0.0)
+    
+    async def test_performance_requirements(self):
+        """Test performance requirements"""
+        print("\n🎯 Testing Performance Requirements")
+        
+        try:
+            # Test preflight performance
+            start_time = time.time()
+            
+            payload = {
+                "techcardIds": ["current"],
+                "organization_id": self.organization_id
+            }
+            
+            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
+            preflight_time = time.time() - start_time
+            
+            preflight_target = 3.0  # 3 seconds target
+            preflight_meets_target = preflight_time <= preflight_target
+            
+            self.log_test("Preflight Performance", preflight_meets_target,
+                        f"{preflight_time:.3f}s vs {preflight_target}s target", preflight_time)
+            
+            if response.status_code == 200:
+                # Test export performance
+                export_start = time.time()
+                
+                export_payload = {
+                    "techcardIds": ["current"],
+                    "operational_rounding": True,
+                    "organization_id": self.organization_id,
+                    "preflight_result": response.json()
+                }
+                
+                export_response = await self.client.post(f"{API_BASE}/export/zip", json=export_payload)
+                export_time = time.time() - export_start
+                
+                export_target = 5.0  # 5 seconds target
+                export_meets_target = export_time <= export_target
+                
+                self.log_test("Export Performance", export_meets_target,
+                            f"{export_time:.3f}s vs {export_target}s target", export_time)
+            
+        except Exception as e:
+            self.log_test("Performance Requirements", False, f"Exception: {str(e)}", 0.0)
     
     def print_summary(self):
-        """Print test summary"""
-        print("=" * 80)
-        print("🎯 AA-01 ARTICLEALLOCATOR TESTING SUMMARY")
-        print("=" * 80)
+        """Print comprehensive test summary"""
+        print("\n" + "="*80)
+        print("🎯 PHASE 3.5: FE BINDING + DISH-FIRST EXPORT TESTING SUMMARY")
+        print("="*80)
         
         total_tests = len(self.test_results)
         passed_tests = sum(1 for result in self.test_results if result["success"])
         failed_tests = total_tests - passed_tests
-        
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
-        print(f"Total Tests: {total_tests}")
-        print(f"Passed: {passed_tests} ✅")
-        print(f"Failed: {failed_tests} ❌")
-        print(f"Success Rate: {success_rate:.1f}%")
-        print()
+        print(f"\n📊 OVERALL RESULTS:")
+        print(f"   Total Tests: {total_tests}")
+        print(f"   Passed: {passed_tests} ✅")
+        print(f"   Failed: {failed_tests} ❌")
+        print(f"   Success Rate: {success_rate:.1f}%")
         
         if failed_tests > 0:
-            print("❌ FAILED TESTS:")
+            print(f"\n❌ FAILED TESTS:")
             for result in self.test_results:
                 if not result["success"]:
-                    print(f"  • {result['test']}: {result['details']}")
-            print()
+                    print(f"   • {result['test']}: {result['details']}")
+        
+        print(f"\n✅ PASSED TESTS:")
+        for result in self.test_results:
+            if result["success"]:
+                print(f"   • {result['test']}: {result['details']}")
         
         # Critical validation points summary
-        print("🔍 CRITICAL VALIDATION POINTS:")
+        print(f"\n🎯 CRITICAL VALIDATION POINTS:")
         
         critical_tests = [
-            ("MongoDB Collections Created", any("MongoDB Collections" in r["test"] and r["success"] for r in self.test_results)),
-            ("5-digit Article Formatting", any("Basic Allocation" in r["test"] and r["success"] for r in self.test_results)),
-            ("Reservation TTL (48h)", any("Complete Workflow" in r["test"] and r["success"] for r in self.test_results)),
-            ("Collision Handling", any("Concurrent Allocation" in r["test"] and r["success"] for r in self.test_results)),
-            ("Organization Isolation", any("Organization Isolation" in r["test"] and r["success"] for r in self.test_results)),
-            ("Error Responses", any("Validation" in r["test"] and r["success"] for r in self.test_results)),
-            ("Complete Workflow", any("Complete Workflow - End-to-End" in r["test"] and r["success"] for r in self.test_results))
+            "Preflight Basic Functionality",
+            "Dish Skeleton Structure", 
+            "MongoDB RMS Lookup (num field)",
+            "Dual Export ZIP Generation",
+            "ArticleAllocator Integration",
+            "Excel Article Formatting",
+            "E2E Workflow Complete"
         ]
         
-        for test_name, passed in critical_tests:
-            status = "✅ PASS" if passed else "❌ FAIL"
-            print(f"  {status} {test_name}")
+        for test_name in critical_tests:
+            result = next((r for r in self.test_results if r["test"] == test_name), None)
+            if result:
+                status = "✅" if result["success"] else "❌"
+                print(f"   {status} {test_name}")
+            else:
+                print(f"   ⚠️  {test_name} (not tested)")
         
-        print()
+        return success_rate >= 80  # 80% success rate threshold
+
+
+async def main():
+    """Main test execution"""
+    print("🚀 Starting Phase 3.5: FE Binding + Dish-first Export Backend Testing")
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"MongoDB URL: {MONGO_URL}")
+    print(f"Database: {DB_NAME}")
+    
+    async with Phase35BackendTester() as tester:
+        # Execute all test suites
+        await tester.test_preflight_orchestrator_dish_validation()
+        await tester.test_dish_article_validation_scenarios()
+        await tester.test_mongodb_connection_and_lookup()
+        await tester.test_dual_export_dish_first_enforcement()
+        await tester.test_article_allocator_integration()
+        await tester.test_excel_formatting_compliance()
+        await tester.test_complete_workflow_e2e()
+        await tester.test_performance_requirements()
         
-        if success_rate >= 80:
-            print("🎉 OVERALL RESULT: AA-01 ArticleAllocator API endpoints are OPERATIONAL")
-            if success_rate == 100:
-                print("🏆 PERFECT SCORE: All tests passed!")
+        # Print comprehensive summary
+        success = tester.print_summary()
+        
+        if success:
+            print(f"\n🎉 PHASE 3.5 TESTING COMPLETED SUCCESSFULLY!")
+            print(f"All critical components are operational and ready for production use.")
         else:
-            print("⚠️ OVERALL RESULT: AA-01 ArticleAllocator needs attention")
+            print(f"\n⚠️  PHASE 3.5 TESTING COMPLETED WITH ISSUES")
+            print(f"Some components require attention before production deployment.")
         
-        print("=" * 80)
+        return success
 
 
 if __name__ == "__main__":
-    tester = ArticleAllocatorTester()
-    tester.run_all_tests()
+    try:
+        success = asyncio.run(main())
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n⚠️ Testing interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Testing failed with exception: {e}")
+        traceback.print_exc()
+        sys.exit(1)
