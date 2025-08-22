@@ -192,7 +192,7 @@ class PreflightOrchestrator:
             
             if needs_skeleton:
                 # Try to find by name in iiko RMS first
-                found_article = await self._find_dish_in_iiko(techcard.name, organization_id)
+                found_article = await self._find_dish_in_iiko(techcard.meta.title, organization_id)
                 
                 if found_article:
                     # Update techcard with found article
