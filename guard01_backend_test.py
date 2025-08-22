@@ -160,7 +160,9 @@ class Guard01BackendTester:
             if response.status_code == 403:
                 # Expected: Strict guard should trigger PRE_FLIGHT_REQUIRED error
                 try:
-                    data = response.json()
+                    response_data = response.json()
+                    # Handle FastAPI HTTPException format with 'detail' wrapper
+                    data = response_data.get('detail', response_data)
                     
                     # Validate strict guard error response
                     is_preflight_required = data.get("error") == "PRE_FLIGHT_REQUIRED"
