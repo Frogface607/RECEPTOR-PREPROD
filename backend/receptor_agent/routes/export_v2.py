@@ -200,13 +200,13 @@ class PreflightOrchestrator:
                     logger.info(f"Found existing dish '{techcard.meta.title}' in RMS with article '{found_article}'")
                 else:
                     # Allocate new article via AA-01
-                    entity_id = f"dish_{getattr(techcard, 'id', techcard.name.replace(' ', '_'))}"
+                    entity_id = f"dish_{getattr(techcard, 'id', techcard.meta.title.replace(' ', '_'))}"
                     allocated_articles = self.allocator.allocate_articles(
                         article_type=ArticleType.DISH,
                         count=1,
                         organization_id=organization_id,
                         entity_ids=[entity_id],
-                        entity_names=[techcard.name]
+                        entity_names=[techcard.meta.title]
                     )
                     
                     if allocated_articles:
