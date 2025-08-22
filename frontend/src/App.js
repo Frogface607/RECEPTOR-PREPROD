@@ -1928,7 +1928,7 @@ function App() {
     else if (skuId && catalogItem.source === 'iiko') {
       try {
         console.log(`MAP-01: Article missing, looking up by skuId: ${skuId}`);
-        const response = await fetch(`${API}/v1/techcards.v2/iiko-search?q=${encodeURIComponent(skuId)}&search_by=id&limit=1`);
+        const response = await fetch(`${API}/v1/techcards.v2/catalog-search?q=${encodeURIComponent(skuId)}&search_by=id&source=iiko&limit=1`);
         const data = await response.json();
         
         if (data.status === 'success' && data.items.length > 0 && data.items[0].article) {
