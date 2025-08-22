@@ -213,6 +213,34 @@ class PreflightOrchestrator:
         
         return None
     
+    async def _check_dish_article_in_rms(self, article: str, organization_id: str) -> bool:
+        """
+        Phase 3.5: Check if dish article exists in iiko RMS
+        
+        Returns True if article exists, False otherwise
+        """
+        try:
+            # Import here to avoid circular imports
+            from ..integrations.iiko_rms_service import get_iiko_rms_service
+            
+            rms_service = get_iiko_rms_service()
+            
+            # Search for dish by article (exact match on num field)
+            dish = rms_service.products.find_one({
+                "organization_id": organization_id,
+                "num": article,  # Use num field (true article) not code
+                "product_type": {"$in": ["DISH", "dish"]}  # Only dishes
+            })
+            
+            exists = dish is not None
+            logger.info(f"Article '{article}' exists in RMS: {exists}")
+            return exists
+            
+        except Exception as e:
+            logger.warning(f"Error checking dish article in RMS: {e}")
+            # If we can't check, assume it doesn't exist (safer)
+            return False
+    
     async def _find_product_in_iiko(self, product_name: str, organization_id: str) -> Optional[str]:
         """Try to find product article in iiko RMS"""
         try:
