@@ -152,7 +152,8 @@ class PreflightOrchestrator:
             ],
             process=[
                 ProcessStepV2(n=1, action="Подготовить ингредиенты", time_min=5.0),
-                ProcessStepV2(n=2, action="Смешать и готовить", time_min=10.0, temp_c=180.0)
+                ProcessStepV2(n=2, action="Смешать и готовить", time_min=10.0, temp_c=180.0),
+                ProcessStepV2(n=3, action="Подать готовое блюдо", time_min=1.0)
             ],
             storage=StorageV2(
                 conditions="Хранить в холодильнике",
