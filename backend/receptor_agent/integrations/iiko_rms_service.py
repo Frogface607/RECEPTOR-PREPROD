@@ -676,6 +676,100 @@ class IikoRmsService:
             logger.error(f"Error searching RMS products: {str(e)}")
             return []
     
+    def search_rms_products_by_article(self, organization_id: str, article: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        FIX-A SRCH-02: Search products by exact article match
+        
+        Args:
+            organization_id: Organization ID
+            article: Article number to search for
+            limit: Maximum results
+            
+        Returns:
+            List of matching products
+        """
+        try:
+            # Exact article match query
+            pipeline = [
+                {
+                    "$match": {
+                        "organization_id": organization_id,
+                        "article": article  # Exact match
+                    }
+                },
+                {"$sort": {"name": 1}},
+                {"$limit": limit}
+            ]
+            
+            results = list(self.products.aggregate(pipeline))
+            
+            enhanced_results = []
+            for result in results:
+                product = {
+                    "sku_id": result["_id"],
+                    "name": result["name"],
+                    "article": result.get("article", ""),
+                    "unit": result["unit"],
+                    "price_per_unit": result.get("price_per_unit", 0.0),
+                    "currency": "RUB",
+                    "asOf": result.get("synced_at", datetime.now(timezone.utc)).strftime("%Y-%m-%d"),
+                    "match_score": 1.0,  # Perfect match for exact article
+                    "group_name": result.get("group_name"),
+                    "source": "iiko_rms",
+                    "product_type": result.get("product_type", "product"),
+                    "active": result.get("active", True)
+                }
+                enhanced_results.append(product)
+            
+            return enhanced_results
+            
+        except Exception as e:
+            logger.error(f"Error searching RMS products by article: {str(e)}")
+            return []
+    
+    def search_rms_products_by_id(self, organization_id: str, sku_id: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        FIX-A MAP-01: Search products by exact ID match for article lookup
+        
+        Args:
+            organization_id: Organization ID
+            sku_id: SKU ID to search for
+            limit: Maximum results
+            
+        Returns:
+            List of matching products
+        """
+        try:
+            # Exact ID match query
+            result = self.products.find_one({
+                "organization_id": organization_id,
+                "_id": sku_id
+            })
+            
+            if not result:
+                return []
+            
+            product = {
+                "sku_id": result["_id"],
+                "name": result["name"],
+                "article": result.get("article", ""),
+                "unit": result["unit"],
+                "price_per_unit": result.get("price_per_unit", 0.0),
+                "currency": "RUB",
+                "asOf": result.get("synced_at", datetime.now(timezone.utc)).strftime("%Y-%m-%d"),
+                "match_score": 1.0,  # Perfect match for exact ID
+                "group_name": result.get("group_name"),
+                "source": "iiko_rms",
+                "product_type": result.get("product_type", "product"),
+                "active": result.get("active", True)
+            }
+            
+            return [product]
+            
+        except Exception as e:
+            logger.error(f"Error searching RMS product by ID: {str(e)}")
+            return []
+    
     def _get_rms_client_for_org(self, organization_id: str) -> IikoRmsClient:
         """Get RMS client for specific organization"""
         # Find credentials for organization
