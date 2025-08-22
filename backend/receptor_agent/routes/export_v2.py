@@ -221,14 +221,14 @@ class PreflightOrchestrator:
                         
                         missing_dishes.append({
                             "id": getattr(techcard, 'id', entity_id),
-                            "name": techcard.name,
+                            "name": techcard.meta.title,
                             "article": new_article,
                             "type": "dish",
                             "unit": "порц",
                             "yield": yield_value
                         })
                         
-                        logger.info(f"Generated new article '{new_article}' for dish '{techcard.name}'")
+                        logger.info(f"Generated new article '{new_article}' for dish '{techcard.meta.title}'")
         
         return missing_dishes, generated_articles
     
