@@ -201,6 +201,18 @@ backend:
         agent: "testing"
         comment: "✅ EX-04 EXPORT SYSTEM STATUS ENDPOINT OPERATIONAL: GET /api/v1/export/status endpoint working perfectly with comprehensive system health monitoring. Response includes all required fields (status, systems, features), system components status (preflight_orchestrator: operational, dual_exporter: operational, article_allocator: operational), feature availability flags (article_allocation: true, ttk_date_resolution: true, skeleton_generation: true, zip_export: true, article_claiming: true). Endpoint provides complete Phase 2 system readiness validation in 0.015s response time."
 
+  - task: "SRCH-02: Backend Exact Search by Article Enhancement"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/techcards_v2.py, backend/receptor_agent/integrations/iiko_rms_service.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🔧 SRCH-02 BACKEND EXACT SEARCH BY ARTICLE ENHANCEMENT COMPLETED: Enhanced backend search capabilities for FIX-A bug resolution with article-first search priority. SEARCH ENDPOINT ENHANCEMENT: Added search_by parameter to /techcards.v2/catalog-search endpoint (name, article, id), updated route handler to support article and ID-based searches, proper integration with existing RMS search infrastructure. RMS SERVICE ENHANCEMENT: Added search_rms_products_by_article method for exact article matching via MongoDB, added search_rms_products_by_id method for article lookup by SKU ID, both methods return properly formatted results with 1.0 match scores for exact matches. SEARCH LOGIC: Article search uses exact match on nomenclature.num field (not code/GUID), ID search enables MAP-01 article lookup fallback when article missing from search response, maintains existing enhanced name search as default. INTEGRATION FEATURES: Proper error handling and logging for new search methods, consistent result format across all search types, backward compatibility with existing search functionality. Ready for backend testing to validate exact article search (4-6 digit queries), ID-based article lookup for automapping fallbacks, and search endpoint parameter handling."
+
   - task: "Phase 2: Minor Import/Schema Fixes"
     implemented: true
     working: true
