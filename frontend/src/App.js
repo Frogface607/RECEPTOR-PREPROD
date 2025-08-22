@@ -10588,14 +10588,14 @@ function App() {
                       🔍 Назначить SKU
                     </button>
                     
-                    {/* 3. Экспорт iiko XLSX (Golden) */}
+                    {/* 3. Phase 3: Экспорт в iiko (2 шага) */}
                     <button 
-                      onClick={startExportWizard}
-                      disabled={!tcV2 || iikoRmsConnection.status !== 'connected' || isExportProcessing}
+                      onClick={startPhase3Export}
+                      disabled={!tcV2 || phase3ExportState === 'running_preflight'}
                       className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
-                      title="Экспорт готовой техкарты в формат iiko XLSX"
+                      title="Новый экспорт с автоматическим созданием скелетов и двухэтапным импортом"
                     >
-                      {isExportProcessing ? '⏳ Обработка...' : '📊 Экспорт iiko XLSX'}
+                      {phase3ExportState === 'running_preflight' ? '⏳ Префлайт...' : '🚀 Экспорт в iiko (2 шага)'}
                     </button>
                     
                     {/* 4. Импорт TTK (XLSX) */}
