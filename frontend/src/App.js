@@ -16119,6 +16119,7 @@ function App() {
                       <div className="mt-4 p-3 bg-blue-900/20 rounded-lg text-left text-xs">
                         <div className="font-medium text-blue-300 mb-2">💡 Советы по поиску:</div>
                         <ul className="text-blue-400 space-y-1">
+                          <li>• <strong>02684</strong> → поиск по артикулу (точное совпадение)</li>
                           <li>• <strong>картоф</strong> → найдет "Картофель", "Картошка"</li>
                           <li>• <strong>молоко 3.2</strong> → найдет продукты с жирностью 3,2%</li>
                           <li>• <strong>яйцо</strong> → найдет "Яйцо куриное С1"</li>
