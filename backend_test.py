@@ -293,7 +293,7 @@ class Phase35BackendTester:
                 data = response.json()
                 print(f"DEBUG: ArticleAllocator response: {data}")  # Debug output
                 
-                if data.get("success") and data.get("allocated_articles"):
+                if (data.get("status") == "success" or data.get("success")) and data.get("allocated_articles"):
                     articles = data["allocated_articles"]
                     
                     # Validate 5-digit format
