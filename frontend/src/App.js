@@ -16066,7 +16066,7 @@ function App() {
                           <div className="text-xs text-gray-500 mt-1 space-y-0.5">
                             {item.article && (
                               <div className="text-green-400 font-mono">
-                                Артикул: {String(item.article).padStart(5, '0')}
+                                Артикул (iiko): {String(item.article).padStart(5, '0')}
                               </div>
                             )}
                             {item.sku_id && !item.article && (
