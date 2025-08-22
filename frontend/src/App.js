@@ -17511,6 +17511,235 @@ function App() {
         </div>
       )}
 
+      {/* Phase 3: FE-04-min Export to iiko (2 steps) Modal */}
+      {showPhase3ExportModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-emerald-400/20">
+            {/* Header */}
+            <div className="bg-gray-800/95 backdrop-blur-lg border-b border-emerald-400/20 p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-emerald-300 mb-2">🚀 Экспорт в iiko (2 шага)</h2>
+                  <p className="text-gray-400">Префлайт → ZIP (Скелеты + ТТК) → импорт в iiko</p>
+                </div>
+                <button
+                  onClick={closePhase3ExportModal}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              
+              {/* State Indicator */}
+              <div className="flex items-center space-x-4 mt-4">
+                <div className={`w-3 h-3 rounded-full ${
+                  phase3ExportState === 'idle' ? 'bg-gray-500' :
+                  phase3ExportState === 'running_preflight' ? 'bg-yellow-500 animate-pulse' :
+                  phase3ExportState === 'ready_zip' ? 'bg-green-500' :
+                  'bg-red-500'
+                }`} />
+                <span className="text-sm text-gray-300">
+                  {phase3ExportState === 'idle' && 'Готов к запуску'}
+                  {phase3ExportState === 'running_preflight' && 'Выполнение префлайта...'}
+                  {phase3ExportState === 'ready_zip' && 'ZIP готов к скачиванию'}
+                  {phase3ExportState === 'error' && 'Ошибка экспорта'}
+                </span>
+              </div>
+            </div>
+            
+            {/* Message Banner */}
+            {phase3ExportMessage.text && (
+              <div className={`p-4 border-b border-gray-600/50 ${
+                phase3ExportMessage.type === 'success' ? 'bg-green-900/30 text-green-300' :
+                phase3ExportMessage.type === 'error' ? 'bg-red-900/30 text-red-300' :
+                phase3ExportMessage.type === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
+                'bg-blue-900/30 text-blue-300'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span>{phase3ExportMessage.text}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-6">
+              {/* Preflight Panel */}
+              {preflightResult && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-emerald-300">📋 Результаты префлайта</h3>
+                  
+                  {/* TTK Date & Skeleton Counts */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-4">
+                      <div className="text-sm text-blue-400">Дата ТТК</div>
+                      <div className="text-xl font-bold text-blue-300">
+                        {preflightResult.ttkDate}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-purple-900/30 border border-purple-400/30 rounded-lg p-4">
+                      <div className="text-sm text-purple-400">Блюда для скелетов</div>
+                      <div className="text-xl font-bold text-purple-300">
+                        {preflightResult.counts?.dishSkeletons || 0}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-orange-900/30 border border-orange-400/30 rounded-lg p-4">
+                      <div className="text-sm text-orange-400">Товары для скелетов</div>
+                      <div className="text-xl font-bold text-orange-300">
+                        {preflightResult.counts?.productSkeletons || 0}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Helpful Instruction */}
+                  <div className="bg-gray-700/50 border border-gray-600/50 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-2xl">💡</div>
+                      <div>
+                        <div className="font-bold text-gray-300">Инструкция по импорту:</div>
+                        <div className="text-gray-400 text-sm mt-1">
+                          Сначала импортируйте скелеты в iikoWeb, затем — файл ТТК.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Generated Articles Preview */}
+                  {(preflightResult.generated?.dishArticles?.length > 0 || preflightResult.generated?.productArticles?.length > 0) && (
+                    <div className="bg-green-900/20 border border-green-400/30 rounded-lg p-4">
+                      <div className="font-bold text-green-300 mb-2">🎯 Сгенерированные артикулы:</div>
+                      <div className="text-sm space-y-1">
+                        {preflightResult.generated.dishArticles?.length > 0 && (
+                          <div className="text-green-400">
+                            Блюда: {preflightResult.generated.dishArticles.join(', ')}
+                          </div>
+                        )}
+                        {preflightResult.generated.productArticles?.length > 0 && (
+                          <div className="text-green-400">
+                            Товары: {preflightResult.generated.productArticles.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Error Details */}
+              {phase3ErrorDetails && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-bold text-red-300">❌ Ошибка экспорта</h3>
+                  
+                  <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-6">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="font-bold text-red-300">Тип ошибки:</div>
+                        <div className="text-red-400">{phase3ErrorDetails.type}</div>
+                      </div>
+                      
+                      {phase3ErrorDetails.hint && (
+                        <div>
+                          <div className="font-bold text-red-300">Рекомендация:</div>
+                          <div className="text-red-400">{phase3ErrorDetails.hint}</div>
+                        </div>
+                      )}
+                      
+                      {phase3ErrorDetails.message && (
+                        <div>
+                          <div className="font-bold text-red-300">Детали:</div>
+                          <div className="text-red-400 text-sm font-mono bg-red-900/20 p-2 rounded">
+                            {phase3ErrorDetails.message}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* ZIP Download Hint */}
+              {phase3ExportState === 'ready_zip' && (
+                <div className="space-y-6">
+                  <div className="bg-green-900/30 border border-green-400/30 rounded-lg p-6">
+                    <div className="text-center space-y-4">
+                      <div className="text-6xl">📦</div>
+                      <div className="text-xl text-green-300 font-bold">ZIP файл создан!</div>
+                      <div className="text-green-400">
+                        ZIP содержит следующие файлы:
+                      </div>
+                      
+                      <div className="bg-green-800/30 rounded-lg p-4 text-sm">
+                        <ul className="text-green-300 space-y-1">
+                          <li>• iiko_TTK.xlsx (всегда включён)</li>
+                          {preflightResult?.counts?.dishSkeletons > 0 && (
+                            <li>• Dish-Skeletons.xlsx ({preflightResult.counts.dishSkeletons} блюд)</li>
+                          )}
+                          {preflightResult?.counts?.productSkeletons > 0 && (
+                            <li>• Product-Skeletons.xlsx ({preflightResult.counts.productSkeletons} товаров)</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer Actions */}
+            <div className="bg-gray-800/95 backdrop-blur-lg border-t border-gray-600/50 p-6">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-400">
+                  {phase3ExportState === 'idle' && 'Нажмите "Запустить префлайт" для начала'}
+                  {phase3ExportState === 'running_preflight' && 'Выполняется анализ и подготовка артикулов...'}
+                  {phase3ExportState === 'ready_zip' && 'Готово! Нажмите "Скачать ZIP" для получения файлов'}
+                  {phase3ExportState === 'error' && 'Произошла ошибка. Попробуйте ещё раз'}
+                </div>
+                
+                <div className="flex space-x-3">
+                  {phase3ExportState === 'idle' && (
+                    <button
+                      onClick={runPreflight}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      🚀 Запустить префлайт
+                    </button>
+                  )}
+                  
+                  {phase3ExportState === 'ready_zip' && (
+                    <button
+                      onClick={generateZipExport}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      📦 Скачать ZIP
+                    </button>
+                  )}
+                  
+                  {phase3ExportState === 'error' && (
+                    <button
+                      onClick={() => {
+                        resetPhase3Export();
+                        setPhase3ExportState('idle');
+                      }}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      🔄 Попробовать снова
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={closePhase3ExportModal}
+                    className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                  >
+                    ✕ Закрыть
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* IK-04/02: XLSX Import Modal */}
       {showXlsxImportModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
