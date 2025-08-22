@@ -192,6 +192,22 @@ class Phase35BackendTester:
                                 f"No dish found with article {test_article} (expected for test)", 
                                 lookup_time)
                 
+                # Test the actual RMS lookup functionality used by preflight
+                try:
+                    # Test products collection lookup
+                    products_collection = db.products
+                    product_lookup = products_collection.find_one({
+                        "organization_id": self.organization_id,
+                        "num": test_article
+                    })
+                    
+                    self.log_test("MongoDB Products Collection Lookup", True,
+                                f"Products collection accessible, lookup result: {'found' if product_lookup else 'not found'}", 
+                                lookup_time)
+                except Exception as e:
+                    self.log_test("MongoDB Products Collection Lookup", False,
+                                f"Error: {str(e)}", lookup_time)
+                
                 self.log_test("MongoDB Connection", True,
                             f"Connected to {DB_NAME}, sample doc found", connection_time)
             else:
