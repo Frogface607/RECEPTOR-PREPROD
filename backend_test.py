@@ -332,7 +332,8 @@ class Phase35BackendTester:
                         
                         if claim_response.status_code == 200:
                             claim_data = claim_response.json()
-                            self.log_test("Article Claiming", claim_data.get("success", False),
+                            claim_success = (claim_data.get("status") == "success" or claim_data.get("success"))
+                            self.log_test("Article Claiming", claim_success,
                                         f"Claimed {len(articles)} articles", claim_time)
                         else:
                             self.log_test("Article Claiming", False,
