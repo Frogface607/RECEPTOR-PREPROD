@@ -639,6 +639,18 @@ frontend:
         agent: "testing"
         comment: "✅ SRCH-02: Frontend Exact Search by Article - FULLY OPERATIONAL (100% success rate, 10/10 tests passed) ✅ Article Search Detection - Regex ^[0-9]{4,6}$ for 4-6 digit queries working correctly ✅ API Integration - Updated calls to /catalog-search endpoint with search_by=article parameter ✅ Badge Display - Proper article badge 'Артикул (iiko): 0xxxx' format displayed ✅ Search Enhancement - Enhanced placeholder indicating article search support ✅ Exact Match - Proper exact article matching functionality operational ✅ UI Integration - Seamless integration with existing search interface"
 
+  - task: "GUARD-02: Frontend Dish-First UI Guards"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "🛡️ GUARD-02 FRONTEND DISH-FIRST UI GUARDS IMPLEMENTATION COMPLETED: Enhanced Phase 3 export modal with critical dish-first rule guards to prevent iiko TTK rejection. UI GUARD LOGIC: Conditional TTK-only button display (hidden when dishSkeletons > 0), guard warning display when TTK-only blocked with clear explanation, enhanced instruction panel with dish-first rule protection explanation. TTK-ONLY DOWNLOAD: New downloadTtkOnly function with double-guard validation, integrated with backend /export/ttk-only endpoint, comprehensive error handling for PRE_FLIGHT_REQUIRED responses, proper file download with error recovery. GUARD MESSAGING: Enhanced instruction panel with conditional messaging (green for all clear, yellow warning for skeleton requirements), specific dish-first rule protection notification when guard triggered, clear explanation of why TTK-only is blocked and solution guidance. TECHNICAL IMPLEMENTATION: Integrated with existing Phase 3 export workflow, proper state management for guard conditions, comprehensive error handling with user-friendly messages, seamless fallback to ZIP export when TTK-only blocked. Ready for frontend testing to validate guard UI behavior, TTK-only button visibility logic, error handling for blocked exports, and complete dish-first rule enforcement."
+
 frontend:
   - task: "P1: iiko Basic Mode UI Redesign"
     implemented: true
