@@ -2854,9 +2854,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "PF-02-bind: Preflight Orchestrator with Dish Article Validation"
-    - "EX-03-bind: Dual Export with Dish-first Article Enforcement"
-    - "FE-04-wire: Enhanced Export UI with Skeleton Guards"
+    - "SRCH-02: Backend Exact Search by Article Enhancement"
+    - "MAP-01: Save product.article on accept (Automapping Fix)" 
+    - "SRCH-02: Frontend Exact Search by Article"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
@@ -2865,7 +2865,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "🎯 PHASE 3.5: FE BINDING + DISH-FIRST EXPORT COMPREHENSIVE BACKEND IMPLEMENTATION READY FOR TESTING: Completed critical Phase 3.5 enhancements building on successful Phase 3 foundation with dish-first export logic for iiko compatibility. 🔧 PF-02-BIND DISH ARTICLE VALIDATION: Enhanced preflight orchestrator with critical RMS existence checking (if dish.article empty OR not in RMS → generate skeleton), implemented _check_dish_article_in_rms method for MongoDB article lookup via nomenclature.num field, enhanced _load_techcards with real MongoDB connection and 'current' techcard support, proper mock techcard creation with mixed article scenarios. 🔧 EX-03-BIND DISH-FIRST EXPORT ENFORCEMENT: Maintains existing ZIP generation functionality with enhanced dish article validation integration, ensures column A in iiko_TTK.xlsx always contains valid dish.article, proper text (@) formatting with leading zeros for all Excel files, enhanced article claiming workflow for permanent assignment. 🎨 FE-04-WIRE ENHANCED UI GUARDS: Enhanced preflight panel with explicit skeleton counters and conditional instructions, intelligent warning system (yellow for required skeletons, green for direct import), clear file composition display, skeleton-specific error handling and validation. 🎯 TESTING PRIORITIES: Focus on dish article existence checking in RMS, skeleton generation for missing dishes, real techcard loading from MongoDB, enhanced UI skeleton guards and instruction display, complete Phase 3.5 E2E workflow validation (dish validation → skeleton generation → ZIP export → import compatibility). Critical acceptance: no 'артикул не найден' errors, proper column A dish.article formatting, automatic skeleton generation for RMS-missing articles."
+    message: "🔧 FIX-A: AUTOMAPPING USES ARTICLE END-TO-END CRITICAL BUG FIX IMPLEMENTATION READY FOR TESTING: Completed comprehensive bug fix addressing critical issue where automapping and search save GUID/code instead of article, causing iiko export failures. 🔧 MAP-01 AUTOMAPPING FIX: Enhanced applyAutoMappingChanges with article-first priority logic (article > code > GUID avoidance), added article lookup fallback when article missing via /catalog-search?search_by=id, enhanced handleAssignIngredientMapping with improved article extraction and additional lookup capabilities, comprehensive product_code assignment with proper 5-digit padding. 🔧 SRCH-02 BACKEND SEARCH ENHANCEMENT: Added search_by parameter to /techcards.v2/catalog-search endpoint (name, article, id), implemented search_rms_products_by_article for exact article matching via MongoDB, added search_rms_products_by_id for article lookup by SKU ID, proper integration with existing RMS search infrastructure. 🔧 FRONTEND API INTEGRATION: Fixed all frontend API calls from /iiko-search to /catalog-search (correct endpoint), added search_by parameter support throughout the application, enhanced error handling and logging for article lookup operations, existing Phase 3 article search functionality maintained with corrected endpoints. ⚠️ CRITICAL BUG ADDRESSED: Automapping now consistently saves nomenclature.num (article) instead of GUID/code, prevents iiko export failures caused by incorrect article values, comprehensive fallback mechanisms when article missing from initial search response. 🎯 TESTING PRIORITIES: Focus on automapping saves article (not GUID/code), manual assignment uses article priority, exact article search (4-6 digit queries), backend search endpoint parameter handling, complete export workflow with proper article values. Validate that exports no longer fail with 'артикул не найден' errors due to GUID/code usage."
 
 agent_communication:
   - agent: "testing"
