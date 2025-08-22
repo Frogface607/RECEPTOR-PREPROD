@@ -47,6 +47,15 @@ class Guard01BackendTester:
         self.test_results.append(result)
         print(f"{status}: {test_name} ({response_time:.3f}s) - {details}")
     
+    def extract_guard_data(self, response):
+        """Extract guard data from FastAPI HTTPException response format"""
+        try:
+            response_data = response.json()
+            # Handle FastAPI HTTPException format with 'detail' wrapper
+            return response_data.get('detail', response_data)
+        except:
+            return {}
+    
     async def test_scenario_a_zip_export_guard_bypass_prevention(self):
         """Test Scenario A: ZIP Export Guard - Bypass Prevention"""
         print("\n🛡️ Testing Scenario A: ZIP Export Guard - Bypass Prevention")
