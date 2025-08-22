@@ -310,7 +310,7 @@ class Phase35BackendTester:
                             "claimed_by": "phase35_test"
                         }
                         
-                        claim_response = await self.client.post(f"{API_BASE}/articles/claim", json=claim_payload)
+                        claim_response = await self.client.post(f"{API_BASE}/techcards.v2/articles/claim", json=claim_payload)
                         claim_time = time.time() - claim_start
                         
                         if claim_response.status_code == 200:
