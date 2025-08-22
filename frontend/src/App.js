@@ -1904,28 +1904,41 @@ function App() {
   const handleAssignIngredientMapping = async (catalogItem) => {
     if (!tcV2 || mappingIngredientIndex === null) return;
 
-    // A. Hotfix & Migration: Получаем product_code из catalogItem если доступен
+    // MAP-01: Enhanced product_code extraction with proper article priority
     let productCode = null;
-    
-    // Для iiko источников ищем article/code в объекте
-    if (catalogItem.source === 'iiko' && catalogItem.article) {
-      // Форматируем артикул как пятизначный с ведущими нулями
-      productCode = String(catalogItem.article).padStart(5, '0');
-    } else if (catalogItem.product_code) {
-      productCode = catalogItem.product_code;
-    } else if (catalogItem.code) {
-      productCode = catalogItem.code;
-    }
-    
-    // Если у нас есть skuId но нет кода, пытаемся получить код через RMS
     const skuId = catalogItem.sku_id || catalogItem.skuId;
-    if (skuId && !productCode && catalogItem.source === 'iiko') {
+    
+    // Priority 1: Use article (nomenclature.num) - the correct field for iiko
+    if (catalogItem.source === 'iiko' && catalogItem.article) {
+      // Format article as five-digit with leading zeros
+      productCode = String(catalogItem.article).padStart(5, '0');
+      console.log(`MAP-01: Using article ${productCode} from catalogItem.article`);
+    } 
+    // Priority 2: Use product_code if already formatted correctly
+    else if (catalogItem.product_code) {
+      productCode = catalogItem.product_code;
+      console.log(`MAP-01: Using product_code ${productCode} from catalogItem.product_code`);
+    } 
+    // Priority 3: Use code only if it's not a GUID (avoid hyphens)
+    else if (catalogItem.code && !catalogItem.code.includes('-')) {
+      productCode = catalogItem.code;
+      console.log(`MAP-01: Using code ${productCode} from catalogItem.code (not GUID)`);
+    }
+    // Priority 4: If article missing but we have skuId, make additional request
+    else if (skuId && catalogItem.source === 'iiko') {
       try {
-        // Дополнительный lookup кода по GUID через RMS если нужно
-        console.log(`Need to lookup product code for skuId: ${skuId}`);
-        // TODO: Можно добавить дополнительный API call для получения кода
+        console.log(`MAP-01: Article missing, looking up by skuId: ${skuId}`);
+        const response = await fetch(`${API}/v1/techcards.v2/iiko-search?q=${encodeURIComponent(skuId)}&search_by=id&limit=1`);
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.items.length > 0 && data.items[0].article) {
+          productCode = String(data.items[0].article).padStart(5, '0');
+          console.log(`MAP-01: Found article ${productCode} via additional lookup for skuId ${skuId}`);
+        } else {
+          console.warn(`MAP-01: Could not find article for skuId ${skuId}, will use skuId as fallback`);
+        }
       } catch (error) {
-        console.warn('Could not lookup product code:', error);
+        console.warn('MAP-01: Error in additional article lookup:', error);
       }
     }
 
@@ -1938,13 +1951,15 @@ function App() {
             ...ing,
             canonical_id: catalogItem.canonical_id || ing.canonical_id || null,
             skuId: skuId || ing.skuId || null,
-            product_code: productCode || ing.product_code || null, // A. Hotfix & Migration: сохраняем код продукта
+            product_code: productCode || ing.product_code || null, // MAP-01: Save article when available
             source: catalogItem.source || ing.source || null
           };
         }
         return ing;
       })
     };
+
+    console.log(`MAP-01: Assigned ingredient mapping - productCode: ${productCode}, skuId: ${skuId}, source: ${catalogItem.source}`);
 
     setTcV2(updatedTcV2);
     setMappingModalOpen(false);
