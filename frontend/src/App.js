@@ -6903,6 +6903,96 @@ function App() {
     setShowPhase3ExportModal(false);
     resetPhase3Export();
   };
+  
+  const downloadTtkOnly = async () => {
+    if (!preflightResult) return;
+    
+    // Guard — dish-first rule: Double-check no dish skeletons needed
+    if (preflightResult.counts?.dishSkeletons > 0) {
+      setPhase3ErrorDetails({
+        type: 'DISH_GUARD_VIOLATION',
+        message: 'TTK-only экспорт заблокирован',
+        hint: 'Сначала импортируйте скелеты блюд в iiko, затем попробуйте снова'
+      });
+      setPhase3ExportState('error');
+      return;
+    }
+    
+    setPhase3ExportMessage({ type: 'info', text: '🔄 Создание TTK файла...' });
+    
+    try {
+      const response = await fetch(`${API}/v1/export/ttk-only`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          techcardIds: [currentTechCardId || 'current'],
+          operational_rounding: true,
+          organization_id: 'default'
+        })
+      });
+      
+      if (!response.ok) {
+        // Handle guard response
+        if (response.status === 403) {
+          const errorData = await response.json();
+          if (errorData.error === 'PRE_FLIGHT_REQUIRED') {
+            setPhase3ErrorDetails({
+              type: 'PRE_FLIGHT_REQUIRED',
+              message: errorData.message,
+              hint: errorData.details || 'Используйте ZIP экспорт для получения скелетов блюд'
+            });
+            setPhase3ExportState('error');
+            return;
+          }
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // Handle TTK file download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Extract filename from response headers
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'iiko_TTK.xlsx';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Create download link
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      setPhase3ExportMessage({
+        type: 'success',
+        text: '✅ TTK файл скачан успешно'
+      });
+      
+    } catch (error) {
+      console.error('TTK-only export error:', error);
+      setPhase3ErrorDetails({
+        type: 'NETWORK',
+        message: error.message,
+        hint: 'Ошибка скачивания TTK файла. Попробуйте ZIP экспорт.'
+      });
+      setPhase3ExportState('error');
+      setPhase3ExportMessage({
+        type: 'error',
+        text: '❌ Ошибка скачивания TTK файла'
+      });
+    }
+  };
 
   const generateMenu = async () => {
     try {
