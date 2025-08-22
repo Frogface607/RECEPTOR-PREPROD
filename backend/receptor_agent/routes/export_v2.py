@@ -182,7 +182,7 @@ class PreflightOrchestrator:
             if not dish_article:
                 # Case 1: No article at all
                 needs_skeleton = True
-                logger.info(f"Dish '{techcard.name}' has no article - needs skeleton")
+                logger.info(f"Dish '{techcard.meta.title}' has no article - needs skeleton")
             else:
                 # Case 2: Has article but check if it exists in RMS
                 article_exists = await self._check_dish_article_in_rms(dish_article, organization_id)
