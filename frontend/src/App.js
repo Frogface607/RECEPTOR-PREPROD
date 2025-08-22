@@ -17769,7 +17769,7 @@ function App() {
                     </div>
                   </div>
                   
-                  {/* Phase 3.5: Enhanced Instruction with Guards */}
+                  {/* Phase 3.5 + Guard: Enhanced Instruction with Guards */}
                   <div className="bg-gray-700/50 border border-gray-600/50 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <div className="text-2xl">💡</div>
@@ -17785,10 +17785,26 @@ function App() {
                             <div className="mt-2 text-yellow-300">
                               ❗ Без предварительного импорта скелетов ТТК не импортируется (ошибка "артикул не найден")
                             </div>
+                            {preflightResult.counts?.dishSkeletons > 0 && (
+                              <div className="mt-2 p-3 bg-yellow-900/30 border border-yellow-600/50 rounded">
+                                <div className="font-bold text-yellow-300">🛡️ Защита "dish-first rule":</div>
+                                <div className="text-yellow-400 text-xs">
+                                  TTK-only экспорт заблокирован, т.к. блюда отсутствуют в номенклатуре iiko.
+                                  Используйте ZIP экспорт для получения скелетов блюд.
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="text-green-400 text-sm mt-1">
-                            ✅ Все артикулы найдены в iiko. Можно сразу импортировать файл ТТК.
+                            <div className="flex items-center mb-2">
+                              <span className="text-green-300">✅ Все артикулы найдены в iiko.</span>
+                            </div>
+                            <div>Доступны оба варианта экспорта:</div>
+                            <div className="ml-4 mt-1">
+                              <div>• ZIP файл (полный экспорт)</div>
+                              <div>• TTK файл (только техкарта)</div>
+                            </div>
                           </div>
                         )}
                       </div>
