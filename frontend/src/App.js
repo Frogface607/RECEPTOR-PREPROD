@@ -67,6 +67,14 @@ function App() {
   });
   const [isExportProcessing, setIsExportProcessing] = useState(false);
   const [exportMessage, setExportMessage] = useState({ type: '', text: '' });
+  
+  // Phase 3: FE-04-min Export to iiko (2 steps) states
+  const [showPhase3ExportModal, setShowPhase3ExportModal] = useState(false);
+  const [phase3ExportState, setPhase3ExportState] = useState('idle'); // 'idle', 'running_preflight', 'ready_zip', 'error'
+  const [preflightResult, setPreflightResult] = useState(null);
+  const [phase3ExportMessage, setPhase3ExportMessage] = useState({ type: '', text: '' });
+  const [zipDownloadUrl, setZipDownloadUrl] = useState(null);
+  const [phase3ErrorDetails, setPhase3ErrorDetails] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingType, setLoadingType] = useState(''); // 'techcard', 'sales', 'pairing', 'photo'
