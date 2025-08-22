@@ -323,7 +323,7 @@ class Phase35BackendTester:
                                         f"HTTP {claim_response.status_code}", claim_time)
                 else:
                     self.log_test("ArticleAllocator Integration", False,
-                                "No articles allocated", response_time)
+                                f"Response: {data}", response_time)
             else:
                 self.log_test("ArticleAllocator Integration", False,
                             f"HTTP {response.status_code}: {response.text[:200]}", response_time)
