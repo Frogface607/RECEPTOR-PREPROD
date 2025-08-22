@@ -3481,6 +3481,23 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showAdvancedActions]);
   
+  // Phase 3: Keyboard shortcut for export (E key)
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Only trigger if not typing in an input field and modal is not open
+      if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA' && 
+          !showPhase3ExportModal && !mappingModalOpen && !showExportWizard) {
+        if (event.key.toLowerCase() === 'e' && tcV2) {
+          event.preventDefault();
+          startPhase3Export();
+        }
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [tcV2, showPhase3ExportModal, mappingModalOpen, showExportWizard]);
+  
   // P0-2: Debounced auto-mapping with 600ms delay
   const [autoMappingDebounceTimer, setAutoMappingDebounceTimer] = useState(null);
   
