@@ -391,8 +391,16 @@ def search_catalog(
                     if connection_status.get("organization_id"):
                         organization_id = connection_status["organization_id"]
                     
-                    # Enhanced search with RU-normalization
-                    rms_products = rms_service.search_rms_products_enhanced(organization_id, query, limit)
+                    # FIX-A: Enhanced search based on search_by parameter
+                    if search_by == "article":
+                        # SRCH-02: Exact search by article
+                        rms_products = rms_service.search_rms_products_by_article(organization_id, q, limit)
+                    elif search_by == "id":
+                        # MAP-01: Search by ID for article lookup
+                        rms_products = rms_service.search_rms_products_by_id(organization_id, q, limit)
+                    else:
+                        # Default: Enhanced name search
+                        rms_products = rms_service.search_rms_products_enhanced(organization_id, q, limit)
                     
                     for product in rms_products:
                         rms_results.append({
