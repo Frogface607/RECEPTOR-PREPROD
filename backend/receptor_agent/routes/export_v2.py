@@ -631,7 +631,7 @@ async def run_preflight_check(request: Request):
 @router.post("/export/zip")
 async def create_dual_export_zip(request: Request):
     """
-    EX-03: Dual Export (ZIP)
+    EX-03: Dual Export (ZIP) with Guard — dish-first rule
     
     Body:
     {
@@ -655,11 +655,34 @@ async def create_dual_export_zip(request: Request):
             raise HTTPException(400, "techcardIds list is required")
         
         preflight_result = body.get('preflight_result')
+        organization_id = body.get('organization_id', 'default')
+        
+        # Guard — dish-first rule: Check if preflight was bypassed with missing dishes
         if not preflight_result:
-            raise HTTPException(400, "preflight_result is required")
+            # No preflight provided - run our own check for guard validation
+            logger.warning("ZIP export called without preflight_result - running guard check")
+            guard_result = await preflight_orchestrator.run_preflight(techcard_ids, organization_id)
+            
+            if guard_result["counts"]["dishSkeletons"] > 0:
+                # Guard triggered: dishes missing from RMS, cannot export TTK without skeletons
+                missing_dishes = guard_result["missing"]["dishes"]
+                raise HTTPException(400, {
+                    "error": "PRE_FLIGHT_REQUIRED",
+                    "message": "Нельзя экспортировать ТК без создания блюд в iiko. Сначала импортируйте скелеты блюд.",
+                    "missing_dishes": missing_dishes,
+                    "dish_count": len(missing_dishes),
+                    "required_action": "import_dish_skeletons_first",
+                    "preflight_result": guard_result
+                })
+            else:
+                # No dishes missing, use guard result as preflight
+                preflight_result = guard_result
+        
+        # Additional guard: Validate preflight result has dish skeleton info
+        if preflight_result["counts"]["dishSkeletons"] > 0:
+            logger.info(f"ZIP export proceeding with {preflight_result['counts']['dishSkeletons']} dish skeletons")
         
         operational_rounding = body.get('operational_rounding', True)
-        organization_id = body.get('organization_id', 'default')
         
         # Create export ZIP
         zip_buffer = await dual_exporter.create_export_zip(
