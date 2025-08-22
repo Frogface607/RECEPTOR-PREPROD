@@ -147,7 +147,7 @@
 
 user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)
 
-CURRENT PHASE: Phase 3.5 — FE binding + Dish-first export - Critical dish article validation for iiko compatibility with automatic skeleton generation and enhanced UI guards."
+CURRENT PHASE: FIX-A — Automapping uses article end-to-end - Critical bug fix: Automapping and search sometimes save GUID/code instead of article, causing iiko export failures. Need to consistently use nomenclature.num (article) throughout."
 
 backend:
   - task: "AA-01: ArticleAllocator API Endpoints Implementation"
