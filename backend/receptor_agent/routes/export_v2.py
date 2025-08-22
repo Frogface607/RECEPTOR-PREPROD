@@ -188,7 +188,7 @@ class PreflightOrchestrator:
                 article_exists = await self._check_dish_article_in_rms(dish_article, organization_id)
                 if not article_exists:
                     needs_skeleton = True
-                    logger.info(f"Dish '{techcard.name}' article '{dish_article}' not found in RMS - needs skeleton")
+                    logger.info(f"Dish '{techcard.meta.title}' article '{dish_article}' not found in RMS - needs skeleton")
             
             if needs_skeleton:
                 # Try to find by name in iiko RMS first
