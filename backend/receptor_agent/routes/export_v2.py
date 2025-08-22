@@ -197,7 +197,7 @@ class PreflightOrchestrator:
                 if found_article:
                     # Update techcard with found article
                     techcard.article = found_article
-                    logger.info(f"Found existing dish '{techcard.name}' in RMS with article '{found_article}'")
+                    logger.info(f"Found existing dish '{techcard.meta.title}' in RMS with article '{found_article}'")
                 else:
                     # Allocate new article via AA-01
                     entity_id = f"dish_{getattr(techcard, 'id', techcard.name.replace(' ', '_'))}"
