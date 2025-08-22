@@ -709,6 +709,78 @@ async def create_dual_export_zip(request: Request):
         raise HTTPException(500, f"Dual export failed: {str(e)}")
 
 
+@router.post("/export/ttk-only") 
+async def create_ttk_only_export(request: Request):
+    """
+    Guard — dish-first rule: TTK-only export with strict dish validation
+    
+    This endpoint enforces the dish-first rule by blocking TTK-only exports
+    when dishes don't exist in iiko RMS nomenclature.
+    
+    Body:
+    {
+        "techcardIds": ["tc-1", "tc-2"],
+        "operational_rounding": true,
+        "organization_id": "org-123"
+    }
+    
+    Returns:
+        - iiko_TTK.xlsx file if all dishes exist in RMS
+        - PRE_FLIGHT_REQUIRED error if dishes missing
+    """
+    try:
+        body = await request.json()
+        
+        techcard_ids = body.get('techcardIds', [])
+        if not techcard_ids:
+            raise HTTPException(400, "techcardIds list is required")
+        
+        organization_id = body.get('organization_id', 'default')
+        operational_rounding = body.get('operational_rounding', True)
+        
+        # Guard — dish-first rule: Always run preflight check for TTK-only exports
+        logger.info("TTK-only export requested - running dish guard validation")
+        preflight_result = await preflight_orchestrator.run_preflight(techcard_ids, organization_id)
+        
+        # Strict guard: Block TTK-only export if any dishes missing
+        if preflight_result["counts"]["dishSkeletons"] > 0:
+            missing_dishes = preflight_result["missing"]["dishes"]
+            
+            logger.warning(f"TTK-only export blocked: {len(missing_dishes)} dishes missing from RMS")
+            
+            raise HTTPException(403, {
+                "error": "PRE_FLIGHT_REQUIRED",
+                "message": "Нельзя экспортировать только ТК - отсутствуют блюда в номенклатуре iiko",
+                "details": "iiko отвергает ТК, если 'Артикул блюда' не существует в номенклатуре",
+                "missing_dishes": missing_dishes,
+                "dish_count": len(missing_dishes),
+                "required_action": "import_dish_skeletons_first",
+                "solution": "Используйте ZIP экспорт для получения скелетов блюд",
+                "preflight_result": preflight_result
+            })
+        
+        # Guard passed: All dishes exist, create TTK-only file
+        logger.info("Dish guard passed - creating TTK-only export")
+        
+        ttk_xlsx = await dual_exporter._create_ttk_xlsx(techcard_ids, operational_rounding)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"iiko_TTK_{timestamp}.xlsx"
+        
+        return StreamingResponse(
+            iter([ttk_xlsx.getvalue()]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"TTK-only export error: {e}")
+        raise HTTPException(500, f"TTK-only export failed: {str(e)}")
+
+
 @router.get("/export/status")
 async def get_export_status():
     """Get export system status"""
