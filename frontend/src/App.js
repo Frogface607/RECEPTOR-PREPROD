@@ -3433,7 +3433,7 @@ function App() {
       
       if (isArticleQuery) {
         // Search by exact article match
-        const response = await fetch(`${API}/v1/techcards.v2/iiko-search?q=${encodeURIComponent(query)}&search_by=article&limit=10`);
+        const response = await fetch(`${API}/v1/techcards.v2/catalog-search?q=${encodeURIComponent(query)}&search_by=article&source=iiko&limit=10`);
         const data = await response.json();
         
         if (data.status === 'success' && data.items.length > 0) {
