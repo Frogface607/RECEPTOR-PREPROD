@@ -286,7 +286,7 @@ class Phase35BackendTester:
                 "entity_names": ["Test Dish 1", "Test Dish 2"]
             }
             
-            response = await self.client.post(f"{API_BASE}/articles/allocate", json=payload)
+            response = await self.client.post(f"{API_BASE}/techcards.v2/articles/allocate", json=payload)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
