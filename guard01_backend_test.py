@@ -313,7 +313,9 @@ class Guard01BackendTester:
             
             if response.status_code == 403:
                 try:
-                    data = response.json()
+                    response_data = response.json()
+                    # Handle FastAPI HTTPException format with 'detail' wrapper
+                    data = response_data.get('detail', response_data)
                     
                     # Validate all required error response fields
                     error_validations = {
