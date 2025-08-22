@@ -15879,7 +15879,7 @@ function App() {
                       // P0: Handle RU input composition (IME)
                       debouncedIikoSearch(e.target.value);
                     }}
-                    placeholder="Поиск в номенклатуре iiko: картоф, яйцо, молоко 3.2..."
+                    placeholder="Поиск в iiko: название или артикул (02684)..."
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400"
                   />
                   
