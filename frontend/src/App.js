@@ -6636,6 +6636,188 @@ function App() {
     }
   };
 
+  // Phase 3: FE-04-min Export to iiko (2 steps) functions
+  const startPhase3Export = async () => {
+    if (!tcV2) return;
+    
+    setShowPhase3ExportModal(true);
+    setPhase3ExportState('running_preflight');
+    setPhase3ExportMessage({ type: 'info', text: '🔄 Запуск префлайта...' });
+    
+    try {
+      // Step 1: Run preflight
+      await runPreflight();
+    } catch (error) {
+      console.error('Phase 3 export error:', error);
+      setPhase3ExportState('error');
+      setPhase3ErrorDetails({
+        type: 'NETWORK',
+        message: error.message,
+        hint: 'Сеть недоступна. Повторите попытку.'
+      });
+      setPhase3ExportMessage({ 
+        type: 'error', 
+        text: '❌ Ошибка при запуске экспорта'
+      });
+    }
+  };
+  
+  const runPreflight = async () => {
+    try {
+      const response = await fetch(`${API}/v1/export/preflight`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          techcardIds: [currentTechCardId || 'current'],
+          organization_id: 'default'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Preflight result:', data);
+      
+      setPreflightResult(data);
+      setPhase3ExportState('ready_zip');
+      
+      // Show preflight completion message
+      const dishCount = data.counts?.dishSkeletons || 0;
+      const productCount = data.counts?.productSkeletons || 0;
+      
+      setPhase3ExportMessage({
+        type: 'success',
+        text: `✅ Preflight завершён: скелетов блюд ${dishCount}, товаров ${productCount}`
+      });
+      
+    } catch (error) {
+      console.error('Preflight error:', error);
+      throw error;
+    }
+  };
+  
+  const generateZipExport = async () => {
+    if (!preflightResult) return;
+    
+    setPhase3ExportState('running_preflight'); // Show loading state
+    setPhase3ExportMessage({ type: 'info', text: '🔄 Создание ZIP файла...' });
+    
+    try {
+      const response = await fetch(`${API}/v1/export/zip`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          techcardIds: [currentTechCardId || 'current'],
+          operational_rounding: true,
+          organization_id: 'default',
+          preflight_result: preflightResult
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // Handle ZIP download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Extract filename from response headers
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'iiko_export.zip';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Create download link
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      setPhase3ExportState('ready_zip');
+      setPhase3ExportMessage({
+        type: 'success',
+        text: '✅ ZIP готов к скачиванию'
+      });
+      
+      // Claim articles (fire and forget)
+      await claimArticles();
+      
+    } catch (error) {
+      console.error('ZIP export error:', error);
+      setPhase3ExportState('error');
+      setPhase3ErrorDetails({
+        type: 'NETWORK',
+        message: error.message,
+        hint: 'Ошибка создания ZIP файла. Повторите попытку.'
+      });
+      setPhase3ExportMessage({
+        type: 'error',
+        text: '❌ Ошибка создания ZIP файла'
+      });
+    }
+  };
+  
+  const claimArticles = async () => {
+    if (!preflightResult) return;
+    
+    try {
+      const allArticles = [
+        ...(preflightResult.generated?.dishArticles || []),
+        ...(preflightResult.generated?.productArticles || [])
+      ];
+      
+      if (allArticles.length === 0) return;
+      
+      const response = await fetch(`${API}/v1/techcards.v2/articles/claim`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          articles: allArticles,
+          organization_id: 'default'
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Articles claimed:', data);
+      }
+      
+    } catch (error) {
+      console.warn('Error claiming articles:', error);
+      // Don't throw - this is a background operation
+    }
+  };
+  
+  const resetPhase3Export = () => {
+    setPhase3ExportState('idle');
+    setPreflightResult(null);
+    setPhase3ExportMessage({ type: '', text: '' });
+    setZipDownloadUrl(null);
+    setPhase3ErrorDetails(null);
+  };
+  
+  const closePhase3ExportModal = () => {
+    setShowPhase3ExportModal(false);
+    resetPhase3Export();
+  };
+
   const generateMenu = async () => {
     try {
       setIsGenerating(true);
