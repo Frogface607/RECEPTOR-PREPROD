@@ -16070,7 +16070,7 @@ function App() {
                               </div>
                             )}
                             {item.sku_id && !item.article && (
-                              <div className="text-gray-500" title="GUID - системный идентификатор">
+                              <div className="text-gray-500" title="Код быстрого набора iikoFront (не используется в ТТК)">
                                 ID: {item.sku_id.substring(0, 8)}...
                               </div>
                             )}
