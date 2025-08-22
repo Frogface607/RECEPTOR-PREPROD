@@ -69,7 +69,9 @@ class Guard01BackendTester:
             if response.status_code == 403:
                 # Expected: Guard should trigger PRE_FLIGHT_REQUIRED error
                 try:
-                    data = response.json()
+                    response_data = response.json()
+                    # Handle FastAPI HTTPException format with 'detail' wrapper
+                    data = response_data.get('detail', response_data)
                     
                     # Validate guard error response structure
                     required_fields = ["error", "message", "missing_dishes", "dish_count", "required_action", "solution"]
