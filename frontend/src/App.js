@@ -17632,15 +17632,28 @@ function App() {
                     </div>
                   </div>
                   
-                  {/* Helpful Instruction */}
+                  {/* Phase 3.5: Enhanced Instruction with Guards */}
                   <div className="bg-gray-700/50 border border-gray-600/50 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <div className="text-2xl">💡</div>
-                      <div>
+                      <div className="flex-1">
                         <div className="font-bold text-gray-300">Инструкция по импорту:</div>
-                        <div className="text-gray-400 text-sm mt-1">
-                          Сначала импортируйте скелеты в iikoWeb, затем — файл ТТК.
-                        </div>
+                        {(preflightResult.counts?.dishSkeletons > 0 || preflightResult.counts?.productSkeletons > 0) ? (
+                          <div className="text-yellow-400 text-sm mt-1">
+                            <div className="font-bold">⚠️ Требуется двухэтапный импорт:</div>
+                            <div className="mt-1">
+                              1. Сначала импортируйте скелеты в iikoWeb ({preflightResult.counts?.dishSkeletons || 0} блюд, {preflightResult.counts?.productSkeletons || 0} товаров)
+                            </div>
+                            <div>2. Затем импортируйте файл ТТК</div>
+                            <div className="mt-2 text-yellow-300">
+                              ❗ Без предварительного импорта скелетов ТТК не импортируется (ошибка "артикул не найден")
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-green-400 text-sm mt-1">
+                            ✅ Все артикулы найдены в iiko. Можно сразу импортировать файл ТТК.
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
