@@ -3413,6 +3413,28 @@ function App() {
     setIsSearchingIiko(true);
     
     try {
+      // Phase 3: Check if query is article number (4-6 digits)
+      const isArticleQuery = /^[0-9]{4,6}$/.test(query);
+      
+      if (isArticleQuery) {
+        // Search by exact article match
+        const response = await fetch(`${API}/v1/techcards.v2/iiko-search?q=${encodeURIComponent(query)}&search_by=article&limit=10`);
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.items.length > 0) {
+          setIikoSearchResults(data.items);
+          setIikoSearchBadge({
+            count: data.items.length,
+            latency: data.latency || 0,
+            orgId: 'default',
+            connection_status: 'connected',
+            search_type: 'article_exact'
+          });
+          return;
+        }
+      }
+      
+      // Default text search
       const { performSearch } = useIikoSearch('default');
       const result = await performSearch(query, { limit: 5 });
       
