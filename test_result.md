@@ -165,17 +165,17 @@ backend:
         agent: "main"
         comment: "🔧 AA-01 ARTICLEALLOCATOR API ENDPOINTS IMPLEMENTATION COMPLETED: Successfully implemented comprehensive ArticleAllocator API endpoints in techcards_v2.py routes. CORE ENDPOINTS ADDED: 5 complete API endpoints implemented - POST /articles/allocate (allocate unique article numbers with reservation system), POST /articles/claim (claim reserved articles for permanent skeleton export), POST /articles/release (release reserved articles by entity_id with reason tracking), GET /articles/stats/{organization_id} (get allocation statistics), GET /articles/width/{organization_id} (get article width with caching). COMPREHENSIVE VALIDATION: All endpoints include proper request validation (article_type enum validation, count limits 1-100, entity array length matching), comprehensive error handling with HTTPException responses, detailed response structures with success/failure counts. INTEGRATION FEATURES: Full integration with ArticleAllocator service singleton, proper enum conversion (string to ArticleType), reservation expiry calculation (48h TTL), idempotency support via entity_ids, organization-based width calculation with caching. TECHNICAL IMPLEMENTATION: Added missing timedelta import for datetime calculations, proper async/await patterns throughout, comprehensive request body validation, detailed API documentation with request/response examples. Ready for backend testing to validate complete ArticleAllocator workflow including allocation, claiming, release operations and statistics retrieval."
 
-  - task: "PF-02: Preflight Orchestrator Implementation"
+  - task: "PF-02-bind: Preflight Orchestrator with Dish Article Validation"
     implemented: true
-    working: true
+    working: false
     file: "backend/receptor_agent/routes/export_v2.py"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    priority: "critical"
+    needs_retesting: true
     status_history:
-      - working: true
-        agent: "testing" 
-        comment: "✅ PF-02: Preflight Orchestrator Implementation - FULLY OPERATIONAL (80% success rate, 4/5 tests passed) ✅ Basic Preflight Check - Proper response structure with ttkDate, missing items, generated articles, counts ✅ Edge Case Handling - Invalid inputs, empty techcards, missing organization IDs handled properly ✅ TTK Date Resolution - Date conflict resolution within +7 days window working correctly ✅ Organization Isolation - Separate processing per organization confirmed ❌ Article Discovery Workflow - Failed with mock data (expected with no real iiko RMS integration)"
+      - working: false
+        agent: "main"
+        comment: "🔧 PF-02-BIND DISH ARTICLE VALIDATION ENHANCEMENT COMPLETED: Enhanced Phase 3.5 preflight orchestrator with critical dish-first logic for iiko compatibility. DISH VALIDATION LOGIC: Enhanced _process_dishes with RMS existence check (if dish.article empty OR doesn't exist in RMS → generate skeleton), added _check_dish_article_in_rms method for exact article lookup via MongoDB, proper distinction between missing articles and non-existent articles in RMS. TECHCARD LOADING: Implemented _load_techcards with real MongoDB connection using same pattern as iiko_rms_service, support for 'current' techcard loading for frontend integration, fallback mock techcard creation with mixed article scenarios (some ingredients with/without product_code). SKELETON GENERATION: Enhanced missing dishes list with proper structure (id, name, article, type, unit, yield), generated articles tracking for article claiming, comprehensive logging for debugging article allocation workflow. INTEGRATION FEATURES: MongoDB connection using MONGO_URL environment variable, proper error handling and fallback mechanisms, seamless integration with existing AA-01 ArticleAllocator, structured mock data for testing dish skeleton generation. Ready for backend testing to validate dish article existence checking, skeleton generation for missing dishes, real techcard loading, and complete preflight workflow with Phase 3.5 enhancements."
 
   - task: "EX-03: Dual Export (ZIP) Implementation"
     implemented: true
