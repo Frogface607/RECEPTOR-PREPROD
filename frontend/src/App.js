@@ -3877,11 +3877,12 @@ function App() {
         throw new Error('Техкарта не найдена или повреждена');
       }
       
-      // Update tcV2 with new SKUs
+      // Update tcV2 with new SKUs and product codes
       const updatedTcV2 = { ...tcV2 };
       let changesCount = 0;
       
-      acceptedResults.forEach(result => {
+      // MAP-01: Enhanced processing with article lookup and fallback
+      for (const result of acceptedResults) {
         // CRITICAL FIX: Validate result data before applying
         if (result.suggestion && 
             typeof result.index === 'number' && 
@@ -3889,16 +3890,47 @@ function App() {
             result.index < updatedTcV2.ingredients.length &&
             updatedTcV2.ingredients[result.index]) {
           
+          const suggestion = result.suggestion;
+          let productCode = null;
+          
+          // MAP-01: Extract article with priority: article > code (but avoid GUID)
+          if (suggestion.article) {
+            productCode = String(suggestion.article).padStart(5, '0');
+          } else if (suggestion.product_code) {
+            productCode = suggestion.product_code;
+          } else if (suggestion.code && !suggestion.code.includes('-')) {
+            // Only use code if it's not a GUID (no hyphens)
+            productCode = suggestion.code;
+          } else if (suggestion.sku_id && !suggestion.article) {
+            // MAP-01: If article missing, make additional request for article by id
+            try {
+              console.log(`MAP-01: Looking up article for skuId: ${suggestion.sku_id}`);
+              const response = await fetch(`${API}/v1/techcards.v2/iiko-search?q=${encodeURIComponent(suggestion.sku_id)}&search_by=id&limit=1`);
+              const data = await response.json();
+              
+              if (data.status === 'success' && data.items.length > 0 && data.items[0].article) {
+                productCode = String(data.items[0].article).padStart(5, '0');
+                console.log(`MAP-01: Found article ${productCode} for skuId ${suggestion.sku_id}`);
+              }
+            } catch (error) {
+              console.warn('MAP-01: Could not lookup article by skuId:', error);
+            }
+          }
+          
+          // Apply mapping with product_code
           updatedTcV2.ingredients[result.index] = {
             ...updatedTcV2.ingredients[result.index],
-            skuId: result.suggestion.sku_id,
+            skuId: suggestion.sku_id,
+            product_code: productCode, // MAP-01: Always save article when available
             source: 'rms'
           };
           changesCount++;
+          
+          console.log(`MAP-01: Applied mapping for ${result.ingredient_name}: skuId=${suggestion.sku_id}, product_code=${productCode}`);
         } else {
           console.warn('Skipped invalid result:', result);
         }
-      });
+      }
       
       if (changesCount === 0) {
         throw new Error('Не удалось применить изменения - некорректные данные');
@@ -3912,7 +3944,7 @@ function App() {
       
       setAutoMappingMessage({ 
         type: 'success', 
-        text: `✅ Применено ${changesCount} изменений. Покрытие цен обновлено!` 
+        text: `✅ Применено ${changesCount} изменений с артикулами. Покрытие цен обновлено!` 
       });
       
     } catch (error) {
