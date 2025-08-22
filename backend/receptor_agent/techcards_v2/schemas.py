@@ -118,6 +118,7 @@ class TechCardV2(BaseModel):
     cost: CostV2 = Field(default_factory=CostV2)
     costMeta: Optional[CostMetaV2] = None
     printNotes: Optional[List[str]] = Field(default_factory=list)
+    article: Optional[str] = None  # Phase 3.5: Dish article for iiko compatibility
 
     model_config = ConfigDict(populate_by_name=True)
     
