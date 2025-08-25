@@ -79,12 +79,12 @@ class FEExportWizardMockValidationTester:
             
             # Get the techcard from response
             techcard_1 = data1.get('card')
-            if not techcard_1 or not techcard_1.get('id'):
+            if not techcard_1 or not techcard_1.get('meta', {}).get('id'):
                 self.log_test("Generate Real TechCard 1", False, 
                             f"No techcard in response: {data1}")
                 return
             
-            techcard_id_1 = techcard_1.get('id')
+            techcard_id_1 = techcard_1.get('meta', {}).get('id')
             
             # Generate second tech card
             dish_name_2 = "Стейк из говядины с картофельным пюре"
