@@ -314,12 +314,63 @@ class ExportWizardFETester:
             )
             return {}
     
-    async def download_and_hash(self, zip_url: str) -> Optional[str]:
-        """Step 4: Download ZIP from zipUrl, calculate hash and extract"""
+    async def download_and_hash(self, export_data: Dict[str, Any]) -> Optional[str]:
+        """Step 4: Download ZIP from zipUrl or use direct ZIP, calculate hash and extract"""
         print("\n⬇️ STEP 4: Download and Hash ZIP")
         
+        # Handle direct ZIP file
+        if export_data.get('direct_zip'):
+            zip_path = export_data.get('zip_path')
+            if not zip_path or not os.path.exists(zip_path):
+                self.log_test("Download ZIP", False, "Direct ZIP file not found")
+                return None
+            
+            # Read the ZIP file
+            with open(zip_path, 'rb') as f:
+                zip_content = f.read()
+            
+            # Calculate hash and size
+            sha256_hash = hashlib.sha256(zip_content).hexdigest()
+            file_size = len(zip_content)
+            
+            # Extract ZIP
+            extract_path = os.path.join(self.temp_dir, "extracted")
+            os.makedirs(extract_path, exist_ok=True)
+            
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(extract_path)
+                    extracted_files = zip_ref.namelist()
+                
+                self.log_test(
+                    "Download ZIP",
+                    True,
+                    f"Direct ZIP processed: Size: {file_size} bytes, SHA256: {sha256_hash[:16]}..., Files: {len(extracted_files)}",
+                    0.0
+                )
+                
+                # Save metadata
+                zip_meta = {
+                    "sha256": sha256_hash,
+                    "size_bytes": file_size,
+                    "extracted_files": extracted_files,
+                    "zip_path": zip_path,
+                    "extract_path": extract_path,
+                    "direct_zip": True,
+                    "timestamp": datetime.now().isoformat()
+                }
+                self.save_artifact("zip_meta.json", zip_meta)
+                
+                return extract_path
+                
+            except Exception as e:
+                self.log_test("Download ZIP", False, f"Failed to extract direct ZIP: {str(e)}")
+                return None
+        
+        # Handle ZIP URL
+        zip_url = export_data.get('zipUrl')
         if not zip_url:
-            self.log_test("Download ZIP", False, "No ZIP URL provided")
+            self.log_test("Download ZIP", False, "No ZIP URL or direct ZIP provided")
             return None
         
         start_time = time.time()
