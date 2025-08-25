@@ -1,0 +1,65 @@
+{
+  "timestamp": "20250825_213203",
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 2,
+    "failed_tests": 4,
+    "success_rate": 33.33333333333333,
+    "critical_mock_content_eliminated": false,
+    "real_content_present": false
+  },
+  "detailed_results": [
+    {
+      "test": "Generate Real TechCards",
+      "status": "\u2705 PASS",
+      "success": true,
+      "details": "Generated 2 real techcards: \u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439 (dab8f0d1...), \u0421\u0442\u0435\u0439\u043a \u0438\u0437 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u044b \u0441 \u043a\u0430\u0440\u0442\u043e\u0444\u0435\u043b\u044c\u043d\u044b\u043c \u043f\u044e\u0440\u0435 (61e538d1...)",
+      "response_time": "28.196s"
+    },
+    {
+      "test": "Preflight Check",
+      "status": "\u2705 PASS",
+      "success": true,
+      "details": "Preflight successful - TTK date: 2025-08-25, Response keys: ['status', 'ttkDate', 'missing', 'generated', 'counts']",
+      "response_time": "0.048s"
+    },
+    {
+      "test": "ZIP Export",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "ZIP export failed: 500 - {\"detail\":\"Export failed: 404: No techcards found for the provided IDs\"}",
+      "response_time": "N/A"
+    },
+    {
+      "test": "XLSX Mock Content Scan",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Article Format Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Real Content Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content or techcards available",
+      "response_time": "N/A"
+    }
+  ],
+  "generated_techcards": [
+    {
+      "id": "dab8f0d1-3479-42f8-b693-99186e940511",
+      "name": "\u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439"
+    },
+    {
+      "id": "61e538d1-2af4-4716-bf6b-debff4096e94",
+      "name": "\u0421\u0442\u0435\u0439\u043a \u0438\u0437 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u044b \u0441 \u043a\u0430\u0440\u0442\u043e\u0444\u0435\u043b\u044c\u043d\u044b\u043c \u043f\u044e\u0440\u0435"
+    }
+  ]
+}
