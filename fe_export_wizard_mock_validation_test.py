@@ -189,7 +189,7 @@ class FEExportWizardMockValidationTester:
             response = await self.client.post(
                 f"{API_BASE}/export/zip",
                 json={
-                    "techcard_ids": techcard_ids,
+                    "techcardIds": techcard_ids,
                     "organization_id": self.organization_id,
                     "preflight_result": self.preflight_data,
                     "operational_rounding": True
