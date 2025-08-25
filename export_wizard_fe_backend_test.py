@@ -223,28 +223,78 @@ class ExportWizardFETester:
             response_time = time.time() - start_time
             
             if response.status_code == 200:
-                export_data = response.json()
+                # Check if response is JSON or binary
+                content_type = response.headers.get('content-type', '')
                 
-                zip_url = export_data.get('zipUrl')
-                file_list = export_data.get('files', [])
-                
-                self.log_test(
-                    "ZIP Export",
-                    True,
-                    f"ZIP URL: {zip_url}, Files: {len(file_list)}",
-                    response_time
-                )
-                
-                # Save export results
-                export_results = {
-                    "zipUrl": zip_url,
-                    "files": file_list,
-                    "response": export_data,
-                    "timestamp": datetime.now().isoformat()
-                }
-                self.save_artifact("export.json", export_results)
-                
-                return export_data
+                if 'application/json' in content_type:
+                    # JSON response with zipUrl
+                    export_data = response.json()
+                    zip_url = export_data.get('zipUrl')
+                    file_list = export_data.get('files', [])
+                    
+                    self.log_test(
+                        "ZIP Export",
+                        True,
+                        f"ZIP URL: {zip_url}, Files: {len(file_list)}",
+                        response_time
+                    )
+                    
+                    # Save export results
+                    export_results = {
+                        "zipUrl": zip_url,
+                        "files": file_list,
+                        "response": export_data,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    self.save_artifact("export.json", export_results)
+                    
+                    return export_data
+                    
+                elif 'application/zip' in content_type or 'application/octet-stream' in content_type:
+                    # Direct ZIP file response
+                    zip_content = response.content
+                    
+                    # Save ZIP file directly
+                    zip_path = os.path.join(self.temp_dir, "direct_export.zip")
+                    with open(zip_path, 'wb') as f:
+                        f.write(zip_content)
+                    
+                    self.log_test(
+                        "ZIP Export",
+                        True,
+                        f"Direct ZIP file received: {len(zip_content)} bytes",
+                        response_time
+                    )
+                    
+                    # Create export data structure for direct ZIP
+                    export_data = {
+                        "direct_zip": True,
+                        "zip_path": zip_path,
+                        "size_bytes": len(zip_content),
+                        "content_type": content_type
+                    }
+                    
+                    # Save export results
+                    export_results = {
+                        "direct_zip": True,
+                        "zip_path": zip_path,
+                        "size_bytes": len(zip_content),
+                        "content_type": content_type,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    self.save_artifact("export.json", export_results)
+                    
+                    return export_data
+                    
+                else:
+                    # Unknown content type
+                    self.log_test(
+                        "ZIP Export",
+                        False,
+                        f"Unknown content type: {content_type}",
+                        response_time
+                    )
+                    return {}
                 
             else:
                 self.log_test(
