@@ -1,0 +1,56 @@
+{
+  "timestamp": "20250825_212804",
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 0,
+    "failed_tests": 6,
+    "success_rate": 0.0,
+    "critical_mock_content_eliminated": false,
+    "real_content_present": false
+  },
+  "detailed_results": [
+    {
+      "test": "Generate Real TechCard 1",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "Failed to generate first techcard: 422 - {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"name\"],\"msg\":\"Field required\",\"input\":{\"dish_name\":\"\u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439\"},\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Preflight Check",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No generated techcards available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "ZIP Export",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No preflight data available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "XLSX Mock Content Scan",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Article Format Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Real Content Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content or techcards available",
+      "response_time": "N/A"
+    }
+  ],
+  "generated_techcards": []
+}
