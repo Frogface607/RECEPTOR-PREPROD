@@ -70,12 +70,21 @@ class FEExportWizardMockValidationTester:
                 return
             
             data1 = response1.json()
-            techcard_id_1 = data1.get('techcard_id')
             
-            if not techcard_id_1:
+            # Check if generation was successful
+            if data1.get('status') not in ['success', 'draft']:
                 self.log_test("Generate Real TechCard 1", False, 
-                            f"No techcard_id in response: {data1}")
+                            f"Generation failed with status: {data1.get('status')} - {data1.get('message', 'No message')}")
                 return
+            
+            # Get the techcard from response
+            techcard_1 = data1.get('card')
+            if not techcard_1 or not techcard_1.get('id'):
+                self.log_test("Generate Real TechCard 1", False, 
+                            f"No techcard in response: {data1}")
+                return
+            
+            techcard_id_1 = techcard_1.get('id')
             
             # Generate second tech card
             dish_name_2 = "Стейк из говядины с картофельным пюре"
