@@ -1,0 +1,96 @@
+{
+  "articles_found": [
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A2",
+      "article": "10002",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A3",
+      "article": "10003",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A4",
+      "article": "10004",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A5",
+      "article": "10005",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A6",
+      "article": "10006",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A7",
+      "article": "10007",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A8",
+      "article": "10008",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A9",
+      "article": "10009",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A10",
+      "article": "10010",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A11",
+      "article": "10011",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A12",
+      "article": "10012",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A13",
+      "article": "10013",
+      "format_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A14",
+      "article": "10014",
+      "format_type": "s"
+    }
+  ],
+  "formatting_issues": []
+}
