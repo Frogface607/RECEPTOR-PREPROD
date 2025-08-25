@@ -1,0 +1,19 @@
+{
+  "validation_results": [
+    {
+      "techcard_id": "6928bcf3-c657-4d8a-8936-72f41e3d2652",
+      "validation_passed": false
+    },
+    {
+      "techcard_id": "e60cc595-bb9e-4ed0-b0e3-8b526568ad73",
+      "validation_passed": false
+    },
+    {
+      "techcard_id": "baf4e146-d5cd-41a2-a0ea-7edd4f7ee2a1",
+      "validation_passed": false
+    }
+  ],
+  "validation_timestamp": "2025-08-25T20:32:30.928723",
+  "passed_count": 0,
+  "total_validated": 3
+}

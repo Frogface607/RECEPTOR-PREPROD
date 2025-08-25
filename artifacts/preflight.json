@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "ttkDate": "2025-08-25",
+  "missing": {
+    "dishes": [],
+    "products": []
+  },
+  "generated": {
+    "dishArticles": [],
+    "productArticles": []
+  },
+  "counts": {
+    "dishSkeletons": 0,
+    "productSkeletons": 0
+  }
+}
