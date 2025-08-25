@@ -1,19 +1,19 @@
 {
   "validation_results": [
     {
-      "techcard_id": "6928bcf3-c657-4d8a-8936-72f41e3d2652",
-      "validation_passed": false
+      "techcard_id": "7d6bfb27-64a7-4500-8231-16ef88118934",
+      "validation_passed": true
     },
     {
-      "techcard_id": "e60cc595-bb9e-4ed0-b0e3-8b526568ad73",
-      "validation_passed": false
+      "techcard_id": "e379d95e-3f5c-4ee9-8cd2-3480a739ef67",
+      "validation_passed": true
     },
     {
-      "techcard_id": "baf4e146-d5cd-41a2-a0ea-7edd4f7ee2a1",
-      "validation_passed": false
+      "techcard_id": "bdd32562-f14e-4969-910b-8a8d219a3f03",
+      "validation_passed": true
     }
   ],
-  "validation_timestamp": "2025-08-25T20:32:30.928723",
-  "passed_count": 0,
+  "validation_timestamp": "2025-08-25T20:36:31.637977",
+  "passed_count": 3,
   "total_validated": 3
 }

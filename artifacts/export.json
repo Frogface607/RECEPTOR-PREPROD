@@ -1,0 +1,20 @@
+{
+  "zip_size": 5143,
+  "zip_file_path": "/app/artifacts/export.zip",
+  "techcard_ids": [
+    "7d6bfb27-64a7-4500-8231-16ef88118934",
+    "e379d95e-3f5c-4ee9-8cd2-3480a739ef67",
+    "bdd32562-f14e-4969-910b-8a8d219a3f03"
+  ],
+  "operational_rounding": true,
+  "export_timestamp": "2025-08-25T20:36:31.792739",
+  "response_headers": {
+    "content-disposition": "attachment; filename=\"iiko_export_20250825_203631.zip\"",
+    "content-type": "application/zip",
+    "date": "Mon, 25 Aug 2025 20:36:30 GMT",
+    "server": "uvicorn",
+    "via": "1.1 google",
+    "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+    "transfer-encoding": "chunked"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "zip_size": 5143,
+  "files_found": [
+    "iiko_TTK.xlsx"
+  ],
+  "xlsx_validation": {
+    "iiko_TTK.xlsx": {
+      "filename": "iiko_TTK.xlsx",
+      "sheets": [
+        {
+          "name": "ТТК",
+          "rows": 3,
+          "columns": 12,
+          "article_columns": [
+            {
+              "column": 1,
+              "header": "Артикул блюда"
+            },
+            {
+              "column": 3,
+              "header": "Артикул продукта"
+            },
+            {
+              "column": 1,
+              "format_valid": true,
+              "sample_values": [
+                {
+                  "value": "DISH_MOCK_TECH_CARD",
+                  "data_type": "s",
+                  "number_format": "@"
+                },
+                {
+                  "value": "DISH_MOCK_TECH_CARD",
+                  "data_type": "s",
+                  "number_format": "@"
+                }
+              ]
+            },
+            {
+              "column": 3,
+              "format_valid": true,
+              "sample_values": [
+                {
+                  "value": "GENERATED_TEST_INGREDIENT",
+                  "data_type": "s",
+                  "number_format": "@"
+                },
+                {
+                  "value": "GENERATED_TEST_INGREDIENT_2",
+                  "data_type": "s",
+                  "number_format": "@"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "article_columns_found": [],
+      "article_format_valid": true,
+      "format_issues": []
+    }
+  },
+  "article_format_check": {}
+}
