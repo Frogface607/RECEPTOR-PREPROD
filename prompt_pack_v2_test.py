@@ -19,7 +19,7 @@ import os
 from typing import Dict, Any, List
 
 # Backend URL from environment
-BACKEND_URL = "https://iiko-menu-sync.preview.emergentagent.com"
+BACKEND_URL = "https://menu-designer-ai.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_prompt_pack_v2():

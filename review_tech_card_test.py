@@ -12,7 +12,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://iiko-menu-sync.preview.emergentagent.com/api"
+BACKEND_URL = "https://menu-designer-ai.preview.emergentagent.com/api"
 
 def test_mixed_ingredients_tech_card():
     """Test tech card generation with mixed ingredients including unit-based items"""

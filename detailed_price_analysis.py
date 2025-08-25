@@ -10,7 +10,7 @@ import re
 def analyze_detailed_pricing():
     """Detailed analysis of pricing in tech card generation"""
     
-    base_url = "https://iiko-menu-sync.preview.emergentagent.com/api"
+    base_url = "https://menu-designer-ai.preview.emergentagent.com/api"
     
     # Register user
     user_data = {
