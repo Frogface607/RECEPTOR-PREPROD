@@ -108,12 +108,12 @@ class FEExportWizardMockValidationTester:
             
             # Get the techcard from response
             techcard_2 = data2.get('card')
-            if not techcard_2 or not techcard_2.get('id'):
+            if not techcard_2 or not techcard_2.get('meta', {}).get('id'):
                 self.log_test("Generate Real TechCard 2", False, 
                             f"No techcard in response: {data2}")
                 return
             
-            techcard_id_2 = techcard_2.get('id')
+            techcard_id_2 = techcard_2.get('meta', {}).get('id')
             
             # Store generated techcards
             self.generated_techcards = [
