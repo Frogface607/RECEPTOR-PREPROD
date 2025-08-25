@@ -127,12 +127,26 @@ class TechCardWorkflowTester:
         try:
             start_time = time.time()
             
+            # First, we need to get the techcard data
+            # Let's try to get it from the database or API
+            techcard_response = await self.client.get(f"{API_BASE}/techcards.v2/{techcard_id}")
+            
+            if techcard_response.status_code != 200:
+                self.log_test(
+                    f"Get TechCard: {techcard_id}",
+                    False,
+                    f"HTTP {techcard_response.status_code}: {techcard_response.text}"
+                )
+                return False
+            
+            techcard_data = techcard_response.json()
+            
             payload = {
-                "techcardId": techcard_id
+                "techcard": techcard_data
             }
             
             response = await self.client.post(
-                f"{API_BASE}/techcards.v2/validate",
+                f"{API_BASE}/techcards.v2/validate/quality",
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
@@ -143,22 +157,20 @@ class TechCardWorkflowTester:
                 data = response.json()
                 
                 # Check for GX-02 green validation (нетто≈выход ±2–5%)
-                validation_passed = True
-                validation_details = []
+                validation_passed = data.get('is_production_ready', False)
+                quality_score = data.get('quality_score', {})
+                validation_issues = data.get('validation_issues', [])
                 
-                if 'validation' in data:
-                    validation = data['validation']
-                    if 'issues' in validation:
-                        issues = validation['issues']
-                        for issue in issues:
-                            if issue.get('severity') == 'error':
-                                validation_passed = False
-                            validation_details.append(f"{issue.get('type', 'unknown')}: {issue.get('message', 'no message')}")
+                validation_details = []
+                for issue in validation_issues:
+                    if issue.get('severity') == 'error':
+                        validation_passed = False
+                    validation_details.append(f"{issue.get('type', 'unknown')}: {issue.get('message', 'no message')}")
                 
                 self.log_test(
                     f"Validate TechCard: {techcard_id}",
                     validation_passed,
-                    f"GX-02 validation: {'PASS' if validation_passed else 'FAIL'}, Issues: {len(validation_details)}",
+                    f"GX-02 validation: {'PASS' if validation_passed else 'FAIL'}, Score: {quality_score.get('overall', 0)}, Issues: {len(validation_details)}",
                     response_time
                 )
                 return validation_passed
