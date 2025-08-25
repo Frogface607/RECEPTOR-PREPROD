@@ -134,27 +134,26 @@ class TechCardWorkflowTester:
             )
             return None
     
-    async def validate_techcard(self, techcard_id: str) -> bool:
+    async def validate_techcard(self, techcard_info: Dict) -> bool:
         """Validate a tech card using GX-02 validation"""
         try:
             start_time = time.time()
             
-            # First, we need to get the techcard data
-            # Let's try to get it from the database or API
-            techcard_response = await self.client.get(f"{API_BASE}/techcards.v2/{techcard_id}")
+            techcard_id = techcard_info['id']
+            techcard_data = techcard_info['data']
             
-            if techcard_response.status_code != 200:
+            # Use the card data from generation response
+            card_data = techcard_data.get('card')
+            if not card_data:
                 self.log_test(
-                    f"Get TechCard: {techcard_id}",
+                    f"Validate TechCard: {techcard_id}",
                     False,
-                    f"HTTP {techcard_response.status_code}: {techcard_response.text}"
+                    "No card data available for validation"
                 )
                 return False
             
-            techcard_data = techcard_response.json()
-            
             payload = {
-                "techcard": techcard_data
+                "techcard": card_data
             }
             
             response = await self.client.post(
@@ -197,7 +196,7 @@ class TechCardWorkflowTester:
                 
         except Exception as e:
             self.log_test(
-                f"Validate TechCard: {techcard_id}",
+                f"Validate TechCard: {techcard_info.get('id', 'unknown')}",
                 False,
                 f"Exception: {str(e)}"
             )
