@@ -1,0 +1,56 @@
+{
+  "timestamp": "20250825_212925",
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 0,
+    "failed_tests": 6,
+    "success_rate": 0.0,
+    "critical_mock_content_eliminated": false,
+    "real_content_present": false
+  },
+  "detailed_results": [
+    {
+      "test": "Generate Real TechCard 1",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No techcard in response: {'status': 'draft', 'card': {'meta': {'id': '23bbe9f9-564b-4384-baf1-b7680906902b', 'title': '\u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439', 'version': '1.0', 'createdAt': '2025-08-25T21:29:25.646447', 'cuisine': '\u043c\u0435\u0436\u0434\u0443\u043d\u0430\u0440\u043e\u0434\u043d\u0430\u044f', 'tags': ['\u0441\u0443\u043f', '\u0433\u043e\u0440\u044f\u0447\u0435\u0435', '\u043c\u044f\u0441\u043d\u043e\u0435'], 'timings': {'llm_draft_ms': 9117.0, 'llm_normalize_ms': 3994.0, 'validate_ms': 0.0, 'contentcheck_ms': 0.0, 'cost_ms': 47.0, 'nutrition_ms': 9.0, 'portion_normalize_ms': 0.0, 'sanitize_ms': 0.0, 'postcheck_ms': 0.0, 'total_ms': 13171.0}, 'scale_factor': 0.107, 'archetype': '\u0441\u0443\u043f', 'original_sum_netto': 3095.0, 'normalized': True}, 'portions': 1, 'yield': {'perPortion_g': 330.0, 'perBatch_g': 330.0}, 'ingredients': [{'name': '\u0433\u043e\u0432\u044f\u0434\u0438\u043d\u0430', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 42.6, 'loss_pct': 20.0, 'netto_g': 34.1, 'allergens': []}, {'name': '\u0441\u0432\u0435\u043a\u043b\u0430', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 21.3, 'loss_pct': 10.0, 'netto_g': 19.2, 'allergens': []}, {'name': '\u043a\u0430\u0440\u0442\u043e\u0444\u0435\u043b\u044c', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 21.3, 'loss_pct': 10.0, 'netto_g': 19.2, 'allergens': []}, {'name': '\u043c\u043e\u0440\u043a\u043e\u0432\u044c', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 10.7, 'loss_pct': 10.0, 'netto_g': 9.6, 'allergens': []}, {'name': '\u043a\u0430\u043f\u0443\u0441\u0442\u0430', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 16.0, 'loss_pct': 10.0, 'netto_g': 14.4, 'allergens': []}, {'name': '\u043b\u0443\u043a', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 10.7, 'loss_pct': 10.0, 'netto_g': 9.6, 'allergens': []}, {'name': '\u0442\u043e\u043c\u0430\u0442\u043d\u0430\u044f \u043f\u0430\u0441\u0442\u0430', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 10.7, 'loss_pct': 0.0, 'netto_g': 10.7, 'allergens': []}, {'name': '\u0432\u043e\u0434\u0430', 'canonical_id': None, 'skuId': None, 'product_code': None, 'subRecipe': None, 'unit': 'g', 'brutto_g': 213.2, 'loss_pct': 0.0, 'netto_g': 213.2, 'allergens': []}], 'process': [{'n': 1, 'action': '\u041e\u0431\u0436\u0430\u0440\u0438\u0442\u044c \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u0443 \u0434\u043e \u0437\u043e\u043b\u043e\u0442\u0438\u0441\u0442\u043e\u0439 \u043a\u043e\u0440\u043e\u0447\u043a\u0438', 'time_min': 15.0, 'temp_c': 180.0, 'equipment': ['\u0441\u043a\u043e\u0432\u043e\u0440\u043e\u0434\u0430'], 'ccp': True, 'note': None}, {'n': 2, 'action': '\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043d\u0430\u0440\u0435\u0437\u0430\u043d\u043d\u044b\u0435 \u043e\u0432\u043e\u0449\u0438 \u0438 \u0442\u043e\u043c\u0430\u0442\u043d\u0443\u044e \u043f\u0430\u0441\u0442\u0443, \u0442\u0443\u0448\u0438\u0442\u044c', 'time_min': 30.0, 'temp_c': 160.0, 'equipment': ['\u043a\u0430\u0441\u0442\u0440\u044e\u043b\u044f'], 'ccp': True, 'note': None}, {'n': 3, 'action': '\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0432\u043e\u0434\u0443, \u0434\u043e\u0432\u0435\u0441\u0442\u0438 \u0434\u043e \u043a\u0438\u043f\u0435\u043d\u0438\u044f \u0438 \u0432\u0430\u0440\u0438\u0442\u044c', 'time_min': 60.0, 'temp_c': 100.0, 'equipment': ['\u043a\u0430\u0441\u0442\u0440\u044e\u043b\u044f'], 'ccp': True, 'note': None}], 'storage': {'conditions': '\u0425\u0440\u0430\u043d\u0438\u0442\u044c \u0432 \u0445\u043e\u043b\u043e\u0434\u0438\u043b\u044c\u043d\u0438\u043a\u0435', 'shelfLife_hours': 24.0, 'servingTemp_c': 70.0}, 'nutrition': {'per100g': {'kcal': 30.4, 'proteins_g': 1.1, 'fats_g': 0.1, 'carbs_g': 6.1}, 'perPortion': {'kcal': 60.8, 'proteins_g': 2.2, 'fats_g': 0.2, 'carbs_g': 12.2}}, 'nutritionMeta': {'source': 'usda', 'coveragePct': 50.0}, 'cost': {'rawCost': 350.92, 'costPerPortion': 87.73, 'markup_pct': 300.0, 'vat_pct': 20.0}, 'costMeta': {'source': 'catalog', 'coveragePct': 100.0, 'asOf': '2025-01-17'}, 'printNotes': [], 'article': None}, 'issues': ['\u041d\u0430\u0439\u0434\u0435\u043d\u044b \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u044b/\u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u044f: 9-564, 2025-01', '\u041d\u0430\u0439\u0434\u0435\u043d\u044b \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u044b/\u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u044f: 9-564, 2025-01'], 'message': 'Tech card generated with validation issues'}",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Preflight Check",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No generated techcards available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "ZIP Export",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No preflight data available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "XLSX Mock Content Scan",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Article Format Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content available",
+      "response_time": "N/A"
+    },
+    {
+      "test": "Real Content Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "No ZIP content or techcards available",
+      "response_time": "N/A"
+    }
+  ],
+  "generated_techcards": []
+}
