@@ -537,48 +537,21 @@ class DualExporter:
             from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
             from ..techcards_v2.operational_rounding import get_operational_rounder
             
-            # Load techcards (mock for now - in real implementation would load from database)
-            # For testing purposes, create a minimal mock techcard
-            from ..techcards_v2.schemas import TechCardV2, IngredientV2, YieldV2, MetaV2, ProcessStepV2, StorageV2
+            # Load real techcards from database
+            techcards = await self._load_techcards(techcard_ids)
             
-            # Create a mock techcard for testing
-            mock_techcard = TechCardV2(
-                meta=MetaV2(title="Mock Tech Card"),
-                portions=1,
-                yield_=YieldV2(perPortion_g=200.0, perBatch_g=200.0),
-                ingredients=[
-                    IngredientV2(
-                        name="Test Ingredient",
-                        netto_g=100.0,
-                        brutto_g=110.0,
-                        unit="g",
-                        loss_pct=9.09
-                    ),
-                    IngredientV2(
-                        name="Test Ingredient 2",
-                        netto_g=100.0,
-                        brutto_g=105.0,
-                        unit="g",
-                        loss_pct=4.76
-                    )
-                ],
-                process=[
-                    ProcessStepV2(n=1, action="Подготовить ингредиенты", time_min=5.0),
-                    ProcessStepV2(n=2, action="Смешать компоненты", time_min=3.0),
-                    ProcessStepV2(n=3, action="Готовить на среднем огне", time_min=10.0, temp_c=180.0)
-                ],
-                storage=StorageV2(
-                    conditions="Хранить в холодильнике",
-                    shelfLife_hours=24.0
-                )
-            )
+            if not techcards:
+                raise HTTPException(status_code=404, detail="No techcards found for the provided IDs")
+            
+            # Use the first techcard for TTK-only export
+            techcard = techcards[0]
             
             # Apply operational rounding if requested
             if operational_rounding:
                 rounder = get_operational_rounder()
-                result = rounder.round_techcard_ingredients(mock_techcard.dict())
-                # Convert back to TechCardV2 - simplified for testing
-                mock_techcard = TechCardV2(**result['rounded_techcard'])
+                result = rounder.round_techcard_ingredients(techcard.dict())
+                # Convert back to TechCardV2
+                techcard = TechCardV2(**result['rounded_techcard'])
             
             # Create XLSX with proper article formatting
             export_options = {
@@ -587,7 +560,7 @@ class DualExporter:
             }
             
             xlsx_buffer, issues = create_iiko_ttk_xlsx(
-                card=mock_techcard,
+                card=techcard,
                 export_options=export_options
             )
             
