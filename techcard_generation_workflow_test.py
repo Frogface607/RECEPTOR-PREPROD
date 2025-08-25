@@ -73,7 +73,7 @@ class TechCardWorkflowTester:
             start_time = time.time()
             
             payload = {
-                "dishName": dish_name,
+                "name": dish_name,
                 "portions": self.portions
             }
             
