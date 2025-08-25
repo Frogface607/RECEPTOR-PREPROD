@@ -793,12 +793,12 @@ class ExportWizardFETester:
             # Step 3: ZIP export
             export_data = await self.zip_export(techcard_ids)
             
-            if not export_data or not export_data.get('zipUrl'):
+            if not export_data:
                 print("❌ CRITICAL: ZIP export failed - cannot continue")
                 return self.generate_summary()
             
             # Step 4: Download and extract ZIP
-            extract_path = await self.download_and_hash(export_data['zipUrl'])
+            extract_path = await self.download_and_hash(export_data)
             
             if not extract_path:
                 print("❌ CRITICAL: ZIP download failed - cannot continue")
