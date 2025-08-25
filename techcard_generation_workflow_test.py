@@ -87,13 +87,21 @@ class TechCardWorkflowTester:
             
             if response.status_code == 200:
                 data = response.json()
-                techcard_id = data.get('techcardId') or data.get('id')
+                
+                # Extract techcard ID from the response structure
+                techcard_id = None
+                if 'card' in data and data['card'] and 'meta' in data['card']:
+                    techcard_id = data['card']['meta'].get('id')
+                
+                if not techcard_id:
+                    # Try alternative locations
+                    techcard_id = data.get('techcardId') or data.get('id')
                 
                 if techcard_id:
                     self.log_test(
                         f"Generate TechCard: {dish_name}",
                         True,
-                        f"Generated techcard ID: {techcard_id}",
+                        f"Generated techcard ID: {techcard_id}, Status: {data.get('status', 'unknown')}",
                         response_time
                     )
                     return techcard_id
@@ -101,7 +109,7 @@ class TechCardWorkflowTester:
                     self.log_test(
                         f"Generate TechCard: {dish_name}",
                         False,
-                        f"No techcard ID in response: {data}",
+                        f"No techcard ID in response structure: {list(data.keys())}",
                         response_time
                     )
                     return None
