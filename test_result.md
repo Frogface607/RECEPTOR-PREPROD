@@ -2903,8 +2903,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "GUARD-01: Backend Dish-First Export Guards"
-    - "GUARD-02: Frontend Dish-First UI Guards"
+    - "Export Wizard UI + MAP-01 Article Consistency + Dish-First Guards testing completed successfully"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
