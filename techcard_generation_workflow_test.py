@@ -255,7 +255,7 @@ class TechCardWorkflowTester:
             )
             return None
     
-    async def export_zip(self, techcard_ids: List[str], preflight_result: Dict = None) -> Optional[str]:
+    async def export_zip(self, techcard_ids: List[str], preflight_result: Dict = None) -> Optional[bytes]:
         """Export tech cards as ZIP with operational rounding"""
         try:
             start_time = time.time()
@@ -278,27 +278,41 @@ class TechCardWorkflowTester:
             response_time = time.time() - start_time
             
             if response.status_code == 200:
-                data = response.json()
-                zip_url = data.get('zipUrl')
+                # The response should be binary ZIP data
+                zip_content = response.content
                 
-                if zip_url:
+                if zip_content:
+                    # Save ZIP file for analysis
+                    zip_file_path = self.artifacts_dir / "export.zip"
+                    with open(zip_file_path, 'wb') as f:
+                        f.write(zip_content)
+                    
                     # Save export metadata
+                    export_metadata = {
+                        "zip_size": len(zip_content),
+                        "zip_file_path": str(zip_file_path),
+                        "techcard_ids": techcard_ids,
+                        "operational_rounding": self.operational_rounding,
+                        "export_timestamp": datetime.now().isoformat(),
+                        "response_headers": dict(response.headers)
+                    }
+                    
                     export_file = self.artifacts_dir / "export.json"
                     with open(export_file, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, ensure_ascii=False, indent=2)
+                        json.dump(export_metadata, f, ensure_ascii=False, indent=2)
                     
                     self.log_test(
                         "ZIP Export",
                         True,
-                        f"ZIP URL: {zip_url}",
+                        f"ZIP exported successfully, size: {len(zip_content)} bytes",
                         response_time
                     )
-                    return zip_url
+                    return zip_content
                 else:
                     self.log_test(
                         "ZIP Export",
                         False,
-                        f"No ZIP URL in response: {data}",
+                        "Empty ZIP content received",
                         response_time
                     )
                     return None
