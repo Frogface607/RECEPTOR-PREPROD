@@ -244,7 +244,7 @@ class TechCardWorkflowTester:
             )
             return None
     
-    async def export_zip(self, techcard_ids: List[str]) -> Optional[str]:
+    async def export_zip(self, techcard_ids: List[str], preflight_result: Dict = None) -> Optional[str]:
         """Export tech cards as ZIP with operational rounding"""
         try:
             start_time = time.time()
@@ -253,6 +253,10 @@ class TechCardWorkflowTester:
                 "techcardIds": techcard_ids,
                 "operational_rounding": self.operational_rounding
             }
+            
+            # Include preflight result if available
+            if preflight_result:
+                payload["preflight_result"] = preflight_result
             
             response = await self.client.post(
                 f"{API_BASE}/export/zip",
