@@ -546,7 +546,7 @@ class TechCardWorkflowTester:
         
         # Step 4: ZIP export
         print(f"\n📦 Step 4: ZIP Export")
-        zip_url = await self.export_zip(self.generated_ids)
+        zip_url = await self.export_zip(self.generated_ids, preflight_result)
         
         if not zip_url:
             print("❌ CRITICAL: ZIP export failed")
