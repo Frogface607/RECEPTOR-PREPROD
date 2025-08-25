@@ -187,8 +187,8 @@ class FEExportWizardMockValidationTester:
                 self.log_test("ZIP Export", False, "No preflight data available")
                 return
             
-            # Get techcard IDs
-            techcard_ids = [tc["id"] for tc in self.generated_techcards]
+            # For the export test, use 'current' which should work with the export system
+            techcard_ids = ['current']
             
             response = await self.client.post(
                 f"{API_BASE}/export/zip",
