@@ -159,6 +159,18 @@ user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology
 CURRENT PHASE: Guard — dish-first rule - Critical safety guard to prevent iiko TTK rejection when dish articles don't exist in nomenclature. Implements strict blocking rules for TTK-only exports."
 
 backend:
+  - task: "FE Export Wizard: disable mocks and bind to /export/preflight + /export/zip (credit-safe)"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/routes/export_v2.py, frontend export wizard"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL MOCK CONTENT DETECTED: Comprehensive testing revealed that while backend endpoints (/export/preflight, /export/zip) are fully operational and produce real data, the exported XLSX files contain mock signatures (DISH_MOCK_TECH_CARD, GENERATED_TEST_INGREDIENT, GENERATED_TEST_INGREDIENT_2). This violates zero-tolerance requirement for mock content. Frontend export wizard must be reconfigured to disable demo/mock mode and properly bind to production export pipeline. Technical infrastructure working (87.5% success rate, 7/8 tests passed) but critical mock content requirement NOT MET."
+
   - task: "AA-01: ArticleAllocator API Endpoints Implementation"
     implemented: true
     working: true
