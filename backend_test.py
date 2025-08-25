@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Phase 3.5: FE Binding + Dish-first Export Comprehensive Backend Testing
-Critical dish article validation for iiko compatibility with enhanced preflight orchestrator and dual export system.
+Export System Mock Content Validation Test
+Critical verification that real tech card data is now being used instead of mock content in exported XLSX files.
 """
 
 import asyncio
@@ -10,11 +10,13 @@ import os
 import sys
 import time
 import traceback
+import zipfile
+import io
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 import httpx
-import pytest
+import openpyxl
 from pymongo import MongoClient
 
 # Test Configuration
