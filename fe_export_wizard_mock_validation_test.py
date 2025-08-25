@@ -81,7 +81,7 @@ class FEExportWizardMockValidationTester:
             dish_name_2 = "Стейк из говядины с картофельным пюре"
             response2 = await self.client.post(
                 f"{API_BASE}/techcards.v2/generate",
-                json={"dish_name": dish_name_2}
+                json={"name": dish_name_2}
             )
             
             if response2.status_code != 200:
