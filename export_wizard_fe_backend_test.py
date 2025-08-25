@@ -215,7 +215,7 @@ class ExportWizardFETester:
             response = await self.client.post(
                 f"{API_BASE}/export/zip",
                 json={
-                    "techcard_ids": techcard_ids,
+                    "techcardIds": techcard_ids,
                     "operational_rounding": True
                 }
             )
