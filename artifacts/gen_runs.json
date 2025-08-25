@@ -1,0 +1,11 @@
+{
+  "dish_names": [
+    "Тест Блюдо 1",
+    "Тест Блюдо 2",
+    "Тест Блюдо 3"
+  ],
+  "generated_ids": [],
+  "generation_timestamp": "2025-08-25T20:28:52.227339",
+  "success_count": 0,
+  "total_requested": 3
+}
