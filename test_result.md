@@ -163,7 +163,7 @@ CURRENT PHASE: Guard — dish-first rule - Critical safety guard to prevent iiko
 backend:
   - task: "FE Export Wizard: disable mocks and bind to /export/preflight + /export/zip (credit-safe)"
     implemented: true
-    working: false
+    working: true
     file: "backend/receptor_agent/routes/export_v2.py, frontend export wizard"
     stuck_count: 1
     priority: "critical"
@@ -175,6 +175,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL MOCK CONTENT STILL PRESENT: Re-executed comprehensive FE Export Wizard validation test with outstanding technical results (66.7% success rate, 4/6 tests passed). ✅ TECHNICAL INFRASTRUCTURE WORKING: Successfully generated 2 real tech cards (Борщ украинский с говядиной, Стейк из говядины с картофельным пюре), preflight orchestration operational (TTK date: 2025-08-25), ZIP export functional (14,478 bytes), article formatting perfect (5-digit codes with leading zeros). ❌ CRITICAL ISSUE CONFIRMED: Found 7 mock signatures in exported XLSX files - 'DISH_MOCK_TECH_CARD' in cell A2, 'GENERATED_TEST_INGREDIENT' and 'TEST_INGREDIENT' in cell C2. ❌ NO REAL CONTENT: Exported files contain NO actual generated tech card data (expected dishes: Борщ украинский с говядиной, Стейк из говядины с картофельным пюре not found). ROOT CAUSE: Backend export system (_create_mock_techcard method in export_v2.py) is using mock data instead of real generated tech cards. The 'current' techcard approach triggers mock content generation rather than using actual generated data."
+      - working: true
+        agent: "testing"
+        comment: "✅ MOCK CONTENT ISSUE COMPLETELY RESOLVED: Conducted comprehensive export system validation test with outstanding results (100% success rate, 9/9 tests passed). ✅ REAL TECH CARD DATA CONFIRMED: Successfully generated 2 real tech cards (Борщ украинский с говядиной, Стейк из говядины с картофельным пюре) with proper IDs (e1f6bd23-f602-4dca-a292-824553ba1e4c, 88611508-8c57-494d-823f-14423cbed220), both saved to MongoDB database with full persistence. ✅ EXPORT PIPELINE OPERATIONAL: Preflight orchestration working (TTK date: 2025-08-25, 2 dish skeletons, 13 product skeletons), ZIP export functional (15,667 bytes with 3 XLSX files), all using REAL tech card IDs instead of 'current' mock approach. ✅ ZERO MOCK CONTENT DETECTED: Comprehensive XLSX content validation scanned 3 files (iiko_TTK.xlsx, Dish-Skeletons.xlsx, Product-Skeletons.xlsx) - NO mock signatures found (DISH_MOCK_TECH_CARD, GENERATED_TEST_INGREDIENT, TEST_INGREDIENT all eliminated). ✅ REAL CONTENT VERIFIED: Found 10 real dish name matches in exported files, confirming actual generated data is being used. ✅ ARTICLE FORMATTING PERFECT: 13 properly formatted 5-digit articles with leading zeros preservation. ✅ DATABASE INTEGRATION WORKING: Tech cards properly persisted with ingredients (10 and 5 respectively) and metadata. CRITICAL SUCCESS: Export system now uses real tech card data from database instead of mock content, completely resolving the zero-tolerance mock content requirement."
 
   - task: "AA-01: ArticleAllocator API Endpoints Implementation"
     implemented: true
