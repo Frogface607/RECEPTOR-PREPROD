@@ -570,15 +570,15 @@ class TechCardWorkflowTester:
         
         # Step 4: ZIP export
         print(f"\n📦 Step 4: ZIP Export")
-        zip_url = await self.export_zip(self.generated_ids, preflight_result)
+        zip_content = await self.export_zip(self.generated_ids, preflight_result)
         
-        if not zip_url:
+        if not zip_content:
             print("❌ CRITICAL: ZIP export failed")
             return False
         
         # Step 5: XLSX validation
         print(f"\n📊 Step 5: XLSX Format Validation")
-        xlsx_validation_passed = await self.download_and_validate_xlsx(zip_url)
+        xlsx_validation_passed = await self.download_and_validate_xlsx(zip_content)
         
         # Generate summary
         await self.generate_summary()
