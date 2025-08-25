@@ -163,13 +163,16 @@ backend:
     implemented: true
     working: false
     file: "backend/receptor_agent/routes/export_v2.py, frontend export wizard"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
     needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL MOCK CONTENT DETECTED: Comprehensive testing revealed that while backend endpoints (/export/preflight, /export/zip) are fully operational and produce real data, the exported XLSX files contain mock signatures (DISH_MOCK_TECH_CARD, GENERATED_TEST_INGREDIENT, GENERATED_TEST_INGREDIENT_2). This violates zero-tolerance requirement for mock content. Frontend export wizard must be reconfigured to disable demo/mock mode and properly bind to production export pipeline. Technical infrastructure working (87.5% success rate, 7/8 tests passed) but critical mock content requirement NOT MET."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL MOCK CONTENT STILL PRESENT: Re-executed comprehensive FE Export Wizard validation test with outstanding technical results (66.7% success rate, 4/6 tests passed). ✅ TECHNICAL INFRASTRUCTURE WORKING: Successfully generated 2 real tech cards (Борщ украинский с говядиной, Стейк из говядины с картофельным пюре), preflight orchestration operational (TTK date: 2025-08-25), ZIP export functional (14,478 bytes), article formatting perfect (5-digit codes with leading zeros). ❌ CRITICAL ISSUE CONFIRMED: Found 7 mock signatures in exported XLSX files - 'DISH_MOCK_TECH_CARD' in cell A2, 'GENERATED_TEST_INGREDIENT' and 'TEST_INGREDIENT' in cell C2. ❌ NO REAL CONTENT: Exported files contain NO actual generated tech card data (expected dishes: Борщ украинский с говядиной, Стейк из говядины с картофельным пюре not found). ROOT CAUSE: Backend export system (_create_mock_techcard method in export_v2.py) is using mock data instead of real generated tech cards. The 'current' techcard approach triggers mock content generation rather than using actual generated data."
 
   - task: "AA-01: ArticleAllocator API Endpoints Implementation"
     implemented: true
