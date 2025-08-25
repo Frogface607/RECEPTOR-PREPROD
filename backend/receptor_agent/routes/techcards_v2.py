@@ -72,6 +72,55 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
         # Run pipeline
         res = run_pipeline(profile)
         
+        # Save tech card to database if generation was successful
+        if res.status in ["success", "draft"] and res.card:
+            try:
+                # Connect to MongoDB and save the tech card
+                import os
+                from pymongo import MongoClient
+                import uuid
+                
+                mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+                db_name = os.getenv('DB_NAME', 'receptor_pro')
+                
+                client = MongoClient(mongo_url)
+                db = client[db_name.strip('"')]
+                techcards_collection = db.techcards_v2
+                
+                # Generate ID if not present
+                if not hasattr(res.card.meta, 'id') or not res.card.meta.id:
+                    # Generate UUID for the tech card
+                    tech_card_id = str(uuid.uuid4())
+                    # Update meta with ID
+                    meta_dict = res.card.meta.model_dump()
+                    meta_dict['id'] = tech_card_id
+                    
+                    # Recreate the card with the ID
+                    from ..techcards_v2.schemas import MetaV2
+                    new_meta = MetaV2.model_validate(meta_dict)
+                    card_data = res.card.model_dump()
+                    card_data['meta'] = new_meta.model_dump()
+                    from ..techcards_v2.schemas import TechCardV2
+                    res.card = TechCardV2.model_validate(card_data)
+                else:
+                    tech_card_id = res.card.meta.id
+                
+                # Prepare document for MongoDB
+                card_doc = res.card.model_dump()
+                card_doc['_id'] = tech_card_id
+                card_doc['created_at'] = datetime.utcnow()
+                card_doc['updated_at'] = datetime.utcnow()
+                
+                # Save to database
+                techcards_collection.insert_one(card_doc)
+                client.close()
+                
+                logger.info(f"Tech card saved to database with ID: {tech_card_id}")
+                
+            except Exception as save_error:
+                logger.error(f"Failed to save tech card to database: {save_error}")
+                # Continue without failing the response
+        
         # Standard response contract with correct content type
         if res.status == "success":
             response_data = {
