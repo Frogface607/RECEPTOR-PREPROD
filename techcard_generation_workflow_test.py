@@ -333,29 +333,26 @@ class TechCardWorkflowTester:
             )
             return None
     
-    async def download_and_validate_xlsx(self, zip_url: str) -> bool:
-        """Download ZIP and validate XLSX format for article preservation"""
+    async def download_and_validate_xlsx(self, zip_content: bytes) -> bool:
+        """Validate XLSX format for article preservation from ZIP content"""
         try:
             start_time = time.time()
             
-            # Download ZIP file
-            response = await self.client.get(zip_url)
-            
-            if response.status_code != 200:
+            if not zip_content:
                 self.log_test(
-                    "Download ZIP",
+                    "XLSX Format Validation",
                     False,
-                    f"HTTP {response.status_code}: Failed to download ZIP"
+                    "No ZIP content provided"
                 )
                 return False
             
             # Save ZIP to temporary file
             with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as temp_zip:
-                temp_zip.write(response.content)
+                temp_zip.write(zip_content)
                 temp_zip_path = temp_zip.name
             
             validation_results = {
-                "zip_size": len(response.content),
+                "zip_size": len(zip_content),
                 "files_found": [],
                 "xlsx_validation": {},
                 "article_format_check": {}
