@@ -5,11 +5,9 @@
     "Тест Блюдо 3"
   ],
   "generated_ids": [
-    "6928bcf3-c657-4d8a-8936-72f41e3d2652",
-    "e60cc595-bb9e-4ed0-b0e3-8b526568ad73",
-    "baf4e146-d5cd-41a2-a0ea-7edd4f7ee2a1"
+    "581bd822-1f2a-44b0-9229-1732ab1c6226"
   ],
-  "generation_timestamp": "2025-08-25T20:32:30.853301",
-  "success_count": 3,
+  "generation_timestamp": "2025-08-25T20:35:50.531811",
+  "success_count": 1,
   "total_requested": 3
 }
