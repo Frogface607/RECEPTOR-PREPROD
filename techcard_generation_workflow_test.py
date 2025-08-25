@@ -67,8 +67,8 @@ class TechCardWorkflowTester:
         self.test_results.append(result)
         print(f"{status} {test_name}: {details}")
     
-    async def generate_techcard(self, dish_name: str) -> Optional[str]:
-        """Generate a single tech card and return techcard ID"""
+    async def generate_techcard(self, dish_name: str) -> Optional[Dict]:
+        """Generate a single tech card and return techcard data with ID"""
         try:
             start_time = time.time()
             
@@ -104,7 +104,11 @@ class TechCardWorkflowTester:
                         f"Generated techcard ID: {techcard_id}, Status: {data.get('status', 'unknown')}",
                         response_time
                     )
-                    return techcard_id
+                    # Return both ID and full data for validation
+                    return {
+                        'id': techcard_id,
+                        'data': data
+                    }
                 else:
                     self.log_test(
                         f"Generate TechCard: {dish_name}",
