@@ -102,7 +102,12 @@ class ExportWizardFETester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    techcard_id = data.get('id') or data.get('techcard', {}).get('id')
+                    # Extract ID from the correct location in response
+                    techcard_id = (
+                        data.get('id') or 
+                        data.get('techcard', {}).get('id') or
+                        data.get('card', {}).get('meta', {}).get('id')
+                    )
                     
                     if techcard_id:
                         techcard_ids.append(techcard_id)
