@@ -507,10 +507,12 @@ class TechCardWorkflowTester:
         
         # Step 1: Generate batch of tech cards
         print("\n📝 Step 1: Generate Tech Cards")
+        generated_techcards = []
         for dish_name in self.dish_names:
-            techcard_id = await self.generate_techcard(dish_name)
-            if techcard_id:
-                self.generated_ids.append(techcard_id)
+            techcard_info = await self.generate_techcard(dish_name)
+            if techcard_info:
+                generated_techcards.append(techcard_info)
+                self.generated_ids.append(techcard_info['id'])
         
         # Save generation results
         gen_runs_file = self.artifacts_dir / "gen_runs.json"
@@ -528,12 +530,12 @@ class TechCardWorkflowTester:
             return False
         
         # Step 2: Validate batch
-        print(f"\n✅ Step 2: Validate Tech Cards ({len(self.generated_ids)} cards)")
+        print(f"\n✅ Step 2: Validate Tech Cards ({len(generated_techcards)} cards)")
         validation_results = []
-        for techcard_id in self.generated_ids:
-            validation_passed = await self.validate_techcard(techcard_id)
+        for techcard_info in generated_techcards:
+            validation_passed = await self.validate_techcard(techcard_info)
             validation_results.append({
-                "techcard_id": techcard_id,
+                "techcard_id": techcard_info['id'],
                 "validation_passed": validation_passed
             })
         
