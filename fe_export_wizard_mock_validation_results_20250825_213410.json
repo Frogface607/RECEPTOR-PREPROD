@@ -1,0 +1,65 @@
+{
+  "timestamp": "20250825_213410",
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 4,
+    "failed_tests": 2,
+    "success_rate": 66.66666666666666,
+    "critical_mock_content_eliminated": false,
+    "real_content_present": false
+  },
+  "detailed_results": [
+    {
+      "test": "Generate Real TechCards",
+      "status": "\u2705 PASS",
+      "success": true,
+      "details": "Generated 2 real techcards: \u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439 (1033d4ad...), \u0421\u0442\u0435\u0439\u043a \u0438\u0437 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u044b \u0441 \u043a\u0430\u0440\u0442\u043e\u0444\u0435\u043b\u044c\u043d\u044b\u043c \u043f\u044e\u0440\u0435 (6fc822e8...)",
+      "response_time": "37.104s"
+    },
+    {
+      "test": "Preflight Check",
+      "status": "\u2705 PASS",
+      "success": true,
+      "details": "Preflight successful - TTK date: 2025-08-25, Response keys: ['status', 'ttkDate', 'missing', 'generated', 'counts']",
+      "response_time": "0.101s"
+    },
+    {
+      "test": "ZIP Export",
+      "status": "\u2705 PASS",
+      "success": true,
+      "details": "ZIP export successful - Size: 14478 bytes",
+      "response_time": "0.228s"
+    },
+    {
+      "test": "XLSX Mock Content Scan",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "\u274c CRITICAL: 7 mock signatures found in 3 XLSX files. Mock content: iiko_TTK.xlsx:\u0422\u0422\u041a:A2 = 'DISH_MOCK_TECH_CARD'; iiko_TTK.xlsx:\u0422\u0422\u041a:C2 = 'GENERATED_TEST_INGREDIENT'; iiko_TTK.xlsx:\u0422\u0422\u041a:C2 = 'TEST_INGREDIENT'...",
+      "response_time": "0.021s"
+    },
+    {
+      "test": "Article Format Validation",
+      "status": "\u2705 PASS",
+      "success": true,
+      "details": "All 1 article codes have proper 5-digit format with leading zeros",
+      "response_time": "0.014s"
+    },
+    {
+      "test": "Real Content Validation",
+      "status": "\u274c FAIL",
+      "success": false,
+      "details": "\u274c CRITICAL: No real tech card content found in XLSX files. Expected dishes: \u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439, \u0421\u0442\u0435\u0439\u043a \u0438\u0437 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u044b \u0441 \u043a\u0430\u0440\u0442\u043e\u0444\u0435\u043b\u044c\u043d\u044b\u043c \u043f\u044e\u0440\u0435",
+      "response_time": "0.015s"
+    }
+  ],
+  "generated_techcards": [
+    {
+      "id": "1033d4ad-82e9-4b76-8099-877a3b4303e2",
+      "name": "\u0411\u043e\u0440\u0449 \u0443\u043a\u0440\u0430\u0438\u043d\u0441\u043a\u0438\u0439 \u0441 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u043e\u0439"
+    },
+    {
+      "id": "6fc822e8-0bee-4855-b4ae-9ca1412ed21f",
+      "name": "\u0421\u0442\u0435\u0439\u043a \u0438\u0437 \u0433\u043e\u0432\u044f\u0434\u0438\u043d\u044b \u0441 \u043a\u0430\u0440\u0442\u043e\u0444\u0435\u043b\u044c\u043d\u044b\u043c \u043f\u044e\u0440\u0435"
+    }
+  ]
+}
