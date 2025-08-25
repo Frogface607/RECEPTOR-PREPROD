@@ -43,9 +43,10 @@ class ExportWizardFETester:
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.client.aclose()
-        # Clean up temporary directory
-        if self.temp_dir and os.path.exists(self.temp_dir):
-            shutil.rmtree(self.temp_dir)
+        # Don't clean up temporary directory for debugging
+        print(f"🔍 Artifacts preserved in: {self.temp_dir}")
+        # if self.temp_dir and os.path.exists(self.temp_dir):
+        #     shutil.rmtree(self.temp_dir)
     
     def log_test(self, test_name: str, success: bool, details: str = "", response_time: float = 0.0):
         """Log test result"""
