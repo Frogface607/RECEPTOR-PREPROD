@@ -78,8 +78,7 @@ class PastaBologneseTester:
             response = await self.client.post(
                 f"{API_BASE}/techcards.v2/generate",
                 json={
-                    "dish_name": dish_name,
-                    "organization_id": self.organization_id
+                    "name": dish_name
                 }
             )
             
