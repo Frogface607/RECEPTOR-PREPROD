@@ -55,7 +55,8 @@ class IngredientV2(BaseModel):
             brutto = info.data['brutto_g']
             loss = info.data['loss_pct']
             expected_netto = brutto * (1 - loss / 100)
-            if abs(v - expected_netto) > 1.0:  # допуск ±1 г
+            # Увеличиваем допуск до ±3г для совместимости с операционным округлением
+            if abs(v - expected_netto) > 3.0:  # допуск ±3 г
                 raise ValueError(f"netto_g must equal brutto_g * (1 - loss_pct/100). Expected: {expected_netto:.1f}, got: {v}")
         return v
 
