@@ -121,7 +121,12 @@ class FEExportWizardTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    techcard_id = data.get("id")
+                    # Extract ID from nested structure
+                    techcard_id = None
+                    if "card" in data and "meta" in data["card"]:
+                        techcard_id = data["card"]["meta"].get("id")
+                    elif "id" in data:
+                        techcard_id = data.get("id")
                     
                     if techcard_id:
                         generated_ids.append(techcard_id)
