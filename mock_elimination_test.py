@@ -90,8 +90,8 @@ class MockEliminationTester:
                 data = response.json()
                 
                 # Extract techcard ID
-                if 'techcard' in data and 'id' in data['techcard']:
-                    self.generated_techcard_id = data['techcard']['id']
+                if 'card' in data and data['card'] and 'id' in data['card']:
+                    self.generated_techcard_id = data['card']['id']
                     
                     self.log_test(
                         "Generate Рагу овощное Tech Card",
