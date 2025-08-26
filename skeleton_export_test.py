@@ -490,7 +490,7 @@ class SkeletonExportTester:
                 if not preflight_result:
                     print("⚠️ Preflight проверка не прошла, но продолжаем тестирование")
             elif i == 2:  # ZIP export
-                zip_content = await test_coro
+                zip_content = await test_coro(preflight_result)
                 if not zip_content:
                     print("❌ Критическая ошибка: не удалось получить ZIP файл")
                     break
