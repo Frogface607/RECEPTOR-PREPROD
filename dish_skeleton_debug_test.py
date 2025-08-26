@@ -168,8 +168,10 @@ class DishSkeletonDebugTester:
             db = client[DB_NAME]
             techcards_collection = db.techcards_v2
             
-            # First check if it exists
-            saved_techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+            # First check if it exists (try both _id and id fields)
+            saved_techcard = techcards_collection.find_one({"_id": self.generated_techcard_id})
+            if not saved_techcard:
+                saved_techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
             
             if not saved_techcard and 'generation' in self.artifacts:
                 # Save the generated techcard to database
