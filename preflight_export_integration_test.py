@@ -210,7 +210,7 @@ class PreflightExportIntegrationTester:
             
             # Запускаем экспорт с preflight_result
             export_payload = {
-                "techcard_ids": [self.generated_techcard_id],
+                "techcardIds": [self.generated_techcard_id],  # Исправлено: techcardIds
                 "organization_id": self.organization_id,
                 "preflight_result": self.preflight_result,  # КРИТИЧЕСКИ ВАЖНО
                 "operational_rounding": True
