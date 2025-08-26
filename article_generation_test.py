@@ -135,7 +135,12 @@ class ArticleGenerationTester:
             client = MongoClient(MONGO_URL)
             db = client[DB_NAME]
             
-            techcard = db.techcards_v2.find_one({"id": self.generated_techcard_id})
+            # Try different possible ID fields
+            techcard = (
+                db.techcards_v2.find_one({"id": self.generated_techcard_id}) or
+                db.techcards_v2.find_one({"meta.id": self.generated_techcard_id}) or
+                db.techcards_v2.find_one({"_id": self.generated_techcard_id})
+            )
             
             if not techcard:
                 self.log_test("Verify Tech Card Articles in Database", False, "Tech card not found in database")
