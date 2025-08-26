@@ -84,27 +84,33 @@ class ArticleGenerationTester:
             
             if response.status_code == 200:
                 data = response.json()
-                self.generated_techcard_id = data.get('id')
                 
-                # Check if tech card has article
-                dish_article = data.get('article') or data.get('dish', {}).get('article')
-                
-                # Check ingredients for product codes
-                ingredients = data.get('ingredients', [])
-                ingredients_with_codes = 0
-                total_ingredients = len(ingredients)
-                
-                for ingredient in ingredients:
-                    if ingredient.get('product_code') or ingredient.get('article'):
-                        ingredients_with_codes += 1
-                
-                success = (
-                    self.generated_techcard_id is not None and
-                    dish_article is not None and
-                    total_ingredients > 0
-                )
-                
-                details = f"Tech card ID: {self.generated_techcard_id}, Dish article: {dish_article}, Ingredients: {total_ingredients}, With codes: {ingredients_with_codes}"
+                # Check response structure
+                if data.get('status') in ['success', 'draft'] and data.get('card'):
+                    card = data['card']
+                    self.generated_techcard_id = card.get('id')
+                    
+                    # Check if tech card has article
+                    dish_article = card.get('article') or card.get('dish', {}).get('article')
+                    
+                    # Check ingredients for product codes
+                    ingredients = card.get('ingredients', [])
+                    ingredients_with_codes = 0
+                    total_ingredients = len(ingredients)
+                    
+                    for ingredient in ingredients:
+                        if ingredient.get('product_code') or ingredient.get('article'):
+                            ingredients_with_codes += 1
+                    
+                    success = (
+                        self.generated_techcard_id is not None and
+                        total_ingredients > 0
+                    )
+                    
+                    details = f"Tech card ID: {self.generated_techcard_id}, Dish article: {dish_article}, Ingredients: {total_ingredients}, With codes: {ingredients_with_codes}"
+                else:
+                    success = False
+                    details = f"Generation failed: {data.get('status')}, Issues: {data.get('issues', [])}"
                 
             else:
                 success = False
