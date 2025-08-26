@@ -146,7 +146,12 @@ class MockEliminationTester:
             techcards_collection = db.techcards_v2
             
             # Find the techcard in database
-            techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+            techcard = techcards_collection.find_one({
+                "$or": [
+                    {"id": self.generated_techcard_id},
+                    {"meta.id": self.generated_techcard_id}
+                ]
+            })
             
             response_time = time.time() - start_time
             
