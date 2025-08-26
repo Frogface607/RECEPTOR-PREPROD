@@ -536,13 +536,15 @@ def generate_product_codes(ingredient_names: List[str],
 
 
 def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str], 
-                              cards: List[TechCardV2]) -> BytesIO:
+                              cards: List[TechCardV2] = None,
+                              dishes_data: List[Dict] = None) -> BytesIO:
     """
     Feature B: Создание файла Dish-Skeletons.xlsx для предварительного импорта блюд в iiko
     
     Args:
         dish_codes_mapping: Маппинг {dish_name: dish_code}
-        cards: Список техкарт для извлечения данных о блюдах
+        cards: Список техкарт для извлечения данных о блюдах (legacy)
+        dishes_data: Прямые данные о блюдах (новый формат)
     
     Returns:
         BytesIO buffer с Excel файлом
@@ -571,33 +573,58 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
     
     # Заполняем данные по блюдам
     row = 2
-    for card in cards:
-        dish_name = card.meta.title
-        dish_code = dish_codes_mapping.get(dish_name, '')
-        
-        if dish_code:
-            # Определяем выход и единицу
-            yield_g = card.yield_.perPortion_g if hasattr(card, 'yield_') else 200
-            unit = 'г'  # По умолчанию граммы
+    
+    # Используем dishes_data если предоставлен (новый формат)
+    if dishes_data:
+        for dish in dishes_data:
+            dish_name = dish["name"]
+            dish_code = dish["article"]
+            dish_type = dish.get("type", "блюдо")
+            unit = dish.get("unit", "порц.")
+            yield_g = dish.get("yield_g", 200.0)
             
-            row_data = [
-                dish_code,      # Артикул
-                dish_name,      # Наименование
-                "Блюдо",        # Тип
-                unit,           # Ед. выпуска
-                yield_g         # Выход
-            ]
+            # Заполняем ячейки
+            ws.cell(row=row, column=1, value=dish_code)
+            ws.cell(row=row, column=2, value=dish_name)
+            ws.cell(row=row, column=3, value=dish_type)
+            ws.cell(row=row, column=4, value=unit)
+            ws.cell(row=row, column=5, value=yield_g)
             
-            # Записываем данные
-            for col, value in enumerate(row_data, 1):
-                cell = ws.cell(row=row, column=col)
-                cell.value = value
-                
-                # Форматируем артикул как текст
-                if col == 1:  # Колонка "Артикул"
-                    cell.number_format = '@'
+            # Форматируем артикул как текст
+            article_cell = ws.cell(row=row, column=1)
+            article_cell.number_format = '@'
             
             row += 1
+    
+    # Legacy: используем cards если dishes_data не предоставлены
+    elif cards:
+        for card in cards:
+            dish_name = card.meta.title
+            dish_code = dish_codes_mapping.get(dish_name, '')
+            
+            if dish_code:
+                # Определяем выход и единицу
+                yield_g = card.yield_.perPortion_g if hasattr(card, 'yield_') else 200
+                unit = 'г'  # По умолчанию граммы
+                
+                row_data = [
+                    dish_code,      # Артикул
+                    dish_name,      # Наименование
+                    "Блюдо",        # Тип
+                    unit,           # Ед. выпуска
+                    yield_g         # Выход
+                ]
+                
+                # Записываем данные
+                for col, value in enumerate(row_data, 1):
+                    cell = ws.cell(row=row, column=col)
+                    cell.value = value
+                    
+                    # Форматируем артикул как текст
+                    if col == 1:  # Колонка "Артикул"
+                        cell.number_format = '@'
+                
+                row += 1
     
     # Автоширина колонок
     for col in range(1, len(headers) + 1):
