@@ -127,8 +127,8 @@ class PreflightOrchestrator:
             
         except Exception as e:
             logger.error(f"Error loading techcards: {e}")
-            # Fallback to mock data for testing
-            return [self._create_mock_techcard()]
+            # Return empty list instead of mock data
+            return []
     
     def _create_mock_techcard(self) -> TechCardV2:
         """Create a mock techcard for testing Phase 3.5 functionality"""
