@@ -312,13 +312,26 @@ class MockContentFixTester:
                 )
                 return None
             
-            # Удаляем MongoDB-специфичные поля
+            # Удаляем MongoDB-специфичные поля и конвертируем datetime
             if '_id' in techcard_doc:
                 del techcard_doc['_id']
             if 'created_at' in techcard_doc:
                 del techcard_doc['created_at']
             if 'updated_at' in techcard_doc:
                 del techcard_doc['updated_at']
+            
+            # Конвертируем datetime объекты в строки
+            def convert_datetime(obj):
+                if isinstance(obj, dict):
+                    return {k: convert_datetime(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_datetime(item) for item in obj]
+                elif hasattr(obj, 'isoformat'):  # datetime objects
+                    return obj.isoformat()
+                else:
+                    return obj
+            
+            techcard_doc = convert_datetime(techcard_doc)
             
             # Попробуем использовать enhanced export endpoint
             response = await self.client.post(
