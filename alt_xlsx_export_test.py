@@ -324,13 +324,15 @@ class AltXLSXExportTester:
         except:
             return {"error": "Could not analyze pattern"}
 
-    async def compare_with_new_zip_export(self, techcard_id: str) -> Dict[str, Any]:
+    async def compare_with_new_zip_export(self, techcard_data: Dict[str, Any]) -> Dict[str, Any]:
         """Compare Alt Export with new ZIP export"""
         try:
             start_time = time.time()
             
             # Try new ZIP export endpoint
             zip_export_url = f"{API_BASE}/export/zip"
+            
+            techcard_id = techcard_data.get('meta', {}).get('id') or techcard_data.get('id')
             
             payload = {
                 "techcard_ids": [techcard_id],
