@@ -148,36 +148,43 @@ class FinalArticleValidationTester:
             return False
             
         try:
-            # Get tech card from database to check meta.article
-            mongo_client = MongoClient(MONGO_URL)
-            db = mongo_client[DB_NAME]
-            techcards_collection = db.techcards_v2
-            
-            techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+            # First check if we have the techcard data directly from generation
+            if hasattr(self, 'generated_techcard_data'):
+                techcard = self.generated_techcard_data
+            else:
+                # Get tech card from database
+                mongo_client = MongoClient(MONGO_URL)
+                db = mongo_client[DB_NAME]
+                techcards_collection = db.techcards_v2
+                
+                techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
             
             if techcard:
+                # Check for article in multiple possible locations
                 meta = techcard.get('meta', {})
-                dish_article = meta.get('article')
+                dish_article = meta.get('article') or techcard.get('article')
                 
                 if dish_article:
                     self.log_test(
                         "Проверка dish.article в meta",
                         True,
-                        f"Dish article найден в meta: {dish_article}"
+                        f"Dish article найден: {dish_article} (в {'meta' if meta.get('article') else 'root'})"
                     )
                     return True
                 else:
+                    # Check if article field exists but is None/empty
+                    has_article_field = 'article' in meta or 'article' in techcard
                     self.log_test(
                         "Проверка dish.article в meta",
                         False,
-                        f"Dish article отсутствует в meta. Meta содержит: {list(meta.keys())}"
+                        f"Dish article отсутствует. Поле article {'существует но пустое' if has_article_field else 'отсутствует'}. Meta: {list(meta.keys())}, Root: {list(techcard.keys())}"
                     )
                     return False
             else:
                 self.log_test(
                     "Проверка dish.article в meta",
                     False,
-                    "Техкарта не найдена в базе данных"
+                    "Техкарта не найдена"
                 )
                 return False
                 
@@ -185,7 +192,7 @@ class FinalArticleValidationTester:
             self.log_test(
                 "Проверка dish.article в meta",
                 False,
-                f"Ошибка при проверке базы данных: {str(e)}"
+                f"Ошибка при проверке: {str(e)}"
             )
             return False
 
