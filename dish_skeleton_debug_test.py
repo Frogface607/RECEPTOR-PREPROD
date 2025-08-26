@@ -86,23 +86,21 @@ class DishSkeletonDebugTester:
                 "dietary": []
             }
             
-            print(f"🔄 Generating tech card: {payload['dish_name']}")
+            print(f"🔄 Generating tech card: {payload['name']}")
             response = await self.client.post(generate_url, json=payload)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
                 data = response.json()
-                self.generated_techcard_id = data.get('id')
                 
-                # Save generation data for analysis
-                self.artifacts['generation'] = {
-                    'techcard_id': self.generated_techcard_id,
-                    'response': data,
-                    'dish_name': payload['dish_name']
-                }
+                # Extract tech card from response
+                techcard = data.get('card')
+                if not techcard:
+                    self.log_test("Generate Борщ украинский Tech Card", False, f"No card in response: {data}", response_time)
+                    return False
                 
-                # Check tech card structure
-                techcard = data.get('techcard', {})
+                # Generate a unique ID for tracking
+                self.generated_techcard_id = techcard.get('id') or f"generated_{int(time.time())}"
                 ingredients = techcard.get('ingredients', [])
                 
                 # Check for dish article
