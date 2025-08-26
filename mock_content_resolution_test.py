@@ -118,11 +118,20 @@ class MockContentResolutionTester:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    print(f"DEBUG: Response data keys: {list(data.keys())}")
+                    print(f"DEBUG: Response data: {json.dumps(data, indent=2)[:500]}...")
                     
-                    # Extract tech card ID
-                    techcard_id = data.get("id") or data.get("techcard_id")
+                    # Extract tech card ID from the response structure
+                    techcard_id = None
+                    if "card" in data and data["card"]:
+                        card_data = data["card"]
+                        techcard_id = card_data.get("id") or card_data.get("_id")
                     
-                    if techcard_id and len(techcard_id) > 10:  # Valid UUID-like ID
+                    if not techcard_id:
+                        # Try other possible locations
+                        techcard_id = data.get("id") or data.get("techcard_id") or data.get("_id")
+                    
+                    if techcard_id and len(str(techcard_id)) > 10:  # Valid UUID-like ID
                         self.generated_techcard_ids.append(techcard_id)
                         
                         # Verify tech card has real content
