@@ -287,10 +287,15 @@ class DishSkeletonDebugTester:
             
             # Export ZIP
             export_url = f"{API_BASE}/export/zip"
+            
+            # Use the preflight result to bypass the guard
+            preflight_result = self.artifacts.get('preflight', {}).get('response', {})
+            
             payload = {
                 "techcardIds": [self.generated_techcard_id],
                 "organization_id": self.organization_id,
-                "operational_rounding": True
+                "operational_rounding": True,
+                "preflight_result": preflight_result  # Include preflight result to bypass guard
             }
             
             print(f"🔄 Exporting ZIP for techcard: {self.generated_techcard_id}")
