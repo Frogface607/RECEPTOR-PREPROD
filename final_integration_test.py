@@ -66,8 +66,7 @@ class FinalIntegrationTester:
             
             payload = {
                 "name": "Суп Том Ям",
-                "description": "Острый тайский суп с креветками, грибами и лемонграссом",
-                "organization_id": self.organization_id
+                "description": "Острый тайский суп с креветками, грибами и лемонграссом"
             }
             
             response = await self.client.post(generate_url, json=payload)
@@ -83,14 +82,20 @@ class FinalIntegrationTester:
             
             data = response.json()
             
-            # Extract tech card ID and data
-            if 'techcard' in data:
-                self.generated_techcard_data = data['techcard']
-                self.generated_techcard_id = self.generated_techcard_data.get('id')
-            elif 'id' in data:
-                self.generated_techcard_id = data['id']
-                self.generated_techcard_data = data
+            # Extract tech card ID and data from the correct response structure
+            if 'card' in data:
+                self.generated_techcard_data = data['card']
+                if 'meta' in self.generated_techcard_data:
+                    self.generated_techcard_id = self.generated_techcard_data['meta'].get('id')
             else:
+                return self.log_test(
+                    "Generate Tom Yam TechCard", 
+                    False, 
+                    "No card found in response", 
+                    response_time
+                )
+            
+            if not self.generated_techcard_id:
                 return self.log_test(
                     "Generate Tom Yam TechCard", 
                     False, 
@@ -101,7 +106,10 @@ class FinalIntegrationTester:
             # Check if dish has article
             dish_article = None
             if isinstance(self.generated_techcard_data, dict):
-                dish_article = self.generated_techcard_data.get('article') or self.generated_techcard_data.get('dish', {}).get('article')
+                dish_article = (
+                    self.generated_techcard_data.get('article') or 
+                    self.generated_techcard_data.get('meta', {}).get('article')
+                )
             
             # Check ingredients for product codes
             ingredients_with_codes = 0
