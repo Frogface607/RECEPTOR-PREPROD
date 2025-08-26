@@ -1,9 +1,701 @@
 {
+  "generation": {
+    "techcard_id": "generated_1756185038",
+    "response": {
+      "status": "draft",
+      "card": {
+        "meta": {
+          "id": "ee9f2a96-7ea5-4cd3-88ea-ff75b83e712c",
+          "title": "Борщ украинский",
+          "version": "1.0",
+          "createdAt": "2025-08-26T05:10:38.736922",
+          "cuisine": "русская",
+          "tags": [
+            "суп",
+            "основное блюдо"
+          ],
+          "timings": {
+            "llm_draft_ms": 37294.0,
+            "llm_normalize_ms": 4185.0,
+            "validate_ms": 0.0,
+            "contentcheck_ms": 0.0,
+            "cost_ms": 49.0,
+            "nutrition_ms": 8.0,
+            "portion_normalize_ms": 1.0,
+            "sanitize_ms": 0.0,
+            "postcheck_ms": 0.0,
+            "total_ms": 41539.0
+          },
+          "scale_factor": 0.105,
+          "archetype": "суп",
+          "original_sum_netto": 3150.0,
+          "normalized": true
+        },
+        "portions": 1,
+        "yield": {
+          "perPortion_g": 330.0,
+          "perBatch_g": 330.0
+        },
+        "ingredients": [
+          {
+            "name": "Свекла",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 31.4,
+            "loss_pct": 10.0,
+            "netto_g": 28.3,
+            "allergens": []
+          },
+          {
+            "name": "Капуста",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 21.0,
+            "loss_pct": 15.0,
+            "netto_g": 17.8,
+            "allergens": []
+          },
+          {
+            "name": "Морковь",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 15.7,
+            "loss_pct": 10.0,
+            "netto_g": 14.1,
+            "allergens": []
+          },
+          {
+            "name": "Картофель",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 41.9,
+            "loss_pct": 5.0,
+            "netto_g": 39.8,
+            "allergens": []
+          },
+          {
+            "name": "Лук",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 10.5,
+            "loss_pct": 20.0,
+            "netto_g": 8.4,
+            "allergens": []
+          },
+          {
+            "name": "Томатная паста",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 10.5,
+            "loss_pct": 0.0,
+            "netto_g": 10.5,
+            "allergens": []
+          },
+          {
+            "name": "Вода",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 209.5,
+            "loss_pct": 0.0,
+            "netto_g": 209.5,
+            "allergens": []
+          },
+          {
+            "name": "Соль",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 1.0,
+            "loss_pct": 0.0,
+            "netto_g": 1.0,
+            "allergens": []
+          },
+          {
+            "name": "Перец черный",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 0.5,
+            "loss_pct": 0.0,
+            "netto_g": 0.5,
+            "allergens": []
+          }
+        ],
+        "process": [
+          {
+            "n": 1,
+            "action": "Нарезать свеклу, капусту, морковь, картофель и лук.",
+            "time_min": 15.0,
+            "temp_c": null,
+            "equipment": [
+              "нож",
+              "разделочная доска"
+            ],
+            "ccp": false,
+            "note": null
+          },
+          {
+            "n": 2,
+            "action": "Обжарить лук и морковь на сковороде.",
+            "time_min": 10.0,
+            "temp_c": 180.0,
+            "equipment": [
+              "сковорода"
+            ],
+            "ccp": true,
+            "note": null
+          },
+          {
+            "n": 3,
+            "action": "Сварить все ингредиенты в кастрюле до готовности.",
+            "time_min": 30.0,
+            "temp_c": 100.0,
+            "equipment": [
+              "кастрюля"
+            ],
+            "ccp": true,
+            "note": null
+          }
+        ],
+        "storage": {
+          "conditions": "Хранить в холодильнике",
+          "shelfLife_hours": 48.0,
+          "servingTemp_c": 60.0
+        },
+        "nutrition": {
+          "per100g": {
+            "kcal": 53.9,
+            "proteins_g": 1.8,
+            "fats_g": 0.3,
+            "carbs_g": 10.9
+          },
+          "perPortion": {
+            "kcal": 107.8,
+            "proteins_g": 3.6,
+            "fats_g": 0.6,
+            "carbs_g": 21.8
+          }
+        },
+        "nutritionMeta": {
+          "source": "usda",
+          "coveragePct": 66.7
+        },
+        "cost": {
+          "rawCost": 115.15,
+          "costPerPortion": 28.79,
+          "markup_pct": 300.0,
+          "vat_pct": 20.0
+        },
+        "costMeta": {
+          "source": "catalog",
+          "coveragePct": 100.0,
+          "asOf": "2025-01-17"
+        },
+        "printNotes": [],
+        "article": null
+      },
+      "issues": [
+        "Найдены диапазоны/приближения: 5-4, 3-88, 96-7, 2025-01",
+        "Найдены диапазоны/приближения: 96-7, 5-4, 3-88, 2025-01"
+      ],
+      "message": "Tech card generated with validation issues"
+    },
+    "dish_name": "Борщ украинский",
+    "full_techcard": {
+      "meta": {
+        "id": "ee9f2a96-7ea5-4cd3-88ea-ff75b83e712c",
+        "title": "Борщ украинский",
+        "version": "1.0",
+        "createdAt": "2025-08-26T05:10:38.736922",
+        "cuisine": "русская",
+        "tags": [
+          "суп",
+          "основное блюдо"
+        ],
+        "timings": {
+          "llm_draft_ms": 37294.0,
+          "llm_normalize_ms": 4185.0,
+          "validate_ms": 0.0,
+          "contentcheck_ms": 0.0,
+          "cost_ms": 49.0,
+          "nutrition_ms": 8.0,
+          "portion_normalize_ms": 1.0,
+          "sanitize_ms": 0.0,
+          "postcheck_ms": 0.0,
+          "total_ms": 41539.0
+        },
+        "scale_factor": 0.105,
+        "archetype": "суп",
+        "original_sum_netto": 3150.0,
+        "normalized": true
+      },
+      "portions": 1,
+      "yield": {
+        "perPortion_g": 330.0,
+        "perBatch_g": 330.0
+      },
+      "ingredients": [
+        {
+          "name": "Свекла",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 31.4,
+          "loss_pct": 10.0,
+          "netto_g": 28.3,
+          "allergens": []
+        },
+        {
+          "name": "Капуста",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 21.0,
+          "loss_pct": 15.0,
+          "netto_g": 17.8,
+          "allergens": []
+        },
+        {
+          "name": "Морковь",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 15.7,
+          "loss_pct": 10.0,
+          "netto_g": 14.1,
+          "allergens": []
+        },
+        {
+          "name": "Картофель",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 41.9,
+          "loss_pct": 5.0,
+          "netto_g": 39.8,
+          "allergens": []
+        },
+        {
+          "name": "Лук",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 10.5,
+          "loss_pct": 20.0,
+          "netto_g": 8.4,
+          "allergens": []
+        },
+        {
+          "name": "Томатная паста",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 10.5,
+          "loss_pct": 0.0,
+          "netto_g": 10.5,
+          "allergens": []
+        },
+        {
+          "name": "Вода",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 209.5,
+          "loss_pct": 0.0,
+          "netto_g": 209.5,
+          "allergens": []
+        },
+        {
+          "name": "Соль",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 1.0,
+          "loss_pct": 0.0,
+          "netto_g": 1.0,
+          "allergens": []
+        },
+        {
+          "name": "Перец черный",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 0.5,
+          "loss_pct": 0.0,
+          "netto_g": 0.5,
+          "allergens": []
+        }
+      ],
+      "process": [
+        {
+          "n": 1,
+          "action": "Нарезать свеклу, капусту, морковь, картофель и лук.",
+          "time_min": 15.0,
+          "temp_c": null,
+          "equipment": [
+            "нож",
+            "разделочная доска"
+          ],
+          "ccp": false,
+          "note": null
+        },
+        {
+          "n": 2,
+          "action": "Обжарить лук и морковь на сковороде.",
+          "time_min": 10.0,
+          "temp_c": 180.0,
+          "equipment": [
+            "сковорода"
+          ],
+          "ccp": true,
+          "note": null
+        },
+        {
+          "n": 3,
+          "action": "Сварить все ингредиенты в кастрюле до готовности.",
+          "time_min": 30.0,
+          "temp_c": 100.0,
+          "equipment": [
+            "кастрюля"
+          ],
+          "ccp": true,
+          "note": null
+        }
+      ],
+      "storage": {
+        "conditions": "Хранить в холодильнике",
+        "shelfLife_hours": 48.0,
+        "servingTemp_c": 60.0
+      },
+      "nutrition": {
+        "per100g": {
+          "kcal": 53.9,
+          "proteins_g": 1.8,
+          "fats_g": 0.3,
+          "carbs_g": 10.9
+        },
+        "perPortion": {
+          "kcal": 107.8,
+          "proteins_g": 3.6,
+          "fats_g": 0.6,
+          "carbs_g": 21.8
+        }
+      },
+      "nutritionMeta": {
+        "source": "usda",
+        "coveragePct": 66.7
+      },
+      "cost": {
+        "rawCost": 115.15,
+        "costPerPortion": 28.79,
+        "markup_pct": 300.0,
+        "vat_pct": 20.0
+      },
+      "costMeta": {
+        "source": "catalog",
+        "coveragePct": 100.0,
+        "asOf": "2025-01-17"
+      },
+      "printNotes": [],
+      "article": null
+    }
+  },
+  "structure_analysis": {
+    "dish_article": null,
+    "total_ingredients": 9,
+    "ingredients_with_articles": 0,
+    "ingredients_without_articles": 9,
+    "article_details": [
+      "Свекла: NO ARTICLE",
+      "Капуста: NO ARTICLE",
+      "Морковь: NO ARTICLE",
+      "Картофель: NO ARTICLE",
+      "Лук: NO ARTICLE",
+      "Томатная паста: NO ARTICLE",
+      "Вода: NO ARTICLE",
+      "Соль: NO ARTICLE",
+      "Перец черный: NO ARTICLE"
+    ],
+    "full_techcard": {
+      "meta": {
+        "id": "ee9f2a96-7ea5-4cd3-88ea-ff75b83e712c",
+        "title": "Борщ украинский",
+        "version": "1.0",
+        "createdAt": "2025-08-26T05:10:38.736922",
+        "cuisine": "русская",
+        "tags": [
+          "суп",
+          "основное блюдо"
+        ],
+        "timings": {
+          "llm_draft_ms": 37294.0,
+          "llm_normalize_ms": 4185.0,
+          "validate_ms": 0.0,
+          "contentcheck_ms": 0.0,
+          "cost_ms": 49.0,
+          "nutrition_ms": 8.0,
+          "portion_normalize_ms": 1.0,
+          "sanitize_ms": 0.0,
+          "postcheck_ms": 0.0,
+          "total_ms": 41539.0
+        },
+        "scale_factor": 0.105,
+        "archetype": "суп",
+        "original_sum_netto": 3150.0,
+        "normalized": true
+      },
+      "portions": 1,
+      "yield": {
+        "perPortion_g": 330.0,
+        "perBatch_g": 330.0
+      },
+      "ingredients": [
+        {
+          "name": "Свекла",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 31.4,
+          "loss_pct": 10.0,
+          "netto_g": 28.3,
+          "allergens": []
+        },
+        {
+          "name": "Капуста",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 21.0,
+          "loss_pct": 15.0,
+          "netto_g": 17.8,
+          "allergens": []
+        },
+        {
+          "name": "Морковь",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 15.7,
+          "loss_pct": 10.0,
+          "netto_g": 14.1,
+          "allergens": []
+        },
+        {
+          "name": "Картофель",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 41.9,
+          "loss_pct": 5.0,
+          "netto_g": 39.8,
+          "allergens": []
+        },
+        {
+          "name": "Лук",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 10.5,
+          "loss_pct": 20.0,
+          "netto_g": 8.4,
+          "allergens": []
+        },
+        {
+          "name": "Томатная паста",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 10.5,
+          "loss_pct": 0.0,
+          "netto_g": 10.5,
+          "allergens": []
+        },
+        {
+          "name": "Вода",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 209.5,
+          "loss_pct": 0.0,
+          "netto_g": 209.5,
+          "allergens": []
+        },
+        {
+          "name": "Соль",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 1.0,
+          "loss_pct": 0.0,
+          "netto_g": 1.0,
+          "allergens": []
+        },
+        {
+          "name": "Перец черный",
+          "canonical_id": null,
+          "skuId": null,
+          "product_code": null,
+          "subRecipe": null,
+          "unit": "g",
+          "brutto_g": 0.5,
+          "loss_pct": 0.0,
+          "netto_g": 0.5,
+          "allergens": []
+        }
+      ],
+      "process": [
+        {
+          "n": 1,
+          "action": "Нарезать свеклу, капусту, морковь, картофель и лук.",
+          "time_min": 15.0,
+          "temp_c": null,
+          "equipment": [
+            "нож",
+            "разделочная доска"
+          ],
+          "ccp": false,
+          "note": null
+        },
+        {
+          "n": 2,
+          "action": "Обжарить лук и морковь на сковороде.",
+          "time_min": 10.0,
+          "temp_c": 180.0,
+          "equipment": [
+            "сковорода"
+          ],
+          "ccp": true,
+          "note": null
+        },
+        {
+          "n": 3,
+          "action": "Сварить все ингредиенты в кастрюле до готовности.",
+          "time_min": 30.0,
+          "temp_c": 100.0,
+          "equipment": [
+            "кастрюля"
+          ],
+          "ccp": true,
+          "note": null
+        }
+      ],
+      "storage": {
+        "conditions": "Хранить в холодильнике",
+        "shelfLife_hours": 48.0,
+        "servingTemp_c": 60.0
+      },
+      "nutrition": {
+        "per100g": {
+          "kcal": 53.9,
+          "proteins_g": 1.8,
+          "fats_g": 0.3,
+          "carbs_g": 10.9
+        },
+        "perPortion": {
+          "kcal": 107.8,
+          "proteins_g": 3.6,
+          "fats_g": 0.6,
+          "carbs_g": 21.8
+        }
+      },
+      "nutritionMeta": {
+        "source": "usda",
+        "coveragePct": 66.7
+      },
+      "cost": {
+        "rawCost": 115.15,
+        "costPerPortion": 28.79,
+        "markup_pct": 300.0,
+        "vat_pct": 20.0
+      },
+      "costMeta": {
+        "source": "catalog",
+        "coveragePct": 100.0,
+        "asOf": "2025-01-17"
+      },
+      "printNotes": [],
+      "article": null
+    }
+  },
+  "database_check": {
+    "found_in_db": false
+  },
   "root_cause_analysis": {
-    "generation_phase": {},
-    "database_phase": {},
+    "generation_phase": {
+      "dish_article_present": false,
+      "ingredients_with_articles": 0,
+      "ingredients_without_articles": 9
+    },
+    "database_phase": {
+      "saved_to_db": false,
+      "dish_article_preserved": false,
+      "ingredients_with_articles_preserved": 0
+    },
     "preflight_phase": {},
     "export_phase": {},
-    "root_causes": []
+    "root_causes": [
+      "GENERATION: Dish article not generated",
+      "GENERATION: 9 ingredients without articles",
+      "DATABASE: Techcard not saved to database"
+    ]
   }
 }
