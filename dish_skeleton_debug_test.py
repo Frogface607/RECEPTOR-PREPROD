@@ -247,13 +247,22 @@ class DishSkeletonDebugTester:
                 missing_dishes = 0
                 missing_products = 0
                 
-                for warning in warnings:
-                    if 'dish' in warning.get('type', '').lower():
-                        missing_dishes += len(warning.get('items', []))
-                    elif 'product' in warning.get('type', '').lower():
-                        missing_products += len(warning.get('items', []))
+                # Check for missing items in the new format
+                missing_data = data.get('missing', {})
+                if 'dishes' in missing_data:
+                    missing_dishes = len(missing_data['dishes'])
+                if 'products' in missing_data:
+                    missing_products = len(missing_data['products'])
                 
-                ttk_date = data.get('ttk_date', 'Not specified')
+                # Fallback to warnings format
+                if missing_dishes == 0 and missing_products == 0:
+                    for warning in warnings:
+                        if 'dish' in warning.get('type', '').lower():
+                            missing_dishes += len(warning.get('items', []))
+                        elif 'product' in warning.get('type', '').lower():
+                            missing_products += len(warning.get('items', []))
+                
+                ttk_date = data.get('ttkDate', data.get('ttk_date', 'Not specified'))
                 export_ready = data.get('export_ready', False)
                 
                 self.artifacts['preflight'] = {
