@@ -1,5 +1,5 @@
 from __future__ import annotations
-import os, json, time
+import os, json, time, traceback
 from typing import Dict, Any, List, Set
 from pydantic import BaseModel
 from receptor_agent.techcards_v2.schemas import TechCardV2, NutritionV2, CostV2, MetaV2
