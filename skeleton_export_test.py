@@ -383,7 +383,12 @@ class SkeletonExportTester:
                     break
             
             if techcard:
-                name = techcard.get('name', 'Unknown')
+                # Handle different document structures
+                if 'meta' in techcard and 'title' in techcard['meta']:
+                    name = techcard['meta']['title']
+                else:
+                    name = techcard.get('name', 'Unknown')
+                
                 ingredients = techcard.get('ingredients', [])
                 ingredients_count = len(ingredients)
                 
