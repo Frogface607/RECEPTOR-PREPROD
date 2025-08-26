@@ -1,30 +1,30 @@
 {
   "generation": {
-    "techcard_id": "generated_1756185205",
+    "techcard_id": "generated_1756185261",
     "response": {
       "status": "draft",
       "card": {
         "meta": {
-          "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
+          "id": "677d94ad-cf55-49ca-83eb-410909003478",
           "title": "Борщ украинский",
           "version": "1.0",
-          "createdAt": "2025-08-26T05:13:25.087353",
+          "createdAt": "2025-08-26T05:14:21.312212",
           "cuisine": "русская",
           "tags": [
             "суп",
             "основное блюдо"
           ],
           "timings": {
-            "llm_draft_ms": 22843.0,
-            "llm_normalize_ms": 4716.0,
+            "llm_draft_ms": 11046.0,
+            "llm_normalize_ms": 14248.0,
             "validate_ms": 0.0,
             "contentcheck_ms": 0.0,
-            "cost_ms": 80.0,
-            "nutrition_ms": 9.0,
+            "cost_ms": 63.0,
+            "nutrition_ms": 15.0,
             "portion_normalize_ms": 1.0,
             "sanitize_ms": 0.0,
             "postcheck_ms": 0.0,
-            "total_ms": 27652.0
+            "total_ms": 25376.0
           },
           "scale_factor": 0.098,
           "archetype": "суп",
@@ -86,7 +86,7 @@
             "allergens": []
           },
           {
-            "name": "Лук",
+            "name": "Лук репчатый",
             "canonical_id": null,
             "skuId": null,
             "product_code": null,
@@ -137,7 +137,7 @@
         "process": [
           {
             "n": 1,
-            "action": "Варить мясо",
+            "action": "Варить мясо в воде",
             "time_min": 120.0,
             "temp_c": 100.0,
             "equipment": [
@@ -148,7 +148,7 @@
           },
           {
             "n": 2,
-            "action": "Добавить овощи",
+            "action": "Добавить нарезанные овощи",
             "time_min": 30.0,
             "temp_c": 100.0,
             "equipment": [
@@ -159,8 +159,8 @@
           },
           {
             "n": 3,
-            "action": "Добавить томатную пасту",
-            "time_min": 10.0,
+            "action": "Добавить томатную пасту и варить",
+            "time_min": 15.0,
             "temp_c": 100.0,
             "equipment": [
               "кастрюля"
@@ -205,40 +205,41 @@
         },
         "printNotes": [],
         "article": null,
-        "_id": "generated_1756185205",
-        "id": "generated_1756185205",
-        "created_at": "2025-08-26 05:13:25.195460",
-        "updated_at": "2025-08-26 05:13:25.195463"
+        "_id": "generated_1756185261",
+        "id": "generated_1756185261",
+        "created_at": "2025-08-26 05:14:21.462794",
+        "updated_at": "2025-08-26 05:14:21.462796"
       },
       "issues": [
-        "Найдены диапазоны/приближения: 081-1, 74-7, 43-44, 2025-01",
-        "Найдены диапазоны/приближения: 74-7, 43-44, 081-1, 2025-01"
+        "normalizeShape: 2 validation errors for TechCardV2\nnutrition\n  Input should be a valid dictionary or instance of NutritionV2 [type=model_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.11/v/model_type\ncost\n  Input should be a valid dictionary or instance of CostV2 [type=model_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.11/v/model_type",
+        "Найдены диапазоны/приближения: 55-49, 2025-01",
+        "Найдены диапазоны/приближения: 55-49, 2025-01"
       ],
       "message": "Tech card generated with validation issues"
     },
     "dish_name": "Борщ украинский",
     "full_techcard": {
       "meta": {
-        "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
+        "id": "677d94ad-cf55-49ca-83eb-410909003478",
         "title": "Борщ украинский",
         "version": "1.0",
-        "createdAt": "2025-08-26T05:13:25.087353",
+        "createdAt": "2025-08-26T05:14:21.312212",
         "cuisine": "русская",
         "tags": [
           "суп",
           "основное блюдо"
         ],
         "timings": {
-          "llm_draft_ms": 22843.0,
-          "llm_normalize_ms": 4716.0,
+          "llm_draft_ms": 11046.0,
+          "llm_normalize_ms": 14248.0,
           "validate_ms": 0.0,
           "contentcheck_ms": 0.0,
-          "cost_ms": 80.0,
-          "nutrition_ms": 9.0,
+          "cost_ms": 63.0,
+          "nutrition_ms": 15.0,
           "portion_normalize_ms": 1.0,
           "sanitize_ms": 0.0,
           "postcheck_ms": 0.0,
-          "total_ms": 27652.0
+          "total_ms": 25376.0
         },
         "scale_factor": 0.098,
         "archetype": "суп",
@@ -300,7 +301,7 @@
           "allergens": []
         },
         {
-          "name": "Лук",
+          "name": "Лук репчатый",
           "canonical_id": null,
           "skuId": null,
           "product_code": null,
@@ -351,7 +352,7 @@
       "process": [
         {
           "n": 1,
-          "action": "Варить мясо",
+          "action": "Варить мясо в воде",
           "time_min": 120.0,
           "temp_c": 100.0,
           "equipment": [
@@ -362,7 +363,7 @@
         },
         {
           "n": 2,
-          "action": "Добавить овощи",
+          "action": "Добавить нарезанные овощи",
           "time_min": 30.0,
           "temp_c": 100.0,
           "equipment": [
@@ -373,8 +374,8 @@
         },
         {
           "n": 3,
-          "action": "Добавить томатную пасту",
-          "time_min": 10.0,
+          "action": "Добавить томатную пасту и варить",
+          "time_min": 15.0,
           "temp_c": 100.0,
           "equipment": [
             "кастрюля"
@@ -419,10 +420,10 @@
       },
       "printNotes": [],
       "article": null,
-      "_id": "generated_1756185205",
-      "id": "generated_1756185205",
-      "created_at": "2025-08-26 05:13:25.195460",
-      "updated_at": "2025-08-26 05:13:25.195463"
+      "_id": "generated_1756185261",
+      "id": "generated_1756185261",
+      "created_at": "2025-08-26 05:14:21.462794",
+      "updated_at": "2025-08-26 05:14:21.462796"
     }
   },
   "structure_analysis": {
@@ -435,33 +436,33 @@
       "Капуста: NO ARTICLE",
       "Морковь: NO ARTICLE",
       "Картофель: NO ARTICLE",
-      "Лук: NO ARTICLE",
+      "Лук репчатый: NO ARTICLE",
       "Томатная паста: NO ARTICLE",
       "Мясо говядины: NO ARTICLE",
       "Вода: NO ARTICLE"
     ],
     "full_techcard": {
       "meta": {
-        "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
+        "id": "677d94ad-cf55-49ca-83eb-410909003478",
         "title": "Борщ украинский",
         "version": "1.0",
-        "createdAt": "2025-08-26T05:13:25.087353",
+        "createdAt": "2025-08-26T05:14:21.312212",
         "cuisine": "русская",
         "tags": [
           "суп",
           "основное блюдо"
         ],
         "timings": {
-          "llm_draft_ms": 22843.0,
-          "llm_normalize_ms": 4716.0,
+          "llm_draft_ms": 11046.0,
+          "llm_normalize_ms": 14248.0,
           "validate_ms": 0.0,
           "contentcheck_ms": 0.0,
-          "cost_ms": 80.0,
-          "nutrition_ms": 9.0,
+          "cost_ms": 63.0,
+          "nutrition_ms": 15.0,
           "portion_normalize_ms": 1.0,
           "sanitize_ms": 0.0,
           "postcheck_ms": 0.0,
-          "total_ms": 27652.0
+          "total_ms": 25376.0
         },
         "scale_factor": 0.098,
         "archetype": "суп",
@@ -523,7 +524,7 @@
           "allergens": []
         },
         {
-          "name": "Лук",
+          "name": "Лук репчатый",
           "canonical_id": null,
           "skuId": null,
           "product_code": null,
@@ -574,7 +575,7 @@
       "process": [
         {
           "n": 1,
-          "action": "Варить мясо",
+          "action": "Варить мясо в воде",
           "time_min": 120.0,
           "temp_c": 100.0,
           "equipment": [
@@ -585,7 +586,7 @@
         },
         {
           "n": 2,
-          "action": "Добавить овощи",
+          "action": "Добавить нарезанные овощи",
           "time_min": 30.0,
           "temp_c": 100.0,
           "equipment": [
@@ -596,8 +597,8 @@
         },
         {
           "n": 3,
-          "action": "Добавить томатную пасту",
-          "time_min": 10.0,
+          "action": "Добавить томатную пасту и варить",
+          "time_min": 15.0,
           "temp_c": 100.0,
           "equipment": [
             "кастрюля"
@@ -642,10 +643,10 @@
       },
       "printNotes": [],
       "article": null,
-      "_id": "generated_1756185205",
-      "id": "generated_1756185205",
-      "created_at": "2025-08-26 05:13:25.195460",
-      "updated_at": "2025-08-26 05:13:25.195463"
+      "_id": "generated_1756185261",
+      "id": "generated_1756185261",
+      "created_at": "2025-08-26 05:14:21.462794",
+      "updated_at": "2025-08-26 05:14:21.462796"
     }
   },
   "database_check": {
@@ -654,28 +655,28 @@
     "ingredients_count": 8,
     "ingredients_with_articles": 0,
     "saved_techcard": {
-      "_id": "generated_1756185205",
+      "_id": "generated_1756185261",
       "meta": {
-        "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
+        "id": "677d94ad-cf55-49ca-83eb-410909003478",
         "title": "Борщ украинский",
         "version": "1.0",
-        "createdAt": "2025-08-26T05:13:25.087353",
+        "createdAt": "2025-08-26T05:14:21.312212",
         "cuisine": "русская",
         "tags": [
           "суп",
           "основное блюдо"
         ],
         "timings": {
-          "llm_draft_ms": 22843.0,
-          "llm_normalize_ms": 4716.0,
+          "llm_draft_ms": 11046.0,
+          "llm_normalize_ms": 14248.0,
           "validate_ms": 0.0,
           "contentcheck_ms": 0.0,
-          "cost_ms": 80.0,
-          "nutrition_ms": 9.0,
+          "cost_ms": 63.0,
+          "nutrition_ms": 15.0,
           "portion_normalize_ms": 1.0,
           "sanitize_ms": 0.0,
           "postcheck_ms": 0.0,
-          "total_ms": 27652.0
+          "total_ms": 25376.0
         },
         "scale_factor": 0.098,
         "archetype": "суп",
@@ -737,7 +738,7 @@
           "allergens": []
         },
         {
-          "name": "Лук",
+          "name": "Лук репчатый",
           "canonical_id": null,
           "skuId": null,
           "product_code": null,
@@ -788,7 +789,7 @@
       "process": [
         {
           "n": 1,
-          "action": "Варить мясо",
+          "action": "Варить мясо в воде",
           "time_min": 120.0,
           "temp_c": 100.0,
           "equipment": [
@@ -799,7 +800,7 @@
         },
         {
           "n": 2,
-          "action": "Добавить овощи",
+          "action": "Добавить нарезанные овощи",
           "time_min": 30.0,
           "temp_c": 100.0,
           "equipment": [
@@ -810,8 +811,8 @@
         },
         {
           "n": 3,
-          "action": "Добавить томатную пасту",
-          "time_min": 10.0,
+          "action": "Добавить томатную пасту и варить",
+          "time_min": 15.0,
           "temp_c": 100.0,
           "equipment": [
             "кастрюля"
@@ -856,9 +857,9 @@
       },
       "printNotes": [],
       "article": null,
-      "id": "generated_1756185205",
-      "created_at": "2025-08-26 05:13:25.195000",
-      "updated_at": "2025-08-26 05:13:25.195000"
+      "id": "generated_1756185261",
+      "created_at": "2025-08-26 05:14:21.462000",
+      "updated_at": "2025-08-26 05:14:21.462000"
     }
   },
   "preflight": {
@@ -910,9 +911,9 @@
             "group": "Овощи"
           },
           {
-            "id": "product_Лук",
-            "name": "Лук",
-            "article": "10005",
+            "id": "product_Лук_репчатый",
+            "name": "Лук репчатый",
+            "article": "10009",
             "type": "product",
             "unit": "g",
             "group": "Овощи"
@@ -952,7 +953,7 @@
           "10002",
           "10003",
           "10004",
-          "10005",
+          "10009",
           "10006",
           "10007",
           "10008"
@@ -963,11 +964,293 @@
         "productSkeletons": 8
       }
     },
-    "missing_dishes": 0,
-    "missing_products": 0,
-    "ttk_date": "Not specified",
+    "missing_dishes": 1,
+    "missing_products": 8,
+    "ttk_date": "2025-08-26",
     "export_ready": false,
     "warnings": []
+  },
+  "export": {
+    "content_type": "application/zip",
+    "zip_size": 15311,
+    "files_analysis": {
+      "iiko_TTK.xlsx": {
+        "size": 6081,
+        "type": "XLSX",
+        "analysis": {
+          "sheets": [
+            {
+              "name": "ТТК",
+              "max_row": 9,
+              "max_column": 12,
+              "cells_with_data": 90,
+              "sample_data": [
+                {
+                  "cell": "A1",
+                  "value": "Артикул блюда"
+                },
+                {
+                  "cell": "B1",
+                  "value": "Наименование блюда"
+                },
+                {
+                  "cell": "C1",
+                  "value": "Артикул продукта"
+                },
+                {
+                  "cell": "D1",
+                  "value": "Наименование продукта"
+                },
+                {
+                  "cell": "E1",
+                  "value": "Брутто"
+                },
+                {
+                  "cell": "F1",
+                  "value": "Потери, %"
+                },
+                {
+                  "cell": "G1",
+                  "value": "Нетто"
+                },
+                {
+                  "cell": "H1",
+                  "value": "Ед."
+                },
+                {
+                  "cell": "I1",
+                  "value": "Выход готового продукта"
+                },
+                {
+                  "cell": "J1",
+                  "value": "Норма закладки"
+                }
+              ]
+            }
+          ],
+          "total_rows": 9,
+          "total_cells_with_data": 90,
+          "articles_found": [],
+          "dish_names_found": [
+            "Артикул блюда",
+            "Наименование блюда",
+            "Артикул продукта",
+            "Наименование продукта",
+            "Брутто",
+            "Потери, %",
+            "Нетто",
+            "Выход готового продукта",
+            "Норма закладки",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_СВЕКЛА",
+            "Свекла",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_КАПУСТА",
+            "Капуста",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_МОРКОВЬ",
+            "Морковь",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_КАРТОФЕЛЬ",
+            "Картофель",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_ЛУК_РЕПЧАТЫЙ",
+            "Лук репчатый",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_ТОМАТНАЯ_ПАСТА",
+            "Томатная паста",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_МЯСО_ГОВЯДИНЫ",
+            "Мясо говядины",
+            "DISH_БОРЩ_УКРАИНСКИЙ",
+            "Борщ украинский",
+            "GENERATED_ВОДА",
+            "Вода"
+          ],
+          "mock_content_detected": [],
+          "empty_file": false
+        }
+      },
+      "Dish-Skeletons.xlsx": {
+        "size": 5036,
+        "type": "XLSX",
+        "analysis": {
+          "sheets": [
+            {
+              "name": "Блюда",
+              "max_row": 1,
+              "max_column": 5,
+              "cells_with_data": 5,
+              "sample_data": [
+                {
+                  "cell": "A1",
+                  "value": "Артикул"
+                },
+                {
+                  "cell": "B1",
+                  "value": "Наименование"
+                },
+                {
+                  "cell": "C1",
+                  "value": "Тип"
+                },
+                {
+                  "cell": "D1",
+                  "value": "Ед. выпуска"
+                },
+                {
+                  "cell": "E1",
+                  "value": "Выход"
+                }
+              ]
+            }
+          ],
+          "total_rows": 1,
+          "total_cells_with_data": 5,
+          "articles_found": [],
+          "dish_names_found": [
+            "Артикул",
+            "Наименование",
+            "Ед. выпуска",
+            "Выход"
+          ],
+          "mock_content_detected": [],
+          "empty_file": false
+        }
+      },
+      "Product-Skeletons.xlsx": {
+        "size": 5507,
+        "type": "XLSX",
+        "analysis": {
+          "sheets": [
+            {
+              "name": "Sheet",
+              "max_row": 9,
+              "max_column": 7,
+              "cells_with_data": 47,
+              "sample_data": [
+                {
+                  "cell": "A1",
+                  "value": "Артикул"
+                },
+                {
+                  "cell": "B1",
+                  "value": "Наименование"
+                },
+                {
+                  "cell": "C1",
+                  "value": "Ед. изм"
+                },
+                {
+                  "cell": "D1",
+                  "value": "Тип"
+                },
+                {
+                  "cell": "E1",
+                  "value": "Группа"
+                },
+                {
+                  "cell": "F1",
+                  "value": "Штрихкод"
+                },
+                {
+                  "cell": "G1",
+                  "value": "Поставщик"
+                },
+                {
+                  "cell": "A2",
+                  "value": "10001"
+                },
+                {
+                  "cell": "B2",
+                  "value": "Свекла"
+                },
+                {
+                  "cell": "C2",
+                  "value": "г"
+                }
+              ]
+            }
+          ],
+          "total_rows": 9,
+          "total_cells_with_data": 47,
+          "articles_found": [
+            "10001",
+            "10002",
+            "10003",
+            "10004",
+            "10009",
+            "10006",
+            "10007",
+            "10008"
+          ],
+          "dish_names_found": [
+            "Артикул",
+            "Наименование",
+            "Ед. изм",
+            "Группа",
+            "Штрихкод",
+            "Поставщик",
+            "Свекла",
+            "Товар",
+            "Сырьё",
+            "Капуста",
+            "Товар",
+            "Овощи",
+            "Морковь",
+            "Товар",
+            "Овощи",
+            "Картофель",
+            "Товар",
+            "Овощи",
+            "Лук репчатый",
+            "Товар",
+            "Овощи",
+            "Томатная паста",
+            "Товар",
+            "Сырьё",
+            "Мясо говядины",
+            "Товар",
+            "Мясо и рыба",
+            "Вода",
+            "Товар",
+            "Сырьё"
+          ],
+          "mock_content_detected": [],
+          "empty_file": false
+        }
+      }
+    }
+  },
+  "detailed_inspection": {
+    "iiko_TTK.xlsx": {
+      "empty": false,
+      "articles_found": 0,
+      "dishes_found": 41,
+      "mock_content": 0,
+      "status": "OK"
+    },
+    "Dish-Skeletons.xlsx": {
+      "empty": false,
+      "articles_found": 0,
+      "dishes_found": 4,
+      "mock_content": 0,
+      "status": "OK"
+    },
+    "Product-Skeletons.xlsx": {
+      "empty": false,
+      "articles_found": 8,
+      "dishes_found": 30,
+      "mock_content": 0,
+      "status": "OK"
+    }
   },
   "root_cause_analysis": {
     "generation_phase": {
@@ -981,15 +1264,21 @@
       "ingredients_with_articles_preserved": 0
     },
     "preflight_phase": {
-      "missing_dishes": 0,
-      "missing_products": 0,
+      "missing_dishes": 1,
+      "missing_products": 8,
       "export_ready": false
     },
-    "export_phase": {},
+    "export_phase": {
+      "empty_files": [],
+      "mock_files": [],
+      "total_files": 3
+    },
     "root_causes": [
       "GENERATION: Dish article not generated",
       "GENERATION: 8 ingredients without articles",
-      "DATABASE: Dish article lost during save"
+      "DATABASE: Dish article lost during save",
+      "PREFLIGHT: 1 missing dishes detected",
+      "PREFLIGHT: 8 missing products detected"
     ]
   }
 }
