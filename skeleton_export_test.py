@@ -206,6 +206,10 @@ class SkeletonExportTester:
                 "operational_rounding": True
             }
             
+            # Include preflight result if provided (proper workflow)
+            if preflight_result:
+                payload["preflight_result"] = preflight_result
+            
             response = await self.client.post(endpoint, json=payload)
             response_time = time.time() - start_time
             
