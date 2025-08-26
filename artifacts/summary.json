@@ -1,115 +1,75 @@
 {
-  "test_specification": "Generate new TechCards → PF-02→EX-03: preflight→zip + XLSX @-format (credit-safe)",
-  "execution_timestamp": "2025-08-25T20:36:31.805681",
-  "test_configuration": {
-    "dish_names": [
-      "Тест Блюдо 1",
-      "Тест Блюдо 2",
-      "Тест Блюдо 3"
-    ],
-    "portions": 1,
-    "operational_rounding": true,
-    "backend_url": "https://menu-designer-ai.preview.emergentagent.com"
-  },
-  "results_summary": {
-    "total_tests": 9,
-    "passed_tests": 9,
-    "failed_tests": 0,
-    "success_rate": "100.0%"
-  },
-  "workflow_steps": {
-    "tech_cards_generated": 3,
-    "tech_cards_requested": 3,
-    "generation_success_rate": "100.0%"
-  },
-  "acceptance_criteria": {
-    "all_generate_http_200": true,
-    "gx02_validation_passes": true,
-    "preflight_correct": true,
-    "zip_contains_expected_files": true,
-    "xlsx_articles_text_format": true,
-    "no_guid_code_in_articles": null
-  },
-  "detailed_results": [
+  "test_suite": "FE Export Wizard: bind to /export/*, anti-mock scan, and article-first XLSX validation",
+  "total_tests": 7,
+  "passed_tests": 0,
+  "failed_tests": 7,
+  "success_rate": "0.0%",
+  "test_results": [
     {
-      "test": "Generate TechCard: Тест Блюдо 1",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "Generated techcard ID: 7d6bfb27-64a7-4500-8231-16ef88118934, Status: draft",
-      "response_time": "11.494s",
-      "timestamp": "2025-08-25T20:36:08.567697"
+      "test": "Generate Tech Card 1",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No ID in response for Борщ украинский с говядиной",
+      "response_time": "28.531s"
     },
     {
-      "test": "Generate TechCard: Тест Блюдо 2",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "Generated techcard ID: e379d95e-3f5c-4ee9-8cd2-3480a739ef67, Status: draft",
-      "response_time": "11.618s",
-      "timestamp": "2025-08-25T20:36:20.185525"
+      "test": "Generate Tech Card 2",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No ID in response for Стейк из говядины с картофельным пюре",
+      "response_time": "11.791s"
     },
     {
-      "test": "Generate TechCard: Тест Блюдо 3",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "Generated techcard ID: bdd32562-f14e-4969-910b-8a8d219a3f03, Status: draft",
-      "response_time": "11.422s",
-      "timestamp": "2025-08-25T20:36:31.607874"
+      "test": "Preflight with Real IDs",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No real tech card IDs available",
+      "response_time": "N/A"
     },
     {
-      "test": "Validate TechCard: 7d6bfb27-64a7-4500-8231-16ef88118934",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "GX-02 validation: PASS, Score: 0, Issues: 0",
-      "response_time": "0.011s",
-      "timestamp": "2025-08-25T20:36:31.619447"
+      "test": "ZIP Export with Real IDs",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No real tech card IDs available",
+      "response_time": "N/A"
     },
     {
-      "test": "Validate TechCard: e379d95e-3f5c-4ee9-8cd2-3480a739ef67",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "GX-02 validation: PASS, Score: 0, Issues: 0",
-      "response_time": "0.009s",
-      "timestamp": "2025-08-25T20:36:31.628226"
+      "test": "Anti-Mock Scan",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No ZIP content to scan",
+      "response_time": "N/A"
     },
     {
-      "test": "Validate TechCard: bdd32562-f14e-4969-910b-8a8d219a3f03",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "GX-02 validation: PASS, Score: 0, Issues: 0",
-      "response_time": "0.009s",
-      "timestamp": "2025-08-25T20:36:31.637789"
+      "test": "Excel Invariants",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No ZIP content to check",
+      "response_time": "N/A"
     },
     {
-      "test": "Preflight Check",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "Counts: {'dishSkeletons': 0, 'productSkeletons': 0}, Missing: {'dishes': [], 'products': []}, TTK Date: 2025-08-25",
-      "response_time": "0.098s",
-      "timestamp": "2025-08-25T20:36:31.736437"
-    },
-    {
-      "test": "ZIP Export",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "ZIP exported successfully, size: 5143 bytes",
-      "response_time": "0.056s",
-      "timestamp": "2025-08-25T20:36:31.792919"
-    },
-    {
-      "test": "XLSX Format Validation",
-      "status": "✅ PASS",
-      "success": true,
-      "details": "Files: 1, Issues: []",
-      "response_time": "0.012s",
-      "timestamp": "2025-08-25T20:36:31.805326"
+      "test": "TTK Skeletons Reconciliation",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "No ZIP content to reconcile",
+      "response_time": "N/A"
     }
   ],
-  "artifacts_created": [
-    "gen_runs.json",
-    "validation.json",
-    "preflight.json",
-    "export.json",
-    "xlsx_checks.json",
-    "summary.md"
-  ]
+  "artifacts_generated": [
+    "/app/artifacts/preflight.json",
+    "/app/artifacts/export.json",
+    "/app/artifacts/validation.json",
+    "/app/artifacts/summary.json",
+    "/app/artifacts/xlsx_checks.json",
+    "/app/artifacts/gen_runs.json"
+  ],
+  "timestamp": "2025-08-26T09:28:01.014734",
+  "acceptance_criteria_status": {
+    "real_endpoints_operational": false,
+    "preflight_functional": false,
+    "zip_export_working": false,
+    "no_mock_content": false,
+    "excel_formatting_correct": false,
+    "ttk_skeleton_reconciliation": false
+  }
 }
