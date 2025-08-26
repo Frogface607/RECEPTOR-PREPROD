@@ -174,7 +174,8 @@ class DishSkeletonDebugTester:
             if not saved_techcard and 'generation' in self.artifacts:
                 # Save the generated techcard to database
                 techcard_data = self.artifacts['generation']['full_techcard']
-                techcard_data['id'] = self.generated_techcard_id
+                techcard_data['_id'] = self.generated_techcard_id  # Use _id for MongoDB
+                techcard_data['id'] = self.generated_techcard_id   # Keep id field too
                 techcard_data['created_at'] = datetime.now()
                 techcard_data['updated_at'] = datetime.now()
                 
@@ -182,8 +183,8 @@ class DishSkeletonDebugTester:
                 result = techcards_collection.insert_one(techcard_data)
                 print(f"📝 Manually saved techcard to database: {result.inserted_id}")
                 
-                # Re-fetch to verify
-                saved_techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+                # Re-fetch to verify using _id
+                saved_techcard = techcards_collection.find_one({"_id": self.generated_techcard_id})
             
             if saved_techcard:
                 # Check articles in saved version
