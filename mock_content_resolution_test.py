@@ -140,7 +140,7 @@ class MockContentResolutionTester:
                         ingredients_count = len(card_data.get("ingredients", []))
                         
                         # Check for mock signatures in the generated content
-                        mock_detected = any(sig in str(data).upper() for sig in [s.upper() for s in MOCK_SIGNATURES])
+                        mock_detected = any(sig in str(card_data).upper() for sig in [s.upper() for s in MOCK_SIGNATURES])
                         
                         if not mock_detected and ingredients_count > 0:
                             self.log_test(f"Tech Card Generation - {dish_name}", True,
