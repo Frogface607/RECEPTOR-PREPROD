@@ -98,7 +98,7 @@ class SkeletonExportTester:
                     self.log_test(
                         "Генерация техкарты 'Простой салат'",
                         True,
-                        f"Техкарта создана: ID={self.generated_techcard_id}, название='{techcard_name}', ингредиентов={ingredients_count}",
+                        f"Техкарта создана: ID={self.generated_techcard_id}, название='{techcard_name}', ингредиентов={ingredients_count}, статус={status}",
                         response_time
                     )
                     return True
