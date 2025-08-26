@@ -500,7 +500,7 @@ class DualExporter:
             raise
     
     async def _create_dish_skeletons_xlsx(self, missing_dishes: List[Dict]) -> io.BytesIO:
-        """Create Dish-Skeletons.xlsx file"""
+        """Create Dish-Skeletons.xlsx file with actual dish data"""
         try:
             # Import here to avoid circular imports
             from ..exports.iiko_xlsx import create_dish_skeletons_xlsx
@@ -508,12 +508,21 @@ class DualExporter:
             # Convert missing dishes to dish_codes_mapping format
             dish_codes_mapping = {dish["name"]: dish["article"] for dish in missing_dishes}
             
-            # Create empty cards list since we don't have actual techcards loaded
-            cards = []
+            # Create dish data directly from missing_dishes instead of requiring techcards
+            dishes_data = []
+            for dish in missing_dishes:
+                dish_data = {
+                    "name": dish["name"],
+                    "article": dish["article"], 
+                    "type": dish.get("type", "блюдо"),
+                    "unit": dish.get("unit", "порц."),
+                    "yield_g": dish.get("yield", 200.0)
+                }
+                dishes_data.append(dish_data)
             
             xlsx_buffer = create_dish_skeletons_xlsx(
                 dish_codes_mapping=dish_codes_mapping,
-                cards=cards
+                dishes_data=dishes_data  # Pass dish data instead of empty cards
             )
             
             return xlsx_buffer
