@@ -193,7 +193,7 @@ class ArticleGenerationTester:
                 details = f"HTTP {response.status_code}: {response.text[:200]}"
                 
             self.log_test("Run Preflight Check", success, details, response_time)
-            return success, response.json() if response.status_code == 200 else {}
+            return success
             
         except Exception as e:
             self.log_test("Run Preflight Check", False, f"Exception: {str(e)}")
