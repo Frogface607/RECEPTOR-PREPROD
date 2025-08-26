@@ -75,9 +75,12 @@ class ReconcileTTKSkeletonsTest:
             
             if response.status_code == 200:
                 data = response.json()
+                print(f"DEBUG: Response data keys: {list(data.keys())}")
+                print(f"DEBUG: Status: {data.get('status')}")
                 
                 if data.get("status") in ["success", "draft"] and data.get("card"):
                     techcard = data["card"]
+                    print(f"DEBUG: TechCard keys: {list(techcard.keys()) if techcard else 'None'}")
                     self.generated_techcard_id = techcard.get("id")
                     
                     # Validate tech card structure
