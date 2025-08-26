@@ -75,8 +75,11 @@ class SkeletonExportTester:
             endpoint = f"{API_BASE}/techcards.v2/generate"
             
             payload = {
-                "dish_name": self.generated_techcard_name,
-                "organization_id": self.organization_id
+                "name": self.generated_techcard_name,
+                "cuisine": "европейская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             response = await self.client.post(endpoint, json=payload)
