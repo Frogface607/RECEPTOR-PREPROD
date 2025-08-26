@@ -214,7 +214,7 @@ class DishSkeletonDebugTester:
             # Run preflight check
             preflight_url = f"{API_BASE}/export/preflight"
             payload = {
-                "techcard_ids": [self.generated_techcard_id],
+                "techcardIds": [self.generated_techcard_id],
                 "organization_id": self.organization_id
             }
             
