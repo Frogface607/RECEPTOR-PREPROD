@@ -582,7 +582,7 @@ class FEExportWizardTester:
             preflight_result = await self.step_2_run_preflight_once(techcard_ids)
             
             # Step 3: ZIP export and metadata
-            zip_content = await self.step_3_zip_export_and_meta(techcard_ids)
+            zip_content = await self.step_3_zip_export_and_meta(techcard_ids, preflight_result)
             
             # Step 4: Anti-mock scan
             await self.step_4_anti_mock_scan(zip_content)
