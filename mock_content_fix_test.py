@@ -154,8 +154,21 @@ class MockContentFixTester:
             db = client[DB_NAME]
             collection = db.techcards_v2
             
-            # Ищем техкарту по ID
-            techcard = collection.find_one({"id": techcard_id})
+            # Ищем техкарту по разным полям ID
+            techcard = None
+            
+            # Try different ID field patterns
+            search_patterns = [
+                {"id": techcard_id},
+                {"_id": techcard_id},
+                {"meta.id": techcard_id}
+            ]
+            
+            for pattern in search_patterns:
+                techcard = collection.find_one(pattern)
+                if techcard:
+                    print(f"DEBUG: Found techcard using pattern: {pattern}")
+                    break
             
             if techcard:
                 dish_name = techcard.get('meta', {}).get('title', 'Unknown')
@@ -168,10 +181,14 @@ class MockContentFixTester:
                 )
                 return True
             else:
+                # Debug: show what's actually in the database
+                all_docs = list(collection.find({}, {"_id": 1, "id": 1, "meta.id": 1, "meta.title": 1}).limit(5))
+                print(f"DEBUG: Recent docs in DB: {all_docs}")
+                
                 self.log_test(
                     "Проверка сохранения в БД",
                     False,
-                    f"Техкарта с ID {techcard_id} не найдена в БД"
+                    f"Техкарта с ID {techcard_id} не найдена в БД. Проверены поля: id, _id, meta.id"
                 )
                 return False
                 
