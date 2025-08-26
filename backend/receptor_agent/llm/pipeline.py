@@ -646,31 +646,43 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         start_articles = time.perf_counter()
         try:
             # Генерируем артикул для блюда, если отсутствует
-            if not getattr(validated_card.meta, 'article', None):
+            dish_article = getattr(validated_card.meta, 'article', None)
+            if not dish_article:
                 # Используем ArticleAllocator для получения артикула
                 from ..integrations.article_allocator import ArticleAllocator
                 allocator = ArticleAllocator()
-                allocated_result = allocator.allocate_articles([validated_card.meta.id or 'temp_dish'])
+                dish_id = validated_card.meta.id or f"dish_{int(time.time())}"
+                allocated_result = allocator.allocate_articles([dish_id])
                 
                 if allocated_result.get('success') and allocated_result.get('allocated'):
                     dish_article = allocated_result['allocated'][0]['article']
-                    # Обновляем meta с артикулом
-                    validated_card = validated_card.model_copy(update={
-                        "meta": validated_card.meta.model_copy(update={"article": dish_article})
-                    })
+                    
+                    # Создаем обновленное meta с article
+                    updated_meta = validated_card.meta.model_copy(deep=True)
+                    if hasattr(updated_meta, 'article'):
+                        updated_meta.article = dish_article
+                    else:
+                        # Добавляем article как новое поле
+                        meta_dict = updated_meta.model_dump()
+                        meta_dict['article'] = dish_article
+                        from ..techcards_v2.schemas import MetaV2
+                        updated_meta = MetaV2.model_validate(meta_dict)
+                    
+                    validated_card = validated_card.model_copy(update={"meta": updated_meta})
                     print(f"✅ Generated dish article: {dish_article}")
             
             # Генерируем артикулы для ингредиентов, если отсутствуют
             updated_ingredients = []
             ingredient_ids_for_allocation = []
-            ingredient_indices_needing_articles = []
+            ingredients_needing_articles = []
             
             for i, ingredient in enumerate(validated_card.ingredients):
-                if not getattr(ingredient, 'product_code', None) and not getattr(ingredient, 'article', None):
+                product_code = getattr(ingredient, 'product_code', None)
+                if not product_code:
                     # Создаем временный ID для ингредиента
                     temp_id = f"ingredient_{i}_{ingredient.name[:10].lower().replace(' ', '_')}"
                     ingredient_ids_for_allocation.append(temp_id)
-                    ingredient_indices_needing_articles.append(i)
+                    ingredients_needing_articles.append((i, ingredient))
                 
                 updated_ingredients.append(ingredient)
             
@@ -685,20 +697,26 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     allocated_articles = allocated_result['allocated']
                     
                     for i, allocation in enumerate(allocated_articles):
-                        if i < len(ingredient_indices_needing_articles):
-                            ingredient_idx = ingredient_indices_needing_articles[i]
+                        if i < len(ingredients_needing_articles):
+                            ingredient_idx, original_ingredient = ingredients_needing_articles[i]
                             article = allocation['article']
                             
-                            # Обновляем ингредиент с артикулом
-                            ingredient = updated_ingredients[ingredient_idx]
-                            updated_ingredients[ingredient_idx] = ingredient.model_copy(update={"product_code": article})
-                            print(f"✅ Generated product article for {ingredient.name}: {article}")
+                            # Создаем обновленный ингредиент с product_code
+                            ingredient_dict = original_ingredient.model_dump()
+                            ingredient_dict['product_code'] = article
+                            
+                            from ..techcards_v2.schemas import IngredientV2
+                            updated_ingredient = IngredientV2.model_validate(ingredient_dict)
+                            updated_ingredients[ingredient_idx] = updated_ingredient
+                            
+                            print(f"✅ Generated product article for {original_ingredient.name}: {article}")
                     
                     # Обновляем техкарту с новыми ингредиентами
                     validated_card = validated_card.model_copy(update={"ingredients": updated_ingredients})
                         
         except Exception as e:
             print(f"⚠️ Article generation failed: {e}")
+            traceback.print_exc()
             # Не блокируем pipeline из-за ошибки генерации артикулов
             
         timings["article_generation_ms"] = int((time.perf_counter() - start_articles) * 1000)
