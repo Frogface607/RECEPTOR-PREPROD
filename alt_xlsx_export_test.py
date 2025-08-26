@@ -494,6 +494,13 @@ class AltXLSXExportTester:
             if len(article_analysis["ingredient_articles"]) > 10:
                 print(f"   ... and {len(article_analysis['ingredient_articles']) - 10} more")
         
+        # Show raw XLSX content for debugging
+        if article_analysis.get("raw_content"):
+            print("📄 RAW XLSX CONTENT (First 10 rows):")
+            for row_data in article_analysis["raw_content"][:10]:
+                row_str = " | ".join([cell[:20] + "..." if len(cell) > 20 else cell for cell in row_data["content"] if cell])
+                print(f"   Row {row_data['row']}: {row_str}")
+        
         print()
         
         # Comparison with ZIP Export
