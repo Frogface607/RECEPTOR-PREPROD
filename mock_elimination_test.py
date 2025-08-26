@@ -382,7 +382,11 @@ class MockEliminationTester:
                                                 if signature in cell_value:
                                                     file_mock_count += 1
                                                     total_mock_count += 1
-                                                    mock_details.append(f"{signature} in cell {cell.coordinate}")
+                                                    mock_details.append(f"{signature} in cell {cell.coordinate}: '{cell_value[:50]}...'")
+                                                    
+                                                    # Debug: Print first few mock findings
+                                                    if total_mock_count <= 5:
+                                                        print(f"DEBUG: Found mock signature '{signature}' in {file_name} cell {cell.coordinate}: '{cell_value[:100]}'")
                             
                             if file_mock_count > 0:
                                 mock_findings[file_name] = {
