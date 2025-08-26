@@ -197,7 +197,7 @@ class ArticleGenerationTester:
             
         except Exception as e:
             self.log_test("Run Preflight Check", False, f"Exception: {str(e)}")
-            return False, {}
+            return False
 
     async def test_4_export_zip_with_articles(self):
         """Test 4: Export ZIP file and verify article content"""
