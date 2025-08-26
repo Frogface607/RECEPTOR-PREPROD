@@ -1,35 +1,34 @@
 {
   "generation": {
-    "techcard_id": "generated_1756185111",
+    "techcard_id": "generated_1756185205",
     "response": {
       "status": "draft",
       "card": {
         "meta": {
-          "id": "ca713aec-4fa6-482e-b06b-aa3f9e119727",
+          "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
           "title": "Борщ украинский",
           "version": "1.0",
-          "createdAt": "2025-08-26T05:11:50.965000",
+          "createdAt": "2025-08-26T05:13:25.087353",
           "cuisine": "русская",
           "tags": [
             "суп",
-            "традиционное",
-            "горячее"
+            "основное блюдо"
           ],
           "timings": {
-            "llm_draft_ms": 11687.0,
-            "llm_normalize_ms": 3540.0,
+            "llm_draft_ms": 22843.0,
+            "llm_normalize_ms": 4716.0,
             "validate_ms": 0.0,
             "contentcheck_ms": 0.0,
-            "cost_ms": 31.0,
-            "nutrition_ms": 58.0,
+            "cost_ms": 80.0,
+            "nutrition_ms": 9.0,
             "portion_normalize_ms": 1.0,
             "sanitize_ms": 0.0,
             "postcheck_ms": 0.0,
-            "total_ms": 15319.0
+            "total_ms": 27652.0
           },
           "scale_factor": 0.098,
           "archetype": "суп",
-          "original_sum_netto": 3355.0,
+          "original_sum_netto": 3380.0,
           "normalized": true
         },
         "portions": 1,
@@ -45,9 +44,9 @@
             "product_code": null,
             "subRecipe": null,
             "unit": "g",
-            "brutto_g": 29.5,
+            "brutto_g": 29.3,
             "loss_pct": 10.0,
-            "netto_g": 26.6,
+            "netto_g": 26.4,
             "allergens": []
           },
           {
@@ -57,9 +56,9 @@
             "product_code": null,
             "subRecipe": null,
             "unit": "g",
-            "brutto_g": 19.7,
-            "loss_pct": 15.0,
-            "netto_g": 16.7,
+            "brutto_g": 19.5,
+            "loss_pct": 5.0,
+            "netto_g": 18.6,
             "allergens": []
           },
           {
@@ -69,9 +68,9 @@
             "product_code": null,
             "subRecipe": null,
             "unit": "g",
-            "brutto_g": 14.8,
+            "brutto_g": 14.6,
             "loss_pct": 10.0,
-            "netto_g": 13.3,
+            "netto_g": 13.2,
             "allergens": []
           },
           {
@@ -81,9 +80,9 @@
             "product_code": null,
             "subRecipe": null,
             "unit": "g",
-            "brutto_g": 29.5,
+            "brutto_g": 29.3,
             "loss_pct": 10.0,
-            "netto_g": 26.6,
+            "netto_g": 26.4,
             "allergens": []
           },
           {
@@ -94,8 +93,8 @@
             "subRecipe": null,
             "unit": "g",
             "brutto_g": 9.8,
-            "loss_pct": 10.0,
-            "netto_g": 8.9,
+            "loss_pct": 5.0,
+            "netto_g": 9.3,
             "allergens": []
           },
           {
@@ -117,9 +116,9 @@
             "product_code": null,
             "subRecipe": null,
             "unit": "g",
-            "brutto_g": 39.3,
+            "brutto_g": 39.1,
             "loss_pct": 20.0,
-            "netto_g": 31.5,
+            "netto_g": 31.2,
             "allergens": []
           },
           {
@@ -129,9 +128,9 @@
             "product_code": null,
             "subRecipe": null,
             "unit": "g",
-            "brutto_g": 196.7,
+            "brutto_g": 195.3,
             "loss_pct": 0.0,
-            "netto_g": 196.7,
+            "netto_g": 195.3,
             "allergens": []
           }
         ],
@@ -177,16 +176,16 @@
         },
         "nutrition": {
           "per100g": {
-            "kcal": 10.6,
-            "proteins_g": 0.4,
-            "fats_g": 0.0,
-            "carbs_g": 2.1
+            "kcal": 43.2,
+            "proteins_g": 1.5,
+            "fats_g": 0.2,
+            "carbs_g": 8.7
           },
           "perPortion": {
-            "kcal": 84.8,
-            "proteins_g": 3.2,
-            "fats_g": 0.0,
-            "carbs_g": 16.8
+            "kcal": 86.4,
+            "proteins_g": 3.0,
+            "fats_g": 0.4,
+            "carbs_g": 17.4
           }
         },
         "nutritionMeta": {
@@ -194,8 +193,8 @@
           "coveragePct": 50.0
         },
         "cost": {
-          "rawCost": 106.85,
-          "costPerPortion": 26.71,
+          "rawCost": 107.92,
+          "costPerPortion": 26.98,
           "markup_pct": 300.0,
           "vat_pct": 20.0
         },
@@ -206,45 +205,44 @@
         },
         "printNotes": [],
         "article": null,
-        "id": "generated_1756185111",
-        "created_at": "2025-08-26 05:11:51.074666",
-        "updated_at": "2025-08-26 05:11:51.074668",
-        "_id": "68ad42172cb12c43b6077070"
+        "_id": "generated_1756185205",
+        "id": "generated_1756185205",
+        "created_at": "2025-08-26 05:13:25.195460",
+        "updated_at": "2025-08-26 05:13:25.195463"
       },
       "issues": [
-        "Найдены диапазоны/приближения: 2025-01, 6-482",
-        "Найдены диапазоны/приближения: 6-482, 2025-01"
+        "Найдены диапазоны/приближения: 081-1, 74-7, 43-44, 2025-01",
+        "Найдены диапазоны/приближения: 74-7, 43-44, 081-1, 2025-01"
       ],
       "message": "Tech card generated with validation issues"
     },
     "dish_name": "Борщ украинский",
     "full_techcard": {
       "meta": {
-        "id": "ca713aec-4fa6-482e-b06b-aa3f9e119727",
+        "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
         "title": "Борщ украинский",
         "version": "1.0",
-        "createdAt": "2025-08-26T05:11:50.965000",
+        "createdAt": "2025-08-26T05:13:25.087353",
         "cuisine": "русская",
         "tags": [
           "суп",
-          "традиционное",
-          "горячее"
+          "основное блюдо"
         ],
         "timings": {
-          "llm_draft_ms": 11687.0,
-          "llm_normalize_ms": 3540.0,
+          "llm_draft_ms": 22843.0,
+          "llm_normalize_ms": 4716.0,
           "validate_ms": 0.0,
           "contentcheck_ms": 0.0,
-          "cost_ms": 31.0,
-          "nutrition_ms": 58.0,
+          "cost_ms": 80.0,
+          "nutrition_ms": 9.0,
           "portion_normalize_ms": 1.0,
           "sanitize_ms": 0.0,
           "postcheck_ms": 0.0,
-          "total_ms": 15319.0
+          "total_ms": 27652.0
         },
         "scale_factor": 0.098,
         "archetype": "суп",
-        "original_sum_netto": 3355.0,
+        "original_sum_netto": 3380.0,
         "normalized": true
       },
       "portions": 1,
@@ -260,9 +258,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 29.5,
+          "brutto_g": 29.3,
           "loss_pct": 10.0,
-          "netto_g": 26.6,
+          "netto_g": 26.4,
           "allergens": []
         },
         {
@@ -272,9 +270,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 19.7,
-          "loss_pct": 15.0,
-          "netto_g": 16.7,
+          "brutto_g": 19.5,
+          "loss_pct": 5.0,
+          "netto_g": 18.6,
           "allergens": []
         },
         {
@@ -284,9 +282,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 14.8,
+          "brutto_g": 14.6,
           "loss_pct": 10.0,
-          "netto_g": 13.3,
+          "netto_g": 13.2,
           "allergens": []
         },
         {
@@ -296,9 +294,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 29.5,
+          "brutto_g": 29.3,
           "loss_pct": 10.0,
-          "netto_g": 26.6,
+          "netto_g": 26.4,
           "allergens": []
         },
         {
@@ -309,8 +307,8 @@
           "subRecipe": null,
           "unit": "g",
           "brutto_g": 9.8,
-          "loss_pct": 10.0,
-          "netto_g": 8.9,
+          "loss_pct": 5.0,
+          "netto_g": 9.3,
           "allergens": []
         },
         {
@@ -332,9 +330,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 39.3,
+          "brutto_g": 39.1,
           "loss_pct": 20.0,
-          "netto_g": 31.5,
+          "netto_g": 31.2,
           "allergens": []
         },
         {
@@ -344,9 +342,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 196.7,
+          "brutto_g": 195.3,
           "loss_pct": 0.0,
-          "netto_g": 196.7,
+          "netto_g": 195.3,
           "allergens": []
         }
       ],
@@ -392,16 +390,16 @@
       },
       "nutrition": {
         "per100g": {
-          "kcal": 10.6,
-          "proteins_g": 0.4,
-          "fats_g": 0.0,
-          "carbs_g": 2.1
+          "kcal": 43.2,
+          "proteins_g": 1.5,
+          "fats_g": 0.2,
+          "carbs_g": 8.7
         },
         "perPortion": {
-          "kcal": 84.8,
-          "proteins_g": 3.2,
-          "fats_g": 0.0,
-          "carbs_g": 16.8
+          "kcal": 86.4,
+          "proteins_g": 3.0,
+          "fats_g": 0.4,
+          "carbs_g": 17.4
         }
       },
       "nutritionMeta": {
@@ -409,8 +407,8 @@
         "coveragePct": 50.0
       },
       "cost": {
-        "rawCost": 106.85,
-        "costPerPortion": 26.71,
+        "rawCost": 107.92,
+        "costPerPortion": 26.98,
         "markup_pct": 300.0,
         "vat_pct": 20.0
       },
@@ -421,10 +419,10 @@
       },
       "printNotes": [],
       "article": null,
-      "id": "generated_1756185111",
-      "created_at": "2025-08-26 05:11:51.074666",
-      "updated_at": "2025-08-26 05:11:51.074668",
-      "_id": "68ad42172cb12c43b6077070"
+      "_id": "generated_1756185205",
+      "id": "generated_1756185205",
+      "created_at": "2025-08-26 05:13:25.195460",
+      "updated_at": "2025-08-26 05:13:25.195463"
     }
   },
   "structure_analysis": {
@@ -444,31 +442,30 @@
     ],
     "full_techcard": {
       "meta": {
-        "id": "ca713aec-4fa6-482e-b06b-aa3f9e119727",
+        "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
         "title": "Борщ украинский",
         "version": "1.0",
-        "createdAt": "2025-08-26T05:11:50.965000",
+        "createdAt": "2025-08-26T05:13:25.087353",
         "cuisine": "русская",
         "tags": [
           "суп",
-          "традиционное",
-          "горячее"
+          "основное блюдо"
         ],
         "timings": {
-          "llm_draft_ms": 11687.0,
-          "llm_normalize_ms": 3540.0,
+          "llm_draft_ms": 22843.0,
+          "llm_normalize_ms": 4716.0,
           "validate_ms": 0.0,
           "contentcheck_ms": 0.0,
-          "cost_ms": 31.0,
-          "nutrition_ms": 58.0,
+          "cost_ms": 80.0,
+          "nutrition_ms": 9.0,
           "portion_normalize_ms": 1.0,
           "sanitize_ms": 0.0,
           "postcheck_ms": 0.0,
-          "total_ms": 15319.0
+          "total_ms": 27652.0
         },
         "scale_factor": 0.098,
         "archetype": "суп",
-        "original_sum_netto": 3355.0,
+        "original_sum_netto": 3380.0,
         "normalized": true
       },
       "portions": 1,
@@ -484,9 +481,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 29.5,
+          "brutto_g": 29.3,
           "loss_pct": 10.0,
-          "netto_g": 26.6,
+          "netto_g": 26.4,
           "allergens": []
         },
         {
@@ -496,9 +493,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 19.7,
-          "loss_pct": 15.0,
-          "netto_g": 16.7,
+          "brutto_g": 19.5,
+          "loss_pct": 5.0,
+          "netto_g": 18.6,
           "allergens": []
         },
         {
@@ -508,9 +505,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 14.8,
+          "brutto_g": 14.6,
           "loss_pct": 10.0,
-          "netto_g": 13.3,
+          "netto_g": 13.2,
           "allergens": []
         },
         {
@@ -520,9 +517,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 29.5,
+          "brutto_g": 29.3,
           "loss_pct": 10.0,
-          "netto_g": 26.6,
+          "netto_g": 26.4,
           "allergens": []
         },
         {
@@ -533,8 +530,8 @@
           "subRecipe": null,
           "unit": "g",
           "brutto_g": 9.8,
-          "loss_pct": 10.0,
-          "netto_g": 8.9,
+          "loss_pct": 5.0,
+          "netto_g": 9.3,
           "allergens": []
         },
         {
@@ -556,9 +553,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 39.3,
+          "brutto_g": 39.1,
           "loss_pct": 20.0,
-          "netto_g": 31.5,
+          "netto_g": 31.2,
           "allergens": []
         },
         {
@@ -568,9 +565,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 196.7,
+          "brutto_g": 195.3,
           "loss_pct": 0.0,
-          "netto_g": 196.7,
+          "netto_g": 195.3,
           "allergens": []
         }
       ],
@@ -616,16 +613,16 @@
       },
       "nutrition": {
         "per100g": {
-          "kcal": 10.6,
-          "proteins_g": 0.4,
-          "fats_g": 0.0,
-          "carbs_g": 2.1
+          "kcal": 43.2,
+          "proteins_g": 1.5,
+          "fats_g": 0.2,
+          "carbs_g": 8.7
         },
         "perPortion": {
-          "kcal": 84.8,
-          "proteins_g": 3.2,
-          "fats_g": 0.0,
-          "carbs_g": 16.8
+          "kcal": 86.4,
+          "proteins_g": 3.0,
+          "fats_g": 0.4,
+          "carbs_g": 17.4
         }
       },
       "nutritionMeta": {
@@ -633,8 +630,8 @@
         "coveragePct": 50.0
       },
       "cost": {
-        "rawCost": 106.85,
-        "costPerPortion": 26.71,
+        "rawCost": 107.92,
+        "costPerPortion": 26.98,
         "markup_pct": 300.0,
         "vat_pct": 20.0
       },
@@ -645,10 +642,10 @@
       },
       "printNotes": [],
       "article": null,
-      "id": "generated_1756185111",
-      "created_at": "2025-08-26 05:11:51.074666",
-      "updated_at": "2025-08-26 05:11:51.074668",
-      "_id": "68ad42172cb12c43b6077070"
+      "_id": "generated_1756185205",
+      "id": "generated_1756185205",
+      "created_at": "2025-08-26 05:13:25.195460",
+      "updated_at": "2025-08-26 05:13:25.195463"
     }
   },
   "database_check": {
@@ -657,33 +654,32 @@
     "ingredients_count": 8,
     "ingredients_with_articles": 0,
     "saved_techcard": {
-      "_id": "68ad42172cb12c43b6077070",
+      "_id": "generated_1756185205",
       "meta": {
-        "id": "ca713aec-4fa6-482e-b06b-aa3f9e119727",
+        "id": "e57ddd74-7d43-44da-a081-1fd6932453ba",
         "title": "Борщ украинский",
         "version": "1.0",
-        "createdAt": "2025-08-26T05:11:50.965000",
+        "createdAt": "2025-08-26T05:13:25.087353",
         "cuisine": "русская",
         "tags": [
           "суп",
-          "традиционное",
-          "горячее"
+          "основное блюдо"
         ],
         "timings": {
-          "llm_draft_ms": 11687.0,
-          "llm_normalize_ms": 3540.0,
+          "llm_draft_ms": 22843.0,
+          "llm_normalize_ms": 4716.0,
           "validate_ms": 0.0,
           "contentcheck_ms": 0.0,
-          "cost_ms": 31.0,
-          "nutrition_ms": 58.0,
+          "cost_ms": 80.0,
+          "nutrition_ms": 9.0,
           "portion_normalize_ms": 1.0,
           "sanitize_ms": 0.0,
           "postcheck_ms": 0.0,
-          "total_ms": 15319.0
+          "total_ms": 27652.0
         },
         "scale_factor": 0.098,
         "archetype": "суп",
-        "original_sum_netto": 3355.0,
+        "original_sum_netto": 3380.0,
         "normalized": true
       },
       "portions": 1,
@@ -699,9 +695,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 29.5,
+          "brutto_g": 29.3,
           "loss_pct": 10.0,
-          "netto_g": 26.6,
+          "netto_g": 26.4,
           "allergens": []
         },
         {
@@ -711,9 +707,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 19.7,
-          "loss_pct": 15.0,
-          "netto_g": 16.7,
+          "brutto_g": 19.5,
+          "loss_pct": 5.0,
+          "netto_g": 18.6,
           "allergens": []
         },
         {
@@ -723,9 +719,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 14.8,
+          "brutto_g": 14.6,
           "loss_pct": 10.0,
-          "netto_g": 13.3,
+          "netto_g": 13.2,
           "allergens": []
         },
         {
@@ -735,9 +731,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 29.5,
+          "brutto_g": 29.3,
           "loss_pct": 10.0,
-          "netto_g": 26.6,
+          "netto_g": 26.4,
           "allergens": []
         },
         {
@@ -748,8 +744,8 @@
           "subRecipe": null,
           "unit": "g",
           "brutto_g": 9.8,
-          "loss_pct": 10.0,
-          "netto_g": 8.9,
+          "loss_pct": 5.0,
+          "netto_g": 9.3,
           "allergens": []
         },
         {
@@ -771,9 +767,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 39.3,
+          "brutto_g": 39.1,
           "loss_pct": 20.0,
-          "netto_g": 31.5,
+          "netto_g": 31.2,
           "allergens": []
         },
         {
@@ -783,9 +779,9 @@
           "product_code": null,
           "subRecipe": null,
           "unit": "g",
-          "brutto_g": 196.7,
+          "brutto_g": 195.3,
           "loss_pct": 0.0,
-          "netto_g": 196.7,
+          "netto_g": 195.3,
           "allergens": []
         }
       ],
@@ -831,16 +827,16 @@
       },
       "nutrition": {
         "per100g": {
-          "kcal": 10.6,
-          "proteins_g": 0.4,
-          "fats_g": 0.0,
-          "carbs_g": 2.1
+          "kcal": 43.2,
+          "proteins_g": 1.5,
+          "fats_g": 0.2,
+          "carbs_g": 8.7
         },
         "perPortion": {
-          "kcal": 84.8,
-          "proteins_g": 3.2,
-          "fats_g": 0.0,
-          "carbs_g": 16.8
+          "kcal": 86.4,
+          "proteins_g": 3.0,
+          "fats_g": 0.4,
+          "carbs_g": 17.4
         }
       },
       "nutritionMeta": {
@@ -848,8 +844,8 @@
         "coveragePct": 50.0
       },
       "cost": {
-        "rawCost": 106.85,
-        "costPerPortion": 26.71,
+        "rawCost": 107.92,
+        "costPerPortion": 26.98,
         "markup_pct": 300.0,
         "vat_pct": 20.0
       },
@@ -860,9 +856,9 @@
       },
       "printNotes": [],
       "article": null,
-      "id": "generated_1756185111",
-      "created_at": "2025-08-26 05:11:51.074000",
-      "updated_at": "2025-08-26 05:11:51.074000"
+      "id": "generated_1756185205",
+      "created_at": "2025-08-26 05:13:25.195000",
+      "updated_at": "2025-08-26 05:13:25.195000"
     }
   },
   "preflight": {
@@ -870,16 +866,101 @@
       "status": "success",
       "ttkDate": "2025-08-26",
       "missing": {
-        "dishes": [],
-        "products": []
+        "dishes": [
+          {
+            "id": "dish_Борщ_украинский",
+            "name": "Борщ украинский",
+            "article": "10000",
+            "type": "dish",
+            "unit": "порц",
+            "yield": 330.0
+          }
+        ],
+        "products": [
+          {
+            "id": "product_Свекла",
+            "name": "Свекла",
+            "article": "10001",
+            "type": "product",
+            "unit": "g",
+            "group": "Овощи"
+          },
+          {
+            "id": "product_Капуста",
+            "name": "Капуста",
+            "article": "10002",
+            "type": "product",
+            "unit": "g",
+            "group": "Овощи"
+          },
+          {
+            "id": "product_Морковь",
+            "name": "Морковь",
+            "article": "10003",
+            "type": "product",
+            "unit": "g",
+            "group": "Овощи"
+          },
+          {
+            "id": "product_Картофель",
+            "name": "Картофель",
+            "article": "10004",
+            "type": "product",
+            "unit": "g",
+            "group": "Овощи"
+          },
+          {
+            "id": "product_Лук",
+            "name": "Лук",
+            "article": "10005",
+            "type": "product",
+            "unit": "g",
+            "group": "Овощи"
+          },
+          {
+            "id": "product_Томатная_паста",
+            "name": "Томатная паста",
+            "article": "10006",
+            "type": "product",
+            "unit": "g",
+            "group": "Сырьё"
+          },
+          {
+            "id": "product_Мясо_говядины",
+            "name": "Мясо говядины",
+            "article": "10007",
+            "type": "product",
+            "unit": "g",
+            "group": "Мясо и рыба"
+          },
+          {
+            "id": "product_Вода",
+            "name": "Вода",
+            "article": "10008",
+            "type": "product",
+            "unit": "g",
+            "group": "Сырьё"
+          }
+        ]
       },
       "generated": {
-        "dishArticles": [],
-        "productArticles": []
+        "dishArticles": [
+          "10000"
+        ],
+        "productArticles": [
+          "10001",
+          "10002",
+          "10003",
+          "10004",
+          "10005",
+          "10006",
+          "10007",
+          "10008"
+        ]
       },
       "counts": {
-        "dishSkeletons": 0,
-        "productSkeletons": 0
+        "dishSkeletons": 1,
+        "productSkeletons": 8
       }
     },
     "missing_dishes": 0,
