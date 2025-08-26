@@ -298,11 +298,33 @@ class MockContentFixTester:
     async def try_alternative_export(self, techcard_id: str) -> Optional[bytes]:
         """Попытка альтернативного экспорта через другие endpoints"""
         try:
+            # Сначала получим техкарту из БД
+            client = MongoClient(MONGO_URL)
+            db = client[DB_NAME]
+            collection = db.techcards_v2
+            
+            techcard_doc = collection.find_one({"_id": techcard_id})
+            if not techcard_doc:
+                self.log_test(
+                    "Альтернативный экспорт (enhanced)",
+                    False,
+                    "Техкарта не найдена в БД для экспорта"
+                )
+                return None
+            
+            # Удаляем MongoDB-специфичные поля
+            if '_id' in techcard_doc:
+                del techcard_doc['_id']
+            if 'created_at' in techcard_doc:
+                del techcard_doc['created_at']
+            if 'updated_at' in techcard_doc:
+                del techcard_doc['updated_at']
+            
             # Попробуем использовать enhanced export endpoint
             response = await self.client.post(
                 f"{API_BASE}/techcards.v2/export/enhanced/iiko.xlsx",
                 json={
-                    "techcard_ids": [techcard_id],
+                    "techcard": techcard_doc,
                     "operational_rounding": True
                 }
             )
