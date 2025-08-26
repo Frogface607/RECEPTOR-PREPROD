@@ -144,7 +144,7 @@ class SkeletonExportTester:
             endpoint = f"{API_BASE}/export/preflight"
             
             payload = {
-                "techcard_ids": [self.generated_techcard_id],
+                "techcardIds": [self.generated_techcard_id],
                 "organization_id": self.organization_id
             }
             
