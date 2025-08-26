@@ -480,28 +480,30 @@ class SkeletonExportTester:
         
         # Execute tests in sequence
         preflight_result = {}
-        for i, (test_name, test_coro) in enumerate(test_sequence):
+        zip_content = None
+        
+        for i, (test_name, test_method) in enumerate(test_sequence):
             if i == 0:  # Generate techcard
-                success = await test_coro
+                success = await getattr(self, test_method)()
                 if not success:
                     print("❌ Критическая ошибка: не удалось сгенерировать техкарту")
                     break
             elif i == 1:  # Preflight check
-                preflight_result = await test_coro
+                preflight_result = await getattr(self, test_method)()
                 if not preflight_result:
                     print("⚠️ Preflight проверка не прошла, но продолжаем тестирование")
             elif i == 2:  # ZIP export
-                zip_content = await test_coro(preflight_result)
+                zip_content = await getattr(self, test_method)(preflight_result)
                 if not zip_content:
                     print("❌ Критическая ошибка: не удалось получить ZIP файл")
                     break
             elif i == 3:  # Skeleton content validation
                 if zip_content:
-                    await self.test_4_skeleton_content_validation(zip_content)
+                    await getattr(self, test_method)(zip_content)
                 else:
                     self.log_test("Проверка содержимого скелетонов", False, "Нет ZIP контента")
             else:  # Other tests
-                await test_coro
+                await getattr(self, test_method)()
         
         # Generate summary
         await self.generate_test_summary()
