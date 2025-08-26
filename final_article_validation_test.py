@@ -325,14 +325,23 @@ class FinalArticleValidationTester:
             )
             return False
             
+        if not hasattr(self, 'preflight_result'):
+            self.log_test(
+                "ZIP экспорт создание",
+                False,
+                "Нет результата preflight для экспорта"
+            )
+            return False
+            
         try:
             start_time = time.time()
             
-            # Perform ZIP export
+            # Perform ZIP export with preflight result
             payload = {
                 "techcardIds": [self.generated_techcard_id],
                 "organizationId": self.organization_id,
-                "operational_rounding": True
+                "operational_rounding": True,
+                "preflight_result": self.preflight_result
             }
             
             response = await self.client.post(
