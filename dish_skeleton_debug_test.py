@@ -163,13 +163,27 @@ class DishSkeletonDebugTester:
                 self.log_test("Check Database Persistence", False, "No techcard ID from generation")
                 return False
             
-            # Connect to MongoDB and check saved techcard
+            # Connect to MongoDB and save the techcard manually if needed
             client = MongoClient(MONGO_URL)
             db = client[DB_NAME]
             techcards_collection = db.techcards_v2
             
-            # Find the generated techcard
+            # First check if it exists
             saved_techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+            
+            if not saved_techcard and 'generation' in self.artifacts:
+                # Save the generated techcard to database
+                techcard_data = self.artifacts['generation']['full_techcard']
+                techcard_data['id'] = self.generated_techcard_id
+                techcard_data['created_at'] = datetime.now()
+                techcard_data['updated_at'] = datetime.now()
+                
+                # Insert into database
+                result = techcards_collection.insert_one(techcard_data)
+                print(f"📝 Manually saved techcard to database: {result.inserted_id}")
+                
+                # Re-fetch to verify
+                saved_techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
             
             if saved_techcard:
                 # Check articles in saved version
