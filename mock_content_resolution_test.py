@@ -151,7 +151,7 @@ class MockContentResolutionTester:
                                 "id": techcard_id,
                                 "name": techcard_name,
                                 "ingredients": ingredients_count,
-                                "data": data
+                                "data": card_data
                             }
                         else:
                             self.log_test(f"Tech Card Generation - {dish_name}", False,
