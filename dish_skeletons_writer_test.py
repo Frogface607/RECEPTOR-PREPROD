@@ -96,11 +96,12 @@ class DishSkeletonsWriterTester:
                 # Извлечь ID техкарты
                 if data.get("status") in ["success", "draft"] and data.get("card"):
                     techcard = data["card"]
-                    self.generated_techcard_id = techcard.get("id")
+                    # ID находится в meta.id
+                    self.generated_techcard_id = techcard.get("meta", {}).get("id")
                     
                     if self.generated_techcard_id:
                         self.log_test("Генерация техкарты", True,
-                                    f"ID: {self.generated_techcard_id}, Название: {techcard.get('name', 'N/A')}", 
+                                    f"ID: {self.generated_techcard_id}, Название: {techcard.get('meta', {}).get('title', 'N/A')}", 
                                     response_time)
                         
                         # Проверить что техкарта сохранена в базу
@@ -109,7 +110,7 @@ class DishSkeletonsWriterTester:
                         return True
                     else:
                         self.log_test("Генерация техкарты", False,
-                                    f"Техкарта создана но ID не найден. Card: {techcard}", response_time)
+                                    f"Техкарта создана но ID не найден в meta", response_time)
                 else:
                     self.log_test("Генерация техкарты", False,
                                 f"Неуспешный ответ: {data.get('status', 'Unknown status')}, {data.get('message', 'No message')}", response_time)
