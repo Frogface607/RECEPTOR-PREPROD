@@ -420,7 +420,7 @@ class ArticleGenerationTester:
         # Run tests in sequence
         test_1_result = await self.test_1_generate_caesar_salad_techcard()
         test_2_result = await self.test_2_verify_techcard_articles_in_database()
-        test_3_result, preflight_data = await self.test_3_run_preflight_check()
+        test_3_result = await self.test_3_run_preflight_check()
         test_4_result = await self.test_4_export_zip_with_articles()
         test_5_result = await self.test_5_verify_xlsx_articles_content()
         test_6_result = await self.test_6_verify_skeletons_not_empty()
