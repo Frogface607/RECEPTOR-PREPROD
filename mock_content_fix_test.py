@@ -298,62 +298,52 @@ class MockContentFixTester:
     async def try_alternative_export(self, techcard_id: str) -> Optional[bytes]:
         """Попытка альтернативного экспорта через другие endpoints"""
         try:
-            # Попробуем использовать старый endpoint для экспорта
-            alternative_endpoints = [
+            # Попробуем использовать enhanced export endpoint
+            response = await self.client.post(
                 f"{API_BASE}/techcards.v2/export/enhanced/iiko.xlsx",
-                f"{API_BASE}/techcards.v2/export/iiko.xlsx"
-            ]
-            
-            for endpoint in alternative_endpoints:
-                try:
-                    response = await self.client.post(
-                        endpoint,
-                        json={
-                            "techcard_ids": [techcard_id],
-                            "operational_rounding": True
-                        }
-                    )
-                    
-                    if response.status_code == 200:
-                        # Если это XLSX файл, создадим простой ZIP
-                        if response.headers.get('content-type', '').startswith('application/vnd.openxmlformats'):
-                            import zipfile
-                            import io
-                            
-                            zip_buffer = io.BytesIO()
-                            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                                zip_file.writestr('iiko_TTK.xlsx', response.content)
-                            
-                            zip_content = zip_buffer.getvalue()
-                            
-                            self.log_test(
-                                "Альтернативный экспорт",
-                                True,
-                                f"Создан ZIP из XLSX файла, размер: {len(zip_content)} байт"
-                            )
-                            return zip_content
-                        else:
-                            # Если это уже ZIP
-                            self.log_test(
-                                "Альтернативный экспорт",
-                                True,
-                                f"Получен файл, размер: {len(response.content)} байт"
-                            )
-                            return response.content
-                            
-                except Exception as e:
-                    continue
-            
-            self.log_test(
-                "Альтернативный экспорт",
-                False,
-                "Все альтернативные endpoints недоступны"
+                json={
+                    "techcard_ids": [techcard_id],
+                    "operational_rounding": True
+                }
             )
-            return None
             
+            if response.status_code == 200:
+                # Если это XLSX файл, создадим простой ZIP
+                if response.headers.get('content-type', '').startswith('application/vnd.openxmlformats'):
+                    import zipfile
+                    import io
+                    
+                    zip_buffer = io.BytesIO()
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                        zip_file.writestr('iiko_TTK.xlsx', response.content)
+                    
+                    zip_content = zip_buffer.getvalue()
+                    
+                    self.log_test(
+                        "Альтернативный экспорт (enhanced)",
+                        True,
+                        f"Создан ZIP из XLSX файла, размер: {len(zip_content)} байт"
+                    )
+                    return zip_content
+                else:
+                    # Если это уже ZIP или другой формат
+                    self.log_test(
+                        "Альтернативный экспорт (enhanced)",
+                        True,
+                        f"Получен файл, размер: {len(response.content)} байт"
+                    )
+                    return response.content
+            else:
+                self.log_test(
+                    "Альтернативный экспорт (enhanced)",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return None
+                            
         except Exception as e:
             self.log_test(
-                "Альтернативный экспорт",
+                "Альтернативный экспорт (enhanced)",
                 False,
                 f"Ошибка: {str(e)}"
             )
