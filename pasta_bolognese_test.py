@@ -101,6 +101,10 @@ class PastaBologneseTester:
                 if 'meta' in card_data and isinstance(card_data['meta'], dict):
                     dish_article = card_data['meta'].get('article')
                 
+                # Also check the top-level article field
+                if dish_article is None and 'article' in card_data:
+                    dish_article = card_data.get('article')
+                
                 if 'ingredients' in card_data and isinstance(card_data['ingredients'], list):
                     ingredients_count = len(card_data['ingredients'])
                     for ingredient in card_data['ingredients']:
