@@ -101,6 +101,15 @@ class DishSkeletonDebugTester:
                 
                 # Generate a unique ID for tracking
                 self.generated_techcard_id = techcard.get('id') or f"generated_{int(time.time())}"
+                
+                # Save generation data for analysis
+                self.artifacts['generation'] = {
+                    'techcard_id': self.generated_techcard_id,
+                    'response': data,
+                    'dish_name': payload['name'],
+                    'full_techcard': techcard
+                }
+                
                 ingredients = techcard.get('ingredients', [])
                 
                 # Check for dish article
