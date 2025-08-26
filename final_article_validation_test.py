@@ -288,6 +288,9 @@ class FinalArticleValidationTester:
                 data = response.json()
                 warnings = data.get('warnings', [])
                 
+                # Store preflight result for export
+                self.preflight_result = data
+                
                 self.log_test(
                     "Preflight check без ошибок",
                     True,
