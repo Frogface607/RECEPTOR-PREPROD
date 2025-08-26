@@ -140,21 +140,47 @@ class AltXLSXExportTester:
             )
             return None
 
+    async def get_techcard_data(self, techcard_id: str) -> Optional[Dict[str, Any]]:
+        """Get tech card data for export"""
+        try:
+            # Get tech card data
+            get_url = f"{API_BASE}/techcards.v2/{techcard_id}"
+            
+            response = await self.client.get(get_url)
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                self.log_test(
+                    "Get TechCard Data",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return None
+                
+        except Exception as e:
+            self.log_test(
+                "Get TechCard Data",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return None
+
     async def test_alt_xlsx_export(self, techcard_id: str) -> Optional[bytes]:
         """Test Alt XLSX Export endpoint"""
         try:
+            # First get the tech card data
+            techcard_data = await self.get_techcard_data(techcard_id)
+            if not techcard_data:
+                return None
+            
             start_time = time.time()
             
-            # Use Alt XLSX Export endpoint
+            # Use Alt XLSX Export endpoint with TechCardV2 structure
             export_url = f"{API_BASE}/techcards.v2/export/iiko.xlsx"
             
-            payload = {
-                "techcard_ids": [techcard_id],
-                "organization_id": self.organization_id,
-                "use_product_codes": True  # Test with product codes enabled
-            }
-            
-            response = await self.client.post(export_url, json=payload)
+            # The endpoint expects a TechCardV2 object directly
+            response = await self.client.post(export_url, json=techcard_data)
             response_time = time.time() - start_time
             
             if response.status_code == 200:
