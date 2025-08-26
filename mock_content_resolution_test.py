@@ -106,8 +106,11 @@ class MockContentResolutionTester:
                 start_time = time.time()
                 
                 payload = {
-                    "dish_name": dish_name,
-                    "organization_id": self.organization_id
+                    "name": dish_name,
+                    "cuisine": "русская",
+                    "equipment": [],
+                    "budget": None,
+                    "dietary": []
                 }
                 
                 response = await self.client.post(f"{API_BASE}/techcards.v2/generate", json=payload)
