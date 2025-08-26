@@ -27,6 +27,9 @@ class MetaV2(BaseModel):
     scale_factor: Optional[float] = Field(default=None, description="Коэффициент масштабирования для нормализации порций")
     archetype: Optional[str] = Field(default=None, description="Архетип блюда для нормализации порций")
     original_sum_netto: Optional[float] = Field(default=None, description="Исходная сумма нетто до нормализации")
+    
+    # Article field for iiko integration
+    article: Optional[str] = Field(default=None, description="5-digit article code for iiko integration")
     normalized: Optional[bool] = Field(default=None, description="Флаг что техкарта была нормализована")
 
 class YieldV2(BaseModel):
