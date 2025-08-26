@@ -89,8 +89,8 @@ class DishSkeletonsWriterTester:
                 data = response.json()
                 
                 # Извлечь ID техкарты
-                if data.get("success") and data.get("techcard"):
-                    techcard = data["techcard"]
+                if data.get("status") in ["success", "draft"] and data.get("card"):
+                    techcard = data["card"]
                     self.generated_techcard_id = techcard.get("id")
                     
                     if self.generated_techcard_id:
