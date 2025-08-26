@@ -143,7 +143,7 @@ class PreflightExportIntegrationTester:
             
             # Запускаем preflight с реальным ID техкарты
             preflight_payload = {
-                "techcard_ids": [self.generated_techcard_id],
+                "techcardIds": [self.generated_techcard_id],  # Исправлено: techcardIds вместо techcard_ids
                 "organization_id": self.organization_id
             }
             
