@@ -427,8 +427,8 @@ class DualExporter:
             zip_buffer = io.BytesIO()
             
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                # 1. Create iiko_TTK.xlsx
-                ttk_xlsx = await self._create_ttk_xlsx(techcard_ids, operational_rounding)
+                # 1. Create iiko_TTK.xlsx with preflight articles
+                ttk_xlsx = await self._create_ttk_xlsx(techcard_ids, operational_rounding, preflight_result)
                 zip_file.writestr("iiko_TTK.xlsx", ttk_xlsx.getvalue())
                 
                 # 2. Create Dish-Skeletons.xlsx if needed
