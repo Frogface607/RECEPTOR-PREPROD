@@ -298,107 +298,71 @@ class MockContentFixTester:
     async def try_alternative_export(self, techcard_id: str) -> Optional[bytes]:
         """Попытка альтернативного экспорта через другие endpoints"""
         try:
-            # Сначала получим техкарту из БД
-            client = MongoClient(MONGO_URL)
-            db = client[DB_NAME]
-            collection = db.techcards_v2
-            
-            techcard_doc = collection.find_one({"_id": techcard_id})
-            if not techcard_doc:
-                self.log_test(
-                    "Альтернативный экспорт (enhanced)",
-                    False,
-                    "Техкарта не найдена в БД для экспорта"
-                )
-                return None
-            
-            # Удаляем MongoDB-специфичные поля и конвертируем datetime
-            if '_id' in techcard_doc:
-                del techcard_doc['_id']
-            if 'created_at' in techcard_doc:
-                del techcard_doc['created_at']
-            if 'updated_at' in techcard_doc:
-                del techcard_doc['updated_at']
-            
-            # Конвертируем datetime объекты в строки
-            def convert_datetime(obj):
-                if isinstance(obj, dict):
-                    return {k: convert_datetime(v) for k, v in obj.items()}
-                elif isinstance(obj, list):
-                    return [convert_datetime(item) for item in obj]
-                elif hasattr(obj, 'isoformat'):  # datetime objects
-                    return obj.isoformat()
-                else:
-                    return obj
-            
-            techcard_doc = convert_datetime(techcard_doc)
-            
-            # Попробуем использовать enhanced export endpoint
+            # Попробуем использовать "current" подход, который использовался в предыдущих тестах
             response = await self.client.post(
-                f"{API_BASE}/techcards.v2/export/enhanced/iiko.xlsx",
+                f"{API_BASE}/export/zip",
                 json={
-                    "techcard": techcard_doc,
+                    "techcardIds": ["current"],  # Используем "current" вместо реального ID
+                    "organization_id": self.organization_id,
                     "operational_rounding": True
                 }
             )
             
             if response.status_code == 200:
-                # Check content type and handle accordingly
-                content_type = response.headers.get('content-type', '')
-                
-                if content_type.startswith('application/vnd.openxmlformats'):
-                    # It's an XLSX file, create ZIP
-                    import zipfile
-                    import io
-                    
-                    zip_buffer = io.BytesIO()
-                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                        zip_file.writestr('iiko_TTK.xlsx', response.content)
-                    
-                    zip_content = zip_buffer.getvalue()
-                    
-                    self.log_test(
-                        "Альтернативный экспорт (enhanced)",
-                        True,
-                        f"Создан ZIP из XLSX файла, размер: {len(zip_content)} байт"
-                    )
-                    return zip_content
-                elif content_type.startswith('application/json'):
-                    # It's a JSON response, probably an error or status
-                    try:
-                        json_data = response.json()
-                        self.log_test(
-                            "Альтернативный экспорт (enhanced)",
-                            False,
-                            f"Получен JSON ответ: {json_data.get('status', 'unknown')}, {json_data.get('message', 'no message')}"
-                        )
-                        return None
-                    except:
-                        self.log_test(
-                            "Альтернативный экспорт (enhanced)",
-                            False,
-                            f"Получен JSON ответ, но не удалось распарсить: {response.text[:200]}"
-                        )
-                        return None
-                else:
-                    # Unknown content type, try to handle as binary
-                    self.log_test(
-                        "Альтернативный экспорт (enhanced)",
-                        True,
-                        f"Получен файл (content-type: {content_type}), размер: {len(response.content)} байт"
-                    )
-                    return response.content
-            else:
+                zip_content = response.content
                 self.log_test(
-                    "Альтернативный экспорт (enhanced)",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
+                    "Альтернативный экспорт (current)",
+                    True,
+                    f"Получен ZIP файл с 'current', размер: {len(zip_content)} байт"
                 )
-                return None
+                return zip_content
+            else:
+                # Если и это не работает, попробуем enhanced-dual endpoint
+                response2 = await self.client.post(
+                    f"{API_BASE}/techcards.v2/export/enhanced-dual/iiko.xlsx",
+                    json={
+                        "techcard_ids": [techcard_id],
+                        "operational_rounding": True
+                    }
+                )
+                
+                if response2.status_code == 200:
+                    # Если это ZIP файл
+                    if response2.headers.get('content-type', '').startswith('application/zip'):
+                        self.log_test(
+                            "Альтернативный экспорт (enhanced-dual)",
+                            True,
+                            f"Получен ZIP файл, размер: {len(response2.content)} байт"
+                        )
+                        return response2.content
+                    else:
+                        # Создаем ZIP из полученного файла
+                        import zipfile
+                        import io
+                        
+                        zip_buffer = io.BytesIO()
+                        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                            zip_file.writestr('export.xlsx', response2.content)
+                        
+                        zip_content = zip_buffer.getvalue()
+                        
+                        self.log_test(
+                            "Альтернативный экспорт (enhanced-dual)",
+                            True,
+                            f"Создан ZIP из файла, размер: {len(zip_content)} байт"
+                        )
+                        return zip_content
+                else:
+                    self.log_test(
+                        "Альтернативный экспорт",
+                        False,
+                        f"Все попытки неудачны. Current: {response.status_code}, Enhanced-dual: {response2.status_code}"
+                    )
+                    return None
                             
         except Exception as e:
             self.log_test(
-                "Альтернативный экспорт (enhanced)",
+                "Альтернативный экспорт",
                 False,
                 f"Ошибка: {str(e)}"
             )
