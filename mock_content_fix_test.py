@@ -343,8 +343,11 @@ class MockContentFixTester:
             )
             
             if response.status_code == 200:
-                # Если это XLSX файл, создадим простой ZIP
-                if response.headers.get('content-type', '').startswith('application/vnd.openxmlformats'):
+                # Check content type and handle accordingly
+                content_type = response.headers.get('content-type', '')
+                
+                if content_type.startswith('application/vnd.openxmlformats'):
+                    # It's an XLSX file, create ZIP
                     import zipfile
                     import io
                     
@@ -360,12 +363,29 @@ class MockContentFixTester:
                         f"Создан ZIP из XLSX файла, размер: {len(zip_content)} байт"
                     )
                     return zip_content
+                elif content_type.startswith('application/json'):
+                    # It's a JSON response, probably an error or status
+                    try:
+                        json_data = response.json()
+                        self.log_test(
+                            "Альтернативный экспорт (enhanced)",
+                            False,
+                            f"Получен JSON ответ: {json_data.get('status', 'unknown')}, {json_data.get('message', 'no message')}"
+                        )
+                        return None
+                    except:
+                        self.log_test(
+                            "Альтернативный экспорт (enhanced)",
+                            False,
+                            f"Получен JSON ответ, но не удалось распарсить: {response.text[:200]}"
+                        )
+                        return None
                 else:
-                    # Если это уже ZIP или другой формат
+                    # Unknown content type, try to handle as binary
                     self.log_test(
                         "Альтернативный экспорт (enhanced)",
                         True,
-                        f"Получен файл, размер: {len(response.content)} байт"
+                        f"Получен файл (content-type: {content_type}), размер: {len(response.content)} байт"
                     )
                     return response.content
             else:
