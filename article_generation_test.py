@@ -89,7 +89,7 @@ class ArticleGenerationTester:
                 # Check response structure
                 if data.get('status') in ['success', 'draft'] and data.get('card'):
                     card = data['card']
-                    self.generated_techcard_id = card.get('id')
+                    self.generated_techcard_id = card.get('meta', {}).get('id')
                     
                     # Check if tech card has article
                     dish_article = card.get('article') or card.get('dish', {}).get('article')
