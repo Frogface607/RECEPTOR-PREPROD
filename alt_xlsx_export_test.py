@@ -199,7 +199,8 @@ class AltXLSXExportTester:
                 "ingredient_articles": [],
                 "article_patterns": [],
                 "total_rows": 0,
-                "articles_found": 0
+                "articles_found": 0,
+                "raw_content": []  # Store raw content for debugging
             }
             
             for sheet_name in workbook.sheetnames:
@@ -209,7 +210,8 @@ class AltXLSXExportTester:
                     "rows": 0,
                     "articles": [],
                     "dish_names": [],
-                    "ingredient_names": []
+                    "ingredient_names": [],
+                    "all_content": []  # Store all content for debugging
                 }
                 
                 # Analyze each row
@@ -220,6 +222,13 @@ class AltXLSXExportTester:
                     sheet_analysis["rows"] += 1
                     analysis["total_rows"] += 1
                     
+                    # Store raw row content for debugging
+                    row_content = [str(cell) if cell is not None else "" for cell in row]
+                    sheet_analysis["all_content"].append({
+                        "row": row_idx,
+                        "content": row_content
+                    })
+                    
                     # Look for articles in each cell
                     for col_idx, cell_value in enumerate(row):
                         if cell_value is None:
@@ -227,16 +236,20 @@ class AltXLSXExportTester:
                             
                         cell_str = str(cell_value).strip()
                         
-                        # Check if this looks like an article (5-digit number)
-                        if cell_str.isdigit() and len(cell_str) == 5:
+                        # Check if this looks like an article (5-digit number or any number)
+                        if cell_str.isdigit():
                             article_info = {
                                 "article": cell_str,
                                 "row": row_idx,
                                 "col": col_idx + 1,
-                                "sheet": sheet_name
+                                "sheet": sheet_name,
+                                "length": len(cell_str)
                             }
                             sheet_analysis["articles"].append(article_info)
-                            analysis["articles_found"] += 1
+                            
+                            # Only count 5-digit articles as proper articles
+                            if len(cell_str) == 5:
+                                analysis["articles_found"] += 1
                             
                             # Try to find associated name in same row
                             name_cell = None
@@ -285,10 +298,14 @@ class AltXLSXExportTester:
                     "sequential": self._check_sequential_pattern(all_articles)
                 }
             
+            # Store first few rows of content for debugging
+            for sheet_data in analysis["worksheets"]:
+                analysis["raw_content"].extend(sheet_data["all_content"][:10])  # First 10 rows per sheet
+            
             self.log_test(
                 "XLSX Article Analysis",
                 True,
-                f"Found {analysis['articles_found']} articles: {len(analysis['dish_articles'])} dish, {len(analysis['ingredient_articles'])} ingredient"
+                f"Found {analysis['articles_found']} proper articles (5-digit): {len(analysis['dish_articles'])} dish, {len(analysis['ingredient_articles'])} ingredient. Total numeric values: {len(all_articles)}"
             )
             
             return analysis
