@@ -89,7 +89,7 @@ class PastaBologneseTester:
                 print(f"🔍 Full response: {json.dumps(data, indent=2, ensure_ascii=False)}")
                 
                 # Try different ways to get the ID
-                self.generated_techcard_id = data.get('id') or data.get('card', {}).get('id') if data.get('card') else None
+                self.generated_techcard_id = data.get('card', {}).get('meta', {}).get('id') if data.get('card') else None
                 
                 # Extract basic info
                 dish_article = None
