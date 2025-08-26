@@ -84,6 +84,7 @@ class ArticleGenerationTester:
             
             if response.status_code == 200:
                 data = response.json()
+                print(f"DEBUG: Full response: {json.dumps(data, indent=2, ensure_ascii=False)}")
                 
                 # Check response structure
                 if data.get('status') in ['success', 'draft'] and data.get('card'):
