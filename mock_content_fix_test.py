@@ -209,7 +209,7 @@ class MockContentFixTester:
             preflight_response = await self.client.post(
                 f"{API_BASE}/export/preflight",
                 json={
-                    "techcard_ids": [techcard_id],
+                    "techcardIds": [techcard_id],
                     "organization_id": self.organization_id
                 }
             )
@@ -226,16 +226,16 @@ class MockContentFixTester:
             self.log_test(
                 "Preflight проверка",
                 True,
-                f"TTK дата: {preflight_data.get('ttk_date', 'N/A')}"
+                f"TTK дата: {preflight_data.get('ttkDate', 'N/A')}"
             )
             
             # Теперь запускаем ZIP экспорт
             export_response = await self.client.post(
                 f"{API_BASE}/export/zip",
                 json={
-                    "techcard_ids": [techcard_id],
+                    "techcardIds": [techcard_id],
                     "organization_id": self.organization_id,
-                    "preflight_result": preflight_data
+                    "preflightResult": preflight_data
                 }
             )
             
