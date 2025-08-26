@@ -1,75 +1,77 @@
 {
   "test_suite": "FE Export Wizard: bind to /export/*, anti-mock scan, and article-first XLSX validation",
   "total_tests": 7,
-  "passed_tests": 3,
-  "failed_tests": 4,
-  "success_rate": "42.9%",
+  "passed_tests": 5,
+  "failed_tests": 2,
+  "success_rate": "71.4%",
   "test_results": [
     {
       "test": "Generate Tech Card 1",
       "status": "✅ PASS",
       "success": true,
-      "details": "ID: 6d1e3499-49ee-4c12-956f-57fa76f5dcac, Dish: Борщ украинский с говядиной",
-      "response_time": "29.285s"
+      "details": "ID: 89934c7b-04f7-4d90-818c-eab44e932b96, Dish: Борщ украинский с говядиной",
+      "response_time": "14.842s"
     },
     {
       "test": "Generate Tech Card 2",
       "status": "✅ PASS",
       "success": true,
-      "details": "ID: c72b35d6-7949-4264-b786-d9e85b2da190, Dish: Стейк из говядины с картофельным пюре",
-      "response_time": "21.224s"
+      "details": "ID: d8729524-7d3b-493f-94b4-5386ac67f4bd, Dish: Стейк из говядины с картофельным пюре",
+      "response_time": "13.251s"
     },
     {
       "test": "Preflight with Real IDs",
       "status": "✅ PASS",
       "success": true,
-      "details": "TTK Date: 2025-08-26, Dish Skeletons: 2, Product Skeletons: 16",
-      "response_time": "0.119s"
+      "details": "TTK Date: 2025-08-26, Dish Skeletons: 2, Product Skeletons: 13",
+      "response_time": "0.180s"
     },
     {
       "test": "ZIP Export with Real IDs",
-      "status": "❌ FAIL",
-      "success": false,
-      "details": "HTTP 400: {\"detail\":{\"error\":\"PRE_FLIGHT_REQUIRED\",\"message\":\"Нельзя экспортировать ТК без создания блюд в iiko. Сначала импортируйте скелеты блюд.\",\"missing_dishes\":[{\"id\":\"dish_Борщ_украинский_с_говядиной\",\"n",
-      "response_time": "0.148s"
+      "status": "✅ PASS",
+      "success": true,
+      "details": "ZIP Size: 15518 bytes, Files: 3",
+      "response_time": "0.719s"
     },
     {
       "test": "Anti-Mock Scan",
       "status": "❌ FAIL",
       "success": false,
-      "details": "No ZIP content to scan",
+      "details": "Found 16 mock signatures in 3 XLSX files",
       "response_time": "N/A"
     },
     {
       "test": "Excel Invariants",
-      "status": "❌ FAIL",
-      "success": false,
-      "details": "No ZIP content to check",
+      "status": "✅ PASS",
+      "success": true,
+      "details": "Checked 13 article cells, 13 text-formatted, 0 with leading zeros",
       "response_time": "N/A"
     },
     {
       "test": "TTK Skeletons Reconciliation",
       "status": "❌ FAIL",
       "success": false,
-      "details": "No ZIP content to reconcile",
+      "details": "TTK: 0, Skeletons: 13, Matched: 0 (0.0%)",
       "response_time": "N/A"
     }
   ],
   "artifacts_generated": [
     "/app/artifacts/preflight.json",
+    "/app/artifacts/mock_scan.json",
     "/app/artifacts/export.json",
     "/app/artifacts/validation.json",
     "/app/artifacts/summary.json",
     "/app/artifacts/xlsx_checks.json",
+    "/app/artifacts/reconcile.json",
     "/app/artifacts/gen_runs.json"
   ],
-  "timestamp": "2025-08-26T09:30:17.413306",
+  "timestamp": "2025-08-26T09:31:18.207705",
   "acceptance_criteria_status": {
     "real_endpoints_operational": true,
     "preflight_functional": true,
-    "zip_export_working": false,
+    "zip_export_working": true,
     "no_mock_content": false,
-    "excel_formatting_correct": false,
+    "excel_formatting_correct": true,
     "ttk_skeleton_reconciliation": false
   }
 }

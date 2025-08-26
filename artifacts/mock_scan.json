@@ -1,0 +1,129 @@
+{
+  "xlsx_files_scanned": [
+    "iiko_TTK.xlsx",
+    "Dish-Skeletons.xlsx",
+    "Product-Skeletons.xlsx"
+  ],
+  "mock_detections": [
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A2",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C2",
+      "signature": "GENERATED_",
+      "value": "GENERATED_ГОВЯДИНА"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A3",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C3",
+      "signature": "GENERATED_",
+      "value": "GENERATED_СВЕКЛА"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A4",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C4",
+      "signature": "GENERATED_",
+      "value": "GENERATED_КАРТОФЕЛЬ"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A5",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C5",
+      "signature": "GENERATED_",
+      "value": "GENERATED_МОРКОВЬ"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A6",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C6",
+      "signature": "GENERATED_",
+      "value": "GENERATED_ЛУК"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A7",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C7",
+      "signature": "GENERATED_",
+      "value": "GENERATED_КАПУСТА"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A8",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C8",
+      "signature": "GENERATED_",
+      "value": "GENERATED_ТОМАТНАЯ_ПАСТА"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "A9",
+      "signature": "DISH_",
+      "value": "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C9",
+      "signature": "GENERATED_",
+      "value": "GENERATED_ВОДА"
+    }
+  ],
+  "mock_signatures_searched": [
+    "DISH_MOCK_TECH_CARD",
+    "GENERATED_TEST_INGREDIENT",
+    "DISH_",
+    "GENERATED_"
+  ],
+  "total_detections": 16,
+  "timestamp": "2025-08-26T09:31:18.180020"
+}

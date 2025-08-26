@@ -1,7 +1,7 @@
 {
   "techcard_ids": [
-    "6d1e3499-49ee-4c12-956f-57fa76f5dcac",
-    "c72b35d6-7949-4264-b786-d9e85b2da190"
+    "89934c7b-04f7-4d90-818c-eab44e932b96",
+    "d8729524-7d3b-493f-94b4-5386ac67f4bd"
   ],
   "preflight_response": {
     "status": "success",
@@ -27,92 +27,20 @@
       ],
       "products": [
         {
-          "id": "product_говядина",
-          "name": "говядина",
-          "article": "10004",
+          "id": "product_Говядина",
+          "name": "Говядина",
+          "article": "10020",
           "type": "product",
           "unit": "g",
           "group": "Мясо и рыба"
         },
         {
-          "id": "product_свекла",
-          "name": "свекла",
-          "article": "10005",
+          "id": "product_Свекла",
+          "name": "Свекла",
+          "article": "10021",
           "type": "product",
           "unit": "g",
           "group": "Овощи"
-        },
-        {
-          "id": "product_картофель",
-          "name": "картофель",
-          "article": "10006",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_морковь",
-          "name": "морковь",
-          "article": "10007",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_капуста",
-          "name": "капуста",
-          "article": "10008",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_лук",
-          "name": "лук",
-          "article": "10009",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_томатная_паста",
-          "name": "томатная паста",
-          "article": "10010",
-          "type": "product",
-          "unit": "g",
-          "group": "Сырьё"
-        },
-        {
-          "id": "product_вода",
-          "name": "вода",
-          "article": "10011",
-          "type": "product",
-          "unit": "g",
-          "group": "Сырьё"
-        },
-        {
-          "id": "product_соль",
-          "name": "соль",
-          "article": "10012",
-          "type": "product",
-          "unit": "g",
-          "group": "Бакалея"
-        },
-        {
-          "id": "product_перец_черный",
-          "name": "перец черный",
-          "article": "10013",
-          "type": "product",
-          "unit": "g",
-          "group": "Бакалея"
-        },
-        {
-          "id": "product_Говядина_(стейк)",
-          "name": "Говядина (стейк)",
-          "article": "10014",
-          "type": "product",
-          "unit": "g",
-          "group": "Мясо и рыба"
         },
         {
           "id": "product_Картофель",
@@ -121,6 +49,54 @@
           "type": "product",
           "unit": "g",
           "group": "Овощи"
+        },
+        {
+          "id": "product_Морковь",
+          "name": "Морковь",
+          "article": "10022",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_Лук",
+          "name": "Лук",
+          "article": "10023",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_Капуста",
+          "name": "Капуста",
+          "article": "10024",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_Томатная_паста",
+          "name": "Томатная паста",
+          "article": "10025",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        },
+        {
+          "id": "product_Вода",
+          "name": "Вода",
+          "article": "10026",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        },
+        {
+          "id": "product_Говядина_(стейк)",
+          "name": "Говядина (стейк)",
+          "article": "10014",
+          "type": "product",
+          "unit": "g",
+          "group": "Мясо и рыба"
         },
         {
           "id": "product_Молоко",
@@ -162,18 +138,15 @@
         "10003"
       ],
       "productArticles": [
-        "10004",
-        "10005",
-        "10006",
-        "10007",
-        "10008",
-        "10009",
-        "10010",
-        "10011",
-        "10012",
-        "10013",
-        "10014",
+        "10020",
+        "10021",
         "10015",
+        "10022",
+        "10023",
+        "10024",
+        "10025",
+        "10026",
+        "10014",
         "10016",
         "10017",
         "10018",
@@ -182,9 +155,9 @@
     },
     "counts": {
       "dishSkeletons": 2,
-      "productSkeletons": 16
+      "productSkeletons": 13
     }
   },
-  "response_time": 0.11948227882385254,
-  "timestamp": "2025-08-26T09:30:17.243943"
+  "response_time": 0.17980575561523438,
+  "timestamp": "2025-08-26T09:31:17.444909"
 }
