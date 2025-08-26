@@ -539,16 +539,22 @@ class AltXLSXExportTester:
         numeric_dish_articles = 0
         numeric_ingredient_articles = 0
         
+        # Look at raw content to find placeholder articles
+        for row_data in article_analysis.get("raw_content", []):
+            row_content = row_data["content"]
+            for cell in row_content:
+                if cell.startswith("DISH_"):
+                    placeholder_dish_articles += 1
+                elif cell.startswith("GENERATED_"):
+                    placeholder_ingredient_articles += 1
+        
+        # Also check the articles list for numeric ones
         for art in article_analysis.get("dish_articles", []):
-            if art["article"].startswith("DISH_") or not art["article"].isdigit():
-                placeholder_dish_articles += 1
-            elif art["article"].isdigit() and len(art["article"]) == 5:
+            if art["article"].isdigit() and len(art["article"]) == 5:
                 numeric_dish_articles += 1
         
         for art in article_analysis.get("ingredient_articles", []):
-            if art["article"].startswith("GENERATED_") or not art["article"].isdigit():
-                placeholder_ingredient_articles += 1
-            elif art["article"].isdigit() and len(art["article"]) == 5:
+            if art["article"].isdigit() and len(art["article"]) == 5:
                 numeric_ingredient_articles += 1
         
         print(f"   1. Генерируются ли артикулы для ингредиентов в Alt Export?")
