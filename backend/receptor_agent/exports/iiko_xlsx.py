@@ -994,31 +994,42 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
             if not product_code and ingredient.skuId:
                 product_code = get_product_code_from_rms(ingredient.skuId, rms_service)
             
-            # Если это все еще GUID или нет кода, используем ArticleAllocator для генерации реального артикула
+            # Если это все еще GUID или нет кода, проверяем preflight данные
             if not product_code or product_code == ingredient.skuId:
-                try:
-                    # Используем ArticleAllocator для получения реального 5-digit артикула
-                    from ..integrations.article_allocator import ArticleAllocator
-                    allocator = ArticleAllocator()
-                    
-                    # Создаем уникальный ID для ингредиента
-                    ingredient_id = f"ingredient_{ingredient.name.lower().replace(' ', '_')}"
-                    allocated_result = allocator.allocate_articles([ingredient_id])
-                    
-                    if allocated_result.get('success') and allocated_result.get('allocated'):
-                        product_code = allocated_result['allocated'][0]['article']
-                        print(f"✅ Generated real article for {ingredient.name}: {product_code}")
-                    else:
+                # Check preflight result for ingredient article
+                if preflight_result:
+                    missing_products = preflight_result.get('missing', {}).get('products', [])
+                    for product in missing_products:
+                        if product.get('name') == ingredient.name:
+                            product_code = product.get('article')
+                            logger.info(f"Using preflight product article for '{ingredient.name}': {product_code}")
+                            break
+                
+                # If still no product code, use ArticleAllocator as fallback
+                if not product_code:
+                    try:
+                        # Используем ArticleAllocator для получения реального 5-digit артикула
+                        from ..integrations.article_allocator import ArticleAllocator
+                        allocator = ArticleAllocator()
+                        
+                        # Создаем уникальный ID для ингредиента
+                        ingredient_id = f"ingredient_{ingredient.name.lower().replace(' ', '_')}"
+                        allocated_result = allocator.allocate_articles([ingredient_id])
+                        
+                        if allocated_result.get('success') and allocated_result.get('allocated'):
+                            product_code = allocated_result['allocated'][0]['article']
+                            print(f"✅ Generated real article for {ingredient.name}: {product_code}")
+                        else:
+                            # Fallback to old placeholder system if ArticleAllocator fails
+                            ingredient_slug = generate_dish_slug(ingredient.name)
+                            product_code = f"GENERATED_{ingredient_slug}"
+                            print(f"⚠️ ArticleAllocator failed, using placeholder for {ingredient.name}: {product_code}")
+                            
+                    except Exception as e:
                         # Fallback to old placeholder system if ArticleAllocator fails
+                        print(f"⚠️ ArticleAllocator error for {ingredient.name}: {e}")
                         ingredient_slug = generate_dish_slug(ingredient.name)
                         product_code = f"GENERATED_{ingredient_slug}"
-                        print(f"⚠️ ArticleAllocator failed, using placeholder for {ingredient.name}: {product_code}")
-                        
-                except Exception as e:
-                    # Fallback to old placeholder system if ArticleAllocator fails
-                    print(f"⚠️ ArticleAllocator error for {ingredient.name}: {e}")
-                    ingredient_slug = generate_dish_slug(ingredient.name)
-                    product_code = f"GENERATED_{ingredient_slug}"
                 issues.append({
                     "type": "noProductCode",
                     "name": ingredient.name,
