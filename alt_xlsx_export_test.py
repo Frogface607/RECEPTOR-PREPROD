@@ -533,27 +533,78 @@ class AltXLSXExportTester:
         dish_articles = len(article_analysis.get("dish_articles", []))
         ingredient_articles = len(article_analysis.get("ingredient_articles", []))
         
+        # Check for placeholder articles
+        placeholder_dish_articles = 0
+        placeholder_ingredient_articles = 0
+        numeric_dish_articles = 0
+        numeric_ingredient_articles = 0
+        
+        for art in article_analysis.get("dish_articles", []):
+            if art["article"].startswith("DISH_") or not art["article"].isdigit():
+                placeholder_dish_articles += 1
+            elif art["article"].isdigit() and len(art["article"]) == 5:
+                numeric_dish_articles += 1
+        
+        for art in article_analysis.get("ingredient_articles", []):
+            if art["article"].startswith("GENERATED_") or not art["article"].isdigit():
+                placeholder_ingredient_articles += 1
+            elif art["article"].isdigit() and len(art["article"]) == 5:
+                numeric_ingredient_articles += 1
+        
         print(f"   1. Генерируются ли артикулы для ингредиентов в Alt Export?")
-        if ingredient_articles > 0:
-            print(f"      ✅ ДА - найдено {ingredient_articles} артикулов ингредиентов")
+        if numeric_ingredient_articles > 0:
+            print(f"      ✅ ДА - найдено {numeric_ingredient_articles} числовых артикулов ингредиентов")
+        elif placeholder_ingredient_articles > 0:
+            print(f"      ⚠️ ЧАСТИЧНО - найдено {placeholder_ingredient_articles} placeholder артикулов (GENERATED_*)")
+            print(f"         🔍 КЛЮЧЕВОЕ ОТКРЫТИЕ: Alt Export использует placeholder'ы вместо реальных артикулов!")
         else:
             print(f"      ❌ НЕТ - артикулы ингредиентов не найдены")
         
         print(f"   2. Есть ли артикул блюда в Alt Export?")
-        if dish_articles > 0:
-            print(f"      ✅ ДА - найдено {dish_articles} артикулов блюд")
+        if numeric_dish_articles > 0:
+            print(f"      ✅ ДА - найдено {numeric_dish_articles} числовых артикулов блюд")
+        elif placeholder_dish_articles > 0:
+            print(f"      ⚠️ ЧАСТИЧНО - найдено {placeholder_dish_articles} placeholder артикулов (DISH_*)")
+            print(f"         🔍 КЛЮЧЕВОЕ ОТКРЫТИЕ: Alt Export использует placeholder'ы вместо реальных артикулов!")
         else:
             print(f"      ❌ НЕТ - артикулы блюд не найдены")
         
         print(f"   3. Какая логика используется для генерации артикулов?")
-        patterns = article_analysis.get("article_patterns", {})
-        if patterns and not patterns.get("error"):
-            if patterns.get("sequential", {}).get("is_sequential"):
-                print(f"      📊 Последовательная нумерация: {patterns.get('range')}")
-            else:
-                print(f"      📊 Непоследовательная нумерация: {patterns.get('range')}")
+        if placeholder_dish_articles > 0 or placeholder_ingredient_articles > 0:
+            print(f"      🎯 ОБНАРУЖЕНА ЛОГИКА PLACEHOLDER'ОВ:")
+            print(f"         - Блюда: DISH_{{НАЗВАНИЕ_БЛЮДА}} (найдено {placeholder_dish_articles})")
+            print(f"         - Ингредиенты: GENERATED_{{НАЗВАНИЕ_ИНГРЕДИЕНТА}} (найдено {placeholder_ingredient_articles})")
+            print(f"         - Это fallback логика когда реальные артикулы недоступны")
         else:
-            print(f"      ❓ Логика не определена - недостаточно данных")
+            patterns = article_analysis.get("article_patterns", {})
+            if patterns and not patterns.get("error"):
+                if patterns.get("sequential", {}).get("is_sequential"):
+                    print(f"      📊 Последовательная нумерация: {patterns.get('range')}")
+                else:
+                    print(f"      📊 Непоследовательная нумерация: {patterns.get('range')}")
+            else:
+                print(f"      ❓ Логика не определена - недостаточно данных")
+        
+        print(f"   4. В чем разница между Alt Export и новым ZIP export?")
+        if comparison.get("zip_export_available"):
+            zip_analysis = comparison.get("zip_content_analysis", {})
+            if zip_analysis and not zip_analysis.get("error"):
+                alt_articles = article_analysis.get("articles_found", 0)
+                zip_articles = zip_analysis.get("articles_found", 0)
+                
+                print(f"      📊 Alt Export: {alt_articles} реальных + {placeholder_dish_articles + placeholder_ingredient_articles} placeholder артикулов")
+                print(f"      📊 ZIP Export: {zip_articles} артикулов")
+                
+                if placeholder_dish_articles + placeholder_ingredient_articles > 0 and zip_articles == 0:
+                    print(f"      🎯 КЛЮЧЕВАЯ РАЗНИЦА: Alt Export имеет fallback логику placeholder'ов, ZIP Export - нет!")
+                elif alt_articles > 0 and zip_articles == 0:
+                    print(f"      🎯 РАЗНИЦА: Alt Export генерирует артикулы, ZIP Export - нет")
+                else:
+                    print(f"      ✅ Оба экспорта работают похоже")
+            else:
+                print(f"      ❌ Не удалось проанализировать ZIP export для сравнения")
+        else:
+            print(f"      ❌ ZIP export недоступен для сравнения")
         
         print()
         
@@ -564,12 +615,20 @@ class AltXLSXExportTester:
         
         print(f"📊 TEST SUMMARY: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}% success rate)")
         
-        if ingredient_articles > 0:
-            print("🎉 SUCCESS: Alt Export shows working article generation logic!")
-            print("💡 RECOMMENDATION: Copy Alt Export article generation logic to new ZIP export")
+        # Key findings and recommendations
+        if placeholder_ingredient_articles > 0 or placeholder_dish_articles > 0:
+            print("🎉 SUCCESS: Alt Export показывает рабочую логику placeholder артикулов!")
+            print("💡 КЛЮЧЕВЫЕ НАХОДКИ:")
+            print("   - Alt Export использует fallback систему placeholder'ов")
+            print("   - Формат: DISH_{название} для блюд, GENERATED_{название} для ингредиентов")
+            print("   - Это объясняет почему Alt Export 'работает' - он не генерирует реальные артикулы")
+            print("💡 РЕКОМЕНДАЦИИ:")
+            print("   1. Новый ZIP export должен реализовать аналогичную fallback логику")
+            print("   2. Или исправить генерацию реальных числовых артикулов в источнике")
+            print("   3. Alt Export НЕ решает проблему - он её маскирует placeholder'ами")
         else:
-            print("⚠️ ISSUE: Alt Export also doesn't generate articles properly")
-            print("💡 RECOMMENDATION: Investigate article generation at source level")
+            print("⚠️ НЕОЖИДАННО: Alt Export также не генерирует артикулы")
+            print("💡 РЕКОМЕНДАЦИЯ: Проблема глубже - нужно исследовать генерацию артикулов на уровне источника")
 
 async def main():
     """Main test execution"""
