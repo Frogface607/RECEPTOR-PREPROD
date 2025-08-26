@@ -87,11 +87,14 @@ class PreflightExportIntegrationTester:
             
             if response.status_code == 200:
                 data = response.json()
-                self.generated_techcard_id = data.get('id')
+                # ID находится в card.meta.id
+                card = data.get('card', {})
+                meta = card.get('meta', {})
+                self.generated_techcard_id = meta.get('id')
                 
                 if self.generated_techcard_id:
                     # Проверяем структуру техкарты
-                    ingredients_count = len(data.get('ingredients', []))
+                    ingredients_count = len(card.get('ingredients', []))
                     
                     self.log_test(
                         "Генерация техкарты 'Паста карбонара'",
@@ -104,7 +107,7 @@ class PreflightExportIntegrationTester:
                     self.log_test(
                         "Генерация техкарты 'Паста карбонара'",
                         False,
-                        "ID техкарты не получен",
+                        f"ID техкарты не получен. Структура: {list(data.keys())}",
                         response_time
                     )
                     return False
