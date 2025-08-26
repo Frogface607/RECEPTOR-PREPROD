@@ -89,10 +89,11 @@ class SkeletonExportTester:
                 data = response.json()
                 
                 # Extract tech card ID from response
-                if 'techcard' in data and 'id' in data['techcard']:
-                    self.generated_techcard_id = data['techcard']['id']
-                    techcard_name = data['techcard'].get('name', 'Unknown')
-                    ingredients_count = len(data['techcard'].get('ingredients', []))
+                if 'card' in data and data['card'] and 'id' in data['card']:
+                    self.generated_techcard_id = data['card']['id']
+                    techcard_name = data['card'].get('name', 'Unknown')
+                    ingredients_count = len(data['card'].get('ingredients', []))
+                    status = data.get('status', 'unknown')
                     
                     self.log_test(
                         "Генерация техкарты 'Простой салат'",
