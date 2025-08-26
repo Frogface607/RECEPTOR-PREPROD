@@ -125,7 +125,10 @@ class MockContentResolutionTester:
                     techcard_id = None
                     if "card" in data and data["card"]:
                         card_data = data["card"]
-                        techcard_id = card_data.get("id") or card_data.get("_id")
+                        if "meta" in card_data and "id" in card_data["meta"]:
+                            techcard_id = card_data["meta"]["id"]
+                        else:
+                            techcard_id = card_data.get("id") or card_data.get("_id")
                     
                     if not techcard_id:
                         # Try other possible locations
