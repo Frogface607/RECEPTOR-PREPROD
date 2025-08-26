@@ -479,6 +479,7 @@ class SkeletonExportTester:
         zip_content = None
         
         # Execute tests in sequence
+        preflight_result = {}
         for i, (test_name, test_coro) in enumerate(test_sequence):
             if i == 0:  # Generate techcard
                 success = await test_coro
