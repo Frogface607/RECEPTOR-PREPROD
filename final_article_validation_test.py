@@ -341,8 +341,8 @@ class FinalArticleValidationTester:
             
             # Perform ZIP export
             payload = {
-                "techcard_ids": [self.generated_techcard_id],
-                "organization_id": self.organization_id,
+                "techcardIds": [self.generated_techcard_id],
+                "organizationId": self.organization_id,
                 "operational_rounding": True
             }
             
