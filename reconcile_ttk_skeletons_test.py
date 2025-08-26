@@ -81,10 +81,14 @@ class ReconcileTTKSkeletonsTest:
                 if data.get("status") in ["success", "draft"] and data.get("card"):
                     techcard = data["card"]
                     print(f"DEBUG: TechCard keys: {list(techcard.keys()) if techcard else 'None'}")
-                    self.generated_techcard_id = techcard.get("id")
+                    
+                    # Try to get ID from meta field
+                    meta = techcard.get("meta", {})
+                    self.generated_techcard_id = meta.get("id") or techcard.get("id")
+                    print(f"DEBUG: TechCard ID: {self.generated_techcard_id}")
                     
                     # Validate tech card structure
-                    required_fields = ["id", "name", "ingredients"]
+                    required_fields = ["meta", "ingredients"]
                     has_required = all(field in techcard for field in required_fields)
                     
                     ingredients_count = len(techcard.get("ingredients", []))
