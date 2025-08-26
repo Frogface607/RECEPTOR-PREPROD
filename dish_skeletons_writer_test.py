@@ -88,6 +88,11 @@ class DishSkeletonsWriterTester:
             if response.status_code == 200:
                 data = response.json()
                 
+                # Debug: Print the actual response structure
+                print(f"DEBUG: Response data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+                if isinstance(data, dict) and 'card' in data:
+                    print(f"DEBUG: Card keys: {list(data['card'].keys()) if isinstance(data['card'], dict) else 'Card not a dict'}")
+                
                 # Извлечь ID техкарты
                 if data.get("status") in ["success", "draft"] and data.get("card"):
                     techcard = data["card"]
@@ -104,7 +109,7 @@ class DishSkeletonsWriterTester:
                         return True
                     else:
                         self.log_test("Генерация техкарты", False,
-                                    "Техкарта создана но ID не найден", response_time)
+                                    f"Техкарта создана но ID не найден. Card: {techcard}", response_time)
                 else:
                     self.log_test("Генерация техкарты", False,
                                 f"Неуспешный ответ: {data.get('status', 'Unknown status')}, {data.get('message', 'No message')}", response_time)
