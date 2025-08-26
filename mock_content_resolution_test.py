@@ -135,8 +135,9 @@ class MockContentResolutionTester:
                         self.generated_techcard_ids.append(techcard_id)
                         
                         # Verify tech card has real content
-                        techcard_name = data.get("name") or data.get("title", "")
-                        ingredients_count = len(data.get("ingredients", []))
+                        card_data = data.get("card", {})
+                        techcard_name = card_data.get("name") or card_data.get("title", "")
+                        ingredients_count = len(card_data.get("ingredients", []))
                         
                         # Check for mock signatures in the generated content
                         mock_detected = any(sig in str(data).upper() for sig in [s.upper() for s in MOCK_SIGNATURES])
