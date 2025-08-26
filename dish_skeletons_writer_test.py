@@ -75,8 +75,11 @@ class DishSkeletonsWriterTester:
             start_time = time.time()
             
             payload = {
-                "dish_name": "Щи зеленые с говядиной",
-                "organization_id": self.organization_id
+                "name": "Щи зеленые с говядиной",
+                "cuisine": "русская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             response = await self.client.post(f"{API_BASE}/techcards.v2/generate", json=payload)
