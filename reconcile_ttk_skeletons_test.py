@@ -76,8 +76,8 @@ class ReconcileTTKSkeletonsTest:
             if response.status_code == 200:
                 data = response.json()
                 
-                if data.get("success") and data.get("techcard"):
-                    techcard = data["techcard"]
+                if data.get("status") in ["success", "draft"] and data.get("card"):
+                    techcard = data["card"]
                     self.generated_techcard_id = techcard.get("id")
                     
                     # Validate tech card structure
