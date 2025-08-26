@@ -382,7 +382,12 @@ class ArticleGenerationTester:
                 self.log_test("End-to-End Workflow", False, f"Failed to generate second tech card: {response.status_code}")
                 return False
             
-            second_techcard_id = response.json().get('id')
+            data = response.json()
+            if data.get('status') not in ['success', 'draft'] or not data.get('card'):
+                self.log_test("End-to-End Workflow", False, f"Second tech card generation failed: {data.get('status')}")
+                return False
+                
+            second_techcard_id = data['card'].get('id')
             
             # Run preflight with both tech cards
             preflight_response = await self.client.post(
