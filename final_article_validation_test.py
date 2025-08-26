@@ -88,7 +88,7 @@ class FinalArticleValidationTester:
             
             if response.status_code == 200:
                 data = response.json()
-                techcard = data.get('techcard', {})
+                techcard = data.get('card', {})
                 self.generated_techcard_id = techcard.get('id')
                 
                 # Check basic structure
@@ -104,7 +104,7 @@ class FinalArticleValidationTester:
                     self.log_test(
                         "Генерация техкарты 'Рыба запеченная с овощами'",
                         False,
-                        "Техкарта создана, но отсутствует ID или название",
+                        f"Техкарта создана, но отсутствует ID или название. Статус: {data.get('status')}, данные: {list(techcard.keys()) if techcard else 'None'}",
                         response_time
                     )
                     return False
