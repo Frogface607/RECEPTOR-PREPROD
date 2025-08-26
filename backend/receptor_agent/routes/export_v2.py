@@ -455,8 +455,8 @@ class DualExporter:
             logger.error(f"Dual export error: {e}")
             raise HTTPException(500, f"Export failed: {str(e)}")
     
-    async def _create_ttk_xlsx(self, techcard_ids: List[str], operational_rounding: bool) -> io.BytesIO:
-        """Create iiko TTK XLSX file with proper article formatting"""
+    async def _create_ttk_xlsx(self, techcard_ids: List[str], operational_rounding: bool, preflight_result: Dict[str, Any] = None) -> io.BytesIO:
+        """Create iiko TTK XLSX file with proper article formatting using preflight articles"""
         try:
             # Import here to avoid circular imports
             from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
@@ -478,11 +478,15 @@ class DualExporter:
                 # Convert back to TechCardV2
                 techcard = TechCardV2(**result['rounded_techcard'])
             
-            # Create XLSX with proper article formatting
+            # Create export options with preflight article mapping
             export_options = {
-                "use_product_codes": True,  # Always use articles, not GUIDs
+                "use_product_codes": True,
                 "operational_rounding": operational_rounding
             }
+            
+            # Pass preflight data to XLSX generator if available
+            if preflight_result:
+                export_options["preflight_result"] = preflight_result
             
             xlsx_buffer, issues = create_iiko_ttk_xlsx(
                 card=techcard,
