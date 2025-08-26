@@ -216,7 +216,7 @@ class FEExportWizardTester:
         
         return None
     
-    async def step_3_zip_export_and_meta(self, techcard_ids: List[str]):
+    async def step_3_zip_export_and_meta(self, techcard_ids: List[str], preflight_result: Dict = None):
         """STEP 3: ZIP export and metadata collection"""
         print("\n🎯 STEP 3: ZIP Export and Metadata Collection")
         
@@ -229,8 +229,13 @@ class FEExportWizardTester:
             
             payload = {
                 "techcardIds": techcard_ids,
-                "organization_id": self.organization_id
+                "organization_id": self.organization_id,
+                "operational_rounding": True
             }
+            
+            # Add preflight result if available
+            if preflight_result:
+                payload["preflight_result"] = preflight_result
             
             response = await self.client.post(f"{API_BASE}/export/zip", json=payload)
             response_time = time.time() - start_time
