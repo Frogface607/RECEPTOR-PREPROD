@@ -1,10 +1,19 @@
 {
-  "expected_dish_articles": [],
-  "expected_product_articles": [],
+  "expected_dish_articles": [
+    "10000"
+  ],
+  "expected_product_articles": [
+    "10001",
+    "10002",
+    "10003",
+    "10004",
+    "10005",
+    "10006"
+  ],
   "actual_dish_articles": [],
   "actual_product_articles": [],
-  "dish_match": true,
-  "product_match": true,
+  "dish_match": false,
+  "product_match": false,
   "generated_count": 0,
-  "overall_success": true
+  "overall_success": false
 }

@@ -1,8 +1,11 @@
 {
-  "generated_techcard_ids": [],
+  "generated_techcard_ids": [
+    "c2af1b0f-a9cd-4c71-8c76-b3a3fa9eba7d"
+  ],
   "dish_names": [
     "Борщ украинский с говядиной",
     "Стейк из говядины с картофельным пюре"
   ],
-  "timestamp": "2025-08-26T10:06:37.480076"
+  "timestamp": "2025-08-26T10:08:52.072068",
+  "fallback_used": false
 }

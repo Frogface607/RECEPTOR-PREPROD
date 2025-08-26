@@ -1,163 +1,83 @@
 {
-  "techcard_ids": [
-    "89934c7b-04f7-4d90-818c-eab44e932b96",
-    "d8729524-7d3b-493f-94b4-5386ac67f4bd"
-  ],
-  "preflight_response": {
-    "status": "success",
-    "ttkDate": "2025-08-26",
-    "missing": {
-      "dishes": [
-        {
-          "id": "dish_Борщ_украинский_с_говядиной",
-          "name": "Борщ украинский с говядиной",
-          "article": "10002",
-          "type": "dish",
-          "unit": "порц",
-          "yield": 330.0
-        },
-        {
-          "id": "dish_Стейк_из_говядины_с_картофельным_пюре",
-          "name": "Стейк из говядины с картофельным пюре",
-          "article": "10003",
-          "type": "dish",
-          "unit": "порц",
-          "yield": 240.0
-        }
-      ],
-      "products": [
-        {
-          "id": "product_Говядина",
-          "name": "Говядина",
-          "article": "10020",
-          "type": "product",
-          "unit": "g",
-          "group": "Мясо и рыба"
-        },
-        {
-          "id": "product_Свекла",
-          "name": "Свекла",
-          "article": "10021",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_Картофель",
-          "name": "Картофель",
-          "article": "10015",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_Морковь",
-          "name": "Морковь",
-          "article": "10022",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_Лук",
-          "name": "Лук",
-          "article": "10023",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_Капуста",
-          "name": "Капуста",
-          "article": "10024",
-          "type": "product",
-          "unit": "g",
-          "group": "Овощи"
-        },
-        {
-          "id": "product_Томатная_паста",
-          "name": "Томатная паста",
-          "article": "10025",
-          "type": "product",
-          "unit": "g",
-          "group": "Сырьё"
-        },
-        {
-          "id": "product_Вода",
-          "name": "Вода",
-          "article": "10026",
-          "type": "product",
-          "unit": "g",
-          "group": "Сырьё"
-        },
-        {
-          "id": "product_Говядина_(стейк)",
-          "name": "Говядина (стейк)",
-          "article": "10014",
-          "type": "product",
-          "unit": "g",
-          "group": "Мясо и рыба"
-        },
-        {
-          "id": "product_Молоко",
-          "name": "Молоко",
-          "article": "10016",
-          "type": "product",
-          "unit": "g",
-          "group": "Молочные продукты"
-        },
-        {
-          "id": "product_Масло_сливочное",
-          "name": "Масло сливочное",
-          "article": "10017",
-          "type": "product",
-          "unit": "g",
-          "group": "Молочные продукты"
-        },
-        {
-          "id": "product_Соль",
-          "name": "Соль",
-          "article": "10018",
-          "type": "product",
-          "unit": "g",
-          "group": "Бакалея"
-        },
-        {
-          "id": "product_Перец_черный",
-          "name": "Перец черный",
-          "article": "10019",
-          "type": "product",
-          "unit": "g",
-          "group": "Бакалея"
-        }
-      ]
-    },
-    "generated": {
-      "dishArticles": [
-        "10002",
-        "10003"
-      ],
-      "productArticles": [
-        "10020",
-        "10021",
-        "10015",
-        "10022",
-        "10023",
-        "10024",
-        "10025",
-        "10026",
-        "10014",
-        "10016",
-        "10017",
-        "10018",
-        "10019"
-      ]
-    },
-    "counts": {
-      "dishSkeletons": 2,
-      "productSkeletons": 13
-    }
+  "status": "success",
+  "ttkDate": "2025-08-26",
+  "missing": {
+    "dishes": [
+      {
+        "id": "dish_Стейк_из_говядины_с_картофельным_пюре",
+        "name": "Стейк из говядины с картофельным пюре",
+        "article": "10000",
+        "type": "dish",
+        "unit": "порц",
+        "yield": 240.0
+      }
+    ],
+    "products": [
+      {
+        "id": "product_Говядина_(стейк)",
+        "name": "Говядина (стейк)",
+        "article": "10001",
+        "type": "product",
+        "unit": "g",
+        "group": "Мясо и рыба"
+      },
+      {
+        "id": "product_Картофель",
+        "name": "Картофель",
+        "article": "10002",
+        "type": "product",
+        "unit": "g",
+        "group": "Овощи"
+      },
+      {
+        "id": "product_Молоко",
+        "name": "Молоко",
+        "article": "10003",
+        "type": "product",
+        "unit": "g",
+        "group": "Молочные продукты"
+      },
+      {
+        "id": "product_Масло_сливочное",
+        "name": "Масло сливочное",
+        "article": "10004",
+        "type": "product",
+        "unit": "g",
+        "group": "Молочные продукты"
+      },
+      {
+        "id": "product_Соль",
+        "name": "Соль",
+        "article": "10005",
+        "type": "product",
+        "unit": "g",
+        "group": "Бакалея"
+      },
+      {
+        "id": "product_Перец_черный",
+        "name": "Перец черный",
+        "article": "10006",
+        "type": "product",
+        "unit": "g",
+        "group": "Бакалея"
+      }
+    ]
   },
-  "response_time": 0.17980575561523438,
-  "timestamp": "2025-08-26T09:31:17.444909"
+  "generated": {
+    "dishArticles": [
+      "10000"
+    ],
+    "productArticles": [
+      "10001",
+      "10002",
+      "10003",
+      "10004",
+      "10005",
+      "10006"
+    ]
+  },
+  "counts": {
+    "dishSkeletons": 1,
+    "productSkeletons": 6
+  }
 }
