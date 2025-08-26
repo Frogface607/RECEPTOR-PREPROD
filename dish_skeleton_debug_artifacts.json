@@ -1,0 +1,9 @@
+{
+  "root_cause_analysis": {
+    "generation_phase": {},
+    "database_phase": {},
+    "preflight_phase": {},
+    "export_phase": {},
+    "root_causes": []
+  }
+}
