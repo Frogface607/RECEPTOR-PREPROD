@@ -139,7 +139,7 @@ class MockContentResolutionTester:
                         
                         # Verify tech card has real content
                         card_data = data.get("card", {})
-                        techcard_name = card_data.get("name") or card_data.get("title", "")
+                        techcard_name = card_data.get("meta", {}).get("title", "") or card_data.get("name", "")
                         ingredients_count = len(card_data.get("ingredients", []))
                         
                         # Check for mock signatures in the generated content
