@@ -287,8 +287,8 @@ class FinalArticleValidationTester:
             
             # Run preflight check
             payload = {
-                "techcard_ids": [self.generated_techcard_id],
-                "organization_id": self.organization_id
+                "techcardIds": [self.generated_techcard_id],
+                "organizationId": self.organization_id
             }
             
             response = await self.client.post(
