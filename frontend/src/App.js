@@ -6310,6 +6310,13 @@ function App() {
       } else if (normalizedData.status === 'draft' && normalizedData.card) {
         const techCardV2 = normalizedData.card;
         setTcV2(techCardV2);
+        
+        // Set the current tech card ID from the generated tech card
+        if (techCardV2.meta && techCardV2.meta.id) {
+          setCurrentTechCardId(techCardV2.meta.id);
+          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
+        }
+        
         setGenerationStatus('draft');
         setGenerationIssues(normalizedData.issues || []);
         
