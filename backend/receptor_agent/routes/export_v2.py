@@ -412,41 +412,7 @@ class DualExporter:
             # Return empty list instead of mock data
             return []
     
-    def _create_mock_techcard(self) -> TechCardV2:
-        """Create a mock techcard for testing functionality"""
-        from ..techcards_v2.schemas import TechCardV2, IngredientV2, YieldV2, MetaV2, ProcessStepV2, StorageV2
-        
-        return TechCardV2(
-            meta=MetaV2(title="Mock Tech Card"),
-            portions=1,
-            yield_=YieldV2(perPortion_g=200.0, perBatch_g=200.0),
-            ingredients=[
-                IngredientV2(
-                    name="Test Ingredient",
-                    netto_g=100.0,
-                    brutto_g=110.0,
-                    unit="g",
-                    loss_pct=9.09
-                ),
-                IngredientV2(
-                    name="Test Ingredient 2",
-                    netto_g=100.0,
-                    brutto_g=105.0,
-                    unit="g",
-                    loss_pct=4.76
-                )
-            ],
-            process=[
-                ProcessStepV2(n=1, action="Подготовить ингредиенты", time_min=5.0),
-                ProcessStepV2(n=2, action="Смешать компоненты", time_min=3.0),
-                ProcessStepV2(n=3, action="Готовить на среднем огне", time_min=10.0, temp_c=180.0)
-            ],
-            storage=StorageV2(
-                conditions="Хранить в холодильнике",
-                shelfLife_hours=24.0
-            )
-        )
-    
+
     async def create_export_zip(self, 
                                techcard_ids: List[str], 
                                preflight_result: Dict[str, Any],
