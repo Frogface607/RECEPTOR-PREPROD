@@ -89,6 +89,11 @@ class MockContentFixTester:
             
             if response.status_code == 200:
                 data = response.json()
+                print(f"DEBUG: Response data keys: {list(data.keys())}")
+                print(f"DEBUG: Status: {data.get('status')}")
+                if data.get('card'):
+                    print(f"DEBUG: Card keys: {list(data['card'].keys())}")
+                
                 # Check if generation was successful
                 if data.get('status') in ['success', 'draft'] and data.get('card'):
                     techcard_id = data['card'].get('id')
@@ -105,7 +110,7 @@ class MockContentFixTester:
                         self.log_test(
                             f"Генерация техкарты '{dish_name}'",
                             False,
-                            "ID не найден в card",
+                            f"ID не найден в card. Card: {data.get('card', {}).keys() if data.get('card') else 'None'}",
                             response_time
                         )
                         return None
