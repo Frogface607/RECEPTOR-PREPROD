@@ -61,7 +61,7 @@ class AltXLSXExportTester:
             print(f"    Response time: {response_time:.3f}s")
         print()
 
-    async def generate_greek_salad_techcard(self) -> Optional[str]:
+    async def generate_greek_salad_techcard(self) -> Optional[Dict[str, Any]]:
         """Generate 'Салат Греческий' tech card for testing"""
         try:
             start_time = time.time()
@@ -83,30 +83,27 @@ class AltXLSXExportTester:
                 
                 # Handle different response structures
                 techcard_id = None
+                techcard_data = None
+                
                 if 'id' in data:
                     techcard_id = data.get('id')
+                    techcard_data = data
                 elif 'card' in data and 'meta' in data['card']:
                     techcard_id = data['card']['meta'].get('id')
+                    techcard_data = data['card']  # Use the card data directly
                 
-                if techcard_id:
+                if techcard_id and techcard_data:
                     self.generated_techcard_id = techcard_id
                     
                     # Get ingredient count for analysis
-                    if 'ingredients' in data:
-                        ingredients = data.get('ingredients', [])
-                    elif 'card' in data:
-                        ingredients = data['card'].get('ingredients', [])
-                    else:
-                        ingredients = []
-                    
+                    ingredients = techcard_data.get('ingredients', [])
                     ingredient_count = len(ingredients)
                     
                     # Check article generation status
                     article_status = "No articles"
-                    if 'card' in data:
-                        dish_article = data['card']['meta'].get('article')
-                        ingredient_articles = [ing.get('product_code') for ing in ingredients if ing.get('product_code')]
-                        article_status = f"Dish article: {dish_article}, Ingredient articles: {len(ingredient_articles)}"
+                    dish_article = techcard_data.get('meta', {}).get('article') or techcard_data.get('article')
+                    ingredient_articles = [ing.get('product_code') for ing in ingredients if ing.get('product_code')]
+                    article_status = f"Dish article: {dish_article}, Ingredient articles: {len(ingredient_articles)}"
                     
                     self.log_test(
                         "Generate Greek Salad TechCard",
@@ -114,7 +111,7 @@ class AltXLSXExportTester:
                         f"Generated 'Салат Греческий' with ID: {techcard_id}, {ingredient_count} ingredients. {article_status}",
                         response_time
                     )
-                    return techcard_id
+                    return techcard_data  # Return the tech card data directly
                 else:
                     self.log_test(
                         "Generate Greek Salad TechCard",
@@ -140,40 +137,9 @@ class AltXLSXExportTester:
             )
             return None
 
-    async def get_techcard_data(self, techcard_id: str) -> Optional[Dict[str, Any]]:
-        """Get tech card data for export"""
-        try:
-            # Get tech card data
-            get_url = f"{API_BASE}/techcards.v2/{techcard_id}"
-            
-            response = await self.client.get(get_url)
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                self.log_test(
-                    "Get TechCard Data",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                return None
-                
-        except Exception as e:
-            self.log_test(
-                "Get TechCard Data",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return None
-
-    async def test_alt_xlsx_export(self, techcard_id: str) -> Optional[bytes]:
+    async def test_alt_xlsx_export(self, techcard_data: Dict[str, Any]) -> Optional[bytes]:
         """Test Alt XLSX Export endpoint"""
         try:
-            # First get the tech card data
-            techcard_data = await self.get_techcard_data(techcard_id)
-            if not techcard_data:
-                return None
-            
             start_time = time.time()
             
             # Use Alt XLSX Export endpoint with TechCardV2 structure
