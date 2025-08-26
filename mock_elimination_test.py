@@ -76,8 +76,11 @@ class MockEliminationTester:
             generate_url = f"{API_BASE}/techcards.v2/generate"
             
             payload = {
-                "dish_name": "Рагу овощное",
-                "organization_id": self.organization_id
+                "name": "Рагу овощное",
+                "cuisine": "русская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             response = await self.client.post(generate_url, json=payload)
