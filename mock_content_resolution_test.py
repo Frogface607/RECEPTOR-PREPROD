@@ -187,10 +187,17 @@ class MockContentResolutionTester:
             # Check techcards collection
             techcards_collection = db.techcards
             
+            # Also try techcards_v2 collection
+            techcards_v2_collection = db.techcards_v2
+            
             verified_count = 0
             for techcard_id in self.generated_techcard_ids:
-                # Look for the tech card in database
-                stored_techcard = techcards_collection.find_one({"_id": techcard_id})
+                # Look for the tech card in both collections
+                stored_techcard = (techcards_collection.find_one({"_id": techcard_id}) or 
+                                 techcards_collection.find_one({"id": techcard_id}) or
+                                 techcards_v2_collection.find_one({"_id": techcard_id}) or
+                                 techcards_v2_collection.find_one({"id": techcard_id}) or
+                                 techcards_v2_collection.find_one({"meta.id": techcard_id}))
                 
                 if stored_techcard:
                     verified_count += 1
