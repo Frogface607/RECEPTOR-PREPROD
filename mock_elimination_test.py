@@ -228,6 +228,9 @@ class MockEliminationTester:
                 has_counts = 'counts' in data
                 
                 if has_ttk_date and has_counts:
+                    # Store preflight result for ZIP export
+                    self.preflight_result = data
+                    
                     self.log_test(
                         "Run Preflight with Real ID",
                         True,
