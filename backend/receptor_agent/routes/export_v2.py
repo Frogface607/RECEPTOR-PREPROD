@@ -105,7 +105,11 @@ class PreflightOrchestrator:
                 # Load specific techcards by ID
                 for techcard_id in techcard_ids:
                     try:
-                        doc = techcards_collection.find_one({"_id": techcard_id})
+                        # Try multiple possible ID fields
+                        doc = (techcards_collection.find_one({"_id": techcard_id}) or 
+                               techcards_collection.find_one({"id": techcard_id}) or
+                               techcards_collection.find_one({"meta.id": techcard_id}))
+                        
                         if doc:
                             # Convert MongoDB document to TechCardV2
                             techcard = TechCardV2(**doc)
@@ -113,8 +117,10 @@ class PreflightOrchestrator:
                             logger.info(f"Loaded techcard: {techcard_id}")
                         else:
                             logger.warning(f"Techcard not found: {techcard_id}")
+                            # Don't create mock data - return empty list instead
                     except Exception as e:
                         logger.error(f"Error loading techcard {techcard_id}: {e}")
+                        # Don't create mock data - continue to next techcard
             
             client.close()
             return techcards
