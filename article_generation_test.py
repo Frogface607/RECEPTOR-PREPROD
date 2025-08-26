@@ -370,8 +370,11 @@ class ArticleGenerationTester:
             response = await self.client.post(
                 f"{API_BASE}/techcards.v2/generate",
                 json={
-                    "dish_name": "Борщ украинский с мясом",
-                    "organization_id": self.organization_id
+                    "name": "Борщ украинский с мясом",
+                    "cuisine": "русская",
+                    "equipment": [],
+                    "budget": None,
+                    "dietary": []
                 }
             )
             
