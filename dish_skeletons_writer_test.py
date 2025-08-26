@@ -107,7 +107,7 @@ class DishSkeletonsWriterTester:
                                     "Техкарта создана но ID не найден", response_time)
                 else:
                     self.log_test("Генерация техкарты", False,
-                                f"Неуспешный ответ: {data.get('error', 'Unknown error')}", response_time)
+                                f"Неуспешный ответ: {data.get('status', 'Unknown status')}, {data.get('message', 'No message')}", response_time)
             else:
                 self.log_test("Генерация техкарты", False,
                             f"HTTP {response.status_code}: {response.text[:200]}", response_time)
