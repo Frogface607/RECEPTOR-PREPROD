@@ -115,6 +115,8 @@ class DishSkeletonsWriterTester:
                 
         except Exception as e:
             self.log_test("Генерация техкарты", False, f"Exception: {str(e)}", 0.0)
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")
         
         return False
     
