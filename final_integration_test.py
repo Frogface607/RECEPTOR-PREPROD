@@ -301,8 +301,7 @@ class FinalIntegrationTester:
             # First run preflight check
             preflight_url = f"{API_BASE}/export/preflight"
             preflight_payload = {
-                "techcard_ids": [self.generated_techcard_id],
-                "organization_id": self.organization_id
+                "techcardIds": [self.generated_techcard_id]
             }
             
             preflight_response = await self.client.post(preflight_url, json=preflight_payload)
@@ -320,9 +319,7 @@ class FinalIntegrationTester:
             # Now run ZIP export
             export_url = f"{API_BASE}/export/zip"
             export_payload = {
-                "techcard_ids": [self.generated_techcard_id],
-                "organization_id": self.organization_id,
-                "preflight_result": preflight_data
+                "techcardIds": [self.generated_techcard_id]
             }
             
             export_response = await self.client.post(export_url, json=export_payload)
@@ -340,7 +337,7 @@ class FinalIntegrationTester:
             content_type = export_response.headers.get('content-type', '')
             zip_size = len(export_response.content)
             
-            if 'zip' not in content_type.lower() and zip_size < 100:
+            if zip_size < 100:
                 return self.log_test(
                     "Run ZIP Export with Real ID", 
                     False, 
@@ -350,6 +347,7 @@ class FinalIntegrationTester:
             
             # Store ZIP content for next test
             self.exported_zip_content = export_response.content
+            self.preflight_data = preflight_data
             
             return self.log_test(
                 "Run ZIP Export with Real ID", 
