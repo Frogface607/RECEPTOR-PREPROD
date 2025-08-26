@@ -207,12 +207,16 @@ class FinalArticleValidationTester:
             return False
             
         try:
-            # Get tech card from database to check ingredient product_codes
-            mongo_client = MongoClient(MONGO_URL)
-            db = mongo_client[DB_NAME]
-            techcards_collection = db.techcards_v2
-            
-            techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+            # First check if we have the techcard data directly from generation
+            if hasattr(self, 'generated_techcard_data'):
+                techcard = self.generated_techcard_data
+            else:
+                # Get tech card from database
+                mongo_client = MongoClient(MONGO_URL)
+                db = mongo_client[DB_NAME]
+                techcards_collection = db.techcards_v2
+                
+                techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
             
             if techcard:
                 ingredients = techcard.get('ingredients', [])
@@ -227,31 +231,36 @@ class FinalArticleValidationTester:
                 
                 ingredients_with_codes = 0
                 total_ingredients = len(ingredients)
+                ingredient_details = []
                 
                 for ingredient in ingredients:
                     product_code = ingredient.get('product_code')
+                    name = ingredient.get('name', 'Unknown')
                     if product_code:
                         ingredients_with_codes += 1
+                        ingredient_details.append(f"{name}: {product_code}")
+                    else:
+                        ingredient_details.append(f"{name}: НЕТ КОДА")
                 
                 if ingredients_with_codes > 0:
                     self.log_test(
                         "Проверка product_code ингредиентов",
                         True,
-                        f"Product codes найдены у {ingredients_with_codes}/{total_ingredients} ингредиентов"
+                        f"Product codes найдены у {ingredients_with_codes}/{total_ingredients} ингредиентов. Детали: {'; '.join(ingredient_details[:3])}{'...' if len(ingredient_details) > 3 else ''}"
                     )
                     return True
                 else:
                     self.log_test(
                         "Проверка product_code ингредиентов",
                         False,
-                        f"Product codes отсутствуют у всех {total_ingredients} ингредиентов"
+                        f"Product codes отсутствуют у всех {total_ingredients} ингредиентов. Ингредиенты: {'; '.join([ing.get('name', 'Unknown') for ing in ingredients[:3]])}{'...' if len(ingredients) > 3 else ''}"
                     )
                     return False
             else:
                 self.log_test(
                     "Проверка product_code ингредиентов",
                     False,
-                    "Техкарта не найдена в базе данных"
+                    "Техкарта не найдена"
                 )
                 return False
                 
@@ -259,7 +268,7 @@ class FinalArticleValidationTester:
             self.log_test(
                 "Проверка product_code ингредиентов",
                 False,
-                f"Ошибка при проверке базы данных: {str(e)}"
+                f"Ошибка при проверке: {str(e)}"
             )
             return False
 
