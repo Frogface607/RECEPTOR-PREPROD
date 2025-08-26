@@ -96,12 +96,14 @@ class FinalArticleValidationTester:
                     meta = techcard.get('meta', {})
                     self.generated_techcard_id = meta.get('id') or techcard.get('id')
                     
-                    # If no ID found, we'll use the techcard data directly for database lookup
+                    # If no ID found, we'll store the techcard data for direct access
                     if not self.generated_techcard_id:
                         # Generate a temporary ID for tracking
                         import uuid
                         self.generated_techcard_id = str(uuid.uuid4())
-                        self.generated_techcard_data = techcard
+                    
+                    # Always store the techcard data for direct access
+                    self.generated_techcard_data = techcard
                     
                     dish_name = meta.get('title') or techcard.get('name', 'Unknown')
                     
