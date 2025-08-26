@@ -63,8 +63,11 @@ class ReconcileTTKSkeletonsTest:
             
             # Generate a real tech card with Russian dish name
             payload = {
-                "dish_name": "Борщ украинский с говядиной",
-                "organization_id": self.organization_id
+                "name": "Борщ украинский с говядиной",
+                "cuisine": "русская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             response = await self.client.post(f"{API_BASE}/techcards.v2/generate", json=payload)
