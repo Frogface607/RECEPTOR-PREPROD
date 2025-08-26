@@ -408,9 +408,9 @@ class AltXLSXExportTester:
         
         # Step 1: Generate Greek Salad tech card
         print("📝 STEP 1: Generate 'Салат Греческий' Tech Card")
-        techcard_id = await self.generate_greek_salad_techcard()
+        techcard_data = await self.generate_greek_salad_techcard()
         
-        if not techcard_id:
+        if not techcard_data:
             print("❌ Cannot proceed without tech card")
             return
         
@@ -418,7 +418,7 @@ class AltXLSXExportTester:
         
         # Step 2: Test Alt XLSX Export
         print("📊 STEP 2: Test Alt XLSX Export")
-        xlsx_content = await self.test_alt_xlsx_export(techcard_id)
+        xlsx_content = await self.test_alt_xlsx_export(techcard_data)
         
         if not xlsx_content:
             print("❌ Cannot proceed without XLSX export")
@@ -434,7 +434,7 @@ class AltXLSXExportTester:
         
         # Step 4: Compare with new ZIP export
         print("⚖️ STEP 4: Compare with New ZIP Export")
-        comparison = await self.compare_with_new_zip_export(techcard_id)
+        comparison = await self.compare_with_new_zip_export(techcard_data)
         
         print()
         
