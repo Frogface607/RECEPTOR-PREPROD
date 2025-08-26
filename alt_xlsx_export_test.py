@@ -80,19 +80,38 @@ class AltXLSXExportTester:
             
             if response.status_code == 200:
                 data = response.json()
-                techcard_id = data.get('id')
+                
+                # Handle different response structures
+                techcard_id = None
+                if 'id' in data:
+                    techcard_id = data.get('id')
+                elif 'card' in data and 'meta' in data['card']:
+                    techcard_id = data['card']['meta'].get('id')
                 
                 if techcard_id:
                     self.generated_techcard_id = techcard_id
                     
                     # Get ingredient count for analysis
-                    ingredients = data.get('ingredients', [])
+                    if 'ingredients' in data:
+                        ingredients = data.get('ingredients', [])
+                    elif 'card' in data:
+                        ingredients = data['card'].get('ingredients', [])
+                    else:
+                        ingredients = []
+                    
                     ingredient_count = len(ingredients)
+                    
+                    # Check article generation status
+                    article_status = "No articles"
+                    if 'card' in data:
+                        dish_article = data['card']['meta'].get('article')
+                        ingredient_articles = [ing.get('product_code') for ing in ingredients if ing.get('product_code')]
+                        article_status = f"Dish article: {dish_article}, Ingredient articles: {len(ingredient_articles)}"
                     
                     self.log_test(
                         "Generate Greek Salad TechCard",
                         True,
-                        f"Generated 'Салат Греческий' with ID: {techcard_id}, {ingredient_count} ingredients",
+                        f"Generated 'Салат Греческий' with ID: {techcard_id}, {ingredient_count} ingredients. {article_status}",
                         response_time
                     )
                     return techcard_id
@@ -100,7 +119,7 @@ class AltXLSXExportTester:
                     self.log_test(
                         "Generate Greek Salad TechCard",
                         False,
-                        f"No techcard ID in response: {data}",
+                        f"No techcard ID found in response structure",
                         response_time
                     )
                     return None
