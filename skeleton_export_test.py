@@ -184,7 +184,7 @@ class SkeletonExportTester:
             )
             return {}
 
-    async def test_3_zip_export(self) -> Optional[bytes]:
+    async def test_3_zip_export(self, preflight_result: Dict[str, Any] = None) -> Optional[bytes]:
         """Тест 3: ZIP экспорт для получения файлов скелетонов"""
         try:
             start_time = time.time()
