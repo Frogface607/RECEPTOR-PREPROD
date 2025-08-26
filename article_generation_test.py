@@ -411,7 +411,7 @@ class ArticleGenerationTester:
             export_response = await self.client.post(
                 f"{API_BASE}/export/zip",
                 json={
-                    "techcard_ids": [self.generated_techcard_id, second_techcard_id],
+                    "techcardIds": [self.generated_techcard_id, second_techcard_id],
                     "organization_id": self.organization_id
                 }
             )
