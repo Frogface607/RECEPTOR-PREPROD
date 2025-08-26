@@ -959,11 +959,31 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
             if not product_code and ingredient.skuId:
                 product_code = get_product_code_from_rms(ingredient.skuId, rms_service)
             
-            # Если это все еще GUID или нет кода, генерируем
+            # Если это все еще GUID или нет кода, используем ArticleAllocator для генерации реального артикула
             if not product_code or product_code == ingredient.skuId:
-                # Генерируем артикул если отсутствует код в iiko
-                ingredient_slug = generate_dish_slug(ingredient.name)
-                product_code = f"GENERATED_{ingredient_slug}"
+                try:
+                    # Используем ArticleAllocator для получения реального 5-digit артикула
+                    from ..integrations.article_allocator import ArticleAllocator
+                    allocator = ArticleAllocator()
+                    
+                    # Создаем уникальный ID для ингредиента
+                    ingredient_id = f"ingredient_{ingredient.name.lower().replace(' ', '_')}"
+                    allocated_result = allocator.allocate_articles([ingredient_id])
+                    
+                    if allocated_result.get('success') and allocated_result.get('allocated'):
+                        product_code = allocated_result['allocated'][0]['article']
+                        print(f"✅ Generated real article for {ingredient.name}: {product_code}")
+                    else:
+                        # Fallback to old placeholder system if ArticleAllocator fails
+                        ingredient_slug = generate_dish_slug(ingredient.name)
+                        product_code = f"GENERATED_{ingredient_slug}"
+                        print(f"⚠️ ArticleAllocator failed, using placeholder for {ingredient.name}: {product_code}")
+                        
+                except Exception as e:
+                    # Fallback to old placeholder system if ArticleAllocator fails
+                    print(f"⚠️ ArticleAllocator error for {ingredient.name}: {e}")
+                    ingredient_slug = generate_dish_slug(ingredient.name)
+                    product_code = f"GENERATED_{ingredient_slug}"
                 issues.append({
                     "type": "noProductCode",
                     "name": ingredient.name,
