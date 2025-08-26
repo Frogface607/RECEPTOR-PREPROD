@@ -101,7 +101,21 @@ class RebuildExportWizardTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    techcard_id = data.get("techcard", {}).get("id")
+                    # Try different possible response structures
+                    techcard_id = None
+                    
+                    # Structure 1: data.techcard.id
+                    if "techcard" in data and isinstance(data["techcard"], dict):
+                        techcard_id = data["techcard"].get("id")
+                    
+                    # Structure 2: data.card.meta.id
+                    elif "card" in data and isinstance(data["card"], dict):
+                        meta = data["card"].get("meta", {})
+                        techcard_id = meta.get("id")
+                    
+                    # Structure 3: data.id
+                    elif "id" in data:
+                        techcard_id = data["id"]
                     
                     if techcard_id:
                         generated_ids.append(techcard_id)
@@ -109,7 +123,7 @@ class RebuildExportWizardTester:
                                     f"ID: {techcard_id}", response_time)
                     else:
                         self.log_test(f"Generate TechCard: {dish_name}", False, 
-                                    "No techcard ID in response", response_time)
+                                    f"No techcard ID in response. Keys: {list(data.keys())}", response_time)
                 else:
                     self.log_test(f"Generate TechCard: {dish_name}", False, 
                                 f"HTTP {response.status_code}: {response.text[:200]}", response_time)
