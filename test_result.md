@@ -165,6 +165,18 @@ user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology
 CURRENT PHASE: Guard — dish-first rule - Critical safety guard to prevent iiko TTK rejection when dish articles don't exist in nomenclature. Implements strict blocking rules for TTK-only exports."
 
 backend:
+  - task: "CRITICAL DEBUG: Dish Skeleton & Article Issues"
+    implemented: true
+    working: false
+    file: "backend/receptor_agent/llm/pipeline.py, backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL ARTICLE GENERATION ISSUES IDENTIFIED: Conducted comprehensive debug testing of dish skeleton and article problems as specified in review request (100% test completion, 6/6 tests passed). ✅ SYSTEM WORKFLOW OPERATIONAL: Successfully generated tech card for 'Борщ украинский' (25.5s), saved to database with proper persistence, ran preflight check (1 missing dish, 8 missing products detected), exported ZIP with 3 XLSX files (15,311 bytes), all files contain real data (no mock content). ❌ CRITICAL ROOT CAUSES IDENTIFIED: 1) GENERATION PHASE: Dish article not generated (meta.article = null), all 8 ingredients missing product_code/article fields (product_code = null), 2) DATABASE PHASE: Articles not preserved during save operations, 3) PREFLIGHT PHASE: System correctly detects missing articles and generates skeleton files with proper 5-digit codes (10000-10008). ✅ SKELETON GENERATION WORKING: Product-Skeletons.xlsx contains 8 properly formatted articles, Dish-Skeletons.xlsx contains dish skeleton, iiko_TTK.xlsx generated but without articles in ingredient data. ✅ EXPORT PIPELINE FUNCTIONAL: ZIP export working correctly, guard system properly prevents TTK-only exports when articles missing, all XLSX files contain real content (41 dish names, 30+ product names). 🎯 CRITICAL ISSUE: Article generation logic in tech card creation pipeline is not populating article/product_code fields during generation phase. This is the root cause of empty skeleton files and missing articles in exported XLSX. Requires immediate fix in LLM pipeline or post-processing to assign articles to generated ingredients."
+
   - task: "FE Export Wizard: disable mocks and bind to /export/preflight + /export/zip (credit-safe)"
     implemented: true
     working: true
