@@ -1,37 +1,37 @@
 {
   "test_suite": "FE Export Wizard: bind to /export/*, anti-mock scan, and article-first XLSX validation",
   "total_tests": 7,
-  "passed_tests": 0,
-  "failed_tests": 7,
-  "success_rate": "0.0%",
+  "passed_tests": 3,
+  "failed_tests": 4,
+  "success_rate": "42.9%",
   "test_results": [
     {
       "test": "Generate Tech Card 1",
-      "status": "❌ FAIL",
-      "success": false,
-      "details": "No ID in response for Борщ украинский с говядиной",
-      "response_time": "28.531s"
+      "status": "✅ PASS",
+      "success": true,
+      "details": "ID: 6d1e3499-49ee-4c12-956f-57fa76f5dcac, Dish: Борщ украинский с говядиной",
+      "response_time": "29.285s"
     },
     {
       "test": "Generate Tech Card 2",
-      "status": "❌ FAIL",
-      "success": false,
-      "details": "No ID in response for Стейк из говядины с картофельным пюре",
-      "response_time": "11.791s"
+      "status": "✅ PASS",
+      "success": true,
+      "details": "ID: c72b35d6-7949-4264-b786-d9e85b2da190, Dish: Стейк из говядины с картофельным пюре",
+      "response_time": "21.224s"
     },
     {
       "test": "Preflight with Real IDs",
-      "status": "❌ FAIL",
-      "success": false,
-      "details": "No real tech card IDs available",
-      "response_time": "N/A"
+      "status": "✅ PASS",
+      "success": true,
+      "details": "TTK Date: 2025-08-26, Dish Skeletons: 2, Product Skeletons: 16",
+      "response_time": "0.119s"
     },
     {
       "test": "ZIP Export with Real IDs",
       "status": "❌ FAIL",
       "success": false,
-      "details": "No real tech card IDs available",
-      "response_time": "N/A"
+      "details": "HTTP 400: {\"detail\":{\"error\":\"PRE_FLIGHT_REQUIRED\",\"message\":\"Нельзя экспортировать ТК без создания блюд в iiko. Сначала импортируйте скелеты блюд.\",\"missing_dishes\":[{\"id\":\"dish_Борщ_украинский_с_говядиной\",\"n",
+      "response_time": "0.148s"
     },
     {
       "test": "Anti-Mock Scan",
@@ -63,10 +63,10 @@
     "/app/artifacts/xlsx_checks.json",
     "/app/artifacts/gen_runs.json"
   ],
-  "timestamp": "2025-08-26T09:28:01.014734",
+  "timestamp": "2025-08-26T09:30:17.413306",
   "acceptance_criteria_status": {
-    "real_endpoints_operational": false,
-    "preflight_functional": false,
+    "real_endpoints_operational": true,
+    "preflight_functional": true,
     "zip_export_working": false,
     "no_mock_content": false,
     "excel_formatting_correct": false,

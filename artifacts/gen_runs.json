@@ -1,6 +1,22 @@
 {
-  "generated_techcard_ids": [],
-  "generation_runs": [],
-  "total_generated": 0,
-  "timestamp": "2025-08-26T09:28:01.014040"
+  "generated_techcard_ids": [
+    "6d1e3499-49ee-4c12-956f-57fa76f5dcac",
+    "c72b35d6-7949-4264-b786-d9e85b2da190"
+  ],
+  "generation_runs": [
+    {
+      "dish_name": "Борщ украинский с говядиной",
+      "techcard_id": "6d1e3499-49ee-4c12-956f-57fa76f5dcac",
+      "generation_time": 29.285187482833862,
+      "status": "success"
+    },
+    {
+      "dish_name": "Стейк из говядины с картофельным пюре",
+      "techcard_id": "c72b35d6-7949-4264-b786-d9e85b2da190",
+      "generation_time": 21.22392725944519,
+      "status": "success"
+    }
+  ],
+  "total_generated": 2,
+  "timestamp": "2025-08-26T09:30:17.124005"
 }
