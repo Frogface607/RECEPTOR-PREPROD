@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "ttkDate": "2025-08-26",
+  "counts": {
+    "dishSkeletons": 1,
+    "productSkeletons": 8
+  },
+  "missing": {
+    "dishes": 1,
+    "products": 8
+  },
+  "response_time": 0.10772585868835449
+}

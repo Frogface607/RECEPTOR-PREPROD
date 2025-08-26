@@ -1,0 +1,61 @@
+{
+  "generated_techcard": {
+    "id": "5dae07af-2a6a-4e05-aeca-49ff0338aba5",
+    "name": null,
+    "ingredients_count": 8,
+    "generation_time": 17.004491090774536
+  },
+  "preflight": {
+    "status": "success",
+    "ttkDate": "2025-08-26",
+    "counts": {
+      "dishSkeletons": 1,
+      "productSkeletons": 8
+    },
+    "missing": {
+      "dishes": 1,
+      "products": 8
+    },
+    "response_time": 0.10772585868835449
+  },
+  "zip_export": {
+    "size_bytes": 15143,
+    "files": [
+      {
+        "name": "iiko_TTK.xlsx",
+        "size": 5934,
+        "compressed_size": 5380
+      },
+      {
+        "name": "Dish-Skeletons.xlsx",
+        "size": 5036,
+        "compressed_size": 4479
+      },
+      {
+        "name": "Product-Skeletons.xlsx",
+        "size": 5486,
+        "compressed_size": 4926
+      }
+    ],
+    "file_count": 3,
+    "response_time": 0.07159209251403809
+  },
+  "reconcile_products": {
+    "product_skeletons_found": true,
+    "ttk_file_found": true,
+    "generated_content_found": [],
+    "no_generated_content": true
+  },
+  "dish_skeletons": {},
+  "excel_invariants": {
+    "files_analyzed": [
+      "iiko_TTK.xlsx",
+      "Dish-Skeletons.xlsx",
+      "Product-Skeletons.xlsx"
+    ],
+    "total_cells_checked": 32,
+    "properly_formatted": 24,
+    "compliance_rate": 0.75,
+    "meets_requirements": false
+  }
+}
