@@ -79,8 +79,11 @@ class DishSkeletonDebugTester:
             # Generate tech card for Борщ украинский
             generate_url = f"{API_BASE}/techcards.v2/generate"
             payload = {
-                "dish_name": "Борщ украинский",
-                "organization_id": self.organization_id
+                "name": "Борщ украинский",
+                "cuisine": "русская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             print(f"🔄 Generating tech card: {payload['dish_name']}")
