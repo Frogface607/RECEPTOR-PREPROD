@@ -244,8 +244,7 @@ class PastaBologneseTester:
             response = await self.client.post(
                 f"{API_BASE}/techcards.v2/export/preflight-check",
                 json={
-                    "techcard_ids": [self.generated_techcard_id],
-                    "organization_id": self.organization_id
+                    "techcards": [self.generated_techcard_id]
                 }
             )
             
