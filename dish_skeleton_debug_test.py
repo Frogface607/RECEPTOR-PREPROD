@@ -271,7 +271,7 @@ class DishSkeletonDebugTester:
             # Export ZIP
             export_url = f"{API_BASE}/export/zip"
             payload = {
-                "techcard_ids": [self.generated_techcard_id],
+                "techcardIds": [self.generated_techcard_id],
                 "organization_id": self.organization_id,
                 "operational_rounding": True
             }
