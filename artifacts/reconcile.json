@@ -1,39 +1,10 @@
 {
-  "ttk_articles": [],
-  "skeleton_articles": [
-    "10018",
-    "10024",
-    "10020",
-    "10014",
-    "10017",
-    "10022",
-    "10023",
-    "10025",
-    "10019",
-    "10021",
-    "10026",
-    "10016",
-    "10015"
-  ],
-  "matched_articles": [],
-  "ttk_only_articles": [],
-  "skeleton_only_articles": [
-    "10024",
-    "10020",
-    "10014",
-    "10017",
-    "10022",
-    "10015",
-    "10023",
-    "10025",
-    "10019",
-    "10021",
-    "10026",
-    "10016",
-    "10018"
-  ],
-  "total_ttk_articles": 0,
-  "total_skeleton_articles": 13,
-  "matched_count": 0,
-  "timestamp": "2025-08-26T09:31:18.207143"
+  "expected_dish_articles": [],
+  "expected_product_articles": [],
+  "actual_dish_articles": [],
+  "actual_product_articles": [],
+  "dish_match": true,
+  "product_match": true,
+  "generated_count": 0,
+  "overall_success": true
 }
