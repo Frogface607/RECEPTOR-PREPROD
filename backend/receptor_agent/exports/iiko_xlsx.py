@@ -906,10 +906,24 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         logger.error(f"working_card.meta: {working_card.meta}")
         dish_title = 'Unknown Dish'
     
+    # Get preflight result for article mapping
+    preflight_result = export_options.get('preflight_result')
+    
     dish_code = dish_codes_mapping.get(dish_title)
     if not dish_code:
         meta_dict = working_card.meta.model_dump() if hasattr(working_card.meta, 'model_dump') else working_card.meta
         dish_code = meta_dict.get('dish_code') if isinstance(meta_dict, dict) else None
+    
+    # Check preflight result for dish article
+    if not dish_code and preflight_result:
+        # Look for dish article in preflight missing dishes
+        missing_dishes = preflight_result.get('missing', {}).get('dishes', [])
+        for dish in missing_dishes:
+            if dish.get('name') == dish_title:
+                dish_code = dish.get('article')
+                logger.info(f"Using preflight dish article for '{dish_title}': {dish_code}")
+                break
+    
     if not dish_code:
         try:
             # Используем ArticleAllocator для получения реального 5-digit артикула блюда
