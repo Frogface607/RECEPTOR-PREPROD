@@ -911,8 +911,29 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
         meta_dict = working_card.meta.model_dump() if hasattr(working_card.meta, 'model_dump') else working_card.meta
         dish_code = meta_dict.get('dish_code') if isinstance(meta_dict, dict) else None
     if not dish_code:
-        dish_slug = generate_dish_slug(dish_title)
-        dish_code = f"DISH_{dish_slug}"
+        try:
+            # Используем ArticleAllocator для получения реального 5-digit артикула блюда
+            from ..integrations.article_allocator import ArticleAllocator
+            allocator = ArticleAllocator()
+            
+            # Создаем уникальный ID для блюда
+            dish_id = f"dish_{dish_title.lower().replace(' ', '_')}"
+            allocated_result = allocator.allocate_articles([dish_id])
+            
+            if allocated_result.get('success') and allocated_result.get('allocated'):
+                dish_code = allocated_result['allocated'][0]['article']
+                print(f"✅ Generated real dish article: {dish_code}")
+            else:
+                # Fallback to old placeholder system if ArticleAllocator fails
+                dish_slug = generate_dish_slug(dish_title)
+                dish_code = f"DISH_{dish_slug}"
+                print(f"⚠️ ArticleAllocator failed for dish, using placeholder: {dish_code}")
+                
+        except Exception as e:
+            # Fallback to old placeholder system if ArticleAllocator fails
+            print(f"⚠️ ArticleAllocator error for dish: {e}")
+            dish_slug = generate_dish_slug(dish_title)
+            dish_code = f"DISH_{dish_slug}"
     
     dish_name = dish_title
     
