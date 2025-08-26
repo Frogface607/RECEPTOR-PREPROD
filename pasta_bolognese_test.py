@@ -86,19 +86,24 @@ class PastaBologneseTester:
             
             if response.status_code == 200:
                 data = response.json()
-                self.generated_techcard_id = data.get('id')
+                print(f"🔍 Full response: {json.dumps(data, indent=2, ensure_ascii=False)}")
+                
+                # Try different ways to get the ID
+                self.generated_techcard_id = data.get('id') or data.get('card', {}).get('id') if data.get('card') else None
                 
                 # Extract basic info
                 dish_article = None
                 ingredients_count = 0
                 ingredients_with_codes = 0
                 
-                if 'meta' in data and isinstance(data['meta'], dict):
-                    dish_article = data['meta'].get('article')
+                card_data = data.get('card') or data
                 
-                if 'ingredients' in data and isinstance(data['ingredients'], list):
-                    ingredients_count = len(data['ingredients'])
-                    for ingredient in data['ingredients']:
+                if 'meta' in card_data and isinstance(card_data['meta'], dict):
+                    dish_article = card_data['meta'].get('article')
+                
+                if 'ingredients' in card_data and isinstance(card_data['ingredients'], list):
+                    ingredients_count = len(card_data['ingredients'])
+                    for ingredient in card_data['ingredients']:
                         if isinstance(ingredient, dict) and ingredient.get('product_code'):
                             ingredients_with_codes += 1
                 
@@ -108,6 +113,7 @@ class PastaBologneseTester:
                 details += f"Dish article: {dish_article or 'NULL'}, "
                 details += f"Ingredients: {ingredients_count}, "
                 details += f"With codes: {ingredients_with_codes}"
+                details += f", Status: {data.get('status', 'unknown')}"
                 
                 self.log_test(
                     "Generate Паста Болоньезе Tech Card",
