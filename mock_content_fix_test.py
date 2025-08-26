@@ -93,10 +93,17 @@ class MockContentFixTester:
                 print(f"DEBUG: Status: {data.get('status')}")
                 if data.get('card'):
                     print(f"DEBUG: Card keys: {list(data['card'].keys())}")
+                    if 'meta' in data['card']:
+                        print(f"DEBUG: Meta keys: {list(data['card']['meta'].keys())}")
                 
                 # Check if generation was successful
                 if data.get('status') in ['success', 'draft'] and data.get('card'):
-                    techcard_id = data['card'].get('id')
+                    # Try to get ID from meta field
+                    techcard_id = None
+                    if 'meta' in data['card'] and 'id' in data['card']['meta']:
+                        techcard_id = data['card']['meta']['id']
+                    elif 'id' in data['card']:
+                        techcard_id = data['card']['id']
                     
                     if techcard_id:
                         self.log_test(
@@ -110,7 +117,7 @@ class MockContentFixTester:
                         self.log_test(
                             f"Генерация техкарты '{dish_name}'",
                             False,
-                            f"ID не найден в card. Card: {data.get('card', {}).keys() if data.get('card') else 'None'}",
+                            f"ID не найден ни в card, ни в meta. Meta: {data['card'].get('meta', {}).keys() if data.get('card', {}).get('meta') else 'None'}",
                             response_time
                         )
                         return None
