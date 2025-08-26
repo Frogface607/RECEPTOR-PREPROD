@@ -72,8 +72,11 @@ class FinalArticleValidationTester:
             
             # Generate tech card with realistic Russian dish name
             payload = {
-                "dish_name": "Рыба запеченная с овощами",
-                "organization_id": self.organization_id
+                "name": "Рыба запеченная с овощами",
+                "cuisine": "русская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             response = await self.client.post(
