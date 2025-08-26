@@ -94,16 +94,8 @@ class PreflightOrchestrator:
             
             techcards = []
             
-            # Handle special case for frontend integration
-            if techcard_ids == ['current'] or 'current' in techcard_ids:
-                # For testing and frontend integration, create a mock techcard
-                # In production, this would load from session/context
-                mock_techcard = self._create_mock_techcard()
-                techcards.append(mock_techcard)
-                logger.info("Using mock techcard for 'current' request")
-            else:
-                # Load specific techcards by ID
-                for techcard_id in techcard_ids:
+            # Load specific techcards by ID
+            for techcard_id in techcard_ids:
                     try:
                         # Try multiple possible ID fields
                         doc = (techcards_collection.find_one({"_id": techcard_id}) or 
