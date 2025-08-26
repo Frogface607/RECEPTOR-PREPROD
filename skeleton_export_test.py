@@ -363,10 +363,24 @@ class SkeletonExportTester:
             # Connect to MongoDB and check tech card
             client = MongoClient(MONGO_URL)
             db = client[DB_NAME]
-            techcards_collection = db.techcards_v2
             
-            # Find the generated tech card
-            techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
+            # Try different collection names
+            collections_to_try = ['techcards_v2', 'techcards', 'tech_cards']
+            techcard = None
+            
+            for collection_name in collections_to_try:
+                collection = db[collection_name]
+                # Try different ID field names
+                for id_field in ['meta.id', 'id', '_id']:
+                    if id_field == 'meta.id':
+                        techcard = collection.find_one({"meta.id": self.generated_techcard_id})
+                    else:
+                        techcard = collection.find_one({id_field: self.generated_techcard_id})
+                    
+                    if techcard:
+                        break
+                if techcard:
+                    break
             
             if techcard:
                 name = techcard.get('name', 'Unknown')
