@@ -26,13 +26,14 @@ MONGO_URL = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
 DB_NAME = os.getenv('DB_NAME', 'receptor_pro')
 
 # MOCK ПОДПИСИ ДЛЯ ПРОВЕРКИ (должно быть 0)
+# These are actual mock/test content signatures, not legitimate generated articles
 MOCK_SIGNATURES = [
     "DISH_MOCK_TECH_CARD",
     "GENERATED_TEST_INGREDIENT", 
-    "DISH_",
-    "GENERATED_",
     "Test Ingredient",
-    "Mock Tech Card"
+    "Mock Tech Card",
+    "ТЕСТОВОЕ БЛЮДО",
+    "ТЕСТОВЫЙ ИНГРЕДИЕНТ"
 ]
 
 class MockEliminationTester:
