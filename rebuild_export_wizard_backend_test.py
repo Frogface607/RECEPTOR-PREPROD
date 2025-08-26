@@ -219,12 +219,27 @@ class RebuildExportWizardTester:
             self.log_test("ZIP Export", False, "No generated techcard IDs available", 0.0)
             return None
         
+        # Load preflight result
+        preflight_path = "/app/artifacts/preflight.json"
+        if not os.path.exists(preflight_path):
+            self.log_test("ZIP Export", False, "Preflight result not available", 0.0)
+            return None
+        
+        try:
+            with open(preflight_path, 'r', encoding='utf-8') as f:
+                preflight_result = json.load(f)
+        except Exception as e:
+            self.log_test("ZIP Export", False, f"Failed to load preflight result: {str(e)}", 0.0)
+            return None
+        
         try:
             start_time = time.time()
             
             payload = {
                 "techcardIds": self.generated_techcard_ids,
-                "organization_id": self.organization_id
+                "organization_id": self.organization_id,
+                "preflight_result": preflight_result,
+                "operational_rounding": True
             }
             
             response = await self.client.post(f"{API_BASE}/export/zip", json=payload)
