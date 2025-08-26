@@ -278,11 +278,20 @@ class MockEliminationTester:
                 )
                 return False
             
+            if not self.preflight_result:
+                self.log_test(
+                    "Run ZIP Export with Real ID",
+                    False,
+                    "No preflight result available"
+                )
+                return False
+            
             export_url = f"{API_BASE}/export/zip"
             
             payload = {
                 "techcardIds": [self.generated_techcard_id],
-                "organization_id": self.organization_id
+                "organization_id": self.organization_id,
+                "preflight_result": self.preflight_result
             }
             
             response = await self.client.post(export_url, json=payload)
