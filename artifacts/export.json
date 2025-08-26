@@ -1,15 +1,6 @@
 {
-  "techcard_ids": [
-    "89934c7b-04f7-4d90-818c-eab44e932b96",
-    "d8729524-7d3b-493f-94b4-5386ac67f4bd"
-  ],
-  "zip_size_bytes": 15518,
-  "zip_files": [
-    "iiko_TTK.xlsx",
-    "Dish-Skeletons.xlsx",
-    "Product-Skeletons.xlsx"
-  ],
-  "content_type": "application/zip",
-  "response_time": 0.7193930149078369,
-  "timestamp": "2025-08-26T09:31:18.165780"
+  "zipUrl": "/app/artifacts/export.zip",
+  "zipSize": 15556,
+  "contentType": "application/zip",
+  "timestamp": "2025-08-26T10:11:57.838131"
 }

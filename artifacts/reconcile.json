@@ -1,8 +1,17 @@
 {
   "expected_dish_articles": [
+    "10007",
     "10000"
   ],
   "expected_product_articles": [
+    "10008",
+    "10009",
+    "10010",
+    "10011",
+    "10012",
+    "10013",
+    "10014",
+    "10015",
     "10001",
     "10002",
     "10003",
@@ -11,9 +20,24 @@
     "10006"
   ],
   "actual_dish_articles": [],
-  "actual_product_articles": [],
+  "actual_product_articles": [
+    "10008",
+    "10009",
+    "10010",
+    "10011",
+    "10012",
+    "10013",
+    "10014",
+    "10015",
+    "10001",
+    "10002",
+    "10003",
+    "10004",
+    "10005",
+    "10006"
+  ],
   "dish_match": false,
-  "product_match": false,
+  "product_match": true,
   "generated_count": 0,
   "overall_success": false
 }

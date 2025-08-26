@@ -2,25 +2,27 @@
 
 ## Overall Statistics
 - Total Tests: 7
-- Passed: 3
-- Failed: 4
-- Success Rate: 42.9%
+- Passed: 4
+- Failed: 3
+- Success Rate: 57.1%
 
 ## Generated Tech Cards
-- c2af1b0f-a9cd-4c71-8c76-b3a3fa9eba7d
+- 9c20c5c2-f0e8-4ebb-ba96-6e5d17f3a93d
+- 022df762-8edd-4930-991c-489d460733ba
 
 ## Test Results
-- ❌ FAIL: Generate TechCard: Борщ украинский с говядиной (N/A) - Exception: 
-- ✅ PASS: Generate TechCard: Стейк из говядины с картофельным пюре (15.101s) - ID: c2af1b0f-a9cd-4c71-8c76-b3a3fa9eba7d
-- ✅ PASS: Preflight Check (0.145s) - TTK Date: 2025-08-26, Dish Skeletons: 1, Product Skeletons: 6
-- ❌ FAIL: ZIP Export (0.057s) - HTTP 400: {"detail":{"error":"PRE_FLIGHT_REQUIRED","message":"Нельзя экспортировать ТК без создания блюд в iiko. Сначала импортируйте скелеты блюд.","missing_dishes":[{"id":"dish_Стейк_из_говядины_с_картофельны
+- ✅ PASS: Generate TechCard: Борщ украинский с говядиной (28.047s) - ID: 9c20c5c2-f0e8-4ebb-ba96-6e5d17f3a93d
+- ✅ PASS: Generate TechCard: Стейк из говядины с картофельным пюре (14.295s) - ID: 022df762-8edd-4930-991c-489d460733ba
+- ✅ PASS: Preflight Check (0.080s) - TTK Date: 2025-08-26, Dish Skeletons: 2, Product Skeletons: 14
+- ✅ PASS: ZIP Export (0.645s) - ZIP Size: 15556 bytes, Content-Type: application/zip
 - ❌ FAIL: Anti-Mock Scan (N/A) - Found 8 mock signatures
-- ✅ PASS: Excel Invariants (N/A) - No articles found to validate
-- ❌ FAIL: TTK↔Skeletons Reconcile (N/A) - Dish articles match: False, Product articles match: False, GENERATED_* count: 0
+- ❌ FAIL: Excel Invariants (N/A) - Articles: 14, Text format: 14 (100.0%), Leading zeros: 0 (0.0%)
+- ❌ FAIL: TTK↔Skeletons Reconcile (N/A) - Dish articles match: False, Product articles match: True, GENERATED_* count: 0
 
 ## Artifacts Generated
 - gen_runs.json
 - preflight.json
+- export.json
 - mock_scan.json
 - xlsx_checks.json
 - reconcile.json

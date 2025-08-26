@@ -3,58 +3,58 @@
     {
       "file": "iiko_TTK.xlsx",
       "sheet": "ТТК",
-      "cell": "A2",
-      "value": "DISH_MOCK_TECH_CARD",
-      "pattern": "DISH_MOCK_TECH_CARD"
-    },
-    {
-      "file": "iiko_TTK.xlsx",
-      "sheet": "ТТК",
       "cell": "C2",
-      "value": "GENERATED_TEST_INGREDIENT",
-      "pattern": "GENERATED_TEST_INGREDIENT"
-    },
-    {
-      "file": "iiko_TTK.xlsx",
-      "sheet": "ТТК",
-      "cell": "C2",
-      "value": "GENERATED_TEST_INGREDIENT",
-      "pattern": "GENERATED_.*"
-    },
-    {
-      "file": "iiko_TTK.xlsx",
-      "sheet": "ТТК",
-      "cell": "C2",
-      "value": "GENERATED_TEST_INGREDIENT",
-      "pattern": "TEST_INGREDIENT"
-    },
-    {
-      "file": "iiko_TTK.xlsx",
-      "sheet": "ТТК",
-      "cell": "A3",
-      "value": "DISH_MOCK_TECH_CARD",
-      "pattern": "DISH_MOCK_TECH_CARD"
-    },
-    {
-      "file": "iiko_TTK.xlsx",
-      "sheet": "ТТК",
-      "cell": "C3",
-      "value": "GENERATED_TEST_INGREDIENT_2",
-      "pattern": "GENERATED_TEST_INGREDIENT"
-    },
-    {
-      "file": "iiko_TTK.xlsx",
-      "sheet": "ТТК",
-      "cell": "C3",
-      "value": "GENERATED_TEST_INGREDIENT_2",
+      "value": "GENERATED_ГОВЯДИНА",
       "pattern": "GENERATED_.*"
     },
     {
       "file": "iiko_TTK.xlsx",
       "sheet": "ТТК",
       "cell": "C3",
-      "value": "GENERATED_TEST_INGREDIENT_2",
-      "pattern": "TEST_INGREDIENT"
+      "value": "GENERATED_СВЕКЛА",
+      "pattern": "GENERATED_.*"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C4",
+      "value": "GENERATED_КАРТОФЕЛЬ",
+      "pattern": "GENERATED_.*"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C5",
+      "value": "GENERATED_МОРКОВЬ",
+      "pattern": "GENERATED_.*"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C6",
+      "value": "GENERATED_КАПУСТА",
+      "pattern": "GENERATED_.*"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C7",
+      "value": "GENERATED_ЛУК",
+      "pattern": "GENERATED_.*"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C8",
+      "value": "GENERATED_ТОМАТНАЯ_ПАСТА",
+      "pattern": "GENERATED_.*"
+    },
+    {
+      "file": "iiko_TTK.xlsx",
+      "sheet": "ТТК",
+      "cell": "C9",
+      "value": "GENERATED_ВОДА",
+      "pattern": "GENERATED_.*"
     }
   ],
   "mock_count": 8,

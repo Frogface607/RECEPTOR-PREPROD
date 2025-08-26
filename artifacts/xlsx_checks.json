@@ -1,10 +1,151 @@
 {
-  "article_checks": [],
+  "article_checks": [
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A2",
+      "value": "10008",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A3",
+      "value": "10009",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A4",
+      "value": "10010",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A5",
+      "value": "10011",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A6",
+      "value": "10012",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A7",
+      "value": "10013",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A8",
+      "value": "10014",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A9",
+      "value": "10015",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A10",
+      "value": "10001",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A11",
+      "value": "10002",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A12",
+      "value": "10003",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A13",
+      "value": "10004",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A14",
+      "value": "10005",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    },
+    {
+      "file": "Product-Skeletons.xlsx",
+      "sheet": "Sheet",
+      "cell": "A15",
+      "value": "10006",
+      "is_text_format": true,
+      "has_leading_zeros": false,
+      "number_format": "@",
+      "data_type": "s"
+    }
+  ],
   "summary": {
-    "total_articles": 0,
-    "text_formatted": 0,
+    "total_articles": 14,
+    "text_formatted": 14,
     "with_leading_zeros": 0,
-    "text_percentage": 0,
-    "zeros_percentage": 0
+    "text_percentage": 100.0,
+    "zeros_percentage": 0.0
   }
 }
