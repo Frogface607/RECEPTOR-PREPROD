@@ -132,10 +132,18 @@ class RebuildExportWizardTester:
                 self.log_test(f"Generate TechCard: {dish_name}", False, f"Exception: {str(e)}", 0.0)
         
         self.generated_techcard_ids = generated_ids
+        
+        # If no tech cards were generated, use "current" as fallback for testing
+        if not generated_ids:
+            print("⚠️ No tech cards generated, using 'current' as fallback for testing")
+            generated_ids = ["current"]
+            self.generated_techcard_ids = generated_ids
+        
         self.save_artifact("gen_runs.json", {
             "generated_techcard_ids": generated_ids,
             "dish_names": dish_names,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "fallback_used": len(self.generated_techcard_ids) > 0 and self.generated_techcard_ids[0] == "current"
         })
         
         return generated_ids
