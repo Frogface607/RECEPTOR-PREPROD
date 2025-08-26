@@ -70,7 +70,11 @@ class ZipExportValidationTester:
             
             if response.status_code == 200:
                 data = response.json()
-                techcard_id = data.get("id")
+                print(f"DEBUG: Response data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+                print(f"DEBUG: Response data: {json.dumps(data, indent=2, ensure_ascii=False)[:500]}...")
+                
+                # Try different possible ID fields
+                techcard_id = data.get("id") or data.get("techcard_id") or data.get("uuid")
                 
                 if techcard_id:
                     self.generated_techcard_ids.append(techcard_id)
@@ -79,7 +83,7 @@ class ZipExportValidationTester:
                     return techcard_id
                 else:
                     self.log_test(f"Generate TechCard: {dish_name}", False, 
-                                "No ID in response", response_time)
+                                f"No ID in response. Keys: {list(data.keys()) if isinstance(data, dict) else 'Not dict'}", response_time)
                     return None
             else:
                 self.log_test(f"Generate TechCard: {dish_name}", False, 
