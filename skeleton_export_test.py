@@ -468,12 +468,12 @@ class SkeletonExportTester:
         
         # Test sequence
         test_sequence = [
-            ("1. Генерация техкарты", self.test_1_generate_techcard()),
-            ("2. Preflight проверка", self.test_2_preflight_check()),
-            ("3. ZIP экспорт", self.test_3_zip_export()),
-            ("4. Проверка содержимого скелетонов", None),  # Will be called with ZIP content
-            ("5. Проверка техкарты в БД", self.test_5_techcard_database_verification()),
-            ("6. Система выделения артикулов", self.test_6_article_allocation_workflow())
+            ("1. Генерация техкарты", "test_1_generate_techcard"),
+            ("2. Preflight проверка", "test_2_preflight_check"),
+            ("3. ZIP экспорт", "test_3_zip_export"),
+            ("4. Проверка содержимого скелетонов", "test_4_skeleton_content_validation"),
+            ("5. Проверка техкарты в БД", "test_5_techcard_database_verification"),
+            ("6. Система выделения артикулов", "test_6_article_allocation_workflow")
         ]
         
         zip_content = None
