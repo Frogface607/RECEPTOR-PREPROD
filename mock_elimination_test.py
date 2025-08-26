@@ -43,6 +43,7 @@ class MockEliminationTester:
         self.test_results = []
         self.organization_id = "test-org-mock-elimination"
         self.generated_techcard_id = None
+        self.preflight_result = None
         
     async def __aenter__(self):
         return self
