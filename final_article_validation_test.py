@@ -148,18 +148,10 @@ class FinalArticleValidationTester:
             return False
             
         try:
-            # First check if we have the techcard data directly from generation
+            # Use the techcard data directly from generation since we have it
             if hasattr(self, 'generated_techcard_data'):
                 techcard = self.generated_techcard_data
-            else:
-                # Get tech card from database
-                mongo_client = MongoClient(MONGO_URL)
-                db = mongo_client[DB_NAME]
-                techcards_collection = db.techcards_v2
                 
-                techcard = techcards_collection.find_one({"id": self.generated_techcard_id})
-            
-            if techcard:
                 # Check for article in multiple possible locations
                 meta = techcard.get('meta', {})
                 dish_article = meta.get('article') or techcard.get('article')
@@ -184,7 +176,7 @@ class FinalArticleValidationTester:
                 self.log_test(
                     "Проверка dish.article в meta",
                     False,
-                    "Техкарта не найдена"
+                    "Данные техкарты недоступны"
                 )
                 return False
                 
