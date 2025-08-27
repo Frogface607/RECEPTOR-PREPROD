@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-08-27T20:07:19.102280",
+  "operation": "DISH_SKELETONS_SUCCESS",
+  "total_dishes": 1,
+  "all_types_valid": true,
+  "dishes": [
+    {
+      "name": "Борщ украинский с говядиной и овощами",
+      "code": "10000",
+      "type": "DISH",
+      "unit": "порц",
+      "yield_g": 330.0
+    }
+  ],
+  "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
+}

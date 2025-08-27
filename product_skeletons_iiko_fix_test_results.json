@@ -1,0 +1,250 @@
+{
+  "test_results": [
+    {
+      "test": "Tech Card Generation for Skeletons Testing",
+      "success": true,
+      "details": "Generated 'Борщ украинский с говядиной и овощами' (ID: a754bd48...) with 7 ingredients",
+      "timestamp": "2025-08-27T20:07:18.972840",
+      "data": {
+        "techcard_id": "a754bd48-5893-424a-9b2e-556a8b8db684",
+        "dish_name": "Борщ украинский с говядиной и овощами",
+        "ingredients_count": 7
+      }
+    },
+    {
+      "test": "Preflight Check for Missing Products",
+      "success": true,
+      "details": "Preflight successful: TTK date=2025-08-27, Missing dishes=1, Missing products=7",
+      "timestamp": "2025-08-27T20:07:19.060859",
+      "data": {
+        "ttk_date": "2025-08-27",
+        "missing_dishes": 1,
+        "missing_products": 7
+      }
+    },
+    {
+      "test": "ZIP Export with Skeletons",
+      "success": true,
+      "details": "ZIP export successful (15118 bytes) with files: ['iiko_TTK.xlsx', 'Dish-Skeletons.xlsx', 'Product-Skeletons.xlsx']",
+      "timestamp": "2025-08-27T20:07:19.139412",
+      "data": {
+        "zip_size": 15118,
+        "files_count": 3,
+        "has_all_required_files": true
+      }
+    },
+    {
+      "test": "Product Skeletons Type Validation (GOODS)",
+      "success": true,
+      "details": "File readable: True, Has type column: True, Contains GOODS: True, All type values: ['GOODS']",
+      "timestamp": "2025-08-27T20:07:19.139496",
+      "data": {
+        "file_readable": true,
+        "has_type_column": true,
+        "has_goods_type": true,
+        "invalid_types": [],
+        "unique_type_values": [
+          "GOODS"
+        ]
+      }
+    },
+    {
+      "test": "Dish Skeletons Type Validation (DISH)",
+      "success": true,
+      "details": "File readable: True, Has type column: True, Contains DISH: True, All type values: ['DISH']",
+      "timestamp": "2025-08-27T20:07:19.139517",
+      "data": {
+        "file_readable": true,
+        "has_type_column": true,
+        "has_dish_type": true,
+        "invalid_types": [],
+        "unique_type_values": [
+          "DISH"
+        ]
+      }
+    },
+    {
+      "test": "ALT Export Functionality",
+      "success": true,
+      "details": "ALT export generated Excel file (5851 bytes), has articles: True, articles valid: True",
+      "timestamp": "2025-08-27T20:07:19.202312",
+      "data": {
+        "file_size": 5851,
+        "has_articles": true,
+        "articles_valid": true,
+        "sample_articles": [
+          "10010",
+          "10011",
+          "10010",
+          "10012",
+          "10010",
+          "10013",
+          "10010",
+          "10014",
+          "10010",
+          "10015"
+        ]
+      }
+    },
+    {
+      "test": "Artifacts Creation",
+      "success": true,
+      "details": "Found: ['product_skeletons_final.json', 'dish_skeletons_final.json'], Missing: ['type_errors.json'], Additional: ['xlsx_checks.json', 'test_results.json', 'reconcile.json', 'export.json', 'gen_runs.json', 'summary.json', 'preflight.json', 'validation.json', 'mock_scan.json']",
+      "timestamp": "2025-08-27T20:07:19.202696",
+      "data": {
+        "artifacts_found": 2,
+        "artifacts_missing": 1,
+        "additional_artifacts": 9
+      }
+    }
+  ],
+  "artifacts": {
+    "generated_techcard_1": {
+      "id": "a754bd48-5893-424a-9b2e-556a8b8db684",
+      "name": "Борщ украинский с говядиной и овощами",
+      "ingredients_count": 7,
+      "dish_article": null,
+      "generation_time": 13684.0
+    },
+    "preflight_result": {
+      "ttk_date": "2025-08-27",
+      "missing_dishes_count": 1,
+      "missing_products_count": 7,
+      "missing_dishes": [
+        {
+          "id": "dish_Борщ_украинский_с_говядиной_и_овощами",
+          "name": "Борщ украинский с говядиной и овощами",
+          "article": "10000",
+          "type": "dish",
+          "unit": "порц",
+          "yield": 330.0
+        }
+      ],
+      "missing_products": [
+        {
+          "id": "product_говядина",
+          "name": "говядина",
+          "article": "10001",
+          "type": "product",
+          "unit": "g",
+          "group": "Мясо и рыба"
+        },
+        {
+          "id": "product_картофель",
+          "name": "картофель",
+          "article": "10002",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_морковь",
+          "name": "морковь",
+          "article": "10003",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_капуста",
+          "name": "капуста",
+          "article": "10004",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_лук",
+          "name": "лук",
+          "article": "10005",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_томатная_паста",
+          "name": "томатная паста",
+          "article": "10006",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        },
+        {
+          "id": "product_вода",
+          "name": "вода",
+          "article": "10007",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        }
+      ]
+    },
+    "zip_export": {
+      "zip_size_bytes": 15118,
+      "files_in_zip": [
+        "iiko_TTK.xlsx",
+        "Dish-Skeletons.xlsx",
+        "Product-Skeletons.xlsx"
+      ],
+      "has_product_skeletons": true,
+      "has_dish_skeletons": true,
+      "has_ttk_file": true
+    },
+    "alt_export": {
+      "file_size_bytes": 5851,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "excel_analysis": {
+        "file_readable": true,
+        "has_articles": true,
+        "articles_valid": true,
+        "sample_articles": [
+          "10010",
+          "10011",
+          "10010",
+          "10012",
+          "10010",
+          "10013",
+          "10010",
+          "10014",
+          "10010",
+          "10015"
+        ],
+        "total_rows": 7
+      }
+    },
+    "artifacts_check": {
+      "expected_artifacts": [
+        "type_errors.json",
+        "product_skeletons_final.json",
+        "dish_skeletons_final.json"
+      ],
+      "artifacts_found": [
+        "product_skeletons_final.json",
+        "dish_skeletons_final.json"
+      ],
+      "artifacts_missing": [
+        "type_errors.json"
+      ],
+      "additional_artifacts": [
+        "xlsx_checks.json",
+        "test_results.json",
+        "reconcile.json",
+        "export.json",
+        "gen_runs.json",
+        "summary.json",
+        "preflight.json",
+        "validation.json",
+        "mock_scan.json"
+      ]
+    }
+  },
+  "timestamp": "2025-08-27T20:07:19.202811",
+  "test_type": "Product_Skeletons_iiko_Import_Fix_Testing",
+  "generated_techcards": [
+    {
+      "id": "a754bd48-5893-424a-9b2e-556a8b8db684",
+      "name": "Борщ украинский с говядиной и овощами",
+      "ingredients_count": 7
+    }
+  ]
+}
