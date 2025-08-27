@@ -103,7 +103,7 @@ class ProductArticleReconcileTest:
                 return {}
             
             gen_data = gen_response.json()
-            techcard_id = gen_data.get("id")
+            techcard_id = gen_data.get("card", {}).get("meta", {}).get("id")
             
             if not techcard_id:
                 self.log_test("Step 1.1: TechCard Generation", False, "No techcard ID returned")
