@@ -8,7 +8,7 @@ import json
 import time
 
 # Configuration
-BACKEND_URL = "https://menu-designer-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://dev-connect-3.preview.emergentagent.com/api"
 
 def main():
     """Test the FINANCES feature with detailed output"""

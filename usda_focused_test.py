@@ -11,7 +11,7 @@ import os
 import sqlite3
 
 # Backend URL from environment
-BACKEND_URL = "https://menu-designer-ai.preview.emergentagent.com"
+BACKEND_URL = "https://dev-connect-3.preview.emergentagent.com"
 
 def test_usda_provider_direct():
     """Test USDA Provider directly"""

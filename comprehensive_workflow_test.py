@@ -21,7 +21,7 @@ import openpyxl
 from pymongo import MongoClient
 
 # Test Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menu-designer-ai.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dev-connect-3.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1"
 MONGO_URL = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
 DB_NAME = os.getenv('DB_NAME', 'receptor_pro')

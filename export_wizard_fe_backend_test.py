@@ -23,7 +23,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 # Test Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menu-designer-ai.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dev-connect-3.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1"
 
 class ExportWizardFETester:
