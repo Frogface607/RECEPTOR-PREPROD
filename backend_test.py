@@ -391,7 +391,7 @@ class IikoMassConversionTester:
             # Сначала запускаем preflight для создания скелетонов
             preflight_response = requests.post(
                 f"{API_BASE}/v1/export/preflight",
-                json={"techcard_ids": [techcard_id]},
+                json={"techcardIds": [techcard_id]},
                 timeout=30
             )
             
