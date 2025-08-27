@@ -140,7 +140,7 @@ class CriticalExportTester:
             
             response = self.session.post(
                 f"{API_BASE}/v1/export/preflight",
-                json={"techcard_ids": techcard_ids},
+                json={"techcardIds": techcard_ids},
                 timeout=30
             )
             
