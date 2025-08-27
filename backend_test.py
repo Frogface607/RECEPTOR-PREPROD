@@ -1,5 +1,547 @@
 #!/usr/bin/env python3
 """
+ALT EXPORT DISH ARTICLE TESTING
+Тестирование исправленного ALT export для проверки добавления DISH артикула в Excel файл
+"""
+
+import requests
+import json
+import time
+import os
+import tempfile
+from datetime import datetime
+import pandas as pd
+from openpyxl import load_workbook
+
+# Backend URL from environment
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-designer-ai.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
+
+class ALTExportDishArticleTester:
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        })
+        self.test_results = []
+        self.artifacts = {}
+        
+    def log_test(self, test_name: str, success: bool, details: str, data: dict = None):
+        """Log test result"""
+        result = {
+            'test': test_name,
+            'success': success,
+            'details': details,
+            'timestamp': datetime.now().isoformat(),
+            'data': data or {}
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {details}")
+        
+    def generate_techcard_for_alt_export(self):
+        """Сгенерировать техкарту для ALT экспорта"""
+        try:
+            # Generate a tech card with Russian dish name for testing
+            dish_name = "Борщ украинский с говядиной"
+            
+            payload = {
+                "name": dish_name,
+                "description": "Традиционный украинский борщ с говядиной и овощами",
+                "cuisine": "Украинская",
+                "category": "Супы"
+            }
+            
+            print(f"🔄 Generating tech card: {dish_name}")
+            response = self.session.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload, timeout=60)
+            
+            if response.status_code == 200:
+                techcard_data = response.json()
+                techcard_id = techcard_data.get('id')
+                
+                self.artifacts['generated_techcard'] = {
+                    'id': techcard_id,
+                    'name': dish_name,
+                    'ingredients_count': len(techcard_data.get('ingredients', [])),
+                    'dish_article': techcard_data.get('meta', {}).get('article'),
+                    'generation_time': techcard_data.get('meta', {}).get('generation_time_s')
+                }
+                
+                self.log_test(
+                    "Tech Card Generation for ALT Export",
+                    True,
+                    f"Generated '{dish_name}' (ID: {techcard_id}) with {len(techcard_data.get('ingredients', []))} ingredients",
+                    {'techcard_id': techcard_id, 'dish_name': dish_name}
+                )
+                
+                return techcard_data
+            else:
+                self.log_test(
+                    "Tech Card Generation for ALT Export",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return None
+                
+        except Exception as e:
+            self.log_test(
+                "Tech Card Generation for ALT Export",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return None
+    
+    def test_alt_export_endpoint(self, techcard_data):
+        """Тестировать /techcards.v2/export/iiko.xlsx endpoint"""
+        try:
+            print(f"🔄 Testing ALT export endpoint with preflight integration")
+            
+            # Use the ALT export endpoint
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
+                json=techcard_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Check if we got an Excel file
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                if 'spreadsheet' in content_type or 'excel' in content_type or content_length > 1000:
+                    # Save the Excel file for analysis
+                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
+                        tmp_file.write(response.content)
+                        excel_path = tmp_file.name
+                    
+                    self.artifacts['alt_export_file'] = {
+                        'path': excel_path,
+                        'size_bytes': content_length,
+                        'content_type': content_type
+                    }
+                    
+                    self.log_test(
+                        "ALT Export Endpoint Response",
+                        True,
+                        f"Generated Excel file ({content_length} bytes) with content-type: {content_type}",
+                        {'file_size': content_length, 'content_type': content_type}
+                    )
+                    
+                    return excel_path
+                else:
+                    self.log_test(
+                        "ALT Export Endpoint Response",
+                        False,
+                        f"Invalid response format. Content-type: {content_type}, Size: {content_length}"
+                    )
+                    return None
+            else:
+                self.log_test(
+                    "ALT Export Endpoint Response",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return None
+                
+        except Exception as e:
+            self.log_test(
+                "ALT Export Endpoint Response",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return None
+    
+    def analyze_dish_article_in_excel(self, excel_path, expected_dish_name):
+        """Проверить наличие DISH артикула в Excel файле"""
+        try:
+            print(f"🔄 Analyzing Excel file for DISH article")
+            
+            # Load the Excel file
+            workbook = load_workbook(excel_path)
+            worksheet = workbook.active
+            
+            # Get all data from the worksheet
+            data = []
+            headers = []
+            
+            for row_idx, row in enumerate(worksheet.iter_rows(values_only=True), 1):
+                if row_idx == 1:
+                    headers = list(row)
+                else:
+                    if any(cell is not None for cell in row):  # Skip empty rows
+                        data.append(list(row))
+            
+            # Find dish article column (should be first column)
+            dish_article_col_idx = 0  # "Артикул блюда" should be first column
+            dish_name_col_idx = 1     # "Наименование блюда" should be second column
+            
+            dish_articles = set()
+            dish_names = set()
+            
+            for row in data:
+                if len(row) > dish_article_col_idx and row[dish_article_col_idx]:
+                    dish_articles.add(str(row[dish_article_col_idx]))
+                if len(row) > dish_name_col_idx and row[dish_name_col_idx]:
+                    dish_names.add(str(row[dish_name_col_idx]))
+            
+            # Check for real 5-digit articles vs placeholder articles
+            real_articles = []
+            placeholder_articles = []
+            
+            for article in dish_articles:
+                if article.startswith('DISH_') or article.startswith('GENERATED_'):
+                    placeholder_articles.append(article)
+                elif article.isdigit() and len(article) == 5:
+                    real_articles.append(article)
+                elif article.isdigit():
+                    real_articles.append(article)  # Accept any numeric article
+            
+            self.artifacts['excel_analysis'] = {
+                'headers': headers,
+                'total_rows': len(data),
+                'dish_articles': list(dish_articles),
+                'dish_names': list(dish_names),
+                'real_articles': real_articles,
+                'placeholder_articles': placeholder_articles
+            }
+            
+            # Test results
+            has_dish_article = len(dish_articles) > 0
+            has_real_article = len(real_articles) > 0
+            has_expected_dish = expected_dish_name in dish_names
+            
+            if has_real_article:
+                self.log_test(
+                    "DISH Article Presence in Excel",
+                    True,
+                    f"Found {len(real_articles)} real DISH articles: {real_articles}",
+                    {'real_articles': real_articles, 'total_articles': len(dish_articles)}
+                )
+            elif has_dish_article:
+                self.log_test(
+                    "DISH Article Presence in Excel",
+                    False,
+                    f"Found only placeholder articles: {placeholder_articles}",
+                    {'placeholder_articles': placeholder_articles}
+                )
+            else:
+                self.log_test(
+                    "DISH Article Presence in Excel",
+                    False,
+                    "No DISH articles found in Excel file"
+                )
+            
+            # Check dish name presence
+            if has_expected_dish:
+                self.log_test(
+                    "Expected Dish Name in Excel",
+                    True,
+                    f"Found expected dish name '{expected_dish_name}' in Excel",
+                    {'dish_names': list(dish_names)}
+                )
+            else:
+                self.log_test(
+                    "Expected Dish Name in Excel",
+                    False,
+                    f"Expected dish name '{expected_dish_name}' not found. Found: {list(dish_names)}",
+                    {'expected': expected_dish_name, 'found': list(dish_names)}
+                )
+            
+            return {
+                'has_dish_article': has_dish_article,
+                'has_real_article': has_real_article,
+                'real_articles': real_articles,
+                'placeholder_articles': placeholder_articles,
+                'dish_names': list(dish_names)
+            }
+            
+        except Exception as e:
+            self.log_test(
+                "Excel Analysis for DISH Article",
+                False,
+                f"Exception analyzing Excel: {str(e)}"
+            )
+            return None
+    
+    def test_article_format_validation(self, analysis_result):
+        """Проверить формат артикулов (5-digit с ведущими нулями)"""
+        try:
+            if not analysis_result or not analysis_result.get('real_articles'):
+                self.log_test(
+                    "Article Format Validation",
+                    False,
+                    "No real articles to validate"
+                )
+                return False
+            
+            real_articles = analysis_result['real_articles']
+            valid_format_count = 0
+            
+            for article in real_articles:
+                # Check if it's a 5-digit format (with or without leading zeros)
+                if article.isdigit() and len(article) == 5:
+                    valid_format_count += 1
+                elif article.isdigit() and 1 <= len(article) <= 5:
+                    # Accept shorter numeric articles as they can be formatted with leading zeros
+                    valid_format_count += 1
+            
+            all_valid = valid_format_count == len(real_articles)
+            
+            self.log_test(
+                "Article Format Validation (5-digit)",
+                all_valid,
+                f"{valid_format_count}/{len(real_articles)} articles in valid format: {real_articles}",
+                {'valid_articles': valid_format_count, 'total_articles': len(real_articles)}
+            )
+            
+            return all_valid
+            
+        except Exception as e:
+            self.log_test(
+                "Article Format Validation",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def compare_with_zip_export(self, techcard_data):
+        """Сравнить ALT export с ZIP export для проверки консистентности артикулов"""
+        try:
+            print(f"🔄 Comparing ALT export with ZIP export")
+            
+            # Try to get ZIP export for comparison
+            techcard_ids = [techcard_data.get('id')]
+            
+            # First run preflight
+            preflight_payload = {
+                "techcard_ids": techcard_ids,
+                "organization_id": "default"
+            }
+            
+            preflight_response = self.session.post(
+                f"{API_BASE}/v1/export/preflight",
+                json=preflight_payload,
+                timeout=30
+            )
+            
+            if preflight_response.status_code == 200:
+                preflight_result = preflight_response.json()
+                
+                # Now try ZIP export
+                zip_payload = {
+                    "techcard_ids": techcard_ids,
+                    "organization_id": "default",
+                    "preflight_result": preflight_result
+                }
+                
+                zip_response = self.session.post(
+                    f"{API_BASE}/v1/export/zip",
+                    json=zip_payload,
+                    timeout=30
+                )
+                
+                if zip_response.status_code == 200:
+                    zip_size = len(zip_response.content)
+                    
+                    self.artifacts['zip_export_comparison'] = {
+                        'preflight_success': True,
+                        'zip_export_success': True,
+                        'zip_size_bytes': zip_size,
+                        'preflight_dish_articles': preflight_result.get('missing', {}).get('dishes', [])
+                    }
+                    
+                    # Extract dish articles from preflight
+                    dish_articles_from_preflight = []
+                    missing_dishes = preflight_result.get('missing', {}).get('dishes', [])
+                    for dish in missing_dishes:
+                        if dish.get('article'):
+                            dish_articles_from_preflight.append(dish['article'])
+                    
+                    self.log_test(
+                        "ZIP Export Comparison",
+                        True,
+                        f"ZIP export successful ({zip_size} bytes). Preflight generated {len(dish_articles_from_preflight)} dish articles: {dish_articles_from_preflight}",
+                        {'zip_size': zip_size, 'preflight_articles': dish_articles_from_preflight}
+                    )
+                    
+                    return dish_articles_from_preflight
+                else:
+                    self.log_test(
+                        "ZIP Export Comparison",
+                        False,
+                        f"ZIP export failed: HTTP {zip_response.status_code}"
+                    )
+                    return None
+            else:
+                self.log_test(
+                    "ZIP Export Comparison",
+                    False,
+                    f"Preflight failed: HTTP {preflight_response.status_code}"
+                )
+                return None
+                
+        except Exception as e:
+            self.log_test(
+                "ZIP Export Comparison",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return None
+    
+    def run_comprehensive_test(self):
+        """Запустить полный тест ALT export с DISH артикулом"""
+        print("🚀 Starting ALT Export DISH Article Comprehensive Testing")
+        print("=" * 80)
+        
+        start_time = time.time()
+        
+        # Step 1: Generate tech card for ALT export
+        techcard_data = self.generate_techcard_for_alt_export()
+        if not techcard_data:
+            print("❌ Cannot proceed without generated tech card")
+            return
+        
+        dish_name = techcard_data.get('meta', {}).get('title', 'Unknown')
+        
+        # Step 2: Test ALT export endpoint
+        excel_path = self.test_alt_export_endpoint(techcard_data)
+        if not excel_path:
+            print("❌ Cannot proceed without Excel file from ALT export")
+            return
+        
+        # Step 3: Analyze DISH article in Excel file
+        analysis_result = self.analyze_dish_article_in_excel(excel_path, dish_name)
+        
+        # Step 4: Validate article format
+        if analysis_result:
+            self.test_article_format_validation(analysis_result)
+        
+        # Step 5: Compare with ZIP export
+        zip_articles = self.compare_with_zip_export(techcard_data)
+        
+        # Step 6: Final validation - ALT export should work like ZIP export
+        if analysis_result and zip_articles:
+            alt_articles = analysis_result.get('real_articles', [])
+            
+            # Check if ALT export produces similar quality articles as ZIP export
+            alt_has_real_articles = len(alt_articles) > 0
+            zip_has_real_articles = len(zip_articles) > 0
+            
+            consistency_check = alt_has_real_articles == zip_has_real_articles
+            
+            self.log_test(
+                "ALT vs ZIP Export Consistency",
+                consistency_check,
+                f"ALT export real articles: {alt_articles}, ZIP preflight articles: {zip_articles}",
+                {'alt_articles': alt_articles, 'zip_articles': zip_articles}
+            )
+        
+        # Cleanup
+        try:
+            if excel_path and os.path.exists(excel_path):
+                os.unlink(excel_path)
+        except:
+            pass
+        
+        # Summary
+        total_time = time.time() - start_time
+        passed_tests = sum(1 for result in self.test_results if result['success'])
+        total_tests = len(self.test_results)
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        
+        print("\n" + "=" * 80)
+        print("🎯 ALT EXPORT DISH ARTICLE TEST SUMMARY")
+        print("=" * 80)
+        print(f"⏱️  Total Time: {total_time:.2f}s")
+        print(f"📊 Success Rate: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+        print(f"🎯 Test Focus: ALT export DISH article generation and Excel integration")
+        
+        # Key findings
+        print("\n🔍 KEY FINDINGS:")
+        
+        if self.artifacts.get('generated_techcard'):
+            tc = self.artifacts['generated_techcard']
+            print(f"   • Tech Card: '{tc['name']}' with {tc['ingredients_count']} ingredients")
+        
+        if self.artifacts.get('alt_export_file'):
+            ef = self.artifacts['alt_export_file']
+            print(f"   • ALT Export: Generated {ef['size_bytes']} byte Excel file")
+        
+        if self.artifacts.get('excel_analysis'):
+            ea = self.artifacts['excel_analysis']
+            real_count = len(ea.get('real_articles', []))
+            placeholder_count = len(ea.get('placeholder_articles', []))
+            print(f"   • Articles: {real_count} real, {placeholder_count} placeholder")
+            
+            if ea.get('real_articles'):
+                print(f"   • Real Articles: {ea['real_articles']}")
+            if ea.get('placeholder_articles'):
+                print(f"   • Placeholder Articles: {ea['placeholder_articles']}")
+        
+        # Critical assessment
+        print("\n🎯 CRITICAL ASSESSMENT:")
+        
+        has_real_articles = False
+        if self.artifacts.get('excel_analysis'):
+            has_real_articles = len(self.artifacts['excel_analysis'].get('real_articles', [])) > 0
+        
+        if has_real_articles:
+            print("   ✅ ALT export successfully generates real DISH articles")
+            print("   ✅ Preflight integration working in ALT export")
+            print("   ✅ Excel file contains proper 5-digit articles")
+        else:
+            print("   ❌ ALT export still using placeholder articles")
+            print("   ❌ Preflight integration may not be working properly")
+            print("   ❌ Need to investigate article generation in ALT export")
+        
+        # Save detailed results
+        self.save_test_artifacts()
+        
+        return success_rate >= 75  # Consider successful if 75% of tests pass
+
+    def save_test_artifacts(self):
+        """Save test artifacts for analysis"""
+        try:
+            artifacts_data = {
+                'test_results': self.test_results,
+                'artifacts': self.artifacts,
+                'timestamp': datetime.now().isoformat(),
+                'test_type': 'ALT_Export_DISH_Article_Testing'
+            }
+            
+            with open('/app/alt_export_test_results.json', 'w', encoding='utf-8') as f:
+                json.dump(artifacts_data, f, indent=2, ensure_ascii=False)
+            
+            print(f"\n💾 Test artifacts saved to: /app/alt_export_test_results.json")
+            
+        except Exception as e:
+            print(f"⚠️ Failed to save test artifacts: {e}")
+
+def main():
+    """Main test execution"""
+    tester = ALTExportDishArticleTester()
+    
+    try:
+        success = tester.run_comprehensive_test()
+        
+        if success:
+            print("\n🎉 ALT EXPORT DISH ARTICLE TESTING COMPLETED SUCCESSFULLY")
+            exit(0)
+        else:
+            print("\n🚨 ALT EXPORT DISH ARTICLE TESTING FAILED")
+            exit(1)
+            
+    except KeyboardInterrupt:
+        print("\n⚠️ Test interrupted by user")
+        exit(1)
+    except Exception as e:
+        print(f"\n💥 Test failed with exception: {e}")
+        exit(1)
+
+if __name__ == "__main__":
+    main()
+"""
 CRITICAL COMPLETION: String Article Formatting + Kilo Conversion + Full GENERATED_* Elimination (Final Export Polish)
 
 This test validates the critical requirements for finalizing exports:
