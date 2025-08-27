@@ -1,45 +1,226 @@
 {
   "summary": {
-    "total_tests": 7,
-    "passed_tests": 3,
-    "failed_tests": 4,
-    "success_rate": 42.857142857142854,
-    "test_timestamp": "2025-08-27T10:58:18.605242"
+    "total_tests": 22,
+    "passed_tests": 17,
+    "failed_tests": 5,
+    "success_rate": 77.27272727272727,
+    "test_timestamp": "2025-08-27T11:02:41.530773"
   },
   "results": [
     {
       "test": "generate_techcard_Тест_блюдо_для_маппинга_артикулов",
-      "success": false,
-      "details": "Generation failed: Tech card generated with validation issues",
-      "timestamp": "2025-08-27T10:57:45.814905",
+      "success": true,
+      "details": "Generated techcard for 'Тест блюдо для маппинга артикулов' with 3 ingredients (status: draft)",
+      "timestamp": "2025-08-27T11:02:06.013233",
+      "data": {
+        "techcard_id": "a865b3bc-ee20-46f9-b614-7a6e1563fb7f",
+        "ingredients_count": 3,
+        "generation_time": "12.04s",
+        "status": "draft"
+      }
+    },
+    {
+      "test": "sync_article_mapping_allocation",
+      "success": true,
+      "details": "Articles allocated: 1 dishes, 3 products",
+      "timestamp": "2025-08-27T11:02:06.070213",
+      "data": {
+        "dish_articles": [
+          "10000"
+        ],
+        "product_articles": [
+          "10001",
+          "10002",
+          "10003"
+        ],
+        "invalid_articles": [],
+        "ttk_date": "2025-08-27"
+      }
+    },
+    {
+      "test": "sync_article_mapping_claiming",
+      "success": true,
+      "details": "Article claiming simulation successful for 4 articles",
+      "timestamp": "2025-08-27T11:02:06.070264",
       "data": null
     },
     {
       "test": "generate_techcard_Блюдо_для_индивидуального_экспорта",
+      "success": true,
+      "details": "Generated techcard for 'Блюдо для индивидуального экспорта' with 5 ingredients (status: draft)",
+      "timestamp": "2025-08-27T11:02:18.445616",
+      "data": {
+        "techcard_id": "050f8929-924f-49fd-96df-f4067f386196",
+        "ingredients_count": 5,
+        "generation_time": "12.37s",
+        "status": "draft"
+      }
+    },
+    {
+      "test": "generate_individual_xlsx_ttk",
+      "success": true,
+      "details": "Individual TTK XLSX export successful",
+      "timestamp": "2025-08-27T11:02:18.919683",
+      "data": {
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename_header": "attachment; filename=\"techcard_050f8929-924f-49fd-96df-f4067f386196_export.xlsx\"",
+        "file_size_bytes": 5894,
+        "is_xlsx_format": true,
+        "has_proper_filename": true
+      }
+    },
+    {
+      "test": "check_xlsx_no_generated_ttk",
       "success": false,
-      "details": "Generation failed: Tech card generated with validation issues",
-      "timestamp": "2025-08-27T10:57:59.945863",
-      "data": null
+      "details": "No GENERATED_* patterns in TTK XLSX: 5 found",
+      "timestamp": "2025-08-27T11:02:18.928272",
+      "data": {
+        "generated_patterns": [
+          {
+            "sheet": "ТТК",
+            "cell": "C2",
+            "value": "GENERATED_КУРИНОЕ_ФИЛЕ"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C3",
+            "value": "GENERATED_ОЛИВКОВОЕ_МАСЛО"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C4",
+            "value": "GENERATED_СОЛЬ"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C5",
+            "value": "GENERATED_ПЕРЕЦ_ЧЕРНЫЙ"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C6",
+            "value": "GENERATED_ЧЕСНОК"
+          }
+        ],
+        "total_cells_checked": 38,
+        "sheets_analyzed": [
+          "ТТК"
+        ]
+      }
+    },
+    {
+      "test": "generate_individual_xlsx_zip",
+      "success": true,
+      "details": "ZIP export with individual files successful",
+      "timestamp": "2025-08-27T11:02:19.384694",
+      "data": {
+        "content_type": "application/zip",
+        "filename_header": "attachment; filename=\"iiko_export_20250827_110219.zip\"",
+        "file_size_bytes": 5465,
+        "is_zip_format": true
+      }
+    },
+    {
+      "test": "analyze_zip_individual_files",
+      "success": true,
+      "details": "ZIP contains individual XLSX files: 1 files",
+      "timestamp": "2025-08-27T11:02:19.384848",
+      "data": {
+        "files_in_zip": [
+          "iiko_TTK.xlsx"
+        ],
+        "has_ttk_file": true,
+        "has_skeleton_files": false,
+        "proper_naming": true
+      }
+    },
+    {
+      "test": "check_xlsx_no_generated_iiko_ttk",
+      "success": false,
+      "details": "No GENERATED_* patterns in iiko_TTK XLSX: 5 found",
+      "timestamp": "2025-08-27T11:02:19.391708",
+      "data": {
+        "generated_patterns": [
+          {
+            "sheet": "ТТК",
+            "cell": "C2",
+            "value": "GENERATED_КУРИНОЕ_ФИЛЕ"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C3",
+            "value": "GENERATED_ОЛИВКОВОЕ_МАСЛО"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C4",
+            "value": "GENERATED_СОЛЬ"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C5",
+            "value": "GENERATED_ПЕРЕЦ_ЧЕРНЫЙ"
+          },
+          {
+            "sheet": "ТТК",
+            "cell": "C6",
+            "value": "GENERATED_ЧЕСНОК"
+          }
+        ],
+        "total_cells_checked": 38,
+        "sheets_analyzed": [
+          "ТТК"
+        ]
+      }
     },
     {
       "test": "generate_techcard_Блюдо_для_тестирования_конвертации_в_кг",
+      "success": true,
+      "details": "Generated techcard for 'Блюдо для тестирования конвертации в кг' with 3 ingredients (status: draft)",
+      "timestamp": "2025-08-27T11:02:30.932185",
+      "data": {
+        "techcard_id": "9fecb6f5-f483-48bf-86f6-8a9e738444c9",
+        "ingredients_count": 3,
+        "generation_time": "11.54s",
+        "status": "draft"
+      }
+    },
+    {
+      "test": "kilo_conversion_format",
       "success": false,
-      "details": "Generation failed: Tech card generated with validation issues",
-      "timestamp": "2025-08-27T10:58:09.750493",
+      "details": "Error checking kilo conversion: File is not a zip file",
+      "timestamp": "2025-08-27T11:02:30.942145",
       "data": null
     },
     {
       "test": "generate_techcard_Блюдо_для_тестирования_Excel_инвариантов",
+      "success": true,
+      "details": "Generated techcard for 'Блюдо для тестирования Excel инвариантов' with 3 ingredients (status: draft)",
+      "timestamp": "2025-08-27T11:02:40.552237",
+      "data": {
+        "techcard_id": "a151a535-913a-4c53-86a8-f30ada4321c0",
+        "ingredients_count": 3,
+        "generation_time": "9.61s",
+        "status": "draft"
+      }
+    },
+    {
+      "test": "excel_invariants_articles",
       "success": false,
-      "details": "Generation failed: Tech card generated with validation issues",
-      "timestamp": "2025-08-27T10:58:18.364305",
-      "data": null
+      "details": "Excel article invariants check: 0 articles, 0 invalid",
+      "timestamp": "2025-08-27T11:02:40.917848",
+      "data": {
+        "articles_found": 0,
+        "invalid_articles": [],
+        "sample_articles": [],
+        "all_strings": true
+      }
     },
     {
       "test": "instruction_section_features",
       "success": true,
       "details": "Export features available for user instructions",
-      "timestamp": "2025-08-27T10:58:18.413513",
+      "timestamp": "2025-08-27T11:02:40.993697",
       "data": {
         "available_features": [
           "article_allocation",
@@ -56,10 +237,64 @@
       }
     },
     {
+      "test": "instruction_section_warnings",
+      "success": true,
+      "details": "Preflight warnings provide UX guidance: 1 warnings",
+      "timestamp": "2025-08-27T11:02:41.004425",
+      "data": {
+        "warnings_count": 1,
+        "warning_types": [
+          "missing_dish_codes"
+        ],
+        "has_proper_structure": true
+      }
+    },
+    {
+      "test": "direct_export_status",
+      "success": true,
+      "details": "Export system status check",
+      "timestamp": "2025-08-27T11:02:41.014554",
+      "data": {
+        "systems": {
+          "preflight_orchestrator": "operational",
+          "dual_exporter": "operational",
+          "article_allocator": "operational"
+        },
+        "features": {
+          "article_allocation": true,
+          "ttk_date_resolution": true,
+          "skeleton_generation": true,
+          "zip_export": true,
+          "article_claiming": true
+        }
+      }
+    },
+    {
+      "test": "direct_export_preflight_validation",
+      "success": true,
+      "details": "Preflight validation works correctly: HTTP 400",
+      "timestamp": "2025-08-27T11:02:41.022435",
+      "data": {
+        "status_code": 400,
+        "expected_400": true
+      }
+    },
+    {
+      "test": "mock_export_xlsx_generation",
+      "success": false,
+      "details": "Mock XLSX export successful",
+      "timestamp": "2025-08-27T11:02:41.071682",
+      "data": {
+        "content_type": "application/json",
+        "file_size_bytes": 1344,
+        "is_xlsx_format": false
+      }
+    },
+    {
       "test": "remove_alt_exports_new_endpoints",
       "success": true,
       "details": "New export endpoints available: 4/4",
-      "timestamp": "2025-08-27T10:58:18.494068",
+      "timestamp": "2025-08-27T11:02:41.189382",
       "data": {
         "working_endpoints": [
           "/v1/export/status",
@@ -74,12 +309,37 @@
       "test": "remove_alt_exports_legacy_hidden",
       "success": true,
       "details": "Legacy export endpoints properly hidden: 0 found",
-      "timestamp": "2025-08-27T10:58:18.604965",
+      "timestamp": "2025-08-27T11:02:41.261379",
+      "data": {
+        "legacy_endpoints_found": [],
+        "total_tested": 4
+      }
+    },
+    {
+      "test": "remove_alt_exports_new_endpoints",
+      "success": true,
+      "details": "New export endpoints available: 4/4",
+      "timestamp": "2025-08-27T11:02:41.415516",
+      "data": {
+        "working_endpoints": [
+          "/v1/export/status",
+          "/v1/export/preflight",
+          "/v1/export/zip",
+          "/v1/techcards.v2/export/enhanced/iiko.xlsx"
+        ],
+        "total_tested": 4
+      }
+    },
+    {
+      "test": "remove_alt_exports_legacy_hidden",
+      "success": true,
+      "details": "Legacy export endpoints properly hidden: 0 found",
+      "timestamp": "2025-08-27T11:02:41.530393",
       "data": {
         "legacy_endpoints_found": [],
         "total_tested": 4
       }
     }
   ],
-  "generated_techcards": 0
+  "generated_techcards": 4
 }
