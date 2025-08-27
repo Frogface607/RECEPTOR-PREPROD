@@ -282,10 +282,10 @@ class ALTExportDishArticleTester:
             valid_format_count = 0
             
             for article in real_articles:
-                # Check if it's a 5-digit format (with or without leading zeros)
-                if article.isdigit() and len(article) == 5:
+                # Check if it's a valid numeric format (5-6 digits as per ArticleAllocator)
+                if article.isdigit() and 5 <= len(article) <= 6:
                     valid_format_count += 1
-                elif article.isdigit() and 1 <= len(article) <= 5:
+                elif article.isdigit() and 1 <= len(article) <= 6:
                     # Accept shorter numeric articles as they can be formatted with leading zeros
                     valid_format_count += 1
             
