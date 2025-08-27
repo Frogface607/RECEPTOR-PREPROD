@@ -1,24 +1,24 @@
 {
   "test_suite": "Export to iiko XLSX - Automatic Gram-to-Kilogram Conversion",
   "total_tests": 5,
-  "passed_tests": 3,
-  "success_rate": 60.0,
-  "critical_tests_passed": "1/3",
-  "total_time_s": 9.0,
+  "passed_tests": 4,
+  "success_rate": 80.0,
+  "critical_tests_passed": "2/3",
+  "total_time_s": 10.2,
   "results": [
     {
       "test": "Генерация техкарты",
       "status": "✅ PASS",
       "success": true,
-      "details": "Техкарта создана: ID=5ce3bd9a-f7aa-48be-8f81-54b4f19a4065, ингредиентов=3, выход=200.0г. Массы в граммах сохранены корректно.",
-      "timing_ms": 8563.0
+      "details": "Техкарта создана: ID=2e4d7098-d628-4ee6-93be-edb652e1838e, ингредиентов=3, выход=200.0г. Массы в граммах сохранены корректно.",
+      "timing_ms": 9446.9
     },
     {
-      "test": "Получение техкарты для экспорта",
-      "status": "❌ FAIL",
-      "success": false,
-      "details": "HTTP 405: {\"detail\":\"Method Not Allowed\"}",
-      "timing_ms": 75.8
+      "test": "TTK XLSX конвертация масс",
+      "status": "✅ PASS",
+      "success": true,
+      "details": "Найдено 3 ингредиентов с массами, 3 с массами <1кг, 3 с единицами 'кг', выход=0.2кг",
+      "timing_ms": 339.1
     },
     {
       "test": "Точность конвертации",
@@ -32,7 +32,7 @@
       "status": "❌ FAIL",
       "success": false,
       "details": "Preflight failed: HTTP 400",
-      "timing_ms": 57.2
+      "timing_ms": 58.3
     },
     {
       "test": "Создание артефактов",
@@ -44,7 +44,7 @@
   ],
   "artifacts": {
     "generated_techcard": {
-      "id": "5ce3bd9a-f7aa-48be-8f81-54b4f19a4065",
+      "id": "2e4d7098-d628-4ee6-93be-edb652e1838e",
       "name": "Тестовое блюдо для конвертации масс",
       "ingredients_count": 3,
       "yield_g": 200.0,
@@ -52,7 +52,183 @@
         "Ингредиент 1: брутто=120.5г, нетто=108.4г, unit=g",
         "Ингредиент 2: брутто=84.3г, нетто=67.5г, unit=g",
         "Ингредиент 3: брутто=24.1г, нетто=24.1г, unit=g"
-      ]
+      ],
+      "full_card_data": {
+        "meta": {
+          "id": "2e4d7098-d628-4ee6-93be-edb652e1838e",
+          "title": "Тестовое блюдо для конвертации масс",
+          "version": "1.0",
+          "createdAt": "2025-08-27T20:53:57.463702",
+          "cuisine": "международная",
+          "tags": [
+            "тестовое",
+            "конвертация масс"
+          ],
+          "timings": {
+            "llm_draft_ms": 5840.0,
+            "llm_normalize_ms": 3430.0,
+            "validate_ms": 0.0,
+            "contentcheck_ms": 0.0,
+            "cost_ms": 13.0,
+            "nutrition_ms": 7.0,
+            "portion_normalize_ms": 0.0,
+            "sanitize_ms": 0.0,
+            "postcheck_ms": 0.0,
+            "total_ms": 9293.0,
+            "article_generation_ms": 46.0
+          },
+          "scale_factor": 0.241,
+          "archetype": "default",
+          "original_sum_netto": 830.0,
+          "article": null,
+          "normalized": true
+        },
+        "portions": 1,
+        "yield": {
+          "perPortion_g": 200.0,
+          "perBatch_g": 200.0
+        },
+        "ingredients": [
+          {
+            "name": "Ингредиент 1",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 120.5,
+            "loss_pct": 10.0,
+            "netto_g": 108.4,
+            "allergens": []
+          },
+          {
+            "name": "Ингредиент 2",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 84.3,
+            "loss_pct": 20.0,
+            "netto_g": 67.5,
+            "allergens": []
+          },
+          {
+            "name": "Ингредиент 3",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 24.1,
+            "loss_pct": 0.0,
+            "netto_g": 24.1,
+            "allergens": []
+          }
+        ],
+        "process": [
+          {
+            "n": 1,
+            "action": "Подготовка ингредиентов",
+            "time_min": 10.0,
+            "temp_c": null,
+            "equipment": [
+              "нож",
+              "разделочная доска"
+            ],
+            "ccp": false,
+            "note": null
+          },
+          {
+            "n": 2,
+            "action": "Смешивание ингредиентов",
+            "time_min": 5.0,
+            "temp_c": null,
+            "equipment": [
+              "миска",
+              "ложка"
+            ],
+            "ccp": false,
+            "note": null
+          },
+          {
+            "n": 3,
+            "action": "Термообработка",
+            "time_min": 30.0,
+            "temp_c": 180.0,
+            "equipment": [
+              "духовка"
+            ],
+            "ccp": true,
+            "note": null
+          }
+        ],
+        "storage": {
+          "conditions": "Хранить в холодильнике",
+          "shelfLife_hours": 24.0,
+          "servingTemp_c": 60.0
+        },
+        "nutrition": {
+          "per100g": {
+            "kcal": 0.0,
+            "proteins_g": 0.0,
+            "fats_g": 0.0,
+            "carbs_g": 0.0
+          },
+          "perPortion": {
+            "kcal": 0.0,
+            "proteins_g": 0.0,
+            "fats_g": 0.0,
+            "carbs_g": 0.0
+          }
+        },
+        "nutritionMeta": {
+          "source": "catalog",
+          "coveragePct": 0.0
+        },
+        "cost": {
+          "rawCost": 0.0,
+          "costPerPortion": 0.0,
+          "markup_pct": 0.0,
+          "vat_pct": 0.0
+        },
+        "costMeta": {
+          "source": "none",
+          "coveragePct": 0.0,
+          "asOf": "2025-08-27"
+        },
+        "printNotes": [],
+        "article": null
+      }
+    },
+    "ttk_xlsx_conversion": {
+      "mass_conversions": [
+        {
+          "ingredient": "Ингредиент 1",
+          "brutto_kg": 0.12,
+          "netto_kg": 0.11,
+          "unit": "кг"
+        },
+        {
+          "ingredient": "Ингредиент 2",
+          "brutto_kg": 0.085,
+          "netto_kg": 0.068,
+          "unit": "кг"
+        },
+        {
+          "ingredient": "Ингредиент 3",
+          "brutto_kg": 0.024,
+          "netto_kg": 0.024,
+          "unit": "кг"
+        }
+      ],
+      "unit_conversions": [
+        "Ингредиент 1: кг",
+        "Ингредиент 2: кг",
+        "Ингредиент 3: кг"
+      ],
+      "yield_conversion": 0.2,
+      "file_size": 5718
     },
     "precision_testing": {
       "mass_conversions": [
