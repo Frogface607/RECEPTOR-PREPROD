@@ -1342,18 +1342,22 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
                     "dish": dish_title
                 })
         
-        # Конвертируем единицы в граммы
-        brutto_g = round(normalize_unit_to_grams(
+        # Конвертируем единицы в граммы, затем в килограммы для iiko XLSX
+        brutto_g_raw = round(normalize_unit_to_grams(
             getattr(ingredient, 'brutto_g', 0), 
             getattr(ingredient, 'unit', 'г'), 
             ingredient.name
         ), 1)
         
-        netto_g = round(normalize_unit_to_grams(
+        netto_g_raw = round(normalize_unit_to_grams(
             getattr(ingredient, 'netto_g', 0), 
             getattr(ingredient, 'unit', 'г'), 
             ingredient.name
         ), 1)
+        
+        # КОНВЕРТАЦИЯ ГРАММ В КИЛОГРАММЫ для экспорта в iiko
+        brutto_kg, brutto_unit = convert_grams_to_kilograms(brutto_g_raw, 'г')
+        netto_kg, netto_unit = convert_grams_to_kilograms(netto_g_raw, 'г')
         
         loss_pct = round(getattr(ingredient, 'loss_pct', 0), 1)
         
@@ -1363,10 +1367,10 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
             dish_name,                    # Наименование блюда
             product_code,                 # Артикул продукта
             ingredient.name,              # Наименование продукта
-            brutto_g,                     # Брутто
+            brutto_kg,                    # Брутто (в кг)
             loss_pct,                     # Потери, %
-            netto_g,                      # Нетто
-            'г',                          # Ед. (всегда граммы)
+            netto_kg,                     # Нетто (в кг)
+            brutto_unit,                  # Ед. (кг для iiko)
             round(output_qty, 1),         # Выход готового продукта
             1,                            # Норма закладки
             1,                            # Метод списания
