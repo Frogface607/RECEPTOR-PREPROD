@@ -181,10 +181,10 @@ class IikoMassConversionTester:
                 
             techcard_data = get_response.json()
             
-            # Экспортируем техкарту в XLSX для iiko
+            # Экспортируем техкарту в XLSX для iiko (используем enhanced endpoint)
             response = requests.post(
-                f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
-                json=techcard_data,
+                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
+                json={"techcard": techcard_data, "options": {"operational_rounding": True}},
                 timeout=30
             )
             
