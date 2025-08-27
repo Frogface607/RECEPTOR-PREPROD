@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-08-27T20:07:19.102280",
+  "timestamp": "2025-08-27T20:31:17.440921",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Борщ украинский с говядиной и овощами",
-      "code": "10000",
+      "name": "Наггетсы-динозавры и вулкан из картофельного пюре с томатным спайси соусом",
+      "code": "10018",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 330.0
+      "yield_g": 150
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."

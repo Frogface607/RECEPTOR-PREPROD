@@ -1,54 +1,12 @@
 {
-  "timestamp": "2025-08-27T20:07:19.110638",
+  "timestamp": "2025-08-27T20:31:17.448525",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 7,
+  "total_products": 1,
   "all_types_valid": true,
   "products": [
     {
-      "name": "говядина",
-      "code": "10001",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Мясо и рыба"
-    },
-    {
-      "name": "картофель",
-      "code": "10002",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Овощи"
-    },
-    {
-      "name": "морковь",
-      "code": "10003",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Овощи"
-    },
-    {
-      "name": "капуста",
-      "code": "10004",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Овощи"
-    },
-    {
-      "name": "лук",
-      "code": "10005",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Овощи"
-    },
-    {
-      "name": "томатная паста",
-      "code": "10006",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Сырьё"
-    },
-    {
-      "name": "вода",
-      "code": "10007",
+      "name": "Панировочные сухари",
+      "code": "10019",
       "type": "GOODS",
       "unit": "г",
       "group": "Сырьё"
