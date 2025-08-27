@@ -202,7 +202,7 @@
 
 user_problem_statement: "Product Skeletons: iiko Import Fix - тестирование исправления Тип маппинга + Dual Export"
 
-CURRENT PHASE: Guard — dish-first rule - Critical safety guard to prevent iiko TTK rejection when dish articles don't exist in nomenclature. Implements strict blocking rules for TTK-only exports."
+CURRENT PHASE: Product Skeletons iiko Import Fix - Critical type mapping validation completed successfully. All skeleton files now use valid iiko types (GOODS/DISH) instead of invalid Russian values (Товар/Блюдо)."
 
 backend:
   - task: "Product Skeletons iiko Import Fix - Type Mapping Validation"
