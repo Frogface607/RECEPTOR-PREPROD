@@ -314,7 +314,7 @@ class ALTExportDishArticleTester:
             print(f"🔄 Comparing ALT export with ZIP export")
             
             # Try to get ZIP export for comparison
-            techcard_ids = [techcard_data.get('id')]
+            techcard_ids = [techcard_data.get('meta', {}).get('id')]
             
             # First run preflight
             preflight_payload = {
