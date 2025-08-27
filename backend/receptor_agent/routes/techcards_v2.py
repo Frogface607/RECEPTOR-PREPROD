@@ -211,14 +211,14 @@ def export_tc_v2_to_iiko_ttk_xlsx(card: TechCardV2):
         # Создаем preflight для получения DISH артикула
         preflight_result = None
         try:
-            # Импортируем PreflightService для генерации артикулов
-            from ..routes.export_v2 import PreflightService
+            # Импортируем PreflightOrchestrator для генерации артикулов
+            from ..routes.export_v2 import PreflightOrchestrator
             import asyncio
             
             # Запускаем preflight для получения артикулов блюда
             async def get_dish_article():
-                preflight_service = PreflightService()
-                return await preflight_service.run_preflight([card.meta.id], "default")
+                preflight_orchestrator = PreflightOrchestrator()
+                return await preflight_orchestrator.run_preflight([card.meta.id], "default")
             
             # Выполняем асинхронную операцию в синхронном контексте
             loop = asyncio.new_event_loop()
