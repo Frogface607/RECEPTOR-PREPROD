@@ -71,7 +71,7 @@ class FinalExportFixTester:
         """Generate a test techcard for testing"""
         try:
             profile_data = {
-                "dishName": dish_name,
+                "name": dish_name,
                 "cuisineType": "европейская",
                 "venueType": "ресторан",
                 "averageCheck": "средний",
