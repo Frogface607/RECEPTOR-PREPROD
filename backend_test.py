@@ -538,7 +538,178 @@ class FinalExportFixTester:
                 f"Exception: {str(e)}"
             )
 
-    def test_remove_alt_exports(self):
+    def test_direct_export_endpoints(self):
+        """Test export endpoints directly without techcard generation"""
+        print("\n=== DIRECT EXPORT ENDPOINTS TEST ===")
+        
+        # Test export status endpoint
+        try:
+            response = self.session.get(f"{API_BASE}/v1/export/status", timeout=10)
+            
+            if response.status_code == 200:
+                result = response.json()
+                systems = result.get('systems', {})
+                features = result.get('features', {})
+                
+                self.log_test(
+                    "direct_export_status",
+                    result.get('status') == 'success',
+                    f"Export system status check",
+                    {
+                        'systems': systems,
+                        'features': features
+                    }
+                )
+            else:
+                self.log_test(
+                    "direct_export_status",
+                    False,
+                    f"Export status failed: HTTP {response.status_code}"
+                )
+        except Exception as e:
+            self.log_test(
+                "direct_export_status",
+                False,
+                f"Exception: {str(e)}"
+            )
+        
+        # Test preflight with empty data (should handle gracefully)
+        try:
+            preflight_data = {
+                "techcardIds": [],
+                "organization_id": "test_org"
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/export/preflight",
+                json=preflight_data,
+                timeout=10
+            )
+            
+            # Should return 400 for empty techcard list
+            expected_error = response.status_code == 400
+            
+            self.log_test(
+                "direct_export_preflight_validation",
+                expected_error,
+                f"Preflight validation works correctly: HTTP {response.status_code}",
+                {
+                    'status_code': response.status_code,
+                    'expected_400': expected_error
+                }
+            )
+            
+        except Exception as e:
+            self.log_test(
+                "direct_export_preflight_validation",
+                False,
+                f"Exception: {str(e)}"
+            )
+
+    def test_mock_export_workflow(self):
+        """Test export workflow with mock data"""
+        print("\n=== MOCK EXPORT WORKFLOW TEST ===")
+        
+        # Create mock techcard data for testing
+        mock_techcard = {
+            "meta": {
+                "id": "test-techcard-001",
+                "title": "Тестовое блюдо для экспорта",
+                "created": "2025-01-20T10:00:00Z"
+            },
+            "ingredients": [
+                {
+                    "name": "Мука пшеничная",
+                    "quantity": 0.250,
+                    "unit": "кг",
+                    "brutto": 0.250,
+                    "netto": 0.250,
+                    "skuId": "test-sku-001"
+                },
+                {
+                    "name": "Молоко",
+                    "quantity": 0.500,
+                    "unit": "л",
+                    "brutto": 0.500,
+                    "netto": 0.500,
+                    "skuId": "test-sku-002"
+                }
+            ],
+            "yield_": {
+                "perPortion_g": 200
+            },
+            "nutrition": {
+                "per100g": {},
+                "perPortion": {}
+            },
+            "cost": {
+                "per100g": {},
+                "perPortion": {}
+            },
+            "process": {
+                "steps": [
+                    {"description": "Смешать ингредиенты"},
+                    {"description": "Приготовить"},
+                    {"description": "Подать"}
+                ]
+            }
+        }
+        
+        try:
+            # Test enhanced export with mock data
+            export_data = {
+                "techcard": mock_techcard,
+                "export_options": {
+                    "use_product_codes": True,
+                    "operational_rounding": True
+                },
+                "organization_id": "test_org",
+                "techcard_id": mock_techcard['meta']['id']
+            }
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
+                json=export_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Check if response is XLSX file
+                content_type = response.headers.get('content-type', '')
+                is_xlsx = 'spreadsheet' in content_type or 'excel' in content_type
+                
+                file_size = len(response.content)
+                
+                self.log_test(
+                    "mock_export_xlsx_generation",
+                    is_xlsx and file_size > 0,
+                    f"Mock XLSX export successful",
+                    {
+                        'content_type': content_type,
+                        'file_size_bytes': file_size,
+                        'is_xlsx_format': is_xlsx
+                    }
+                )
+                
+                # Test XLSX content for Final Export Fix requirements
+                if is_xlsx and file_size > 0:
+                    self.check_xlsx_content_for_generated_patterns(response.content, "MockTTK")
+                    self.check_xlsx_kilo_conversion(response.content)
+                    self.check_excel_invariants(response.content)
+                
+            else:
+                self.log_test(
+                    "mock_export_xlsx_generation",
+                    False,
+                    f"Mock export failed: HTTP {response.status_code} - {response.text[:200]}"
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "mock_export_xlsx_generation",
+                False,
+                f"Exception: {str(e)}"
+            )
         """Test 6: remove_alt_exports - Ensure alt/legacy exports are hidden"""
         print("\n=== TEST 6: REMOVE ALT EXPORTS ===")
         
