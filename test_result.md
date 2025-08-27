@@ -3005,7 +3005,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Export Wizard UI + MAP-01 Article Consistency + Dish-First Guards testing completed successfully"
+    - "CRITICAL FIX: Product-Article Reconcile (No GENERATED_* in TTK, Only Real Articles from Skeletons) - COMPLETED SUCCESSFULLY"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
