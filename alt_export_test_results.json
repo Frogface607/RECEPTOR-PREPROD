@@ -1,0 +1,103 @@
+{
+  "test_results": [
+    {
+      "test": "Tech Card Generation for ALT Export",
+      "success": true,
+      "details": "Generated 'Борщ украинский с говядиной' (ID: 0818707e-b369-4a16-b75f-0bd6dba02769) with 10 ingredients",
+      "timestamp": "2025-08-27T16:54:49.029308",
+      "data": {
+        "techcard_id": "0818707e-b369-4a16-b75f-0bd6dba02769",
+        "dish_name": "Борщ украинский с говядиной"
+      }
+    },
+    {
+      "test": "ALT Export Endpoint Response",
+      "success": true,
+      "details": "Generated Excel file (6194 bytes) with content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "timestamp": "2025-08-27T16:54:49.915253",
+      "data": {
+        "file_size": 6194,
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }
+    },
+    {
+      "test": "DISH Article Presence in Excel",
+      "success": false,
+      "details": "Found only placeholder articles: ['DISH_БОРЩ_УКРАИНСКИЙ_С_ГО']",
+      "timestamp": "2025-08-27T16:54:49.922099",
+      "data": {
+        "placeholder_articles": [
+          "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+        ]
+      }
+    },
+    {
+      "test": "Expected Dish Name in Excel",
+      "success": true,
+      "details": "Found expected dish name 'Борщ украинский с говядиной' in Excel",
+      "timestamp": "2025-08-27T16:54:49.922129",
+      "data": {
+        "dish_names": [
+          "Борщ украинский с говядиной"
+        ]
+      }
+    },
+    {
+      "test": "Article Format Validation",
+      "success": false,
+      "details": "No real articles to validate",
+      "timestamp": "2025-08-27T16:54:49.922139",
+      "data": {}
+    },
+    {
+      "test": "ZIP Export Comparison",
+      "success": false,
+      "details": "Preflight failed: HTTP 400",
+      "timestamp": "2025-08-27T16:54:49.928907",
+      "data": {}
+    }
+  ],
+  "artifacts": {
+    "generated_techcard": {
+      "id": "0818707e-b369-4a16-b75f-0bd6dba02769",
+      "name": "Борщ украинский с говядиной",
+      "ingredients_count": 10,
+      "dish_article": null,
+      "generation_time": 27404.0
+    },
+    "alt_export_file": {
+      "path": "/tmp/tmpksdqejxg.xlsx",
+      "size_bytes": 6194,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    "excel_analysis": {
+      "headers": [
+        "Артикул блюда",
+        "Наименование блюда",
+        "Артикул продукта",
+        "Наименование продукта",
+        "Брутто",
+        "Потери, %",
+        "Нетто",
+        "Ед.",
+        "Выход готового продукта",
+        "Норма закладки",
+        "Метод списания",
+        "Технология приготовления"
+      ],
+      "total_rows": 10,
+      "dish_articles": [
+        "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+      ],
+      "dish_names": [
+        "Борщ украинский с говядиной"
+      ],
+      "real_articles": [],
+      "placeholder_articles": [
+        "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+      ]
+    }
+  },
+  "timestamp": "2025-08-27T16:54:49.929454",
+  "test_type": "ALT_Export_DISH_Article_Testing"
+}
