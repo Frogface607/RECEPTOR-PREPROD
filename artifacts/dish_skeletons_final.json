@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-08-27T20:55:29.190163",
+  "timestamp": "2025-08-27T21:24:16.221655",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Тестовое блюдо для конвертации масс",
-      "code": "10022",
+      "name": "Глазунья",
+      "code": "10027",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 200.0
+      "yield_g": 240
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."

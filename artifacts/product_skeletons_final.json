@@ -1,29 +1,15 @@
 {
-  "timestamp": "2025-08-27T20:55:29.197310",
+  "timestamp": "2025-08-27T21:24:16.229708",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 3,
+  "total_products": 1,
   "all_types_valid": true,
   "products": [
     {
-      "name": "Ингредиент 1",
-      "code": "10023",
+      "name": "Перец черный",
+      "code": "10021",
       "type": "GOODS",
       "unit": "г",
-      "group": "Сырьё"
-    },
-    {
-      "name": "Ингредиент 2",
-      "code": "10024",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Сырьё"
-    },
-    {
-      "name": "Ингредиент 3",
-      "code": "10025",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Сырьё"
+      "group": "Бакалея"
     }
   ],
   "instruction": "Все продукты готовы к импорту в iiko. Типы валидированы согласно требованиям iiko API."
