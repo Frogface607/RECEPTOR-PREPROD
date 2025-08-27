@@ -830,10 +830,42 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
         adjusted_width = min(max_length + 2, 50)
         ws.column_dimensions[column_letter].width = adjusted_width
     
+    
     # Сохраняем в буфер
     buffer = BytesIO()
     wb.save(buffer)
     buffer.seek(0)
+    
+    # Создаем артефакт с успешными результатами для блюд
+    try:
+        success_report = {
+            "timestamp": datetime.now().isoformat(),
+            "operation": "DISH_SKELETONS_SUCCESS",
+            "total_dishes": len(validated_dishes),
+            "all_types_valid": True,
+            "dishes": [
+                {
+                    "name": d["dish_name"],
+                    "code": d["dish_code"],
+                    "type": d["dish_type"],
+                    "unit": d["unit"],
+                    "yield_g": d["yield_g"]
+                }
+                for d in validated_dishes
+            ],
+            "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
+        }
+        
+        import json
+        success_file_path = "/app/artifacts/dish_skeletons_final.json"
+        os.makedirs(os.path.dirname(success_file_path), exist_ok=True)
+        with open(success_file_path, 'w', encoding='utf-8') as f:
+            json.dump(success_report, f, indent=2, ensure_ascii=False)
+        
+        logger.info(f"✅ Dish-Skeletons.xlsx создан с {len(validated_dishes)} валидными блюдами")
+        logger.info(f"Отчет сохранен: {success_file_path}")
+    except Exception as e:
+        logger.warning(f"Could not save dish success report: {e}")
     
     return buffer
 
