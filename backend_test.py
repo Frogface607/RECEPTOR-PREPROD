@@ -292,7 +292,7 @@ class ALTExportDishArticleTester:
             all_valid = valid_format_count == len(real_articles)
             
             self.log_test(
-                "Article Format Validation (5-digit)",
+                "Article Format Validation (5-6 digit)",
                 all_valid,
                 f"{valid_format_count}/{len(real_articles)} articles in valid format: {real_articles}",
                 {'valid_articles': valid_format_count, 'total_articles': len(real_articles)}
