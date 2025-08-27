@@ -1,0 +1,137 @@
+{
+  "test_suite": "Export to iiko XLSX - Automatic Gram-to-Kilogram Conversion",
+  "total_tests": 5,
+  "passed_tests": 3,
+  "success_rate": 60.0,
+  "critical_tests_passed": "1/3",
+  "total_time_s": 10.3,
+  "results": [
+    {
+      "test": "Генерация техкарты",
+      "status": "✅ PASS",
+      "success": true,
+      "details": "Техкарта создана: ID=363b8d02-2795-4bcf-98e6-55d62fca66e8, ингредиентов=3, выход=200.0г. Массы в граммах сохранены корректно.",
+      "timing_ms": 9859.5
+    },
+    {
+      "test": "TTK XLSX экспорт",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"meta\"],\"msg\":\"Field required\",\"input\":{\"techcard_id\":\"363b8d02-2795-4bcf-98e6-55d62fca66e8\"},\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"},{\"type\":\"mi",
+      "timing_ms": 81.4
+    },
+    {
+      "test": "Точность конвертации",
+      "status": "✅ PASS",
+      "success": true,
+      "details": "Пройдено 9/9 тестов точности. Округление до 3 знаков после запятой работает корректно.",
+      "timing_ms": 0
+    },
+    {
+      "test": "Dish Skeletons preflight",
+      "status": "❌ FAIL",
+      "success": false,
+      "details": "Preflight failed: HTTP 400",
+      "timing_ms": 56.7
+    },
+    {
+      "test": "Создание артефактов",
+      "status": "✅ PASS",
+      "success": true,
+      "details": "Созданы артефакты: /app/artifacts/xlsx_mass_conversion.json, /app/artifacts/instruction.md",
+      "timing_ms": 0
+    }
+  ],
+  "artifacts": {
+    "generated_techcard": {
+      "id": "363b8d02-2795-4bcf-98e6-55d62fca66e8",
+      "name": "Тестовое блюдо для конвертации масс",
+      "ingredients_count": 3,
+      "yield_g": 200.0,
+      "ingredients_masses": [
+        "Ингредиент 1: брутто=106.7г, нетто=96.0г, unit=g",
+        "Ингредиент 2: брутто=53.3г, нетто=50.7г, unit=g",
+        "Ингредиент 3: брутто=66.7г, нетто=53.3г, unit=g"
+      ]
+    },
+    "precision_testing": {
+      "mass_conversions": [
+        {
+          "input_g": 25,
+          "expected_kg": 0.025,
+          "actual_kg": 0.025,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 200,
+          "expected_kg": 0.2,
+          "actual_kg": 0.2,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 1500,
+          "expected_kg": 1.5,
+          "actual_kg": 1.5,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 33.3,
+          "expected_kg": 0.033,
+          "actual_kg": 0.033,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 1,
+          "expected_kg": 0.001,
+          "actual_kg": 0.001,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 999,
+          "expected_kg": 0.999,
+          "actual_kg": 0.999,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        }
+      ],
+      "yield_conversions": [
+        {
+          "input_g": 250,
+          "expected_kg": 0.25,
+          "actual_kg": 0.25,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 500,
+          "expected_kg": 0.5,
+          "actual_kg": 0.5,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 1200,
+          "expected_kg": 1.2,
+          "actual_kg": 1.2,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        }
+      ],
+      "all_tests_passed": true
+    }
+  }
+}

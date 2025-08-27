@@ -1,0 +1,105 @@
+{
+  "feature": "Automatic Gram-to-Kilogram Conversion for iiko XLSX Export",
+  "description": "Автоматическая конвертация всех масс из грамм в килограммы при экспорте XLSX для iiko",
+  "conversion_rules": {
+    "brutto_netto": "Брутто и нетто ингредиентов: граммы → килограммы (÷1000, округление до 3 знаков)",
+    "yield": "Выход готового продукта: граммы → килограммы (÷1000, округление до 3 знаков)",
+    "units": "Единицы измерения: 'г' → 'кг'",
+    "dish_skeletons": "Выход блюд в Dish-Skeletons.xlsx: граммы → килограммы",
+    "product_skeletons": "Product-Skeletons.xlsx: без изменений (исходные единицы)"
+  },
+  "iiko_compatibility": "Экспортируемые XLSX файлы полностью совместимы с требованиями iiko (килограммы вместо грамм)",
+  "interface_preservation": "В интерфейсе и PDF остаются граммы (конвертация только для экспорта)",
+  "test_results": {
+    "generated_techcard": {
+      "id": "363b8d02-2795-4bcf-98e6-55d62fca66e8",
+      "name": "Тестовое блюдо для конвертации масс",
+      "ingredients_count": 3,
+      "yield_g": 200.0,
+      "ingredients_masses": [
+        "Ингредиент 1: брутто=106.7г, нетто=96.0г, unit=g",
+        "Ингредиент 2: брутто=53.3г, нетто=50.7г, unit=g",
+        "Ингредиент 3: брутто=66.7г, нетто=53.3г, unit=g"
+      ]
+    },
+    "precision_testing": {
+      "mass_conversions": [
+        {
+          "input_g": 25,
+          "expected_kg": 0.025,
+          "actual_kg": 0.025,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 200,
+          "expected_kg": 0.2,
+          "actual_kg": 0.2,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 1500,
+          "expected_kg": 1.5,
+          "actual_kg": 1.5,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 33.3,
+          "expected_kg": 0.033,
+          "actual_kg": 0.033,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 1,
+          "expected_kg": 0.001,
+          "actual_kg": 0.001,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 999,
+          "expected_kg": 0.999,
+          "actual_kg": 0.999,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        }
+      ],
+      "yield_conversions": [
+        {
+          "input_g": 250,
+          "expected_kg": 0.25,
+          "actual_kg": 0.25,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 500,
+          "expected_kg": 0.5,
+          "actual_kg": 0.5,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        },
+        {
+          "input_g": 1200,
+          "expected_kg": 1.2,
+          "actual_kg": 1.2,
+          "unit": "кг",
+          "precision_ok": true,
+          "passed": true
+        }
+      ],
+      "all_tests_passed": true
+    }
+  }
+}
