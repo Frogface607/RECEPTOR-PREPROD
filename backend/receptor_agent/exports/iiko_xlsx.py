@@ -839,12 +839,16 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
     # Записываем ВАЛИДНЫЕ блюда в Excel
     row = 2
     for dish in validated_dishes:
+        # КОНВЕРТАЦИЯ ВЫХОДА БЛЮДА ИЗ ГРАММ В КИЛОГРАММЫ для экспорта в iiko
+        yield_kg, yield_unit = convert_yield_grams_to_kilograms(dish["yield_g"])
+        dish_unit_kg = "кг"  # Для блюд всегда используем килограммы в iiko
+        
         # Заполняем ячейки с валидными данными
         ws.cell(row=row, column=1, value=dish["dish_code"])
         ws.cell(row=row, column=2, value=dish["dish_name"])
         ws.cell(row=row, column=3, value=dish["dish_type"])  # ВАЛИДНЫЙ тип DISH
-        ws.cell(row=row, column=4, value=dish["unit"])
-        ws.cell(row=row, column=5, value=dish["yield_g"])
+        ws.cell(row=row, column=4, value=dish_unit_kg)       # Единица измерения (кг)
+        ws.cell(row=row, column=5, value=yield_kg)           # Выход в килограммах
         
         # Форматируем артикул как текст
         article_cell = ws.cell(row=row, column=1)
