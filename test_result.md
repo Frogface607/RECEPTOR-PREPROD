@@ -200,7 +200,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Product Skeletons: iiko Import Fix - тестирование исправления Тип маппинга + Dual Export"
+user_problem_statement: "Export to iiko XLSX: Automatic Gram-to-Kilogram Conversion for All Mass Fields - тестирование"
 
 CURRENT PHASE: Product Skeletons iiko Import Fix - Critical type mapping validation completed successfully. All skeleton files now use valid iiko types (GOODS/DISH) instead of invalid Russian values (Товар/Блюдо)."
 
