@@ -201,15 +201,48 @@ def export_tc_v2_to_iiko(card: TechCardV2):
 
 @router.post("/techcards.v2/export/iiko.xlsx")
 def export_tc_v2_to_iiko_ttk_xlsx(card: TechCardV2):
-    """Экспорт техкарты в формат iiko XLSX (ТТК по шаблону iikoWeb)"""
+    """Экспорт техкарты в формат iiko XLSX (ТТК по шаблону iikoWeb) с добавлением DISH артикула"""
     if not _flag():
         raise HTTPException(404, "feature disabled")
     
     try:
         from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
         
-        # Генерируем XLSX файл для импорта ТТК
-        xlsx_buffer, issues = create_iiko_ttk_xlsx(card)
+        # Создаем preflight для получения DISH артикула
+        preflight_result = None
+        try:
+            # Импортируем PreflightService для генерации артикулов
+            from ..routes.export_v2 import PreflightService
+            import asyncio
+            
+            # Запускаем preflight для получения артикулов блюда
+            async def get_dish_article():
+                preflight_service = PreflightService()
+                return await preflight_service.run_preflight([card.meta.id], "default")
+            
+            # Выполняем асинхронную операцию в синхронном контексте
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                preflight_result = loop.run_until_complete(get_dish_article())
+            finally:
+                loop.close()
+                
+        except Exception as e:
+            print(f"Preflight for ALT export failed: {e}")
+            # Продолжаем без preflight (как было раньше)
+        
+        # Создаем export_options с preflight данными для получения DISH артикула
+        export_options = {
+            "use_product_codes": True
+        }
+        
+        if preflight_result:
+            export_options["preflight_result"] = preflight_result
+            print(f"ALT export: Added preflight result with dish articles")
+        
+        # Генерируем XLSX файл для импорта ТТК с DISH артикулом
+        xlsx_buffer, issues = create_iiko_ttk_xlsx(card, export_options)
         
         # Создаем безопасное имя файла  
         import re
