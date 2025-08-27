@@ -710,6 +710,88 @@ class FinalExportFixTester:
                 False,
                 f"Exception: {str(e)}"
             )
+
+    def test_remove_alt_exports(self):
+        """Test 6: remove_alt_exports - Ensure alt/legacy exports are hidden"""
+        print("\n=== TEST 6: REMOVE ALT EXPORTS ===")
+        
+        try:
+            # Test that only the new export endpoints are available
+            # and legacy endpoints return appropriate responses
+            
+            # Test new export endpoints (should work)
+            new_endpoints = [
+                "/v1/export/status",
+                "/v1/export/preflight", 
+                "/v1/export/zip",
+                "/v1/techcards.v2/export/enhanced/iiko.xlsx"
+            ]
+            
+            working_endpoints = []
+            for endpoint in new_endpoints:
+                try:
+                    # Use GET for status, POST for others with minimal data
+                    if 'status' in endpoint:
+                        response = self.session.get(f"{API_BASE}{endpoint}", timeout=5)
+                    else:
+                        # Minimal POST data to check if endpoint exists
+                        response = self.session.post(
+                            f"{API_BASE}{endpoint}",
+                            json={"test": True},
+                            timeout=5
+                        )
+                    
+                    # 200, 400, 422 are acceptable (endpoint exists)
+                    # 404, 405 mean endpoint doesn't exist
+                    if response.status_code not in [404, 405]:
+                        working_endpoints.append(endpoint)
+                        
+                except:
+                    pass  # Endpoint doesn't exist or error
+            
+            self.log_test(
+                "remove_alt_exports_new_endpoints",
+                len(working_endpoints) >= 3,  # At least 3 new endpoints should work
+                f"New export endpoints available: {len(working_endpoints)}/{len(new_endpoints)}",
+                {
+                    'working_endpoints': working_endpoints,
+                    'total_tested': len(new_endpoints)
+                }
+            )
+            
+            # Test that legacy export patterns are not accessible
+            legacy_patterns = [
+                "/v1/techcards/export",  # Old export
+                "/v1/export/legacy",     # Legacy export
+                "/v1/export/old",        # Old export
+                "/api/export-tech-card"  # Very old pattern
+            ]
+            
+            legacy_found = []
+            for endpoint in legacy_patterns:
+                try:
+                    response = self.session.get(f"{API_BASE}{endpoint}", timeout=5)
+                    if response.status_code not in [404, 405]:
+                        legacy_found.append(endpoint)
+                except:
+                    pass  # Good - endpoint doesn't exist
+            
+            self.log_test(
+                "remove_alt_exports_legacy_hidden",
+                len(legacy_found) == 0,
+                f"Legacy export endpoints properly hidden: {len(legacy_found)} found",
+                {
+                    'legacy_endpoints_found': legacy_found,
+                    'total_tested': len(legacy_patterns)
+                }
+            )
+            
+        except Exception as e:
+            self.log_test(
+                "remove_alt_exports_test",
+                False,
+                f"Exception: {str(e)}"
+            )
         """Test 6: remove_alt_exports - Ensure alt/legacy exports are hidden"""
         print("\n=== TEST 6: REMOVE ALT EXPORTS ===")
         
