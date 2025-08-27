@@ -219,7 +219,7 @@ class CriticalExportTester:
             response = self.session.post(
                 f"{API_BASE}/v1/export/zip",
                 json={
-                    "techcard_ids": techcard_ids,
+                    "techcardIds": techcard_ids,
                     "preflight_result": self.preflight_result,
                     "operational_rounding": True
                 },
