@@ -530,7 +530,7 @@ class IikoMassConversionTester:
             zip_response = requests.post(
                 f"{API_BASE}/v1/export/zip",
                 json={
-                    "techcard_ids": [techcard_id],
+                    "techcardIds": [techcard_id],
                     "preflight_result": preflight_data
                 },
                 timeout=30
