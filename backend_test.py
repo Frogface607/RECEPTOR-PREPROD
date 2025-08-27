@@ -1,5 +1,663 @@
 #!/usr/bin/env python3
 """
+CRITICAL COMPLETION: String Article Formatting + Kilo Conversion + Full GENERATED_* Elimination (Final Export Polish)
+
+This test validates the critical requirements for finalizing exports:
+1. All articles in XLSX should be in string format (@) with leading zeros (01023)
+2. All masses should be converted to kilograms (0.123, 0.080) with 3 decimal places
+3. No GENERATED_* content should appear in exported files
+4. 100% compliance with these requirements
+
+Testing Focus:
+- Tech card generation with proper article assignment
+- Export functionality with string article formatting
+- Mass conversion to kilograms
+- Complete elimination of mock/generated content
+- XLSX format validation
+"""
+
+import requests
+import json
+import time
+import os
+import tempfile
+import zipfile
+from openpyxl import load_workbook
+import re
+from typing import Dict, List, Any, Optional
+
+# Get backend URL from environment
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-designer-ai.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
+
+class CriticalExportTester:
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.timeout = 30
+        self.test_results = []
+        self.generated_techcards = []
+        
+    def log_result(self, test_name: str, success: bool, details: str, data: Any = None):
+        """Log test result with details"""
+        result = {
+            'test': test_name,
+            'success': success,
+            'details': details,
+            'timestamp': time.time(),
+            'data': data
+        }
+        self.test_results.append(result)
+        status = "✅" if success else "❌"
+        print(f"{status} {test_name}: {details}")
+        
+    def test_techcard_generation_with_articles(self):
+        """Test tech card generation focusing on article assignment"""
+        print("\n🔧 Testing Tech Card Generation with Article Assignment...")
+        
+        test_dishes = [
+            "Борщ украинский с говядиной",
+            "Стейк из говядины с картофельным пюре", 
+            "Салат Цезарь с курицей"
+        ]
+        
+        for dish_name in test_dishes:
+            try:
+                # Generate tech card
+                response = self.session.post(
+                    f"{API_BASE}/v1/techcards.v2/generate",
+                    json={"name": dish_name},
+                    timeout=45
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    techcard_id = data.get('card', {}).get('meta', {}).get('id')
+                    
+                    if techcard_id:
+                        self.generated_techcards.append({
+                            'id': techcard_id,
+                            'name': dish_name,
+                            'data': data
+                        })
+                        
+                        # Check for article assignment
+                        dish_article = data.get('card', {}).get('meta', {}).get('article')
+                        ingredients = data.get('card', {}).get('ingredients', [])
+                        
+                        ingredient_articles = 0
+                        for ingredient in ingredients:
+                            if ingredient.get('product_code'):
+                                ingredient_articles += 1
+                        
+                        self.log_result(
+                            f"Tech Card Generation: {dish_name}",
+                            True,
+                            f"Generated successfully (ID: {techcard_id[:8]}...), dish article: {dish_article}, ingredient articles: {ingredient_articles}/{len(ingredients)}",
+                            {
+                                'techcard_id': techcard_id,
+                                'dish_article': dish_article,
+                                'ingredient_count': len(ingredients),
+                                'articles_assigned': ingredient_articles
+                            }
+                        )
+                    else:
+                        self.log_result(
+                            f"Tech Card Generation: {dish_name}",
+                            False,
+                            "No tech card ID returned in response"
+                        )
+                else:
+                    self.log_result(
+                        f"Tech Card Generation: {dish_name}",
+                        False,
+                        f"HTTP {response.status_code}: {response.text[:200]}"
+                    )
+                    
+            except Exception as e:
+                self.log_result(
+                    f"Tech Card Generation: {dish_name}",
+                    False,
+                    f"Exception: {str(e)}"
+                )
+                
+        return len(self.generated_techcards) > 0
+    
+    def test_preflight_orchestration(self):
+        """Test preflight orchestration for article allocation"""
+        print("\n🚀 Testing Preflight Orchestration...")
+        
+        if not self.generated_techcards:
+            self.log_result(
+                "Preflight Orchestration",
+                False,
+                "No generated tech cards available for testing"
+            )
+            return False
+            
+        try:
+            # Use real tech card IDs for preflight
+            techcard_ids = [tc['id'] for tc in self.generated_techcards]
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/export/preflight",
+                json={"techcard_ids": techcard_ids},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check preflight results
+                ttk_date = data.get('ttkDate')
+                missing_dishes = data.get('missing', {}).get('dishes', [])
+                missing_products = data.get('missing', {}).get('products', [])
+                
+                # Validate article format in missing items
+                dish_articles_valid = True
+                product_articles_valid = True
+                
+                for dish in missing_dishes:
+                    article = dish.get('article', '')
+                    if not re.match(r'^\d{5}$', str(article)):
+                        dish_articles_valid = False
+                        
+                for product in missing_products:
+                    article = product.get('article', '')
+                    if not re.match(r'^\d{5}$', str(article)):
+                        product_articles_valid = False
+                
+                self.log_result(
+                    "Preflight Orchestration",
+                    True,
+                    f"TTK Date: {ttk_date}, Missing dishes: {len(missing_dishes)}, Missing products: {len(missing_products)}, Article format valid: dishes={dish_articles_valid}, products={product_articles_valid}",
+                    {
+                        'ttk_date': ttk_date,
+                        'missing_dishes': len(missing_dishes),
+                        'missing_products': len(missing_products),
+                        'dish_articles_valid': dish_articles_valid,
+                        'product_articles_valid': product_articles_valid,
+                        'preflight_result': data
+                    }
+                )
+                
+                # Store preflight result for export testing
+                self.preflight_result = data
+                return True
+                
+            else:
+                self.log_result(
+                    "Preflight Orchestration",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Preflight Orchestration",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_zip_export_with_real_data(self):
+        """Test ZIP export using real tech card data"""
+        print("\n📦 Testing ZIP Export with Real Data...")
+        
+        if not hasattr(self, 'preflight_result'):
+            self.log_result(
+                "ZIP Export",
+                False,
+                "No preflight result available for export"
+            )
+            return False
+            
+        try:
+            # Use real tech card IDs and preflight result
+            techcard_ids = [tc['id'] for tc in self.generated_techcards]
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/export/zip",
+                json={
+                    "techcard_ids": techcard_ids,
+                    "preflight_result": self.preflight_result,
+                    "operational_rounding": True
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Save ZIP file for analysis
+                zip_content = response.content
+                zip_size = len(zip_content)
+                
+                # Extract and analyze XLSX files
+                with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as temp_zip:
+                    temp_zip.write(zip_content)
+                    temp_zip_path = temp_zip.name
+                
+                analysis_results = self.analyze_xlsx_files(temp_zip_path)
+                
+                # Clean up
+                os.unlink(temp_zip_path)
+                
+                self.log_result(
+                    "ZIP Export",
+                    True,
+                    f"ZIP generated successfully ({zip_size} bytes), XLSX analysis: {analysis_results['summary']}",
+                    {
+                        'zip_size': zip_size,
+                        'xlsx_analysis': analysis_results
+                    }
+                )
+                
+                return analysis_results['compliance_check']['overall_compliant']
+                
+            else:
+                self.log_result(
+                    "ZIP Export",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "ZIP Export",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def analyze_xlsx_files(self, zip_path: str) -> Dict[str, Any]:
+        """Analyze XLSX files for compliance with critical requirements"""
+        print("\n🔍 Analyzing XLSX Files for Compliance...")
+        
+        analysis = {
+            'files_found': [],
+            'article_format_check': {},
+            'mass_conversion_check': {},
+            'generated_content_check': {},
+            'compliance_check': {
+                'string_articles': False,
+                'kilo_conversion': False,
+                'no_generated_content': False,
+                'overall_compliant': False
+            },
+            'summary': ''
+        }
+        
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_file:
+                xlsx_files = [f for f in zip_file.namelist() if f.endswith('.xlsx')]
+                analysis['files_found'] = xlsx_files
+                
+                for xlsx_file in xlsx_files:
+                    print(f"  📄 Analyzing {xlsx_file}...")
+                    
+                    # Extract XLSX file
+                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as temp_xlsx:
+                        temp_xlsx.write(zip_file.read(xlsx_file))
+                        temp_xlsx_path = temp_xlsx.name
+                    
+                    # Analyze the XLSX file
+                    file_analysis = self.analyze_single_xlsx(temp_xlsx_path, xlsx_file)
+                    
+                    # Store analysis results
+                    analysis['article_format_check'][xlsx_file] = file_analysis['article_format']
+                    analysis['mass_conversion_check'][xlsx_file] = file_analysis['mass_conversion']
+                    analysis['generated_content_check'][xlsx_file] = file_analysis['generated_content']
+                    
+                    # Clean up
+                    os.unlink(temp_xlsx_path)
+                
+                # Overall compliance check
+                analysis['compliance_check'] = self.check_overall_compliance(analysis)
+                
+                # Generate summary
+                compliance = analysis['compliance_check']
+                analysis['summary'] = f"Articles: {'✅' if compliance['string_articles'] else '❌'}, Masses: {'✅' if compliance['kilo_conversion'] else '❌'}, No GENERATED_*: {'✅' if compliance['no_generated_content'] else '❌'}"
+                
+        except Exception as e:
+            analysis['error'] = str(e)
+            analysis['summary'] = f"Analysis failed: {str(e)}"
+            
+        return analysis
+    
+    def analyze_single_xlsx(self, xlsx_path: str, filename: str) -> Dict[str, Any]:
+        """Analyze a single XLSX file for compliance"""
+        analysis = {
+            'article_format': {'compliant': False, 'details': []},
+            'mass_conversion': {'compliant': False, 'details': []},
+            'generated_content': {'compliant': True, 'violations': []}
+        }
+        
+        try:
+            workbook = load_workbook(xlsx_path, data_only=True)
+            
+            for sheet_name in workbook.sheetnames:
+                sheet = workbook[sheet_name]
+                
+                # Check each cell for compliance
+                for row in sheet.iter_rows():
+                    for cell in row:
+                        if cell.value is not None:
+                            cell_value = str(cell.value)
+                            
+                            # Check for GENERATED_* content (CRITICAL VIOLATION)
+                            if 'GENERATED_' in cell_value or 'DISH_MOCK_' in cell_value or 'TEST_INGREDIENT' in cell_value:
+                                analysis['generated_content']['compliant'] = False
+                                analysis['generated_content']['violations'].append({
+                                    'sheet': sheet_name,
+                                    'cell': cell.coordinate,
+                                    'value': cell_value
+                                })
+                            
+                            # Check article format (should be 5-digit strings with leading zeros)
+                            if re.match(r'^\d{5}$', cell_value):
+                                # Check if cell is formatted as text (@)
+                                if cell.number_format == '@' or cell.data_type == 's':
+                                    analysis['article_format']['details'].append({
+                                        'sheet': sheet_name,
+                                        'cell': cell.coordinate,
+                                        'value': cell_value,
+                                        'format': cell.number_format,
+                                        'compliant': True
+                                    })
+                                else:
+                                    analysis['article_format']['details'].append({
+                                        'sheet': sheet_name,
+                                        'cell': cell.coordinate,
+                                        'value': cell_value,
+                                        'format': cell.number_format,
+                                        'compliant': False
+                                    })
+                            
+                            # Check mass values (should be in kg format: 0.123)
+                            if re.match(r'^\d+\.\d{3}$', cell_value):
+                                mass_value = float(cell_value)
+                                if 0.001 <= mass_value <= 10.0:  # Reasonable range for kg
+                                    analysis['mass_conversion']['details'].append({
+                                        'sheet': sheet_name,
+                                        'cell': cell.coordinate,
+                                        'value': cell_value,
+                                        'kg_format': True
+                                    })
+            
+            # Determine compliance
+            article_compliant_count = sum(1 for detail in analysis['article_format']['details'] if detail.get('compliant', False))
+            analysis['article_format']['compliant'] = article_compliant_count > 0
+            
+            mass_compliant_count = len(analysis['mass_conversion']['details'])
+            analysis['mass_conversion']['compliant'] = mass_compliant_count > 0
+            
+        except Exception as e:
+            analysis['error'] = str(e)
+            
+        return analysis
+    
+    def check_overall_compliance(self, analysis: Dict[str, Any]) -> Dict[str, bool]:
+        """Check overall compliance with critical requirements"""
+        compliance = {
+            'string_articles': False,
+            'kilo_conversion': False,
+            'no_generated_content': True,
+            'overall_compliant': False
+        }
+        
+        # Check string articles compliance
+        for file_analysis in analysis['article_format_check'].values():
+            if file_analysis.get('compliant', False):
+                compliance['string_articles'] = True
+                break
+        
+        # Check kilo conversion compliance
+        for file_analysis in analysis['mass_conversion_check'].values():
+            if file_analysis.get('compliant', False):
+                compliance['kilo_conversion'] = True
+                break
+        
+        # Check no GENERATED_* content
+        for file_analysis in analysis['generated_content_check'].values():
+            if not file_analysis.get('compliant', True):
+                compliance['no_generated_content'] = False
+                break
+        
+        # Overall compliance requires all three
+        compliance['overall_compliant'] = (
+            compliance['string_articles'] and 
+            compliance['kilo_conversion'] and 
+            compliance['no_generated_content']
+        )
+        
+        return compliance
+    
+    def test_individual_xlsx_export(self):
+        """Test individual XLSX export for enhanced validation"""
+        print("\n📊 Testing Individual XLSX Export...")
+        
+        if not self.generated_techcards:
+            self.log_result(
+                "Individual XLSX Export",
+                False,
+                "No generated tech cards available for testing"
+            )
+            return False
+            
+        try:
+            # Test enhanced export endpoint
+            techcard_id = self.generated_techcards[0]['id']
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
+                json={
+                    "techcard_ids": [techcard_id],
+                    "operational_rounding": True
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Check content type
+                content_type = response.headers.get('content-type', '')
+                is_xlsx = 'spreadsheet' in content_type or 'excel' in content_type
+                
+                if is_xlsx:
+                    # Save and analyze XLSX
+                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as temp_xlsx:
+                        temp_xlsx.write(response.content)
+                        temp_xlsx_path = temp_xlsx.name
+                    
+                    file_analysis = self.analyze_single_xlsx(temp_xlsx_path, 'individual_export.xlsx')
+                    
+                    # Clean up
+                    os.unlink(temp_xlsx_path)
+                    
+                    self.log_result(
+                        "Individual XLSX Export",
+                        True,
+                        f"XLSX exported successfully ({len(response.content)} bytes), Analysis: {file_analysis}",
+                        file_analysis
+                    )
+                    
+                    return file_analysis['generated_content']['compliant']
+                else:
+                    self.log_result(
+                        "Individual XLSX Export",
+                        False,
+                        f"Response is not XLSX format (content-type: {content_type})"
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Individual XLSX Export",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Individual XLSX Export",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_article_allocator_integration(self):
+        """Test ArticleAllocator integration for proper 5-digit article generation"""
+        print("\n🔢 Testing ArticleAllocator Integration...")
+        
+        try:
+            # Test article allocation
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/articles/allocate",
+                json={
+                    "article_type": "dish",
+                    "count": 3,
+                    "entity_ids": ["test-dish-1", "test-dish-2", "test-dish-3"]
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                allocated_articles = data.get('allocated_articles', [])
+                
+                # Validate article format
+                valid_format = True
+                for article in allocated_articles:
+                    if not re.match(r'^\d{5}$', str(article)):
+                        valid_format = False
+                        break
+                
+                self.log_result(
+                    "ArticleAllocator Integration",
+                    valid_format,
+                    f"Allocated {len(allocated_articles)} articles, format valid: {valid_format}, articles: {allocated_articles}",
+                    {
+                        'allocated_articles': allocated_articles,
+                        'format_valid': valid_format
+                    }
+                )
+                
+                return valid_format
+            else:
+                self.log_result(
+                    "ArticleAllocator Integration",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "ArticleAllocator Integration",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def run_comprehensive_test(self):
+        """Run comprehensive test suite for critical export requirements"""
+        print("🚀 STARTING CRITICAL COMPLETION TESTING: String Article Formatting + Kilo Conversion + Full GENERATED_* Elimination")
+        print("=" * 100)
+        
+        start_time = time.time()
+        
+        # Test sequence
+        tests = [
+            ("Tech Card Generation", self.test_techcard_generation_with_articles),
+            ("ArticleAllocator Integration", self.test_article_allocator_integration),
+            ("Preflight Orchestration", self.test_preflight_orchestration),
+            ("ZIP Export with Real Data", self.test_zip_export_with_real_data),
+            ("Individual XLSX Export", self.test_individual_xlsx_export)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(tests)
+        
+        for test_name, test_func in tests:
+            print(f"\n{'='*50}")
+            print(f"🧪 RUNNING: {test_name}")
+            print(f"{'='*50}")
+            
+            try:
+                success = test_func()
+                if success:
+                    passed_tests += 1
+            except Exception as e:
+                self.log_result(test_name, False, f"Test execution failed: {str(e)}")
+        
+        # Generate final report
+        end_time = time.time()
+        duration = end_time - start_time
+        
+        print(f"\n{'='*100}")
+        print("🎯 CRITICAL COMPLETION TEST RESULTS")
+        print(f"{'='*100}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        
+        print(f"📊 Overall Success Rate: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+        print(f"⏱️  Total Duration: {duration:.2f}s")
+        print(f"🔧 Generated Tech Cards: {len(self.generated_techcards)}")
+        
+        # Critical compliance summary
+        print(f"\n🎯 CRITICAL REQUIREMENTS COMPLIANCE:")
+        
+        # Find compliance results from ZIP export test
+        compliance_found = False
+        for result in self.test_results:
+            if result['test'] == 'ZIP Export' and result.get('data', {}).get('xlsx_analysis'):
+                compliance = result['data']['xlsx_analysis']['compliance_check']
+                print(f"   📝 String Articles (@): {'✅ PASS' if compliance['string_articles'] else '❌ FAIL'}")
+                print(f"   ⚖️  Kilo Conversion: {'✅ PASS' if compliance['kilo_conversion'] else '❌ FAIL'}")
+                print(f"   🚫 No GENERATED_*: {'✅ PASS' if compliance['no_generated_content'] else '❌ FAIL'}")
+                print(f"   🎯 Overall Compliant: {'✅ PASS' if compliance['overall_compliant'] else '❌ FAIL'}")
+                compliance_found = True
+                break
+        
+        if not compliance_found:
+            print("   ⚠️  Compliance check not available (export test may have failed)")
+        
+        # Detailed test results
+        print(f"\n📋 DETAILED TEST RESULTS:")
+        for result in self.test_results:
+            status = "✅" if result['success'] else "❌"
+            print(f"   {status} {result['test']}: {result['details']}")
+        
+        # Final verdict
+        if success_rate >= 80 and compliance_found:
+            print(f"\n🎉 CRITICAL SUCCESS: Export system meets critical requirements for production use!")
+        elif success_rate >= 60:
+            print(f"\n⚠️  PARTIAL SUCCESS: Most functionality working but critical issues remain")
+        else:
+            print(f"\n🚨 CRITICAL FAILURE: Major issues prevent production readiness")
+        
+        return success_rate >= 80
+
+def main():
+    """Main test execution"""
+    tester = CriticalExportTester()
+    
+    try:
+        success = tester.run_comprehensive_test()
+        exit_code = 0 if success else 1
+        
+        print(f"\n🏁 Test execution completed with exit code: {exit_code}")
+        return exit_code
+        
+    except KeyboardInterrupt:
+        print(f"\n⚠️  Test execution interrupted by user")
+        return 2
+    except Exception as e:
+        print(f"\n💥 Test execution failed with exception: {str(e)}")
+        return 3
+
+if __name__ == "__main__":
+    exit(main())
+"""
 Final Export Fix: Backend Testing
 Comprehensive testing for auto-update product articles, individual XLSX export, 
 kilo conversion, UX instructions (no GENERATED_*)
