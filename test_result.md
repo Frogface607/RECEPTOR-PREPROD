@@ -200,7 +200,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "iiko Codes End-to-End + Product Skeletons + Terminology: Task: A. Hotfix & Migration: код вместо GUID везде, B. Terminology & UI, C. Product Skeletons (когда маппинг не нашёлся), D. Dish Code Resolver (актуализировать), E. Operational Rounding v1 (довести), F. TTK Date Autoresolve (ошибка «на дату уже есть»), G. Багфикс экспорта. PRIORITY: 1) A + G (код вместо GUID + багфикс экспорта), 2) C + D (Product Skeletons + Dish Resolver), 3) E (округление в экспорт/PDF), 4) F (автосдвиг даты)
+user_problem_statement: "Product Skeletons: iiko Import Fix - тестирование исправления Тип маппинга + Dual Export"
 
 CURRENT PHASE: Guard — dish-first rule - Critical safety guard to prevent iiko TTK rejection when dish articles don't exist in nomenclature. Implements strict blocking rules for TTK-only exports."
 
