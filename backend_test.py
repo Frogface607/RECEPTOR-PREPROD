@@ -165,22 +165,17 @@ class IikoMassConversionTester:
         try:
             start_time = time.time()
             
-            # Сначала получаем техкарту для экспорта
-            get_response = requests.get(
-                f"{API_BASE}/v1/techcards.v2/{techcard_id}",
-                timeout=30
-            )
-            
-            if get_response.status_code != 200:
+            # Используем сохраненные данные техкарты из генерации
+            if 'generated_techcard' not in self.artifacts or 'full_card_data' not in self.artifacts['generated_techcard']:
                 self.log_result(
-                    "Получение техкарты для экспорта", 
+                    "Данные техкарты для экспорта", 
                     False, 
-                    f"HTTP {get_response.status_code}: {get_response.text[:200]}", 
-                    time.time() - start_time
+                    "Отсутствуют сохраненные данные техкарты", 
+                    0
                 )
                 return False
                 
-            techcard_data = get_response.json()
+            techcard_data = self.artifacts['generated_techcard']['full_card_data']
             
             # Экспортируем техкарту в XLSX для iiko (используем enhanced endpoint)
             response = requests.post(
