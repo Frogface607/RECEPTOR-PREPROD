@@ -3007,6 +3007,7 @@ frontend:
 
 test_plan:
   current_focus:
+    - "ALT Export DISH Article Fix"
     - "CRITICAL FIX: Product-Article Reconcile (No GENERATED_* in TTK, Only Real Articles from Skeletons) - COMPLETED SUCCESSFULLY"
   stuck_tasks:
     - "HACCP Pro Frontend Module (FE-01A)"
