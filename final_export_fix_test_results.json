@@ -1,0 +1,85 @@
+{
+  "summary": {
+    "total_tests": 7,
+    "passed_tests": 3,
+    "failed_tests": 4,
+    "success_rate": 42.857142857142854,
+    "test_timestamp": "2025-08-27T10:57:08.157073"
+  },
+  "results": [
+    {
+      "test": "generate_techcard_Тест_блюдо_для_маппинга_артикулов",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"name\"],\"msg\":\"Field required\",\"input\":{\"dishName\":\"Тест блюдо для маппинга артикулов\",\"cuisineType\":\"европейская\",\"venueType\":\"ресторан\",\"averageCheck\":\"сре",
+      "timestamp": "2025-08-27T10:57:07.748723",
+      "data": null
+    },
+    {
+      "test": "generate_techcard_Блюдо_для_индивидуального_экспорта",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"name\"],\"msg\":\"Field required\",\"input\":{\"dishName\":\"Блюдо для индивидуального экспорта\",\"cuisineType\":\"европейская\",\"venueType\":\"ресторан\",\"averageCheck\":\"ср",
+      "timestamp": "2025-08-27T10:57:07.769224",
+      "data": null
+    },
+    {
+      "test": "generate_techcard_Блюдо_для_тестирования_конвертации_в_кг",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"name\"],\"msg\":\"Field required\",\"input\":{\"dishName\":\"Блюдо для тестирования конвертации в кг\",\"cuisineType\":\"европейская\",\"venueType\":\"ресторан\",\"averageCheck",
+      "timestamp": "2025-08-27T10:57:07.818758",
+      "data": null
+    },
+    {
+      "test": "generate_techcard_Блюдо_для_тестирования_Excel_инвариантов",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"name\"],\"msg\":\"Field required\",\"input\":{\"dishName\":\"Блюдо для тестирования Excel инвариантов\",\"cuisineType\":\"европейская\",\"venueType\":\"ресторан\",\"averageChec",
+      "timestamp": "2025-08-27T10:57:07.828699",
+      "data": null
+    },
+    {
+      "test": "instruction_section_features",
+      "success": true,
+      "details": "Export features available for user instructions",
+      "timestamp": "2025-08-27T10:57:07.966109",
+      "data": {
+        "available_features": [
+          "article_allocation",
+          "ttk_date_resolution",
+          "skeleton_generation",
+          "zip_export",
+          "article_claiming"
+        ],
+        "systems_status": {
+          "preflight_orchestrator": "operational",
+          "dual_exporter": "operational",
+          "article_allocator": "operational"
+        }
+      }
+    },
+    {
+      "test": "remove_alt_exports_new_endpoints",
+      "success": true,
+      "details": "New export endpoints available: 4/4",
+      "timestamp": "2025-08-27T10:57:08.043750",
+      "data": {
+        "working_endpoints": [
+          "/v1/export/status",
+          "/v1/export/preflight",
+          "/v1/export/zip",
+          "/v1/techcards.v2/export/enhanced/iiko.xlsx"
+        ],
+        "total_tested": 4
+      }
+    },
+    {
+      "test": "remove_alt_exports_legacy_hidden",
+      "success": true,
+      "details": "Legacy export endpoints properly hidden: 0 found",
+      "timestamp": "2025-08-27T10:57:08.156781",
+      "data": {
+        "legacy_endpoints_found": [],
+        "total_tested": 4
+      }
+    }
+  ],
+  "generated_techcards": 0
+}
