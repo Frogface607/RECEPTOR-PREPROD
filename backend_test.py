@@ -451,7 +451,7 @@ class CriticalExportTester:
             response = self.session.post(
                 f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
                 json={
-                    "techcard_ids": [techcard_id],
+                    "techcardIds": [techcard_id],
                     "operational_rounding": True
                 },
                 timeout=30
