@@ -644,7 +644,7 @@ class ProductArticleReconcileTest:
                 return False
             
             gen_data = gen_response.json()
-            techcard_id = gen_data.get("id")
+            techcard_id = gen_data.get("card", {}).get("meta", {}).get("id")
             
             # Пытаемся экспортировать без preflight (должно заблокироваться)
             export_response = await self.client.post(f"{API_BASE}/v1/export/zip", json={
