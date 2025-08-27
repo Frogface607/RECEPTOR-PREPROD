@@ -349,10 +349,19 @@ def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]],
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal='center')
     
-    # Заполняем данные по ингредиентам
-    row = 2
     
-    for ingredient in missing_ingredients:
+    # Записываем заголовки
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+    
+    # Валидация и подготовка данных
+    type_errors = []
+    validated_products = []
+    
+    # Заполняем данные по ингредиентам с СТРОГОЙ ВАЛИДАЦИЕЙ
+    for idx, ingredient in enumerate(missing_ingredients):
         ingredient_name = ingredient.get('name', 'Unknown Ingredient')
         unit = ingredient.get('unit', 'г')
         
@@ -393,12 +402,72 @@ def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]],
         else:
             group = 'Сырьё'  # По умолчанию
         
-        # Записываем данные в строку
-        ws.cell(row=row, column=1, value=product_code).number_format = '@'  # Текстовый формат для кода
-        ws.cell(row=row, column=2, value=ingredient_name)
-        ws.cell(row=row, column=3, value=normalized_unit)
-        ws.cell(row=row, column=4, value="Товар")  # Тип продукта
-        ws.cell(row=row, column=5, value=group)
+        # КРИТИЧЕСКОЕ: Определяем ВАЛИДНЫЙ тип для iiko
+        # Все ингредиенты должны быть GOODS (товар) в iiko системе
+        product_type = "GOODS"
+        
+        # СТРОГАЯ ВАЛИДАЦИЯ ТИПА
+        if product_type not in VALID_IIKO_TYPES:
+            type_errors.append({
+                "index": idx,
+                "name": ingredient_name,
+                "invalid_type": product_type,
+                "valid_types": list(VALID_IIKO_TYPES),
+                "error": f"Недопустимый тип '{product_type}' для продукта '{ingredient_name}'"
+            })
+            continue
+        
+        validated_products.append({
+            "product_code": product_code,
+            "ingredient_name": ingredient_name,
+            "normalized_unit": normalized_unit,
+            "product_type": product_type,
+            "group": group
+        })
+    
+    # FAIL-FAST: Если есть ошибки валидации - останавливаем экспорт
+    if type_errors:
+        # Создаем детальный отчет об ошибках
+        error_report = {
+            "timestamp": datetime.now().isoformat(),
+            "error_type": "PRODUCT_TYPE_VALIDATION_FAILED",
+            "total_products": len(missing_ingredients),
+            "invalid_products": len(type_errors),
+            "valid_types": list(VALID_IIKO_TYPES),
+            "errors": type_errors,
+            "instruction": "Исправьте типы продуктов на допустимые значения: GOODS, DISH, MODIFIER, GROUP, SERVICE, PREPARED"
+        }
+        
+        # Сохраняем отчет об ошибках (если нужен файловый артефакт)
+        try:
+            import json
+            error_file_path = "/app/artifacts/type_errors.json"
+            os.makedirs(os.path.dirname(error_file_path), exist_ok=True)
+            with open(error_file_path, 'w', encoding='utf-8') as f:
+                json.dump(error_report, f, indent=2, ensure_ascii=False)
+            logger.error(f"Type validation errors saved to {error_file_path}")
+        except Exception as e:
+            logger.warning(f"Could not save error report: {e}")
+        
+        # Генерируем детальное сообщение об ошибке
+        error_msg = f"КРИТИЧЕСКАЯ ОШИБКА: Обнаружено {len(type_errors)} продуктов с невалидными типами:\n"
+        for error in type_errors[:5]:  # Показываем первые 5 ошибок
+            error_msg += f"- {error['name']}: тип '{error['invalid_type']}' недопустим\n"
+        if len(type_errors) > 5:
+            error_msg += f"... и еще {len(type_errors) - 5} ошибок\n"
+        error_msg += f"\nДопустимые типы: {', '.join(VALID_IIKO_TYPES)}"
+        error_msg += f"\nИспользуйте GOODS для обычных ингредиентов, DISH для блюд."
+        
+        raise ValueError(error_msg)
+    
+    # Записываем ВАЛИДНЫЕ данные в Excel
+    row = 2
+    for product in validated_products:
+        ws.cell(row=row, column=1, value=product["product_code"]).number_format = '@'  # Текстовый формат для кода
+        ws.cell(row=row, column=2, value=product["ingredient_name"])
+        ws.cell(row=row, column=3, value=product["normalized_unit"])
+        ws.cell(row=row, column=4, value=product["product_type"])  # ВАЛИДНЫЙ тип
+        ws.cell(row=row, column=5, value=product["group"])
         ws.cell(row=row, column=6, value="")  # Штрихкод пустой
         ws.cell(row=row, column=7, value="")  # Поставщик пустой
         
