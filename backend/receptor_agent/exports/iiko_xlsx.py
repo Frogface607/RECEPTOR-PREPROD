@@ -1252,13 +1252,16 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     else:
         resolved_date = base_date or datetime.now().strftime('%Y-%m-%d')
     
-    # Рассчитываем выход готового продукта
-    output_qty = getattr(working_card.yield_, 'perBatch_g', 0) if hasattr(working_card, 'yield_') and working_card.yield_ else 0
-    if not output_qty and hasattr(working_card, 'yield_') and working_card.yield_:
+    # Рассчитываем выход готового продукта и конвертируем в килограммы
+    output_qty_g = getattr(working_card.yield_, 'perBatch_g', 0) if hasattr(working_card, 'yield_') and working_card.yield_ else 0
+    if not output_qty_g and hasattr(working_card, 'yield_') and working_card.yield_:
         # Если нет perBatch_g, рассчитываем из порций
         portions = getattr(working_card, 'portions', 1)
         per_portion = getattr(working_card.yield_, 'perPortion_g', 0)
-        output_qty = portions * per_portion if per_portion else 0
+        output_qty_g = portions * per_portion if per_portion else 0
+    
+    # КОНВЕРТАЦИЯ ВЫХОДА ИЗ ГРАММ В КИЛОГРАММЫ для экспорта в iiko
+    output_qty_kg, output_unit = convert_yield_grams_to_kilograms(output_qty_g)
     
     # Генерируем технологию приготовления
     technology_text = ""
@@ -1371,7 +1374,7 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
             loss_pct,                     # Потери, %
             netto_kg,                     # Нетто (в кг)
             brutto_unit,                  # Ед. (кг для iiko)
-            round(output_qty, 1),         # Выход готового продукта
+            round(output_qty_kg, 1),      # Выход готового продукта (в кг)
             1,                            # Норма закладки
             1,                            # Метод списания
             technology_text if row == 2 else ""  # Технология (только для первой строки)
