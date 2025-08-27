@@ -1,0 +1,147 @@
+{
+  "product_mapping": {
+    "Куриное филе": "10006",
+    "Тортилья": "10007",
+    "Ананас": "10008",
+    "Лук": "10009",
+    "Кинза": "10010",
+    "Лайм": "10011"
+  },
+  "techcard_id": "e2a0b873-090c-47d6-808f-7e2540eefe27",
+  "preflight_data": {
+    "status": "success",
+    "ttkDate": "2025-08-27",
+    "missing": {
+      "dishes": [
+        {
+          "id": "dish_Тако_с_курицей_и_ананасовой_сальсой",
+          "name": "Тако с курицей и ананасовой сальсой",
+          "article": "10005",
+          "type": "dish",
+          "unit": "порц",
+          "yield": 240.0
+        }
+      ],
+      "products": [
+        {
+          "id": "product_Куриное_филе",
+          "name": "Куриное филе",
+          "article": "10006",
+          "type": "product",
+          "unit": "g",
+          "group": "Мясо и рыба"
+        },
+        {
+          "id": "product_Тортилья",
+          "name": "Тортилья",
+          "article": "10007",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        },
+        {
+          "id": "product_Ананас",
+          "name": "Ананас",
+          "article": "10008",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        },
+        {
+          "id": "product_Лук",
+          "name": "Лук",
+          "article": "10009",
+          "type": "product",
+          "unit": "g",
+          "group": "Овощи"
+        },
+        {
+          "id": "product_Кинза",
+          "name": "Кинза",
+          "article": "10010",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        },
+        {
+          "id": "product_Лайм",
+          "name": "Лайм",
+          "article": "10011",
+          "type": "product",
+          "unit": "g",
+          "group": "Сырьё"
+        }
+      ]
+    },
+    "generated": {
+      "dishArticles": [
+        "10005"
+      ],
+      "productArticles": [
+        "10006",
+        "10007",
+        "10008",
+        "10009",
+        "10010",
+        "10011"
+      ]
+    },
+    "counts": {
+      "dishSkeletons": 1,
+      "productSkeletons": 6
+    }
+  },
+  "dish_article": "10005",
+  "ttk_product_articles": [
+    "10006",
+    "10007",
+    "10008",
+    "10009",
+    "10010",
+    "10011"
+  ],
+  "ttk_product_names": [
+    "Куриное филе",
+    "Тортилья",
+    "Ананас",
+    "Лук",
+    "Кинза",
+    "Лайм"
+  ],
+  "mapping_validation": {
+    "total_products": 6,
+    "mapped_correctly": 6,
+    "mapping_errors": 0,
+    "unmapped_products": 0
+  },
+  "generated_validation": {
+    "files_scanned": [
+      "iiko_TTK.xlsx",
+      "Dish-Skeletons.xlsx",
+      "Product-Skeletons.xlsx"
+    ],
+    "generated_signatures_found": 0,
+    "mock_signatures_found": 0,
+    "total_articles_validated": 12,
+    "invalid_articles": 0
+  },
+  "mapping_report": {
+    "workflow_status": "COMPLETED",
+    "timestamp": "2025-08-27T16:23:14.538815",
+    "product_mapping_count": 6,
+    "dish_article": "10005",
+    "ttk_products_count": 6,
+    "mapping_accuracy": "100%",
+    "generated_content_found": false,
+    "mock_content_found": false,
+    "critical_errors": 0,
+    "acceptance_criteria_met": true
+  },
+  "performance_report": {
+    "total_tests": 16,
+    "passed_tests": 16,
+    "success_rate": "100.0%",
+    "critical_errors": 0,
+    "workflow_operational": true
+  }
+}
