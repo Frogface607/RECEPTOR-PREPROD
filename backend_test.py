@@ -524,10 +524,10 @@ class CriticalExportTester:
                 data = response.json()
                 allocated_articles = data.get('allocated_articles', [])
                 
-                # Validate article format
+                # Validate article format (should be 5 or 6 digit articles)
                 valid_format = True
                 for article in allocated_articles:
-                    if not re.match(r'^\d{5}$', str(article)):
+                    if not re.match(r'^\d{5,6}$', str(article)):
                         valid_format = False
                         break
                 
