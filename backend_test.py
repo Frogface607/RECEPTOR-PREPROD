@@ -1016,6 +1016,8 @@ class FinalExportFixTester:
         self.test_kilo_conversion()
         self.test_excel_invariants()
         self.test_instruction_section()
+        self.test_direct_export_endpoints()
+        self.test_mock_export_workflow()
         self.test_remove_alt_exports()
         
         # Generate summary
