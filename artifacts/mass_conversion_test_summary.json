@@ -4,21 +4,21 @@
   "passed_tests": 3,
   "success_rate": 60.0,
   "critical_tests_passed": "1/3",
-  "total_time_s": 10.3,
+  "total_time_s": 9.0,
   "results": [
     {
       "test": "Генерация техкарты",
       "status": "✅ PASS",
       "success": true,
-      "details": "Техкарта создана: ID=363b8d02-2795-4bcf-98e6-55d62fca66e8, ингредиентов=3, выход=200.0г. Массы в граммах сохранены корректно.",
-      "timing_ms": 9859.5
+      "details": "Техкарта создана: ID=5ce3bd9a-f7aa-48be-8f81-54b4f19a4065, ингредиентов=3, выход=200.0г. Массы в граммах сохранены корректно.",
+      "timing_ms": 8563.0
     },
     {
-      "test": "TTK XLSX экспорт",
+      "test": "Получение техкарты для экспорта",
       "status": "❌ FAIL",
       "success": false,
-      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"meta\"],\"msg\":\"Field required\",\"input\":{\"techcard_id\":\"363b8d02-2795-4bcf-98e6-55d62fca66e8\"},\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"},{\"type\":\"mi",
-      "timing_ms": 81.4
+      "details": "HTTP 405: {\"detail\":\"Method Not Allowed\"}",
+      "timing_ms": 75.8
     },
     {
       "test": "Точность конвертации",
@@ -32,7 +32,7 @@
       "status": "❌ FAIL",
       "success": false,
       "details": "Preflight failed: HTTP 400",
-      "timing_ms": 56.7
+      "timing_ms": 57.2
     },
     {
       "test": "Создание артефактов",
@@ -44,14 +44,14 @@
   ],
   "artifacts": {
     "generated_techcard": {
-      "id": "363b8d02-2795-4bcf-98e6-55d62fca66e8",
+      "id": "5ce3bd9a-f7aa-48be-8f81-54b4f19a4065",
       "name": "Тестовое блюдо для конвертации масс",
       "ingredients_count": 3,
       "yield_g": 200.0,
       "ingredients_masses": [
-        "Ингредиент 1: брутто=106.7г, нетто=96.0г, unit=g",
-        "Ингредиент 2: брутто=53.3г, нетто=50.7г, unit=g",
-        "Ингредиент 3: брутто=66.7г, нетто=53.3г, unit=g"
+        "Ингредиент 1: брутто=120.5г, нетто=108.4г, unit=g",
+        "Ингредиент 2: брутто=84.3г, нетто=67.5г, unit=g",
+        "Ингредиент 3: брутто=24.1г, нетто=24.1г, unit=g"
       ]
     },
     "precision_testing": {
