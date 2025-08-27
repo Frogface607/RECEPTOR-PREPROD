@@ -702,9 +702,10 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
                 "yield_g": yield_g
             })
     
+    
     # Legacy: используем cards если dishes_data не предоставлены
     elif cards:
-        for card in cards:
+        for idx, card in enumerate(cards):
             dish_name = card.meta.title
             dish_code = dish_codes_mapping.get(dish_name, '')
             
@@ -713,24 +714,77 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
                 yield_g = card.yield_.perPortion_g if hasattr(card, 'yield_') else 200
                 unit = 'г'  # По умолчанию граммы
                 
-                row_data = [
-                    dish_code,      # Артикул
-                    dish_name,      # Наименование
-                    "Блюдо",        # Тип
-                    unit,           # Ед. выпуска
-                    yield_g         # Выход
-                ]
+                # КРИТИЧЕСКОЕ: Все блюда должны быть типа DISH
+                dish_type = "DISH"
                 
-                # Записываем данные
-                for col, value in enumerate(row_data, 1):
-                    cell = ws.cell(row=row, column=col)
-                    cell.value = value
-                    
-                    # Форматируем артикул как текст
-                    if col == 1:  # Колонка "Артикул"
-                        cell.number_format = '@'
+                # СТРОГАЯ ВАЛИДАЦИЯ ТИПА
+                if dish_type not in VALID_IIKO_DISH_TYPES:
+                    type_errors.append({
+                        "index": idx,
+                        "name": dish_name,
+                        "invalid_type": dish_type,
+                        "valid_types": list(VALID_IIKO_DISH_TYPES),
+                        "error": f"Недопустимый тип '{dish_type}' для блюда '{dish_name}'"
+                    })
+                    continue
                 
-                row += 1
+                validated_dishes.append({
+                    "dish_code": dish_code,
+                    "dish_name": dish_name,
+                    "dish_type": dish_type,
+                    "unit": unit,
+                    "yield_g": yield_g
+                })
+    
+    # FAIL-FAST: Если есть ошибки валидации - останавливаем экспорт
+    if type_errors:
+        # Создаем детальный отчет об ошибках для блюд
+        error_report = {
+            "timestamp": datetime.now().isoformat(),
+            "error_type": "DISH_TYPE_VALIDATION_FAILED",
+            "total_dishes": len(dishes_data) if dishes_data else len(cards) if cards else 0,
+            "invalid_dishes": len(type_errors),
+            "valid_types": list(VALID_IIKO_DISH_TYPES),
+            "errors": type_errors,
+            "instruction": "Все блюда должны иметь тип DISH для корректного импорта в iiko"
+        }
+        
+        # Сохраняем отчет об ошибках
+        try:
+            import json
+            error_file_path = "/app/artifacts/dish_type_errors.json"
+            os.makedirs(os.path.dirname(error_file_path), exist_ok=True)
+            with open(error_file_path, 'w', encoding='utf-8') as f:
+                json.dump(error_report, f, indent=2, ensure_ascii=False)
+            logger.error(f"Dish type validation errors saved to {error_file_path}")
+        except Exception as e:
+            logger.warning(f"Could not save dish error report: {e}")
+        
+        # Генерируем детальное сообщение об ошибке
+        error_msg = f"КРИТИЧЕСКАЯ ОШИБКА DISH SKELETONS: Обнаружено {len(type_errors)} блюд с невалидными типами:\n"
+        for error in type_errors[:3]:  # Показываем первые 3 ошибки
+            error_msg += f"- {error['name']}: тип '{error['invalid_type']}' недопустим\n"
+        if len(type_errors) > 3:
+            error_msg += f"... и еще {len(type_errors) - 3} ошибок\n"
+        error_msg += f"\nДля блюд используйте только тип: DISH"
+        
+        raise ValueError(error_msg)
+    
+    # Записываем ВАЛИДНЫЕ блюда в Excel
+    row = 2
+    for dish in validated_dishes:
+        # Заполняем ячейки с валидными данными
+        ws.cell(row=row, column=1, value=dish["dish_code"])
+        ws.cell(row=row, column=2, value=dish["dish_name"])
+        ws.cell(row=row, column=3, value=dish["dish_type"])  # ВАЛИДНЫЙ тип DISH
+        ws.cell(row=row, column=4, value=dish["unit"])
+        ws.cell(row=row, column=5, value=dish["yield_g"])
+        
+        # Форматируем артикул как текст
+        article_cell = ws.cell(row=row, column=1)
+        article_cell.number_format = '@'
+        
+        row += 1
     
     # Автоширина колонок
     for col in range(1, len(headers) + 1):
