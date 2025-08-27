@@ -1,12 +1,26 @@
 {
-  "timestamp": "2025-08-27T20:31:17.448525",
+  "timestamp": "2025-08-27T20:55:29.197310",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 1,
+  "total_products": 3,
   "all_types_valid": true,
   "products": [
     {
-      "name": "Панировочные сухари",
-      "code": "10019",
+      "name": "Ингредиент 1",
+      "code": "10023",
+      "type": "GOODS",
+      "unit": "г",
+      "group": "Сырьё"
+    },
+    {
+      "name": "Ингредиент 2",
+      "code": "10024",
+      "type": "GOODS",
+      "unit": "г",
+      "group": "Сырьё"
+    },
+    {
+      "name": "Ингредиент 3",
+      "code": "10025",
       "type": "GOODS",
       "unit": "г",
       "group": "Сырьё"

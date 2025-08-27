@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-08-27T20:31:17.440921",
+  "timestamp": "2025-08-27T20:55:29.190163",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Наггетсы-динозавры и вулкан из картофельного пюре с томатным спайси соусом",
-      "code": "10018",
+      "name": "Тестовое блюдо для конвертации масс",
+      "code": "10022",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 150
+      "yield_g": 200.0
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."

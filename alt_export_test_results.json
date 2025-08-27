@@ -3,20 +3,20 @@
     {
       "test": "Tech Card Generation for ALT Export",
       "success": true,
-      "details": "Generated 'Борщ украинский с говядиной' (ID: 3a6087a2-e07f-47ae-afd8-b5bd13e226fd) with 8 ingredients",
-      "timestamp": "2025-08-27T20:54:11.410792",
+      "details": "Generated 'Борщ украинский с говядиной' (ID: 2657f88f-6421-4f94-9078-92bfa9a42035) with 10 ingredients",
+      "timestamp": "2025-08-27T20:55:43.692604",
       "data": {
-        "techcard_id": "3a6087a2-e07f-47ae-afd8-b5bd13e226fd",
+        "techcard_id": "2657f88f-6421-4f94-9078-92bfa9a42035",
         "dish_name": "Борщ украинский с говядиной"
       }
     },
     {
       "test": "ALT Export Endpoint Response",
       "success": true,
-      "details": "Generated Excel file (6017 bytes) with content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "timestamp": "2025-08-27T20:54:11.828106",
+      "details": "Generated Excel file (6152 bytes) with content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "timestamp": "2025-08-27T20:55:44.228307",
       "data": {
-        "file_size": 6017,
+        "file_size": 6152,
         "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       }
     },
@@ -24,7 +24,7 @@
       "test": "DISH Article Presence in Excel",
       "success": true,
       "details": "Found 1 real DISH articles: ['10020']",
-      "timestamp": "2025-08-27T20:54:11.834004",
+      "timestamp": "2025-08-27T20:55:44.234492",
       "data": {
         "real_articles": [
           "10020"
@@ -36,7 +36,7 @@
       "test": "Expected Dish Name in Excel",
       "success": true,
       "details": "Found expected dish name 'Борщ украинский с говядиной' in Excel",
-      "timestamp": "2025-08-27T20:54:11.834040",
+      "timestamp": "2025-08-27T20:55:44.234527",
       "data": {
         "dish_names": [
           "Борщ украинский с говядиной"
@@ -47,7 +47,7 @@
       "test": "Article Format Validation (5-6 digit)",
       "success": true,
       "details": "1/1 articles in valid format: ['10020']",
-      "timestamp": "2025-08-27T20:54:11.834054",
+      "timestamp": "2025-08-27T20:55:44.234541",
       "data": {
         "valid_articles": 1,
         "total_articles": 1
@@ -57,21 +57,21 @@
       "test": "ZIP Export Comparison",
       "success": false,
       "details": "Preflight failed: HTTP 400",
-      "timestamp": "2025-08-27T20:54:11.884225",
+      "timestamp": "2025-08-27T20:55:44.285200",
       "data": {}
     }
   ],
   "artifacts": {
     "generated_techcard": {
-      "id": "3a6087a2-e07f-47ae-afd8-b5bd13e226fd",
+      "id": "2657f88f-6421-4f94-9078-92bfa9a42035",
       "name": "Борщ украинский с говядиной",
-      "ingredients_count": 8,
+      "ingredients_count": 10,
       "dish_article": null,
-      "generation_time": 12782.0
+      "generation_time": 14109.0
     },
     "alt_export_file": {
-      "path": "/tmp/tmp8sge7twt.xlsx",
-      "size_bytes": 6017,
+      "path": "/tmp/tmpc1qj0j49.xlsx",
+      "size_bytes": 6152,
       "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     },
     "excel_analysis": {
@@ -89,7 +89,7 @@
         "Метод списания",
         "Технология приготовления"
       ],
-      "total_rows": 8,
+      "total_rows": 10,
       "dish_articles": [
         "10020"
       ],
@@ -102,6 +102,6 @@
       "placeholder_articles": []
     }
   },
-  "timestamp": "2025-08-27T20:54:11.884979",
+  "timestamp": "2025-08-27T20:55:44.285874",
   "test_type": "ALT_Export_DISH_Article_Testing"
 }

@@ -12,7 +12,7 @@
   "interface_preservation": "В интерфейсе и PDF остаются граммы (конвертация только для экспорта)",
   "test_results": {
     "generated_techcard": {
-      "id": "2e4d7098-d628-4ee6-93be-edb652e1838e",
+      "id": "2b33fdda-b4e2-45be-ade8-dda67ea9f834",
       "name": "Тестовое блюдо для конвертации масс",
       "ingredients_count": 3,
       "yield_g": 200.0,
@@ -23,26 +23,27 @@
       ],
       "full_card_data": {
         "meta": {
-          "id": "2e4d7098-d628-4ee6-93be-edb652e1838e",
+          "id": "2b33fdda-b4e2-45be-ade8-dda67ea9f834",
           "title": "Тестовое блюдо для конвертации масс",
           "version": "1.0",
-          "createdAt": "2025-08-27T20:53:57.463702",
+          "createdAt": "2025-08-27T20:55:28.170610",
           "cuisine": "международная",
           "tags": [
             "тестовое",
-            "конвертация масс"
+            "конвертация",
+            "масс"
           ],
           "timings": {
-            "llm_draft_ms": 5840.0,
-            "llm_normalize_ms": 3430.0,
+            "llm_draft_ms": 5386.0,
+            "llm_normalize_ms": 3673.0,
             "validate_ms": 0.0,
             "contentcheck_ms": 0.0,
-            "cost_ms": 13.0,
-            "nutrition_ms": 7.0,
+            "cost_ms": 14.0,
+            "nutrition_ms": 6.0,
             "portion_normalize_ms": 0.0,
             "sanitize_ms": 0.0,
             "postcheck_ms": 0.0,
-            "total_ms": 9293.0,
+            "total_ms": 9082.0,
             "article_generation_ms": 46.0
           },
           "scale_factor": 0.241,
@@ -98,7 +99,7 @@
           {
             "n": 1,
             "action": "Подготовка ингредиентов",
-            "time_min": 10.0,
+            "time_min": 15.0,
             "temp_c": null,
             "equipment": [
               "нож",
@@ -110,7 +111,7 @@
           {
             "n": 2,
             "action": "Смешивание ингредиентов",
-            "time_min": 5.0,
+            "time_min": 10.0,
             "temp_c": null,
             "equipment": [
               "миска",
@@ -276,6 +277,34 @@
         }
       ],
       "all_tests_passed": true
+    },
+    "dish_skeletons_conversion": {
+      "file_found": true,
+      "dish_conversions": [
+        {
+          "dish_name": "Тестовое блюдо для конвертации масс",
+          "yield_kg": 0.2,
+          "unit": "кг"
+        }
+      ],
+      "zip_size": 14750
+    },
+    "product_skeletons_units": {
+      "file_found": true,
+      "product_units": [
+        {
+          "product_name": "Ингредиент 1",
+          "unit": "г"
+        },
+        {
+          "product_name": "Ингредиент 2",
+          "unit": "г"
+        },
+        {
+          "product_name": "Ингредиент 3",
+          "unit": "г"
+        }
+      ]
     }
   }
 }
