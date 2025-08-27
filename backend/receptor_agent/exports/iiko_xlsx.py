@@ -28,6 +28,42 @@ from receptor_agent.integrations.iiko_rms_service import IikoRmsService
 logger = logging.getLogger(__name__)
 
 
+def convert_grams_to_kilograms(grams_value: float, unit: str = 'г') -> tuple[float, str]:
+    """
+    Автоматическая конвертация грамм в килограммы для экспорта XLSX в iiko
+    
+    Args:
+        grams_value: Значение в граммах
+        unit: Исходная единица измерения
+        
+    Returns:
+        tuple: (конвертированное_значение_в_кг, новая_единица)
+    """
+    # Конвертируем только если единица измерения - граммы
+    if unit.lower() in ['г', 'gram', 'гр', 'грамм']:
+        # Конвертируем граммы в килограммы: делим на 1000, округляем до 3 знаков после запятой
+        kg_value = round(grams_value / 1000.0, 3)
+        return kg_value, 'кг'
+    else:
+        # Для других единиц измерения оставляем как есть
+        return grams_value, unit
+
+
+def convert_yield_grams_to_kilograms(yield_g: float) -> tuple[float, str]:
+    """
+    Конвертация выхода блюда из грамм в килограммы для экспорта iiko XLSX
+    
+    Args:
+        yield_g: Выход блюда в граммах
+        
+    Returns:
+        tuple: (выход_в_кг, единица_кг)
+    """
+    # Всегда конвертируем выход в килограммы для iiko
+    yield_kg = round(yield_g / 1000.0, 3)
+    return yield_kg, 'кг'
+
+
 def resolve_ttk_date_conflict(dish_name: str, 
                              base_date: Optional[str] = None, 
                              rms_service: Optional[IikoRmsService] = None,
