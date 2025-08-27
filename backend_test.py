@@ -57,15 +57,18 @@ class ALTExportDishArticleTester:
             response = self.session.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload, timeout=60)
             
             if response.status_code == 200:
-                techcard_data = response.json()
-                techcard_id = techcard_data.get('id')
+                response_data = response.json()
+                
+                # Extract the actual techcard from the response
+                techcard_data = response_data.get('card', {})
+                techcard_id = techcard_data.get('meta', {}).get('id')
                 
                 self.artifacts['generated_techcard'] = {
                     'id': techcard_id,
                     'name': dish_name,
                     'ingredients_count': len(techcard_data.get('ingredients', [])),
                     'dish_article': techcard_data.get('meta', {}).get('article'),
-                    'generation_time': techcard_data.get('meta', {}).get('generation_time_s')
+                    'generation_time': techcard_data.get('meta', {}).get('timings', {}).get('total_ms')
                 }
                 
                 self.log_test(
