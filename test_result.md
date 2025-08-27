@@ -3022,6 +3022,7 @@ frontend:
 
 test_plan:
   current_focus:
+    - "Product Skeletons iiko Import Fix - Type Mapping Validation - COMPLETED SUCCESSFULLY"
     - "ALT Export DISH Article Fix"
     - "CRITICAL FIX: Product-Article Reconcile (No GENERATED_* in TTK, Only Real Articles from Skeletons) - COMPLETED SUCCESSFULLY"
   stuck_tasks:
