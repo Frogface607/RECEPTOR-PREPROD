@@ -301,6 +301,7 @@ def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]],
                                  generated_codes: Dict[str, str] = None) -> BytesIO:
     """
     C. Product Skeletons: Создать XLSX файл для импорта номенклатуры в iiko
+    WITH STRICT TYPE VALIDATION
     
     Args:
         missing_ingredients: Список ингредиентов без маппинга
@@ -308,12 +309,25 @@ def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]],
         
     Returns:
         BytesIO buffer с Product-Skeletons.xlsx
+        
+    Raises:
+        ValueError: Если обнаружены невалидные типы продуктов
     """
     if not Workbook:
         raise ImportError("openpyxl is required for Excel export. Install with: pip install openpyxl")
     
     if not generated_codes:
         generated_codes = {}
+    
+    # VALID IIKO PRODUCT TYPES - строго по документации iiko
+    VALID_IIKO_TYPES = {
+        "GOODS",      # Товар (основной тип для ингредиентов)
+        "DISH",       # Блюдо
+        "MODIFIER",   # Модификатор
+        "GROUP",      # Группа товаров
+        "SERVICE",    # Услуга
+        "PREPARED"    # Полуфабрикат
+    }
     
     wb = Workbook()
     ws = wb.active
@@ -323,7 +337,7 @@ def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]],
         "Артикул",           # Column A - numeric code (text format)
         "Наименование",      # Column B - product name  
         "Ед. изм",          # Column C - unit of measure
-        "Тип",              # Column D - product type ("Товар")
+        "Тип",              # Column D - product type (STRICT VALIDATION)
         "Группа",           # Column E - product group ("Сырьё")
         "Штрихкод",         # Column F - barcode (optional, empty)
         "Поставщик"         # Column G - supplier (optional, empty)
