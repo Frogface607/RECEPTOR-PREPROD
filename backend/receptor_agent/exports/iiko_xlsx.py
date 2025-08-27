@@ -486,12 +486,42 @@ def create_product_skeletons_xlsx(missing_ingredients: List[Dict[str, Any]],
         adjusted_width = min(max_length + 2, 50)
         ws.column_dimensions[column_letter].width = adjusted_width
     
+    
     # Сохраняем в BytesIO
     buffer = BytesIO()
     wb.save(buffer)
     buffer.seek(0)
     
-    logger.info(f"Created Product-Skeletons.xlsx with {len(missing_ingredients)} products")
+    # Создаем артефакт с успешными результатами
+    try:
+        success_report = {
+            "timestamp": datetime.now().isoformat(),
+            "operation": "PRODUCT_SKELETONS_SUCCESS",
+            "total_products": len(validated_products),
+            "all_types_valid": True,
+            "products": [
+                {
+                    "name": p["ingredient_name"],
+                    "code": p["product_code"],
+                    "type": p["product_type"],
+                    "unit": p["normalized_unit"],
+                    "group": p["group"]
+                }
+                for p in validated_products
+            ],
+            "instruction": "Все продукты готовы к импорту в iiko. Типы валидированы согласно требованиям iiko API."
+        }
+        
+        import json
+        success_file_path = "/app/artifacts/product_skeletons_final.json"
+        os.makedirs(os.path.dirname(success_file_path), exist_ok=True)
+        with open(success_file_path, 'w', encoding='utf-8') as f:
+            json.dump(success_report, f, indent=2, ensure_ascii=False)
+        
+        logger.info(f"✅ Product-Skeletons.xlsx создан с {len(validated_products)} валидными продуктами")
+        logger.info(f"Отчет сохранен: {success_file_path}")
+    except Exception as e:
+        logger.warning(f"Could not save success report: {e}")
     
     return buffer
 
