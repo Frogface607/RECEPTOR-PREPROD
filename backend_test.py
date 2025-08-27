@@ -609,7 +609,7 @@ class CriticalExportTester:
         # Find compliance results from ZIP export test
         compliance_found = False
         for result in self.test_results:
-            if result['test'] == 'ZIP Export' and result.get('data', {}).get('xlsx_analysis'):
+            if result['test'] == 'ZIP Export' and result.get('data', {}) and result['data'].get('xlsx_analysis'):
                 compliance = result['data']['xlsx_analysis']['compliance_check']
                 print(f"   📝 String Articles (@): {'✅ PASS' if compliance['string_articles'] else '❌ FAIL'}")
                 print(f"   ⚖️  Kilo Conversion: {'✅ PASS' if compliance['kilo_conversion'] else '❌ FAIL'}")
