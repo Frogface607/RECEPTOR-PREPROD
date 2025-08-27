@@ -3,39 +3,40 @@
     {
       "test": "Tech Card Generation for ALT Export",
       "success": true,
-      "details": "Generated 'Борщ украинский с говядиной' (ID: 0818707e-b369-4a16-b75f-0bd6dba02769) with 10 ingredients",
-      "timestamp": "2025-08-27T16:54:49.029308",
+      "details": "Generated 'Борщ украинский с говядиной' (ID: 62a9eb6e-d548-42b8-aa46-55b5e7356aa5) with 10 ingredients",
+      "timestamp": "2025-08-27T16:58:48.681223",
       "data": {
-        "techcard_id": "0818707e-b369-4a16-b75f-0bd6dba02769",
+        "techcard_id": "62a9eb6e-d548-42b8-aa46-55b5e7356aa5",
         "dish_name": "Борщ украинский с говядиной"
       }
     },
     {
       "test": "ALT Export Endpoint Response",
       "success": true,
-      "details": "Generated Excel file (6194 bytes) with content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "timestamp": "2025-08-27T16:54:49.915253",
+      "details": "Generated Excel file (6135 bytes) with content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "timestamp": "2025-08-27T16:58:49.504737",
       "data": {
-        "file_size": 6194,
+        "file_size": 6135,
         "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       }
     },
     {
       "test": "DISH Article Presence in Excel",
-      "success": false,
-      "details": "Found only placeholder articles: ['DISH_БОРЩ_УКРАИНСКИЙ_С_ГО']",
-      "timestamp": "2025-08-27T16:54:49.922099",
+      "success": true,
+      "details": "Found 1 real DISH articles: ['100037']",
+      "timestamp": "2025-08-27T16:58:49.511476",
       "data": {
-        "placeholder_articles": [
-          "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
-        ]
+        "real_articles": [
+          "100037"
+        ],
+        "total_articles": 1
       }
     },
     {
       "test": "Expected Dish Name in Excel",
       "success": true,
       "details": "Found expected dish name 'Борщ украинский с говядиной' in Excel",
-      "timestamp": "2025-08-27T16:54:49.922129",
+      "timestamp": "2025-08-27T16:58:49.511514",
       "data": {
         "dish_names": [
           "Борщ украинский с говядиной"
@@ -43,31 +44,34 @@
       }
     },
     {
-      "test": "Article Format Validation",
+      "test": "Article Format Validation (5-digit)",
       "success": false,
-      "details": "No real articles to validate",
-      "timestamp": "2025-08-27T16:54:49.922139",
-      "data": {}
+      "details": "0/1 articles in valid format: ['100037']",
+      "timestamp": "2025-08-27T16:58:49.511529",
+      "data": {
+        "valid_articles": 0,
+        "total_articles": 1
+      }
     },
     {
       "test": "ZIP Export Comparison",
       "success": false,
       "details": "Preflight failed: HTTP 400",
-      "timestamp": "2025-08-27T16:54:49.928907",
+      "timestamp": "2025-08-27T16:58:49.518817",
       "data": {}
     }
   ],
   "artifacts": {
     "generated_techcard": {
-      "id": "0818707e-b369-4a16-b75f-0bd6dba02769",
+      "id": "62a9eb6e-d548-42b8-aa46-55b5e7356aa5",
       "name": "Борщ украинский с говядиной",
       "ingredients_count": 10,
       "dish_article": null,
-      "generation_time": 27404.0
+      "generation_time": 19104.0
     },
     "alt_export_file": {
-      "path": "/tmp/tmpksdqejxg.xlsx",
-      "size_bytes": 6194,
+      "path": "/tmp/tmpuh5o6_hk.xlsx",
+      "size_bytes": 6135,
       "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     },
     "excel_analysis": {
@@ -87,17 +91,17 @@
       ],
       "total_rows": 10,
       "dish_articles": [
-        "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
+        "100037"
       ],
       "dish_names": [
         "Борщ украинский с говядиной"
       ],
-      "real_articles": [],
-      "placeholder_articles": [
-        "DISH_БОРЩ_УКРАИНСКИЙ_С_ГО"
-      ]
+      "real_articles": [
+        "100037"
+      ],
+      "placeholder_articles": []
     }
   },
-  "timestamp": "2025-08-27T16:54:49.929454",
+  "timestamp": "2025-08-27T16:58:49.519409",
   "test_type": "ALT_Export_DISH_Article_Testing"
 }
