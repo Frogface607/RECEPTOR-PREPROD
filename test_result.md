@@ -205,6 +205,17 @@ user_problem_statement: "Product Skeletons: iiko Import Fix - тестирова
 CURRENT PHASE: Guard — dish-first rule - Critical safety guard to prevent iiko TTK rejection when dish articles don't exist in nomenclature. Implements strict blocking rules for TTK-only exports."
 
 backend:
+  - task: "Product Skeletons iiko Import Fix - Type Mapping Validation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "🎉 COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY: Product Skeletons type mapping fix fully validated with 100% success rate (7/7 tests passed). ✅ CRITICAL FIX VERIFIED: Product-Skeletons.xlsx contains only 'GOODS' in type column (no more 'Товар'), Dish-Skeletons.xlsx contains only 'DISH' in type column (no more 'Блюдо'), complete elimination of invalid Russian type values confirmed. ✅ EXPORT WORKFLOW OPERATIONAL: Generated test tech card with 7 ingredients, preflight detected 1 missing dish + 7 missing products, ZIP export (15,118 bytes) contains all required files with proper iiko-compatible types. ✅ ALT EXPORT FUNCTIONAL: ALT export generates proper Excel files (5,851 bytes) with valid articles, preflight integration working correctly. ✅ ARTIFACTS CREATED: Required JSON artifacts generated (product_skeletons_final.json, dish_skeletons_final.json) with proper structure. 🎯 OUTSTANDING SUCCESS: Critical type mapping issue completely resolved - skeleton files now use valid iiko types ensuring successful import without validation errors."
   - task: "CRITICAL DEBUG: Dish Skeleton & Article Issues"
     implemented: true
     working: false
