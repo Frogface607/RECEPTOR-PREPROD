@@ -136,7 +136,8 @@ class IikoMassConversionTester:
                 'name': dish_name,
                 'ingredients_count': len(ingredients),
                 'yield_g': yield_g,
-                'ingredients_masses': gram_masses
+                'ingredients_masses': gram_masses,
+                'full_card_data': card  # Сохраняем полные данные техкарты
             }
             
             self.log_result(
