@@ -93,7 +93,7 @@ class ProductArticleReconcileTest:
             
             # 1.1 Генерируем техкарту
             gen_response = await self.client.post(f"{API_BASE}/v1/techcards.v2/generate", json={
-                "dish_name": test_dish,
+                "name": test_dish,
                 "organization_id": "test_org"
             })
             
