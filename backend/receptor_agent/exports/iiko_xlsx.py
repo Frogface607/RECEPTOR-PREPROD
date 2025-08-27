@@ -623,6 +623,7 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
                               dishes_data: List[Dict] = None) -> BytesIO:
     """
     Feature B: Создание файла Dish-Skeletons.xlsx для предварительного импорта блюд в iiko
+    WITH STRICT TYPE VALIDATION
     
     Args:
         dish_codes_mapping: Маппинг {dish_name: dish_code}
@@ -631,9 +632,17 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
     
     Returns:
         BytesIO buffer с Excel файлом
+        
+    Raises:
+        ValueError: Если обнаружены невалидные типы блюд
     """
     if not Workbook:
         raise ImportError("openpyxl is required for Excel export")
+    
+    # VALID IIKO DISH TYPES - строго по документации iiko
+    VALID_IIKO_DISH_TYPES = {
+        "DISH"        # Блюдо (основной тип для всех блюд)
+    }
     
     wb = Workbook()
     ws = wb.active
@@ -643,7 +652,7 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
     headers = [
         "Артикул",           # Числовой код блюда
         "Наименование",      # Название блюда  
-        "Тип",               # Всегда "Блюдо"
+        "Тип",               # Всегда "DISH" (валидировано)
         "Ед. выпуска",       # Единица измерения (г/мл)
         "Выход"              # Выход готового продукта
     ]
@@ -654,30 +663,44 @@ def create_dish_skeletons_xlsx(dish_codes_mapping: Dict[str, str],
         cell.value = header
         cell.font = Font(bold=True)
     
-    # Заполняем данные по блюдам
+    # Валидация и подготовка данных
+    type_errors = []
+    validated_dishes = []
+    
+    # Заполняем данные по блюдам с СТРОГОЙ ВАЛИДАЦИЕЙ
     row = 2
     
     # Используем dishes_data если предоставлен (новый формат)
     if dishes_data:
-        for dish in dishes_data:
+        for idx, dish in enumerate(dishes_data):
             dish_name = dish["name"]
             dish_code = dish["article"]
-            dish_type = dish.get("type", "блюдо")
+            dish_type_input = dish.get("type", "блюдо")
             unit = dish.get("unit", "порц.")
             yield_g = dish.get("yield_g", 200.0)
             
-            # Заполняем ячейки
-            ws.cell(row=row, column=1, value=dish_code)
-            ws.cell(row=row, column=2, value=dish_name)
-            ws.cell(row=row, column=3, value=dish_type)
-            ws.cell(row=row, column=4, value=unit)
-            ws.cell(row=row, column=5, value=yield_g)
+            # КРИТИЧЕСКОЕ: Все блюда должны быть типа DISH
+            dish_type = "DISH"
             
-            # Форматируем артикул как текст
-            article_cell = ws.cell(row=row, column=1)
-            article_cell.number_format = '@'
+            # СТРОГАЯ ВАЛИДАЦИЯ ТИПА
+            if dish_type not in VALID_IIKO_DISH_TYPES:
+                type_errors.append({
+                    "index": idx,
+                    "name": dish_name,
+                    "invalid_type": dish_type,
+                    "input_type": dish_type_input,
+                    "valid_types": list(VALID_IIKO_DISH_TYPES),
+                    "error": f"Недопустимый тип '{dish_type}' для блюда '{dish_name}'"
+                })
+                continue
             
-            row += 1
+            validated_dishes.append({
+                "dish_code": dish_code,
+                "dish_name": dish_name,
+                "dish_type": dish_type,
+                "unit": unit,
+                "yield_g": yield_g
+            })
     
     # Legacy: используем cards если dishes_data не предоставлены
     elif cards:
