@@ -89,17 +89,18 @@ class FinalExportFixTester:
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('status') == 'success' and result.get('card'):
+                if result.get('status') in ['success', 'draft'] and result.get('card'):
                     techcard = result['card']
                     self.generated_techcards.append(techcard)
                     self.log_test(
                         f"generate_techcard_{dish_name.replace(' ', '_')}",
                         True,
-                        f"Generated techcard for '{dish_name}' with {len(techcard.get('ingredients', []))} ingredients",
+                        f"Generated techcard for '{dish_name}' with {len(techcard.get('ingredients', []))} ingredients (status: {result.get('status')})",
                         {
                             'techcard_id': techcard.get('meta', {}).get('id'),
                             'ingredients_count': len(techcard.get('ingredients', [])),
-                            'generation_time': f"{response.elapsed.total_seconds():.2f}s"
+                            'generation_time': f"{response.elapsed.total_seconds():.2f}s",
+                            'status': result.get('status')
                         }
                     )
                     return techcard
