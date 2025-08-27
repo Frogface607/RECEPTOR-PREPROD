@@ -518,7 +518,7 @@ class IikoMassConversionTester:
             # Используем тот же ZIP из предыдущего теста
             preflight_response = requests.post(
                 f"{API_BASE}/v1/export/preflight",
-                json={"techcard_ids": [techcard_id]},
+                json={"techcardIds": [techcard_id]},
                 timeout=30
             )
             
