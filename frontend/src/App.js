@@ -10860,14 +10860,7 @@ function App() {
                             >
                               📄 iiko CSV (ZIP)
                             </button>
-                            <button 
-                              onClick={() => { handleIikoTtkXlsxExport(); setShowAdvancedActions(false); }}
-                              disabled={!tcV2}
-                              className="w-full text-left px-3 py-2 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm text-white transition-colors"
-                              title="Альтернативный XLSX экспорт"
-                            >
-                              📋 Alt XLSX Export
-                            </button>
+
                           </div>
                         </div>
                       )}
