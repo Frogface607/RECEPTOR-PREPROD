@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-01-27T19:00:00Z",
+  "feature": "ALT_EXPORT_UX_MIGRATION",
+  "status": "FULLY_COMPLETED",
+  "changes_made": {
+    "removed_from_dropdown": {
+      "location": "⚙️ Дополнительно ▾ menu",
+      "old_button": "📋 Alt XLSX Export",
+      "file": "/app/frontend/src/App.js",
+      "lines_removed": "10863-10870"
+    },
+    "added_to_main_screen": {
+      "location": "Main action buttons area",
+      "new_button": "📋 Экспорт ТК для IIKo",
+      "position": "After '🚀 Экспорт в iiko (2 шага)' button",
+      "file": "/app/frontend/src/App.js",
+      "lines_added": "10791-10799"
+    }
+  },
+  "button_styling": {
+    "size": "increased (px-6 py-3 vs px-4 py-2)",
+    "font_size": "text-base vs text-sm",
+    "height": "min-h-[52px] vs min-h-[44px]",
+    "color": "green gradient (from-green-600 to-green-700)",
+    "shadow": "shadow-lg for prominence",
+    "icon": "📋 (clipboard)"
+  },
+  "functionality": {
+    "handler": "handleIikoTtkXlsxExport()",
+    "disabled_condition": "!tcV2 (no tech card)",
+    "tooltip": "Экспорт готовой технологической карты для импорта в iiko (XLSX формат)",
+    "export_format": "XLSX with kilogram conversion"
+  },
+  "test_results": {
+    "success_rate": "100%",
+    "tests_passed": 7,
+    "tests_failed": 0,
+    "verification": [
+      "Button visible on main screen ✅",
+      "Correct green styling and increased size ✅", 
+      "Old button removed from dropdown ✅",
+      "Export functionality working ✅",
+      "File download successful ✅",
+      "UX behavior correct (hover, tooltip, disabled) ✅",
+      "Positioning among main buttons ✅"
+    ]
+  },
+  "user_benefits": {
+    "accessibility": "ALT export now prominently visible without clicking dropdown",
+    "discoverability": "Main action button makes feature more discoverable",
+    "efficiency": "One-click access instead of dropdown navigation",
+    "visual_prominence": "Larger green button draws attention to key export function"
+  },
+  "before_after": {
+    "before": "📋 Alt XLSX Export hidden in ⚙️ Дополнительно ▾ dropdown menu",
+    "after": "📋 Экспорт ТК для IIKo prominent green button on main screen"
+  }
+}
