@@ -11005,14 +11005,15 @@ function App() {
                       {phase3ExportState === 'running_preflight' ? '⏳ Префлайт...' : '🚀 Экспорт номенклатур'}
                     </button>
                     
-                    {/* 3.5. ALT Export - главный экспорт ТК для IIKo */}
+                    {/* CREATE EXPORT WIZARD UI - Unified Export Button */}
                     <button 
-                      onClick={() => { handleIikoTtkXlsxExport(); }}
+                      onClick={() => { openExportWizard(); }}
                       disabled={!tcV2}
-                      className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-bold transition-colors text-base min-h-[52px] flex items-center shadow-lg"
-                      title="Экспорт готовой технологической карты для импорта в iiko (XLSX формат)"
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-bold transition-all text-lg min-h-[64px] flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
+                      title="Открыть мастер экспорта - все форматы в одном месте"
                     >
-                      📋 Экспорт ТК для IIKo
+                      <span className="mr-3">🚀</span>
+                      Мастер экспорта
                     </button>
                     
                     {/* 4. Импорт TTK (XLSX) */}
