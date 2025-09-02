@@ -22,8 +22,7 @@ CLEANUP TECH CARD DATA & UI - READY STATUS VERIFICATION TEST
 Фокус на проверке что исправление pipeline работает и техкарты создаются со статусом READY.
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
 import time
 from typing import Dict, List, Any, Optional
@@ -36,7 +35,8 @@ API_BASE = f"{BACKEND_URL}/api"
 
 class CleanupTechCardReadyTester:
     def __init__(self):
-        self.session = None
+        self.session = requests.Session()
+        self.session.timeout = 60
         self.results = {
             'test_start': datetime.now().isoformat(),
             'ready_status_verification': {},
@@ -45,14 +45,6 @@ class CleanupTechCardReadyTester:
             'final_assessment': {}
         }
         self.generated_techcards = []
-        
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60))
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
 
     async def test_1_ready_status_verification(self):
         """Test 1: READY Status Verification - Создать 2-3 техкарты и проверить статус READY"""
