@@ -433,14 +433,32 @@ class TechCardQualityBoostTester:
         total_ingredients = len(ingredients)
         
         for ingredient in ingredients:
-            # Check if ingredient has nutrition data
-            has_nutrition = any(key in ingredient for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g', 'nutrition'])
+            # Check if ingredient has nutrition data in various possible locations
+            has_nutrition = False
             
-            # Also check nested nutrition object
-            if not has_nutrition and 'nutrition' in ingredient:
+            # Check direct fields
+            if any(key in ingredient for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g']):
+                has_nutrition = True
+            
+            # Check nested nutrition object
+            elif 'nutrition' in ingredient:
                 nutrition_obj = ingredient['nutrition']
                 if isinstance(nutrition_obj, dict):
                     has_nutrition = any(key in nutrition_obj for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g'])
+            
+            # Check per100g object (catalog format)
+            elif 'per100g' in ingredient:
+                per100g_obj = ingredient['per100g']
+                if isinstance(per100g_obj, dict):
+                    has_nutrition = any(key in per100g_obj for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g'])
+            
+            # Check if ingredient has any nutritional values > 0
+            if not has_nutrition:
+                for field in ['kcal', 'proteins_g', 'fats_g', 'carbs_g']:
+                    value = ingredient.get(field, 0)
+                    if isinstance(value, (int, float)) and value > 0:
+                        has_nutrition = True
+                        break
             
             if has_nutrition:
                 covered_ingredients += 1
