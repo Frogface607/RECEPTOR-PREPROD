@@ -55,9 +55,9 @@ def test_ready_status():
                 
                 if is_ready and has_minimal_issues and has_data:
                     ready_count += 1
-                    print(f"      ✅ READY - Issues: {len(issues)}, Data: {has_data}")
+                    print(f"      ✅ READY - Issues: {len(issues)}, Ingredients: {len(techcard.get('ingredients', []))}")
                 else:
-                    print(f"      ❌ Status: {status}, Issues: {len(issues)}, Data: {has_data}")
+                    print(f"      ❌ Status: {status}, Issues: {len(issues)}, TC: {has_techcard}, Ing: {has_ingredients}, Nut: {has_nutrition}, Cost: {has_cost}")
             else:
                 print(f"      ❌ HTTP {response.status_code}")
                 
