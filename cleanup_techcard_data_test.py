@@ -98,27 +98,27 @@ class CleanupTechCardDataTester:
                     has_ingredients = bool(techcard.get('ingredients'))
                     has_nutrition = bool(techcard.get('nutrition'))
                     has_cost = bool(techcard.get('cost'))
-                        
-                        result = {
-                            'dish_name': dish_name,
-                            'status': status,
-                            'is_ready_status': is_ready_status,
-                            'issues_count': len(issues),
-                            'has_minimal_issues': has_minimal_issues,
-                            'has_techcard_data': has_techcard_data,
-                            'has_ingredients': has_ingredients,
-                            'has_nutrition': has_nutrition,
-                            'has_cost': has_cost,
-                            'generation_time': generation_time,
-                            'techcard_id': techcard.get('id'),
-                            'issues': issues[:3]  # Store first 3 issues for analysis
-                        }
-                        
-                        ready_status_results.append(result)
-                        
-                        success = is_ready_status and has_minimal_issues and has_techcard_data
-                        print(f"      ✅ Status: {status}, Issues: {len(issues)}, Success: {success}")
-                        
+                    
+                    result = {
+                        'dish_name': dish_name,
+                        'status': status,
+                        'is_ready_status': is_ready_status,
+                        'issues_count': len(issues),
+                        'has_minimal_issues': has_minimal_issues,
+                        'has_techcard_data': has_techcard_data,
+                        'has_ingredients': has_ingredients,
+                        'has_nutrition': has_nutrition,
+                        'has_cost': has_cost,
+                        'generation_time': generation_time,
+                        'techcard_id': techcard.get('id'),
+                        'issues': issues[:3]  # Store first 3 issues for analysis
+                    }
+                    
+                    ready_status_results.append(result)
+                    
+                    success = is_ready_status and has_minimal_issues and has_techcard_data
+                    print(f"      ✅ Status: {status}, Issues: {len(issues)}, Success: {success}")
+                    
                 else:
                     print(f"      ❌ Generation failed: HTTP {response.status_code}")
                     ready_status_results.append({
