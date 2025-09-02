@@ -113,7 +113,8 @@ class TechCardQualityBoostTester:
                             for i, ingredient in enumerate(ingredients_list[:50]):  # Check first 50 for performance
                                 if isinstance(ingredient, dict):
                                     # Check required БЖУ fields
-                                    has_nutrition = all(key in ingredient for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g'])
+                                    per100g = ingredient.get('per100g', {})
+                                    has_nutrition = all(key in per100g for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g'])
                                     has_valid_unit = ingredient.get('unit', '').lower() in valid_units
                                     has_name = bool(ingredient.get('name', '').strip())
                                     has_id = bool(ingredient.get('canonical_id') or ingredient.get('id'))
