@@ -6759,12 +6759,48 @@ function App() {
   const openExportWizard = () => {
     resetExportWizard();
     setShowUnifiedExportWizard(true);
+    
+    // FIX JS MODAL SCROLL & OPEN BUG: Prevent body scroll when modal opens
+    document.body.style.overflow = 'hidden';
   };
   
   const closeExportWizard = () => {
     setShowUnifiedExportWizard(false);
     resetExportWizard();
+    
+    // FIX JS MODAL SCROLL & OPEN BUG: Restore body scroll when modal closes
+    document.body.style.overflow = 'unset';
   };
+
+  // FIX JS MODAL SCROLL & OPEN BUG: Handle escape key and focus management
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && showUnifiedExportWizard) {
+        closeExportWizard();
+      }
+    };
+
+    if (showUnifiedExportWizard) {
+      document.addEventListener('keydown', handleEscapeKey);
+      
+      // Focus trap - focus first focusable element in modal
+      const modal = document.querySelector('[data-export-wizard-modal]');
+      if (modal) {
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length > 0) {
+          focusableElements[0].focus();
+        }
+      }
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      // Cleanup body scroll on unmount
+      document.body.style.overflow = 'unset';
+    };
+  }, [showUnifiedExportWizard]);
 
   const executeExport = async (exportType) => {
     if (!tcV2) {
