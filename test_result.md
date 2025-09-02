@@ -3265,7 +3265,7 @@ frontend:
 test_plan:
   current_focus:
     - "CRITICAL FRONTEND TESTING: CLEANUP TECH CARD DATA & UI - COMPLETED WITH FINDINGS"
-    - "Tech Card Generation Error Investigation - PERSISTENCE ISSUE IDENTIFIED"
+    - "Tech Card Generation Error Investigation - CRITICAL BACKEND GENERATION FAILURE CONFIRMED"
     - "UI Warning Labels Cleanup Verification - COMPLETED SUCCESSFULLY"
     - "REMOVE INVALID TECH CARD FROM ZIP (P0 - КРИТИЧЕСКИЙ) - COMPLETED SUCCESSFULLY"
     - "RENAME EXPORT STEP BUTTON (P0 - UI) - BACKEND VALIDATED, FRONTEND VERIFICATION NEEDED"
@@ -3273,7 +3273,7 @@ test_plan:
     - "ALT Export DISH Article Fix"
     - "CRITICAL FIX: Product-Article Reconcile (No GENERATED_* in TTK, Only Real Articles from Skeletons) - COMPLETED SUCCESSFULLY"
   stuck_tasks:
-    - "Tech Card Persistence Issue - Generated cards not saving to user account"
+    - "Tech Card Generation Backend Pipeline Failure - Generation Error at 100% progress"
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
   test_all: false
