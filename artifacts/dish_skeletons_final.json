@@ -1,12 +1,26 @@
 {
-  "timestamp": "2025-09-02T10:59:38.295499",
+  "timestamp": "2025-09-02T11:07:35.975308",
   "operation": "DISH_SKELETONS_SUCCESS",
-  "total_dishes": 1,
+  "total_dishes": 3,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Салат цезарь с курицей",
-      "code": "100040",
+      "name": "Борщ украинский с говядиной",
+      "code": "100030",
+      "type": "DISH",
+      "unit": "порц",
+      "yield_g": 330.0
+    },
+    {
+      "name": "Стейк из говядины с картофельным пюре",
+      "code": "100033",
+      "type": "DISH",
+      "unit": "порц",
+      "yield_g": 240.0
+    },
+    {
+      "name": "Салат Цезарь с курицей",
+      "code": "100031",
       "type": "DISH",
       "unit": "порц",
       "yield_g": 240.0

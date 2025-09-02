@@ -1,54 +1,149 @@
 {
-  "test_start": "2025-09-02T11:03:55.865599",
+  "test_start": "2025-09-02T11:06:05.014714",
   "task_1_remove_invalid_ttk": {
     "test_results": [
       {
         "dish_name": "Борщ украинский с говядиной",
-        "error": "No tech card ID",
-        "success": false
+        "techcard_id": "b387c3ad-e598-4ec8-b930-df7d6a27ad63",
+        "zip_size": 9455,
+        "generation_time": 13.27555537223816,
+        "preflight_time": 0.05266928672790527,
+        "zip_time": 0.025783538818359375,
+        "zip_analysis": {
+          "valid_structure": true,
+          "contains_iiko_ttk": false,
+          "has_dish_skeletons": true,
+          "has_product_skeletons": true,
+          "file_list": [
+            "Dish-Skeletons.xlsx",
+            "Product-Skeletons.xlsx"
+          ],
+          "file_sizes": {
+            "Dish-Skeletons.xlsx": 5128,
+            "Product-Skeletons.xlsx": 5180
+          },
+          "unexpected_files": []
+        },
+        "success": true
       },
       {
         "dish_name": "Стейк из говядины с картофельным пюре",
-        "error": "No tech card ID",
-        "success": false
+        "techcard_id": "e80c0d0a-61d5-406e-8890-021bf1b962d2",
+        "zip_size": 9471,
+        "generation_time": 12.896449089050293,
+        "preflight_time": 0.04138064384460449,
+        "zip_time": 0.026721715927124023,
+        "zip_analysis": {
+          "valid_structure": true,
+          "contains_iiko_ttk": false,
+          "has_dish_skeletons": true,
+          "has_product_skeletons": true,
+          "file_list": [
+            "Dish-Skeletons.xlsx",
+            "Product-Skeletons.xlsx"
+          ],
+          "file_sizes": {
+            "Dish-Skeletons.xlsx": 5141,
+            "Product-Skeletons.xlsx": 5180
+          },
+          "unexpected_files": []
+        },
+        "success": true
       },
       {
         "dish_name": "Салат Цезарь с курицей",
-        "error": "No tech card ID",
-        "success": false
+        "techcard_id": "33b22b42-8585-4539-ba13-e007abe5aa0c",
+        "zip_size": 9452,
+        "generation_time": 19.245737552642822,
+        "preflight_time": 0.05147433280944824,
+        "zip_time": 0.027503013610839844,
+        "zip_analysis": {
+          "valid_structure": true,
+          "contains_iiko_ttk": false,
+          "has_dish_skeletons": true,
+          "has_product_skeletons": true,
+          "file_list": [
+            "Dish-Skeletons.xlsx",
+            "Product-Skeletons.xlsx"
+          ],
+          "file_sizes": {
+            "Dish-Skeletons.xlsx": 5126,
+            "Product-Skeletons.xlsx": 5179
+          },
+          "unexpected_files": []
+        },
+        "success": true
       },
       {
         "dish_name": "Паста карбонара с беконом",
-        "error": "No tech card ID",
-        "success": false
+        "techcard_id": "739a3f13-f636-4d8d-ad9a-b5e0a89bb6b9",
+        "zip_size": 9447,
+        "generation_time": 15.16806435585022,
+        "preflight_time": 0.05678677558898926,
+        "zip_time": 0.025620222091674805,
+        "zip_analysis": {
+          "valid_structure": true,
+          "contains_iiko_ttk": false,
+          "has_dish_skeletons": true,
+          "has_product_skeletons": true,
+          "file_list": [
+            "Dish-Skeletons.xlsx",
+            "Product-Skeletons.xlsx"
+          ],
+          "file_sizes": {
+            "Dish-Skeletons.xlsx": 5124,
+            "Product-Skeletons.xlsx": 5180
+          },
+          "unexpected_files": []
+        },
+        "success": true
       },
       {
         "dish_name": "Рыба запеченная с овощами",
-        "error": "No tech card ID",
-        "success": false
+        "techcard_id": "a5c0cf2d-1e86-4b6c-83d0-c44f3cc5bc8b",
+        "zip_size": 9611,
+        "generation_time": 29.63791584968567,
+        "preflight_time": 0.0840446949005127,
+        "zip_time": 0.030444860458374023,
+        "zip_analysis": {
+          "valid_structure": true,
+          "contains_iiko_ttk": false,
+          "has_dish_skeletons": true,
+          "has_product_skeletons": true,
+          "file_list": [
+            "Dish-Skeletons.xlsx",
+            "Product-Skeletons.xlsx"
+          ],
+          "file_sizes": {
+            "Dish-Skeletons.xlsx": 5129,
+            "Product-Skeletons.xlsx": 5327
+          },
+          "unexpected_files": []
+        },
+        "success": true
       }
     ],
     "total_tests": 5,
-    "successful_tests": 0,
-    "success_rate": 0.0,
-    "valid_zip_structures": 0,
-    "no_invalid_ttk_files": 0,
-    "contains_required_files": 0,
-    "target_met": false,
+    "successful_tests": 5,
+    "success_rate": 1.0,
+    "valid_zip_structures": 5,
+    "no_invalid_ttk_files": 5,
+    "contains_required_files": 5,
+    "target_met": true,
     "critical_requirements": {
-      "zip_contains_only_skeletons": false,
-      "no_iiko_ttk_in_archive": false,
-      "export_without_errors": false,
-      "test_archives_valid": false
+      "zip_contains_only_skeletons": true,
+      "no_iiko_ttk_in_archive": true,
+      "export_without_errors": true,
+      "test_archives_valid": true
     }
   },
   "task_2_rename_button": {
     "test_results": {
-      "backend_endpoints_working": false,
+      "backend_endpoints_working": true,
       "no_old_text_in_responses": true,
-      "export_functionality_intact": false
+      "export_functionality_intact": true
     },
-    "success": false,
+    "success": true,
     "expected_new_text": "Экспорт номенклатур",
     "old_texts_checked": [
       "Экспорт в iiko (2 шага)",
@@ -59,38 +154,38 @@
     "critical_requirements": {
       "button_renamed_in_interfaces": true,
       "user_sees_new_text": true,
-      "export_functionality_works": false
+      "export_functionality_works": true
     }
   },
   "integration_tests": {
-    "full_workflow_success": false,
-    "performance_acceptable": false,
+    "full_workflow_success": true,
+    "performance_acceptable": true,
     "alt_export_cleanup_working": true
   },
   "final_assessment": {
-    "overall_success": false,
+    "overall_success": true,
     "task_1_remove_invalid_ttk": {
-      "success": false,
-      "zip_contains_only_skeletons": false,
-      "no_iiko_ttk_in_archive": false,
-      "export_without_errors": false,
-      "test_archives_valid": false
+      "success": true,
+      "zip_contains_only_skeletons": true,
+      "no_iiko_ttk_in_archive": true,
+      "export_without_errors": true,
+      "test_archives_valid": true
     },
     "task_2_rename_button": {
-      "success": false,
-      "backend_functionality_intact": false,
+      "success": true,
+      "backend_functionality_intact": true,
       "frontend_verification_needed": true
     },
     "integration_workflow": {
-      "success": false,
-      "full_pipeline_working": false
+      "success": true,
+      "full_pipeline_working": true
     },
     "acceptance_criteria_met": {
-      "task_1_critical": false,
-      "task_2_backend": false,
-      "integration_stable": false,
-      "no_regressions": false
+      "task_1_critical": true,
+      "task_2_backend": true,
+      "integration_stable": true,
+      "no_regressions": true
     }
   },
-  "test_end": "2025-09-02T11:05:07.579990"
+  "test_end": "2025-09-02T11:07:36.002810"
 }
