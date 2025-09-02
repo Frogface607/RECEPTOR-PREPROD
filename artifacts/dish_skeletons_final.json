@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-09-02T10:57:01.453035",
+  "timestamp": "2025-09-02T10:59:38.295499",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Плов узбекский с говядиной и овощами",
-      "code": "100038",
+      "name": "Салат цезарь с курицей",
+      "code": "100040",
       "type": "DISH",
       "unit": "порц",
       "yield_g": 240.0
