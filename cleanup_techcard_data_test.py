@@ -177,16 +177,16 @@ class CleanupTechCardDataTester:
             
             if response.status_code == 200:
                 data = response.json()
-                    
-                    # Extract key data
-                    status = data.get('status', 'unknown')
-                    techcard = data.get('techcard', {})
-                    issues = data.get('issues', [])
-                    
-                    # Validate clean output requirements
-                    is_ready_status = status == "READY"
-                    has_no_issues = len(issues) == 0
-                    has_minimal_issues = len(issues) <= 1
+                
+                # Extract key data
+                status = data.get('status', 'unknown')
+                techcard = data.get('techcard', {})
+                issues = data.get('issues', [])
+                
+                # Validate clean output requirements
+                is_ready_status = status == "READY"
+                has_no_issues = len(issues) == 0
+                has_minimal_issues = len(issues) <= 1
                     
                     # Check data completeness
                     nutrition_data = techcard.get('nutrition', {})
