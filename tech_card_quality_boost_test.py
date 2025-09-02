@@ -122,10 +122,10 @@ class TechCardQualityBoostTester:
                                     # Check for reasonable БЖУ values (not negative, not extremely high)
                                     reasonable_nutrition = True
                                     if has_nutrition:
-                                        kcal = ingredient.get('kcal', 0)
-                                        proteins = ingredient.get('proteins_g', 0)
-                                        fats = ingredient.get('fats_g', 0)
-                                        carbs = ingredient.get('carbs_g', 0)
+                                        kcal = per100g.get('kcal', 0)
+                                        proteins = per100g.get('proteins_g', 0)
+                                        fats = per100g.get('fats_g', 0)
+                                        carbs = per100g.get('carbs_g', 0)
                                         
                                         reasonable_nutrition = (
                                             0 <= kcal <= 1000 and
