@@ -2783,7 +2783,21 @@
       },
       "source": "manual",
       "added_date": "2025-09-02T04:55:59.723217"
+    },
+    {
+      "canonical_id": "cheese_base",
+      "name": "сыр",
+      "category": "сыры",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 350.0,
+        "proteins_g": 25.0,
+        "fats_g": 27.0,
+        "carbs_g": 2.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T05:16:23.657236"
     }
   ],
-  "items_count": 200
+  "items_count": 201
 }
