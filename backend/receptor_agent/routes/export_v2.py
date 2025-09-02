@@ -792,6 +792,89 @@ async def create_ttk_only_export(request: Request):
         raise HTTPException(500, f"TTK-only export failed: {str(e)}")
 
 
+# ALT Export Cleanup: Admin endpoints для мониторинга и управления
+
+@router.get("/export/cleanup/stats")
+def get_cleanup_statistics():
+    """
+    Получить статистику ALT Export Cleanup
+    
+    Возвращает:
+    - Количество обработанных архивов
+    - Количество удаленных дублей, невалидных файлов, superfluous files
+    - Общую статистику очистки
+    """
+    try:
+        from ..exports.alt_export_cleanup import get_alt_export_validator
+        
+        validator = get_alt_export_validator()
+        stats = validator.get_cleanup_statistics()
+        
+        return {
+            "status": "success",
+            "cleanup_statistics": stats,
+            "message": "ALT Export Cleanup statistics retrieved successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get cleanup statistics: {e}")
+        raise HTTPException(500, f"Statistics retrieval failed: {str(e)}")
+
+
+@router.post("/export/cleanup/audit")
+async def admin_audit_archives():
+    """
+    Admin: Полный аудит архивов ALT Export
+    
+    Выполняет комплексную проверку и возвращает детальный отчет:
+    - Найденные проблемы
+    - Рекомендации по очистке
+    - Статистика по типам проблем
+    """
+    try:
+        from ..exports.alt_export_cleanup import get_alt_export_validator
+        
+        validator = get_alt_export_validator()
+        audit_result = validator.admin_audit_archives()
+        
+        logger.info(f"ALT Export audit completed: {audit_result}")
+        
+        return {
+            "status": "success",
+            "audit_result": audit_result,
+            "message": "Archive audit completed successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Archive audit failed: {e}")
+        raise HTTPException(500, f"Audit failed: {str(e)}")
+
+
+@router.post("/export/cleanup/reset-stats")
+def reset_cleanup_statistics():
+    """
+    Admin: Сброс статистики ALT Export Cleanup
+    """
+    try:
+        from ..exports.alt_export_cleanup import get_alt_export_validator
+        
+        validator = get_alt_export_validator()
+        old_stats = validator.get_cleanup_statistics()
+        validator.reset_statistics()
+        
+        logger.info("ALT Export cleanup statistics reset")
+        
+        return {
+            "status": "success",
+            "message": "Cleanup statistics reset successfully",
+            "previous_stats": old_stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to reset cleanup statistics: {e}")
+        raise HTTPException(500, f"Statistics reset failed: {str(e)}")
+
+
 @router.get("/export/status")
 async def get_export_status():
     """Get export system status"""
