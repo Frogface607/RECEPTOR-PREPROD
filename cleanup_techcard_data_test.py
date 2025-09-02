@@ -158,7 +158,7 @@ class CleanupTechCardDataTester:
         
         return len(ready_cards) >= 2
 
-    async def test_2_pipeline_clean_output(self):
+    def test_2_pipeline_clean_output(self):
         """Test 2: Pipeline Clean Output - Тестовое блюдо для очистки"""
         print("\n🍽️ TEST 2: PIPELINE CLEAN OUTPUT")
         
