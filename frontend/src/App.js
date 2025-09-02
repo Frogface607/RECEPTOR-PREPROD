@@ -7909,6 +7909,13 @@ function App() {
     return () => document.removeEventListener('keydown', onKey, { capture: true });
   }, [closeAllModals]);
 
+  // Load user history when switching to techcards view
+  useEffect(() => {
+    if (currentView === 'techcards' && currentUser?.id) {
+      fetchUserHistory();
+    }
+  }, [currentView, currentUser?.id]);
+
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
     if (!currentUser?.id) {
