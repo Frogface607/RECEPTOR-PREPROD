@@ -1,0 +1,209 @@
+{
+  "test_start": "2025-09-02T13:14:59.660343",
+  "ready_status_testing": {
+    "test_results": [
+      {
+        "dish_name": "Борщ украинский с говядиной",
+        "status": "error",
+        "is_ready_status": false,
+        "issues_count": 1,
+        "has_minimal_issues": true,
+        "has_techcard_data": false,
+        "has_ingredients": false,
+        "has_nutrition": false,
+        "has_cost": false,
+        "generation_time": 41.618491649627686,
+        "techcard_id": null,
+        "issues": [
+          {
+            "type": "pipeline_error",
+            "message": "Pipeline execution failed"
+          }
+        ]
+      },
+      {
+        "dish_name": "Стейк из говядины с картофельным пюре",
+        "status": "error",
+        "is_ready_status": false,
+        "issues_count": 1,
+        "has_minimal_issues": true,
+        "has_techcard_data": false,
+        "has_ingredients": false,
+        "has_nutrition": false,
+        "has_cost": false,
+        "generation_time": 27.466966152191162,
+        "techcard_id": null,
+        "issues": [
+          {
+            "type": "pipeline_error",
+            "message": "Pipeline execution failed"
+          }
+        ]
+      },
+      {
+        "dish_name": "Салат Цезарь с курицей",
+        "status": "error",
+        "is_ready_status": false,
+        "issues_count": 1,
+        "has_minimal_issues": true,
+        "has_techcard_data": false,
+        "has_ingredients": false,
+        "has_nutrition": false,
+        "has_cost": false,
+        "generation_time": 37.96033048629761,
+        "techcard_id": null,
+        "issues": [
+          {
+            "type": "pipeline_error",
+            "message": "Pipeline execution failed"
+          }
+        ]
+      }
+    ],
+    "total_tested": 3,
+    "ready_status_count": 0,
+    "minimal_issues_count": 3,
+    "complete_data_count": 0,
+    "success_rate": 0.0,
+    "target_met": false
+  },
+  "pipeline_clean_output": {
+    "dish_name": "Тестовое блюдо для очистки",
+    "status": "error",
+    "is_ready_status": false,
+    "issues_count": 1,
+    "has_no_issues": false,
+    "has_minimal_issues": true,
+    "has_nutrition": false,
+    "has_cost": false,
+    "has_ingredients": false,
+    "ingredients_count": 0,
+    "has_clean_data": true,
+    "generation_time": 10.456092357635498,
+    "techcard_id": null,
+    "issues": [
+      {
+        "type": "pipeline_error",
+        "message": "Pipeline execution failed"
+      }
+    ],
+    "nutrition_keys": [],
+    "cost_total": 0
+  },
+  "data_integrity": {
+    "nutrition_catalog": {
+      "file_exists": true,
+      "total_items": 216,
+      "range_ids_count": 0,
+      "mock_ids_count": 0,
+      "valid_items": 213,
+      "has_range_ids": false,
+      "has_mock_ids": false,
+      "range_ids_sample": [],
+      "mock_ids_sample": [],
+      "integrity_score": 0.9861111111111112
+    },
+    "price_catalog": {
+      "file_exists": true,
+      "total_items": 0,
+      "valid_uuids": 0,
+      "invalid_codes_count": 0,
+      "mock_codes_count": 0,
+      "has_invalid_codes": false,
+      "has_mock_codes": false,
+      "invalid_codes_sample": [],
+      "mock_codes_sample": [],
+      "uuid_validity_rate": 0
+    },
+    "nutrition_clean": true,
+    "price_clean": true,
+    "overall_integrity": true
+  },
+  "api_response_format": {
+    "catalog_search": {
+      "results": [
+        {
+          "query": "говядина",
+          "status_code": 200,
+          "has_warnings": false,
+          "results_count": 10,
+          "response_keys": [
+            "status",
+            "items",
+            "total_found",
+            "price_count",
+            "rms_count",
+            "iiko_count",
+            "usda_count",
+            "catalog_count",
+            "default_source",
+            "iiko_badge"
+          ]
+        },
+        {
+          "query": "картофель",
+          "status_code": 200,
+          "has_warnings": false,
+          "results_count": 10,
+          "response_keys": [
+            "status",
+            "items",
+            "total_found",
+            "price_count",
+            "rms_count",
+            "iiko_count",
+            "usda_count",
+            "catalog_count",
+            "default_source",
+            "iiko_badge"
+          ]
+        },
+        {
+          "query": "молоко",
+          "status_code": 200,
+          "has_warnings": false,
+          "results_count": 10,
+          "response_keys": [
+            "status",
+            "items",
+            "total_found",
+            "price_count",
+            "rms_count",
+            "iiko_count",
+            "usda_count",
+            "catalog_count",
+            "default_source",
+            "iiko_badge"
+          ]
+        }
+      ],
+      "success_rate": 1.0,
+      "warnings_found": false
+    },
+    "xlsx_export": {
+      "error": "No techcard generated for export testing",
+      "success": false
+    },
+    "catalog_healthy": true,
+    "export_healthy": false,
+    "no_warnings": true,
+    "overall_api_health": false
+  },
+  "final_assessment": {
+    "overall_success": false,
+    "success_rate": 0.25,
+    "critical_criteria_met": {
+      "ready_status_testing": false,
+      "pipeline_clean_output": false,
+      "data_integrity": true,
+      "api_response_format": false
+    },
+    "key_metrics": {
+      "ready_cards_count": 0,
+      "total_tested": 3,
+      "ready_cards_rate": 0.0
+    },
+    "cleanup_status": "NEEDS_IMPROVEMENT"
+  },
+  "test_end": "2025-09-02T13:17:10.451806"
+}
