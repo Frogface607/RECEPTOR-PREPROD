@@ -400,16 +400,29 @@ class DualExporter:
             # Load specific techcards by ID
             for techcard_id in techcard_ids:
                     try:
-                        # Try multiple possible ID fields
-                        doc = (techcards_collection.find_one({"_id": techcard_id}) or 
-                               techcards_collection.find_one({"id": techcard_id}) or
-                               techcards_collection.find_one({"meta.id": techcard_id}))
+                        # Search in user_history format (id field)
+                        doc = techcards_collection.find_one({"id": techcard_id})
                         
                         if doc:
-                            # Convert MongoDB document to TechCardV2
-                            techcard = TechCardV2(**doc)
+                            # Load from user_history format
+                            if 'techcard_v2_data' in doc and doc['techcard_v2_data']:
+                                # New format with V2 data
+                                techcard = TechCardV2(**doc['techcard_v2_data'])
+                            elif 'content' in doc and doc['content']:
+                                # Old format - try to parse JSON
+                                try:
+                                    import json
+                                    content_data = json.loads(doc['content'])
+                                    techcard = TechCardV2(**content_data)
+                                except:
+                                    logger.warning(f"Cannot parse techcard content for {techcard_id}")
+                                    continue
+                            else:
+                                logger.warning(f"No valid techcard data for {techcard_id}")
+                                continue
+                                
                             techcards.append(techcard)
-                            logger.info(f"Loaded techcard: {techcard_id}")
+                            logger.info(f"Loaded techcard from user_history: {techcard_id}")
                         else:
                             logger.warning(f"Techcard not found: {techcard_id}")
                             # Don't create mock data - return empty list instead
