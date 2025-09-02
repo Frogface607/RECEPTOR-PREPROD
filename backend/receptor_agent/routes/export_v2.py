@@ -380,7 +380,7 @@ class DualExporter:
             
             client = MongoClient(mongo_url)
             db = client[db_name.strip('"')]
-            techcards_collection = db.techcards_v2
+            techcards_collection = db.user_history  # Техkарты сохраняются в user_history
             
             techcards = []
             
