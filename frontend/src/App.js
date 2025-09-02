@@ -4344,7 +4344,7 @@ function App() {
         results.blockers.push('Нет подключения к iiko RMS');
       }
       
-      if (tcV2.status !== 'success' && tcV2.issues?.some(issue => 
+      if (tcV2.status !== 'success' && tcV2.status !== 'READY' && tcV2.issues?.some(issue => 
         issue.type === 'ruleError' || issue.type === 'missingAnchor'
       )) {
         results.blockers.push('Критические ошибки в техкарте');
