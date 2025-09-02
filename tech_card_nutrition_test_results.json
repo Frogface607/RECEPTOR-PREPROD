@@ -8,7 +8,7 @@
     "alt_export_cleanup": true
   },
   "success_rate": 66.66666666666666,
-  "total_time": 111.24565124511719,
+  "total_time": 106.70045518875122,
   "critical_tests_passed": false,
   "artifacts": {
     "nutrition_coverage_results": [
@@ -16,22 +16,22 @@
         "dish": "Борщ украинский с говядиной",
         "coverage_pct": 80.0,
         "source": "catalog",
-        "generation_time": 15.7896728515625,
-        "card_id": null
+        "generation_time": 13.154244184494019,
+        "card_id": "fd3165e0-9cd1-484b-8167-bfe9cf67a2d9"
       },
       {
         "dish": "Стейк из говядины с картофельным пюре",
         "coverage_pct": 100.0,
         "source": "catalog",
-        "generation_time": 11.455095767974854,
-        "card_id": null
+        "generation_time": 11.268158197402954,
+        "card_id": "c0c809a2-a726-4896-9a64-42bdb7e039e5"
       },
       {
         "dish": "Салат Цезарь с курицей",
         "coverage_pct": 60.0,
         "source": "catalog",
-        "generation_time": 14.017354249954224,
-        "card_id": null
+        "generation_time": 11.863595247268677,
+        "card_id": "a05841d2-9c81-45cf-9e99-f02b04880e03"
       }
     ],
     "ingredient_search_results": [
@@ -89,19 +89,19 @@
     "performance_results": [
       {
         "dish": "Борщ классический",
-        "generation_time": 12.570525884628296,
+        "generation_time": 14.820363521575928,
         "success": true,
         "status_code": 200
       },
       {
         "dish": "Салат Оливье",
-        "generation_time": 14.893941402435303,
+        "generation_time": 14.449143409729004,
         "success": true,
         "status_code": 200
       },
       {
         "dish": "Котлеты по-киевски",
-        "generation_time": 15.329812288284302,
+        "generation_time": 24.65697979927063,
         "success": true,
         "status_code": 200
       }
@@ -112,7 +112,7 @@
       "test": "Expanded Nutrition Catalog Validation",
       "success": true,
       "details": "Каталог содержит 201 ингредиентов (≥201 требуется)",
-      "timestamp": 1756790632.2299912,
+      "timestamp": 1756790850.7323058,
       "data": {
         "count": 201
       }
@@ -121,7 +121,7 @@
       "test": "БЖУ Data Completeness",
       "success": true,
       "details": "БЖУ данные полные для 100.0% ингредиентов",
-      "timestamp": 1756790632.2301664,
+      "timestamp": 1756790850.7324727,
       "data": {
         "completeness_pct": 100.0
       }
@@ -129,162 +129,162 @@
     {
       "test": "БЖУ Coverage - Борщ украинский с говядиной",
       "success": true,
-      "details": "Покрытие: 80.0%, источник: catalog, время: 15.8с",
-      "timestamp": 1756790648.0200126,
+      "details": "Покрытие: 80.0%, источник: catalog, время: 13.2с",
+      "timestamp": 1756790863.886879,
       "data": null
     },
     {
       "test": "БЖУ Coverage - Стейк из говядины с картофельным пюре",
       "success": true,
-      "details": "Покрытие: 100.0%, источник: catalog, время: 11.5с",
-      "timestamp": 1756790659.4756398,
+      "details": "Покрытие: 100.0%, источник: catalog, время: 11.3с",
+      "timestamp": 1756790875.1554193,
       "data": null
     },
     {
       "test": "БЖУ Coverage - Салат Цезарь с курицей",
       "success": false,
-      "details": "Покрытие: 60.0%, источник: catalog, время: 14.0с",
-      "timestamp": 1756790673.4933875,
+      "details": "Покрытие: 60.0%, источник: catalog, время: 11.9с",
+      "timestamp": 1756790887.0194151,
       "data": null
     },
     {
       "test": "КРИТИЧЕСКИЙ: Улучшенное БЖУ покрытие",
       "success": true,
       "details": "Среднее покрытие: 80.0% (цель: ≥80%), источник 'catalog': 3/3",
-      "timestamp": 1756790673.4934986,
+      "timestamp": 1756790887.019526,
       "data": null
     },
     {
       "test": "XLSX Export - Tech Card Generation",
       "success": true,
-      "details": "Техкарта сгенерирована (ID: None, БЖУ покрытие: 87.5%)",
-      "timestamp": 1756790699.9158714,
+      "details": "Техкарта сгенерирована (ID: 78a9e7ff-eef1-4997-ac88-3d44028630ca, БЖУ покрытие: 71.4%)",
+      "timestamp": 1756790899.836374,
       "data": null
     },
     {
       "test": "XLSX Export Request",
       "success": false,
       "details": "Ошибка экспорта: HTTP 422",
-      "timestamp": 1756790699.9906347,
+      "timestamp": 1756790899.911881,
       "data": null
     },
     {
       "test": "Поиск ингредиента - говядина",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.0492759,
+      "timestamp": 1756790900.8573372,
       "data": null
     },
     {
       "test": "Поиск ингредиента - картофель",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.103085,
+      "timestamp": 1756790901.1472075,
       "data": null
     },
     {
       "test": "Поиск ингредиента - лук",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.157206,
+      "timestamp": 1756790901.4233754,
       "data": null
     },
     {
       "test": "Поиск ингредиента - морковь",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.2128618,
+      "timestamp": 1756790901.707912,
       "data": null
     },
     {
       "test": "Поиск ингредиента - молоко",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.265149,
+      "timestamp": 1756790901.9835544,
       "data": null
     },
     {
       "test": "Поиск ингредиента - яйца",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.3234026,
+      "timestamp": 1756790902.2564774,
       "data": null
     },
     {
       "test": "Поиск ингредиента - масло",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.381634,
+      "timestamp": 1756790902.5331867,
       "data": null
     },
     {
       "test": "Поиск ингредиента - соль",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.4409568,
+      "timestamp": 1756790902.8080347,
       "data": null
     },
     {
       "test": "Поиск ингредиента - перец",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.4920073,
+      "timestamp": 1756790903.078839,
       "data": null
     },
     {
       "test": "Поиск ингредиента - помидоры",
       "success": false,
       "details": "Найдено результатов: 0",
-      "timestamp": 1756790700.5428824,
+      "timestamp": 1756790903.3574297,
       "data": null
     },
     {
       "test": "Система поиска ингредиентов",
       "success": false,
       "details": "Покрытие поиска: 0.0% (цель: ≥90%), найдено: 0/10",
-      "timestamp": 1756790700.542935,
+      "timestamp": 1756790903.3574786,
       "data": null
     },
     {
       "test": "Performance - Борщ классический",
       "success": true,
-      "details": "Время генерации: 12.6с, успех: True",
-      "timestamp": 1756790713.114852,
+      "details": "Время генерации: 14.8с, успех: True",
+      "timestamp": 1756790918.17925,
       "data": null
     },
     {
       "test": "Performance - Салат Оливье",
       "success": true,
-      "details": "Время генерации: 14.9с, успех: True",
-      "timestamp": 1756790728.0090156,
+      "details": "Время генерации: 14.4с, успех: True",
+      "timestamp": 1756790932.628798,
       "data": null
     },
     {
       "test": "Performance - Котлеты по-киевски",
       "success": true,
-      "details": "Время генерации: 15.3с, успех: True",
-      "timestamp": 1756790743.3392172,
+      "details": "Время генерации: 24.7с, успех: True",
+      "timestamp": 1756790957.2861547,
       "data": null
     },
     {
       "test": "Performance и стабильность",
       "success": true,
-      "details": "Среднее время: 14.3с, успешность: 100.0%",
-      "timestamp": 1756790743.3393228,
+      "details": "Среднее время: 18.0с, успешность: 100.0%",
+      "timestamp": 1756790957.2862756,
       "data": null
     },
     {
       "test": "ALT Export Cleanup Stats",
       "success": true,
-      "details": "Статистика cleanup доступна: {'status': 'success', 'cleanup_statistics': {'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0, 'timestamp': '2025-09-02T05:25:43.417912'}, 'message': 'ALT Export Cleanup statistics retrieved successfully'}",
-      "timestamp": 1756790743.419963,
+      "details": "Статистика cleanup доступна: {'status': 'success', 'cleanup_statistics': {'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0, 'timestamp': '2025-09-02T05:29:17.378760'}, 'message': 'ALT Export Cleanup statistics retrieved successfully'}",
+      "timestamp": 1756790957.3809862,
       "data": null
     },
     {
       "test": "ALT Export Cleanup Integration",
       "success": true,
       "details": "ALT Export Cleanup система интегрирована и функциональна",
-      "timestamp": 1756790743.4720533,
+      "timestamp": 1756790957.4291604,
       "data": null
     }
   ]
