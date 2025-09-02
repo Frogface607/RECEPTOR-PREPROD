@@ -10778,7 +10778,7 @@ function App() {
                       🔍 Назначить SKU
                     </button>
                     
-                    {/* 3. Phase 3: Экспорт в iiko (2 шага) */}
+                    {/* 3. Phase 3: Экспорт номенклатур */}
                     <button 
                       onClick={startPhase3Export}
                       disabled={!tcV2 || phase3ExportState === 'running_preflight'}
