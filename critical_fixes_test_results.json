@@ -1,0 +1,96 @@
+{
+  "test_start": "2025-09-02T11:03:55.865599",
+  "task_1_remove_invalid_ttk": {
+    "test_results": [
+      {
+        "dish_name": "Борщ украинский с говядиной",
+        "error": "No tech card ID",
+        "success": false
+      },
+      {
+        "dish_name": "Стейк из говядины с картофельным пюре",
+        "error": "No tech card ID",
+        "success": false
+      },
+      {
+        "dish_name": "Салат Цезарь с курицей",
+        "error": "No tech card ID",
+        "success": false
+      },
+      {
+        "dish_name": "Паста карбонара с беконом",
+        "error": "No tech card ID",
+        "success": false
+      },
+      {
+        "dish_name": "Рыба запеченная с овощами",
+        "error": "No tech card ID",
+        "success": false
+      }
+    ],
+    "total_tests": 5,
+    "successful_tests": 0,
+    "success_rate": 0.0,
+    "valid_zip_structures": 0,
+    "no_invalid_ttk_files": 0,
+    "contains_required_files": 0,
+    "target_met": false,
+    "critical_requirements": {
+      "zip_contains_only_skeletons": false,
+      "no_iiko_ttk_in_archive": false,
+      "export_without_errors": false,
+      "test_archives_valid": false
+    }
+  },
+  "task_2_rename_button": {
+    "test_results": {
+      "backend_endpoints_working": false,
+      "no_old_text_in_responses": true,
+      "export_functionality_intact": false
+    },
+    "success": false,
+    "expected_new_text": "Экспорт номенклатур",
+    "old_texts_checked": [
+      "Экспорт в iiko (2 шага)",
+      "Export to iiko (2 steps)",
+      "2 шага",
+      "2 steps"
+    ],
+    "critical_requirements": {
+      "button_renamed_in_interfaces": true,
+      "user_sees_new_text": true,
+      "export_functionality_works": false
+    }
+  },
+  "integration_tests": {
+    "full_workflow_success": false,
+    "performance_acceptable": false,
+    "alt_export_cleanup_working": true
+  },
+  "final_assessment": {
+    "overall_success": false,
+    "task_1_remove_invalid_ttk": {
+      "success": false,
+      "zip_contains_only_skeletons": false,
+      "no_iiko_ttk_in_archive": false,
+      "export_without_errors": false,
+      "test_archives_valid": false
+    },
+    "task_2_rename_button": {
+      "success": false,
+      "backend_functionality_intact": false,
+      "frontend_verification_needed": true
+    },
+    "integration_workflow": {
+      "success": false,
+      "full_pipeline_working": false
+    },
+    "acceptance_criteria_met": {
+      "task_1_critical": false,
+      "task_2_backend": false,
+      "integration_stable": false,
+      "no_regressions": false
+    }
+  },
+  "test_end": "2025-09-02T11:05:07.579990"
+}
