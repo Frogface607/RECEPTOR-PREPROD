@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-09-02T10:55:32.719636",
+  "timestamp": "2025-09-02T10:57:01.453035",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Борщ украинский с мясом",
-      "code": "100037",
+      "name": "Плов узбекский с говядиной и овощами",
+      "code": "100038",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 330.0
+      "yield_g": 240.0
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
