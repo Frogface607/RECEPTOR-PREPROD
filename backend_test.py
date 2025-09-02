@@ -223,7 +223,7 @@ class TechCardNutritionTester:
             # First generate a tech card with good nutrition coverage
             response = requests.post(
                 f"{API_BASE}/v1/techcards.v2/generate",
-                json={"dish_name": "Паста Болоньезе"},
+                json={"name": "Паста Болоньезе"},
                 timeout=60
             )
             
