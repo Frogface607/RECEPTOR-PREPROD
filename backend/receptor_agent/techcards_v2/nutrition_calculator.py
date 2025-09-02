@@ -210,20 +210,37 @@ class NutritionCalculator:
             return {"items": [], "densities": {}}
     
     def _build_nutrition_index(self) -> Dict[str, Dict[str, Any]]:
-        """Создает индекс всех продуктов для быстрого поиска"""
+        """Создает индекс всех продуктов для быстрого поиска с улучшенным маппингом"""
         index = {}
         items = self.catalog.get("items", [])
         
         for item in items:
             name = item.get("name", "").lower()
             if name:
+                # Основное название
                 index[name] = item
                 
                 # Добавляем без лишних слов для лучшего поиска
                 clean_name = self._clean_ingredient_name(name)
                 if clean_name != name:
                     index[clean_name] = item
+                
+                # TECH CARD QUALITY BOOST: Добавляем улучшенное индексирование по ключевым словам
+                # Разбиваем название на слова и индексируем каждое ключевое слово
+                words = name.split()
+                if len(words) > 1:
+                    # Для составных названий добавляем каждое ключевое слово
+                    for word in words:
+                        if len(word) > 3:  # Индексируем только слова длиннее 3 символов
+                            if word not in index:  # Не перезаписываем если уже есть точное совпадение
+                                index[word] = item
+                
+            # Добавляем canonical_id для поиска
+            canonical_id = item.get("canonical_id", "").lower()
+            if canonical_id:
+                index[canonical_id] = item
         
+        print(f"🔧 TECH CARD QUALITY BOOST: Built nutrition index with {len(index)} entries")
         return index
     
     def _clean_ingredient_name(self, name: str) -> str:
