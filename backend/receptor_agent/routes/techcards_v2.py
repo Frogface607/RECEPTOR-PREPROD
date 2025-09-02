@@ -105,14 +105,32 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
                 else:
                     tech_card_id = res.card.meta.id
                 
-                # Prepare document for MongoDB
-                card_doc = res.card.model_dump()
-                card_doc['_id'] = tech_card_id
-                card_doc['created_at'] = datetime.utcnow()
-                card_doc['updated_at'] = datetime.utcnow()
+                # CLEANUP TECH CARD DATA & UI: Сохранение с user_id для связи с аккаунтом
+                # Prepare document for user_history (совместимость с существующей системой)
+                card_doc = {
+                    "id": tech_card_id,
+                    "user_id": profile.user_id or 'anonymous',
+                    "dish_name": profile.name,
+                    "content": res.card.model_dump_json(),  # Сохраняем как JSON строку для совместимости
+                    "created_at": datetime.utcnow().isoformat(),
+                    "is_menu": False,
+                    "status": res.status,
+                    "techcard_v2_data": res.card.model_dump()  # Полные данные V2
+                }
                 
-                # Save to database
-                techcards_collection.insert_one(card_doc)
+                # Save to user_history collection (как в старой системе)
+                from motor.motor_asyncio import AsyncIOMotorClient
+                async_client = AsyncIOMotorClient(mongo_url)
+                async_db = async_client[db_name]
+                
+                # Используем синхронную вставку через asyncio
+                import asyncio
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(async_db.user_history.insert_one(card_doc))
+                loop.close()
+                
+                async_client.close()
                 client.close()
                 
                 logger.info(f"Tech card saved to database with ID: {tech_card_id}")
