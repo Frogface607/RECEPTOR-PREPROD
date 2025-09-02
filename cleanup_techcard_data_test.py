@@ -314,7 +314,7 @@ class CleanupTechCardDataTester:
         except Exception:
             return False
 
-    async def test_3_data_integrity(self):
+    def test_3_data_integrity(self):
         """Test 3: Data Integrity - Проверить чистоту каталогов данных"""
         print("\n📊 TEST 3: DATA INTEGRITY")
         
