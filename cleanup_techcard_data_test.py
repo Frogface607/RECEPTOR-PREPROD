@@ -75,14 +75,14 @@ class CleanupTechCardDataTester:
                 start_time = time.time()
                 
                 # Generate tech card
-                async with self.session.post(
+                response = self.session.post(
                     f"{API_BASE}/v1/techcards.v2/generate",
                     json={"name": dish_name}
-                ) as response:
-                    generation_time = time.time() - start_time
-                    
-                    if response.status == 200:
-                        data = await response.json()
+                )
+                generation_time = time.time() - start_time
+                
+                if response.status_code == 200:
+                    data = response.json()
                         
                         # Check status field
                         status = data.get('status', 'unknown')
