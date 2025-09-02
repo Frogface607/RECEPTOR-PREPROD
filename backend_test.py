@@ -1,5 +1,628 @@
 #!/usr/bin/env python3
 """
+TECH CARD NUTRITION INTEGRATION COMPREHENSIVE TESTING
+Протестировать ЗАВЕРШЕННУЮ систему TECH CARD NUTRITION INTEGRATION после всех улучшений.
+
+КРИТИЧЕСКИЕ тесты для финального подтверждения:
+1. Проверка улучшенного БЖУ покрытия (КРИТИЧЕСКИЙ) - ≥80%
+2. Валидация расширенного каталога (201 ингредиент)
+3. XLSX экспорт с улучшенными данными (КРИТИЧЕСКИЙ)
+4. Система поиска ингредиентов (≥90% покрытие)
+5. Performance и стабильность
+"""
+
+import requests
+import json
+import time
+import os
+from typing import Dict, List, Any
+import tempfile
+import zipfile
+from openpyxl import load_workbook
+import statistics
+
+# Configuration
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
+
+class TechCardNutritionTester:
+    def __init__(self):
+        self.results = []
+        self.artifacts = {}
+        
+    def log_result(self, test_name: str, success: bool, details: str, data: Any = None):
+        """Log test result with details"""
+        result = {
+            'test': test_name,
+            'success': success,
+            'details': details,
+            'timestamp': time.time(),
+            'data': data
+        }
+        self.results.append(result)
+        status = "✅" if success else "❌"
+        print(f"{status} {test_name}: {details}")
+        
+    def test_expanded_catalog_validation(self) -> bool:
+        """КРИТИЧЕСКИЙ ТЕСТ 1: Проверка расширенного каталога с 201 ингредиентом"""
+        try:
+            # Check nutrition catalog
+            try:
+                with open('/app/nutrition_catalog.dev.json', 'r', encoding='utf-8') as f:
+                    nutrition_catalog = json.load(f)
+                
+                ingredient_count = len(nutrition_catalog)
+                
+                if ingredient_count >= 201:
+                    self.log_result(
+                        "Expanded Nutrition Catalog Validation", 
+                        True,
+                        f"Каталог содержит {ingredient_count} ингредиентов (≥201 требуется)",
+                        {'count': ingredient_count}
+                    )
+                    
+                    # Validate БЖУ data completeness
+                    complete_nutrition = 0
+                    for ingredient in nutrition_catalog:
+                        if all(key in ingredient for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g']):
+                            complete_nutrition += 1
+                    
+                    completeness_pct = (complete_nutrition / ingredient_count) * 100
+                    
+                    if completeness_pct >= 95:
+                        self.log_result(
+                            "БЖУ Data Completeness", 
+                            True,
+                            f"БЖУ данные полные для {completeness_pct:.1f}% ингредиентов",
+                            {'completeness_pct': completeness_pct}
+                        )
+                        return True
+                    else:
+                        self.log_result(
+                            "БЖУ Data Completeness", 
+                            False,
+                            f"БЖУ данные неполные: {completeness_pct:.1f}% (требуется ≥95%)"
+                        )
+                        return False
+                else:
+                    self.log_result(
+                        "Expanded Nutrition Catalog Validation", 
+                        False,
+                        f"Каталог содержит только {ingredient_count} ингредиентов (требуется ≥201)"
+                    )
+                    return False
+                    
+            except FileNotFoundError:
+                self.log_result(
+                    "Expanded Nutrition Catalog Validation", 
+                    False,
+                    "nutrition_catalog.dev.json не найден"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Expanded Catalog Validation", 
+                False,
+                f"Ошибка при проверке каталога: {str(e)}"
+            )
+            return False
+    
+    def test_improved_nutrition_coverage(self) -> bool:
+        """КРИТИЧЕСКИЙ ТЕСТ 2: Проверка улучшенного БЖУ покрытия ≥80%"""
+        try:
+            # Test dishes with different complexity levels
+            test_dishes = [
+                "Борщ украинский с говядиной",
+                "Стейк из говядины с картофельным пюре", 
+                "Салат Цезарь с курицей"
+            ]
+            
+            coverage_results = []
+            
+            for dish_name in test_dishes:
+                start_time = time.time()
+                
+                # Generate tech card
+                response = requests.post(
+                    f"{API_BASE}/v1/techcards.v2/generate",
+                    json={"dish_name": dish_name},
+                    timeout=60
+                )
+                
+                generation_time = time.time() - start_time
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if data.get('card') and data['card'].get('nutritionMeta'):
+                        nutrition_meta = data['card']['nutritionMeta']
+                        coverage_pct = nutrition_meta.get('coveragePct', 0)
+                        source = nutrition_meta.get('source', 'unknown')
+                        
+                        coverage_results.append({
+                            'dish': dish_name,
+                            'coverage_pct': coverage_pct,
+                            'source': source,
+                            'generation_time': generation_time,
+                            'card_id': data['card'].get('id')
+                        })
+                        
+                        self.log_result(
+                            f"БЖУ Coverage - {dish_name}",
+                            coverage_pct >= 80,
+                            f"Покрытие: {coverage_pct:.1f}%, источник: {source}, время: {generation_time:.1f}с"
+                        )
+                    else:
+                        self.log_result(
+                            f"БЖУ Coverage - {dish_name}",
+                            False,
+                            "Отсутствуют данные nutritionMeta в ответе"
+                        )
+                        coverage_results.append({
+                            'dish': dish_name,
+                            'coverage_pct': 0,
+                            'source': 'error',
+                            'generation_time': generation_time,
+                            'error': 'No nutritionMeta'
+                        })
+                else:
+                    self.log_result(
+                        f"БЖУ Coverage - {dish_name}",
+                        False,
+                        f"Ошибка генерации: HTTP {response.status_code}"
+                    )
+                    coverage_results.append({
+                        'dish': dish_name,
+                        'coverage_pct': 0,
+                        'source': 'error',
+                        'generation_time': generation_time,
+                        'error': f'HTTP {response.status_code}'
+                    })
+            
+            # Calculate average coverage
+            valid_coverages = [r['coverage_pct'] for r in coverage_results if r['coverage_pct'] > 0]
+            
+            if valid_coverages:
+                avg_coverage = statistics.mean(valid_coverages)
+                
+                # Check if average meets target
+                target_met = avg_coverage >= 80.0
+                
+                # Check if source is 'catalog' (using expanded catalog)
+                catalog_sources = [r for r in coverage_results if r['source'] == 'catalog']
+                
+                self.artifacts['nutrition_coverage_results'] = coverage_results
+                
+                self.log_result(
+                    "КРИТИЧЕСКИЙ: Улучшенное БЖУ покрытие",
+                    target_met and len(catalog_sources) > 0,
+                    f"Среднее покрытие: {avg_coverage:.1f}% (цель: ≥80%), источник 'catalog': {len(catalog_sources)}/{len(coverage_results)}"
+                )
+                
+                return target_met and len(catalog_sources) > 0
+            else:
+                self.log_result(
+                    "КРИТИЧЕСКИЙ: Улучшенное БЖУ покрытие",
+                    False,
+                    "Нет валидных результатов покрытия БЖУ"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Improved Nutrition Coverage Test",
+                False,
+                f"Ошибка при тестировании БЖУ покрытия: {str(e)}"
+            )
+            return False
+    
+    def test_xlsx_export_with_improved_data(self) -> bool:
+        """КРИТИЧЕСКИЙ ТЕСТ 3: XLSX экспорт с улучшенными БЖУ данными"""
+        try:
+            # First generate a tech card with good nutrition coverage
+            response = requests.post(
+                f"{API_BASE}/v1/techcards.v2/generate",
+                json={"dish_name": "Паста Болоньезе"},
+                timeout=60
+            )
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "XLSX Export - Tech Card Generation",
+                    False,
+                    f"Не удалось сгенерировать техкарту: HTTP {response.status_code}"
+                )
+                return False
+            
+            data = response.json()
+            card = data.get('card')
+            
+            if not card:
+                self.log_result(
+                    "XLSX Export - Tech Card Generation",
+                    False,
+                    "Техкарта не сгенерирована (card = null)"
+                )
+                return False
+            
+            card_id = card.get('id')
+            nutrition_coverage = card.get('nutritionMeta', {}).get('coveragePct', 0)
+            
+            self.log_result(
+                "XLSX Export - Tech Card Generation",
+                True,
+                f"Техкарта сгенерирована (ID: {card_id}, БЖУ покрытие: {nutrition_coverage:.1f}%)"
+            )
+            
+            # Test XLSX export
+            export_response = requests.post(
+                f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
+                json={"techcard_ids": [card_id]},
+                timeout=30
+            )
+            
+            if export_response.status_code == 200:
+                # Check if it's actually an XLSX file
+                content_type = export_response.headers.get('content-type', '')
+                
+                if 'spreadsheet' in content_type or 'excel' in content_type:
+                    file_size = len(export_response.content)
+                    
+                    # Save and analyze XLSX content
+                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
+                        tmp_file.write(export_response.content)
+                        tmp_file_path = tmp_file.name
+                    
+                    try:
+                        # Load and analyze XLSX
+                        workbook = load_workbook(tmp_file_path)
+                        sheet_names = workbook.sheetnames
+                        
+                        # Check for nutrition data in sheets
+                        nutrition_data_found = False
+                        for sheet_name in sheet_names:
+                            sheet = workbook[sheet_name]
+                            for row in sheet.iter_rows(values_only=True):
+                                if row and any(cell for cell in row if cell and 'ккал' in str(cell).lower()):
+                                    nutrition_data_found = True
+                                    break
+                            if nutrition_data_found:
+                                break
+                        
+                        os.unlink(tmp_file_path)
+                        
+                        self.log_result(
+                            "КРИТИЧЕСКИЙ: XLSX экспорт с БЖУ данными",
+                            nutrition_data_found,
+                            f"XLSX файл ({file_size} байт), листы: {sheet_names}, БЖУ данные: {'найдены' if nutrition_data_found else 'не найдены'}"
+                        )
+                        
+                        return nutrition_data_found
+                        
+                    except Exception as e:
+                        os.unlink(tmp_file_path)
+                        self.log_result(
+                            "XLSX Export Analysis",
+                            False,
+                            f"Ошибка анализа XLSX файла: {str(e)}"
+                        )
+                        return False
+                else:
+                    self.log_result(
+                        "XLSX Export Content Type",
+                        False,
+                        f"Неверный content-type: {content_type}"
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "XLSX Export Request",
+                    False,
+                    f"Ошибка экспорта: HTTP {export_response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "XLSX Export Test",
+                False,
+                f"Ошибка при тестировании XLSX экспорта: {str(e)}"
+            )
+            return False
+    
+    def test_ingredient_search_system(self) -> bool:
+        """ТЕСТ 4: Система поиска ингредиентов с улучшенной индексацией"""
+        try:
+            # Test popular Russian ingredients
+            test_ingredients = [
+                "говядина",
+                "картофель", 
+                "лук",
+                "морковь",
+                "молоко",
+                "яйца",
+                "масло",
+                "соль",
+                "перец",
+                "помидоры"
+            ]
+            
+            search_results = []
+            
+            for ingredient in test_ingredients:
+                # Test catalog search
+                response = requests.get(
+                    f"{API_BASE}/v1/techcards.v2/catalog-search",
+                    params={"q": ingredient, "source": "nutrition"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    results_count = len(data.get('results', []))
+                    
+                    search_results.append({
+                        'ingredient': ingredient,
+                        'results_count': results_count,
+                        'found': results_count > 0
+                    })
+                    
+                    self.log_result(
+                        f"Поиск ингредиента - {ingredient}",
+                        results_count > 0,
+                        f"Найдено результатов: {results_count}"
+                    )
+                else:
+                    search_results.append({
+                        'ingredient': ingredient,
+                        'results_count': 0,
+                        'found': False,
+                        'error': f'HTTP {response.status_code}'
+                    })
+                    
+                    self.log_result(
+                        f"Поиск ингредиента - {ingredient}",
+                        False,
+                        f"Ошибка поиска: HTTP {response.status_code}"
+                    )
+            
+            # Calculate coverage
+            found_ingredients = [r for r in search_results if r['found']]
+            coverage_pct = (len(found_ingredients) / len(test_ingredients)) * 100
+            
+            target_met = coverage_pct >= 90.0
+            
+            self.artifacts['ingredient_search_results'] = search_results
+            
+            self.log_result(
+                "Система поиска ингредиентов",
+                target_met,
+                f"Покрытие поиска: {coverage_pct:.1f}% (цель: ≥90%), найдено: {len(found_ingredients)}/{len(test_ingredients)}"
+            )
+            
+            return target_met
+            
+        except Exception as e:
+            self.log_result(
+                "Ingredient Search System Test",
+                False,
+                f"Ошибка при тестировании поиска: {str(e)}"
+            )
+            return False
+    
+    def test_performance_and_stability(self) -> bool:
+        """ТЕСТ 5: Performance и стабильность системы"""
+        try:
+            performance_results = []
+            
+            # Test multiple tech card generations for performance
+            test_dishes = [
+                "Борщ классический",
+                "Салат Оливье", 
+                "Котлеты по-киевски"
+            ]
+            
+            for dish in test_dishes:
+                start_time = time.time()
+                
+                response = requests.post(
+                    f"{API_BASE}/v1/techcards.v2/generate",
+                    json={"dish_name": dish},
+                    timeout=60
+                )
+                
+                generation_time = time.time() - start_time
+                
+                success = response.status_code == 200 and response.json().get('card') is not None
+                
+                performance_results.append({
+                    'dish': dish,
+                    'generation_time': generation_time,
+                    'success': success,
+                    'status_code': response.status_code
+                })
+                
+                self.log_result(
+                    f"Performance - {dish}",
+                    success and generation_time < 45.0,
+                    f"Время генерации: {generation_time:.1f}с, успех: {success}"
+                )
+            
+            # Calculate average performance
+            successful_generations = [r for r in performance_results if r['success']]
+            
+            if successful_generations:
+                avg_time = statistics.mean([r['generation_time'] for r in successful_generations])
+                success_rate = len(successful_generations) / len(performance_results) * 100
+                
+                performance_acceptable = avg_time < 45.0 and success_rate >= 80.0
+                
+                self.artifacts['performance_results'] = performance_results
+                
+                self.log_result(
+                    "Performance и стабильность",
+                    performance_acceptable,
+                    f"Среднее время: {avg_time:.1f}с, успешность: {success_rate:.1f}%"
+                )
+                
+                return performance_acceptable
+            else:
+                self.log_result(
+                    "Performance и стабильность",
+                    False,
+                    "Нет успешных генераций для анализа производительности"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "Performance and Stability Test",
+                False,
+                f"Ошибка при тестировании производительности: {str(e)}"
+            )
+            return False
+    
+    def test_alt_export_cleanup_integration(self) -> bool:
+        """ТЕСТ 6: ALT Export Cleanup интеграция"""
+        try:
+            # Test ALT export cleanup stats
+            response = requests.get(f"{API_BASE}/v1/export/cleanup/stats", timeout=10)
+            
+            if response.status_code == 200:
+                stats = response.json()
+                
+                self.log_result(
+                    "ALT Export Cleanup Stats",
+                    True,
+                    f"Статистика cleanup доступна: {stats}"
+                )
+                
+                # Test audit endpoint
+                audit_response = requests.post(f"{API_BASE}/v1/export/cleanup/audit", timeout=10)
+                
+                if audit_response.status_code == 200:
+                    self.log_result(
+                        "ALT Export Cleanup Integration",
+                        True,
+                        "ALT Export Cleanup система интегрирована и функциональна"
+                    )
+                    return True
+                else:
+                    self.log_result(
+                        "ALT Export Cleanup Audit",
+                        False,
+                        f"Ошибка audit: HTTP {audit_response.status_code}"
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "ALT Export Cleanup Stats",
+                    False,
+                    f"Ошибка получения статистики: HTTP {response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "ALT Export Cleanup Integration Test",
+                False,
+                f"Ошибка при тестировании ALT Export Cleanup: {str(e)}"
+            )
+            return False
+    
+    def run_comprehensive_test(self) -> Dict[str, Any]:
+        """Запуск всех критических тестов"""
+        print("🎯 НАЧАЛО КОМПЛЕКСНОГО ТЕСТИРОВАНИЯ TECH CARD NUTRITION INTEGRATION")
+        print("=" * 80)
+        
+        start_time = time.time()
+        
+        # Run all critical tests
+        test_results = {
+            'expanded_catalog': self.test_expanded_catalog_validation(),
+            'nutrition_coverage': self.test_improved_nutrition_coverage(), 
+            'xlsx_export': self.test_xlsx_export_with_improved_data(),
+            'ingredient_search': self.test_ingredient_search_system(),
+            'performance': self.test_performance_and_stability(),
+            'alt_export_cleanup': self.test_alt_export_cleanup_integration()
+        }
+        
+        total_time = time.time() - start_time
+        
+        # Calculate overall success
+        passed_tests = sum(1 for result in test_results.values() if result)
+        total_tests = len(test_results)
+        success_rate = (passed_tests / total_tests) * 100
+        
+        # Final assessment
+        print("\n" + "=" * 80)
+        print("🎯 ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ")
+        print("=" * 80)
+        
+        for test_name, result in test_results.items():
+            status = "✅ ПРОЙДЕН" if result else "❌ НЕ ПРОЙДЕН"
+            print(f"{status}: {test_name}")
+        
+        print(f"\nОБЩИЙ РЕЗУЛЬТАТ: {passed_tests}/{total_tests} тестов пройдено ({success_rate:.1f}%)")
+        print(f"ВРЕМЯ ВЫПОЛНЕНИЯ: {total_time:.1f} секунд")
+        
+        # Check critical acceptance criteria
+        critical_tests_passed = (
+            test_results['nutrition_coverage'] and  # БЖУ покрытие ≥80%
+            test_results['expanded_catalog'] and    # Каталог 200+ ингредиентов  
+            test_results['xlsx_export']             # XLSX экспорт работает
+        )
+        
+        if critical_tests_passed:
+            print("\n🎉 КРИТИЧЕСКИЕ ACCEPTANCE CRITERIA ВЫПОЛНЕНЫ!")
+            print("✅ БЖУ покрытие ≥80%")
+            print("✅ Каталог 200+ ингредиентов") 
+            print("✅ XLSX экспорт с БЖУ данными")
+            
+            if success_rate >= 80:
+                print("\n🚀 TECH CARD NUTRITION INTEGRATION ГОТОВА К ПРОДАКШЕНУ!")
+            else:
+                print(f"\n⚠️ Система частично готова (успешность {success_rate:.1f}%)")
+        else:
+            print("\n🚨 КРИТИЧЕСКИЕ ТРЕБОВАНИЯ НЕ ВЫПОЛНЕНЫ!")
+            if not test_results['nutrition_coverage']:
+                print("❌ БЖУ покрытие < 80%")
+            if not test_results['expanded_catalog']:
+                print("❌ Каталог < 200 ингредиентов")
+            if not test_results['xlsx_export']:
+                print("❌ XLSX экспорт не работает")
+        
+        # Save detailed results
+        final_results = {
+            'test_results': test_results,
+            'success_rate': success_rate,
+            'total_time': total_time,
+            'critical_tests_passed': critical_tests_passed,
+            'artifacts': self.artifacts,
+            'detailed_results': self.results
+        }
+        
+        # Save to file
+        with open('/app/tech_card_nutrition_test_results.json', 'w', encoding='utf-8') as f:
+            json.dump(final_results, f, ensure_ascii=False, indent=2, default=str)
+        
+        return final_results
+
+def main():
+    """Main test execution"""
+    tester = TechCardNutritionTester()
+    results = tester.run_comprehensive_test()
+    
+    # Return appropriate exit code
+    if results['critical_tests_passed'] and results['success_rate'] >= 80:
+        exit(0)  # Success
+    else:
+        exit(1)  # Failure
+
+if __name__ == "__main__":
+    main()
+"""
 ALT Export Cleanup System Comprehensive Testing
 
 Протестировать ALT Export Cleanup систему согласно спецификации в test_result.md.
