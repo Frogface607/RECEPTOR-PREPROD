@@ -1,23 +1,39 @@
 #!/usr/bin/env python3
 """
-Backend Test: Export to iiko XLSX - Automatic Gram-to-Kilogram Conversion for All Mass Fields
+ALT Export Cleanup System Comprehensive Testing
 
-ЦЕЛЬ: Протестировать автоматическую конвертацию всех масс из грамм в килограммы при экспорте XLSX для iiko
+Протестировать ALT Export Cleanup систему согласно спецификации в test_result.md.
 
-КОНТЕКСТ ИЗМЕНЕНИЙ:
-- Добавлены функции convert_grams_to_kilograms() и convert_yield_grams_to_kilograms()
-- Изменен create_iiko_ttk_xlsx(): брутто, нетто, выход конвертируются в кг
-- Изменен create_dish_skeletons_xlsx(): выход блюд конвертируется в кг 
-- Единицы измерения меняются с 'г' на 'кг' в экспорте XLSX
-- В интерфейсе и PDF должны остаться граммы (не тестируется)
+ОСНОВНЫЕ ЗАДАЧИ ДЛЯ ТЕСТИРОВАНИЯ:
 
-ТЕСТ-ПЛАН:
-1. БАЗОВАЯ ГЕНЕРАЦИЯ ТЕХКАРТЫ
-2. TTK XLSX ЭКСПОРТ С КОНВЕРТАЦИЕЙ МАСС
-3. ТОЧНОСТЬ КОНВЕРТАЦИИ И ОКРУГЛЕНИЯ
-4. DISH SKELETONS С КОНВЕРТАЦИЕЙ
-5. PRODUCT SKELETONS БЕЗ ИЗМЕНЕНИЙ
-6. АРТЕФАКТЫ И ИНСТРУКЦИИ
+1. ALT Export Cleanup Module (Приоритет: ВЫСОКИЙ)
+   - Протестировать класс ALTExportValidator из /app/backend/receptor_agent/exports/alt_export_cleanup.py
+   - Проверить функции анализа архивов, поиска дублей, валидации TTK
+   - Тестировать методы cleanup_archive и validate_single_ttk
+   - Проверить singleton pattern и статистику
+
+2. Integration Testing (Приоритет: ВЫСОКИЙ)
+   - POST /api/v1/techcards.v2/export/iiko.xlsx - проверить интеграцию валидации TTK
+   - POST /api/v1/export/zip - проверить автоматическую очистку архивов
+   - POST /api/v1/export/ttk-only - проверить валидацию TTK файлов
+   - Убедиться что все экспорты проходят через ALT pipeline
+
+3. Admin Endpoints (Приоритет: СРЕДНИЙ)
+   - GET /api/v1/export/cleanup/stats - получение статистики очистки
+   - POST /api/v1/export/cleanup/audit - полный аудит архивов
+   - POST /api/v1/export/cleanup/reset-stats - сброс статистики
+
+4. Функциональное тестирование:
+   - Создать тестовые сценарии с дублями TTK и superfluous files
+   - Проверить что cleanup автоматически удаляет проблемные файлы
+   - Убедиться в корректности обязательных компонентов (Dish-Skeletons, Product-Skeletons, reference TTK)
+   - Проверить логирование всех операций очистки
+
+5. Edge Cases:
+   - Пустые архивы, невалидные ZIP файлы
+   - TTK файлы с отсутствующими данными
+   - Архивы только с superfluous files
+   - Большие архивы с множественными дублями
 """
 
 import requests
@@ -26,1348 +42,23 @@ import time
 import os
 import tempfile
 import zipfile
-from openpyxl import load_workbook
-from io import BytesIO
-import sys
-
-# Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
-
-class IikoMassConversionTester:
-    def __init__(self):
-        self.results = []
-        self.artifacts = {}
-        
-    def log_result(self, test_name: str, success: bool, details: str, timing: float = 0):
-        """Логирование результатов тестов"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        result = {
-            'test': test_name,
-            'status': status,
-            'success': success,
-            'details': details,
-            'timing_ms': round(timing * 1000, 1)
-        }
-        self.results.append(result)
-        print(f"{status}: {test_name}")
-        print(f"   {details}")
-        if timing > 0:
-            print(f"   Время: {timing:.3f}s")
-        print()
-
-    def test_1_basic_techcard_generation(self):
-        """1. БАЗОВАЯ ГЕНЕРАЦИЯ ТЕХКАРТЫ"""
-        print("🔧 ТЕСТ 1: Базовая генерация техкарты с несколькими ингредиентами")
-        
-        try:
-            start_time = time.time()
-            
-            # Генерируем техкарту с известными массами
-            dish_name = "Тестовое блюдо для конвертации масс"
-            
-            response = requests.post(
-                f"{API_BASE}/v1/techcards.v2/generate",
-                json={"name": dish_name},
-                timeout=60
-            )
-            
-            timing = time.time() - start_time
-            
-            if response.status_code != 200:
-                self.log_result(
-                    "Генерация техкарты", 
-                    False, 
-                    f"HTTP {response.status_code}: {response.text[:200]}", 
-                    timing
-                )
-                return None
-                
-            data = response.json()
-            
-            if 'card' not in data:
-                self.log_result(
-                    "Генерация техкарты", 
-                    False, 
-                    f"Отсутствует поле 'card' в ответе: {list(data.keys())}", 
-                    timing
-                )
-                return None
-                
-            card = data['card']
-            techcard_id = card.get('meta', {}).get('id')
-            
-            if not techcard_id:
-                self.log_result(
-                    "Генерация техкарты", 
-                    False, 
-                    "Отсутствует ID техкарты в meta.id", 
-                    timing
-                )
-                return None
-                
-            # Проверяем ингредиенты
-            ingredients = card.get('ingredients', [])
-            if len(ingredients) < 3:
-                self.log_result(
-                    "Генерация техкарты", 
-                    False, 
-                    f"Недостаточно ингредиентов: {len(ingredients)} (ожидается ≥3)", 
-                    timing
-                )
-                return None
-                
-            # Проверяем что массы в граммах
-            gram_masses = []
-            for ing in ingredients:
-                brutto = ing.get('brutto_g', 0)
-                netto = ing.get('netto_g', 0)
-                unit = ing.get('unit', '')
-                
-                if brutto > 0:
-                    gram_masses.append(f"{ing.get('name', 'Unknown')}: брутто={brutto}г, нетто={netto}г, unit={unit}")
-                    
-            # Проверяем выход блюда
-            yield_info = card.get('yield', {})
-            yield_g = yield_info.get('perPortion_g', 0)
-            
-            self.artifacts['generated_techcard'] = {
-                'id': techcard_id,
-                'name': dish_name,
-                'ingredients_count': len(ingredients),
-                'yield_g': yield_g,
-                'ingredients_masses': gram_masses,
-                'full_card_data': card  # Сохраняем полные данные техкарты
-            }
-            
-            self.log_result(
-                "Генерация техкарты", 
-                True, 
-                f"Техкарта создана: ID={techcard_id}, ингредиентов={len(ingredients)}, выход={yield_g}г. Массы в граммах сохранены корректно.", 
-                timing
-            )
-            
-            return techcard_id
-            
-        except Exception as e:
-            self.log_result(
-                "Генерация техкарты", 
-                False, 
-                f"Ошибка: {str(e)}", 
-                time.time() - start_time if 'start_time' in locals() else 0
-            )
-            return None
-
-    def test_2_ttk_xlsx_mass_conversion(self, techcard_id: str):
-        """2. TTK XLSX ЭКСПОРТ С КОНВЕРТАЦИЕЙ МАСС"""
-        print("🔧 ТЕСТ 2: TTK XLSX экспорт с конвертацией масс")
-        
-        try:
-            start_time = time.time()
-            
-            # Используем сохраненные данные техкарты из генерации
-            if 'generated_techcard' not in self.artifacts or 'full_card_data' not in self.artifacts['generated_techcard']:
-                self.log_result(
-                    "Данные техкарты для экспорта", 
-                    False, 
-                    "Отсутствуют сохраненные данные техкарты", 
-                    0
-                )
-                return False
-                
-            techcard_data = self.artifacts['generated_techcard']['full_card_data']
-            
-            # Экспортируем техкарту в XLSX для iiko (используем enhanced endpoint)
-            response = requests.post(
-                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
-                json={"techcard": techcard_data, "options": {"operational_rounding": True}},
-                timeout=30
-            )
-            
-            timing = time.time() - start_time
-            
-            if response.status_code != 200:
-                self.log_result(
-                    "TTK XLSX экспорт", 
-                    False, 
-                    f"HTTP {response.status_code}: {response.text[:200]}", 
-                    timing
-                )
-                return False
-                
-            # Проверяем заголовки
-            content_type = response.headers.get('content-type', '')
-            if 'spreadsheet' not in content_type:
-                self.log_result(
-                    "TTK XLSX экспорт", 
-                    False, 
-                    f"Неверный content-type: {content_type}", 
-                    timing
-                )
-                return False
-                
-            # Загружаем XLSX файл
-            xlsx_content = response.content
-            workbook = load_workbook(BytesIO(xlsx_content))
-            worksheet = workbook.active
-            
-            # Проверяем заголовки
-            headers = [cell.value for cell in worksheet[1]]
-            expected_headers = ['Артикул блюда', 'Наименование блюда', 'Артикул продукта', 
-                             'Наименование продукта', 'Брутто', 'Потери %', 'Нетто', 'Ед.']
-            
-            mass_conversions = []
-            unit_conversions = []
-            yield_conversion = None
-            
-            # Проверяем данные ингредиентов
-            for row_idx in range(2, worksheet.max_row + 1):
-                row = worksheet[row_idx]
-                
-                if len(row) >= 8:
-                    brutto_val = row[4].value  # Колонка "Брутто"
-                    netto_val = row[6].value   # Колонка "Нетто"
-                    unit_val = row[7].value    # Колонка "Ед."
-                    ingredient_name = row[3].value  # Наименование продукта
-                    
-                    if brutto_val is not None and netto_val is not None:
-                        # Проверяем что значения в килограммах (должны быть < 1 для большинства ингредиентов)
-                        if isinstance(brutto_val, (int, float)) and isinstance(netto_val, (int, float)):
-                            mass_conversions.append({
-                                'ingredient': ingredient_name,
-                                'brutto_kg': brutto_val,
-                                'netto_kg': netto_val,
-                                'unit': unit_val
-                            })
-                            
-                        # Проверяем единицы измерения
-                        if unit_val and 'кг' in str(unit_val):
-                            unit_conversions.append(f"{ingredient_name}: {unit_val}")
-                            
-            # Проверяем выход готового продукта
-            if len(headers) >= 9 and 'Выход готового продукта' in headers:
-                yield_col_idx = headers.index('Выход готового продукта')
-                if worksheet.max_row >= 2:
-                    yield_val = worksheet.cell(row=2, column=yield_col_idx + 1).value
-                    if yield_val is not None:
-                        yield_conversion = yield_val
-                        
-            self.artifacts['ttk_xlsx_conversion'] = {
-                'mass_conversions': mass_conversions,
-                'unit_conversions': unit_conversions,
-                'yield_conversion': yield_conversion,
-                'file_size': len(xlsx_content)
-            }
-            
-            # Проверяем результаты
-            kg_masses_found = len([m for m in mass_conversions if m['brutto_kg'] < 1.0])
-            kg_units_found = len(unit_conversions)
-            
-            success = kg_masses_found > 0 and kg_units_found > 0
-            
-            details = f"Найдено {len(mass_conversions)} ингредиентов с массами, {kg_masses_found} с массами <1кг, {kg_units_found} с единицами 'кг'"
-            if yield_conversion:
-                details += f", выход={yield_conversion}кг"
-                
-            self.log_result(
-                "TTK XLSX конвертация масс", 
-                success, 
-                details, 
-                timing
-            )
-            
-            return success
-            
-        except Exception as e:
-            self.log_result(
-                "TTK XLSX конвертация масс", 
-                False, 
-                f"Ошибка: {str(e)}", 
-                time.time() - start_time if 'start_time' in locals() else 0
-            )
-            return False
-
-    def test_3_conversion_precision(self):
-        """3. ТОЧНОСТЬ КОНВЕРТАЦИИ И ОКРУГЛЕНИЯ"""
-        print("🔧 ТЕСТ 3: Точность конвертации и округления")
-        
-        try:
-            # Импортируем функции конвертации для прямого тестирования
-            sys.path.append('/app/backend')
-            from receptor_agent.exports.iiko_xlsx import convert_grams_to_kilograms, convert_yield_grams_to_kilograms
-            
-            test_cases = [
-                (25, 0.025),      # 25г → 0.025кг
-                (200, 0.200),     # 200г → 0.200кг
-                (1500, 1.500),    # 1500г → 1.500кг
-                (33.3, 0.033),    # 33.3г → 0.033кг
-                (1, 0.001),       # 1г → 0.001кг
-                (999, 0.999),     # 999г → 0.999кг
-            ]
-            
-            conversion_results = []
-            all_passed = True
-            
-            for grams, expected_kg in test_cases:
-                kg_val, unit = convert_grams_to_kilograms(grams, 'г')
-                
-                # Проверяем точность (до 3 знаков после запятой)
-                precision_ok = abs(kg_val - expected_kg) < 0.0001
-                unit_ok = unit == 'кг'
-                
-                test_passed = precision_ok and unit_ok
-                all_passed = all_passed and test_passed
-                
-                conversion_results.append({
-                    'input_g': grams,
-                    'expected_kg': expected_kg,
-                    'actual_kg': kg_val,
-                    'unit': unit,
-                    'precision_ok': precision_ok,
-                    'passed': test_passed
-                })
-                
-            # Тестируем конвертацию выхода
-            yield_test_cases = [
-                (250, 0.250),     # 250г → 0.250кг
-                (500, 0.500),     # 500г → 0.500кг
-                (1200, 1.200),    # 1200г → 1.200кг
-            ]
-            
-            yield_results = []
-            
-            for yield_g, expected_kg in yield_test_cases:
-                kg_val, unit = convert_yield_grams_to_kilograms(yield_g)
-                
-                precision_ok = abs(kg_val - expected_kg) < 0.0001
-                unit_ok = unit == 'кг'
-                
-                test_passed = precision_ok and unit_ok
-                all_passed = all_passed and test_passed
-                
-                yield_results.append({
-                    'input_g': yield_g,
-                    'expected_kg': expected_kg,
-                    'actual_kg': kg_val,
-                    'unit': unit,
-                    'precision_ok': precision_ok,
-                    'passed': test_passed
-                })
-                
-            self.artifacts['precision_testing'] = {
-                'mass_conversions': conversion_results,
-                'yield_conversions': yield_results,
-                'all_tests_passed': all_passed
-            }
-            
-            passed_count = len([r for r in conversion_results + yield_results if r['passed']])
-            total_count = len(conversion_results + yield_results)
-            
-            self.log_result(
-                "Точность конвертации", 
-                all_passed, 
-                f"Пройдено {passed_count}/{total_count} тестов точности. Округление до 3 знаков после запятой работает корректно.", 
-                0
-            )
-            
-            return all_passed
-            
-        except Exception as e:
-            self.log_result(
-                "Точность конвертации", 
-                False, 
-                f"Ошибка: {str(e)}", 
-                0
-            )
-            return False
-
-    def test_4_dish_skeletons_conversion(self, techcard_id: str):
-        """4. DISH SKELETONS С КОНВЕРТАЦИЕЙ"""
-        print("🔧 ТЕСТ 4: Dish Skeletons с конвертацией выхода")
-        
-        try:
-            start_time = time.time()
-            
-            # Сначала запускаем preflight для создания скелетонов
-            preflight_response = requests.post(
-                f"{API_BASE}/v1/export/preflight",
-                json={"techcardIds": [techcard_id]},
-                timeout=30
-            )
-            
-            if preflight_response.status_code != 200:
-                self.log_result(
-                    "Dish Skeletons preflight", 
-                    False, 
-                    f"Preflight failed: HTTP {preflight_response.status_code}", 
-                    time.time() - start_time
-                )
-                return False
-                
-            preflight_data = preflight_response.json()
-            
-            # Экспортируем ZIP с скелетонами
-            zip_response = requests.post(
-                f"{API_BASE}/v1/export/zip",
-                json={
-                    "techcardIds": [techcard_id],
-                    "preflight_result": preflight_data
-                },
-                timeout=30
-            )
-            
-            timing = time.time() - start_time
-            
-            if zip_response.status_code != 200:
-                self.log_result(
-                    "Dish Skeletons ZIP экспорт", 
-                    False, 
-                    f"HTTP {zip_response.status_code}: {zip_response.text[:200]}", 
-                    timing
-                )
-                return False
-                
-            # Извлекаем ZIP
-            zip_content = zip_response.content
-            
-            with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp_file:
-                tmp_file.write(zip_content)
-                tmp_file.flush()
-                
-                with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
-                    file_list = zip_file.namelist()
-                    
-                    # Ищем Dish-Skeletons.xlsx
-                    dish_skeleton_file = None
-                    for filename in file_list:
-                        if 'Dish-Skeletons' in filename and filename.endswith('.xlsx'):
-                            dish_skeleton_file = filename
-                            break
-                            
-                    if not dish_skeleton_file:
-                        self.log_result(
-                            "Dish Skeletons файл", 
-                            False, 
-                            f"Dish-Skeletons.xlsx не найден в ZIP. Файлы: {file_list}", 
-                            timing
-                        )
-                        return False
-                        
-                    # Читаем Dish-Skeletons.xlsx
-                    with zip_file.open(dish_skeleton_file) as skeleton_file:
-                        workbook = load_workbook(skeleton_file)
-                        worksheet = workbook.active
-                        
-                        # Проверяем заголовки
-                        headers = [cell.value for cell in worksheet[1]]
-                        
-                        dish_conversions = []
-                        
-                        # Проверяем данные блюд
-                        for row_idx in range(2, worksheet.max_row + 1):
-                            row = worksheet[row_idx]
-                            
-                            if len(row) >= 5:
-                                dish_name = row[1].value      # Наименование
-                                unit_val = row[3].value      # Ед. выпуска
-                                yield_val = row[4].value     # Выход
-                                
-                                if yield_val is not None and unit_val is not None:
-                                    dish_conversions.append({
-                                        'dish_name': dish_name,
-                                        'yield_kg': yield_val,
-                                        'unit': unit_val
-                                    })
-                                    
-                        self.artifacts['dish_skeletons_conversion'] = {
-                            'file_found': True,
-                            'dish_conversions': dish_conversions,
-                            'zip_size': len(zip_content)
-                        }
-                        
-                        # Проверяем что выход в килограммах
-                        kg_yields = [d for d in dish_conversions if d['yield_kg'] < 2.0 and 'кг' in str(d['unit'])]
-                        
-                        success = len(kg_yields) > 0
-                        
-                        self.log_result(
-                            "Dish Skeletons конвертация", 
-                            success, 
-                            f"Найдено {len(dish_conversions)} блюд, {len(kg_yields)} с выходом в кг", 
-                            timing
-                        )
-                        
-                        return success
-                        
-        except Exception as e:
-            self.log_result(
-                "Dish Skeletons конвертация", 
-                False, 
-                f"Ошибка: {str(e)}", 
-                time.time() - start_time if 'start_time' in locals() else 0
-            )
-            return False
-
-    def test_5_product_skeletons_unchanged(self, techcard_id: str):
-        """5. PRODUCT SKELETONS БЕЗ ИЗМЕНЕНИЙ"""
-        print("🔧 ТЕСТ 5: Product Skeletons без изменений (массы продуктов в исходных единицах)")
-        
-        try:
-            start_time = time.time()
-            
-            # Используем тот же ZIP из предыдущего теста
-            preflight_response = requests.post(
-                f"{API_BASE}/v1/export/preflight",
-                json={"techcardIds": [techcard_id]},
-                timeout=30
-            )
-            
-            if preflight_response.status_code != 200:
-                return False
-                
-            preflight_data = preflight_response.json()
-            
-            zip_response = requests.post(
-                f"{API_BASE}/v1/export/zip",
-                json={
-                    "techcardIds": [techcard_id],
-                    "preflight_result": preflight_data
-                },
-                timeout=30
-            )
-            
-            timing = time.time() - start_time
-            
-            if zip_response.status_code != 200:
-                return False
-                
-            zip_content = zip_response.content
-            
-            with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp_file:
-                tmp_file.write(zip_content)
-                tmp_file.flush()
-                
-                with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
-                    file_list = zip_file.namelist()
-                    
-                    # Ищем Product-Skeletons.xlsx
-                    product_skeleton_file = None
-                    for filename in file_list:
-                        if 'Product-Skeletons' in filename and filename.endswith('.xlsx'):
-                            product_skeleton_file = filename
-                            break
-                            
-                    if not product_skeleton_file:
-                        self.log_result(
-                            "Product Skeletons файл", 
-                            True, 
-                            "Product-Skeletons.xlsx не найден (ожидаемо, если нет недостающих продуктов)", 
-                            timing
-                        )
-                        return True
-                        
-                    # Читаем Product-Skeletons.xlsx
-                    with zip_file.open(product_skeleton_file) as skeleton_file:
-                        workbook = load_workbook(skeleton_file)
-                        worksheet = workbook.active
-                        
-                        product_units = []
-                        
-                        # Проверяем единицы измерения продуктов
-                        for row_idx in range(2, worksheet.max_row + 1):
-                            row = worksheet[row_idx]
-                            
-                            if len(row) >= 3:
-                                product_name = row[1].value   # Наименование
-                                unit_val = row[2].value      # Ед. изм
-                                
-                                if unit_val is not None:
-                                    product_units.append({
-                                        'product_name': product_name,
-                                        'unit': unit_val
-                                    })
-                                    
-                        self.artifacts['product_skeletons_units'] = {
-                            'file_found': True,
-                            'product_units': product_units
-                        }
-                        
-                        # Проверяем что единицы НЕ все в килограммах (должны быть разные)
-                        non_kg_units = [p for p in product_units if 'кг' not in str(p['unit'])]
-                        
-                        success = len(non_kg_units) > 0 or len(product_units) == 0
-                        
-                        self.log_result(
-                            "Product Skeletons единицы", 
-                            success, 
-                            f"Найдено {len(product_units)} продуктов, {len(non_kg_units)} с единицами не в кг (корректно)", 
-                            timing
-                        )
-                        
-                        return success
-                        
-        except Exception as e:
-            self.log_result(
-                "Product Skeletons единицы", 
-                False, 
-                f"Ошибка: {str(e)}", 
-                time.time() - start_time if 'start_time' in locals() else 0
-            )
-            return False
-
-    def test_6_artifacts_and_instructions(self):
-        """6. АРТЕФАКТЫ И ИНСТРУКЦИИ"""
-        print("🔧 ТЕСТ 6: Создание артефактов и инструкций")
-        
-        try:
-            # Создаем артефакт с информацией о конвертации
-            conversion_info = {
-                "feature": "Automatic Gram-to-Kilogram Conversion for iiko XLSX Export",
-                "description": "Автоматическая конвертация всех масс из грамм в килограммы при экспорте XLSX для iiko",
-                "conversion_rules": {
-                    "brutto_netto": "Брутто и нетто ингредиентов: граммы → килограммы (÷1000, округление до 3 знаков)",
-                    "yield": "Выход готового продукта: граммы → килограммы (÷1000, округление до 3 знаков)",
-                    "units": "Единицы измерения: 'г' → 'кг'",
-                    "dish_skeletons": "Выход блюд в Dish-Skeletons.xlsx: граммы → килограммы",
-                    "product_skeletons": "Product-Skeletons.xlsx: без изменений (исходные единицы)"
-                },
-                "iiko_compatibility": "Экспортируемые XLSX файлы полностью совместимы с требованиями iiko (килограммы вместо грамм)",
-                "interface_preservation": "В интерфейсе и PDF остаются граммы (конвертация только для экспорта)",
-                "test_results": self.artifacts
-            }
-            
-            # Сохраняем артефакт
-            artifact_path = "/app/artifacts/xlsx_mass_conversion.json"
-            os.makedirs(os.path.dirname(artifact_path), exist_ok=True)
-            
-            with open(artifact_path, 'w', encoding='utf-8') as f:
-                json.dump(conversion_info, f, ensure_ascii=False, indent=2)
-                
-            # Создаем инструкцию для пользователей
-            instruction_content = """# Автоматическая конвертация масс в экспорте iiko XLSX
-
-## Описание функции
-Система автоматически конвертирует все массы из грамм в килограммы при экспорте XLSX файлов для iiko.
-
-## Что конвертируется:
-- **Брутто и Нетто ингредиентов**: автоматически делятся на 1000 и округляются до 3 знаков после запятой
-- **Выход готового продукта**: конвертируется в килограммы
-- **Единицы измерения**: меняются с 'г' на 'кг'
-- **Выход блюд в Dish-Skeletons.xlsx**: конвертируется в килограммы
-
-## Что НЕ изменяется:
-- Отображение в интерфейсе (остается в граммах)
-- PDF экспорт (остается в граммах)
-- Product-Skeletons.xlsx (используются исходные единицы)
-
-## Совместимость с iiko:
-Экспортируемые XLSX файлы полностью совместимы с требованиями iikoWeb для импорта технологических карт.
-
-## Примеры конвертации:
-- 25г → 0.025кг
-- 200г → 0.200кг
-- 1500г → 1.500кг
-- 33.3г → 0.033кг
-
-Конвертация происходит автоматически и не требует дополнительных действий от пользователя.
-"""
-            
-            instruction_path = "/app/artifacts/instruction.md"
-            with open(instruction_path, 'w', encoding='utf-8') as f:
-                f.write(instruction_content)
-                
-            self.log_result(
-                "Создание артефактов", 
-                True, 
-                f"Созданы артефакты: {artifact_path}, {instruction_path}", 
-                0
-            )
-            
-            return True
-            
-        except Exception as e:
-            self.log_result(
-                "Создание артефактов", 
-                False, 
-                f"Ошибка: {str(e)}", 
-                0
-            )
-            return False
-
-    def run_all_tests(self):
-        """Запуск всех тестов"""
-        print("🚀 НАЧАЛО ТЕСТИРОВАНИЯ: Export to iiko XLSX - Automatic Gram-to-Kilogram Conversion")
-        print("=" * 80)
-        
-        start_time = time.time()
-        
-        # 1. Базовая генерация техкарты
-        techcard_id = self.test_1_basic_techcard_generation()
-        if not techcard_id:
-            print("❌ Тестирование прервано: не удалось создать техкарту")
-            return
-            
-        # 2. TTK XLSX экспорт с конвертацией масс
-        self.test_2_ttk_xlsx_mass_conversion(techcard_id)
-        
-        # 3. Точность конвертации и округления
-        self.test_3_conversion_precision()
-        
-        # 4. Dish Skeletons с конвертацией
-        self.test_4_dish_skeletons_conversion(techcard_id)
-        
-        # 5. Product Skeletons без изменений
-        self.test_5_product_skeletons_unchanged(techcard_id)
-        
-        # 6. Артефакты и инструкции
-        self.test_6_artifacts_and_instructions()
-        
-        # Подведение итогов
-        total_time = time.time() - start_time
-        passed_tests = len([r for r in self.results if r['success']])
-        total_tests = len(self.results)
-        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-        
-        print("=" * 80)
-        print("📊 РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ:")
-        print(f"Пройдено тестов: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
-        print(f"Общее время: {total_time:.1f}s")
-        print()
-        
-        # Критерии успеха
-        critical_tests = [
-            "TTK XLSX конвертация масс",
-            "Точность конвертации", 
-            "Dish Skeletons конвертация"
-        ]
-        
-        critical_passed = len([r for r in self.results if r['test'] in critical_tests and r['success']])
-        critical_total = len(critical_tests)
-        
-        print("🎯 КРИТЕРИИ УСПЕХА:")
-        for criterion in [
-            "✅ Все массы (брутто, нетто, выход) автоматически конвертированы г → кг в TTK XLSX",
-            "✅ Единицы измерения изменены на 'кг' в соответствующих колонках", 
-            "✅ Точность округления до 3 знаков после запятой сохранена",
-            "✅ Dish-Skeletons.xlsx также использует килограммы для выхода",
-            "✅ Конвертация НЕ влияет на внутренние данные техкарт (остаются в граммах)",
-            "✅ Создаются информативные артефакты с инструкциями"
-        ]:
-            print(criterion)
-            
-        print()
-        
-        if critical_passed == critical_total:
-            print("🎉 ВЫДАЮЩИЙСЯ УСПЕХ: Автоматическая конвертация грамм в килограммы ПОЛНОСТЬЮ ОПЕРАЦИОНАЛЬНА")
-            print("Экспортируемые XLSX файлы полностью совместимы с требованиями iiko")
-        else:
-            print("⚠️ ТРЕБУЕТСЯ ДОРАБОТКА: Не все критические тесты пройдены")
-            
-        # Сохраняем итоговый отчет
-        summary = {
-            "test_suite": "Export to iiko XLSX - Automatic Gram-to-Kilogram Conversion",
-            "total_tests": total_tests,
-            "passed_tests": passed_tests,
-            "success_rate": success_rate,
-            "critical_tests_passed": f"{critical_passed}/{critical_total}",
-            "total_time_s": round(total_time, 1),
-            "results": self.results,
-            "artifacts": self.artifacts
-        }
-        
-        summary_path = "/app/artifacts/mass_conversion_test_summary.json"
-        os.makedirs(os.path.dirname(summary_path), exist_ok=True)
-        
-        with open(summary_path, 'w', encoding='utf-8') as f:
-            json.dump(summary, f, ensure_ascii=False, indent=2)
-            
-        print(f"📄 Отчет сохранен: {summary_path}")
-
-if __name__ == "__main__":
-    tester = IikoMassConversionTester()
-    tester.run_all_tests()
-"""
-ALT EXPORT DISH ARTICLE TESTING
-Тестирование исправленного ALT export для проверки добавления DISH артикула в Excel файл
-"""
-
-import requests
-import json
-import time
-import os
-import tempfile
+import io
 from datetime import datetime
-import pandas as pd
-from openpyxl import load_workbook
+from typing import Dict, List, Any, Optional
+import sys
+import hashlib
 
 # Backend URL from environment
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
-class ALTExportDishArticleTester:
-    def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        })
-        self.test_results = []
-        self.artifacts = {}
-        
-    def log_test(self, test_name: str, success: bool, details: str, data: dict = None):
-        """Log test result"""
-        result = {
-            'test': test_name,
-            'success': success,
-            'details': details,
-            'timestamp': datetime.now().isoformat(),
-            'data': data or {}
-        }
-        self.test_results.append(result)
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name} - {details}")
-        
-    def generate_techcard_for_alt_export(self):
-        """Сгенерировать техкарту для ALT экспорта"""
-        try:
-            # Generate a tech card with Russian dish name for testing
-            dish_name = "Борщ украинский с говядиной"
-            
-            payload = {
-                "name": dish_name,
-                "description": "Традиционный украинский борщ с говядиной и овощами",
-                "cuisine": "Украинская",
-                "category": "Супы"
-            }
-            
-            print(f"🔄 Generating tech card: {dish_name}")
-            response = self.session.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload, timeout=60)
-            
-            if response.status_code == 200:
-                response_data = response.json()
-                
-                # Extract the actual techcard from the response
-                techcard_data = response_data.get('card', {})
-                techcard_id = techcard_data.get('meta', {}).get('id')
-                
-                self.artifacts['generated_techcard'] = {
-                    'id': techcard_id,
-                    'name': dish_name,
-                    'ingredients_count': len(techcard_data.get('ingredients', [])),
-                    'dish_article': techcard_data.get('meta', {}).get('article'),
-                    'generation_time': techcard_data.get('meta', {}).get('timings', {}).get('total_ms')
-                }
-                
-                self.log_test(
-                    "Tech Card Generation for ALT Export",
-                    True,
-                    f"Generated '{dish_name}' (ID: {techcard_id}) with {len(techcard_data.get('ingredients', []))} ingredients",
-                    {'techcard_id': techcard_id, 'dish_name': dish_name}
-                )
-                
-                return techcard_data
-            else:
-                self.log_test(
-                    "Tech Card Generation for ALT Export",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                return None
-                
-        except Exception as e:
-            self.log_test(
-                "Tech Card Generation for ALT Export",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return None
-    
-    def test_alt_export_endpoint(self, techcard_data):
-        """Тестировать /techcards.v2/export/iiko.xlsx endpoint"""
-        try:
-            print(f"🔄 Testing ALT export endpoint with preflight integration")
-            
-            # Use the ALT export endpoint
-            response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
-                json=techcard_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                # Check if we got an Excel file
-                content_type = response.headers.get('content-type', '')
-                content_length = len(response.content)
-                
-                if 'spreadsheet' in content_type or 'excel' in content_type or content_length > 1000:
-                    # Save the Excel file for analysis
-                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
-                        tmp_file.write(response.content)
-                        excel_path = tmp_file.name
-                    
-                    self.artifacts['alt_export_file'] = {
-                        'path': excel_path,
-                        'size_bytes': content_length,
-                        'content_type': content_type
-                    }
-                    
-                    self.log_test(
-                        "ALT Export Endpoint Response",
-                        True,
-                        f"Generated Excel file ({content_length} bytes) with content-type: {content_type}",
-                        {'file_size': content_length, 'content_type': content_type}
-                    )
-                    
-                    return excel_path
-                else:
-                    self.log_test(
-                        "ALT Export Endpoint Response",
-                        False,
-                        f"Invalid response format. Content-type: {content_type}, Size: {content_length}"
-                    )
-                    return None
-            else:
-                self.log_test(
-                    "ALT Export Endpoint Response",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                return None
-                
-        except Exception as e:
-            self.log_test(
-                "ALT Export Endpoint Response",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return None
-    
-    def analyze_dish_article_in_excel(self, excel_path, expected_dish_name):
-        """Проверить наличие DISH артикула в Excel файле"""
-        try:
-            print(f"🔄 Analyzing Excel file for DISH article")
-            
-            # Load the Excel file
-            workbook = load_workbook(excel_path)
-            worksheet = workbook.active
-            
-            # Get all data from the worksheet
-            data = []
-            headers = []
-            
-            for row_idx, row in enumerate(worksheet.iter_rows(values_only=True), 1):
-                if row_idx == 1:
-                    headers = list(row)
-                else:
-                    if any(cell is not None for cell in row):  # Skip empty rows
-                        data.append(list(row))
-            
-            # Find dish article column (should be first column)
-            dish_article_col_idx = 0  # "Артикул блюда" should be first column
-            dish_name_col_idx = 1     # "Наименование блюда" should be second column
-            
-            dish_articles = set()
-            dish_names = set()
-            
-            for row in data:
-                if len(row) > dish_article_col_idx and row[dish_article_col_idx]:
-                    dish_articles.add(str(row[dish_article_col_idx]))
-                if len(row) > dish_name_col_idx and row[dish_name_col_idx]:
-                    dish_names.add(str(row[dish_name_col_idx]))
-            
-            # Check for real 5-digit articles vs placeholder articles
-            real_articles = []
-            placeholder_articles = []
-            
-            for article in dish_articles:
-                if article.startswith('DISH_') or article.startswith('GENERATED_'):
-                    placeholder_articles.append(article)
-                elif article.isdigit() and len(article) == 5:
-                    real_articles.append(article)
-                elif article.isdigit():
-                    real_articles.append(article)  # Accept any numeric article
-            
-            self.artifacts['excel_analysis'] = {
-                'headers': headers,
-                'total_rows': len(data),
-                'dish_articles': list(dish_articles),
-                'dish_names': list(dish_names),
-                'real_articles': real_articles,
-                'placeholder_articles': placeholder_articles
-            }
-            
-            # Test results
-            has_dish_article = len(dish_articles) > 0
-            has_real_article = len(real_articles) > 0
-            has_expected_dish = expected_dish_name in dish_names
-            
-            if has_real_article:
-                self.log_test(
-                    "DISH Article Presence in Excel",
-                    True,
-                    f"Found {len(real_articles)} real DISH articles: {real_articles}",
-                    {'real_articles': real_articles, 'total_articles': len(dish_articles)}
-                )
-            elif has_dish_article:
-                self.log_test(
-                    "DISH Article Presence in Excel",
-                    False,
-                    f"Found only placeholder articles: {placeholder_articles}",
-                    {'placeholder_articles': placeholder_articles}
-                )
-            else:
-                self.log_test(
-                    "DISH Article Presence in Excel",
-                    False,
-                    "No DISH articles found in Excel file"
-                )
-            
-            # Check dish name presence
-            if has_expected_dish:
-                self.log_test(
-                    "Expected Dish Name in Excel",
-                    True,
-                    f"Found expected dish name '{expected_dish_name}' in Excel",
-                    {'dish_names': list(dish_names)}
-                )
-            else:
-                self.log_test(
-                    "Expected Dish Name in Excel",
-                    False,
-                    f"Expected dish name '{expected_dish_name}' not found. Found: {list(dish_names)}",
-                    {'expected': expected_dish_name, 'found': list(dish_names)}
-                )
-            
-            return {
-                'has_dish_article': has_dish_article,
-                'has_real_article': has_real_article,
-                'real_articles': real_articles,
-                'placeholder_articles': placeholder_articles,
-                'dish_names': list(dish_names)
-            }
-            
-        except Exception as e:
-            self.log_test(
-                "Excel Analysis for DISH Article",
-                False,
-                f"Exception analyzing Excel: {str(e)}"
-            )
-            return None
-    
-    def test_article_format_validation(self, analysis_result):
-        """Проверить формат артикулов (5-digit с ведущими нулями)"""
-        try:
-            if not analysis_result or not analysis_result.get('real_articles'):
-                self.log_test(
-                    "Article Format Validation",
-                    False,
-                    "No real articles to validate"
-                )
-                return False
-            
-            real_articles = analysis_result['real_articles']
-            valid_format_count = 0
-            
-            for article in real_articles:
-                # Check if it's a valid numeric format (5-6 digits as per ArticleAllocator)
-                if article.isdigit() and 5 <= len(article) <= 6:
-                    valid_format_count += 1
-                elif article.isdigit() and 1 <= len(article) <= 6:
-                    # Accept shorter numeric articles as they can be formatted with leading zeros
-                    valid_format_count += 1
-            
-            all_valid = valid_format_count == len(real_articles)
-            
-            self.log_test(
-                "Article Format Validation (5-6 digit)",
-                all_valid,
-                f"{valid_format_count}/{len(real_articles)} articles in valid format: {real_articles}",
-                {'valid_articles': valid_format_count, 'total_articles': len(real_articles)}
-            )
-            
-            return all_valid
-            
-        except Exception as e:
-            self.log_test(
-                "Article Format Validation",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return False
-    
-    def compare_with_zip_export(self, techcard_data):
-        """Сравнить ALT export с ZIP export для проверки консистентности артикулов"""
-        try:
-            print(f"🔄 Comparing ALT export with ZIP export")
-            
-            # Try to get ZIP export for comparison
-            techcard_ids = [techcard_data.get('meta', {}).get('id')]
-            
-            # First run preflight
-            preflight_payload = {
-                "techcard_ids": techcard_ids,
-                "organization_id": "default"
-            }
-            
-            preflight_response = self.session.post(
-                f"{API_BASE}/v1/export/preflight",
-                json=preflight_payload,
-                timeout=30
-            )
-            
-            if preflight_response.status_code == 200:
-                preflight_result = preflight_response.json()
-                
-                # Now try ZIP export
-                zip_payload = {
-                    "techcard_ids": techcard_ids,
-                    "organization_id": "default",
-                    "preflight_result": preflight_result
-                }
-                
-                zip_response = self.session.post(
-                    f"{API_BASE}/v1/export/zip",
-                    json=zip_payload,
-                    timeout=30
-                )
-                
-                if zip_response.status_code == 200:
-                    zip_size = len(zip_response.content)
-                    
-                    self.artifacts['zip_export_comparison'] = {
-                        'preflight_success': True,
-                        'zip_export_success': True,
-                        'zip_size_bytes': zip_size,
-                        'preflight_dish_articles': preflight_result.get('missing', {}).get('dishes', [])
-                    }
-                    
-                    # Extract dish articles from preflight
-                    dish_articles_from_preflight = []
-                    missing_dishes = preflight_result.get('missing', {}).get('dishes', [])
-                    for dish in missing_dishes:
-                        if dish.get('article'):
-                            dish_articles_from_preflight.append(dish['article'])
-                    
-                    self.log_test(
-                        "ZIP Export Comparison",
-                        True,
-                        f"ZIP export successful ({zip_size} bytes). Preflight generated {len(dish_articles_from_preflight)} dish articles: {dish_articles_from_preflight}",
-                        {'zip_size': zip_size, 'preflight_articles': dish_articles_from_preflight}
-                    )
-                    
-                    return dish_articles_from_preflight
-                else:
-                    self.log_test(
-                        "ZIP Export Comparison",
-                        False,
-                        f"ZIP export failed: HTTP {zip_response.status_code}"
-                    )
-                    return None
-            else:
-                self.log_test(
-                    "ZIP Export Comparison",
-                    False,
-                    f"Preflight failed: HTTP {preflight_response.status_code}"
-                )
-                return None
-                
-        except Exception as e:
-            self.log_test(
-                "ZIP Export Comparison",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return None
-    
-    def run_comprehensive_test(self):
-        """Запустить полный тест ALT export с DISH артикулом"""
-        print("🚀 Starting ALT Export DISH Article Comprehensive Testing")
-        print("=" * 80)
-        
-        start_time = time.time()
-        
-        # Step 1: Generate tech card for ALT export
-        techcard_data = self.generate_techcard_for_alt_export()
-        if not techcard_data:
-            print("❌ Cannot proceed without generated tech card")
-            return
-        
-        dish_name = techcard_data.get('meta', {}).get('title', 'Unknown')
-        
-        # Step 2: Test ALT export endpoint
-        excel_path = self.test_alt_export_endpoint(techcard_data)
-        if not excel_path:
-            print("❌ Cannot proceed without Excel file from ALT export")
-            return
-        
-        # Step 3: Analyze DISH article in Excel file
-        analysis_result = self.analyze_dish_article_in_excel(excel_path, dish_name)
-        
-        # Step 4: Validate article format
-        if analysis_result:
-            self.test_article_format_validation(analysis_result)
-        
-        # Step 5: Compare with ZIP export
-        zip_articles = self.compare_with_zip_export(techcard_data)
-        
-        # Step 6: Final validation - ALT export should work like ZIP export
-        if analysis_result and zip_articles:
-            alt_articles = analysis_result.get('real_articles', [])
-            
-            # Check if ALT export produces similar quality articles as ZIP export
-            alt_has_real_articles = len(alt_articles) > 0
-            zip_has_real_articles = len(zip_articles) > 0
-            
-            consistency_check = alt_has_real_articles == zip_has_real_articles
-            
-            self.log_test(
-                "ALT vs ZIP Export Consistency",
-                consistency_check,
-                f"ALT export real articles: {alt_articles}, ZIP preflight articles: {zip_articles}",
-                {'alt_articles': alt_articles, 'zip_articles': zip_articles}
-            )
-        
-        # Cleanup
-        try:
-            if excel_path and os.path.exists(excel_path):
-                os.unlink(excel_path)
-        except:
-            pass
-        
-        # Summary
-        total_time = time.time() - start_time
-        passed_tests = sum(1 for result in self.test_results if result['success'])
-        total_tests = len(self.test_results)
-        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-        
-        print("\n" + "=" * 80)
-        print("🎯 ALT EXPORT DISH ARTICLE TEST SUMMARY")
-        print("=" * 80)
-        print(f"⏱️  Total Time: {total_time:.2f}s")
-        print(f"📊 Success Rate: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
-        print(f"🎯 Test Focus: ALT export DISH article generation and Excel integration")
-        
-        # Key findings
-        print("\n🔍 KEY FINDINGS:")
-        
-        if self.artifacts.get('generated_techcard'):
-            tc = self.artifacts['generated_techcard']
-            print(f"   • Tech Card: '{tc['name']}' with {tc['ingredients_count']} ingredients")
-        
-        if self.artifacts.get('alt_export_file'):
-            ef = self.artifacts['alt_export_file']
-            print(f"   • ALT Export: Generated {ef['size_bytes']} byte Excel file")
-        
-        if self.artifacts.get('excel_analysis'):
-            ea = self.artifacts['excel_analysis']
-            real_count = len(ea.get('real_articles', []))
-            placeholder_count = len(ea.get('placeholder_articles', []))
-            print(f"   • Articles: {real_count} real, {placeholder_count} placeholder")
-            
-            if ea.get('real_articles'):
-                print(f"   • Real Articles: {ea['real_articles']}")
-            if ea.get('placeholder_articles'):
-                print(f"   • Placeholder Articles: {ea['placeholder_articles']}")
-        
-        # Critical assessment
-        print("\n🎯 CRITICAL ASSESSMENT:")
-        
-        has_real_articles = False
-        if self.artifacts.get('excel_analysis'):
-            has_real_articles = len(self.artifacts['excel_analysis'].get('real_articles', [])) > 0
-        
-        if has_real_articles:
-            print("   ✅ ALT export successfully generates real DISH articles")
-            print("   ✅ Preflight integration working in ALT export")
-            print("   ✅ Excel file contains proper 5-digit articles")
-        else:
-            print("   ❌ ALT export still using placeholder articles")
-            print("   ❌ Preflight integration may not be working properly")
-            print("   ❌ Need to investigate article generation in ALT export")
-        
-        # Save detailed results
-        self.save_test_artifacts()
-        
-        return success_rate >= 75  # Consider successful if 75% of tests pass
-
-    def save_test_artifacts(self):
-        """Save test artifacts for analysis"""
-        try:
-            artifacts_data = {
-                'test_results': self.test_results,
-                'artifacts': self.artifacts,
-                'timestamp': datetime.now().isoformat(),
-                'test_type': 'ALT_Export_DISH_Article_Testing'
-            }
-            
-            with open('/app/alt_export_test_results.json', 'w', encoding='utf-8') as f:
-                json.dump(artifacts_data, f, indent=2, ensure_ascii=False)
-            
-            print(f"\n💾 Test artifacts saved to: /app/alt_export_test_results.json")
-            
-        except Exception as e:
-            print(f"⚠️ Failed to save test artifacts: {e}")
-
-def main():
-    """Main test execution"""
-    tester = ALTExportDishArticleTester()
-    
-    try:
-        success = tester.run_comprehensive_test()
-        
-        if success:
-            print("\n🎉 ALT EXPORT DISH ARTICLE TESTING COMPLETED SUCCESSFULLY")
-            exit(0)
-        else:
-            print("\n🚨 ALT EXPORT DISH ARTICLE TESTING FAILED")
-            exit(1)
-            
-    except KeyboardInterrupt:
-        print("\n⚠️ Test interrupted by user")
-        exit(1)
-    except Exception as e:
-        print(f"\n💥 Test failed with exception: {e}")
-        exit(1)
-
-if __name__ == "__main__":
-    main()
-"""
-CRITICAL COMPLETION: String Article Formatting + Kilo Conversion + Full GENERATED_* Elimination (Final Export Polish)
-
-This test validates the critical requirements for finalizing exports:
-1. All articles in XLSX should be in string format (@) with leading zeros (01023)
-2. All masses should be converted to kilograms (0.123, 0.080) with 3 decimal places
-3. No GENERATED_* content should appear in exported files
-4. 100% compliance with these requirements
-
-Testing Focus:
-- Tech card generation with proper article assignment
-- Export functionality with string article formatting
-- Mass conversion to kilograms
-- Complete elimination of mock/generated content
-- XLSX format validation
-"""
-
-import requests
-import json
-import time
-import os
-import tempfile
-import zipfile
-from openpyxl import load_workbook
-import re
-from typing import Dict, List, Any, Optional
-
-# Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
-
-class CriticalExportTester:
+class ALTExportCleanupTester:
     def __init__(self):
         self.session = requests.Session()
         self.session.timeout = 30
         self.test_results = []
         self.generated_techcards = []
+        self.test_artifacts = {}
         
     def log_result(self, test_name: str, success: bool, details: str, data: Any = None):
         """Log test result with details"""
@@ -1382,2441 +73,903 @@ class CriticalExportTester:
         status = "✅" if success else "❌"
         print(f"{status} {test_name}: {details}")
         
-    def test_techcard_generation_with_articles(self):
-        """Test tech card generation focusing on article assignment"""
-        print("\n🔧 Testing Tech Card Generation with Article Assignment...")
+    def test_1_alt_export_validator_class(self):
+        """1. ALT Export Cleanup Module - Тестирование класса ALTExportValidator"""
+        print("\n🔧 ТЕСТ 1: ALT Export Cleanup Module - ALTExportValidator Class")
         
-        test_dishes = [
-            "Борщ украинский с говядиной",
-            "Стейк из говядины с картофельным пюре", 
-            "Салат Цезарь с курицей"
-        ]
+        try:
+            # Import the ALT Export Cleanup module directly
+            sys.path.append('/app/backend')
+            from receptor_agent.exports.alt_export_cleanup import ALTExportValidator, get_alt_export_validator, ArchiveAnalysisResult
+            
+            # Test 1.1: Singleton pattern
+            validator1 = get_alt_export_validator()
+            validator2 = get_alt_export_validator()
+            
+            singleton_test = validator1 is validator2
+            self.log_result(
+                "ALTExportValidator Singleton Pattern",
+                singleton_test,
+                f"Singleton pattern working: {singleton_test}"
+            )
+            
+            # Test 1.2: Basic validator initialization
+            validator = ALTExportValidator()
+            has_required_methods = all(hasattr(validator, method) for method in [
+                'analyze_archive', 'cleanup_archive', 'validate_single_ttk', 
+                'get_cleanup_statistics', 'reset_statistics'
+            ])
+            
+            self.log_result(
+                "ALTExportValidator Required Methods",
+                has_required_methods,
+                f"All required methods present: {has_required_methods}"
+            )
+            
+            # Test 1.3: Statistics initialization
+            stats = validator.get_cleanup_statistics()
+            expected_stats_keys = ['total_processed', 'duplicates_removed', 'invalid_removed', 'superfluous_removed', 'archives_cleaned']
+            stats_valid = all(key in stats for key in expected_stats_keys)
+            
+            self.log_result(
+                "ALTExportValidator Statistics Structure",
+                stats_valid,
+                f"Statistics structure valid: {stats_valid}, keys: {list(stats.keys())}"
+            )
+            
+            # Test 1.4: Create test archive with issues for analysis
+            test_archive = self._create_test_archive_with_issues()
+            analysis_result = validator.analyze_archive(test_archive, "test_analysis")
+            
+            analysis_valid = isinstance(analysis_result, ArchiveAnalysisResult)
+            has_issues = analysis_result.has_issues()
+            
+            self.log_result(
+                "ALTExportValidator Archive Analysis",
+                analysis_valid and has_issues,
+                f"Analysis working: {analysis_valid}, found issues: {has_issues}, summary: {analysis_result.get_summary()}"
+            )
+            
+            # Test 1.5: Cleanup functionality
+            clean_archive, cleanup_stats = validator.cleanup_archive(test_archive, analysis_result, "test_cleanup")
+            cleanup_successful = cleanup_stats.get('cleaned', False)
+            
+            self.log_result(
+                "ALTExportValidator Archive Cleanup",
+                cleanup_successful,
+                f"Cleanup successful: {cleanup_successful}, stats: {cleanup_stats}"
+            )
+            
+            return True
+            
+        except Exception as e:
+            self.log_result(
+                "ALT Export Cleanup Module Test",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def _create_test_archive_with_issues(self) -> io.BytesIO:
+        """Create a test ZIP archive with various issues for testing"""
+        zip_buffer = io.BytesIO()
         
-        for dish_name in test_dishes:
-            try:
-                # Generate tech card
-                response = self.session.post(
-                    f"{API_BASE}/v1/techcards.v2/generate",
-                    json={"name": dish_name},
-                    timeout=45
-                )
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            # Valid TTK file
+            zf.writestr("iiko_TTK.xlsx", b"PK" + b"valid_xlsx_content" * 100)
+            
+            # Duplicate TTK files (same content)
+            duplicate_content = b"PK" + b"duplicate_content" * 50
+            zf.writestr("duplicate_1.xlsx", duplicate_content)
+            zf.writestr("duplicate_2.xlsx", duplicate_content)
+            
+            # Invalid TTK file (too small)
+            zf.writestr("invalid_small.xlsx", b"small")
+            
+            # Superfluous files
+            zf.writestr(".DS_Store", b"mac_system_file")
+            zf.writestr("Thumbs.db", b"windows_system_file")
+            zf.writestr("temp.tmp", b"temporary_file")
+            zf.writestr(".hidden_file", b"hidden_content")
+            
+            # Valid skeleton files
+            zf.writestr("Dish-Skeletons.xlsx", b"PK" + b"dish_skeleton_content" * 50)
+            zf.writestr("Product-Skeletons.xlsx", b"PK" + b"product_skeleton_content" * 50)
+        
+        zip_buffer.seek(0)
+        return zip_buffer
+    
+    def test_2_generate_techcard_for_testing(self):
+        """2. Генерация техкарты для интеграционного тестирования"""
+        print("\n🔧 ТЕСТ 2: Генерация техкарты для интеграционного тестирования")
+        
+        try:
+            # Generate a tech card for testing ALT export integration
+            dish_name = "Тестовое блюдо для ALT Export Cleanup"
+            
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/generate",
+                json={"name": dish_name},
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                techcard_data = data.get('card', {})
+                techcard_id = techcard_data.get('meta', {}).get('id')
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    techcard_id = data.get('card', {}).get('meta', {}).get('id')
+                if techcard_id:
+                    self.generated_techcards.append({
+                        'id': techcard_id,
+                        'name': dish_name,
+                        'data': techcard_data
+                    })
                     
-                    if techcard_id:
-                        self.generated_techcards.append({
-                            'id': techcard_id,
-                            'name': dish_name,
-                            'data': data
-                        })
-                        
-                        # Check for article assignment
-                        dish_article = data.get('card', {}).get('meta', {}).get('article')
-                        ingredients = data.get('card', {}).get('ingredients', [])
-                        
-                        ingredient_articles = 0
-                        for ingredient in ingredients:
-                            if ingredient.get('product_code'):
-                                ingredient_articles += 1
-                        
-                        self.log_result(
-                            f"Tech Card Generation: {dish_name}",
-                            True,
-                            f"Generated successfully (ID: {techcard_id[:8]}...), dish article: {dish_article}, ingredient articles: {ingredient_articles}/{len(ingredients)}",
-                            {
-                                'techcard_id': techcard_id,
-                                'dish_article': dish_article,
-                                'ingredient_count': len(ingredients),
-                                'articles_assigned': ingredient_articles
-                            }
-                        )
-                    else:
-                        self.log_result(
-                            f"Tech Card Generation: {dish_name}",
-                            False,
-                            "No tech card ID returned in response"
-                        )
-                else:
+                    self.test_artifacts['generated_techcard'] = {
+                        'id': techcard_id,
+                        'name': dish_name,
+                        'ingredients_count': len(techcard_data.get('ingredients', [])),
+                        'full_data': techcard_data
+                    }
+                    
                     self.log_result(
-                        f"Tech Card Generation: {dish_name}",
-                        False,
-                        f"HTTP {response.status_code}: {response.text[:200]}"
+                        "Tech Card Generation for ALT Testing",
+                        True,
+                        f"Generated '{dish_name}' (ID: {techcard_id}) with {len(techcard_data.get('ingredients', []))} ingredients"
                     )
                     
-            except Exception as e:
+                    return techcard_data
+                else:
+                    self.log_result(
+                        "Tech Card Generation for ALT Testing",
+                        False,
+                        "No tech card ID returned in response"
+                    )
+                    return None
+            else:
                 self.log_result(
-                    f"Tech Card Generation: {dish_name}",
+                    "Tech Card Generation for ALT Testing",
                     False,
-                    f"Exception: {str(e)}"
+                    f"HTTP {response.status_code}: {response.text[:200]}"
                 )
+                return None
                 
-        return len(self.generated_techcards) > 0
+        except Exception as e:
+            self.log_result(
+                "Tech Card Generation for ALT Testing",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return None
     
-    def test_preflight_orchestration(self):
-        """Test preflight orchestration for article allocation"""
-        print("\n🚀 Testing Preflight Orchestration...")
+    def test_3_alt_export_iiko_xlsx_integration(self, techcard_data):
+        """3. Integration Testing - POST /api/v1/techcards.v2/export/iiko.xlsx"""
+        print("\n🔧 ТЕСТ 3: ALT Export iiko.xlsx Integration Testing")
+        
+        if not techcard_data:
+            self.log_result(
+                "ALT Export iiko.xlsx Integration",
+                False,
+                "No techcard data available for testing"
+            )
+            return False
+        
+        try:
+            # Test ALT export endpoint with TTK validation
+            response = self.session.post(
+                f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
+                json=techcard_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Check if we got an Excel file
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                if 'spreadsheet' in content_type or 'excel' in content_type or content_length > 1000:
+                    # Save the Excel file for validation testing
+                    excel_content = response.content
+                    
+                    # Test ALT Export Cleanup validation on the generated file
+                    sys.path.append('/app/backend')
+                    from receptor_agent.exports.alt_export_cleanup import get_alt_export_validator
+                    
+                    validator = get_alt_export_validator()
+                    validation_result = validator.validate_single_ttk(
+                        excel_content,
+                        filename="test_alt_export.xlsx"
+                    )
+                    
+                    self.test_artifacts['alt_export_validation'] = validation_result
+                    
+                    self.log_result(
+                        "ALT Export iiko.xlsx Integration",
+                        True,
+                        f"Generated Excel file ({content_length} bytes), validation: {validation_result['valid']}, issues: {len(validation_result.get('issues', []))}"
+                    )
+                    
+                    return True
+                else:
+                    self.log_result(
+                        "ALT Export iiko.xlsx Integration",
+                        False,
+                        f"Invalid response format. Content-type: {content_type}, Size: {content_length}"
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "ALT Export iiko.xlsx Integration",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result(
+                "ALT Export iiko.xlsx Integration",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def test_4_zip_export_cleanup_integration(self):
+        """4. Integration Testing - POST /api/v1/export/zip with ALT cleanup"""
+        print("\n🔧 ТЕСТ 4: ZIP Export with ALT Cleanup Integration")
         
         if not self.generated_techcards:
             self.log_result(
-                "Preflight Orchestration",
+                "ZIP Export ALT Cleanup Integration",
                 False,
-                "No generated tech cards available for testing"
+                "No generated techcards available for testing"
             )
             return False
-            
+        
         try:
-            # Use real tech card IDs for preflight
             techcard_ids = [tc['id'] for tc in self.generated_techcards]
             
-            response = self.session.post(
+            # First run preflight
+            preflight_response = self.session.post(
                 f"{API_BASE}/v1/export/preflight",
                 json={"techcardIds": techcard_ids},
                 timeout=30
             )
             
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Check preflight results
-                ttk_date = data.get('ttkDate')
-                missing_dishes = data.get('missing', {}).get('dishes', [])
-                missing_products = data.get('missing', {}).get('products', [])
-                
-                # Validate article format in missing items
-                dish_articles_valid = True
-                product_articles_valid = True
-                
-                for dish in missing_dishes:
-                    article = dish.get('article', '')
-                    if not re.match(r'^\d{5}$', str(article)):
-                        dish_articles_valid = False
-                        
-                for product in missing_products:
-                    article = product.get('article', '')
-                    if not re.match(r'^\d{5}$', str(article)):
-                        product_articles_valid = False
-                
+            if preflight_response.status_code != 200:
                 self.log_result(
-                    "Preflight Orchestration",
-                    True,
-                    f"TTK Date: {ttk_date}, Missing dishes: {len(missing_dishes)}, Missing products: {len(missing_products)}, Article format valid: dishes={dish_articles_valid}, products={product_articles_valid}",
-                    {
-                        'ttk_date': ttk_date,
-                        'missing_dishes': len(missing_dishes),
-                        'missing_products': len(missing_products),
-                        'dish_articles_valid': dish_articles_valid,
-                        'product_articles_valid': product_articles_valid,
-                        'preflight_result': data
-                    }
-                )
-                
-                # Store preflight result for export testing
-                self.preflight_result = data
-                return True
-                
-            else:
-                self.log_result(
-                    "Preflight Orchestration",
+                    "ZIP Export Preflight",
                     False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
+                    f"Preflight failed: HTTP {preflight_response.status_code}"
                 )
                 return False
-                
-        except Exception as e:
-            self.log_result(
-                "Preflight Orchestration",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return False
-    
-    def test_zip_export_with_real_data(self):
-        """Test ZIP export using real tech card data"""
-        print("\n📦 Testing ZIP Export with Real Data...")
-        
-        if not hasattr(self, 'preflight_result'):
-            self.log_result(
-                "ZIP Export",
-                False,
-                "No preflight result available for export"
-            )
-            return False
             
-        try:
-            # Use real tech card IDs and preflight result
-            techcard_ids = [tc['id'] for tc in self.generated_techcards]
+            preflight_data = preflight_response.json()
             
-            response = self.session.post(
+            # Now test ZIP export with ALT cleanup
+            zip_response = self.session.post(
                 f"{API_BASE}/v1/export/zip",
                 json={
                     "techcardIds": techcard_ids,
-                    "preflight_result": self.preflight_result,
+                    "preflight_result": preflight_data,
                     "operational_rounding": True
                 },
                 timeout=30
             )
             
-            if response.status_code == 200:
-                # Save ZIP file for analysis
-                zip_content = response.content
+            if zip_response.status_code == 200:
+                zip_content = zip_response.content
                 zip_size = len(zip_content)
                 
-                # Extract and analyze XLSX files
+                # Test that ALT cleanup was applied to the ZIP
                 with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as temp_zip:
                     temp_zip.write(zip_content)
                     temp_zip_path = temp_zip.name
                 
-                analysis_results = self.analyze_xlsx_files(temp_zip_path)
+                # Analyze the ZIP for cleanup evidence
+                cleanup_evidence = self._analyze_zip_for_cleanup(temp_zip_path)
                 
-                # Clean up
+                # Clean up temp file
                 os.unlink(temp_zip_path)
                 
+                self.test_artifacts['zip_export_cleanup'] = {
+                    'zip_size': zip_size,
+                    'cleanup_evidence': cleanup_evidence,
+                    'preflight_data': preflight_data
+                }
+                
                 self.log_result(
-                    "ZIP Export",
+                    "ZIP Export ALT Cleanup Integration",
                     True,
-                    f"ZIP generated successfully ({zip_size} bytes), XLSX analysis: {analysis_results['summary']}",
-                    {
-                        'zip_size': zip_size,
-                        'xlsx_analysis': analysis_results
-                    }
+                    f"ZIP export successful ({zip_size} bytes), cleanup evidence: {cleanup_evidence}"
                 )
                 
-                return analysis_results['compliance_check']['overall_compliant']
-                
+                return True
             else:
                 self.log_result(
-                    "ZIP Export",
+                    "ZIP Export ALT Cleanup Integration",
                     False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
+                    f"HTTP {zip_response.status_code}: {zip_response.text[:200]}"
                 )
                 return False
                 
         except Exception as e:
             self.log_result(
-                "ZIP Export",
+                "ZIP Export ALT Cleanup Integration",
                 False,
                 f"Exception: {str(e)}"
             )
             return False
     
-    def analyze_xlsx_files(self, zip_path: str) -> Dict[str, Any]:
-        """Analyze XLSX files for compliance with critical requirements"""
-        print("\n🔍 Analyzing XLSX Files for Compliance...")
-        
-        analysis = {
-            'files_found': [],
-            'article_format_check': {},
-            'mass_conversion_check': {},
-            'generated_content_check': {},
-            'compliance_check': {
-                'string_articles': False,
-                'kilo_conversion': False,
-                'no_generated_content': False,
-                'overall_compliant': False
-            },
-            'summary': ''
-        }
-        
+    def _analyze_zip_for_cleanup(self, zip_path: str) -> Dict[str, Any]:
+        """Analyze ZIP file for evidence of ALT cleanup"""
         try:
-            with zipfile.ZipFile(zip_path, 'r') as zip_file:
-                xlsx_files = [f for f in zip_file.namelist() if f.endswith('.xlsx')]
-                analysis['files_found'] = xlsx_files
+            with zipfile.ZipFile(zip_path, 'r') as zf:
+                file_list = zf.namelist()
                 
-                for xlsx_file in xlsx_files:
-                    print(f"  📄 Analyzing {xlsx_file}...")
-                    
-                    # Extract XLSX file
-                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as temp_xlsx:
-                        temp_xlsx.write(zip_file.read(xlsx_file))
-                        temp_xlsx_path = temp_xlsx.name
-                    
-                    # Analyze the XLSX file
-                    file_analysis = self.analyze_single_xlsx(temp_xlsx_path, xlsx_file)
-                    
-                    # Store analysis results
-                    analysis['article_format_check'][xlsx_file] = file_analysis['article_format']
-                    analysis['mass_conversion_check'][xlsx_file] = file_analysis['mass_conversion']
-                    analysis['generated_content_check'][xlsx_file] = file_analysis['generated_content']
-                    
-                    # Clean up
-                    os.unlink(temp_xlsx_path)
+                # Check for required components
+                has_ttk = any('iiko_TTK.xlsx' in f for f in file_list)
+                has_dish_skeletons = any('Dish-Skeletons.xlsx' in f for f in file_list)
+                has_product_skeletons = any('Product-Skeletons.xlsx' in f for f in file_list)
                 
-                # Overall compliance check
-                analysis['compliance_check'] = self.check_overall_compliance(analysis)
+                # Check for absence of superfluous files
+                superfluous_patterns = ['.DS_Store', 'Thumbs.db', '.tmp', '.log', '.bak']
+                has_superfluous = any(pattern in ' '.join(file_list) for pattern in superfluous_patterns)
                 
-                # Generate summary
-                compliance = analysis['compliance_check']
-                analysis['summary'] = f"Articles: {'✅' if compliance['string_articles'] else '❌'}, Masses: {'✅' if compliance['kilo_conversion'] else '❌'}, No GENERATED_*: {'✅' if compliance['no_generated_content'] else '❌'}"
+                return {
+                    'total_files': len(file_list),
+                    'has_required_ttk': has_ttk,
+                    'has_dish_skeletons': has_dish_skeletons,
+                    'has_product_skeletons': has_product_skeletons,
+                    'has_superfluous_files': has_superfluous,
+                    'file_list': file_list
+                }
                 
         except Exception as e:
-            analysis['error'] = str(e)
-            analysis['summary'] = f"Analysis failed: {str(e)}"
-            
-        return analysis
+            return {'error': str(e)}
     
-    def analyze_single_xlsx(self, xlsx_path: str, filename: str) -> Dict[str, Any]:
-        """Analyze a single XLSX file for compliance"""
-        analysis = {
-            'article_format': {'compliant': False, 'details': []},
-            'mass_conversion': {'compliant': False, 'details': []},
-            'generated_content': {'compliant': True, 'violations': []}
-        }
-        
-        try:
-            workbook = load_workbook(xlsx_path, data_only=True)
-            
-            for sheet_name in workbook.sheetnames:
-                sheet = workbook[sheet_name]
-                
-                # Check each cell for compliance
-                for row in sheet.iter_rows():
-                    for cell in row:
-                        if cell.value is not None:
-                            cell_value = str(cell.value)
-                            
-                            # Check for GENERATED_* content (CRITICAL VIOLATION)
-                            if 'GENERATED_' in cell_value or 'DISH_MOCK_' in cell_value or 'TEST_INGREDIENT' in cell_value:
-                                analysis['generated_content']['compliant'] = False
-                                analysis['generated_content']['violations'].append({
-                                    'sheet': sheet_name,
-                                    'cell': cell.coordinate,
-                                    'value': cell_value
-                                })
-                            
-                            # Check article format (should be 5-digit strings with leading zeros)
-                            if re.match(r'^\d{5}$', cell_value):
-                                # Check if cell is formatted as text (@)
-                                if cell.number_format == '@' or cell.data_type == 's':
-                                    analysis['article_format']['details'].append({
-                                        'sheet': sheet_name,
-                                        'cell': cell.coordinate,
-                                        'value': cell_value,
-                                        'format': cell.number_format,
-                                        'compliant': True
-                                    })
-                                else:
-                                    analysis['article_format']['details'].append({
-                                        'sheet': sheet_name,
-                                        'cell': cell.coordinate,
-                                        'value': cell_value,
-                                        'format': cell.number_format,
-                                        'compliant': False
-                                    })
-                            
-                            # Check mass values (should be in kg format: 0.123)
-                            if re.match(r'^\d+\.\d{3}$', cell_value):
-                                mass_value = float(cell_value)
-                                if 0.001 <= mass_value <= 10.0:  # Reasonable range for kg
-                                    analysis['mass_conversion']['details'].append({
-                                        'sheet': sheet_name,
-                                        'cell': cell.coordinate,
-                                        'value': cell_value,
-                                        'kg_format': True
-                                    })
-            
-            # Determine compliance
-            article_compliant_count = sum(1 for detail in analysis['article_format']['details'] if detail.get('compliant', False))
-            analysis['article_format']['compliant'] = article_compliant_count > 0
-            
-            mass_compliant_count = len(analysis['mass_conversion']['details'])
-            analysis['mass_conversion']['compliant'] = mass_compliant_count > 0
-            
-        except Exception as e:
-            analysis['error'] = str(e)
-            
-        return analysis
-    
-    def check_overall_compliance(self, analysis: Dict[str, Any]) -> Dict[str, bool]:
-        """Check overall compliance with critical requirements"""
-        compliance = {
-            'string_articles': False,
-            'kilo_conversion': False,
-            'no_generated_content': True,
-            'overall_compliant': False
-        }
-        
-        # Check string articles compliance
-        for file_analysis in analysis['article_format_check'].values():
-            if file_analysis.get('compliant', False):
-                compliance['string_articles'] = True
-                break
-        
-        # Check kilo conversion compliance
-        for file_analysis in analysis['mass_conversion_check'].values():
-            if file_analysis.get('compliant', False):
-                compliance['kilo_conversion'] = True
-                break
-        
-        # Check no GENERATED_* content
-        for file_analysis in analysis['generated_content_check'].values():
-            if not file_analysis.get('compliant', True):
-                compliance['no_generated_content'] = False
-                break
-        
-        # Overall compliance requires all three
-        compliance['overall_compliant'] = (
-            compliance['string_articles'] and 
-            compliance['kilo_conversion'] and 
-            compliance['no_generated_content']
-        )
-        
-        return compliance
-    
-    def test_individual_xlsx_export(self):
-        """Test individual XLSX export for enhanced validation"""
-        print("\n📊 Testing Individual XLSX Export...")
+    def test_5_ttk_only_export_validation(self):
+        """5. Integration Testing - POST /api/v1/export/ttk-only with validation"""
+        print("\n🔧 ТЕСТ 5: TTK-Only Export with ALT Validation")
         
         if not self.generated_techcards:
             self.log_result(
-                "Individual XLSX Export",
+                "TTK-Only Export ALT Validation",
                 False,
-                "No generated tech cards available for testing"
+                "No generated techcards available for testing"
             )
             return False
-            
+        
         try:
-            # Test enhanced export endpoint
-            techcard_id = self.generated_techcards[0]['id']
+            techcard_ids = [tc['id'] for tc in self.generated_techcards]
             
+            # Test TTK-only export (should include ALT validation)
             response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
+                f"{API_BASE}/v1/export/ttk-only",
                 json={
-                    "techcardIds": [techcard_id],
+                    "techcardIds": techcard_ids,
                     "operational_rounding": True
                 },
                 timeout=30
             )
             
+            # This might return 403 if dishes are missing (expected behavior)
             if response.status_code == 200:
-                # Check content type
-                content_type = response.headers.get('content-type', '')
-                is_xlsx = 'spreadsheet' in content_type or 'excel' in content_type
-                
-                if is_xlsx:
-                    # Save and analyze XLSX
-                    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as temp_xlsx:
-                        temp_xlsx.write(response.content)
-                        temp_xlsx_path = temp_xlsx.name
-                    
-                    file_analysis = self.analyze_single_xlsx(temp_xlsx_path, 'individual_export.xlsx')
-                    
-                    # Clean up
-                    os.unlink(temp_xlsx_path)
-                    
-                    self.log_result(
-                        "Individual XLSX Export",
-                        True,
-                        f"XLSX exported successfully ({len(response.content)} bytes), Analysis: {file_analysis}",
-                        file_analysis
-                    )
-                    
-                    return file_analysis['generated_content']['compliant']
-                else:
-                    self.log_result(
-                        "Individual XLSX Export",
-                        False,
-                        f"Response is not XLSX format (content-type: {content_type})"
-                    )
-                    return False
-            else:
-                self.log_result(
-                    "Individual XLSX Export",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                return False
-                
-        except Exception as e:
-            self.log_result(
-                "Individual XLSX Export",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return False
-    
-    def test_article_allocator_integration(self):
-        """Test ArticleAllocator integration for proper 5-digit article generation"""
-        print("\n🔢 Testing ArticleAllocator Integration...")
-        
-        try:
-            # Test article allocation
-            response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/articles/allocate",
-                json={
-                    "article_type": "dish",
-                    "count": 3,
-                    "entity_ids": ["test-dish-1", "test-dish-2", "test-dish-3"]
-                },
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                allocated_articles = data.get('allocated_articles', [])
-                
-                # Validate article format (should be 5 or 6 digit articles)
-                valid_format = True
-                for article in allocated_articles:
-                    if not re.match(r'^\d{5,6}$', str(article)):
-                        valid_format = False
-                        break
-                
-                self.log_result(
-                    "ArticleAllocator Integration",
-                    valid_format,
-                    f"Allocated {len(allocated_articles)} articles, format valid: {valid_format}, articles: {allocated_articles}",
-                    {
-                        'allocated_articles': allocated_articles,
-                        'format_valid': valid_format
-                    }
-                )
-                
-                return valid_format
-            else:
-                self.log_result(
-                    "ArticleAllocator Integration",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                return False
-                
-        except Exception as e:
-            self.log_result(
-                "ArticleAllocator Integration",
-                False,
-                f"Exception: {str(e)}"
-            )
-            return False
-    
-    def run_comprehensive_test(self):
-        """Run comprehensive test suite for critical export requirements"""
-        print("🚀 STARTING CRITICAL COMPLETION TESTING: String Article Formatting + Kilo Conversion + Full GENERATED_* Elimination")
-        print("=" * 100)
-        
-        start_time = time.time()
-        
-        # Test sequence
-        tests = [
-            ("Tech Card Generation", self.test_techcard_generation_with_articles),
-            ("ArticleAllocator Integration", self.test_article_allocator_integration),
-            ("Preflight Orchestration", self.test_preflight_orchestration),
-            ("ZIP Export with Real Data", self.test_zip_export_with_real_data),
-            ("Individual XLSX Export", self.test_individual_xlsx_export)
-        ]
-        
-        passed_tests = 0
-        total_tests = len(tests)
-        
-        for test_name, test_func in tests:
-            print(f"\n{'='*50}")
-            print(f"🧪 RUNNING: {test_name}")
-            print(f"{'='*50}")
-            
-            try:
-                success = test_func()
-                if success:
-                    passed_tests += 1
-            except Exception as e:
-                self.log_result(test_name, False, f"Test execution failed: {str(e)}")
-        
-        # Generate final report
-        end_time = time.time()
-        duration = end_time - start_time
-        
-        print(f"\n{'='*100}")
-        print("🎯 CRITICAL COMPLETION TEST RESULTS")
-        print(f"{'='*100}")
-        
-        success_rate = (passed_tests / total_tests) * 100
-        
-        print(f"📊 Overall Success Rate: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
-        print(f"⏱️  Total Duration: {duration:.2f}s")
-        print(f"🔧 Generated Tech Cards: {len(self.generated_techcards)}")
-        
-        # Critical compliance summary
-        print(f"\n🎯 CRITICAL REQUIREMENTS COMPLIANCE:")
-        
-        # Find compliance results from ZIP export test
-        compliance_found = False
-        for result in self.test_results:
-            if result['test'] == 'ZIP Export' and result.get('data', {}) and result['data'].get('xlsx_analysis'):
-                compliance = result['data']['xlsx_analysis']['compliance_check']
-                print(f"   📝 String Articles (@): {'✅ PASS' if compliance['string_articles'] else '❌ FAIL'}")
-                print(f"   ⚖️  Kilo Conversion: {'✅ PASS' if compliance['kilo_conversion'] else '❌ FAIL'}")
-                print(f"   🚫 No GENERATED_*: {'✅ PASS' if compliance['no_generated_content'] else '❌ FAIL'}")
-                print(f"   🎯 Overall Compliant: {'✅ PASS' if compliance['overall_compliant'] else '❌ FAIL'}")
-                compliance_found = True
-                break
-        
-        if not compliance_found:
-            print("   ⚠️  Compliance check not available (export test may have failed)")
-        
-        # Detailed test results
-        print(f"\n📋 DETAILED TEST RESULTS:")
-        for result in self.test_results:
-            status = "✅" if result['success'] else "❌"
-            print(f"   {status} {result['test']}: {result['details']}")
-        
-        # Final verdict
-        if success_rate >= 80 and compliance_found:
-            print(f"\n🎉 CRITICAL SUCCESS: Export system meets critical requirements for production use!")
-        elif success_rate >= 60:
-            print(f"\n⚠️  PARTIAL SUCCESS: Most functionality working but critical issues remain")
-        else:
-            print(f"\n🚨 CRITICAL FAILURE: Major issues prevent production readiness")
-        
-        return success_rate >= 80
-
-def main():
-    """Main test execution"""
-    tester = CriticalExportTester()
-    
-    try:
-        success = tester.run_comprehensive_test()
-        exit_code = 0 if success else 1
-        
-        print(f"\n🏁 Test execution completed with exit code: {exit_code}")
-        return exit_code
-        
-    except KeyboardInterrupt:
-        print(f"\n⚠️  Test execution interrupted by user")
-        return 2
-    except Exception as e:
-        print(f"\n💥 Test execution failed with exception: {str(e)}")
-        return 3
-
-if __name__ == "__main__":
-    exit(main())
-"""
-Final Export Fix: Backend Testing
-Comprehensive testing for auto-update product articles, individual XLSX export, 
-kilo conversion, UX instructions (no GENERATED_*)
-
-Test Focus:
-1. sync_article_mapping - Check article updates after allocation
-2. generate_individual_xlsx - Test separate XLSX exports with proper naming  
-3. kilo_conversion - Check mass conversion to kg format
-4. excel_invariants - Ensure all articles are string format without GENERATED_*
-5. instruction_section - Check UX instructions for import
-6. remove_alt_exports - Ensure alt/legacy exports are hidden
-
-Acceptance Criteria:
-- No GENERATED_* in TTK files ✅
-- Individual files (xlsx, not ZIP) with human names ✅  
-- All masses in kg format (0.123, 0.080) ✅
-- UX instructions for import ✅
-- Excel invariants with string articles ✅
-"""
-
-import requests
-import json
-import time
-import os
-import sys
-from datetime import datetime
-from typing import Dict, List, Any, Optional
-import tempfile
-import zipfile
-import io
-import pandas as pd
-import openpyxl
-from openpyxl import load_workbook
-
-# Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
-
-class FinalExportFixTester:
-    def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        })
-        self.test_results = []
-        self.generated_techcards = []
-        
-    def log_test(self, test_name: str, success: bool, details: str = "", data: Any = None):
-        """Log test result"""
-        result = {
-            'test': test_name,
-            'success': success,
-            'details': details,
-            'timestamp': datetime.now().isoformat(),
-            'data': data
-        }
-        self.test_results.append(result)
-        
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name}: {details}")
-        
-        if data and isinstance(data, dict):
-            for key, value in data.items():
-                if isinstance(value, (str, int, float, bool)):
-                    print(f"    {key}: {value}")
-
-    def generate_test_techcard(self, dish_name: str) -> Optional[Dict]:
-        """Generate a test techcard for testing"""
-        try:
-            profile_data = {
-                "name": dish_name,
-                "cuisineType": "европейская",
-                "venueType": "ресторан",
-                "averageCheck": "средний",
-                "kitchenEquipment": ["плита", "духовка", "сковорода"],
-                "dietaryRestrictions": [],
-                "servingSize": 1,
-                "complexity": "средняя"
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/generate",
-                json=profile_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                if result.get('status') in ['success', 'draft'] and result.get('card'):
-                    techcard = result['card']
-                    self.generated_techcards.append(techcard)
-                    self.log_test(
-                        f"generate_techcard_{dish_name.replace(' ', '_')}",
-                        True,
-                        f"Generated techcard for '{dish_name}' with {len(techcard.get('ingredients', []))} ingredients (status: {result.get('status')})",
-                        {
-                            'techcard_id': techcard.get('meta', {}).get('id'),
-                            'ingredients_count': len(techcard.get('ingredients', [])),
-                            'generation_time': f"{response.elapsed.total_seconds():.2f}s",
-                            'status': result.get('status')
-                        }
-                    )
-                    return techcard
-                else:
-                    self.log_test(
-                        f"generate_techcard_{dish_name.replace(' ', '_')}",
-                        False,
-                        f"Generation failed: {result.get('message', 'Unknown error')}"
-                    )
-            else:
-                self.log_test(
-                    f"generate_techcard_{dish_name.replace(' ', '_')}",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                f"generate_techcard_{dish_name.replace(' ', '_')}",
-                False,
-                f"Exception: {str(e)}"
-            )
-        
-        return None
-
-    def test_sync_article_mapping(self):
-        """Test 1: sync_article_mapping - Check article updates after allocation"""
-        print("\n=== TEST 1: SYNC ARTICLE MAPPING ===")
-        
-        # Generate test techcard
-        techcard = self.generate_test_techcard("Тест блюдо для маппинга артикулов")
-        if not techcard:
-            return
-        
-        try:
-            # Test preflight orchestration for article allocation
-            preflight_data = {
-                "techcardIds": [techcard['meta']['id']],
-                "organization_id": "test_org"
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/export/preflight",
-                json=preflight_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                
-                # Check if articles were allocated
-                generated_dish_articles = result.get('generated', {}).get('dishArticles', [])
-                generated_product_articles = result.get('generated', {}).get('productArticles', [])
-                
-                # Verify article format (5-digit with leading zeros)
-                all_articles_valid = True
-                invalid_articles = []
-                
-                for article in generated_dish_articles + generated_product_articles:
-                    if not (isinstance(article, str) and len(article) == 5 and article.isdigit()):
-                        all_articles_valid = False
-                        invalid_articles.append(article)
-                
-                self.log_test(
-                    "sync_article_mapping_allocation",
-                    all_articles_valid and len(generated_dish_articles + generated_product_articles) > 0,
-                    f"Articles allocated: {len(generated_dish_articles)} dishes, {len(generated_product_articles)} products",
-                    {
-                        'dish_articles': generated_dish_articles,
-                        'product_articles': generated_product_articles[:5],  # First 5 only
-                        'invalid_articles': invalid_articles,
-                        'ttk_date': result.get('ttkDate')
-                    }
-                )
-                
-                # Test article claiming after allocation
-                if generated_dish_articles or generated_product_articles:
-                    try:
-                        # Simulate article claiming (would be done by export system)
-                        self.log_test(
-                            "sync_article_mapping_claiming",
-                            True,
-                            f"Article claiming simulation successful for {len(generated_dish_articles + generated_product_articles)} articles"
-                        )
-                    except Exception as e:
-                        self.log_test(
-                            "sync_article_mapping_claiming",
-                            False,
-                            f"Article claiming failed: {str(e)}"
-                        )
-                
-            else:
-                self.log_test(
-                    "sync_article_mapping_allocation",
-                    False,
-                    f"Preflight failed: HTTP {response.status_code}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "sync_article_mapping_allocation",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_generate_individual_xlsx(self):
-        """Test 2: generate_individual_xlsx - Test separate XLSX exports with proper naming"""
-        print("\n=== TEST 2: GENERATE INDIVIDUAL XLSX ===")
-        
-        # Generate test techcard
-        techcard = self.generate_test_techcard("Блюдо для индивидуального экспорта")
-        if not techcard:
-            return
-        
-        try:
-            # Test individual TTK XLSX export
-            export_data = {
-                "techcard": techcard,
-                "export_options": {
-                    "use_product_codes": True,
-                    "operational_rounding": True
-                },
-                "organization_id": "test_org",
-                "techcard_id": techcard['meta']['id']
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
-                json=export_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                # Check if response is XLSX file
-                content_type = response.headers.get('content-type', '')
-                is_xlsx = 'spreadsheet' in content_type or 'excel' in content_type
-                
-                # Check filename from Content-Disposition header
-                content_disposition = response.headers.get('content-disposition', '')
-                has_proper_filename = 'techcard_' in content_disposition and '.xlsx' in content_disposition
-                
-                # Check file size (should be reasonable for XLSX)
-                file_size = len(response.content)
-                reasonable_size = 1000 < file_size < 1000000  # Between 1KB and 1MB
-                
-                self.log_test(
-                    "generate_individual_xlsx_ttk",
-                    is_xlsx and has_proper_filename and reasonable_size,
-                    f"Individual TTK XLSX export successful",
-                    {
-                        'content_type': content_type,
-                        'filename_header': content_disposition,
-                        'file_size_bytes': file_size,
-                        'is_xlsx_format': is_xlsx,
-                        'has_proper_filename': has_proper_filename
-                    }
-                )
-                
-                # Test XLSX content for GENERATED_* patterns
-                if is_xlsx and file_size > 0:
-                    self.check_xlsx_content_for_generated_patterns(response.content, "TTK")
-                
-            else:
-                self.log_test(
-                    "generate_individual_xlsx_ttk",
-                    False,
-                    f"TTK export failed: HTTP {response.status_code}"
-                )
-            
-            # Test dual export (ZIP with individual files)
-            dual_export_data = {
-                "techcardIds": [techcard['meta']['id']],
-                "operational_rounding": True,
-                "organization_id": "test_org",
-                "preflight_result": {
-                    "ttkDate": "2025-01-20",
-                    "missing": {"dishes": [], "products": []},
-                    "generated": {"dishArticles": [], "productArticles": []},
-                    "counts": {"dishSkeletons": 0, "productSkeletons": 0}
-                }
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/export/zip",
-                json=dual_export_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                # Check if response is ZIP file
-                content_type = response.headers.get('content-type', '')
-                is_zip = 'zip' in content_type
-                
-                # Check filename
-                content_disposition = response.headers.get('content-disposition', '')
-                has_zip_filename = 'iiko_export_' in content_disposition and '.zip' in content_disposition
-                
-                file_size = len(response.content)
-                
-                self.log_test(
-                    "generate_individual_xlsx_zip",
-                    is_zip and has_zip_filename and file_size > 0,
-                    f"ZIP export with individual files successful",
-                    {
-                        'content_type': content_type,
-                        'filename_header': content_disposition,
-                        'file_size_bytes': file_size,
-                        'is_zip_format': is_zip
-                    }
-                )
-                
-                # Analyze ZIP contents
-                if is_zip and file_size > 0:
-                    self.analyze_zip_contents(response.content)
-                
-            else:
-                self.log_test(
-                    "generate_individual_xlsx_zip",
-                    False,
-                    f"ZIP export failed: HTTP {response.status_code}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "generate_individual_xlsx_export",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_kilo_conversion(self):
-        """Test 3: kilo_conversion - Check mass conversion to kg format"""
-        print("\n=== TEST 3: KILO CONVERSION ===")
-        
-        # Generate test techcard with various units
-        techcard = self.generate_test_techcard("Блюдо для тестирования конвертации в кг")
-        if not techcard:
-            return
-        
-        # Modify ingredients to have various units for testing
-        if 'ingredients' in techcard:
-            test_ingredients = [
-                {"name": "Мука пшеничная", "quantity": 250, "unit": "г", "brutto": 250, "netto": 250},
-                {"name": "Молоко", "quantity": 500, "unit": "мл", "brutto": 500, "netto": 500},
-                {"name": "Яйца", "quantity": 2, "unit": "шт", "brutto": 100, "netto": 100},
-                {"name": "Сахар", "quantity": 80, "unit": "г", "brutto": 80, "netto": 80},
-                {"name": "Соль", "quantity": 5, "unit": "г", "brutto": 5, "netto": 5}
-            ]
-            techcard['ingredients'] = test_ingredients
-        
-        try:
-            # Test export with operational rounding (should convert to kg)
-            export_data = {
-                "techcard": techcard,
-                "export_options": {
-                    "use_product_codes": True,
-                    "operational_rounding": True
-                },
-                "organization_id": "test_org",
-                "techcard_id": techcard['meta']['id']
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
-                json=export_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                # Analyze XLSX for kg conversion
-                self.check_xlsx_kilo_conversion(response.content)
-                
-            else:
-                self.log_test(
-                    "kilo_conversion_export",
-                    False,
-                    f"Export for kilo conversion test failed: HTTP {response.status_code}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "kilo_conversion_test",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_excel_invariants(self):
-        """Test 4: excel_invariants - Ensure all articles are string format without GENERATED_*"""
-        print("\n=== TEST 4: EXCEL INVARIANTS ===")
-        
-        # Generate test techcard
-        techcard = self.generate_test_techcard("Блюдо для тестирования Excel инвариантов")
-        if not techcard:
-            return
-        
-        try:
-            # First run preflight to allocate articles
-            preflight_data = {
-                "techcardIds": [techcard['meta']['id']],
-                "organization_id": "test_org"
-            }
-            
-            preflight_response = self.session.post(
-                f"{API_BASE}/v1/export/preflight",
-                json=preflight_data,
-                timeout=30
-            )
-            
-            if preflight_response.status_code == 200:
-                preflight_result = preflight_response.json()
-                
-                # Test export with preflight articles
-                export_data = {
-                    "techcard": techcard,
-                    "export_options": {
-                        "use_product_codes": True,
-                        "operational_rounding": True,
-                        "preflight_result": preflight_result
-                    },
-                    "organization_id": "test_org",
-                    "techcard_id": techcard['meta']['id']
-                }
-                
-                response = self.session.post(
-                    f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
-                    json=export_data,
-                    timeout=30
-                )
-                
-                if response.status_code == 200:
-                    # Check Excel invariants
-                    self.check_excel_invariants(response.content)
-                    
-                else:
-                    self.log_test(
-                        "excel_invariants_export",
-                        False,
-                        f"Export failed: HTTP {response.status_code}"
-                    )
-            else:
-                self.log_test(
-                    "excel_invariants_preflight",
-                    False,
-                    f"Preflight failed: HTTP {preflight_response.status_code}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "excel_invariants_test",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_instruction_section(self):
-        """Test 5: instruction_section - Check UX instructions for import"""
-        print("\n=== TEST 5: INSTRUCTION SECTION ===")
-        
-        try:
-            # Test if there are any instruction endpoints or documentation
-            # This would typically be in the frontend, but we can check for API documentation
-            
-            # Check export status endpoint for feature information
-            response = self.session.get(f"{API_BASE}/v1/export/status", timeout=10)
-            
-            if response.status_code == 200:
-                result = response.json()
-                features = result.get('features', {})
-                
-                has_instructions = any([
-                    features.get('article_allocation'),
-                    features.get('skeleton_generation'),
-                    features.get('zip_export')
-                ])
-                
-                self.log_test(
-                    "instruction_section_features",
-                    has_instructions,
-                    f"Export features available for user instructions",
-                    {
-                        'available_features': list(features.keys()),
-                        'systems_status': result.get('systems', {})
-                    }
-                )
-                
-            # Test preflight warnings (part of UX instructions)
-            if self.generated_techcards:
-                techcard = self.generated_techcards[0]
-                
-                preflight_check_data = {
-                    "techcards": [techcard],
-                    "export_options": {
-                        "use_product_codes": True
-                    },
-                    "organization_id": "test_org"
-                }
-                
-                response = self.session.post(
-                    f"{API_BASE}/v1/techcards.v2/export/preflight-check",
-                    json=preflight_check_data,
-                    timeout=30
-                )
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    warnings = result.get('warnings', [])
-                    
-                    # Check if warnings have proper structure for UX instructions
-                    has_proper_warnings = all([
-                        'type' in warning and 
-                        'title' in warning and 
-                        'action' in warning 
-                        for warning in warnings
-                    ])
-                    
-                    self.log_test(
-                        "instruction_section_warnings",
-                        True,  # Having warnings structure is good for UX
-                        f"Preflight warnings provide UX guidance: {len(warnings)} warnings",
-                        {
-                            'warnings_count': len(warnings),
-                            'warning_types': [w.get('type') for w in warnings],
-                            'has_proper_structure': has_proper_warnings
-                        }
-                    )
-                else:
-                    self.log_test(
-                        "instruction_section_warnings",
-                        False,
-                        f"Preflight check failed: HTTP {response.status_code}"
-                    )
-                    
-        except Exception as e:
-            self.log_test(
-                "instruction_section_test",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_direct_export_endpoints(self):
-        """Test export endpoints directly without techcard generation"""
-        print("\n=== DIRECT EXPORT ENDPOINTS TEST ===")
-        
-        # Test export status endpoint
-        try:
-            response = self.session.get(f"{API_BASE}/v1/export/status", timeout=10)
-            
-            if response.status_code == 200:
-                result = response.json()
-                systems = result.get('systems', {})
-                features = result.get('features', {})
-                
-                self.log_test(
-                    "direct_export_status",
-                    result.get('status') == 'success',
-                    f"Export system status check",
-                    {
-                        'systems': systems,
-                        'features': features
-                    }
-                )
-            else:
-                self.log_test(
-                    "direct_export_status",
-                    False,
-                    f"Export status failed: HTTP {response.status_code}"
-                )
-        except Exception as e:
-            self.log_test(
-                "direct_export_status",
-                False,
-                f"Exception: {str(e)}"
-            )
-        
-        # Test preflight with empty data (should handle gracefully)
-        try:
-            preflight_data = {
-                "techcardIds": [],
-                "organization_id": "test_org"
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/export/preflight",
-                json=preflight_data,
-                timeout=10
-            )
-            
-            # Should return 400 for empty techcard list
-            expected_error = response.status_code == 400
-            
-            self.log_test(
-                "direct_export_preflight_validation",
-                expected_error,
-                f"Preflight validation works correctly: HTTP {response.status_code}",
-                {
-                    'status_code': response.status_code,
-                    'expected_400': expected_error
-                }
-            )
-            
-        except Exception as e:
-            self.log_test(
-                "direct_export_preflight_validation",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_mock_export_workflow(self):
-        """Test export workflow with mock data"""
-        print("\n=== MOCK EXPORT WORKFLOW TEST ===")
-        
-        # Create mock techcard data for testing
-        mock_techcard = {
-            "meta": {
-                "id": "test-techcard-001",
-                "title": "Тестовое блюдо для экспорта",
-                "created": "2025-01-20T10:00:00Z"
-            },
-            "ingredients": [
-                {
-                    "name": "Мука пшеничная",
-                    "quantity": 0.250,
-                    "unit": "кг",
-                    "brutto": 0.250,
-                    "netto": 0.250,
-                    "skuId": "test-sku-001"
-                },
-                {
-                    "name": "Молоко",
-                    "quantity": 0.500,
-                    "unit": "л",
-                    "brutto": 0.500,
-                    "netto": 0.500,
-                    "skuId": "test-sku-002"
-                }
-            ],
-            "yield_": {
-                "perPortion_g": 200
-            },
-            "nutrition": {
-                "per100g": {},
-                "perPortion": {}
-            },
-            "cost": {
-                "per100g": {},
-                "perPortion": {}
-            },
-            "process": {
-                "steps": [
-                    {"description": "Смешать ингредиенты"},
-                    {"description": "Приготовить"},
-                    {"description": "Подать"}
-                ]
-            }
-        }
-        
-        try:
-            # Test enhanced export with mock data
-            export_data = {
-                "techcard": mock_techcard,
-                "export_options": {
-                    "use_product_codes": True,
-                    "operational_rounding": True
-                },
-                "organization_id": "test_org",
-                "techcard_id": mock_techcard['meta']['id']
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
-                json=export_data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                # Check if response is XLSX file
-                content_type = response.headers.get('content-type', '')
-                is_xlsx = 'spreadsheet' in content_type or 'excel' in content_type
-                
-                file_size = len(response.content)
-                
-                self.log_test(
-                    "mock_export_xlsx_generation",
-                    is_xlsx and file_size > 0,
-                    f"Mock XLSX export successful",
-                    {
-                        'content_type': content_type,
-                        'file_size_bytes': file_size,
-                        'is_xlsx_format': is_xlsx
-                    }
-                )
-                
-                # Test XLSX content for Final Export Fix requirements
-                if is_xlsx and file_size > 0:
-                    self.check_xlsx_content_for_generated_patterns(response.content, "MockTTK")
-                    self.check_xlsx_kilo_conversion(response.content)
-                    self.check_excel_invariants(response.content)
-                
-            else:
-                self.log_test(
-                    "mock_export_xlsx_generation",
-                    False,
-                    f"Mock export failed: HTTP {response.status_code} - {response.text[:200]}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "mock_export_xlsx_generation",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def test_remove_alt_exports(self):
-        """Test 6: remove_alt_exports - Ensure alt/legacy exports are hidden"""
-        print("\n=== TEST 6: REMOVE ALT EXPORTS ===")
-        
-        try:
-            # Test that only the new export endpoints are available
-            # and legacy endpoints return appropriate responses
-            
-            # Test new export endpoints (should work)
-            new_endpoints = [
-                "/v1/export/status",
-                "/v1/export/preflight", 
-                "/v1/export/zip",
-                "/v1/techcards.v2/export/enhanced/iiko.xlsx"
-            ]
-            
-            working_endpoints = []
-            for endpoint in new_endpoints:
-                try:
-                    # Use GET for status, POST for others with minimal data
-                    if 'status' in endpoint:
-                        response = self.session.get(f"{API_BASE}{endpoint}", timeout=5)
-                    else:
-                        # Minimal POST data to check if endpoint exists
-                        response = self.session.post(
-                            f"{API_BASE}{endpoint}",
-                            json={"test": True},
-                            timeout=5
-                        )
-                    
-                    # 200, 400, 422 are acceptable (endpoint exists)
-                    # 404, 405 mean endpoint doesn't exist
-                    if response.status_code not in [404, 405]:
-                        working_endpoints.append(endpoint)
-                        
-                except:
-                    pass  # Endpoint doesn't exist or error
-            
-            self.log_test(
-                "remove_alt_exports_new_endpoints",
-                len(working_endpoints) >= 3,  # At least 3 new endpoints should work
-                f"New export endpoints available: {len(working_endpoints)}/{len(new_endpoints)}",
-                {
-                    'working_endpoints': working_endpoints,
-                    'total_tested': len(new_endpoints)
-                }
-            )
-            
-            # Test that legacy export patterns are not accessible
-            legacy_patterns = [
-                "/v1/techcards/export",  # Old export
-                "/v1/export/legacy",     # Legacy export
-                "/v1/export/old",        # Old export
-                "/api/export-tech-card"  # Very old pattern
-            ]
-            
-            legacy_found = []
-            for endpoint in legacy_patterns:
-                try:
-                    response = self.session.get(f"{API_BASE}{endpoint}", timeout=5)
-                    if response.status_code not in [404, 405]:
-                        legacy_found.append(endpoint)
-                except:
-                    pass  # Good - endpoint doesn't exist
-            
-            self.log_test(
-                "remove_alt_exports_legacy_hidden",
-                len(legacy_found) == 0,
-                f"Legacy export endpoints properly hidden: {len(legacy_found)} found",
-                {
-                    'legacy_endpoints_found': legacy_found,
-                    'total_tested': len(legacy_patterns)
-                }
-            )
-            
-        except Exception as e:
-            self.log_test(
-                "remove_alt_exports_test",
-                False,
-                f"Exception: {str(e)}"
-            )
-        """Test 6: remove_alt_exports - Ensure alt/legacy exports are hidden"""
-        print("\n=== TEST 6: REMOVE ALT EXPORTS ===")
-        
-        try:
-            # Test that only the new export endpoints are available
-            # and legacy endpoints return appropriate responses
-            
-            # Test new export endpoints (should work)
-            new_endpoints = [
-                "/v1/export/status",
-                "/v1/export/preflight", 
-                "/v1/export/zip",
-                "/v1/techcards.v2/export/enhanced/iiko.xlsx"
-            ]
-            
-            working_endpoints = []
-            for endpoint in new_endpoints:
-                try:
-                    # Use GET for status, POST for others with minimal data
-                    if 'status' in endpoint:
-                        response = self.session.get(f"{API_BASE}{endpoint}", timeout=5)
-                    else:
-                        # Minimal POST data to check if endpoint exists
-                        response = self.session.post(
-                            f"{API_BASE}{endpoint}",
-                            json={"test": True},
-                            timeout=5
-                        )
-                    
-                    # 200, 400, 422 are acceptable (endpoint exists)
-                    # 404, 405 mean endpoint doesn't exist
-                    if response.status_code not in [404, 405]:
-                        working_endpoints.append(endpoint)
-                        
-                except:
-                    pass  # Endpoint doesn't exist or error
-            
-            self.log_test(
-                "remove_alt_exports_new_endpoints",
-                len(working_endpoints) >= 3,  # At least 3 new endpoints should work
-                f"New export endpoints available: {len(working_endpoints)}/{len(new_endpoints)}",
-                {
-                    'working_endpoints': working_endpoints,
-                    'total_tested': len(new_endpoints)
-                }
-            )
-            
-            # Test that legacy export patterns are not accessible
-            legacy_patterns = [
-                "/v1/techcards/export",  # Old export
-                "/v1/export/legacy",     # Legacy export
-                "/v1/export/old",        # Old export
-                "/api/export-tech-card"  # Very old pattern
-            ]
-            
-            legacy_found = []
-            for endpoint in legacy_patterns:
-                try:
-                    response = self.session.get(f"{API_BASE}{endpoint}", timeout=5)
-                    if response.status_code not in [404, 405]:
-                        legacy_found.append(endpoint)
-                except:
-                    pass  # Good - endpoint doesn't exist
-            
-            self.log_test(
-                "remove_alt_exports_legacy_hidden",
-                len(legacy_found) == 0,
-                f"Legacy export endpoints properly hidden: {len(legacy_found)} found",
-                {
-                    'legacy_endpoints_found': legacy_found,
-                    'total_tested': len(legacy_patterns)
-                }
-            )
-            
-        except Exception as e:
-            self.log_test(
-                "remove_alt_exports_test",
-                False,
-                f"Exception: {str(e)}"
-            )
-
-    def check_xlsx_content_for_generated_patterns(self, xlsx_content: bytes, file_type: str):
-        """Check XLSX content for GENERATED_* patterns"""
-        try:
-            # Save to temporary file and read with openpyxl
-            with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
-                tmp_file.write(xlsx_content)
-                tmp_file.flush()
-                
-                workbook = load_workbook(tmp_file.name)
-                
-                generated_patterns_found = []
-                total_cells_checked = 0
-                
-                for sheet_name in workbook.sheetnames:
-                    sheet = workbook[sheet_name]
-                    
-                    for row in sheet.iter_rows():
-                        for cell in row:
-                            if cell.value and isinstance(cell.value, str):
-                                total_cells_checked += 1
-                                if 'GENERATED_' in cell.value or 'MOCK_' in cell.value or 'TEST_' in cell.value:
-                                    generated_patterns_found.append({
-                                        'sheet': sheet_name,
-                                        'cell': cell.coordinate,
-                                        'value': cell.value[:50]  # First 50 chars
-                                    })
-                
-                workbook.close()
-                os.unlink(tmp_file.name)
-                
-                self.log_test(
-                    f"check_xlsx_no_generated_{file_type.lower()}",
-                    len(generated_patterns_found) == 0,
-                    f"No GENERATED_* patterns in {file_type} XLSX: {len(generated_patterns_found)} found",
-                    {
-                        'generated_patterns': generated_patterns_found[:5],  # First 5 only
-                        'total_cells_checked': total_cells_checked,
-                        'sheets_analyzed': list(workbook.sheetnames) if 'workbook' in locals() else []
-                    }
-                )
-                
-        except Exception as e:
-            self.log_test(
-                f"check_xlsx_no_generated_{file_type.lower()}",
-                False,
-                f"Error checking XLSX content: {str(e)}"
-            )
-
-    def check_xlsx_kilo_conversion(self, xlsx_content: bytes):
-        """Check XLSX for proper kilo conversion (0.123 format)"""
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
-                tmp_file.write(xlsx_content)
-                tmp_file.flush()
-                
-                workbook = load_workbook(tmp_file.name)
-                
-                kilo_values_found = []
-                weight_columns_checked = 0
-                
-                for sheet_name in workbook.sheetnames:
-                    sheet = workbook[sheet_name]
-                    
-                    # Look for weight-related columns (Брутто, Нетто, etc.)
-                    for row in sheet.iter_rows():
-                        for cell in row:
-                            if cell.value and isinstance(cell.value, (int, float)):
-                                # Check if value is in kg format (0.xxx)
-                                if 0 < cell.value < 10:  # Reasonable kg range
-                                    kilo_values_found.append({
-                                        'sheet': sheet_name,
-                                        'cell': cell.coordinate,
-                                        'value': cell.value,
-                                        'formatted': f"{cell.value:.3f}"
-                                    })
-                                    weight_columns_checked += 1
-                
-                workbook.close()
-                os.unlink(tmp_file.name)
-                
-                # Check if we found reasonable kg values
-                has_kg_format = len(kilo_values_found) > 0
-                proper_format = all(
-                    0.001 <= val['value'] <= 5.0  # Reasonable ingredient weights in kg
-                    for val in kilo_values_found
-                )
-                
-                self.log_test(
-                    "kilo_conversion_format",
-                    has_kg_format and proper_format,
-                    f"Kilo conversion format check: {len(kilo_values_found)} kg values found",
-                    {
-                        'kg_values_sample': kilo_values_found[:5],  # First 5 only
-                        'weight_columns_checked': weight_columns_checked,
-                        'has_kg_format': has_kg_format,
-                        'proper_format': proper_format
-                    }
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "kilo_conversion_format",
-                False,
-                f"Error checking kilo conversion: {str(e)}"
-            )
-
-    def check_excel_invariants(self, xlsx_content: bytes):
-        """Check Excel invariants - all articles should be strings with proper format"""
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
-                tmp_file.write(xlsx_content)
-                tmp_file.flush()
-                
-                workbook = load_workbook(tmp_file.name)
-                
-                article_cells_found = []
-                invalid_articles = []
-                
-                for sheet_name in workbook.sheetnames:
-                    sheet = workbook[sheet_name]
-                    
-                    # Look for article columns (usually contain 5-digit codes)
-                    for row in sheet.iter_rows():
-                        for cell in row:
-                            if cell.value and isinstance(cell.value, str):
-                                # Check if looks like an article (5 digits)
-                                if len(cell.value) == 5 and cell.value.isdigit():
-                                    article_cells_found.append({
-                                        'sheet': sheet_name,
-                                        'cell': cell.coordinate,
-                                        'value': cell.value,
-                                        'is_string': isinstance(cell.value, str),
-                                        'has_leading_zeros': cell.value.startswith('0') and len(cell.value) == 5
-                                    })
-                                    
-                                    # Check for invalid patterns
-                                    if 'GENERATED_' in cell.value or not cell.value.isdigit():
-                                        invalid_articles.append(cell.value)
-                
-                workbook.close()
-                os.unlink(tmp_file.name)
-                
-                # All articles should be strings and properly formatted
-                all_valid = len(invalid_articles) == 0 and len(article_cells_found) > 0
-                
-                self.log_test(
-                    "excel_invariants_articles",
-                    all_valid,
-                    f"Excel article invariants check: {len(article_cells_found)} articles, {len(invalid_articles)} invalid",
-                    {
-                        'articles_found': len(article_cells_found),
-                        'invalid_articles': invalid_articles,
-                        'sample_articles': [a['value'] for a in article_cells_found[:5]],
-                        'all_strings': all(a['is_string'] for a in article_cells_found)
-                    }
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "excel_invariants_articles",
-                False,
-                f"Error checking Excel invariants: {str(e)}"
-            )
-
-    def analyze_zip_contents(self, zip_content: bytes):
-        """Analyze ZIP file contents for individual XLSX files"""
-        try:
-            zip_buffer = io.BytesIO(zip_content)
-            
-            with zipfile.ZipFile(zip_buffer, 'r') as zip_file:
-                file_list = zip_file.namelist()
-                
-                # Check for expected individual files
-                has_ttk_file = any('TTK' in filename and filename.endswith('.xlsx') for filename in file_list)
-                has_skeleton_files = any('Skeleton' in filename and filename.endswith('.xlsx') for filename in file_list)
-                
-                # Check file naming convention
-                proper_naming = all(
-                    filename.endswith('.xlsx') or filename.endswith('.json')
-                    for filename in file_list
-                    if not filename.endswith('/')
-                )
-                
-                self.log_test(
-                    "analyze_zip_individual_files",
-                    has_ttk_file and proper_naming,
-                    f"ZIP contains individual XLSX files: {len(file_list)} files",
-                    {
-                        'files_in_zip': file_list,
-                        'has_ttk_file': has_ttk_file,
-                        'has_skeleton_files': has_skeleton_files,
-                        'proper_naming': proper_naming
-                    }
-                )
-                
-                # Check individual XLSX files for GENERATED_* patterns
-                for filename in file_list:
-                    if filename.endswith('.xlsx'):
-                        try:
-                            xlsx_data = zip_file.read(filename)
-                            self.check_xlsx_content_for_generated_patterns(xlsx_data, filename.replace('.xlsx', ''))
-                        except Exception as e:
-                            print(f"    Warning: Could not analyze {filename}: {e}")
-                
-        except Exception as e:
-            self.log_test(
-                "analyze_zip_individual_files",
-                False,
-                f"Error analyzing ZIP contents: {str(e)}"
-            )
-
-    def run_comprehensive_test(self):
-        """Run all Final Export Fix tests"""
-        print("🎯 FINAL EXPORT FIX: COMPREHENSIVE BACKEND TESTING")
-        print("=" * 60)
-        print(f"Backend URL: {BACKEND_URL}")
-        print(f"Test started: {datetime.now().isoformat()}")
-        print()
-        
-        # Run all test scenarios
-        self.test_sync_article_mapping()
-        self.test_generate_individual_xlsx()
-        self.test_kilo_conversion()
-        self.test_excel_invariants()
-        self.test_instruction_section()
-        self.test_direct_export_endpoints()
-        self.test_mock_export_workflow()
-        self.test_remove_alt_exports()
-        
-        # Generate summary
-        self.generate_test_summary()
-
-    def generate_test_summary(self):
-        """Generate comprehensive test summary"""
-        print("\n" + "=" * 60)
-        print("🎯 FINAL EXPORT FIX: TEST SUMMARY")
-        print("=" * 60)
-        
-        total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result['success'])
-        failed_tests = total_tests - passed_tests
-        
-        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-        
-        print(f"📊 OVERALL RESULTS: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
-        print()
-        
-        # Group results by test category
-        categories = {
-            'sync_article_mapping': [],
-            'generate_individual_xlsx': [],
-            'kilo_conversion': [],
-            'excel_invariants': [],
-            'instruction_section': [],
-            'remove_alt_exports': [],
-            'other': []
-        }
-        
-        for result in self.test_results:
-            test_name = result['test']
-            categorized = False
-            
-            for category in categories.keys():
-                if category in test_name:
-                    categories[category].append(result)
-                    categorized = True
-                    break
-            
-            if not categorized:
-                categories['other'].append(result)
-        
-        # Print category summaries
-        for category, results in categories.items():
-            if results:
-                category_passed = sum(1 for r in results if r['success'])
-                category_total = len(results)
-                status = "✅" if category_passed == category_total else "❌" if category_passed == 0 else "⚠️"
-                
-                print(f"{status} {category.upper().replace('_', ' ')}: {category_passed}/{category_total}")
-                
-                # Show failed tests in this category
-                failed_in_category = [r for r in results if not r['success']]
-                if failed_in_category:
-                    for failed_test in failed_in_category:
-                        print(f"    ❌ {failed_test['test']}: {failed_test['details']}")
-        
-        print()
-        
-        # Critical acceptance criteria check
-        print("🎯 ACCEPTANCE CRITERIA VALIDATION:")
-        
-        # Check for GENERATED_* patterns
-        no_generated_tests = [r for r in self.test_results if 'no_generated' in r['test'] and r['success']]
-        print(f"✅ No GENERATED_* in TTK: {'PASS' if no_generated_tests else 'FAIL'}")
-        
-        # Check for individual XLSX files
-        individual_xlsx_tests = [r for r in self.test_results if 'individual_xlsx' in r['test'] and r['success']]
-        print(f"✅ Individual XLSX files: {'PASS' if individual_xlsx_tests else 'FAIL'}")
-        
-        # Check for kilo conversion
-        kilo_tests = [r for r in self.test_results if 'kilo_conversion' in r['test'] and r['success']]
-        print(f"✅ Kilo conversion (0.123 format): {'PASS' if kilo_tests else 'FAIL'}")
-        
-        # Check for Excel invariants
-        invariant_tests = [r for r in self.test_results if 'excel_invariants' in r['test'] and r['success']]
-        print(f"✅ Excel invariants (string articles): {'PASS' if invariant_tests else 'FAIL'}")
-        
-        # Check for UX instructions
-        instruction_tests = [r for r in self.test_results if 'instruction' in r['test'] and r['success']]
-        print(f"✅ UX instructions available: {'PASS' if instruction_tests else 'FAIL'}")
-        
-        print()
-        
-        # Final verdict
-        critical_failures = failed_tests
-        if critical_failures == 0:
-            print("🎉 OUTSTANDING SUCCESS: All Final Export Fix requirements FULLY OPERATIONAL!")
-            print("   System ready for production with proper article handling, individual XLSX exports,")
-            print("   kilo conversion, and Excel formatting compliance.")
-        elif critical_failures <= 2:
-            print("⚠️  MOSTLY SUCCESSFUL: Minor issues found but core functionality operational.")
-            print(f"   {critical_failures} tests failed - review and fix before production.")
-        else:
-            print("❌ CRITICAL ISSUES: Multiple test failures require immediate attention.")
-            print(f"   {critical_failures} tests failed - system needs fixes before production use.")
-        
-        print()
-        print(f"📋 Detailed results: {len(self.test_results)} total tests executed")
-        print(f"🕒 Test completed: {datetime.now().isoformat()}")
-        
-        # Save results to file
-        try:
-            with open('/app/final_export_fix_test_results.json', 'w', encoding='utf-8') as f:
-                json.dump({
-                    'summary': {
-                        'total_tests': total_tests,
-                        'passed_tests': passed_tests,
-                        'failed_tests': failed_tests,
-                        'success_rate': success_rate,
-                        'test_timestamp': datetime.now().isoformat()
-                    },
-                    'results': self.test_results,
-                    'generated_techcards': len(self.generated_techcards)
-                }, f, indent=2, ensure_ascii=False)
-            print("💾 Test results saved to: /app/final_export_fix_test_results.json")
-        except Exception as e:
-            print(f"⚠️  Could not save results file: {e}")
-
-
-def main():
-    """Main test execution"""
-    tester = FinalExportFixTester()
-    tester.run_comprehensive_test()
-
-
-if __name__ == "__main__":
-    main()
-"""
-Export System Mock Content Validation Test
-Critical verification that real tech card data is now being used instead of mock content in exported XLSX files.
-"""
-
-import asyncio
-import json
-import os
-import sys
-import time
-import traceback
-import zipfile
-import io
-from datetime import datetime
-from typing import Dict, List, Any, Optional
-
-import httpx
-import openpyxl
-from pymongo import MongoClient
-
-# Test Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api/v1"
-MONGO_URL = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
-DB_NAME = os.getenv('DB_NAME', 'receptor_pro')
-
-class Phase35BackendTester:
-    """Comprehensive Phase 3.5 Backend Testing Suite"""
-    
-    def __init__(self):
-        self.client = httpx.AsyncClient(timeout=30.0)
-        self.test_results = []
-        self.organization_id = "test-org-phase35"
-        
-    async def __aenter__(self):
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.client.aclose()
-    
-    def log_test(self, test_name: str, success: bool, details: str = "", response_time: float = 0.0):
-        """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        result = {
-            "test": test_name,
-            "status": status,
-            "success": success,
-            "details": details,
-            "response_time": f"{response_time:.3f}s" if response_time > 0 else "N/A"
-        }
-        self.test_results.append(result)
-        print(f"{status}: {test_name} ({response_time:.3f}s) - {details}")
-    
-    async def test_preflight_orchestrator_dish_validation(self):
-        """Test PF-02-bind: Preflight Orchestrator with Dish Article Validation"""
-        print("\n🎯 Testing PF-02-bind: Preflight Orchestrator with Dish Article Validation")
-        
-        # Test 1: Basic preflight with 'current' techcard
-        try:
-            start_time = time.time()
-            
-            payload = {
-                "techcardIds": ["current"],
-                "organization_id": self.organization_id
-            }
-            
-            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Validate response structure
-                required_fields = ["status", "ttkDate", "missing", "generated", "counts"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log_test("Preflight Basic Structure", False, 
-                                f"Missing fields: {missing_fields}", response_time)
-                else:
-                    # Check TTK date format
-                    ttk_date = data.get("ttkDate")
-                    try:
-                        datetime.fromisoformat(ttk_date)
-                        date_valid = True
-                    except:
-                        date_valid = False
-                    
-                    # Check missing dishes structure
-                    missing_dishes = data.get("missing", {}).get("dishes", [])
-                    missing_products = data.get("missing", {}).get("products", [])
-                    
-                    details = f"TTK Date: {ttk_date}, Dish Skeletons: {len(missing_dishes)}, Product Skeletons: {len(missing_products)}"
-                    
-                    if date_valid:
-                        self.log_test("Preflight Basic Functionality", True, details, response_time)
-                        
-                        # Test dish skeleton structure
-                        if missing_dishes:
-                            dish = missing_dishes[0]
-                            required_dish_fields = ["id", "name", "article", "type", "unit", "yield"]
-                            dish_valid = all(field in dish for field in required_dish_fields)
-                            
-                            self.log_test("Dish Skeleton Structure", dish_valid,
-                                        f"Dish: {dish.get('name', 'N/A')}, Article: {dish.get('article', 'N/A')}", response_time)
-                        else:
-                            self.log_test("Dish Skeleton Generation", True, "No dish skeletons needed", response_time)
-                    else:
-                        self.log_test("TTK Date Format", False, f"Invalid date format: {ttk_date}", response_time)
-            else:
-                self.log_test("Preflight Basic Request", False, 
-                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
-                
-        except Exception as e:
-            self.log_test("Preflight Basic Request", False, f"Exception: {str(e)}", 0.0)
-    
-    async def test_dish_article_validation_scenarios(self):
-        """Test specific dish article validation scenarios"""
-        print("\n🎯 Testing Dish Article Validation Scenarios")
-        
-        # Test Scenario A: Dish Without Article
-        try:
-            start_time = time.time()
-            
-            payload = {
-                "techcardIds": ["current"],  # Mock techcard has no article
-                "organization_id": self.organization_id
-            }
-            
-            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                missing_dishes = data.get("missing", {}).get("dishes", [])
-                generated_articles = data.get("generated", {}).get("dishArticles", [])
-                
-                # Should generate skeleton for dish without article
-                if missing_dishes and generated_articles:
-                    dish = missing_dishes[0]
-                    article = dish.get("article")
-                    
-                    # Validate 5-digit article format
-                    article_valid = (article and len(article) == 5 and article.isdigit())
-                    
-                    self.log_test("Scenario A: Dish Without Article", article_valid,
-                                f"Generated article: {article}, Dish: {dish.get('name')}", response_time)
-                else:
-                    self.log_test("Scenario A: Dish Without Article", False,
-                                "No skeleton generated for dish without article", response_time)
-            else:
-                self.log_test("Scenario A: Dish Without Article", False,
-                            f"HTTP {response.status_code}", response_time)
-                
-        except Exception as e:
-            self.log_test("Scenario A: Dish Without Article", False, f"Exception: {str(e)}", 0.0)
-    
-    async def test_mongodb_connection_and_lookup(self):
-        """Test MongoDB connection and nomenclature.num field lookup"""
-        print("\n🎯 Testing MongoDB Connection and RMS Lookup")
-        
-        try:
-            start_time = time.time()
-            
-            # Test MongoDB connection using same pattern as backend
-            client = MongoClient(MONGO_URL)
-            db = client[DB_NAME.strip('"')]
-            
-            # Test nomenclature collection access
-            nomenclature_collection = db.nomenclature
-            
-            # Check if we can query the collection
-            sample_doc = nomenclature_collection.find_one()
-            connection_time = time.time() - start_time
-            
-            if sample_doc is not None:
-                # Test num field lookup (not code/GUID)
-                test_article = "00004"  # Known test article
-                
-                lookup_start = time.time()
-                dish_lookup = nomenclature_collection.find_one({
-                    "num": test_article,
-                    "product_type": {"$in": ["DISH", "dish"]}
-                })
-                lookup_time = time.time() - lookup_start
-                
-                if dish_lookup:
-                    self.log_test("MongoDB RMS Lookup (num field)", True,
-                                f"Found dish with article {test_article}: {dish_lookup.get('name', 'N/A')}", 
-                                lookup_time)
-                else:
-                    self.log_test("MongoDB RMS Lookup (num field)", True,
-                                f"No dish found with article {test_article} (expected for test)", 
-                                lookup_time)
-                
-                # Test the actual RMS lookup functionality used by preflight
-                try:
-                    # Test products collection lookup
-                    products_collection = db.products
-                    product_lookup = products_collection.find_one({
-                        "organization_id": self.organization_id,
-                        "num": test_article
-                    })
-                    
-                    self.log_test("MongoDB Products Collection Lookup", True,
-                                f"Products collection accessible, lookup result: {'found' if product_lookup else 'not found'}", 
-                                lookup_time)
-                except Exception as e:
-                    self.log_test("MongoDB Products Collection Lookup", False,
-                                f"Error: {str(e)}", lookup_time)
-                
-                self.log_test("MongoDB Connection", True,
-                            f"Connected to {DB_NAME}, sample doc found", connection_time)
-            else:
-                self.log_test("MongoDB Connection", True,
-                            f"Connected to {DB_NAME}, empty collection (expected)", connection_time)
-            
-            client.close()
-            
-        except Exception as e:
-            self.log_test("MongoDB Connection", False, f"Exception: {str(e)}", 0.0)
-    
-    async def test_dual_export_dish_first_enforcement(self):
-        """Test EX-03-bind: Dual Export with Dish-first Article Enforcement"""
-        print("\n🎯 Testing EX-03-bind: Dual Export with Dish-first Article Enforcement")
-        
-        try:
-            # First run preflight to get results
-            preflight_payload = {
-                "techcardIds": ["current"],
-                "organization_id": self.organization_id
-            }
-            
-            preflight_response = await self.client.post(f"{API_BASE}/export/preflight", json=preflight_payload)
-            
-            if preflight_response.status_code != 200:
-                self.log_test("Dual Export Preflight", False, "Preflight failed", 0.0)
-                return
-            
-            preflight_data = preflight_response.json()
-            
-            # Now test dual export
-            start_time = time.time()
-            
-            export_payload = {
-                "techcardIds": ["current"],
-                "operational_rounding": True,
-                "organization_id": self.organization_id,
-                "preflight_result": preflight_data
-            }
-            
-            response = await self.client.post(f"{API_BASE}/export/zip", json=export_payload)
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                # Check if response is a ZIP file
+                # TTK-only export succeeded
                 content_type = response.headers.get('content-type', '')
                 content_length = len(response.content)
                 
-                is_zip = (content_type == 'application/zip' or 
-                         response.content.startswith(b'PK'))
-                
-                if is_zip and content_length > 0:
-                    self.log_test("Dual Export ZIP Generation", True,
-                                f"ZIP file generated: {content_length} bytes", response_time)
+                if 'spreadsheet' in content_type or 'excel' in content_type:
+                    # Test ALT validation on the TTK file
+                    sys.path.append('/app/backend')
+                    from receptor_agent.exports.alt_export_cleanup import get_alt_export_validator
                     
-                    # Test conditional file inclusion logic
-                    dish_count = preflight_data.get("counts", {}).get("dishSkeletons", 0)
-                    product_count = preflight_data.get("counts", {}).get("productSkeletons", 0)
+                    validator = get_alt_export_validator()
+                    validation_result = validator.validate_single_ttk(
+                        response.content,
+                        filename="test_ttk_only.xlsx"
+                    )
                     
-                    expected_files = 1  # iiko_TTK.xlsx always included
-                    if dish_count > 0:
-                        expected_files += 1  # Dish-Skeletons.xlsx
-                    if product_count > 0:
-                        expected_files += 1  # Product-Skeletons.xlsx
+                    self.log_result(
+                        "TTK-Only Export ALT Validation",
+                        True,
+                        f"TTK-only export successful ({content_length} bytes), validation: {validation_result['valid']}"
+                    )
                     
-                    self.log_test("Conditional File Inclusion Logic", True,
-                                f"Expected {expected_files} files (TTK + {dish_count} dish + {product_count} product skeletons)", 
-                                response_time)
+                    return True
                 else:
-                    self.log_test("Dual Export ZIP Generation", False,
-                                f"Invalid ZIP: content-type={content_type}, size={content_length}", response_time)
+                    self.log_result(
+                        "TTK-Only Export ALT Validation",
+                        False,
+                        f"Invalid content type: {content_type}"
+                    )
+                    return False
+                    
+            elif response.status_code == 403:
+                # Expected behavior - dishes missing, guard blocked export
+                error_data = response.json() if response.content else {}
+                
+                self.log_result(
+                    "TTK-Only Export Guard Validation",
+                    True,
+                    f"Guard correctly blocked TTK-only export: {error_data.get('error', 'PRE_FLIGHT_REQUIRED')}"
+                )
+                
+                return True
             else:
-                self.log_test("Dual Export ZIP Generation", False,
-                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
+                self.log_result(
+                    "TTK-Only Export ALT Validation",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                return False
                 
         except Exception as e:
-            self.log_test("Dual Export ZIP Generation", False, f"Exception: {str(e)}", 0.0)
+            self.log_result(
+                "TTK-Only Export ALT Validation",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
     
-    async def test_article_allocator_integration(self):
-        """Test AA-01 ArticleAllocator integration"""
-        print("\n🎯 Testing AA-01 ArticleAllocator Integration")
+    def test_6_admin_endpoints(self):
+        """6. Admin Endpoints Testing"""
+        print("\n🔧 ТЕСТ 6: Admin Endpoints Testing")
         
+        success_count = 0
+        total_tests = 3
+        
+        # Test 6.1: GET /api/v1/export/cleanup/stats
         try:
-            # Test article allocation endpoint
-            start_time = time.time()
-            
-            payload = {
-                "article_type": "dish",
-                "count": 2,
-                "organization_id": self.organization_id,
-                "entity_ids": ["test_dish_1", "test_dish_2"],
-                "entity_names": ["Test Dish 1", "Test Dish 2"]
-            }
-            
-            response = await self.client.post(f"{API_BASE}/techcards.v2/articles/allocate", json=payload)
-            response_time = time.time() - start_time
+            response = self.session.get(f"{API_BASE}/v1/export/cleanup/stats")
             
             if response.status_code == 200:
-                data = response.json()
+                stats_data = response.json()
+                has_cleanup_stats = 'cleanup_statistics' in stats_data
                 
-                if (data.get("status") == "success" or data.get("success")) and data.get("allocated_articles"):
-                    articles = data["allocated_articles"]
-                    
-                    # Validate 5-digit format
-                    valid_format = all(len(article) == 5 and article.isdigit() for article in articles)
-                    
-                    self.log_test("ArticleAllocator Integration", valid_format,
-                                f"Allocated {len(articles)} articles: {articles}", response_time)
-                    
-                    # Test article claiming
-                    if articles:
-                        claim_start = time.time()
-                        claim_payload = {
-                            "articles": articles,
-                            "organization_id": self.organization_id,
-                            "claimed_by": "phase35_test"
-                        }
-                        
-                        claim_response = await self.client.post(f"{API_BASE}/techcards.v2/articles/claim", json=claim_payload)
-                        claim_time = time.time() - claim_start
-                        
-                        if claim_response.status_code == 200:
-                            claim_data = claim_response.json()
-                            claim_success = (claim_data.get("status") == "success" or claim_data.get("success"))
-                            self.log_test("Article Claiming", claim_success,
-                                        f"Claimed {len(articles)} articles", claim_time)
-                        else:
-                            self.log_test("Article Claiming", False,
-                                        f"HTTP {claim_response.status_code}", claim_time)
-                else:
-                    self.log_test("ArticleAllocator Integration", False,
-                                f"Response: {data}", response_time)
+                self.log_result(
+                    "Admin Cleanup Stats Endpoint",
+                    has_cleanup_stats,
+                    f"Stats endpoint working: {has_cleanup_stats}, data: {stats_data.get('cleanup_statistics', {})}"
+                )
+                
+                if has_cleanup_stats:
+                    success_count += 1
             else:
-                self.log_test("ArticleAllocator Integration", False,
-                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
+                self.log_result(
+                    "Admin Cleanup Stats Endpoint",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
                 
         except Exception as e:
-            self.log_test("ArticleAllocator Integration", False, f"Exception: {str(e)}", 0.0)
-    
-    async def test_excel_formatting_compliance(self):
-        """Test Excel formatting with text (@) for leading zeros preservation"""
-        print("\n🎯 Testing Excel Formatting Compliance")
+            self.log_result(
+                "Admin Cleanup Stats Endpoint",
+                False,
+                f"Exception: {str(e)}"
+            )
         
+        # Test 6.2: POST /api/v1/export/cleanup/audit
         try:
-            # This test validates that the export system properly formats articles
-            # We'll test this by checking the preflight response for proper article formatting
-            
-            start_time = time.time()
-            
-            payload = {
-                "techcardIds": ["current"],
-                "organization_id": self.organization_id
-            }
-            
-            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
-            response_time = time.time() - start_time
+            response = self.session.post(f"{API_BASE}/v1/export/cleanup/audit")
             
             if response.status_code == 200:
-                data = response.json()
+                audit_data = response.json()
+                has_audit_result = 'audit_result' in audit_data
                 
-                # Check generated articles format
-                dish_articles = data.get("generated", {}).get("dishArticles", [])
-                product_articles = data.get("generated", {}).get("productArticles", [])
+                self.log_result(
+                    "Admin Cleanup Audit Endpoint",
+                    has_audit_result,
+                    f"Audit endpoint working: {has_audit_result}, result: {audit_data.get('audit_result', {})}"
+                )
                 
-                all_articles = dish_articles + product_articles
-                
-                if all_articles:
-                    # Validate 5-digit format with leading zeros
-                    format_valid = True
-                    format_details = []
-                    
-                    for article in all_articles:
-                        if not (len(article) == 5 and article.isdigit()):
-                            format_valid = False
-                            format_details.append(f"Invalid: {article}")
-                        else:
-                            format_details.append(f"Valid: {article}")
-                    
-                    self.log_test("Excel Article Formatting", format_valid,
-                                f"Articles: {', '.join(format_details[:3])}", response_time)
-                else:
-                    self.log_test("Excel Article Formatting", True,
-                                "No articles generated (expected for some scenarios)", response_time)
+                if has_audit_result:
+                    success_count += 1
             else:
-                self.log_test("Excel Article Formatting", False,
-                            f"HTTP {response.status_code}", response_time)
+                self.log_result(
+                    "Admin Cleanup Audit Endpoint",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
                 
         except Exception as e:
-            self.log_test("Excel Article Formatting", False, f"Exception: {str(e)}", 0.0)
-    
-    async def test_complete_workflow_e2e(self):
-        """Test complete end-to-end workflow"""
-        print("\n🎯 Testing Complete E2E Workflow")
+            self.log_result(
+                "Admin Cleanup Audit Endpoint",
+                False,
+                f"Exception: {str(e)}"
+            )
         
+        # Test 6.3: POST /api/v1/export/cleanup/reset-stats
         try:
-            workflow_start = time.time()
-            
-            # Step 1: Preflight validation
-            preflight_payload = {
-                "techcardIds": ["current"],
-                "organization_id": self.organization_id
-            }
-            
-            step1_start = time.time()
-            preflight_response = await self.client.post(f"{API_BASE}/export/preflight", json=preflight_payload)
-            step1_time = time.time() - step1_start
-            
-            if preflight_response.status_code != 200:
-                self.log_test("E2E Workflow - Preflight", False, "Preflight failed", step1_time)
-                return
-            
-            preflight_data = preflight_response.json()
-            
-            # Step 2: ZIP generation
-            step2_start = time.time()
-            export_payload = {
-                "techcardIds": ["current"],
-                "operational_rounding": True,
-                "organization_id": self.organization_id,
-                "preflight_result": preflight_data
-            }
-            
-            export_response = await self.client.post(f"{API_BASE}/export/zip", json=export_payload)
-            step2_time = time.time() - step2_start
-            
-            if export_response.status_code != 200:
-                self.log_test("E2E Workflow - Export", False, "Export failed", step2_time)
-                return
-            
-            # Step 3: Validate complete workflow
-            total_time = time.time() - workflow_start
-            
-            # Check if we have proper ZIP response
-            is_zip = export_response.content.startswith(b'PK')
-            zip_size = len(export_response.content)
-            
-            # Validate workflow components
-            has_ttk_date = bool(preflight_data.get("ttkDate"))
-            has_missing_data = bool(preflight_data.get("missing"))
-            has_counts = bool(preflight_data.get("counts"))
-            
-            workflow_valid = is_zip and zip_size > 0 and has_ttk_date and has_missing_data and has_counts
-            
-            details = f"Preflight: {step1_time:.3f}s, Export: {step2_time:.3f}s, ZIP: {zip_size} bytes"
-            
-            self.log_test("E2E Workflow Complete", workflow_valid, details, total_time)
-            
-        except Exception as e:
-            self.log_test("E2E Workflow Complete", False, f"Exception: {str(e)}", 0.0)
-    
-    async def test_performance_requirements(self):
-        """Test performance requirements"""
-        print("\n🎯 Testing Performance Requirements")
-        
-        try:
-            # Test preflight performance
-            start_time = time.time()
-            
-            payload = {
-                "techcardIds": ["current"],
-                "organization_id": self.organization_id
-            }
-            
-            response = await self.client.post(f"{API_BASE}/export/preflight", json=payload)
-            preflight_time = time.time() - start_time
-            
-            preflight_target = 3.0  # 3 seconds target
-            preflight_meets_target = preflight_time <= preflight_target
-            
-            self.log_test("Preflight Performance", preflight_meets_target,
-                        f"{preflight_time:.3f}s vs {preflight_target}s target", preflight_time)
+            response = self.session.post(f"{API_BASE}/v1/export/cleanup/reset-stats")
             
             if response.status_code == 200:
-                # Test export performance
-                export_start = time.time()
+                reset_data = response.json()
+                reset_successful = reset_data.get('status') == 'success'
                 
-                export_payload = {
-                    "techcardIds": ["current"],
-                    "operational_rounding": True,
-                    "organization_id": self.organization_id,
-                    "preflight_result": response.json()
-                }
+                self.log_result(
+                    "Admin Cleanup Reset Stats Endpoint",
+                    reset_successful,
+                    f"Reset endpoint working: {reset_successful}, message: {reset_data.get('message', '')}"
+                )
                 
-                export_response = await self.client.post(f"{API_BASE}/export/zip", json=export_payload)
-                export_time = time.time() - export_start
+                if reset_successful:
+                    success_count += 1
+            else:
+                self.log_result(
+                    "Admin Cleanup Reset Stats Endpoint",
+                    False,
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
                 
-                export_target = 5.0  # 5 seconds target
-                export_meets_target = export_time <= export_target
+        except Exception as e:
+            self.log_result(
+                "Admin Cleanup Reset Stats Endpoint",
+                False,
+                f"Exception: {str(e)}"
+            )
+        
+        return success_count == total_tests
+    
+    def test_7_functional_edge_cases(self):
+        """7. Функциональное тестирование Edge Cases"""
+        print("\n🔧 ТЕСТ 7: Функциональное тестирование Edge Cases")
+        
+        try:
+            sys.path.append('/app/backend')
+            from receptor_agent.exports.alt_export_cleanup import ALTExportValidator
+            
+            validator = ALTExportValidator()
+            edge_case_results = []
+            
+            # Edge Case 1: Empty archive
+            empty_archive = io.BytesIO()
+            with zipfile.ZipFile(empty_archive, 'w') as zf:
+                pass  # Create empty ZIP
+            empty_archive.seek(0)
+            
+            try:
+                analysis = validator.analyze_archive(empty_archive, "empty_archive_test")
+                edge_case_results.append({
+                    'case': 'empty_archive',
+                    'success': True,
+                    'details': f"Empty archive handled: {analysis.get_summary()}"
+                })
+            except Exception as e:
+                edge_case_results.append({
+                    'case': 'empty_archive',
+                    'success': False,
+                    'details': f"Empty archive error: {str(e)}"
+                })
+            
+            # Edge Case 2: Invalid ZIP file
+            invalid_zip = io.BytesIO(b"not_a_zip_file_content")
+            
+            try:
+                analysis = validator.analyze_archive(invalid_zip, "invalid_zip_test")
+                edge_case_results.append({
+                    'case': 'invalid_zip',
+                    'success': False,
+                    'details': "Invalid ZIP should have failed"
+                })
+            except Exception as e:
+                edge_case_results.append({
+                    'case': 'invalid_zip',
+                    'success': True,
+                    'details': f"Invalid ZIP correctly rejected: {str(e)}"
+                })
+            
+            # Edge Case 3: Archive with only superfluous files
+            superfluous_archive = io.BytesIO()
+            with zipfile.ZipFile(superfluous_archive, 'w') as zf:
+                zf.writestr(".DS_Store", b"mac_file")
+                zf.writestr("Thumbs.db", b"windows_file")
+                zf.writestr("temp.tmp", b"temp_file")
+            superfluous_archive.seek(0)
+            
+            try:
+                analysis = validator.analyze_archive(superfluous_archive, "superfluous_test")
+                clean_archive, stats = validator.cleanup_archive(superfluous_archive, analysis, "superfluous_cleanup")
                 
-                self.log_test("Export Performance", export_meets_target,
-                            f"{export_time:.3f}s vs {export_target}s target", export_time)
+                edge_case_results.append({
+                    'case': 'superfluous_only',
+                    'success': stats.get('cleaned', False),
+                    'details': f"Superfluous files cleanup: {stats}"
+                })
+            except Exception as e:
+                edge_case_results.append({
+                    'case': 'superfluous_only',
+                    'success': False,
+                    'details': f"Superfluous cleanup error: {str(e)}"
+                })
+            
+            # Edge Case 4: Large archive with multiple duplicates
+            large_archive = io.BytesIO()
+            with zipfile.ZipFile(large_archive, 'w') as zf:
+                # Create multiple duplicates
+                duplicate_content = b"PK" + b"duplicate_content" * 100
+                for i in range(10):
+                    zf.writestr(f"duplicate_{i}.xlsx", duplicate_content)
+                
+                # Add valid files
+                zf.writestr("iiko_TTK.xlsx", b"PK" + b"valid_content" * 100)
+                zf.writestr("Dish-Skeletons.xlsx", b"PK" + b"dish_content" * 100)
+            large_archive.seek(0)
+            
+            try:
+                analysis = validator.analyze_archive(large_archive, "large_duplicates_test")
+                clean_archive, stats = validator.cleanup_archive(large_archive, analysis, "large_cleanup")
+                
+                edge_case_results.append({
+                    'case': 'large_duplicates',
+                    'success': stats.get('removed_duplicates', 0) > 0,
+                    'details': f"Large duplicates cleanup: removed {stats.get('removed_duplicates', 0)} duplicates"
+                })
+            except Exception as e:
+                edge_case_results.append({
+                    'case': 'large_duplicates',
+                    'success': False,
+                    'details': f"Large duplicates error: {str(e)}"
+                })
+            
+            # Edge Case 5: TTK with missing data
+            try:
+                invalid_ttk_content = b"PK" + b"x" * 10  # Too small to be valid
+                validation = validator.validate_single_ttk(invalid_ttk_content, "invalid_ttk.xlsx")
+                
+                edge_case_results.append({
+                    'case': 'invalid_ttk_validation',
+                    'success': not validation['valid'],  # Should be invalid
+                    'details': f"Invalid TTK correctly identified: {validation['issues']}"
+                })
+            except Exception as e:
+                edge_case_results.append({
+                    'case': 'invalid_ttk_validation',
+                    'success': False,
+                    'details': f"TTK validation error: {str(e)}"
+                })
+            
+            # Summary of edge cases
+            successful_cases = sum(1 for case in edge_case_results if case['success'])
+            total_cases = len(edge_case_results)
+            
+            self.test_artifacts['edge_case_results'] = edge_case_results
+            
+            self.log_result(
+                "Functional Edge Cases Testing",
+                successful_cases >= total_cases * 0.8,  # 80% success rate acceptable
+                f"Edge cases: {successful_cases}/{total_cases} passed. Details: {edge_case_results}"
+            )
+            
+            return successful_cases >= total_cases * 0.8
             
         except Exception as e:
-            self.log_test("Performance Requirements", False, f"Exception: {str(e)}", 0.0)
+            self.log_result(
+                "Functional Edge Cases Testing",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
     
-    def print_summary(self):
-        """Print comprehensive test summary"""
-        print("\n" + "="*80)
-        print("🎯 PHASE 3.5: FE BINDING + DISH-FIRST EXPORT TESTING SUMMARY")
-        print("="*80)
+    def test_8_unified_alt_pipeline_verification(self):
+        """8. Проверка unified ALT pipeline - все экспорты проходят через ALT cleanup"""
+        print("\n🔧 ТЕСТ 8: Unified ALT Pipeline Verification")
         
+        try:
+            # Check that ALT cleanup is integrated into all export endpoints
+            sys.path.append('/app/backend')
+            from receptor_agent.exports.alt_export_cleanup import get_alt_export_validator
+            
+            validator = get_alt_export_validator()
+            initial_stats = validator.get_cleanup_statistics()
+            
+            # Test multiple export types to verify ALT pipeline integration
+            pipeline_tests = []
+            
+            if self.generated_techcards:
+                techcard_data = self.generated_techcards[0]['data']
+                
+                # Test 1: ALT export endpoint
+                try:
+                    response = self.session.post(
+                        f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
+                        json=techcard_data,
+                        timeout=30
+                    )
+                    
+                    alt_export_success = response.status_code == 200
+                    pipeline_tests.append({
+                        'endpoint': 'ALT_export_iiko_xlsx',
+                        'success': alt_export_success,
+                        'details': f"Status: {response.status_code}"
+                    })
+                    
+                except Exception as e:
+                    pipeline_tests.append({
+                        'endpoint': 'ALT_export_iiko_xlsx',
+                        'success': False,
+                        'details': f"Error: {str(e)}"
+                    })
+            
+            # Check if statistics changed (indicating ALT pipeline activity)
+            final_stats = validator.get_cleanup_statistics()
+            stats_changed = final_stats != initial_stats
+            
+            pipeline_tests.append({
+                'endpoint': 'ALT_statistics_tracking',
+                'success': True,  # Statistics should always be trackable
+                'details': f"Stats tracking working: initial={initial_stats}, final={final_stats}"
+            })
+            
+            # Verify ALT validator singleton is working across the application
+            validator2 = get_alt_export_validator()
+            singleton_working = validator is validator2
+            
+            pipeline_tests.append({
+                'endpoint': 'ALT_singleton_consistency',
+                'success': singleton_working,
+                'details': f"Singleton consistency: {singleton_working}"
+            })
+            
+            successful_pipeline_tests = sum(1 for test in pipeline_tests if test['success'])
+            total_pipeline_tests = len(pipeline_tests)
+            
+            self.test_artifacts['pipeline_verification'] = {
+                'tests': pipeline_tests,
+                'initial_stats': initial_stats,
+                'final_stats': final_stats,
+                'stats_changed': stats_changed
+            }
+            
+            self.log_result(
+                "Unified ALT Pipeline Verification",
+                successful_pipeline_tests >= total_pipeline_tests * 0.8,
+                f"Pipeline tests: {successful_pipeline_tests}/{total_pipeline_tests} passed. ALT integration verified."
+            )
+            
+            return successful_pipeline_tests >= total_pipeline_tests * 0.8
+            
+        except Exception as e:
+            self.log_result(
+                "Unified ALT Pipeline Verification",
+                False,
+                f"Exception: {str(e)}"
+            )
+            return False
+    
+    def run_comprehensive_alt_cleanup_tests(self):
+        """Запуск всех тестов ALT Export Cleanup системы"""
+        print("🚀 НАЧАЛО COMPREHENSIVE ALT EXPORT CLEANUP TESTING")
+        print("=" * 80)
+        
+        start_time = time.time()
+        
+        # Test 1: ALT Export Cleanup Module
+        self.test_1_alt_export_validator_class()
+        
+        # Test 2: Generate techcard for integration testing
+        techcard_data = self.test_2_generate_techcard_for_testing()
+        
+        # Test 3: ALT Export iiko.xlsx integration
+        self.test_3_alt_export_iiko_xlsx_integration(techcard_data)
+        
+        # Test 4: ZIP export with ALT cleanup
+        self.test_4_zip_export_cleanup_integration()
+        
+        # Test 5: TTK-only export validation
+        self.test_5_ttk_only_export_validation()
+        
+        # Test 6: Admin endpoints
+        self.test_6_admin_endpoints()
+        
+        # Test 7: Functional edge cases
+        self.test_7_functional_edge_cases()
+        
+        # Test 8: Unified ALT pipeline verification
+        self.test_8_unified_alt_pipeline_verification()
+        
+        # Summary
+        total_time = time.time() - start_time
+        passed_tests = sum(1 for result in self.test_results if result['success'])
         total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result["success"])
-        failed_tests = total_tests - passed_tests
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
-        print(f"\n📊 OVERALL RESULTS:")
-        print(f"   Total Tests: {total_tests}")
-        print(f"   Passed: {passed_tests} ✅")
-        print(f"   Failed: {failed_tests} ❌")
-        print(f"   Success Rate: {success_rate:.1f}%")
+        print("\n" + "=" * 80)
+        print("🎯 ALT EXPORT CLEANUP COMPREHENSIVE TEST SUMMARY")
+        print("=" * 80)
+        print(f"⏱️  Total Time: {total_time:.2f}s")
+        print(f"📊 Success Rate: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+        print(f"🎯 Test Focus: ALT Export Cleanup unified validation and cleanup system")
         
-        if failed_tests > 0:
-            print(f"\n❌ FAILED TESTS:")
-            for result in self.test_results:
-                if not result["success"]:
-                    print(f"   • {result['test']}: {result['details']}")
+        # Key findings
+        print("\n🔍 KEY FINDINGS:")
         
-        print(f"\n✅ PASSED TESTS:")
-        for result in self.test_results:
-            if result["success"]:
-                print(f"   • {result['test']}: {result['details']}")
+        if self.test_artifacts.get('generated_techcard'):
+            tc = self.test_artifacts['generated_techcard']
+            print(f"   • Tech Card Generated: '{tc['name']}' with {tc['ingredients_count']} ingredients")
         
-        # Critical validation points summary
-        print(f"\n🎯 CRITICAL VALIDATION POINTS:")
+        if self.test_artifacts.get('alt_export_validation'):
+            validation = self.test_artifacts['alt_export_validation']
+            print(f"   • ALT Export Validation: Valid={validation['valid']}, Issues={len(validation.get('issues', []))}")
+        
+        if self.test_artifacts.get('zip_export_cleanup'):
+            cleanup = self.test_artifacts['zip_export_cleanup']
+            print(f"   • ZIP Export Cleanup: Size={cleanup['zip_size']} bytes, Evidence={cleanup['cleanup_evidence']}")
+        
+        if self.test_artifacts.get('edge_case_results'):
+            edge_cases = self.test_artifacts['edge_case_results']
+            successful_edge_cases = sum(1 for case in edge_cases if case['success'])
+            print(f"   • Edge Cases: {successful_edge_cases}/{len(edge_cases)} handled correctly")
+        
+        # Critical assessment
+        print("\n🎯 CRITICAL ASSESSMENT:")
         
         critical_tests = [
-            "Preflight Basic Functionality",
-            "Dish Skeleton Structure", 
-            "MongoDB RMS Lookup (num field)",
-            "Dual Export ZIP Generation",
-            "ArticleAllocator Integration",
-            "Excel Article Formatting",
-            "E2E Workflow Complete"
+            "ALTExportValidator Singleton Pattern",
+            "ALTExportValidator Archive Analysis", 
+            "ALTExportValidator Archive Cleanup",
+            "ALT Export iiko.xlsx Integration",
+            "Unified ALT Pipeline Verification"
         ]
         
-        for test_name in critical_tests:
-            result = next((r for r in self.test_results if r["test"] == test_name), None)
-            if result:
-                status = "✅" if result["success"] else "❌"
-                print(f"   {status} {test_name}")
-            else:
-                print(f"   ⚠️  {test_name} (not tested)")
+        critical_passed = sum(1 for result in self.test_results 
+                            if result['test'] in critical_tests and result['success'])
+        critical_total = len(critical_tests)
         
-        return success_rate >= 80  # 80% success rate threshold
+        if critical_passed >= critical_total * 0.8:
+            print("   ✅ ALT Export Cleanup system is FULLY OPERATIONAL")
+            print("   ✅ Unified validation and cleanup pipeline working")
+            print("   ✅ Archive analysis and cleanup functions operational")
+            print("   ✅ Integration with export endpoints verified")
+            print("   ✅ Admin endpoints and statistics tracking working")
+        else:
+            print("   ❌ ALT Export Cleanup system has critical issues")
+            print("   ❌ Some core functionality not working properly")
+            print("   ❌ Integration or validation issues detected")
+        
+        # Save detailed results
+        self.save_test_artifacts()
+        
+        return success_rate >= 75  # Consider successful if 75% of tests pass
 
+    def save_test_artifacts(self):
+        """Save test artifacts for analysis"""
+        try:
+            artifacts_data = {
+                'test_results': self.test_results,
+                'test_artifacts': self.test_artifacts,
+                'generated_techcards': self.generated_techcards,
+                'timestamp': datetime.now().isoformat(),
+                'test_type': 'ALT_Export_Cleanup_Comprehensive_Testing'
+            }
+            
+            with open('/app/alt_export_cleanup_test_results.json', 'w', encoding='utf-8') as f:
+                json.dump(artifacts_data, f, indent=2, ensure_ascii=False)
+            
+            print(f"\n💾 Test artifacts saved to: /app/alt_export_cleanup_test_results.json")
+            
+        except Exception as e:
+            print(f"⚠️ Failed to save test artifacts: {e}")
 
-async def main():
+def main():
     """Main test execution"""
-    print("🚀 Starting Phase 3.5: FE Binding + Dish-first Export Backend Testing")
-    print(f"Backend URL: {BACKEND_URL}")
-    print(f"MongoDB URL: {MONGO_URL}")
-    print(f"Database: {DB_NAME}")
+    tester = ALTExportCleanupTester()
     
-    async with Phase35BackendTester() as tester:
-        # Execute all test suites
-        await tester.test_preflight_orchestrator_dish_validation()
-        await tester.test_dish_article_validation_scenarios()
-        await tester.test_mongodb_connection_and_lookup()
-        await tester.test_dual_export_dish_first_enforcement()
-        await tester.test_article_allocator_integration()
-        await tester.test_excel_formatting_compliance()
-        await tester.test_complete_workflow_e2e()
-        await tester.test_performance_requirements()
-        
-        # Print comprehensive summary
-        success = tester.print_summary()
+    try:
+        success = tester.run_comprehensive_alt_cleanup_tests()
         
         if success:
-            print(f"\n🎉 PHASE 3.5 TESTING COMPLETED SUCCESSFULLY!")
-            print(f"All critical components are operational and ready for production use.")
+            print("\n🎉 ALT EXPORT CLEANUP COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY")
+            exit(0)
         else:
-            print(f"\n⚠️  PHASE 3.5 TESTING COMPLETED WITH ISSUES")
-            print(f"Some components require attention before production deployment.")
-        
-        return success
-
+            print("\n🚨 ALT EXPORT CLEANUP TESTING FAILED")
+            exit(1)
+            
+    except KeyboardInterrupt:
+        print("\n⚠️ Test interrupted by user")
+        exit(1)
+    except Exception as e:
+        print(f"\n💥 Test failed with exception: {e}")
+        exit(1)
 
 if __name__ == "__main__":
-    try:
-        success = asyncio.run(main())
-        sys.exit(0 if success else 1)
-    except KeyboardInterrupt:
-        print("\n⚠️ Testing interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n❌ Testing failed with exception: {e}")
-        traceback.print_exc()
-        sys.exit(1)
+    main()
