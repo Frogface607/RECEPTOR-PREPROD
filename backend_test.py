@@ -356,7 +356,7 @@ class TechCardNutritionTester:
                 # Test catalog search
                 response = requests.get(
                     f"{API_BASE}/v1/techcards.v2/catalog-search",
-                    params={"q": ingredient, "source": "nutrition"},
+                    params={"q": ingredient, "source": "all"},
                     timeout=10
                 )
                 
