@@ -6757,11 +6757,14 @@ function App() {
   };
 
   const openExportWizard = () => {
+    console.log('🚀 DEBUG: openExportWizard called');
     resetExportWizard();
+    console.log('🚀 DEBUG: setting showUnifiedExportWizard to true');
     setShowUnifiedExportWizard(true);
     
     // FIX JS MODAL SCROLL & OPEN BUG: Prevent body scroll when modal opens
     document.body.style.overflow = 'hidden';
+    console.log('🚀 DEBUG: body overflow set to hidden');
   };
   
   const closeExportWizard = () => {
