@@ -362,7 +362,7 @@ class TechCardNutritionTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    results_count = len(data.get('results', []))
+                    results_count = len(data.get('results', data.get('items', [])))
                     
                     search_results.append({
                         'ingredient': ingredient,
