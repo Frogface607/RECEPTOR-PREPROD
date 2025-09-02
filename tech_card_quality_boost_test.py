@@ -81,8 +81,8 @@ class TechCardQualityBoostTester:
         try:
             # Check if nutrition catalog files exist and validate structure
             catalog_files = [
-                '/app/backend/receptor_agent/data/nutrition_catalog.dev.json',
-                '/app/backend/receptor_agent/data/price_catalog.dev.json'
+                '/app/backend/data/nutrition_catalog.dev.json',
+                '/app/backend/data/price_catalog.dev.json'
             ]
             
             catalog_results = {}
