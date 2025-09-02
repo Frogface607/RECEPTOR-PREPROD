@@ -2335,7 +2335,441 @@
       },
       "source": "manual",
       "added_date": "2025-09-02T04:54:54.408999"
+    },
+    {
+      "canonical_id": "перец_болгарский_красный",
+      "name": "перец болгарский красный",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 31.0,
+        "proteins_g": 1.3,
+        "fats_g": 0.3,
+        "carbs_g": 5.3
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975584"
+    },
+    {
+      "canonical_id": "перец_болгарский_желтый",
+      "name": "перец болгарский желтый",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 27.0,
+        "proteins_g": 1.0,
+        "fats_g": 0.2,
+        "carbs_g": 5.3
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975601"
+    },
+    {
+      "canonical_id": "кукуруза",
+      "name": "кукуруза",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 123.0,
+        "proteins_g": 4.1,
+        "fats_g": 2.3,
+        "carbs_g": 22.5
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975614"
+    },
+    {
+      "canonical_id": "горошек_зеленый",
+      "name": "горошек зеленый",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 73.0,
+        "proteins_g": 5.0,
+        "fats_g": 0.4,
+        "carbs_g": 12.8
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975619"
+    },
+    {
+      "canonical_id": "виноград",
+      "name": "виноград",
+      "category": "фрукты",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 65.0,
+        "proteins_g": 0.6,
+        "fats_g": 0.2,
+        "carbs_g": 15.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975627"
+    },
+    {
+      "canonical_id": "дыня",
+      "name": "дыня",
+      "category": "фрукты",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 35.0,
+        "proteins_g": 0.6,
+        "fats_g": 0.3,
+        "carbs_g": 7.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975630"
+    },
+    {
+      "canonical_id": "арбуз",
+      "name": "арбуз",
+      "category": "фрукты",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 25.0,
+        "proteins_g": 0.6,
+        "fats_g": 0.1,
+        "carbs_g": 5.8
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975634"
+    },
+    {
+      "canonical_id": "треска",
+      "name": "треска",
+      "category": "рыба",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 78.0,
+        "proteins_g": 17.7,
+        "fats_g": 0.7,
+        "carbs_g": 0.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975638"
+    },
+    {
+      "canonical_id": "окунь",
+      "name": "окунь",
+      "category": "рыба",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 95.0,
+        "proteins_g": 18.5,
+        "fats_g": 1.2,
+        "carbs_g": 0.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975642"
+    },
+    {
+      "canonical_id": "семга",
+      "name": "семга",
+      "category": "рыба",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 219.0,
+        "proteins_g": 20.8,
+        "fats_g": 15.1,
+        "carbs_g": 0.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975645"
+    },
+    {
+      "canonical_id": "скумбрия",
+      "name": "скумбрия",
+      "category": "рыба",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 181.0,
+        "proteins_g": 18.0,
+        "fats_g": 13.2,
+        "carbs_g": 0.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975648"
+    },
+    {
+      "canonical_id": "сельдь",
+      "name": "сельдь",
+      "category": "рыба",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 161.0,
+        "proteins_g": 17.7,
+        "fats_g": 11.4,
+        "carbs_g": 0.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975652"
+    },
+    {
+      "canonical_id": "мидии",
+      "name": "мидии",
+      "category": "морепродукты",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 77.0,
+        "proteins_g": 11.5,
+        "fats_g": 2.0,
+        "carbs_g": 3.3
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975655"
+    },
+    {
+      "canonical_id": "кальмар",
+      "name": "кальмар",
+      "category": "морепродукты",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 100.0,
+        "proteins_g": 21.2,
+        "fats_g": 2.2,
+        "carbs_g": 0.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975658"
+    },
+    {
+      "canonical_id": "кориандр_семена",
+      "name": "кориандр семена",
+      "category": "специи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 298.0,
+        "proteins_g": 12.4,
+        "fats_g": 17.8,
+        "carbs_g": 13.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975663"
+    },
+    {
+      "canonical_id": "шафран",
+      "name": "шафран",
+      "category": "специи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 310.0,
+        "proteins_g": 11.4,
+        "fats_g": 5.9,
+        "carbs_g": 65.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975668"
+    },
+    {
+      "canonical_id": "полента",
+      "name": "полента",
+      "category": "крупы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 328.0,
+        "proteins_g": 8.7,
+        "fats_g": 2.7,
+        "carbs_g": 68.2
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975672"
+    },
+    {
+      "canonical_id": "амарант",
+      "name": "амарант",
+      "category": "крупы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 371.0,
+        "proteins_g": 13.6,
+        "fats_g": 7.0,
+        "carbs_g": 58.6
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975675"
+    },
+    {
+      "canonical_id": "просо",
+      "name": "просо",
+      "category": "крупы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 348.0,
+        "proteins_g": 11.5,
+        "fats_g": 3.3,
+        "carbs_g": 69.3
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975678"
+    },
+    {
+      "canonical_id": "спагетти",
+      "name": "спагетти",
+      "category": "макароны",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 344.0,
+        "proteins_g": 12.5,
+        "fats_g": 1.1,
+        "carbs_g": 71.5
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975684"
+    },
+    {
+      "canonical_id": "феттучини",
+      "name": "феттучини",
+      "category": "макароны",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 350.0,
+        "proteins_g": 13.0,
+        "fats_g": 2.5,
+        "carbs_g": 69.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975688"
+    },
+    {
+      "canonical_id": "пенне",
+      "name": "пенне",
+      "category": "макароны",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 341.0,
+        "proteins_g": 12.0,
+        "fats_g": 1.8,
+        "carbs_g": 69.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975691"
+    },
+    {
+      "canonical_id": "томаты_консервированные",
+      "name": "томаты консервированные",
+      "category": "консервы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 20.0,
+        "proteins_g": 1.1,
+        "fats_g": 0.2,
+        "carbs_g": 3.5
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975695"
+    },
+    {
+      "canonical_id": "томатная_паста",
+      "name": "томатная паста",
+      "category": "консервы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 102.0,
+        "proteins_g": 4.8,
+        "fats_g": 0.7,
+        "carbs_g": 19.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975698"
+    },
+    {
+      "canonical_id": "оливки",
+      "name": "оливки",
+      "category": "консервы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 361.0,
+        "proteins_g": 1.0,
+        "fats_g": 36.2,
+        "carbs_g": 4.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975702"
+    },
+    {
+      "canonical_id": "каперсы",
+      "name": "каперсы",
+      "category": "консервы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 23.0,
+        "proteins_g": 2.4,
+        "fats_g": 0.9,
+        "carbs_g": 2.0
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975706"
+    },
+    {
+      "canonical_id": "молоко_козье",
+      "name": "молоко козье",
+      "category": "молочные",
+      "unit": "liter",
+      "per100g": {
+        "kcal": 68.0,
+        "proteins_g": 3.0,
+        "fats_g": 4.2,
+        "carbs_g": 4.5
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975710"
+    },
+    {
+      "canonical_id": "сливки_33%",
+      "name": "сливки 33%",
+      "category": "молочные",
+      "unit": "liter",
+      "per100g": {
+        "kcal": 337.0,
+        "proteins_g": 2.8,
+        "fats_g": 35.0,
+        "carbs_g": 3.1
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975713"
+    },
+    {
+      "canonical_id": "масло_топленое",
+      "name": "масло топленое",
+      "category": "молочные",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 892.0,
+        "proteins_g": 0.3,
+        "fats_g": 99.0,
+        "carbs_g": 0.6
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975717"
+    },
+    {
+      "canonical_id": "яйца_перепелиные",
+      "name": "яйца перепелиные",
+      "category": "яйца",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 168.0,
+        "proteins_g": 11.9,
+        "fats_g": 13.1,
+        "carbs_g": 0.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975720"
+    },
+    {
+      "canonical_id": "яйца_утиные",
+      "name": "яйца утиные",
+      "category": "яйца",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 185.0,
+        "proteins_g": 13.8,
+        "fats_g": 14.0,
+        "carbs_g": 1.4
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:49.975786"
     }
   ],
-  "items_count": 168
+  "items_count": 199
 }
