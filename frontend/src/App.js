@@ -1397,23 +1397,7 @@ function App() {
                                     </>
                                   )}
                                   
-                                  {/* No mapping badges */}
-                                  {(!ing.canonical_id && !ing.skuId && !ing.subRecipe) && (
-                                    <>
-                                      <span className="text-xs bg-yellow-600 text-yellow-100 px-1 py-0.5 rounded" title="Нет маппинга БЖУ">⚠ no БЖУ</span>
-                                      <span className="text-xs bg-red-600 text-red-100 px-1 py-0.5 rounded" title="Нет маппинга цены">⚠ no price</span>
-                                    </>
-                                  )}
-                                  
-                                  {/* Only nutrition mapping */}
-                                  {(ing.canonical_id && !ing.skuId && !ing.subRecipe) && (
-                                    <span className="text-xs bg-red-600 text-red-100 px-1 py-0.5 rounded" title="Нет маппинга цены">⚠ no price</span>
-                                  )}
-                                  
-                                  {/* Only price mapping */}
-                                  {(!ing.canonical_id && ing.skuId && !ing.subRecipe) && (
-                                    <span className="text-xs bg-yellow-600 text-yellow-100 px-1 py-0.5 rounded" title="Нет маппинга БЖУ">⚠ no БЖУ</span>
-                                  )}
+                                  {/* CLEANUP TECH CARD DATA & UI: Убираем все warning'и из интерфейса */}
                                 </div>
                               </div>
                               {ing.subRecipe && (
