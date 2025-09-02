@@ -28,6 +28,7 @@ class ProfileInput(BaseModel):
     equipment: List[str] = []
     budget: float | None = None
     dietary: List[str] = []
+    user_id: str | None = None  # CLEANUP TECH CARD DATA & UI: добавляем user_id для связи с аккаунтом
 
 class PipelineResult(BaseModel):
     card: TechCardV2 | None = None
