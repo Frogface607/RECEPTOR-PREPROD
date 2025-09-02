@@ -25,8 +25,7 @@ This test validates the two critical P0 fixes as specified in the Russian review
 ✅ Экспорт по кнопке работает как прежде
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
 import time
 import tempfile
@@ -41,7 +40,8 @@ API_BASE = f"{BACKEND_URL}/api"
 
 class CriticalFixesTester:
     def __init__(self):
-        self.session = None
+        self.session = requests.Session()
+        self.session.timeout = 60
         self.results = {
             'test_start': datetime.now().isoformat(),
             'task_1_remove_invalid_ttk': {},
@@ -50,16 +50,8 @@ class CriticalFixesTester:
             'final_assessment': {}
         }
         self.generated_techcards = []
-        
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60))
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
 
-    async def test_1_remove_invalid_ttk_from_zip(self):
+    def test_1_remove_invalid_ttk_from_zip(self):
         """КРИТИЧЕСКИЙ ТЕСТ 1: REMOVE INVALID TECH CARD FROM ZIP"""
         print("🎯 КРИТИЧЕСКИЙ ТЕСТ 1: REMOVE INVALID TECH CARD FROM ZIP")
         print("=" * 70)
@@ -81,97 +73,100 @@ class CriticalFixesTester:
             try:
                 # Step 1: Generate tech card
                 start_time = time.time()
-                async with self.session.post(
+                response = self.session.post(
                     f"{API_BASE}/v1/techcards.v2/generate",
                     json={"name": dish_name}
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        techcard = data.get('techcard', {})
-                        techcard_id = techcard.get('id')
-                        generation_time = time.time() - start_time
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    techcard = data.get('techcard', {})
+                    techcard_id = techcard.get('id')
+                    generation_time = time.time() - start_time
+                    
+                    if techcard_id:
+                        self.generated_techcards.append({
+                            'id': techcard_id,
+                            'name': dish_name,
+                            'data': techcard
+                        })
                         
-                        if techcard_id:
-                            self.generated_techcards.append({
-                                'id': techcard_id,
-                                'name': dish_name,
-                                'data': techcard
-                            })
+                        print(f"      ✅ Tech card generated: {techcard_id} in {generation_time:.1f}s")
+                        
+                        # Step 2: Run preflight check
+                        preflight_start = time.time()
+                        preflight_response = self.session.post(
+                            f"{API_BASE}/v1/export/preflight",
+                            json={"techcardIds": [techcard_id]}
+                        )
+                        
+                        if preflight_response.status_code == 200:
+                            preflight_data = preflight_response.json()
+                            preflight_time = time.time() - preflight_start
                             
-                            print(f"      ✅ Tech card generated: {techcard_id} in {generation_time:.1f}s")
+                            print(f"      ✅ Preflight completed in {preflight_time:.2f}s")
                             
-                            # Step 2: Run preflight check
-                            preflight_start = time.time()
-                            async with self.session.post(
-                                f"{API_BASE}/v1/export/preflight",
-                                json={"techcardIds": [techcard_id]}
-                            ) as preflight_response:
-                                if preflight_response.status == 200:
-                                    preflight_data = await preflight_response.json()
-                                    preflight_time = time.time() - preflight_start
-                                    
-                                    print(f"      ✅ Preflight completed in {preflight_time:.2f}s")
-                                    
-                                    # Step 3: Generate ZIP export
-                                    zip_start = time.time()
-                                    async with self.session.post(
-                                        f"{API_BASE}/v1/export/zip",
-                                        json={
-                                            "techcardIds": [techcard_id],
-                                            "preflight_result": preflight_data,
-                                            "operational_rounding": True
-                                        }
-                                    ) as zip_response:
-                                        if zip_response.status == 200:
-                                            zip_content = await zip_response.read()
-                                            zip_time = time.time() - zip_start
-                                            zip_size = len(zip_content)
-                                            
-                                            print(f"      ✅ ZIP generated: {zip_size} bytes in {zip_time:.2f}s")
-                                            
-                                            # Step 4: Analyze ZIP contents
-                                            zip_analysis = await self.analyze_zip_contents(zip_content, dish_name)
-                                            
-                                            zip_test_results.append({
-                                                'dish_name': dish_name,
-                                                'techcard_id': techcard_id,
-                                                'zip_size': zip_size,
-                                                'generation_time': generation_time,
-                                                'preflight_time': preflight_time,
-                                                'zip_time': zip_time,
-                                                'zip_analysis': zip_analysis,
-                                                'success': zip_analysis['valid_structure']
-                                            })
-                                            
-                                        else:
-                                            print(f"      ❌ ZIP export failed: HTTP {zip_response.status}")
-                                            zip_test_results.append({
-                                                'dish_name': dish_name,
-                                                'error': f'ZIP export HTTP {zip_response.status}',
-                                                'success': False
-                                            })
-                                else:
-                                    print(f"      ❌ Preflight failed: HTTP {preflight_response.status}")
-                                    zip_test_results.append({
-                                        'dish_name': dish_name,
-                                        'error': f'Preflight HTTP {preflight_response.status}',
-                                        'success': False
-                                    })
+                            # Step 3: Generate ZIP export
+                            zip_start = time.time()
+                            zip_response = self.session.post(
+                                f"{API_BASE}/v1/export/zip",
+                                json={
+                                    "techcardIds": [techcard_id],
+                                    "preflight_result": preflight_data,
+                                    "operational_rounding": True
+                                }
+                            )
+                            
+                            if zip_response.status_code == 200:
+                                zip_content = zip_response.content
+                                zip_time = time.time() - zip_start
+                                zip_size = len(zip_content)
+                                
+                                print(f"      ✅ ZIP generated: {zip_size} bytes in {zip_time:.2f}s")
+                                
+                                # Step 4: Analyze ZIP contents
+                                zip_analysis = self.analyze_zip_contents(zip_content, dish_name)
+                                
+                                zip_test_results.append({
+                                    'dish_name': dish_name,
+                                    'techcard_id': techcard_id,
+                                    'zip_size': zip_size,
+                                    'generation_time': generation_time,
+                                    'preflight_time': preflight_time,
+                                    'zip_time': zip_time,
+                                    'zip_analysis': zip_analysis,
+                                    'success': zip_analysis['valid_structure']
+                                })
+                                
+                            else:
+                                print(f"      ❌ ZIP export failed: HTTP {zip_response.status_code}")
+                                zip_test_results.append({
+                                    'dish_name': dish_name,
+                                    'error': f'ZIP export HTTP {zip_response.status_code}',
+                                    'success': False
+                                })
                         else:
-                            print(f"      ❌ No tech card ID returned")
+                            print(f"      ❌ Preflight failed: HTTP {preflight_response.status_code}")
                             zip_test_results.append({
                                 'dish_name': dish_name,
-                                'error': 'No tech card ID',
+                                'error': f'Preflight HTTP {preflight_response.status_code}',
                                 'success': False
                             })
                     else:
-                        print(f"      ❌ Tech card generation failed: HTTP {response.status}")
+                        print(f"      ❌ No tech card ID returned")
                         zip_test_results.append({
                             'dish_name': dish_name,
-                            'error': f'Generation HTTP {response.status}',
+                            'error': 'No tech card ID',
                             'success': False
                         })
-                        
+                else:
+                    print(f"      ❌ Tech card generation failed: HTTP {response.status_code}")
+                    zip_test_results.append({
+                        'dish_name': dish_name,
+                        'error': f'Generation HTTP {response.status_code}',
+                        'success': False
+                    })
+                    
             except Exception as e:
                 print(f"      ❌ Exception: {str(e)}")
                 zip_test_results.append({
@@ -215,7 +210,7 @@ class CriticalFixesTester:
         
         return success_rate >= 0.8 and valid_zip_structures >= 4
 
-    async def analyze_zip_contents(self, zip_content: bytes, dish_name: str) -> Dict[str, Any]:
+    def analyze_zip_contents(self, zip_content: bytes, dish_name: str) -> Dict[str, Any]:
         """Analyze ZIP contents to verify fix implementation"""
         try:
             with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as temp_file:
@@ -281,7 +276,7 @@ class CriticalFixesTester:
                 'error': str(e)
             }
 
-    async def test_2_rename_export_button(self):
+    def test_2_rename_export_button(self):
         """КРИТИЧЕСКИЙ ТЕСТ 2: RENAME EXPORT STEP BUTTON"""
         print("\n🎯 КРИТИЧЕСКИЙ ТЕСТ 2: RENAME EXPORT STEP BUTTON")
         print("=" * 70)
@@ -303,30 +298,32 @@ class CriticalFixesTester:
                 techcard = self.generated_techcards[0]
                 
                 # Test preflight endpoint
-                async with self.session.post(
+                response = self.session.post(
                     f"{API_BASE}/v1/export/preflight",
                     json={"techcardIds": [techcard['id']]}
-                ) as response:
-                    if response.status == 200:
-                        preflight_data = await response.json()
-                        
-                        # Test ZIP export endpoint
-                        async with self.session.post(
-                            f"{API_BASE}/v1/export/zip",
-                            json={
-                                "techcardIds": [techcard['id']],
-                                "preflight_result": preflight_data,
-                                "operational_rounding": True
-                            }
-                        ) as zip_response:
-                            if zip_response.status == 200:
-                                button_test_results['backend_endpoints_working'] = True
-                                button_test_results['export_functionality_intact'] = True
-                                print("      ✅ Export endpoints working correctly")
-                            else:
-                                print(f"      ❌ ZIP export failed: HTTP {zip_response.status}")
+                )
+                
+                if response.status_code == 200:
+                    preflight_data = response.json()
+                    
+                    # Test ZIP export endpoint
+                    zip_response = self.session.post(
+                        f"{API_BASE}/v1/export/zip",
+                        json={
+                            "techcardIds": [techcard['id']],
+                            "preflight_result": preflight_data,
+                            "operational_rounding": True
+                        }
+                    )
+                    
+                    if zip_response.status_code == 200:
+                        button_test_results['backend_endpoints_working'] = True
+                        button_test_results['export_functionality_intact'] = True
+                        print("      ✅ Export endpoints working correctly")
                     else:
-                        print(f"      ❌ Preflight failed: HTTP {response.status}")
+                        print(f"      ❌ ZIP export failed: HTTP {zip_response.status_code}")
+                else:
+                    print(f"      ❌ Preflight failed: HTTP {response.status_code}")
             
             # Test 2: Check for old button text in API responses
             print("   🔄 Checking for old button text in API responses...")
@@ -348,13 +345,13 @@ class CriticalFixesTester:
             
             for endpoint in endpoints_to_check:
                 try:
-                    async with self.session.get(endpoint) as response:
-                        if response.status == 200:
-                            response_text = await response.text()
-                            for old_text in old_button_texts:
-                                if old_text in response_text:
-                                    old_text_found = True
-                                    print(f"      ⚠️ Found old text '{old_text}' in {endpoint}")
+                    response = self.session.get(endpoint)
+                    if response.status_code == 200:
+                        response_text = response.text
+                        for old_text in old_button_texts:
+                            if old_text in response_text:
+                                old_text_found = True
+                                print(f"      ⚠️ Found old text '{old_text}' in {endpoint}")
                 except:
                     pass  # Endpoint might not exist, that's ok
             
@@ -391,7 +388,7 @@ class CriticalFixesTester:
         
         return button_success
 
-    async def test_3_integration_workflow(self):
+    def test_3_integration_workflow(self):
         """ТЕСТ 3: Интеграционное тестирование полного workflow"""
         print("\n🔗 ТЕСТ 3: INTEGRATION WORKFLOW TESTING")
         print("=" * 50)
@@ -413,45 +410,47 @@ class CriticalFixesTester:
                 techcard_ids = [tc['id'] for tc in self.generated_techcards[:3]]
                 
                 # Step 1: Preflight
-                async with self.session.post(
+                preflight_response = self.session.post(
                     f"{API_BASE}/v1/export/preflight",
                     json={"techcardIds": techcard_ids}
-                ) as preflight_response:
-                    if preflight_response.status == 200:
-                        preflight_data = await preflight_response.json()
+                )
+                
+                if preflight_response.status_code == 200:
+                    preflight_data = preflight_response.json()
+                    
+                    # Step 2: ZIP Export
+                    zip_response = self.session.post(
+                        f"{API_BASE}/v1/export/zip",
+                        json={
+                            "techcardIds": techcard_ids,
+                            "preflight_result": preflight_data,
+                            "operational_rounding": True
+                        }
+                    )
+                    
+                    if zip_response.status_code == 200:
+                        zip_content = zip_response.content
+                        total_time = time.time() - start_time
                         
-                        # Step 2: ZIP Export
-                        async with self.session.post(
-                            f"{API_BASE}/v1/export/zip",
-                            json={
-                                "techcardIds": techcard_ids,
-                                "preflight_result": preflight_data,
-                                "operational_rounding": True
-                            }
-                        ) as zip_response:
-                            if zip_response.status == 200:
-                                zip_content = await zip_response.read()
-                                total_time = time.time() - start_time
-                                
-                                # Step 3: Validate ZIP structure
-                                zip_analysis = await self.analyze_zip_contents(zip_content, "Integration Test")
-                                
-                                integration_results['full_workflow_success'] = zip_analysis['valid_structure']
-                                integration_results['performance_acceptable'] = total_time < 10.0
-                                
-                                print(f"      ✅ Full workflow completed in {total_time:.2f}s")
-                                print(f"      ✅ ZIP structure valid: {zip_analysis['valid_structure']}")
-                                
+                        # Step 3: Validate ZIP structure
+                        zip_analysis = self.analyze_zip_contents(zip_content, "Integration Test")
+                        
+                        integration_results['full_workflow_success'] = zip_analysis['valid_structure']
+                        integration_results['performance_acceptable'] = total_time < 10.0
+                        
+                        print(f"      ✅ Full workflow completed in {total_time:.2f}s")
+                        print(f"      ✅ ZIP structure valid: {zip_analysis['valid_structure']}")
+                        
             # Test ALT Export Cleanup integration
             print("   🔄 Testing ALT Export Cleanup integration...")
             
             try:
-                async with self.session.get(f"{API_BASE}/v1/export/cleanup/stats") as response:
-                    if response.status == 200:
-                        integration_results['alt_export_cleanup_working'] = True
-                        print("      ✅ ALT Export Cleanup system operational")
-                    else:
-                        print(f"      ❌ ALT Export Cleanup stats failed: HTTP {response.status}")
+                response = self.session.get(f"{API_BASE}/v1/export/cleanup/stats")
+                if response.status_code == 200:
+                    integration_results['alt_export_cleanup_working'] = True
+                    print("      ✅ ALT Export Cleanup system operational")
+                else:
+                    print(f"      ❌ ALT Export Cleanup stats failed: HTTP {response.status_code}")
             except:
                 print("      ⚠️ ALT Export Cleanup endpoints not accessible")
                 
@@ -469,7 +468,7 @@ class CriticalFixesTester:
         
         return integration_success
 
-    async def generate_final_assessment(self):
+    def generate_final_assessment(self):
         """Generate final assessment of critical fixes"""
         print("\n🎯 FINAL ASSESSMENT: CRITICAL FIXES VALIDATION")
         print("=" * 70)
@@ -543,7 +542,7 @@ class CriticalFixesTester:
         
         return overall_success
 
-    async def save_results(self):
+    def save_results(self):
         """Save test results to file"""
         self.results['test_end'] = datetime.now().isoformat()
         
@@ -552,45 +551,45 @@ class CriticalFixesTester:
         
         print(f"\n💾 Results saved to: /app/critical_fixes_test_results.json")
 
-async def main():
+def main():
     """Main test execution"""
     print("🚀 CRITICAL FIXES FINAL TESTING")
     print("REMOVE INVALID TECH CARD FROM ZIP + RENAME EXPORT BUTTON")
     print("=" * 70)
     
-    async with CriticalFixesTester() as tester:
-        test_results = []
-        
-        # Execute critical tests
-        test_results.append(await tester.test_1_remove_invalid_ttk_from_zip())
-        test_results.append(await tester.test_2_rename_export_button())
-        test_results.append(await tester.test_3_integration_workflow())
-        
-        # Generate final assessment
-        final_success = await tester.generate_final_assessment()
-        
-        # Save results
-        await tester.save_results()
-        
-        # Summary
-        passed_tests = sum(test_results)
-        total_tests = len(test_results)
-        
-        print(f"\n" + "=" * 70)
-        print(f"🏁 TESTING COMPLETED")
-        print(f"   Tests passed: {passed_tests}/{total_tests}")
-        print(f"   Success rate: {passed_tests/total_tests*100:.1f}%")
-        print(f"   Final assessment: {'✅ SUCCESS' if final_success else '❌ NEEDS ATTENTION'}")
-        
-        if final_success:
-            print(f"\n🎉 CRITICAL FIXES VALIDATION SUCCESSFUL!")
-            print(f"   ✅ TASK 1: Remove Invalid TTK from ZIP - WORKING")
-            print(f"   ✅ TASK 2: Rename Export Button - BACKEND OK")
-            print(f"   ✅ Integration workflow stable")
-            print(f"   ⚠️ Frontend verification needed for complete Task 2 validation")
-        else:
-            print(f"\n⚠️ CRITICAL FIXES NEED ATTENTION")
-            print(f"   Review detailed results for specific issues")
+    tester = CriticalFixesTester()
+    test_results = []
+    
+    # Execute critical tests
+    test_results.append(tester.test_1_remove_invalid_ttk_from_zip())
+    test_results.append(tester.test_2_rename_export_button())
+    test_results.append(tester.test_3_integration_workflow())
+    
+    # Generate final assessment
+    final_success = tester.generate_final_assessment()
+    
+    # Save results
+    tester.save_results()
+    
+    # Summary
+    passed_tests = sum(test_results)
+    total_tests = len(test_results)
+    
+    print(f"\n" + "=" * 70)
+    print(f"🏁 TESTING COMPLETED")
+    print(f"   Tests passed: {passed_tests}/{total_tests}")
+    print(f"   Success rate: {passed_tests/total_tests*100:.1f}%")
+    print(f"   Final assessment: {'✅ SUCCESS' if final_success else '❌ NEEDS ATTENTION'}")
+    
+    if final_success:
+        print(f"\n🎉 CRITICAL FIXES VALIDATION SUCCESSFUL!")
+        print(f"   ✅ TASK 1: Remove Invalid TTK from ZIP - WORKING")
+        print(f"   ✅ TASK 2: Rename Export Button - BACKEND OK")
+        print(f"   ✅ Integration workflow stable")
+        print(f"   ⚠️ Frontend verification needed for complete Task 2 validation")
+    else:
+        print(f"\n⚠️ CRITICAL FIXES NEED ATTENTION")
+        print(f"   Review detailed results for specific issues")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
