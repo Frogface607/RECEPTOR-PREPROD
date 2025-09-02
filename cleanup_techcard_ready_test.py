@@ -168,7 +168,7 @@ class CleanupTechCardReadyTester:
         
         return ready_count >= 2
 
-    async def test_2_api_health_check(self):
+    def test_2_api_health_check(self):
         """Test 2: Quick API Health Check - Проверить основные эндпоинты"""
         print("\n🔍 TEST 2: API HEALTH CHECK")
         
@@ -177,25 +177,25 @@ class CleanupTechCardReadyTester:
         # Test 2.1: POST /api/v1/techcards.v2/generate
         print("   🔄 Testing tech card generation endpoint...")
         try:
-            async with self.session.post(
+            response = self.session.post(
                 f"{API_BASE}/v1/techcards.v2/generate",
                 json={"name": "Тестовое блюдо для проверки API"}
-            ) as response:
-                generate_success = response.status == 200
-                if generate_success:
-                    data = await response.json()
-                    returns_ready = data.get('status') == 'READY'
-                else:
-                    returns_ready = False
-                
-                health_results['generate_endpoint'] = {
-                    'accessible': generate_success,
-                    'returns_ready': returns_ready,
-                    'status_code': response.status
-                }
-                
-                print(f"      {'✅' if generate_success else '❌'} Generate endpoint: HTTP {response.status}")
-                print(f"      {'✅' if returns_ready else '❌'} Returns READY status: {returns_ready}")
+            )
+            generate_success = response.status_code == 200
+            if generate_success:
+                data = response.json()
+                returns_ready = data.get('status') == 'READY'
+            else:
+                returns_ready = False
+            
+            health_results['generate_endpoint'] = {
+                'accessible': generate_success,
+                'returns_ready': returns_ready,
+                'status_code': response.status_code
+            }
+            
+            print(f"      {'✅' if generate_success else '❌'} Generate endpoint: HTTP {response.status_code}")
+            print(f"      {'✅' if returns_ready else '❌'} Returns READY status: {returns_ready}")
                 
         except Exception as e:
             health_results['generate_endpoint'] = {
