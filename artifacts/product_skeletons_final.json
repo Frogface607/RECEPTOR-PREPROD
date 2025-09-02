@@ -1,9 +1,16 @@
 {
-  "timestamp": "2025-08-27T21:24:16.229708",
+  "timestamp": "2025-08-29T12:32:23.483475",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 1,
+  "total_products": 2,
   "all_types_valid": true,
   "products": [
+    {
+      "name": "Яйца",
+      "code": "10032",
+      "type": "GOODS",
+      "unit": "г",
+      "group": "Сырьё"
+    },
     {
       "name": "Перец черный",
       "code": "10021",

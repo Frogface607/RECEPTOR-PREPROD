@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-08-27T21:24:16.221655",
+  "timestamp": "2025-08-29T12:32:23.476144",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Глазунья",
-      "code": "10027",
+      "name": "Омлет",
+      "code": "10033",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 240
+      "yield_g": 200
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
