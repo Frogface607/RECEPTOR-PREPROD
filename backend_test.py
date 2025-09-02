@@ -31,7 +31,7 @@ from datetime import datetime
 import os
 
 # Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-automation.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class TechCardNutritionFinalBoostTester:
@@ -531,7 +531,7 @@ from openpyxl import load_workbook
 import statistics
 
 # Configuration
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-automation.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class TechCardNutritionTester:
@@ -1183,7 +1183,7 @@ import sys
 import hashlib
 
 # Backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-automation.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class ALTExportCleanupTester:

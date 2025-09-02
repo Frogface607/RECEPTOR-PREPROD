@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://menu-automation.preview.emergentagent.com/api"
 
 def comprehensive_finances_test():
     """Comprehensive test of all enhanced FINANCES features"""

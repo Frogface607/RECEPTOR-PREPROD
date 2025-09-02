@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://menu-automation.preview.emergentagent.com/api"
 
 def debug_finances_response():
     """Debug the finances response to see raw_analysis content"""

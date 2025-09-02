@@ -12,7 +12,7 @@ from datetime import datetime
 class UrgentDeploymentTest:
     def __init__(self):
         # Use the public endpoint from frontend/.env
-        self.base_url = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
+        self.base_url = "https://menu-automation.preview.emergentagent.com/api"
         self.test_user_id = "test_user_12345"
         self.dish_name = "Борщ"
         self.city = "moskva"

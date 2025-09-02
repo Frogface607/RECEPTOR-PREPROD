@@ -50,7 +50,7 @@ import re
 import uuid
 
 # Backend URL from environment - try external first, fallback to local
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-automation.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class TechCardQualityBoostTester:

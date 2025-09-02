@@ -10,7 +10,7 @@ import re
 def analyze_detailed_pricing():
     """Detailed analysis of pricing in tech card generation"""
     
-    base_url = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
+    base_url = "https://menu-automation.preview.emergentagent.com/api"
     
     # Register user
     user_data = {
