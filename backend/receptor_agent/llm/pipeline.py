@@ -703,14 +703,14 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     entity_names=[ing[1].name for ing in ingredients_needing_articles]
                 )
                 
-                if allocated_result.get('success') and allocated_result.get('allocated'):
+                if allocated_result and len(allocated_result) > 0:
                     # Обновляем ингредиенты с артикулами
-                    allocated_articles = allocated_result['allocated']
+                    allocated_articles = allocated_result  # List of strings
                     
-                    for i, allocation in enumerate(allocated_articles):
+                    for i, article in enumerate(allocated_articles):
                         if i < len(ingredients_needing_articles):
                             ingredient_idx, original_ingredient = ingredients_needing_articles[i]
-                            article = allocation['article']
+                            # article is already a string
                             
                             # Создаем обновленный ингредиент с product_code
                             ingredient_dict = original_ingredient.model_dump()
