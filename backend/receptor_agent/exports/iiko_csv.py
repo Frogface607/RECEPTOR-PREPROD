@@ -14,7 +14,7 @@ def techcard_to_csv(card: TechCardV2) -> str:
     for ing in card.ingredients:
         w.writerow([
             card.meta.title,
-            card.meta.category or "",
+            "",  # category не используется в V2
             ing.canonical or ing.name,
             ing.uom,
             f"{ing.gross_g:.2f}",
