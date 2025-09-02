@@ -6705,8 +6705,11 @@ function App() {
       return;
     }
 
+    setGenerationError(null);
+    setGenerationStatus('success');
+
     try {
-      console.log('Sending IIKo TTK XLSX export request to V2 endpoint');
+      console.log('[ALT EXPORT XLSX] Starting iiko TTK XLSX export');
       const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
         method: 'POST',
         headers: {
@@ -6715,33 +6718,239 @@ function App() {
         body: JSON.stringify(tcV2)
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        // Create safe filename
+        const safeTitle = tcV2.meta?.title?.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_') || 'techcard';
+        a.href = url;
+        a.download = `iiko_ttk_${safeTitle}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        console.log('[ALT EXPORT XLSX] Successfully exported XLSX');
+        setGenerationStatus('success');
+      } else {
+        const errorText = await response.text();
+        console.error('[ALT EXPORT XLSX] Export failed:', response.status, errorText);
+        setGenerationError(`Ошибка экспорта: ${response.status} ${errorText}`);
+        setGenerationStatus('error');
       }
-
-      // Handle XLSX file download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `iiko_ttk_${(tcV2.meta?.title || 'techcard').replace(/\s+/g, '_')}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      console.log('IIKo TTK XLSX file downloaded successfully');
-      
-      // Show success message
-      setGenerationError(null);
-      setGenerationStatus('success');
-
     } catch (error) {
-      console.error('Error exporting to IIKo TTK XLSX:', error);
-      setGenerationError('Ошибка при экспорте ТТК XLSX в iiko: ' + error.message);
+      console.error('[ALT EXPORT XLSX] Export error:', error);
+      setGenerationError(`Ошибка экспорта: ${error.message}`);
       setGenerationStatus('error');
     }
+  };
+
+  // CREATE EXPORT WIZARD UI: Unified export functions
+  const resetExportWizard = () => {
+    setSelectedExportType(null);
+    setExportProgress(0);
+    setExportStatus('idle');
+    setCurrentExportStep('');
+    setExportResults([]);
+  };
+
+  const openExportWizard = () => {
+    resetExportWizard();
+    setShowUnifiedExportWizard(true);
+  };
+  
+  const closeExportWizard = () => {
+    setShowUnifiedExportWizard(false);
+    resetExportWizard();
+  };
+
+  const executeExport = async (exportType) => {
+    if (!tcV2) {
+      setGenerationError('Сначала создайте техкарту');
+      return;
+    }
+
+    setSelectedExportType(exportType);
+    setExportStatus('processing');
+    setExportProgress(10);
+    setExportResults([]);
+
+    try {
+      switch (exportType) {
+        case 'xlsx':
+          await executeXlsxExport();
+          break;
+        case 'zip':
+          await executeZipExport();
+          break;
+        case 'pdf':
+          await executePdfExport();
+          break;
+        case 'full_package':
+          await executeFullPackageExport();
+          break;
+        default:
+          throw new Error('Unknown export type');
+      }
+      
+      setExportStatus('success');
+      setExportProgress(100);
+      setCurrentExportStep('Экспорт завершен');
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      setExportStatus('error');
+      setCurrentExportStep(`Ошибка: ${error.message}`);
+      setGenerationError(error.message);
+    }
+  };
+
+  const executeXlsxExport = async () => {
+    setCurrentExportStep('Создание XLSX файла...');
+    setExportProgress(30);
+    
+    const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tcV2)
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    setExportProgress(70);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    
+    const safeTitle = tcV2.meta?.title?.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_') || 'techcard';
+    const filename = `iiko_ttk_${safeTitle}.xlsx`;
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    setExportResults([{
+      type: 'xlsx',
+      filename: filename,
+      size: blob.size,
+      description: 'Техкарта для импорта в iiko'
+    }]);
+  };
+
+  const executeZipExport = async () => {
+    setCurrentExportStep('Запуск префлайт проверки...');
+    setExportProgress(20);
+
+    // Run preflight first
+    const preflightResponse = await fetch(`${API}/v1/export/preflight`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ techcardIds: [tcV2.meta.id] })
+    });
+
+    if (!preflightResponse.ok) throw new Error('Preflight failed');
+    const preflight = await preflightResponse.json();
+
+    setCurrentExportStep('Создание ZIP архива...');
+    setExportProgress(60);
+
+    const zipResponse = await fetch(`${API}/v1/export/zip`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        techcardIds: [tcV2.meta.id],
+        preflight_result: preflight
+      })
+    });
+
+    if (!zipResponse.ok) throw new Error(`ZIP export failed: ${zipResponse.status}`);
+
+    setExportProgress(80);
+    const blob = await zipResponse.blob();
+    const url = window.URL.createObjectURL(blob);
+    
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `iiko_export_${timestamp}.zip`;
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    setExportResults([{
+      type: 'zip',
+      filename: filename,
+      size: blob.size,
+      description: `Номенклатуры для iiko (${preflight.counts?.dishSkeletons || 0} блюд, ${preflight.counts?.productSkeletons || 0} продуктов)`
+    }]);
+  };
+
+  const executePdfExport = async () => {
+    setCurrentExportStep('Генерация PDF файла...');
+    setExportProgress(40);
+
+    const response = await fetch(`${API}/v1/techcards.v2/print`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tcV2)
+    });
+
+    if (!response.ok) throw new Error(`PDF generation failed: ${response.status}`);
+
+    setExportProgress(70);
+    const htmlContent = await response.text();
+    
+    // Open in new window for printing
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    setTimeout(() => {
+      printWindow.print();
+    }, 1000);
+
+    setExportResults([{
+      type: 'pdf',
+      filename: 'techcard.pdf',
+      size: htmlContent.length,
+      description: 'Техкарта в PDF формате (без цен для персонала)'
+    }]);
+  };
+
+  const executeFullPackageExport = async () => {
+    setCurrentExportStep('Подготовка полного пакета...');
+    setExportProgress(10);
+    
+    const results = [];
+
+    // 1. XLSX Export
+    setCurrentExportStep('Создание XLSX файла...');
+    setExportProgress(25);
+    await executeXlsxExport();
+    results.push(...exportResults);
+
+    // 2. ZIP Export  
+    setCurrentExportStep('Создание ZIP архива...');
+    setExportProgress(50);
+    await executeZipExport();
+    results.push(...exportResults);
+
+    // 3. PDF Export
+    setCurrentExportStep('Генерация PDF...');
+    setExportProgress(75);
+    await executePdfExport();
+    results.push(...exportResults);
+
+    setExportResults(results);
+    setCurrentExportStep('Полный пакет готов');
   };
 
   // Phase 3: FE-04-min Export to iiko (2 steps) functions
