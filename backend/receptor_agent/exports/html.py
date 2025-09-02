@@ -218,7 +218,6 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
                     <th>Потери, %</th>
                     <th>Нетто, г</th>
                     <th>Ед.</th>
-                    <th>SKU</th>
                 </tr>
             </thead>
             <tbody>
