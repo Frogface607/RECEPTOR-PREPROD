@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-08-29T12:32:23.476144",
+  "timestamp": "2025-09-02T03:53:02.637138",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Омлет",
-      "code": "10033",
+      "name": "Тестовое блюдо для ALT Export Cleanup",
+      "code": "100006",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 200
+      "yield_g": 200.0
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."

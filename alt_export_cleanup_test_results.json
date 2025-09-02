@@ -1,0 +1,572 @@
+{
+  "test_results": [
+    {
+      "test": "ALTExportValidator Singleton Pattern",
+      "success": true,
+      "details": "Singleton pattern working: True",
+      "timestamp": 1756785170.44755,
+      "data": null
+    },
+    {
+      "test": "ALTExportValidator Required Methods",
+      "success": true,
+      "details": "All required methods present: True",
+      "timestamp": 1756785170.4475808,
+      "data": null
+    },
+    {
+      "test": "ALTExportValidator Statistics Structure",
+      "success": true,
+      "details": "Statistics structure valid: True, keys: ['total_processed', 'duplicates_removed', 'invalid_removed', 'superfluous_removed', 'archives_cleaned', 'timestamp']",
+      "timestamp": 1756785170.4476058,
+      "data": null
+    },
+    {
+      "test": "ALTExportValidator Archive Analysis",
+      "success": true,
+      "details": "Analysis working: True, found issues: True, summary: {'has_issues': True, 'duplicates_count': 0, 'invalid_count': 3, 'superfluous_count': 4, 'missing_components': [], 'valid_components': ['iiko_TTK.xlsx', 'Dish-Skeletons.xlsx', 'Product-Skeletons.xlsx'], 'cleanup_actions_count': 2}",
+      "timestamp": 1756785170.452817,
+      "data": null
+    },
+    {
+      "test": "ALTExportValidator Archive Cleanup",
+      "success": true,
+      "details": "Cleanup successful: True, stats: {'cleaned': True, 'original_files': 10, 'removed_files': 7, 'final_files': 3, 'removed_duplicates': 0, 'removed_invalid': 3, 'removed_superfluous': 4}",
+      "timestamp": 1756785170.4531848,
+      "data": null
+    },
+    {
+      "test": "Tech Card Generation for ALT Testing",
+      "success": true,
+      "details": "Generated 'Тестовое блюдо для ALT Export Cleanup' (ID: dd823e29-90c9-4bd1-92b1-7694c00a6120) with 4 ingredients",
+      "timestamp": 1756785182.2175658,
+      "data": null
+    },
+    {
+      "test": "ALT Export iiko.xlsx Integration",
+      "success": true,
+      "details": "Generated Excel file (5784 bytes), validation: True, issues: 0",
+      "timestamp": 1756785182.4488556,
+      "data": null
+    },
+    {
+      "test": "ZIP Export ALT Cleanup Integration",
+      "success": true,
+      "details": "ZIP export successful (14866 bytes), cleanup evidence: {'total_files': 3, 'has_required_ttk': True, 'has_dish_skeletons': True, 'has_product_skeletons': True, 'has_superfluous_files': False, 'file_list': ['iiko_TTK.xlsx', 'Dish-Skeletons.xlsx', 'Product-Skeletons.xlsx']}",
+      "timestamp": 1756785182.653739,
+      "data": null
+    },
+    {
+      "test": "TTK-Only Export Guard Validation",
+      "success": true,
+      "details": "Guard correctly blocked TTK-only export: PRE_FLIGHT_REQUIRED",
+      "timestamp": 1756785182.7055807,
+      "data": null
+    },
+    {
+      "test": "Admin Cleanup Stats Endpoint",
+      "success": true,
+      "details": "Stats endpoint working: True, data: {'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0, 'timestamp': '2025-09-02T03:53:02.709947'}",
+      "timestamp": 1756785182.7123206,
+      "data": null
+    },
+    {
+      "test": "Admin Cleanup Audit Endpoint",
+      "success": true,
+      "details": "Audit endpoint working: True, result: {'timestamp': '2025-09-02T03:53:02.717144', 'archives_analyzed': 0, 'total_issues': 0, 'issues_by_type': {'duplicates': 0, 'invalid': 0, 'superfluous': 0, 'missing_components': 0}, 'recommendations': [], 'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0}",
+      "timestamp": 1756785182.7191658,
+      "data": null
+    },
+    {
+      "test": "Admin Cleanup Reset Stats Endpoint",
+      "success": true,
+      "details": "Reset endpoint working: True, message: Cleanup statistics reset successfully",
+      "timestamp": 1756785182.7688725,
+      "data": null
+    },
+    {
+      "test": "Functional Edge Cases Testing",
+      "success": true,
+      "details": "Edge cases: 4/5 passed. Details: [{'case': 'empty_archive', 'success': True, 'details': \"Empty archive handled: {'has_issues': True, 'duplicates_count': 0, 'invalid_count': 0, 'superfluous_count': 0, 'missing_components': ['iiko_TTK.xlsx'], 'valid_components': [], 'cleanup_actions_count': 1}\"}, {'case': 'invalid_zip', 'success': True, 'details': 'Invalid ZIP correctly rejected: Archive analysis failed: File is not a zip file'}, {'case': 'superfluous_only', 'success': True, 'details': \"Superfluous files cleanup: {'cleaned': True, 'original_files': 3, 'removed_files': 3, 'final_files': 0, 'removed_duplicates': 0, 'removed_invalid': 0, 'removed_superfluous': 3}\"}, {'case': 'large_duplicates', 'success': False, 'details': 'Large duplicates cleanup: removed 0 duplicates'}, {'case': 'invalid_ttk_validation', 'success': True, 'details': \"Invalid TTK correctly identified: ['File too small to be valid XLSX']\"}]",
+      "timestamp": 1756785182.7702734,
+      "data": null
+    },
+    {
+      "test": "Unified ALT Pipeline Verification",
+      "success": true,
+      "details": "Pipeline tests: 3/3 passed. ALT integration verified.",
+      "timestamp": 1756785182.9234357,
+      "data": null
+    }
+  ],
+  "test_artifacts": {
+    "generated_techcard": {
+      "id": "dd823e29-90c9-4bd1-92b1-7694c00a6120",
+      "name": "Тестовое блюдо для ALT Export Cleanup",
+      "ingredients_count": 4,
+      "full_data": {
+        "meta": {
+          "id": "dd823e29-90c9-4bd1-92b1-7694c00a6120",
+          "title": "Тестовое блюдо для ALT Export Cleanup",
+          "version": "1.0",
+          "createdAt": "2025-09-02T03:53:01.914552",
+          "cuisine": "международная",
+          "tags": [
+            "тестовое",
+            "экспорт",
+            "cleanup"
+          ],
+          "timings": {
+            "llm_draft_ms": 7740.0,
+            "llm_normalize_ms": 3605.0,
+            "validate_ms": 2.0,
+            "contentcheck_ms": 0.0,
+            "cost_ms": 66.0,
+            "nutrition_ms": 2.0,
+            "portion_normalize_ms": 2.0,
+            "sanitize_ms": 0.0,
+            "postcheck_ms": 0.0,
+            "total_ms": 11423.0,
+            "article_generation_ms": 201.0
+          },
+          "scale_factor": 0.195,
+          "archetype": "default",
+          "original_sum_netto": 1025.0,
+          "article": null,
+          "normalized": true
+        },
+        "portions": 1,
+        "yield": {
+          "perPortion_g": 200.0,
+          "perBatch_g": 200.0
+        },
+        "ingredients": [
+          {
+            "name": "Куриное филе",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 195.1,
+            "loss_pct": 10.0,
+            "netto_g": 175.6,
+            "allergens": []
+          },
+          {
+            "name": "Оливковое масло",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 19.5,
+            "loss_pct": 5.0,
+            "netto_g": 18.5,
+            "allergens": []
+          },
+          {
+            "name": "Соль",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 3.9,
+            "loss_pct": 0.0,
+            "netto_g": 3.9,
+            "allergens": []
+          },
+          {
+            "name": "Перец черный",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 2.0,
+            "loss_pct": 0.0,
+            "netto_g": 2.0,
+            "allergens": []
+          }
+        ],
+        "process": [
+          {
+            "n": 1,
+            "action": "Нарезать куриное филе на куски",
+            "time_min": 10.0,
+            "temp_c": null,
+            "equipment": [
+              "нож",
+              "разделочная доска"
+            ],
+            "ccp": false,
+            "note": null
+          },
+          {
+            "n": 2,
+            "action": "Обжарить куриное филе на оливковом масле",
+            "time_min": 15.0,
+            "temp_c": 180.0,
+            "equipment": [
+              "сковорода"
+            ],
+            "ccp": true,
+            "note": null
+          },
+          {
+            "n": 3,
+            "action": "Добавить соль и перец, перемешать",
+            "time_min": 5.0,
+            "temp_c": null,
+            "equipment": [
+              "ложка"
+            ],
+            "ccp": false,
+            "note": null
+          }
+        ],
+        "storage": {
+          "conditions": "Хранить в холодильнике",
+          "shelfLife_hours": 24.0,
+          "servingTemp_c": 60.0
+        },
+        "nutrition": {
+          "per100g": {
+            "kcal": 295.4,
+            "proteins_g": 35.0,
+            "fats_g": 15.9,
+            "carbs_g": 0.5
+          },
+          "perPortion": {
+            "kcal": 590.8,
+            "proteins_g": 70.0,
+            "fats_g": 31.8,
+            "carbs_g": 1.0
+          }
+        },
+        "nutritionMeta": {
+          "source": "usda",
+          "coveragePct": 100.0
+        },
+        "cost": {
+          "rawCost": 451.5,
+          "costPerPortion": 112.88,
+          "markup_pct": 300.0,
+          "vat_pct": 20.0
+        },
+        "costMeta": {
+          "source": "catalog",
+          "coveragePct": 100.0,
+          "asOf": "2025-01-17"
+        },
+        "printNotes": [],
+        "article": null
+      }
+    },
+    "alt_export_validation": {
+      "valid": true,
+      "metadata": {
+        "dish_id": null,
+        "dish_name": "test alt export",
+        "file_size": 5784,
+        "file_path": "test_alt_export.xlsx"
+      },
+      "issues": [],
+      "content_hash": "fda13930234e64dcc054aec51ae96427",
+      "file_size": 5784
+    },
+    "zip_export_cleanup": {
+      "zip_size": 14866,
+      "cleanup_evidence": {
+        "total_files": 3,
+        "has_required_ttk": true,
+        "has_dish_skeletons": true,
+        "has_product_skeletons": true,
+        "has_superfluous_files": false,
+        "file_list": [
+          "iiko_TTK.xlsx",
+          "Dish-Skeletons.xlsx",
+          "Product-Skeletons.xlsx"
+        ]
+      },
+      "preflight_data": {
+        "status": "success",
+        "ttkDate": "2025-09-02",
+        "missing": {
+          "dishes": [
+            {
+              "id": "dish_Тестовое_блюдо_для_ALT_Export_Cleanup",
+              "name": "Тестовое блюдо для ALT Export Cleanup",
+              "article": "100006",
+              "type": "dish",
+              "unit": "порц",
+              "yield": 200.0
+            }
+          ],
+          "products": [
+            {
+              "id": "product_Оливковое_масло",
+              "name": "Оливковое масло",
+              "article": "100007",
+              "type": "product",
+              "unit": "g",
+              "group": "Молочные продукты"
+            },
+            {
+              "id": "product_Перец_черный",
+              "name": "Перец черный",
+              "article": "100008",
+              "type": "product",
+              "unit": "g",
+              "group": "Бакалея"
+            }
+          ]
+        },
+        "generated": {
+          "dishArticles": [
+            "100006"
+          ],
+          "productArticles": [
+            "100007",
+            "100008"
+          ]
+        },
+        "counts": {
+          "dishSkeletons": 1,
+          "productSkeletons": 2
+        }
+      }
+    },
+    "edge_case_results": [
+      {
+        "case": "empty_archive",
+        "success": true,
+        "details": "Empty archive handled: {'has_issues': True, 'duplicates_count': 0, 'invalid_count': 0, 'superfluous_count': 0, 'missing_components': ['iiko_TTK.xlsx'], 'valid_components': [], 'cleanup_actions_count': 1}"
+      },
+      {
+        "case": "invalid_zip",
+        "success": true,
+        "details": "Invalid ZIP correctly rejected: Archive analysis failed: File is not a zip file"
+      },
+      {
+        "case": "superfluous_only",
+        "success": true,
+        "details": "Superfluous files cleanup: {'cleaned': True, 'original_files': 3, 'removed_files': 3, 'final_files': 0, 'removed_duplicates': 0, 'removed_invalid': 0, 'removed_superfluous': 3}"
+      },
+      {
+        "case": "large_duplicates",
+        "success": false,
+        "details": "Large duplicates cleanup: removed 0 duplicates"
+      },
+      {
+        "case": "invalid_ttk_validation",
+        "success": true,
+        "details": "Invalid TTK correctly identified: ['File too small to be valid XLSX']"
+      }
+    ],
+    "pipeline_verification": {
+      "tests": [
+        {
+          "endpoint": "ALT_export_iiko_xlsx",
+          "success": true,
+          "details": "Status: 200"
+        },
+        {
+          "endpoint": "ALT_statistics_tracking",
+          "success": true,
+          "details": "Stats tracking working: initial={'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0, 'timestamp': '2025-09-02T03:53:02.770319'}, final={'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0, 'timestamp': '2025-09-02T03:53:02.923410'}"
+        },
+        {
+          "endpoint": "ALT_singleton_consistency",
+          "success": true,
+          "details": "Singleton consistency: True"
+        }
+      ],
+      "initial_stats": {
+        "total_processed": 0,
+        "duplicates_removed": 0,
+        "invalid_removed": 0,
+        "superfluous_removed": 0,
+        "archives_cleaned": 0,
+        "timestamp": "2025-09-02T03:53:02.770319"
+      },
+      "final_stats": {
+        "total_processed": 0,
+        "duplicates_removed": 0,
+        "invalid_removed": 0,
+        "superfluous_removed": 0,
+        "archives_cleaned": 0,
+        "timestamp": "2025-09-02T03:53:02.923410"
+      },
+      "stats_changed": true
+    }
+  },
+  "generated_techcards": [
+    {
+      "id": "dd823e29-90c9-4bd1-92b1-7694c00a6120",
+      "name": "Тестовое блюдо для ALT Export Cleanup",
+      "data": {
+        "meta": {
+          "id": "dd823e29-90c9-4bd1-92b1-7694c00a6120",
+          "title": "Тестовое блюдо для ALT Export Cleanup",
+          "version": "1.0",
+          "createdAt": "2025-09-02T03:53:01.914552",
+          "cuisine": "международная",
+          "tags": [
+            "тестовое",
+            "экспорт",
+            "cleanup"
+          ],
+          "timings": {
+            "llm_draft_ms": 7740.0,
+            "llm_normalize_ms": 3605.0,
+            "validate_ms": 2.0,
+            "contentcheck_ms": 0.0,
+            "cost_ms": 66.0,
+            "nutrition_ms": 2.0,
+            "portion_normalize_ms": 2.0,
+            "sanitize_ms": 0.0,
+            "postcheck_ms": 0.0,
+            "total_ms": 11423.0,
+            "article_generation_ms": 201.0
+          },
+          "scale_factor": 0.195,
+          "archetype": "default",
+          "original_sum_netto": 1025.0,
+          "article": null,
+          "normalized": true
+        },
+        "portions": 1,
+        "yield": {
+          "perPortion_g": 200.0,
+          "perBatch_g": 200.0
+        },
+        "ingredients": [
+          {
+            "name": "Куриное филе",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 195.1,
+            "loss_pct": 10.0,
+            "netto_g": 175.6,
+            "allergens": []
+          },
+          {
+            "name": "Оливковое масло",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 19.5,
+            "loss_pct": 5.0,
+            "netto_g": 18.5,
+            "allergens": []
+          },
+          {
+            "name": "Соль",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 3.9,
+            "loss_pct": 0.0,
+            "netto_g": 3.9,
+            "allergens": []
+          },
+          {
+            "name": "Перец черный",
+            "canonical_id": null,
+            "skuId": null,
+            "product_code": null,
+            "subRecipe": null,
+            "unit": "g",
+            "brutto_g": 2.0,
+            "loss_pct": 0.0,
+            "netto_g": 2.0,
+            "allergens": []
+          }
+        ],
+        "process": [
+          {
+            "n": 1,
+            "action": "Нарезать куриное филе на куски",
+            "time_min": 10.0,
+            "temp_c": null,
+            "equipment": [
+              "нож",
+              "разделочная доска"
+            ],
+            "ccp": false,
+            "note": null
+          },
+          {
+            "n": 2,
+            "action": "Обжарить куриное филе на оливковом масле",
+            "time_min": 15.0,
+            "temp_c": 180.0,
+            "equipment": [
+              "сковорода"
+            ],
+            "ccp": true,
+            "note": null
+          },
+          {
+            "n": 3,
+            "action": "Добавить соль и перец, перемешать",
+            "time_min": 5.0,
+            "temp_c": null,
+            "equipment": [
+              "ложка"
+            ],
+            "ccp": false,
+            "note": null
+          }
+        ],
+        "storage": {
+          "conditions": "Хранить в холодильнике",
+          "shelfLife_hours": 24.0,
+          "servingTemp_c": 60.0
+        },
+        "nutrition": {
+          "per100g": {
+            "kcal": 295.4,
+            "proteins_g": 35.0,
+            "fats_g": 15.9,
+            "carbs_g": 0.5
+          },
+          "perPortion": {
+            "kcal": 590.8,
+            "proteins_g": 70.0,
+            "fats_g": 31.8,
+            "carbs_g": 1.0
+          }
+        },
+        "nutritionMeta": {
+          "source": "usda",
+          "coveragePct": 100.0
+        },
+        "cost": {
+          "rawCost": 451.5,
+          "costPerPortion": 112.88,
+          "markup_pct": 300.0,
+          "vat_pct": 20.0
+        },
+        "costMeta": {
+          "source": "catalog",
+          "coveragePct": 100.0,
+          "asOf": "2025-01-17"
+        },
+        "printNotes": [],
+        "article": null
+      }
+    }
+  ],
+  "timestamp": "2025-09-02T03:53:02.923566",
+  "test_type": "ALT_Export_Cleanup_Comprehensive_Testing"
+}

@@ -1,19 +1,19 @@
 {
-  "timestamp": "2025-08-29T12:32:23.483475",
+  "timestamp": "2025-09-02T03:53:02.644520",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
   "total_products": 2,
   "all_types_valid": true,
   "products": [
     {
-      "name": "Яйца",
-      "code": "10032",
+      "name": "Оливковое масло",
+      "code": "100007",
       "type": "GOODS",
       "unit": "г",
-      "group": "Сырьё"
+      "group": "Молочные продукты"
     },
     {
       "name": "Перец черный",
-      "code": "10021",
+      "code": "100008",
       "type": "GOODS",
       "unit": "г",
       "group": "Бакалея"
