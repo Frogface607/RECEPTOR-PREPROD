@@ -327,6 +327,43 @@ frontend:
         agent: "main"
         comment: "ALT Export Cleanup works transparently on backend. Existing ALT export button functionality remains unchanged. Users will benefit from automatic cleanup without UI changes."
 
+## frontend:
+  - task: "CRITICAL FRONTEND TESTING: CLEANUP TECH CARD DATA & UI"
+    implemented: true
+    working: "partial"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "partial"
+        agent: "testing"
+        comment: "🎯 CRITICAL FRONTEND TESTING COMPLETED WITH MIXED RESULTS: Conducted comprehensive end-to-end testing of tech card generation and UI cleanup as specified in Russian review request. ✅ GENERATION PROCESS FUNCTIONAL: Tech card generation works correctly - tested 'Борщ украинский с говядиной', shows proper progress modal (63% observed), completes in 15.2s without errors, UI remains stable throughout process. ✅ UI CLEANUP VERIFIED: No problematic warning labels found ('⚠ no БЖУ', '⚠ no price', 'Без SKU' not detected), no yellow DRAFT banners, no red validation errors, clean interface without legacy warnings. ✅ INTERFACE STABILITY: Main interface loads via Quick Test, all navigation functional, no JavaScript errors, consistent behavior across multiple generations. ❌ CRITICAL PERSISTENCE ISSUE: Dashboard shows '0 Техкарт создано' despite successful generation, tech cards not appearing in ТЕХКАРТЫ section, possible data persistence or user association problem. Generation works but results not saved/displayed. RECOMMENDATION: Investigate tech card persistence and user account association logic."
+
+  - task: "Tech Card Generation Error Investigation"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ PERSISTENCE ISSUE IDENTIFIED: While tech card generation process works (shows progress, completes without errors), generated tech cards are not persisting or being associated with user accounts. Dashboard consistently shows '0 Техкарт создано' and ТЕХКАРТЫ section remains empty despite successful generation attempts. This may be the root cause of the generation error reported by user."
+
+  - task: "UI Warning Labels Cleanup Verification"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ WARNING LABELS CLEANUP SUCCESSFUL: Comprehensive testing confirmed no problematic warning labels present in UI. Patterns '⚠ no БЖУ', '⚠ no price', 'Без SKU', '⚠️ Покрытие' not found in generated content. No yellow DRAFT banners detected. No red validation errors in ingredients table. UI cleanup implementation working as intended."
+
 ## metadata:
   created_by: "main_agent"
   version: "2.0"
