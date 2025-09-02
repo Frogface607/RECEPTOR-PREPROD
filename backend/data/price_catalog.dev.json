@@ -565,134 +565,134 @@
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "994fe397-ff94-43c0-a41e-4a8cb30e9293",
-        "added_date": "2025-09-02T04:50:14.761509"
+        "product_code": "a74e35d8-c5d0-4899-aebe-f3f481fb810c",
+        "added_date": "2025-09-02T04:51:42.627072"
       },
       "груши": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "62685b1e-9fd0-49aa-9655-0af6310badac",
-        "added_date": "2025-09-02T04:50:14.761525"
+        "product_code": "93b15220-176a-4213-bd66-85b8d213d20b",
+        "added_date": "2025-09-02T04:51:42.627089"
       },
       "бананы": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "5b442caf-dd27-4c63-b85f-4e62c7df2ff7",
-        "added_date": "2025-09-02T04:50:14.761537"
+        "product_code": "aa08e85f-d9cb-4ee0-a1fa-8fb92c9d5f6c",
+        "added_date": "2025-09-02T04:51:42.627102"
       },
       "апельсины": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "d59e83a4-3597-4141-b4f8-e2f6b61ccb7e",
-        "added_date": "2025-09-02T04:50:14.761544"
+        "product_code": "340a4476-9543-4602-8104-62ea291279d6",
+        "added_date": "2025-09-02T04:51:42.627109"
       },
       "лимоны": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "069995f0-5e90-40cd-842b-a3b4ec23af42",
-        "added_date": "2025-09-02T04:50:14.761551"
+        "product_code": "ae59213f-afc6-4498-a946-22061c64c0b6",
+        "added_date": "2025-09-02T04:51:42.627130"
       },
       "лайм": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "9de986c1-d50c-4333-a248-f76c1b80d7ea",
-        "added_date": "2025-09-02T04:50:14.761557"
+        "product_code": "ac7d6ad1-e399-4c04-9ba6-490de1596349",
+        "added_date": "2025-09-02T04:51:42.627137"
       },
       "грейпфрут": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "38be37f1-c6c4-4f1b-888f-c2542df0fe39",
-        "added_date": "2025-09-02T04:50:14.761565"
+        "product_code": "6cc0c327-80d9-4be0-851d-e068ccfeadfb",
+        "added_date": "2025-09-02T04:51:42.627145"
       },
       "ананас": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "aa59f54f-5962-42ab-afc7-c2f1bbd7a336",
-        "added_date": "2025-09-02T04:50:14.761572"
+        "product_code": "3c3f9846-181c-4d97-b889-2ce853717ade",
+        "added_date": "2025-09-02T04:51:42.627152"
       },
       "манго": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "660195c9-2f32-4f21-a251-abcf4347f59f",
-        "added_date": "2025-09-02T04:50:14.761578"
+        "product_code": "0107993f-ea57-4bf3-877a-7ed148c11616",
+        "added_date": "2025-09-02T04:51:42.627159"
       },
       "киви": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "c6fa9811-337b-437c-866e-5d3d89ce8f44",
-        "added_date": "2025-09-02T04:50:14.761584"
+        "product_code": "a1d75678-1eed-4673-a544-6fb221ef72e0",
+        "added_date": "2025-09-02T04:51:42.627165"
       },
       "клубника": {
         "price": 250,
         "unit": "kg",
         "category": "ягоды",
-        "product_code": "b928cb4a-50b4-43ca-985c-4a3f5eccaac1",
-        "added_date": "2025-09-02T04:50:14.761590"
+        "product_code": "cd914f3e-11e9-4750-b8ea-ba6c453b7a95",
+        "added_date": "2025-09-02T04:51:42.627171"
       },
       "малина": {
         "price": 250,
         "unit": "kg",
         "category": "ягоды",
-        "product_code": "a9ef8881-50a5-4d72-b400-ea2d83a623c9",
-        "added_date": "2025-09-02T04:50:14.761596"
+        "product_code": "9e952e86-5ce5-476c-842d-45c37d60fc10",
+        "added_date": "2025-09-02T04:51:42.627177"
       },
       "черника": {
         "price": 250,
         "unit": "kg",
         "category": "ягоды",
-        "product_code": "ef01c1e0-4734-454a-b4a0-91046c6f1de9",
-        "added_date": "2025-09-02T04:50:14.761602"
+        "product_code": "9a7db839-ed63-4049-9f60-7233112c407c",
+        "added_date": "2025-09-02T04:51:42.627183"
       },
       "ежевика": {
         "price": 250,
         "unit": "kg",
         "category": "ягоды",
-        "product_code": "557dfa8b-7004-44fb-bf2a-a0b1530c58f3",
-        "added_date": "2025-09-02T04:50:14.761608"
+        "product_code": "7693ca3e-b087-4fb0-aa7d-21825706769f",
+        "added_date": "2025-09-02T04:51:42.627197"
       },
       "вишня": {
         "price": 250,
         "unit": "kg",
         "category": "ягоды",
-        "product_code": "93687657-826d-4295-b46d-e8b5cf8f0730",
-        "added_date": "2025-09-02T04:50:14.761614"
+        "product_code": "e6691eec-3801-47ba-bb27-5d32a80928a4",
+        "added_date": "2025-09-02T04:51:42.627204"
       },
       "черешня": {
         "price": 250,
         "unit": "kg",
         "category": "ягоды",
-        "product_code": "cc7bc169-d9d3-40fe-a9b9-4cfbd2a658c1",
-        "added_date": "2025-09-02T04:50:14.761620"
+        "product_code": "cc8b252e-1b36-40a2-b0c1-2e13ca6a21f8",
+        "added_date": "2025-09-02T04:51:42.627210"
       },
       "персики": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "f8e8e3dd-7607-469d-8294-1e9c7c446eff",
-        "added_date": "2025-09-02T04:50:14.761626"
+        "product_code": "836f4050-0949-41c1-a7d4-a98c04d3f697",
+        "added_date": "2025-09-02T04:51:42.627216"
       },
       "абрикосы": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "6da5c386-b1d8-43d3-bc8b-361a8cccfac3",
-        "added_date": "2025-09-02T04:50:14.761632"
+        "product_code": "8d587f3d-f25c-44ac-b41c-43099c115a68",
+        "added_date": "2025-09-02T04:51:42.627222"
       },
       "сливы": {
         "price": 250,
         "unit": "kg",
         "category": "фрукты",
-        "product_code": "f68edc95-5162-4b27-8e40-65be7ecc5808",
-        "added_date": "2025-09-02T04:50:14.761637"
+        "product_code": "d6c5624d-5f12-4b21-a22e-54c219974fc5",
+        "added_date": "2025-09-02T04:51:42.627229"
       }
     },
     "консервы_соусы": {
@@ -781,43 +781,43 @@
         "price": 1400,
         "unit": "kg",
         "category": "орехи",
-        "product_code": "b1ab2ba9-700b-4ecf-b6d3-c948d74645a8",
-        "added_date": "2025-09-02T04:50:14.761684"
+        "product_code": "499f4e87-c961-4ce0-95df-a317959283e0",
+        "added_date": "2025-09-02T04:51:42.627278"
       },
       "грецкие орехи": {
         "price": 1400,
         "unit": "kg",
         "category": "орехи",
-        "product_code": "a7c113c6-9372-4ce7-86b9-9dd8b0ceb071",
-        "added_date": "2025-09-02T04:50:14.761690"
+        "product_code": "f6872e26-c483-42d6-85f6-047fcbb46cf0",
+        "added_date": "2025-09-02T04:51:42.627284"
       },
       "фундук": {
         "price": 1400,
         "unit": "kg",
         "category": "орехи",
-        "product_code": "9c17204d-eab4-4851-8536-3e40dfc1c275",
-        "added_date": "2025-09-02T04:50:14.761696"
+        "product_code": "2236a4c9-9bd9-453b-a368-90472c2d969d",
+        "added_date": "2025-09-02T04:51:42.627290"
       },
       "кешью": {
         "price": 1400,
         "unit": "kg",
         "category": "орехи",
-        "product_code": "1340c552-f792-42b4-844a-fea4f6264b16",
-        "added_date": "2025-09-02T04:50:14.761701"
+        "product_code": "3141d25d-aca1-45bb-aced-a0c89a6505b8",
+        "added_date": "2025-09-02T04:51:42.627296"
       },
       "фисташки": {
         "price": 1400,
         "unit": "kg",
         "category": "орехи",
-        "product_code": "19a90992-3d58-42ad-8d64-c8b3eaf90e93",
-        "added_date": "2025-09-02T04:50:14.761707"
+        "product_code": "a0b16a78-6969-4402-aba6-cb40ebcf2b1d",
+        "added_date": "2025-09-02T04:51:42.627302"
       },
       "кедровые орехи": {
         "price": 1400,
         "unit": "kg",
         "category": "орехи",
-        "product_code": "1ec9d2e1-11af-44d3-94d4-db3df43ffeaf",
-        "added_date": "2025-09-02T04:50:14.761713"
+        "product_code": "9848e203-7764-4c82-be7f-7bf6e3bd691d",
+        "added_date": "2025-09-02T04:51:42.627308"
       }
     },
     "специи_приправы": {
@@ -825,120 +825,120 @@
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "e41c44b6-d540-49ff-9881-b409682577bb",
-        "added_date": "2025-09-02T04:50:14.761720"
+        "product_code": "e4e3c49c-2f96-4cf3-a5fa-ccd9f51675e1",
+        "added_date": "2025-09-02T04:51:42.627314"
       },
       "орегано": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "42da05fd-9c15-4cfc-8262-00a02541e30c",
-        "added_date": "2025-09-02T04:50:14.761726"
+        "product_code": "b0a37664-8c30-42c0-a7f1-8909f4b81dd5",
+        "added_date": "2025-09-02T04:51:42.627320"
       },
       "тимьян": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "4c1c9d0b-0b4c-4209-8455-9e9614f9a3ec",
-        "added_date": "2025-09-02T04:50:14.761732"
+        "product_code": "d2686778-da4b-4c44-b70b-58bd47073555",
+        "added_date": "2025-09-02T04:51:42.627327"
       },
       "розмарин": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "addaf9ec-04c4-4708-b129-be6e41577a83",
-        "added_date": "2025-09-02T04:50:14.761738"
+        "product_code": "4a73f26b-8ad9-468e-b930-7c3510300b44",
+        "added_date": "2025-09-02T04:51:42.627333"
       },
       "имбирь": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "d49b7405-30bb-4ca8-85c7-de48ddf8f83b",
-        "added_date": "2025-09-02T04:50:14.761744"
+        "product_code": "7046d1ee-9dfd-4d52-907c-419760ed58ac",
+        "added_date": "2025-09-02T04:51:42.627340"
       },
       "куркума": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "aa5470e1-d229-4a22-8058-f28d2bdd087e",
-        "added_date": "2025-09-02T04:50:14.761750"
+        "product_code": "192d0733-85d5-4463-b527-cd2ed988b3e7",
+        "added_date": "2025-09-02T04:51:42.627345"
       },
       "кориандр": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "59c72a7b-475e-404e-8114-865da2dc6855",
-        "added_date": "2025-09-02T04:50:14.761760"
+        "product_code": "79e89ed9-b063-4d35-b24b-11622e4fcd02",
+        "added_date": "2025-09-02T04:51:42.627351"
       },
       "тмин": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "aa6cfba7-eac4-4f17-8c10-9d6bf24c5f8b",
-        "added_date": "2025-09-02T04:50:14.761767"
+        "product_code": "aa77ae45-42f0-4672-97d8-a90bd3316b84",
+        "added_date": "2025-09-02T04:51:42.627357"
       },
       "кардамон": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "71301bca-5173-4702-9d4c-40403cf15f22",
-        "added_date": "2025-09-02T04:50:14.761773"
+        "product_code": "dc6d5d81-ad07-413d-a8b1-30db7a022036",
+        "added_date": "2025-09-02T04:51:42.627363"
       },
       "корица": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "65849939-1d4f-4698-a441-306a7552c692",
-        "added_date": "2025-09-02T04:50:14.761779"
+        "product_code": "fcc54549-5081-4b6e-830b-7902741a7c44",
+        "added_date": "2025-09-02T04:51:42.627370"
       },
       "гвоздика": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "a52c3013-7fb9-47ce-afbf-4f7207a50f9e",
-        "added_date": "2025-09-02T04:50:14.761784"
+        "product_code": "e9af2405-e1ca-4cca-9bd2-75ae0dcca12b",
+        "added_date": "2025-09-02T04:51:42.627376"
       },
       "мускатный орех": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "f321c920-60c8-4236-a05b-9302dc23eae0",
-        "added_date": "2025-09-02T04:50:14.761791"
+        "product_code": "65284c9c-2a30-4be3-bcf6-b7c973a0e136",
+        "added_date": "2025-09-02T04:51:42.627382"
       },
       "паприка": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "e0a706c9-50b8-49ff-8dfa-a55e3054b9fd",
-        "added_date": "2025-09-02T04:50:14.761797"
+        "product_code": "b71274d2-3a03-41d4-9446-c977ac993753",
+        "added_date": "2025-09-02T04:51:42.627388"
       },
       "перец черный": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "9d906afc-cab5-4537-a48e-f399a226f58d",
-        "added_date": "2025-09-02T04:50:14.761802"
+        "product_code": "69a75484-e4a6-48b5-9903-5608c0ff9cb9",
+        "added_date": "2025-09-02T04:51:42.627394"
       },
       "перец белый": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "b912de9f-c31b-4739-8dab-b3c90e0b1717",
-        "added_date": "2025-09-02T04:50:14.761808"
+        "product_code": "131cad02-71fe-4eb6-85c1-07e9777d7ec9",
+        "added_date": "2025-09-02T04:51:42.627400"
       },
       "лавровый лист": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "a3be41f0-1a8a-49f5-aa39-ba30779c5c1c",
-        "added_date": "2025-09-02T04:50:14.761814"
+        "product_code": "61db4a8a-94d5-4ae3-9b40-0224b24ee825",
+        "added_date": "2025-09-02T04:51:42.627406"
       },
       "ваниль": {
         "price": 1750,
         "unit": "kg",
         "category": "специи",
-        "product_code": "0e4fe7ec-9675-4e9c-996c-fcf35d2534f1",
-        "added_date": "2025-09-02T04:50:14.761820"
+        "product_code": "5b08ac98-3a0d-4224-9ce7-0816ca6b38e0",
+        "added_date": "2025-09-02T04:51:42.627412"
       }
     },
     "бобовые": {
@@ -946,43 +946,43 @@
         "price": 140,
         "unit": "kg",
         "category": "бобовые",
-        "product_code": "7f9d359c-2d32-48d9-b5da-a005e6bb4964",
-        "added_date": "2025-09-02T04:50:14.761649"
+        "product_code": "22b5f627-6cee-48e0-9d5d-ce89e8393ddf",
+        "added_date": "2025-09-02T04:51:42.627243"
       },
       "чечевица зеленая": {
         "price": 140,
         "unit": "kg",
         "category": "бобовые",
-        "product_code": "a9c6c3a9-fb20-4e28-b41c-ee5db3c87ff2",
-        "added_date": "2025-09-02T04:50:14.761655"
+        "product_code": "450ff36a-108f-467f-8f89-42674bb35a77",
+        "added_date": "2025-09-02T04:51:42.627249"
       },
       "нут": {
         "price": 140,
         "unit": "kg",
         "category": "бобовые",
-        "product_code": "8de2f67a-8731-4d25-9389-d48ba64832cc",
-        "added_date": "2025-09-02T04:50:14.761660"
+        "product_code": "e449e378-fa6b-45e0-a67a-af02d03ee60c",
+        "added_date": "2025-09-02T04:51:42.627255"
       },
       "фасоль белая": {
         "price": 140,
         "unit": "kg",
         "category": "бобовые",
-        "product_code": "b9c20978-61bc-49da-9f25-fdd4ebabccc6",
-        "added_date": "2025-09-02T04:50:14.761666"
+        "product_code": "53676a01-58ac-4165-8270-5cfba40b44c3",
+        "added_date": "2025-09-02T04:51:42.627261"
       },
       "фасоль красная": {
         "price": 140,
         "unit": "kg",
         "category": "бобовые",
-        "product_code": "01eda56a-73f9-4aa3-b5f2-1014b8903265",
-        "added_date": "2025-09-02T04:50:14.761672"
+        "product_code": "a5bc5e7e-7d05-4a64-a8b2-917ef9de2afc",
+        "added_date": "2025-09-02T04:51:42.627267"
       },
       "горох колотый": {
         "price": 140,
         "unit": "kg",
         "category": "бобовые",
-        "product_code": "6785239d-3b1b-4706-aec8-9a8da329a38f",
-        "added_date": "2025-09-02T04:50:14.761678"
+        "product_code": "b8534994-dd3e-456d-ba65-88b40fbc45e0",
+        "added_date": "2025-09-02T04:51:42.627272"
       }
     }
   },
