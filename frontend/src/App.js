@@ -18042,7 +18042,10 @@ function App() {
 
       {/* CREATE EXPORT WIZARD UI - Unified Export Wizard Modal */}
       {/* FIX JS MODAL SCROLL & OPEN BUG: Enhanced modal with proper scroll handling */}
-      {showUnifiedExportWizard && (
+      {(() => {
+        console.log('🚀 DEBUG: Rendering modal check, showUnifiedExportWizard:', showUnifiedExportWizard);
+        return showUnifiedExportWizard;
+      })() && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
           onClick={closeExportWizard}
