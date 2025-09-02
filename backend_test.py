@@ -260,7 +260,7 @@ class TechCardNutritionTester:
             # Test XLSX export
             export_response = requests.post(
                 f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
-                json={"techcard_ids": [card_id]},
+                json=card,  # Send the full card object
                 timeout=30
             )
             
