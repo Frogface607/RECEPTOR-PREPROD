@@ -16,12 +16,12 @@ def techcard_to_csv(card: TechCardV2) -> str:
             card.meta.title,
             "",  # category не используется в V2
             ing.canonical_id or ing.name,
-            ing.uom,
-            f"{ing.gross_g:.2f}",
-            f"{ing.net_g:.2f}",
+            ing.unit,
+            f"{ing.brutto_g:.2f}",
+            f"{ing.netto_g:.2f}",
             f"{ing.loss_pct:.2f}",
-            card.yield_.per_portion_g,
-            card.yield_.portions,
+            card.yield_.perPortion_g,
+            1,  # portions не используется в V2
         ])
     return buf.getvalue()
 
