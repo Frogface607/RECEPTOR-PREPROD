@@ -138,6 +138,15 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
                 "message": "Tech card generated with validation issues"
             }
             return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
+        elif res.status == "READY":
+            # CLEANUP TECH CARD DATA & UI: Все техкарты теперь READY
+            response_data = {
+                "status": "READY",
+                "card": res.card.model_dump(by_alias=True, mode="json") if res.card else None,
+                "issues": res.issues or [],
+                "message": "Tech card generated and ready for production"
+            }
+            return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
         else:  # failed or any other status
             response_data = {
                 "status": "error",
