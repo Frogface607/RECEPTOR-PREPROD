@@ -11166,7 +11166,7 @@ function App() {
                         </span>
                       ) : iikoRmsConnection.status === 'needs_reconnection' ? '⚠️ Нужно переподключиться' :
                         iikoRmsConnection.status === 'error' ? '❌ Ошибка iiko' :
-                        '⚪ iiko не подключено'}
+                        '🔧 Настройка iiko'}
                     </div>
                   </div>
                   
