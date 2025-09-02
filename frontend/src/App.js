@@ -1599,9 +1599,7 @@ function App() {
                         {step.equipment && step.equipment.length > 0 && (
                           <span className="text-yellow-300">🔧 {step.equipment.join(', ')}</span>
                         )}
-                        {step.ccp && (
-                          <span className="text-red-400 font-bold">⚠ CCP</span>
-                        )}
+                        {/* CLEANUP TECH CARD DATA & UI: Убираем CCP warning'и */}
                       </div>
                     </div>
                   </div>
