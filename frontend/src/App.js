@@ -10699,8 +10699,7 @@ function App() {
                               📅 {new Date(techcard.created_at).toLocaleDateString('ru-RU')}
                             </span>
                             <span className={`px-2 py-1 rounded text-xs font-bold ${
-                              techcard.status === 'READY' ? 'bg-green-600 text-white' : 
-                              techcard.status === 'success' ? 'bg-green-600 text-white' :
+                              (techcard.status === 'READY' || techcard.status === 'success') ? 'bg-green-600 text-white' : 
                               'bg-yellow-600 text-black'
                             }`}>
                               {techcard.status === 'READY' ? 'ГОТОВО' : (techcard.status || 'draft')}
