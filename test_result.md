@@ -346,11 +346,14 @@ frontend:
     file: "/app/frontend/src/App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ PERSISTENCE ISSUE IDENTIFIED: While tech card generation process works (shows progress, completes without errors), generated tech cards are not persisting or being associated with user accounts. Dashboard consistently shows '0 Техкарт создано' and ТЕХКАРТЫ section remains empty despite successful generation attempts. This may be the root cause of the generation error reported by user."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL GENERATION ERROR CONFIRMED: Conducted comprehensive testing of tech card generation and persistence as specified in Russian review request. ❌ GENERATION FAILURE: Tech card generation shows 'Ошибка генерации' (Generation Error) at 100% progress, indicating backend generation failure. ❌ DASHBOARD PERSISTENCE ISSUE: Dashboard consistently shows '0 техкарт' before and after generation attempts, confirming tech cards are not being saved to user account. ❌ PARTIAL PERSISTENCE: ТЕХКАРТЫ section shows dish names ('Борщ' found) but without READY status, indicating incomplete generation/saving process. ✅ UI CLEANUP SUCCESS: No problematic warning labels found ('no БЖУ', 'no price', 'Без SKU' patterns not detected), UI cleanup implementation working correctly. 🎯 ROOT CAUSE: Backend tech card generation pipeline is failing during generation process, preventing proper completion and persistence to user account. This explains why dashboard shows 0 tech cards and why generated cards don't appear with READY status."
 
   - task: "UI Warning Labels Cleanup Verification"
     implemented: true
