@@ -481,12 +481,12 @@ class CleanupTechCardDataTester:
             catalog_search_results = []
             
             for query in test_queries:
-                async with self.session.get(
+                response = self.session.get(
                     f"{API_BASE}/v1/techcards.v2/catalog-search",
                     params={"q": query, "source": "all"}
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
+                )
+                if response.status_code == 200:
+                    data = response.json()
                         
                         # Check for warnings in response
                         has_warnings = 'warnings' in data or 'warning' in data
