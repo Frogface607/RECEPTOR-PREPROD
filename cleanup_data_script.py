@@ -101,12 +101,14 @@ def validate_clean_data():
         with open(nutrition_path, 'r', encoding='utf-8') as f:
             nutrition_data = json.load(f)
         
-        for ingredient in nutrition_data:
-            canonical_id = ingredient.get('canonical_id', '')
-            if re.match(r'^\d+-\d+$', canonical_id):
-                issues_found.append(f"Nutrition: найден диапазон ID '{canonical_id}'")
-            if 'mock' in canonical_id.lower() or 'test' in canonical_id.lower():
-                issues_found.append(f"Nutrition: найден mock ID '{canonical_id}'")
+        # Проверяем items в nutrition catalog
+        if 'items' in nutrition_data:
+            for ingredient in nutrition_data['items']:
+                canonical_id = ingredient.get('canonical_id', '')
+                if re.match(r'^\d+-\d+$', canonical_id):
+                    issues_found.append(f"Nutrition: найден диапазон ID '{canonical_id}'")
+                if 'mock' in canonical_id.lower() or 'test' in canonical_id.lower():
+                    issues_found.append(f"Nutrition: найден mock ID '{canonical_id}'")
     
     # Проверяем price catalog  
     price_path = "/app/backend/data/price_catalog.dev.json"
