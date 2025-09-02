@@ -97,7 +97,8 @@ class TechCardQualityBoostTester:
                         
                         if catalog_name == 'nutrition_catalog.dev.json':
                             # Validate nutrition catalog structure
-                            ingredients_count = len(catalog_data) if isinstance(catalog_data, list) else len(catalog_data.get('ingredients', []))
+                            ingredients_list = catalog_data.get('items', [])
+                            ingredients_count = len(ingredients_list)
                             
                             # Check for 200+ ingredients requirement
                             has_200_plus = ingredients_count >= 200
