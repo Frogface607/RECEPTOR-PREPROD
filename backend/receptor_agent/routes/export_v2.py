@@ -775,9 +775,26 @@ async def create_ttk_only_export(request: Request):
         
         ttk_xlsx = await dual_exporter._create_ttk_xlsx(techcard_ids, operational_rounding)
         
+        # ALT Export Cleanup: Валидация TTK файла
+        from ..exports.alt_export_cleanup import get_alt_export_validator
+        
+        validator = get_alt_export_validator()
+        ttk_content = ttk_xlsx.getvalue()
+        
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"iiko_TTK_{timestamp}.xlsx"
+        
+        validation_result = validator.validate_single_ttk(
+            ttk_content,
+            filename=filename
+        )
+        
+        if not validation_result["valid"]:
+            logger.warning(f"TTK-only export validation issues: {validation_result['issues']}")
+            # Логируем, но не блокируем (может быть legacy данные)
+        else:
+            logger.info(f"TTK-only export validation passed: {validation_result['metadata']}")
         
         return StreamingResponse(
             iter([ttk_xlsx.getvalue()]),
