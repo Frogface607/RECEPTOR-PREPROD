@@ -201,12 +201,13 @@ def export_tc_v2_to_iiko(card: TechCardV2):
 
 @router.post("/techcards.v2/export/iiko.xlsx")
 def export_tc_v2_to_iiko_ttk_xlsx(card: TechCardV2):
-    """Экспорт техкарты в формат iiko XLSX (ТТК по шаблону iikoWeb) с добавлением DISH артикула"""
+    """Экспорт техкарты в формат iiko XLSX (ТТК по шаблону iikoWeb) с добавлением DISH артикула + ALT Cleanup"""
     if not _flag():
         raise HTTPException(404, "feature disabled")
     
     try:
         from ..exports.iiko_xlsx import create_iiko_ttk_xlsx
+        from ..exports.alt_export_cleanup import get_alt_export_validator
         
         # Создаем preflight для получения DISH артикула
         preflight_result = None
