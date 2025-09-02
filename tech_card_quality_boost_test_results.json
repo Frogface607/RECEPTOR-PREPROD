@@ -1,0 +1,270 @@
+{
+  "test_results": [
+    {
+      "test": "Expanded Catalogs Validation",
+      "success": false,
+      "details": "Nutrition: 0 ingredients (200+ req: False), Validation rate: 0.0%, Price catalog: False",
+      "timestamp": 1756789245.5054739,
+      "data": null
+    },
+    {
+      "test": "ID System and Articles Validation",
+      "success": false,
+      "details": "No range IDs: True, Valid ID ratio: 0/0, UUID-based IDs: 0, Range IDs found: 0",
+      "timestamp": 1756789245.6093595,
+      "data": null
+    },
+    {
+      "test": "TechCard Generation with Improved Coverage",
+      "success": false,
+      "details": "Generated: 3/3, Avg nutrition coverage: 0.0% (baseline: 53%), Coverage improved: False",
+      "timestamp": 1756789299.1574006,
+      "data": null
+    },
+    {
+      "test": "XLSX Export with Quality Data",
+      "success": false,
+      "details": "Exports: 2/2 (100.0%), Avg quality score: 60.0/100",
+      "timestamp": 1756789299.9380825,
+      "data": null
+    },
+    {
+      "test": "Data Quality Validation",
+      "success": false,
+      "details": "Queries: 0/4, Avg quality: 0.0/100, Duplicate rate: 0.0%",
+      "timestamp": 1756789300.020204,
+      "data": null
+    },
+    {
+      "test": "ALT Export Cleanup Integration",
+      "success": true,
+      "details": "Integration tests: 3/3 passed",
+      "timestamp": 1756789301.1110537,
+      "data": null
+    },
+    {
+      "test": "Acceptance Criteria Validation",
+      "success": false,
+      "details": "Criteria met: 2/5 (40.0%), Production ready: False",
+      "timestamp": 1756789301.1111672,
+      "data": null
+    }
+  ],
+  "test_artifacts": {
+    "catalog_validation": {
+      "nutrition_catalog.dev.json": {
+        "exists": false,
+        "error": "File not found"
+      },
+      "price_catalog.dev.json": {
+        "exists": false,
+        "error": "File not found"
+      }
+    },
+    "id_system_validation": {
+      "total_results": 0,
+      "valid_ids": 0,
+      "invalid_ids": 0,
+      "range_ids_found": 0,
+      "uuid_based_ids": 0,
+      "invalid_examples": []
+    },
+    "techcard_generation": {
+      "results": [
+        {
+          "dish": "Борщ украинский с говядиной",
+          "success": true,
+          "id": "638f0ba4-7339-4a6b-8e2f-aeeb673748af",
+          "generation_time": 14.44319224357605,
+          "ingredients_count": 8,
+          "nutrition_coverage": {
+            "coverage_percentage": 0.0,
+            "total_ingredients": 8,
+            "covered_ingredients": 0
+          }
+        },
+        {
+          "dish": "Салат Цезарь с курицей",
+          "success": true,
+          "id": "c94f6638-f073-406f-bcc5-d7c8869c5666",
+          "generation_time": 26.786734104156494,
+          "ingredients_count": 5,
+          "nutrition_coverage": {
+            "coverage_percentage": 0.0,
+            "total_ingredients": 5,
+            "covered_ingredients": 0
+          }
+        },
+        {
+          "dish": "Стейк из говядины с картофельным пюре",
+          "success": true,
+          "id": "17f42806-ff93-4acc-aec2-980ac2d920dd",
+          "generation_time": 12.317757606506348,
+          "ingredients_count": 6,
+          "nutrition_coverage": {
+            "coverage_percentage": 0.0,
+            "total_ingredients": 6,
+            "covered_ingredients": 0
+          }
+        }
+      ],
+      "successful_generations": 3,
+      "total_generations": 3,
+      "average_coverage": 0.0,
+      "coverage_improved": false,
+      "baseline_coverage": 53
+    },
+    "xlsx_export": {
+      "results": [
+        {
+          "techcard_name": "Борщ украинский с говядиной",
+          "success": true,
+          "file_size": 6019,
+          "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "quality_analysis": {
+            "overall_score": 60,
+            "file_size": 6019,
+            "has_excel_signature": true,
+            "ingredients_count": 8,
+            "nutrition_coverage": 0.0
+          }
+        },
+        {
+          "techcard_name": "Салат Цезарь с курицей",
+          "success": true,
+          "file_size": 5866,
+          "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "quality_analysis": {
+            "overall_score": 60,
+            "file_size": 5866,
+            "has_excel_signature": true,
+            "ingredients_count": 5,
+            "nutrition_coverage": 0.0
+          }
+        }
+      ],
+      "successful_exports": 2,
+      "total_exports": 2,
+      "export_success_rate": 1.0,
+      "average_quality_score": 60.0
+    },
+    "data_quality": {
+      "query_results": [
+        {
+          "query": "мука",
+          "success": false,
+          "error": "No results"
+        },
+        {
+          "query": "молоко",
+          "success": false,
+          "error": "No results"
+        },
+        {
+          "query": "мясо",
+          "success": false,
+          "error": "No results"
+        },
+        {
+          "query": "овощи",
+          "success": false,
+          "error": "No results"
+        }
+      ],
+      "successful_queries": 0,
+      "total_queries": 4,
+      "average_quality_score": 0,
+      "duplicate_analysis": {
+        "duplicate_rate": 0,
+        "total_items": 0,
+        "duplicates_found": 0
+      }
+    },
+    "alt_cleanup_integration": {
+      "results": [
+        {
+          "test": "cleanup_stats_endpoint",
+          "success": true,
+          "details": "Stats endpoint working: True"
+        },
+        {
+          "test": "zip_export_cleanup_pipeline",
+          "success": true,
+          "details": "ZIP export successful: 10278 bytes"
+        },
+        {
+          "test": "enhanced_export_new_data",
+          "success": true,
+          "details": "Enhanced export: HTTP 200"
+        }
+      ],
+      "successful_tests": 3,
+      "total_tests": 3,
+      "success_rate": 1.0
+    },
+    "acceptance_criteria": {
+      "criteria_results": {
+        "catalog_200_ingredients": {
+          "met": false,
+          "actual": 0,
+          "target": 200
+        },
+        "no_range_ids": {
+          "met": true,
+          "range_ids_found": 0
+        },
+        "correct_units": {
+          "met": false,
+          "validation_rate": 0,
+          "target": 80
+        },
+        "xlsx_export_works": {
+          "met": true,
+          "success_rate": 1.0,
+          "target": 0.8
+        },
+        "nutrition_coverage_improved": {
+          "met": false,
+          "current_coverage": 0.0,
+          "baseline": 53,
+          "target": 80
+        }
+      },
+      "met_criteria": 2,
+      "total_criteria": 5,
+      "acceptance_rate": 0.4,
+      "production_ready": false
+    }
+  },
+  "generated_techcards": [
+    {
+      "id": "638f0ba4-7339-4a6b-8e2f-aeeb673748af",
+      "name": "Борщ украинский с говядиной",
+      "nutrition_coverage": {
+        "coverage_percentage": 0.0,
+        "total_ingredients": 8,
+        "covered_ingredients": 0
+      }
+    },
+    {
+      "id": "c94f6638-f073-406f-bcc5-d7c8869c5666",
+      "name": "Салат Цезарь с курицей",
+      "nutrition_coverage": {
+        "coverage_percentage": 0.0,
+        "total_ingredients": 5,
+        "covered_ingredients": 0
+      }
+    },
+    {
+      "id": "17f42806-ff93-4acc-aec2-980ac2d920dd",
+      "name": "Стейк из говядины с картофельным пюре",
+      "nutrition_coverage": {
+        "coverage_percentage": 0.0,
+        "total_ingredients": 6,
+        "covered_ingredients": 0
+      }
+    }
+  ],
+  "timestamp": "2025-09-02T05:01:41.111247",
+  "test_type": "TECH_CARD_QUALITY_BOOST_Comprehensive_Testing"
+}
