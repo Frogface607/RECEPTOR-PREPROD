@@ -1695,14 +1695,7 @@ function App() {
               )}
             </div>
             {/* МЕТАДАННЫЕ ПИТАНИЯ */}
-            {nutritionMeta.coveragePct < 100 && nutritionMeta.coveragePct > 0 && (
-              <div className="mt-3 text-sm text-gray-400 text-center bg-yellow-900/10 rounded-lg p-3">
-                ⚠️ Покрытие {nutritionMeta.coveragePct}% (часть ингредиентов без данных)
-                {nutritionMeta.source && (
-                  <span className="ml-2">• Источник: {nutritionMeta.source}</span>
-                )}
-              </div>
-            )}
+            {/* CLEANUP TECH CARD DATA & UI: Убираем предупреждения о покрытии */}
             {nutritionMeta.coveragePct === 100 && (
               <div className="mt-3 text-sm text-green-400 text-center">
                 ✅ Полные данные по всем ингредиентам
