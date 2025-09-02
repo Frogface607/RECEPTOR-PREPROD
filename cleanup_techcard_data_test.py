@@ -29,8 +29,7 @@ This test validates the CLEANUP TECH CARD DATA & UI system according to the revi
 Ожидаемый результат: Все техкарты создаются со статусом READY, данные чистые, API работает без warning'ов.
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
 import time
 import os
@@ -46,7 +45,8 @@ API_BASE = f"{BACKEND_URL}/api"
 
 class CleanupTechCardDataTester:
     def __init__(self):
-        self.session = None
+        self.session = requests.Session()
+        self.session.timeout = 60
         self.results = {
             'test_start': datetime.now().isoformat(),
             'ready_status_testing': {},
@@ -55,14 +55,6 @@ class CleanupTechCardDataTester:
             'api_response_format': {},
             'final_assessment': {}
         }
-        
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60))
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
 
     async def test_1_ready_status_testing(self):
         """Test 1: READY Status Testing - Создать техкарту и проверить статус READY"""
