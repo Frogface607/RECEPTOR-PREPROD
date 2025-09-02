@@ -195,8 +195,103 @@
 # IMPORTANT: Main agent must ALWAYS update test_result.md BEFORE calling the testing agent, as it relies on this file to understand what to test next.
 
 #====================================================================================================
-# END - Testing Protocol - DO NOT EDIT OR REMOVE THIS SECTION
+# END - Testing Protocol - DO NOT EDIT OR REMOVE THIS SECTION ABOVE
 #====================================================================================================
+
+## user_problem_statement: "ALT Export Cleanup - Analyze archives, identify duplicate and invalid TTKs, and ensure export occurs only through the ALT pipeline, guaranteeing correct components (Dish-Skeletons, Product-Skeletons, reference TTK) and validating archives for correctness and absence of superfluous files."
+
+## backend:
+  - task: "ALT Export Cleanup Module Creation"
+    implemented: true
+    working: "NA"  # Needs testing
+    file: "/app/backend/receptor_agent/exports/alt_export_cleanup.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created comprehensive ALTExportValidator class with archive analysis, duplicate detection, TTK validation, and cleanup functionality. Includes singleton pattern and admin functions."
+
+  - task: "ALT Export Integration - Single XLSX Export"
+    implemented: true
+    working: "NA"  # Needs testing
+    file: "/app/backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Integrated ALT Export Cleanup validator into single XLSX export endpoint (/techcards.v2/export/iiko.xlsx). Added TTK validation with non-blocking warnings for legacy compatibility."
+
+  - task: "ALT Export Integration - ZIP Export"
+    implemented: true
+    working: "NA"  # Needs testing
+    file: "/app/backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Integrated ALT Export Cleanup into ZIP export endpoint (/export/zip). Added automatic archive cleanup with full analysis and file removal for duplicates, invalid TTKs, and superfluous files."
+
+  - task: "ALT Export Integration - TTK-Only Export"
+    implemented: true
+    working: "NA"  # Needs testing
+    file: "/app/backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Integrated ALT Export Cleanup validation into TTK-only export endpoint (/export/ttk-only). Added TTK file validation with proper logging."
+
+  - task: "ALT Export Admin Endpoints"
+    implemented: true
+    working: "NA"  # Needs testing
+    file: "/app/backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created admin endpoints for monitoring and management: GET /export/cleanup/stats, POST /export/cleanup/audit, POST /export/cleanup/reset-stats. Provides comprehensive cleanup statistics and audit functionality."
+
+## frontend:
+  - task: "No Frontend Changes Required"
+    implemented: true
+    working: "NA"
+    file: "N/A"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "ALT Export Cleanup works transparently on backend. Existing ALT export button functionality remains unchanged. Users will benefit from automatic cleanup without UI changes."
+
+## metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+## test_plan:
+  current_focus:
+    - "ALT Export Cleanup Module Creation"
+    - "ALT Export Integration - Single XLSX Export"
+    - "ALT Export Integration - ZIP Export"
+    - "ALT Export Integration - TTK-Only Export"
+    - "ALT Export Admin Endpoints"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+## agent_communication:
 
 
 
