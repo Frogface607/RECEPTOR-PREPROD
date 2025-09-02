@@ -467,44 +467,44 @@ class CleanupTechCardReadyTester:
         
         print(f"\n💾 Results saved to: /app/cleanup_techcard_ready_test_results.json")
 
-async def main():
+def main():
     """Main test execution"""
     print("🚀 CLEANUP TECH CARD DATA & UI - READY STATUS VERIFICATION")
     print("=" * 70)
     
-    async with CleanupTechCardReadyTester() as tester:
-        test_results = []
-        
-        # Execute all tests
-        test_results.append(await tester.test_1_ready_status_verification())
-        test_results.append(await tester.test_2_api_health_check())
-        test_results.append(await tester.test_3_data_validation())
-        
-        # Generate final assessment
-        final_success = await tester.generate_final_assessment()
-        
-        # Save results
-        await tester.save_results()
-        
-        # Summary
-        passed_tests = sum(test_results)
-        total_tests = len(test_results)
-        
-        print(f"\n" + "=" * 70)
-        print(f"🏁 TESTING COMPLETED")
-        print(f"   Tests passed: {passed_tests}/{total_tests}")
-        print(f"   Success rate: {passed_tests/total_tests*100:.1f}%")
-        print(f"   Final assessment: {'✅ PIPELINE FIXED' if final_success else '❌ NEEDS MORE WORK'}")
-        
-        if final_success:
-            print(f"\n🎉 CLEANUP TECH CARD DATA & UI: PIPELINE FIX VERIFIED!")
-            print(f"   ✅ Tech cards generate with READY status")
-            print(f"   ✅ APIs respond without errors")
-            print(f"   ✅ Data is clean (no range IDs)")
-            print(f"   ✅ Export functions working")
-        else:
-            print(f"\n⚠️ CLEANUP TECH CARD DATA & UI: PIPELINE NEEDS MORE WORK")
-            print(f"   Review results for specific issues to address")
+    tester = CleanupTechCardReadyTester()
+    test_results = []
+    
+    # Execute all tests
+    test_results.append(tester.test_1_ready_status_verification())
+    test_results.append(tester.test_2_api_health_check())
+    test_results.append(tester.test_3_data_validation())
+    
+    # Generate final assessment
+    final_success = tester.generate_final_assessment()
+    
+    # Save results
+    tester.save_results()
+    
+    # Summary
+    passed_tests = sum(test_results)
+    total_tests = len(test_results)
+    
+    print(f"\n" + "=" * 70)
+    print(f"🏁 TESTING COMPLETED")
+    print(f"   Tests passed: {passed_tests}/{total_tests}")
+    print(f"   Success rate: {passed_tests/total_tests*100:.1f}%")
+    print(f"   Final assessment: {'✅ PIPELINE FIXED' if final_success else '❌ NEEDS MORE WORK'}")
+    
+    if final_success:
+        print(f"\n🎉 CLEANUP TECH CARD DATA & UI: PIPELINE FIX VERIFIED!")
+        print(f"   ✅ Tech cards generate with READY status")
+        print(f"   ✅ APIs respond without errors")
+        print(f"   ✅ Data is clean (no range IDs)")
+        print(f"   ✅ Export functions working")
+    else:
+        print(f"\n⚠️ CLEANUP TECH CARD DATA & UI: PIPELINE NEEDS MORE WORK")
+        print(f"   Review results for specific issues to address")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
