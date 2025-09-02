@@ -108,7 +108,7 @@ class TechCardQualityBoostTester:
                             invalid_ingredients = []
                             valid_units = {'kg', 'liter', 'g', 'ml', 'pcs', 'l', 'piece', 'unit'}
                             
-                            ingredients_list = catalog_data if isinstance(catalog_data, list) else catalog_data.get('ingredients', [])
+                            ingredients_list = catalog_data.get('items', [])
                             
                             for i, ingredient in enumerate(ingredients_list[:50]):  # Check first 50 for performance
                                 if isinstance(ingredient, dict):
