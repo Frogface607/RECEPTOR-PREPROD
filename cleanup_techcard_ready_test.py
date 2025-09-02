@@ -46,7 +46,7 @@ class CleanupTechCardReadyTester:
         }
         self.generated_techcards = []
 
-    async def test_1_ready_status_verification(self):
+    def test_1_ready_status_verification(self):
         """Test 1: READY Status Verification - Создать 2-3 техкарты и проверить статус READY"""
         print("🔍 TEST 1: READY STATUS VERIFICATION")
         
@@ -67,14 +67,14 @@ class CleanupTechCardReadyTester:
                 start_time = time.time()
                 
                 # Generate tech card
-                async with self.session.post(
+                response = self.session.post(
                     f"{API_BASE}/v1/techcards.v2/generate",
                     json={"name": dish_name}
-                ) as response:
-                    generation_time = time.time() - start_time
-                    
-                    if response.status == 200:
-                        data = await response.json()
+                )
+                generation_time = time.time() - start_time
+                
+                if response.status_code == 200:
+                    data = response.json()
                         
                         # Extract key data
                         techcard = data.get('techcard', {})
