@@ -36,7 +36,7 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
         <td><strong>ИТОГО по нетто:</strong></td>
         <td colspan="2">—</td>
         <td><strong>{total_netto:.1f}</strong></td>
-        <td colspan="2">Заявленный выход: {card.yield_.perBatch_g:.1f} г</td>
+        <td>Заявленный выход: {card.yield_.perBatch_g:.1f} г</td>
     </tr>
     """
     
