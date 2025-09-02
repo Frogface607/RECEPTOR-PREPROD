@@ -169,14 +169,14 @@ class CleanupTechCardDataTester:
             start_time = time.time()
             
             # Generate specific test dish
-            async with self.session.post(
+            response = self.session.post(
                 f"{API_BASE}/v1/techcards.v2/generate",
                 json={"name": test_dish}
-            ) as response:
-                generation_time = time.time() - start_time
-                
-                if response.status == 200:
-                    data = await response.json()
+            )
+            generation_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
                     
                     # Extract key data
                     status = data.get('status', 'unknown')
