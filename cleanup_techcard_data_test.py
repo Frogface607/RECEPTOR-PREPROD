@@ -657,45 +657,45 @@ class CleanupTechCardDataTester:
         
         print(f"\n💾 Results saved to: /app/cleanup_techcard_data_results.json")
 
-async def main():
+def main():
     """Main test execution"""
     print("🚀 CLEANUP TECH CARD DATA & UI - COMPREHENSIVE TESTING")
     print("=" * 70)
     
-    async with CleanupTechCardDataTester() as tester:
-        test_results = []
-        
-        # Execute all tests
-        test_results.append(await tester.test_1_ready_status_testing())
-        test_results.append(await tester.test_2_pipeline_clean_output())
-        test_results.append(await tester.test_3_data_integrity())
-        test_results.append(await tester.test_4_api_response_format())
-        
-        # Generate final assessment
-        final_success = await tester.generate_final_assessment()
-        
-        # Save results
-        await tester.save_results()
-        
-        # Summary
-        passed_tests = sum(test_results)
-        total_tests = len(test_results)
-        
-        print(f"\n" + "=" * 70)
-        print(f"🏁 TESTING COMPLETED")
-        print(f"   Tests passed: {passed_tests}/{total_tests}")
-        print(f"   Success rate: {passed_tests/total_tests*100:.1f}%")
-        print(f"   Final assessment: {'✅ SUCCESS' if final_success else '❌ NEEDS IMPROVEMENT'}")
-        
-        if final_success:
-            print(f"\n🎉 CLEANUP TECH CARD DATA & UI: PROJECT GOAL ACHIEVED!")
-            print(f"   ✅ All techcards created with READY status")
-            print(f"   ✅ Clean data catalogs confirmed")
-            print(f"   ✅ APIs work without warnings")
-            print(f"   ✅ Pipeline produces clean output")
-        else:
-            print(f"\n⚠️ CLEANUP TECH CARD DATA & UI: NEEDS IMPROVEMENT")
-            print(f"   Review results for specific issues to address")
+    tester = CleanupTechCardDataTester()
+    test_results = []
+    
+    # Execute all tests
+    test_results.append(tester.test_1_ready_status_testing())
+    test_results.append(tester.test_2_pipeline_clean_output())
+    test_results.append(tester.test_3_data_integrity())
+    test_results.append(tester.test_4_api_response_format())
+    
+    # Generate final assessment
+    final_success = tester.generate_final_assessment()
+    
+    # Save results
+    tester.save_results()
+    
+    # Summary
+    passed_tests = sum(test_results)
+    total_tests = len(test_results)
+    
+    print(f"\n" + "=" * 70)
+    print(f"🏁 TESTING COMPLETED")
+    print(f"   Tests passed: {passed_tests}/{total_tests}")
+    print(f"   Success rate: {passed_tests/total_tests*100:.1f}%")
+    print(f"   Final assessment: {'✅ SUCCESS' if final_success else '❌ NEEDS IMPROVEMENT'}")
+    
+    if final_success:
+        print(f"\n🎉 CLEANUP TECH CARD DATA & UI: PROJECT GOAL ACHIEVED!")
+        print(f"   ✅ All techcards created with READY status")
+        print(f"   ✅ Clean data catalogs confirmed")
+        print(f"   ✅ APIs work without warnings")
+        print(f"   ✅ Pipeline produces clean output")
+    else:
+        print(f"\n⚠️ CLEANUP TECH CARD DATA & UI: NEEDS IMPROVEMENT")
+        print(f"   Review results for specific issues to address")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
