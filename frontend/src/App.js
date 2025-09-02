@@ -10664,9 +10664,9 @@ function App() {
               <p className="text-gray-400">Все созданные техкарты и их статусы</p>
             </div>
             
-            {history && history.length > 0 ? (
+            {userHistory && userHistory.length > 0 ? (
               <div className="grid gap-4">
-                {history.filter(item => !item.is_menu).map((techcard, index) => {
+                {userHistory.filter(item => !item.is_menu).map((techcard, index) => {
                   const isV2 = techcard.techcard_v2_data || techcard.status === 'READY';
                   return (
                     <div 
