@@ -240,32 +240,32 @@ class CleanupTechCardReadyTester:
             try:
                 techcard_data = self.generated_techcards[0]['data']
                 
-                async with self.session.post(
+                response = self.session.post(
                     f"{API_BASE}/v1/techcards.v2/export/enhanced/iiko.xlsx",
                     json={
                         "techcard_ids": [self.generated_techcards[0]['id']],
                         "operational_rounding": True
                     }
-                ) as response:
-                    export_success = response.status == 200
-                    if export_success:
-                        content_type = response.headers.get('content-type', '')
-                        is_excel = 'spreadsheet' in content_type or 'excel' in content_type
-                        content_length = len(await response.read())
-                    else:
-                        is_excel = False
-                        content_length = 0
-                    
-                    health_results['export_endpoint'] = {
-                        'accessible': export_success,
-                        'returns_excel': is_excel,
-                        'file_size': content_length,
-                        'status_code': response.status
-                    }
-                    
-                    print(f"      {'✅' if export_success else '❌'} Export endpoint: HTTP {response.status}")
-                    print(f"      {'✅' if is_excel else '❌'} Returns Excel file: {is_excel}")
-                    print(f"      📊 File size: {content_length} bytes")
+                )
+                export_success = response.status_code == 200
+                if export_success:
+                    content_type = response.headers.get('content-type', '')
+                    is_excel = 'spreadsheet' in content_type or 'excel' in content_type
+                    content_length = len(response.content)
+                else:
+                    is_excel = False
+                    content_length = 0
+                
+                health_results['export_endpoint'] = {
+                    'accessible': export_success,
+                    'returns_excel': is_excel,
+                    'file_size': content_length,
+                    'status_code': response.status_code
+                }
+                
+                print(f"      {'✅' if export_success else '❌'} Export endpoint: HTTP {response.status_code}")
+                print(f"      {'✅' if is_excel else '❌'} Returns Excel file: {is_excel}")
+                print(f"      📊 File size: {content_length} bytes")
                     
             except Exception as e:
                 health_results['export_endpoint'] = {
