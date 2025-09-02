@@ -1,29 +1,15 @@
 {
-  "timestamp": "2025-09-02T11:07:35.975308",
+  "timestamp": "2025-09-02T11:12:25.831888",
   "operation": "DISH_SKELETONS_SUCCESS",
-  "total_dishes": 3,
+  "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Борщ украинский с говядиной",
-      "code": "100030",
+      "name": "Омлет с беконом",
+      "code": "100044",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 330.0
-    },
-    {
-      "name": "Стейк из говядины с картофельным пюре",
-      "code": "100033",
-      "type": "DISH",
-      "unit": "порц",
-      "yield_g": 240.0
-    },
-    {
-      "name": "Салат Цезарь с курицей",
-      "code": "100031",
-      "type": "DISH",
-      "unit": "порц",
-      "yield_g": 240.0
+      "yield_g": 200
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."

@@ -1,29 +1,15 @@
 {
-  "timestamp": "2025-09-02T11:07:35.982585",
+  "timestamp": "2025-09-02T11:12:25.839456",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 3,
+  "total_products": 1,
   "all_types_valid": true,
   "products": [
-    {
-      "name": "перец черный",
-      "code": "100022",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Бакалея"
-    },
     {
       "name": "Перец черный",
       "code": "100008",
       "type": "GOODS",
       "unit": "г",
       "group": "Бакалея"
-    },
-    {
-      "name": "Салат Романо",
-      "code": "100032",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Сырьё"
     }
   ],
   "instruction": "Все продукты готовы к импорту в iiko. Типы валидированы согласно требованиям iiko API."
