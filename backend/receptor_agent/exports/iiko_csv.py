@@ -13,7 +13,7 @@ def techcard_to_csv(card: TechCardV2) -> str:
     w.writerow(["dish_name","category","ingredient","uom","gross_g","net_g","loss_pct","portion_g","portions"])
     for ing in card.ingredients:
         w.writerow([
-            card.meta.name,
+            card.meta.title,
             card.meta.category or "",
             ing.canonical or ing.name,
             ing.uom,
