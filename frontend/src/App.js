@@ -17713,7 +17713,7 @@ function App() {
             <div className="bg-gray-800/95 backdrop-blur-lg border-b border-emerald-400/20 p-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-emerald-300 mb-2">🚀 Экспорт в iiko (2 шага)</h2>
+                  <h2 className="text-2xl font-bold text-emerald-300 mb-2">🚀 Экспорт номенклатур</h2>
                   <p className="text-gray-400">Префлайт → ZIP (Скелеты + ТТК) → импорт в iiko</p>
                 </div>
                 <button
