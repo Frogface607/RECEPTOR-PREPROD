@@ -8390,7 +8390,7 @@ function App() {
         axios.get(`${API}/menu-projects/${currentUser.id}`)
       ]);
       
-      const history = historyResponse.data || [];
+      const history = historyResponse.data.history || []; // TC-003: API возвращает {history: [...]}
       const projects = projectsResponse.data.projects || [];
       
       // Calculate overall statistics
