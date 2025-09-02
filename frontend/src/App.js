@@ -8697,7 +8697,7 @@ function App() {
               onClick={() => {
                 // Создаем тестового пользователя без выбора города
                 const testUser = {
-                  id: 'test_user_' + Date.now(),
+                  id: 'test_user_quick',  // Фиксированный ID для совместимости с историей
                   name: 'Тест Предприниматель',
                   email: 'entrepreneur@test.com',
                   city: 'moskva',
