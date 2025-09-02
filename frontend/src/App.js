@@ -53,7 +53,7 @@ function App() {
   const [preserveExistingProductCode, setPreserveExistingProductCode] = useState(true);
   const [tcV2Backup, setTcV2Backup] = useState(null); // For undo functionality
   
-  // Export wizard states (IK-02B-FE/03)
+  // Export wizard states (CREATE EXPORT WIZARD UI)
   const [showExportWizard, setShowExportWizard] = useState(false);
   const [showAdvancedActions, setShowAdvancedActions] = useState(false); // P1: Advanced actions dropdown
   const [exportWizardStep, setExportWizardStep] = useState(1); // 1-4
@@ -67,6 +67,14 @@ function App() {
   });
   const [isExportProcessing, setIsExportProcessing] = useState(false);
   const [exportMessage, setExportMessage] = useState({ type: '', text: '' });
+
+  // NEW: Unified Export Wizard states
+  const [showUnifiedExportWizard, setShowUnifiedExportWizard] = useState(false);
+  const [selectedExportType, setSelectedExportType] = useState(null); // 'xlsx', 'zip', 'pdf', 'full_package'
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportStatus, setExportStatus] = useState('idle'); // 'idle', 'processing', 'success', 'error'
+  const [currentExportStep, setCurrentExportStep] = useState('');
+  const [exportResults, setExportResults] = useState([]);
   
   // Phase 3: FE-04-min Export to iiko (2 steps) states
   const [showPhase3ExportModal, setShowPhase3ExportModal] = useState(false);
