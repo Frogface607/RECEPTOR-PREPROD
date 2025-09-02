@@ -75,14 +75,14 @@ class CleanupTechCardReadyTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                        
-                        # Extract key data
-                        techcard = data.get('techcard', {})
-                        status = data.get('status', 'UNKNOWN')
-                        issues = data.get('issues', [])
-                        
-                        # Check for READY status
-                        is_ready = status == "READY"
+                    
+                    # Extract key data
+                    techcard = data.get('techcard', {})
+                    status = data.get('status', 'UNKNOWN')
+                    issues = data.get('issues', [])
+                    
+                    # Check for READY status
+                    is_ready = status == "READY"
                         has_minimal_issues = len(issues) <= 2  # Allow minimal issues
                         
                         # Check for complete data
