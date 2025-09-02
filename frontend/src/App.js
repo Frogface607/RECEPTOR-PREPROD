@@ -11385,7 +11385,7 @@ function App() {
                 
                 <div className="prose prose-invert max-w-none">
                   {FORCE_TECHCARD_V2 ? (
-                    tcV2 ? renderTechCardV2(tcV2) : (
+                    (console.log('FORCE_TECHCARD_V2 path: tcV2 is', tcV2 ? 'present' : 'null/undefined'), tcV2) ? renderTechCardV2(tcV2) : (
                       <div className="text-center py-12 text-gray-400 space-y-4">
                         <div className="text-6xl">🔧</div>
                         <div>
