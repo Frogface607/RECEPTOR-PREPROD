@@ -264,29 +264,42 @@ class NutritionCalculator:
     def find_nutrition_data(self, ingredient_name: str, canonical_id: str = None) -> Optional[Dict[str, Any]]:
         """
         Поиск данных о питательности ингредиента
-        Порядок источников: USDA → dev-каталог → bootstrap
+        TECH CARD QUALITY BOOST: Улучшенная логика поиска с использованием расширенного каталога
+        Порядок источников: dev-каталог → USDA → bootstrap
         Возвращает: данные продукта или None
         """
         
-        # 1. Сначала пробуем USDA (если включен)
-        if self.use_usda and self.usda_provider:
-            usda_data = self.usda_provider.find_nutrition_data(ingredient_name, canonical_id)
-            if usda_data:
-                return usda_data
-        
-        # 2. Затем пробуем обычный каталог/bootstrap логику
+        # TECH CARD QUALITY BOOST: Сначала пробуем расширенный локальный каталог (приоритет)
         clean_name = ingredient_name.lower().strip()
         
-        # Прямое совпадение
+        # 1. Прямое совпадение по названию
         if clean_name in self.nutrition_index:
-            return self.nutrition_index[clean_name]
+            result = self.nutrition_index[clean_name].copy()
+            result["source"] = "catalog"
+            return result
         
-        # Поиск с очищенным названием
+        # 2. Поиск по canonical_id
+        if canonical_id and canonical_id.lower() in self.nutrition_index:
+            result = self.nutrition_index[canonical_id.lower()].copy()
+            result["source"] = "catalog_canonical"
+            return result
+        
+        # 3. Поиск с очищенным названием
         clean_name_processed = self._clean_ingredient_name(ingredient_name)
         if clean_name_processed in self.nutrition_index:
-            return self.nutrition_index[clean_name_processed]
+            result = self.nutrition_index[clean_name_processed].copy()
+            result["source"] = "catalog_clean"
+            return result
         
-        # Fuzzy matching для близких совпадений (80% порог для каталогов)
+        # 4. TECH CARD QUALITY BOOST: Поиск по ключевым словам
+        words = clean_name.split()
+        for word in words:
+            if len(word) > 3 and word in self.nutrition_index:
+                result = self.nutrition_index[word].copy()
+                result["source"] = "catalog_keyword"
+                return result
+        
+        # 5. Fuzzy matching для близких совпадений (80% порог для каталогов)
         best_match = None
         best_ratio = 0.0
         
@@ -294,9 +307,19 @@ class NutritionCalculator:
             ratio = SequenceMatcher(None, clean_name, indexed_name).ratio()
             if ratio > best_ratio and ratio >= 0.8:  # 80% совпадение для питания
                 best_ratio = ratio
-                best_match = item_data
+                best_match = item_data.copy()
+                best_match["source"] = f"catalog_fuzzy_{best_ratio:.2f}"
         
-        return best_match
+        if best_match:
+            return best_match
+        
+        # 6. Только если в каталоге не найдено - пробуем USDA (если включен)
+        if self.use_usda and self.usda_provider:
+            usda_data = self.usda_provider.find_nutrition_data(ingredient_name, canonical_id)
+            if usda_data:
+                return usda_data
+        
+        return None
     
     def _convert_to_grams(self, amount: float, unit: str, ingredient_name: str = "", nutrition_data: Dict[str, Any] = None) -> Tuple[float, str]:
         """
