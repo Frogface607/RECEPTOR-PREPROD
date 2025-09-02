@@ -1487,9 +1487,7 @@ function App() {
                                   editingErrors.netto_g ? 'border-red-500' : 'border-gray-600'
                                 }`}
                               />
-                              {editingErrors.netto_g && (
-                                <div className="text-red-400 text-xs mt-1">{editingErrors.netto_g}</div>
-                              )}
+                              {/* CLEANUP TECH CARD DATA & UI: Убираем validation errors */}
                             </div>
                           ) : (
                             <span 
