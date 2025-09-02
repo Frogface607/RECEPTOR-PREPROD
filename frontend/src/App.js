@@ -7744,7 +7744,7 @@ function App() {
       setXlsxImportStage('done');
       setXlsxImportResults(result);
       
-      if (result.status === 'success' || result.status === 'draft') {
+      if (result.status === 'success' || result.status === 'draft' || result.status === 'READY') {
         // Success - set the imported techcard
         setTcV2(result.techcard);
         
