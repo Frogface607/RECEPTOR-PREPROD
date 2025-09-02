@@ -56,7 +56,7 @@ class CleanupTechCardDataTester:
             'final_assessment': {}
         }
 
-    async def test_1_ready_status_testing(self):
+    def test_1_ready_status_testing(self):
         """Test 1: READY Status Testing - Создать техкарту и проверить статус READY"""
         print("🔍 TEST 1: READY STATUS TESTING")
         
