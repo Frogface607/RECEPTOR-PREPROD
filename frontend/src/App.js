@@ -1461,9 +1461,7 @@ function App() {
                                   editingErrors.loss_pct ? 'border-red-500' : 'border-gray-600'
                                 }`}
                               />
-                              {editingErrors.loss_pct && (
-                                <div className="text-red-400 text-xs mt-1">{editingErrors.loss_pct}</div>
-                              )}
+                              {/* CLEANUP TECH CARD DATA & UI: Убираем validation errors */}
                             </div>
                           ) : (
                             <span 
