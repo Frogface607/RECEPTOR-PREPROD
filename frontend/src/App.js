@@ -17203,7 +17203,7 @@ function App() {
                       {iikoRmsConnection.status === 'connected' ? '✅ Подключено' :
                        iikoRmsConnection.status === 'needs_reconnection' ? '⚠️ Нужно переподключиться' :
                        iikoRmsConnection.status === 'error' ? '❌ Ошибка' :
-                       '⚪ Не подключено'}
+                       '🔧 Настройка'}
                     </span>
                   </div>
                   {iikoRmsConnection.organization_name && (
