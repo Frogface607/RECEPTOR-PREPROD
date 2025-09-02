@@ -8676,7 +8676,7 @@ function App() {
                 }
                 // Создаем тестового пользователя
                 const testUser = {
-                  id: 'test_user_' + Date.now(),
+                  id: 'test_user_quick',  // Фиксированный ID для совместимости с историей
                   name: 'Тестовый пользователь',
                   email: 'test@example.com',
                   city: selectedCity.toLowerCase(),
