@@ -2769,7 +2769,21 @@
       },
       "source": "manual",
       "added_date": "2025-09-02T04:55:49.975786"
+    },
+    {
+      "canonical_id": "honey",
+      "name": "мед натуральный",
+      "category": "сладости",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 329.0,
+        "proteins_g": 0.8,
+        "fats_g": 0.0,
+        "carbs_g": 81.5
+      },
+      "source": "manual",
+      "added_date": "2025-09-02T04:55:59.723217"
     }
   ],
-  "items_count": 199
+  "items_count": 200
 }
