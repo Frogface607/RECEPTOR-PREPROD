@@ -128,14 +128,14 @@ class CleanupTechCardReadyTester:
                         print(f"      {data_icon} Complete data: {complete_data} (ingredients: {len(techcard.get('ingredients', []))}, nutrition: {has_nutrition}, cost: {has_cost})")
                         print(f"      ⏱️ Generated in {generation_time:.1f}s")
                         
-                    else:
-                        print(f"      ❌ Generation failed: HTTP {response.status}")
-                        generation_results.append({
-                            'name': dish_name,
-                            'status': 'ERROR',
-                            'error': f"HTTP {response.status}",
-                            'success': False
-                        })
+                else:
+                    print(f"      ❌ Generation failed: HTTP {response.status_code}")
+                    generation_results.append({
+                        'name': dish_name,
+                        'status': 'ERROR',
+                        'error': f"HTTP {response.status_code}",
+                        'success': False
+                    })
                         
             except Exception as e:
                 print(f"      ❌ Generation error: {str(e)}")
