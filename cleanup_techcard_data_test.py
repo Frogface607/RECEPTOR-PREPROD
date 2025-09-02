@@ -468,7 +468,7 @@ class CleanupTechCardDataTester:
         
         return nutrition_clean and price_clean
 
-    async def test_4_api_response_format(self):
+    def test_4_api_response_format(self):
         """Test 4: API Response Format - Проверить чистоту API ответов"""
         print("\n🔗 TEST 4: API RESPONSE FORMAT")
         
