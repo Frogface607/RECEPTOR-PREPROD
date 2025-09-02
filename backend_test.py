@@ -248,7 +248,7 @@ class TechCardNutritionTester:
                 )
                 return False
             
-            card_id = card.get('id')
+            card_id = card.get('id') or card.get('meta', {}).get('id')
             nutrition_coverage = card.get('nutritionMeta', {}).get('coveragePct', 0)
             
             self.log_result(
