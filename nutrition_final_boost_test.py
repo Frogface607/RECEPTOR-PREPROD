@@ -272,7 +272,8 @@ class TechCardNutritionFinalBoostTester:
         
         successful_exports = sum(1 for result in export_results if result.get('success', False))
         avg_export_time = statistics.mean(export_times) if export_times else 0
-        avg_file_size = statistics.mean([r.get('file_size', 0) for r in export_results if r.get('success', False)])
+        successful_file_sizes = [r.get('file_size', 0) for r in export_results if r.get('success', False)]
+        avg_file_size = statistics.mean(successful_file_sizes) if successful_file_sizes else 0
         
         self.results['xlsx_export'] = {
             'export_results': export_results,
