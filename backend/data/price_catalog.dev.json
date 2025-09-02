@@ -1,131 +1,989 @@
 {
   "catalog_version": "1.0",
-  "last_updated": "2025-01-17",
+  "last_updated": "2025-09-02",
   "currency": "RUB",
   "price_unit": "per_kg_or_liter",
   "ingredients": {
     "мясо_птица": {
-      "куриное филе": {"price": 450, "unit": "kg", "category": "мясо"},
-      "куриное бедро": {"price": 350, "unit": "kg", "category": "мясо"},
-      "куриные крылья": {"price": 280, "unit": "kg", "category": "мясо"},
-      "курица целая": {"price": 220, "unit": "kg", "category": "мясо"},
-      "индейка филе": {"price": 650, "unit": "kg", "category": "мясо"},
-      "утка": {"price": 800, "unit": "kg", "category": "мясо"}
+      "куриное филе": {
+        "price": 450,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "b580cb10-25d7-4c89-9f10-41a89dd17a7a",
+        "updated_date": "2025-09-02T04:50:14.761828"
+      },
+      "куриное бедро": {
+        "price": 350,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "39737d6f-c5c3-47ac-bfe1-b6b08e1f4664",
+        "updated_date": "2025-09-02T04:50:14.761833"
+      },
+      "куриные крылья": {
+        "price": 280,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "452b65b7-14a7-4a2b-b67d-1a46b71b40c7",
+        "updated_date": "2025-09-02T04:50:14.761838"
+      },
+      "курица целая": {
+        "price": 220,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "084d919d-1778-4602-bcdf-deee5fa88cc9",
+        "updated_date": "2025-09-02T04:50:14.761844"
+      },
+      "индейка филе": {
+        "price": 650,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "b15f1f55-a542-4926-9b0a-a2a671f442a5",
+        "updated_date": "2025-09-02T04:50:14.761848"
+      },
+      "утка": {
+        "price": 800,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "f6b2505f-0451-43ce-a6d4-eb3b7e57e86e",
+        "updated_date": "2025-09-02T04:50:14.761853"
+      }
     },
     "мясо_говядина": {
-      "говядина тушеная": {"price": 800, "unit": "kg", "category": "мясо"},
-      "говядина для стейка": {"price": 1200, "unit": "kg", "category": "мясо"},
-      "говядина фарш": {"price": 450, "unit": "kg", "category": "мясо"},
-      "телятина": {"price": 900, "unit": "kg", "category": "мясо"}
+      "говядина тушеная": {
+        "price": 800,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "e814830e-a366-4cf3-b317-23f459560090",
+        "updated_date": "2025-09-02T04:50:14.761859"
+      },
+      "говядина для стейка": {
+        "price": 1200,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "75d662ee-2db0-4710-b7b0-1b98c95a1b5d",
+        "updated_date": "2025-09-02T04:50:14.761864"
+      },
+      "говядина фарш": {
+        "price": 450,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "0a25c80c-78ab-4207-b5ed-438ac1d3585b",
+        "updated_date": "2025-09-02T04:50:14.761869"
+      },
+      "телятина": {
+        "price": 900,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "0511a2af-904e-41d7-8a39-d305a95e4e42",
+        "updated_date": "2025-09-02T04:50:14.761874"
+      }
     },
     "мясо_свинина": {
-      "свинина вырезка": {"price": 550, "unit": "kg", "category": "мясо"},
-      "свинина лопатка": {"price": 400, "unit": "kg", "category": "мясо"},
-      "бекон": {"price": 700, "unit": "kg", "category": "мясо"},
-      "ветчина": {"price": 800, "unit": "kg", "category": "мясо"}
+      "свинина вырезка": {
+        "price": 550,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "371d8678-230c-41d0-928b-e4ef8d8cc1ad",
+        "updated_date": "2025-09-02T04:50:14.761879"
+      },
+      "свинина лопатка": {
+        "price": 400,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "3c411c6f-49a3-4ab3-b7d5-5e97e698f6e2",
+        "updated_date": "2025-09-02T04:50:14.761884"
+      },
+      "бекон": {
+        "price": 700,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "19d9c604-fb57-40f6-b8ca-72952f2faea0",
+        "updated_date": "2025-09-02T04:50:14.761889"
+      },
+      "ветчина": {
+        "price": 800,
+        "unit": "kg",
+        "category": "мясо",
+        "product_code": "9d23a391-0e5a-4a40-9888-a4e4a7ecde1b",
+        "updated_date": "2025-09-02T04:50:14.761894"
+      }
     },
     "рыба_морепродукты": {
-      "лосось": {"price": 1000, "unit": "kg", "category": "рыба"},
-      "семга": {"price": 1200, "unit": "kg", "category": "рыба"},
-      "треска": {"price": 600, "unit": "kg", "category": "рыба"},
-      "скумбрия": {"price": 350, "unit": "kg", "category": "рыба"},
-      "креветки": {"price": 800, "unit": "kg", "category": "морепродукты"},
-      "кальмары": {"price": 450, "unit": "kg", "category": "морепродукты"},
-      "мидии": {"price": 300, "unit": "kg", "category": "морепродукты"}
+      "лосось": {
+        "price": 1000,
+        "unit": "kg",
+        "category": "рыба",
+        "product_code": "9c475f1f-b989-45a5-bba3-eaa0949cb81d",
+        "updated_date": "2025-09-02T04:50:14.761899"
+      },
+      "семга": {
+        "price": 1200,
+        "unit": "kg",
+        "category": "рыба",
+        "product_code": "f00ab312-ec34-4335-a88d-25f4a775dadb",
+        "updated_date": "2025-09-02T04:50:14.761904"
+      },
+      "треска": {
+        "price": 600,
+        "unit": "kg",
+        "category": "рыба",
+        "product_code": "8cef2eb6-eadd-4311-bab1-45f6f87673ee",
+        "updated_date": "2025-09-02T04:50:14.761909"
+      },
+      "скумбрия": {
+        "price": 350,
+        "unit": "kg",
+        "category": "рыба",
+        "product_code": "bc0b3d70-2c3d-49f6-9aad-d8b76cf2d4a4",
+        "updated_date": "2025-09-02T04:50:14.761914"
+      },
+      "креветки": {
+        "price": 800,
+        "unit": "kg",
+        "category": "морепродукты",
+        "product_code": "abfb4900-be3a-4880-be37-935423c6c433",
+        "updated_date": "2025-09-02T04:50:14.761919"
+      },
+      "кальмары": {
+        "price": 450,
+        "unit": "kg",
+        "category": "морепродукты",
+        "product_code": "abf5cb13-ee55-4f8c-aa07-6f84ee06e656",
+        "updated_date": "2025-09-02T04:50:14.761924"
+      },
+      "мидии": {
+        "price": 300,
+        "unit": "kg",
+        "category": "морепродукты",
+        "product_code": "3358eeff-4e8b-4be8-8ca8-0308910fbc34",
+        "updated_date": "2025-09-02T04:50:14.761928"
+      }
     },
     "молочные": {
-      "молоко": {"price": 80, "unit": "liter", "category": "молочные"},
-      "сливки 20%": {"price": 150, "unit": "liter", "category": "молочные"},
-      "сливки 35%": {"price": 200, "unit": "liter", "category": "молочные"},
-      "сметана": {"price": 120, "unit": "kg", "category": "молочные"},
-      "творог": {"price": 180, "unit": "kg", "category": "молочные"},
-      "сыр российский": {"price": 400, "unit": "kg", "category": "сыры"},
-      "сыр пармезан": {"price": 1200, "unit": "kg", "category": "сыры"},
-      "сыр моцарелла": {"price": 800, "unit": "kg", "category": "сыры"},
-      "сыр чеддер": {"price": 600, "unit": "kg", "category": "сыры"},
-      "масло сливочное": {"price": 400, "unit": "kg", "category": "молочные"}
+      "молоко": {
+        "price": 80,
+        "unit": "liter",
+        "category": "молочные",
+        "product_code": "a05f9bd5-71a4-4282-9a9d-c1f813b2556d",
+        "updated_date": "2025-09-02T04:50:14.761934"
+      },
+      "сливки 20%": {
+        "price": 150,
+        "unit": "liter",
+        "category": "молочные",
+        "product_code": "8c60e21a-5853-42f6-87b3-0af0821b3bd5",
+        "updated_date": "2025-09-02T04:50:14.761938"
+      },
+      "сливки 35%": {
+        "price": 200,
+        "unit": "liter",
+        "category": "молочные",
+        "product_code": "a634abae-8cf9-4264-8828-350cda839a85",
+        "updated_date": "2025-09-02T04:50:14.761943"
+      },
+      "сметана": {
+        "price": 120,
+        "unit": "kg",
+        "category": "молочные",
+        "product_code": "cc2c0b03-9b7a-40f6-b40f-76bb5afd8e8a",
+        "updated_date": "2025-09-02T04:50:14.761948"
+      },
+      "творог": {
+        "price": 180,
+        "unit": "kg",
+        "category": "молочные",
+        "product_code": "7777b6f4-3f25-4998-9eab-5c4c9d1d8bd1",
+        "updated_date": "2025-09-02T04:50:14.761953"
+      },
+      "сыр российский": {
+        "price": 400,
+        "unit": "kg",
+        "category": "сыры",
+        "product_code": "3c7424f2-4dbf-46e0-a4d7-90ff286c0546",
+        "updated_date": "2025-09-02T04:50:14.761958"
+      },
+      "сыр пармезан": {
+        "price": 1200,
+        "unit": "kg",
+        "category": "сыры",
+        "product_code": "cd4423ad-7941-47a4-a1c9-8bf42575e4ee",
+        "updated_date": "2025-09-02T04:50:14.761963"
+      },
+      "сыр моцарелла": {
+        "price": 800,
+        "unit": "kg",
+        "category": "сыры",
+        "product_code": "6d285c07-e3d8-4453-8943-59266c723e39",
+        "updated_date": "2025-09-02T04:50:14.761968"
+      },
+      "сыр чеддер": {
+        "price": 600,
+        "unit": "kg",
+        "category": "сыры",
+        "product_code": "8a00776e-874a-4e43-bf75-ccec1b7e2b46",
+        "updated_date": "2025-09-02T04:50:14.761973"
+      },
+      "масло сливочное": {
+        "price": 400,
+        "unit": "kg",
+        "category": "молочные",
+        "product_code": "51cad7cc-a694-488d-bd1b-0ae608c2a888",
+        "updated_date": "2025-09-02T04:50:14.761978"
+      }
     },
     "яйца": {
-      "яйца куриные": {"price": 120, "unit": "kg", "category": "яйца", "pieces_per_kg": 18},
-      "перепелиные яйца": {"price": 600, "unit": "kg", "category": "яйца", "pieces_per_kg": 80}
+      "яйца куриные": {
+        "price": 120,
+        "unit": "kg",
+        "category": "яйца",
+        "pieces_per_kg": 18,
+        "product_code": "443d5198-b949-408e-8f04-ec121b69e3d1",
+        "updated_date": "2025-09-02T04:50:14.761983"
+      },
+      "перепелиные яйца": {
+        "price": 600,
+        "unit": "kg",
+        "category": "яйца",
+        "pieces_per_kg": 80,
+        "product_code": "4f71e5b7-05c5-41df-956f-26709b980ff1",
+        "updated_date": "2025-09-02T04:50:14.761988"
+      }
     },
     "крупы_макароны": {
-      "рис круглозерный": {"price": 90, "unit": "kg", "category": "крупы"},
-      "рис длиннозерный": {"price": 120, "unit": "kg", "category": "крупы"},
-      "гречка": {"price": 100, "unit": "kg", "category": "крупы"},
-      "пшено": {"price": 70, "unit": "kg", "category": "крупы"},
-      "овсянка": {"price": 80, "unit": "kg", "category": "крупы"},
-      "макароны": {"price": 110, "unit": "kg", "category": "макароны"},
-      "спагетти": {"price": 130, "unit": "kg", "category": "макароны"},
-      "паста": {"price": 150, "unit": "kg", "category": "макароны"}
+      "рис круглозерный": {
+        "price": 90,
+        "unit": "kg",
+        "category": "крупы",
+        "product_code": "d5c835ec-1e5d-447a-8842-b82d8142f211",
+        "updated_date": "2025-09-02T04:50:14.761993"
+      },
+      "рис длиннозерный": {
+        "price": 120,
+        "unit": "kg",
+        "category": "крупы",
+        "product_code": "b467fb11-f513-41b9-94d6-1dc96087686b",
+        "updated_date": "2025-09-02T04:50:14.761998"
+      },
+      "гречка": {
+        "price": 100,
+        "unit": "kg",
+        "category": "крупы",
+        "product_code": "cc74c132-692f-40b2-9730-012640ce9b9d",
+        "updated_date": "2025-09-02T04:50:14.762003"
+      },
+      "пшено": {
+        "price": 70,
+        "unit": "kg",
+        "category": "крупы",
+        "product_code": "313145b3-2263-4821-b1d9-371a21da7a26",
+        "updated_date": "2025-09-02T04:50:14.762008"
+      },
+      "овсянка": {
+        "price": 80,
+        "unit": "kg",
+        "category": "крупы",
+        "product_code": "e2cb1b36-fbd7-4e74-8198-6e658e84c6e0",
+        "updated_date": "2025-09-02T04:50:14.762013"
+      },
+      "макароны": {
+        "price": 110,
+        "unit": "kg",
+        "category": "макароны",
+        "product_code": "9ab156e8-e088-4b50-b6c1-adfc2bcc4a77",
+        "updated_date": "2025-09-02T04:50:14.762018"
+      },
+      "спагетти": {
+        "price": 130,
+        "unit": "kg",
+        "category": "макароны",
+        "product_code": "1c6ada6d-7192-49e2-9222-bd76046657ac",
+        "updated_date": "2025-09-02T04:50:14.762023"
+      },
+      "паста": {
+        "price": 150,
+        "unit": "kg",
+        "category": "макароны",
+        "product_code": "ff770b67-803a-4323-87d0-89e737578d67",
+        "updated_date": "2025-09-02T04:50:14.762027"
+      }
     },
     "овощи": {
-      "картофель": {"price": 40, "unit": "kg", "category": "овощи"},
-      "морковь": {"price": 50, "unit": "kg", "category": "овощи"},
-      "лук репчатый": {"price": 35, "unit": "kg", "category": "овощи"},
-      "лук зеленый": {"price": 200, "unit": "kg", "category": "зелень"},
-      "чеснок": {"price": 300, "unit": "kg", "category": "овощи"},
-      "помидоры": {"price": 180, "unit": "kg", "category": "овощи"},
-      "огурцы": {"price": 120, "unit": "kg", "category": "овощи"},
-      "капуста белокочанная": {"price": 45, "unit": "kg", "category": "овощи"},
-      "капуста цветная": {"price": 120, "unit": "kg", "category": "овощи"},
-      "брокколи": {"price": 200, "unit": "kg", "category": "овощи"},
-      "перец болгарский": {"price": 250, "unit": "kg", "category": "овощи"},
-      "баклажаны": {"price": 180, "unit": "kg", "category": "овощи"},
-      "кабачки": {"price": 80, "unit": "kg", "category": "овощи"},
-      "свекла": {"price": 50, "unit": "kg", "category": "овощи"}
+      "картофель": {
+        "price": 40,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "f5c5ca51-7211-4fcb-bba6-4c2cfda39186",
+        "updated_date": "2025-09-02T04:50:14.762060"
+      },
+      "морковь": {
+        "price": 50,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "72c23e4f-4af2-4638-a041-c6d0daf5d2cb",
+        "updated_date": "2025-09-02T04:50:14.762066"
+      },
+      "лук репчатый": {
+        "price": 35,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "8ed30538-b4fa-49a3-863b-994d73a87a16",
+        "updated_date": "2025-09-02T04:50:14.762071"
+      },
+      "лук зеленый": {
+        "price": 200,
+        "unit": "kg",
+        "category": "зелень",
+        "product_code": "e8a70d48-8036-431b-b0b7-492a8beb75f3",
+        "updated_date": "2025-09-02T04:50:14.762076"
+      },
+      "чеснок": {
+        "price": 300,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "a95c1793-9501-4f2d-873e-8cbdbb6640e1",
+        "updated_date": "2025-09-02T04:50:14.762081"
+      },
+      "помидоры": {
+        "price": 180,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "b6484e84-0645-44de-8ad7-181c3b168256",
+        "updated_date": "2025-09-02T04:50:14.762086"
+      },
+      "огурцы": {
+        "price": 120,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "be54cb60-4f18-4936-96e8-2080fce643d7",
+        "updated_date": "2025-09-02T04:50:14.762091"
+      },
+      "капуста белокочанная": {
+        "price": 45,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "925f79a9-9b4d-4033-8966-041886823322",
+        "updated_date": "2025-09-02T04:50:14.762096"
+      },
+      "капуста цветная": {
+        "price": 120,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "c2011639-1fa6-46fe-aaa3-9191462c40d3",
+        "updated_date": "2025-09-02T04:50:14.762101"
+      },
+      "брокколи": {
+        "price": 200,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "1e3995de-6627-4f7e-861b-bef25f889217",
+        "updated_date": "2025-09-02T04:50:14.762106"
+      },
+      "перец болгарский": {
+        "price": 250,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "00d1dd60-f757-4214-8e5a-68ae24991bbf",
+        "updated_date": "2025-09-02T04:50:14.762128"
+      },
+      "баклажаны": {
+        "price": 180,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "711ac1d2-603f-4e01-89f1-08c2b66025dc",
+        "updated_date": "2025-09-02T04:50:14.762134"
+      },
+      "кабачки": {
+        "price": 80,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "aa913e14-57ba-4537-9496-4dbb4930e3f0",
+        "updated_date": "2025-09-02T04:50:14.762139"
+      },
+      "свекла": {
+        "price": 50,
+        "unit": "kg",
+        "category": "овощи",
+        "product_code": "90f8e106-e1d8-47c7-9e4a-d8b5c3efcc59",
+        "updated_date": "2025-09-02T04:50:14.762144"
+      }
     },
     "зелень_специи": {
-      "укроп": {"price": 800, "unit": "kg", "category": "зелень"},
-      "петрушка": {"price": 700, "unit": "kg", "category": "зелень"},
-      "базилик": {"price": 1200, "unit": "kg", "category": "зелень"},
-      "кинза": {"price": 900, "unit": "kg", "category": "зелень"},
-      "соль поваренная": {"price": 25, "unit": "kg", "category": "специи"},
-      "перец черный молотый": {"price": 800, "unit": "kg", "category": "специи"},
-      "перец красный молотый": {"price": 600, "unit": "kg", "category": "специи"},
-      "лавровый лист": {"price": 2000, "unit": "kg", "category": "специи"},
-      "тмин": {"price": 400, "unit": "kg", "category": "специи"},
-      "орегано": {"price": 1500, "unit": "kg", "category": "специи"},
-      "тимьян": {"price": 1800, "unit": "kg", "category": "специи"}
+      "укроп": {
+        "price": 800,
+        "unit": "kg",
+        "category": "зелень",
+        "product_code": "0fa0f785-7be2-431d-8e41-ed924d566257",
+        "updated_date": "2025-09-02T04:50:14.762150"
+      },
+      "петрушка": {
+        "price": 700,
+        "unit": "kg",
+        "category": "зелень",
+        "product_code": "d36b4dfe-37dd-4f28-92af-eaa2a6341968",
+        "updated_date": "2025-09-02T04:50:14.762154"
+      },
+      "базилик": {
+        "price": 1200,
+        "unit": "kg",
+        "category": "зелень",
+        "product_code": "94849f2f-3656-4bb7-bd96-21e7310b06b8",
+        "updated_date": "2025-09-02T04:50:14.762159"
+      },
+      "кинза": {
+        "price": 900,
+        "unit": "kg",
+        "category": "зелень",
+        "product_code": "eb7151bf-edbb-42b2-b9c2-a4097ed6b2e7",
+        "updated_date": "2025-09-02T04:50:14.762165"
+      },
+      "соль поваренная": {
+        "price": 25,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "89f62fe6-03c1-4ea0-9306-616e445b3869",
+        "updated_date": "2025-09-02T04:50:14.762170"
+      },
+      "перец черный молотый": {
+        "price": 800,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "c25369c9-3a8c-4189-a280-7ea2522de236",
+        "updated_date": "2025-09-02T04:50:14.762174"
+      },
+      "перец красный молотый": {
+        "price": 600,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "f75fa84d-c3e6-4b64-81e6-2f4237475355",
+        "updated_date": "2025-09-02T04:50:14.762179"
+      },
+      "лавровый лист": {
+        "price": 2000,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "ea276d36-7efd-4622-8cb9-a28fa3973d54",
+        "updated_date": "2025-09-02T04:50:14.762184"
+      },
+      "тмин": {
+        "price": 400,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "32f88c97-d91a-4034-a4cb-3aa79677ea62",
+        "updated_date": "2025-09-02T04:50:14.762189"
+      },
+      "орегано": {
+        "price": 1500,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "5f84a2d9-ceaa-4833-b99e-20cc1f6c8582",
+        "updated_date": "2025-09-02T04:50:14.762203"
+      },
+      "тимьян": {
+        "price": 1800,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "96294ad1-6858-4cac-8659-52fc6adf1367",
+        "updated_date": "2025-09-02T04:50:14.762209"
+      }
     },
     "масла_жиры": {
-      "растительное масло": {"price": 150, "unit": "liter", "category": "масла"},
-      "оливковое масло": {"price": 400, "unit": "liter", "category": "масла"},
-      "масло подсолнечное": {"price": 130, "unit": "liter", "category": "масла"},
-      "маргарин": {"price": 180, "unit": "kg", "category": "жиры"},
-      "жир свиной": {"price": 250, "unit": "kg", "category": "жиры"}
+      "растительное масло": {
+        "price": 150,
+        "unit": "liter",
+        "category": "масла",
+        "product_code": "e060e393-4524-42ee-b756-3b73a5bd15c7",
+        "updated_date": "2025-09-02T04:50:14.762214"
+      },
+      "оливковое масло": {
+        "price": 400,
+        "unit": "liter",
+        "category": "масла",
+        "product_code": "7f975404-d9e6-4afc-8865-97f8633f9240",
+        "updated_date": "2025-09-02T04:50:14.762219"
+      },
+      "масло подсолнечное": {
+        "price": 130,
+        "unit": "liter",
+        "category": "масла",
+        "product_code": "7818f725-3ca6-4354-98f1-aac6983a2914",
+        "updated_date": "2025-09-02T04:50:14.762224"
+      },
+      "маргарин": {
+        "price": 180,
+        "unit": "kg",
+        "category": "жиры",
+        "product_code": "6c167f5b-b821-4f9d-acbb-434456a6b8ea",
+        "updated_date": "2025-09-02T04:50:14.762229"
+      },
+      "жир свиной": {
+        "price": 250,
+        "unit": "kg",
+        "category": "жиры",
+        "product_code": "1779c905-27b5-46c3-9c86-1e51320ed2f9",
+        "updated_date": "2025-09-02T04:50:14.762233"
+      }
     },
     "мука_сахар": {
-      "мука пшеничная": {"price": 45, "unit": "kg", "category": "мука"},
-      "мука ржаная": {"price": 55, "unit": "kg", "category": "мука"},
-      "сахар": {"price": 80, "unit": "kg", "category": "сахар"},
-      "сахар коричневый": {"price": 120, "unit": "kg", "category": "сахар"},
-      "мед": {"price": 500, "unit": "kg", "category": "подсластители"}
+      "мука пшеничная": {
+        "price": 45,
+        "unit": "kg",
+        "category": "мука",
+        "product_code": "d471d0c4-53dd-4aaa-b59d-78918fedb4d6",
+        "updated_date": "2025-09-02T04:50:14.762239"
+      },
+      "мука ржаная": {
+        "price": 55,
+        "unit": "kg",
+        "category": "мука",
+        "product_code": "56407f83-ebb3-4443-8042-656c58f9da90",
+        "updated_date": "2025-09-02T04:50:14.762243"
+      },
+      "сахар": {
+        "price": 80,
+        "unit": "kg",
+        "category": "сахар",
+        "product_code": "dcf7d234-184f-40ba-9653-b71445e97440",
+        "updated_date": "2025-09-02T04:50:14.762248"
+      },
+      "сахар коричневый": {
+        "price": 120,
+        "unit": "kg",
+        "category": "сахар",
+        "product_code": "8d0ec8a0-ee8a-4d63-a11b-f15c8df7e147",
+        "updated_date": "2025-09-02T04:50:14.762254"
+      },
+      "мед": {
+        "price": 500,
+        "unit": "kg",
+        "category": "подсластители",
+        "product_code": "54516cbd-2af9-4502-9f73-d3b8a267987a",
+        "updated_date": "2025-09-02T04:50:14.762259"
+      }
     },
     "фрукты_ягоды": {
-      "яблоки": {"price": 100, "unit": "kg", "category": "фрукты"},
-      "груши": {"price": 150, "unit": "kg", "category": "фрукты"},
-      "бананы": {"price": 120, "unit": "kg", "category": "фрукты"},
-      "апельсины": {"price": 140, "unit": "kg", "category": "фрукты"},
-      "лимоны": {"price": 180, "unit": "kg", "category": "фрукты"},
-      "клубника": {"price": 400, "unit": "kg", "category": "ягоды"},
-      "малина": {"price": 600, "unit": "kg", "category": "ягоды"},
-      "черника": {"price": 800, "unit": "kg", "category": "ягоды"}
+      "яблоки": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "994fe397-ff94-43c0-a41e-4a8cb30e9293",
+        "added_date": "2025-09-02T04:50:14.761509"
+      },
+      "груши": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "62685b1e-9fd0-49aa-9655-0af6310badac",
+        "added_date": "2025-09-02T04:50:14.761525"
+      },
+      "бананы": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "5b442caf-dd27-4c63-b85f-4e62c7df2ff7",
+        "added_date": "2025-09-02T04:50:14.761537"
+      },
+      "апельсины": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "d59e83a4-3597-4141-b4f8-e2f6b61ccb7e",
+        "added_date": "2025-09-02T04:50:14.761544"
+      },
+      "лимоны": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "069995f0-5e90-40cd-842b-a3b4ec23af42",
+        "added_date": "2025-09-02T04:50:14.761551"
+      },
+      "лайм": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "9de986c1-d50c-4333-a248-f76c1b80d7ea",
+        "added_date": "2025-09-02T04:50:14.761557"
+      },
+      "грейпфрут": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "38be37f1-c6c4-4f1b-888f-c2542df0fe39",
+        "added_date": "2025-09-02T04:50:14.761565"
+      },
+      "ананас": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "aa59f54f-5962-42ab-afc7-c2f1bbd7a336",
+        "added_date": "2025-09-02T04:50:14.761572"
+      },
+      "манго": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "660195c9-2f32-4f21-a251-abcf4347f59f",
+        "added_date": "2025-09-02T04:50:14.761578"
+      },
+      "киви": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "c6fa9811-337b-437c-866e-5d3d89ce8f44",
+        "added_date": "2025-09-02T04:50:14.761584"
+      },
+      "клубника": {
+        "price": 250,
+        "unit": "kg",
+        "category": "ягоды",
+        "product_code": "b928cb4a-50b4-43ca-985c-4a3f5eccaac1",
+        "added_date": "2025-09-02T04:50:14.761590"
+      },
+      "малина": {
+        "price": 250,
+        "unit": "kg",
+        "category": "ягоды",
+        "product_code": "a9ef8881-50a5-4d72-b400-ea2d83a623c9",
+        "added_date": "2025-09-02T04:50:14.761596"
+      },
+      "черника": {
+        "price": 250,
+        "unit": "kg",
+        "category": "ягоды",
+        "product_code": "ef01c1e0-4734-454a-b4a0-91046c6f1de9",
+        "added_date": "2025-09-02T04:50:14.761602"
+      },
+      "ежевика": {
+        "price": 250,
+        "unit": "kg",
+        "category": "ягоды",
+        "product_code": "557dfa8b-7004-44fb-bf2a-a0b1530c58f3",
+        "added_date": "2025-09-02T04:50:14.761608"
+      },
+      "вишня": {
+        "price": 250,
+        "unit": "kg",
+        "category": "ягоды",
+        "product_code": "93687657-826d-4295-b46d-e8b5cf8f0730",
+        "added_date": "2025-09-02T04:50:14.761614"
+      },
+      "черешня": {
+        "price": 250,
+        "unit": "kg",
+        "category": "ягоды",
+        "product_code": "cc7bc169-d9d3-40fe-a9b9-4cfbd2a658c1",
+        "added_date": "2025-09-02T04:50:14.761620"
+      },
+      "персики": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "f8e8e3dd-7607-469d-8294-1e9c7c446eff",
+        "added_date": "2025-09-02T04:50:14.761626"
+      },
+      "абрикосы": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "6da5c386-b1d8-43d3-bc8b-361a8cccfac3",
+        "added_date": "2025-09-02T04:50:14.761632"
+      },
+      "сливы": {
+        "price": 250,
+        "unit": "kg",
+        "category": "фрукты",
+        "product_code": "f68edc95-5162-4b27-8e40-65be7ecc5808",
+        "added_date": "2025-09-02T04:50:14.761637"
+      }
     },
     "консервы_соусы": {
-      "томатная паста": {"price": 200, "unit": "kg", "category": "консервы"},
-      "томаты в собственном соку": {"price": 150, "unit": "kg", "category": "консервы"},
-      "майонез": {"price": 180, "unit": "kg", "category": "соусы"},
-      "кетчуп": {"price": 160, "unit": "kg", "category": "соусы"},
-      "горчица": {"price": 120, "unit": "kg", "category": "соусы"},
-      "уксус": {"price": 60, "unit": "liter", "category": "уксус"},
-      "соевый соус": {"price": 300, "unit": "liter", "category": "соусы"}
+      "томатная паста": {
+        "price": 200,
+        "unit": "kg",
+        "category": "консервы",
+        "product_code": "9f07c662-ebe5-4234-8ba4-22fede9d37ba",
+        "updated_date": "2025-09-02T04:50:14.762304"
+      },
+      "томаты в собственном соку": {
+        "price": 150,
+        "unit": "kg",
+        "category": "консервы",
+        "product_code": "4c8f3d98-607c-49e0-aca0-eb564c4b6ae6",
+        "updated_date": "2025-09-02T04:50:14.762309"
+      },
+      "майонез": {
+        "price": 180,
+        "unit": "kg",
+        "category": "соусы",
+        "product_code": "19953bce-f247-44b1-b70c-291399e520fb",
+        "updated_date": "2025-09-02T04:50:14.762313"
+      },
+      "кетчуп": {
+        "price": 160,
+        "unit": "kg",
+        "category": "соусы",
+        "product_code": "33ef3efa-3a2c-47de-8be4-dad0b7300175",
+        "updated_date": "2025-09-02T04:50:14.762318"
+      },
+      "горчица": {
+        "price": 120,
+        "unit": "kg",
+        "category": "соусы",
+        "product_code": "059e813c-e62f-4a2a-8317-7d28340ea6d9",
+        "updated_date": "2025-09-02T04:50:14.762323"
+      },
+      "уксус": {
+        "price": 60,
+        "unit": "liter",
+        "category": "уксус",
+        "product_code": "00287375-9bf7-4407-8ef8-c319840b4b63",
+        "updated_date": "2025-09-02T04:50:14.762329"
+      },
+      "соевый соус": {
+        "price": 300,
+        "unit": "liter",
+        "category": "соусы",
+        "product_code": "2003dbf5-65c1-4097-a49e-81d974a9a718",
+        "updated_date": "2025-09-02T04:50:14.762334"
+      }
     },
     "напитки": {
-      "вода": {"price": 25, "unit": "liter", "category": "напитки"},
-      "вино белое": {"price": 400, "unit": "liter", "category": "алкоголь"},
-      "вино красное": {"price": 450, "unit": "liter", "category": "алкоголь"},
-      "коньяк": {"price": 1200, "unit": "liter", "category": "алкоголь"}
+      "вода": {
+        "price": 25,
+        "unit": "liter",
+        "category": "напитки",
+        "product_code": "ff094b99-fe1c-429d-b265-abe3927e4527",
+        "updated_date": "2025-09-02T04:50:14.762339"
+      },
+      "вино белое": {
+        "price": 400,
+        "unit": "liter",
+        "category": "алкоголь",
+        "product_code": "1885e3ef-b8b2-43bc-9d2e-88459bb40198",
+        "updated_date": "2025-09-02T04:50:14.762344"
+      },
+      "вино красное": {
+        "price": 450,
+        "unit": "liter",
+        "category": "алкоголь",
+        "product_code": "46832091-2995-475b-8bd0-e7517427a06f",
+        "updated_date": "2025-09-02T04:50:14.762349"
+      },
+      "коньяк": {
+        "price": 1200,
+        "unit": "liter",
+        "category": "алкоголь",
+        "product_code": "be99ade7-140e-443e-bc67-164922cf6184",
+        "updated_date": "2025-09-02T04:50:14.762353"
+      }
+    },
+    "орехи_семена": {
+      "миндаль": {
+        "price": 1400,
+        "unit": "kg",
+        "category": "орехи",
+        "product_code": "b1ab2ba9-700b-4ecf-b6d3-c948d74645a8",
+        "added_date": "2025-09-02T04:50:14.761684"
+      },
+      "грецкие орехи": {
+        "price": 1400,
+        "unit": "kg",
+        "category": "орехи",
+        "product_code": "a7c113c6-9372-4ce7-86b9-9dd8b0ceb071",
+        "added_date": "2025-09-02T04:50:14.761690"
+      },
+      "фундук": {
+        "price": 1400,
+        "unit": "kg",
+        "category": "орехи",
+        "product_code": "9c17204d-eab4-4851-8536-3e40dfc1c275",
+        "added_date": "2025-09-02T04:50:14.761696"
+      },
+      "кешью": {
+        "price": 1400,
+        "unit": "kg",
+        "category": "орехи",
+        "product_code": "1340c552-f792-42b4-844a-fea4f6264b16",
+        "added_date": "2025-09-02T04:50:14.761701"
+      },
+      "фисташки": {
+        "price": 1400,
+        "unit": "kg",
+        "category": "орехи",
+        "product_code": "19a90992-3d58-42ad-8d64-c8b3eaf90e93",
+        "added_date": "2025-09-02T04:50:14.761707"
+      },
+      "кедровые орехи": {
+        "price": 1400,
+        "unit": "kg",
+        "category": "орехи",
+        "product_code": "1ec9d2e1-11af-44d3-94d4-db3df43ffeaf",
+        "added_date": "2025-09-02T04:50:14.761713"
+      }
+    },
+    "специи_приправы": {
+      "базилик сушеный": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "e41c44b6-d540-49ff-9881-b409682577bb",
+        "added_date": "2025-09-02T04:50:14.761720"
+      },
+      "орегано": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "42da05fd-9c15-4cfc-8262-00a02541e30c",
+        "added_date": "2025-09-02T04:50:14.761726"
+      },
+      "тимьян": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "4c1c9d0b-0b4c-4209-8455-9e9614f9a3ec",
+        "added_date": "2025-09-02T04:50:14.761732"
+      },
+      "розмарин": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "addaf9ec-04c4-4708-b129-be6e41577a83",
+        "added_date": "2025-09-02T04:50:14.761738"
+      },
+      "имбирь": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "d49b7405-30bb-4ca8-85c7-de48ddf8f83b",
+        "added_date": "2025-09-02T04:50:14.761744"
+      },
+      "куркума": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "aa5470e1-d229-4a22-8058-f28d2bdd087e",
+        "added_date": "2025-09-02T04:50:14.761750"
+      },
+      "кориандр": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "59c72a7b-475e-404e-8114-865da2dc6855",
+        "added_date": "2025-09-02T04:50:14.761760"
+      },
+      "тмин": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "aa6cfba7-eac4-4f17-8c10-9d6bf24c5f8b",
+        "added_date": "2025-09-02T04:50:14.761767"
+      },
+      "кардамон": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "71301bca-5173-4702-9d4c-40403cf15f22",
+        "added_date": "2025-09-02T04:50:14.761773"
+      },
+      "корица": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "65849939-1d4f-4698-a441-306a7552c692",
+        "added_date": "2025-09-02T04:50:14.761779"
+      },
+      "гвоздика": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "a52c3013-7fb9-47ce-afbf-4f7207a50f9e",
+        "added_date": "2025-09-02T04:50:14.761784"
+      },
+      "мускатный орех": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "f321c920-60c8-4236-a05b-9302dc23eae0",
+        "added_date": "2025-09-02T04:50:14.761791"
+      },
+      "паприка": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "e0a706c9-50b8-49ff-8dfa-a55e3054b9fd",
+        "added_date": "2025-09-02T04:50:14.761797"
+      },
+      "перец черный": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "9d906afc-cab5-4537-a48e-f399a226f58d",
+        "added_date": "2025-09-02T04:50:14.761802"
+      },
+      "перец белый": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "b912de9f-c31b-4739-8dab-b3c90e0b1717",
+        "added_date": "2025-09-02T04:50:14.761808"
+      },
+      "лавровый лист": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "a3be41f0-1a8a-49f5-aa39-ba30779c5c1c",
+        "added_date": "2025-09-02T04:50:14.761814"
+      },
+      "ваниль": {
+        "price": 1750,
+        "unit": "kg",
+        "category": "специи",
+        "product_code": "0e4fe7ec-9675-4e9c-996c-fcf35d2534f1",
+        "added_date": "2025-09-02T04:50:14.761820"
+      }
+    },
+    "бобовые": {
+      "чечевица красная": {
+        "price": 140,
+        "unit": "kg",
+        "category": "бобовые",
+        "product_code": "7f9d359c-2d32-48d9-b5da-a005e6bb4964",
+        "added_date": "2025-09-02T04:50:14.761649"
+      },
+      "чечевица зеленая": {
+        "price": 140,
+        "unit": "kg",
+        "category": "бобовые",
+        "product_code": "a9c6c3a9-fb20-4e28-b41c-ee5db3c87ff2",
+        "added_date": "2025-09-02T04:50:14.761655"
+      },
+      "нут": {
+        "price": 140,
+        "unit": "kg",
+        "category": "бобовые",
+        "product_code": "8de2f67a-8731-4d25-9389-d48ba64832cc",
+        "added_date": "2025-09-02T04:50:14.761660"
+      },
+      "фасоль белая": {
+        "price": 140,
+        "unit": "kg",
+        "category": "бобовые",
+        "product_code": "b9c20978-61bc-49da-9f25-fdd4ebabccc6",
+        "added_date": "2025-09-02T04:50:14.761666"
+      },
+      "фасоль красная": {
+        "price": 140,
+        "unit": "kg",
+        "category": "бобовые",
+        "product_code": "01eda56a-73f9-4aa3-b5f2-1014b8903265",
+        "added_date": "2025-09-02T04:50:14.761672"
+      },
+      "горох колотый": {
+        "price": 140,
+        "unit": "kg",
+        "category": "бобовые",
+        "product_code": "6785239d-3b1b-4706-aec8-9a8da329a38f",
+        "added_date": "2025-09-02T04:50:14.761678"
+      }
     }
   },
   "fallback_prices": {
@@ -142,11 +1000,26 @@
     "default_markup_pct": 300,
     "default_vat_pct": 20,
     "by_category": {
-      "мясо": {"markup_pct": 250, "vat_pct": 20},
-      "рыба": {"markup_pct": 280, "vat_pct": 20},
-      "молочные": {"markup_pct": 200, "vat_pct": 10},
-      "овощи": {"markup_pct": 350, "vat_pct": 10},
-      "специи": {"markup_pct": 400, "vat_pct": 20}
+      "мясо": {
+        "markup_pct": 250,
+        "vat_pct": 20
+      },
+      "рыба": {
+        "markup_pct": 280,
+        "vat_pct": 20
+      },
+      "молочные": {
+        "markup_pct": 200,
+        "vat_pct": 10
+      },
+      "овощи": {
+        "markup_pct": 350,
+        "vat_pct": 10
+      },
+      "специи": {
+        "markup_pct": 400,
+        "vat_pct": 20
+      }
     }
   }
 }
