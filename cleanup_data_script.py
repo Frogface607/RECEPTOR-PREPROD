@@ -33,22 +33,24 @@ def clean_catalog_ids():
         with open(nutrition_catalog_path, 'r', encoding='utf-8') as f:
             nutrition_data = json.load(f)
         
-        for ingredient in nutrition_data:
-            # Проверяем canonical_id на диапазоны типа '9969-86'  
-            if 'canonical_id' in ingredient:
-                canonical_id = ingredient['canonical_id']
-                # Ищем паттерны вида числа-числа или другие проблемные ID
-                if re.match(r'^\d{4}-\d{2}$', canonical_id) or \
-                   re.match(r'^\d+-\d+$', canonical_id) or \
-                   'mock' in canonical_id.lower() or \
-                   'test' in canonical_id.lower():
-                    # Генерируем чистый ID на основе имени
-                    clean_name = ingredient['name'].lower().replace(' ', '_').replace('(', '').replace(')', '')
-                    # Удаляем спецсимволы и оставляем только буквы и подчеркивания
-                    clean_name = re.sub(r'[^a-zA-Zа-яёА-ЯЁ0-9_]', '', clean_name)
-                    ingredient['canonical_id'] = clean_name
-                    changes_count += 1
-                    print(f"  ✅ Заменили ID '{canonical_id}' → '{clean_name}'")
+        # Nutrition catalog имеет структуру с "items" массивом
+        if 'items' in nutrition_data:
+            for ingredient in nutrition_data['items']:
+                # Проверяем canonical_id на диапазоны типа '9969-86'  
+                if 'canonical_id' in ingredient:
+                    canonical_id = ingredient['canonical_id']
+                    # Ищем паттерны вида числа-числа или другие проблемные ID
+                    if re.match(r'^\d{4}-\d{2}$', canonical_id) or \
+                       re.match(r'^\d+-\d+$', canonical_id) or \
+                       'mock' in canonical_id.lower() or \
+                       'test' in canonical_id.lower():
+                        # Генерируем чистый ID на основе имени
+                        clean_name = ingredient['name'].lower().replace(' ', '_').replace('(', '').replace(')', '')
+                        # Удаляем спецсимволы и оставляем только буквы и подчеркивания
+                        clean_name = re.sub(r'[^a-zA-Zа-яёА-ЯЁ0-9_]', '', clean_name)
+                        ingredient['canonical_id'] = clean_name
+                        changes_count += 1
+                        print(f"  ✅ Заменили ID '{canonical_id}' → '{clean_name}'")
         
         # Сохраняем обновленный nutrition catalog
         with open(nutrition_catalog_path, 'w', encoding='utf-8') as f:
