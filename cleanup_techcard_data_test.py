@@ -648,7 +648,7 @@ class CleanupTechCardDataTester:
         
         return success_rate >= 0.75
 
-    async def save_results(self):
+    def save_results(self):
         """Save test results to file"""
         self.results['test_end'] = datetime.now().isoformat()
         
