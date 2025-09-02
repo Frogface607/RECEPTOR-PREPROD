@@ -2797,7 +2797,217 @@
       },
       "source": "manual",
       "added_date": "2025-09-02T05:16:23.657236"
+    },
+    {
+      "canonical_id": "вода",
+      "name": "вода",
+      "category": "напитки",
+      "unit": "liter",
+      "per100g": {
+        "kcal": 0.0,
+        "proteins_g": 0.0,
+        "fats_g": 0.0,
+        "carbs_g": 0.0
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993651"
+    },
+    {
+      "canonical_id": "свекла",
+      "name": "свекла",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 40.0,
+        "proteins_g": 1.5,
+        "fats_g": 0.1,
+        "carbs_g": 8.8
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993691"
+    },
+    {
+      "canonical_id": "лук",
+      "name": "лук",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 41.0,
+        "proteins_g": 1.4,
+        "fats_g": 0.2,
+        "carbs_g": 8.2
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993699"
+    },
+    {
+      "canonical_id": "соль",
+      "name": "соль",
+      "category": "специи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 0.0,
+        "proteins_g": 0.0,
+        "fats_g": 0.0,
+        "carbs_g": 0.0
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993705"
+    },
+    {
+      "canonical_id": "капуста",
+      "name": "капуста",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 27.0,
+        "proteins_g": 1.8,
+        "fats_g": 0.1,
+        "carbs_g": 4.7
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993711"
+    },
+    {
+      "canonical_id": "мука",
+      "name": "мука",
+      "category": "мука",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 342.0,
+        "proteins_g": 10.8,
+        "fats_g": 1.3,
+        "carbs_g": 69.9
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993717"
+    },
+    {
+      "canonical_id": "сахар",
+      "name": "сахар",
+      "category": "сахар",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 387.0,
+        "proteins_g": 0.0,
+        "fats_g": 0.0,
+        "carbs_g": 99.7
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993727"
+    },
+    {
+      "canonical_id": "колбаса",
+      "name": "колбаса",
+      "category": "мясные_изделия",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 301.0,
+        "proteins_g": 12.1,
+        "fats_g": 27.5,
+        "carbs_g": 1.9
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993737"
+    },
+    {
+      "canonical_id": "майонез",
+      "name": "майонез",
+      "category": "соусы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 627.0,
+        "proteins_g": 2.8,
+        "fats_g": 67.0,
+        "carbs_g": 2.6
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993746"
+    },
+    {
+      "canonical_id": "рыба",
+      "name": "рыба",
+      "category": "рыба",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 150.0,
+        "proteins_g": 22.0,
+        "fats_g": 6.0,
+        "carbs_g": 0.0
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993753"
+    },
+    {
+      "canonical_id": "специи",
+      "name": "специи",
+      "category": "специи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 250.0,
+        "proteins_g": 10.0,
+        "fats_g": 5.0,
+        "carbs_g": 50.0
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993759"
+    },
+    {
+      "canonical_id": "лапша",
+      "name": "лапша",
+      "category": "макароны",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 344.0,
+        "proteins_g": 12.5,
+        "fats_g": 1.1,
+        "carbs_g": 71.5
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993765"
+    },
+    {
+      "canonical_id": "горошек",
+      "name": "горошек",
+      "category": "овощи",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 73.0,
+        "proteins_g": 5.0,
+        "fats_g": 0.4,
+        "carbs_g": 12.8
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993771"
+    },
+    {
+      "canonical_id": "горошек_консервированный",
+      "name": "горошек консервированный",
+      "category": "консервы",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 58.0,
+        "proteins_g": 3.1,
+        "fats_g": 0.2,
+        "carbs_g": 9.8
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993782"
+    },
+    {
+      "canonical_id": "мясо",
+      "name": "мясо",
+      "category": "мясо",
+      "unit": "kg",
+      "per100g": {
+        "kcal": 200.0,
+        "proteins_g": 25.0,
+        "fats_g": 10.0,
+        "carbs_g": 0.0
+      },
+      "source": "critical_addition",
+      "added_date": "2025-09-02T05:50:58.993788"
     }
   ],
-  "items_count": 201
+  "items_count": 216
 }
