@@ -1435,9 +1435,7 @@ function App() {
                                 }`}
                                 autoFocus
                               />
-                              {editingErrors.brutto_g && (
-                                <div className="text-red-400 text-xs mt-1">{editingErrors.brutto_g}</div>
-                              )}
+                              {/* CLEANUP TECH CARD DATA & UI: Убираем validation errors */}
                             </div>
                           ) : (
                             <span 
