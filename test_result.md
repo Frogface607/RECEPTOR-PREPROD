@@ -290,20 +290,19 @@
 
 ## metadata:
   created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "2.0"
+  test_sequence: 2
   run_ui: false
 
 ## test_plan:
   current_focus:
-    - "ALT Export Cleanup Module Creation"
-    - "ALT Export Integration - Single XLSX Export"
-    - "ALT Export Integration - ZIP Export"
-    - "ALT Export Integration - TTK-Only Export"
-    - "ALT Export Admin Endpoints"
-  stuck_tasks: []
-  test_all: true
-  test_priority: "high_first"
+    - "TechCard Generation with Improved Coverage"
+    - "Data Quality Validation"
+  stuck_tasks:
+    - "TechCard Generation with Improved Coverage"
+    - "Data Quality Validation"
+  test_all: false
+  test_priority: "stuck_first"
 
 ## agent_communication:
 
