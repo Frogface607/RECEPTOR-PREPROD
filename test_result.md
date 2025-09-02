@@ -200,68 +200,80 @@
 # END - Testing Protocol - DO NOT EDIT OR REMOVE THIS SECTION ABOVE
 #====================================================================================================
 
-## user_problem_statement: "ALT Export Cleanup - Analyze archives, identify duplicate and invalid TTKs, and ensure export occurs only through the ALT pipeline, guaranteeing correct components (Dish-Skeletons, Product-Skeletons, reference TTK) and validating archives for correctness and absence of superfluous files."
+## user_problem_statement: "Протестировать систему TECH CARD QUALITY BOOST и все реализованные улучшения качества техкарт. Ключевые области: расширенные каталоги (200+ ингредиентов), ID система без диапазонов, создание и экспорт техкарт с улучшенным БЖУ покрытием, качество данных, ALT Export Cleanup интеграция."
 
 ## backend:
-  - task: "ALT Export Cleanup Module Creation"
+  - task: "Expanded Catalogs Validation (200+ ingredients)"
     implemented: true
-    working: "NA"  # Needs testing
-    file: "/app/backend/receptor_agent/exports/alt_export_cleanup.py"
+    working: true
+    file: "/app/backend/data/nutrition_catalog.dev.json"
     stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FULLY OPERATIONAL: nutrition_catalog.dev.json contains exactly 200 ingredients with complete БЖУ data (kcal, proteins_g, fats_g, carbs_g), all ingredients have valid units (kg, liter, g, ml, pcs), 100% validation rate achieved, price_catalog.dev.json structure confirmed valid."
+
+  - task: "ID System and Articles (no range IDs)"
+    implemented: true
+    working: true
+    file: "/app/backend/data/nutrition_catalog.dev.json"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CLEAN ID SYSTEM: No range IDs like '9969-86' detected in any ID fields, all canonical_id and product_code fields use proper UUID-based or alphanumeric formats, system compatible with iiko export requirements."
+
+  - task: "TechCard Generation with Improved Coverage"
+    implemented: true
+    working: false
+    file: "/app/backend/receptor_agent/llm/pipeline.py"
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Created comprehensive ALTExportValidator class with archive analysis, duplicate detection, TTK validation, and cleanup functionality. Includes singleton pattern and admin functions."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Generated tech cards show 0% nutrition coverage despite expanded catalog, indicating БЖУ data not being properly integrated during generation process. Average coverage 0.0% vs baseline 53% and target 80%. Nutrition data from expanded catalog not being utilized in tech card generation pipeline."
 
-  - task: "ALT Export Integration - Single XLSX Export"
+  - task: "XLSX Export with Quality Data"
     implemented: true
-    working: "NA"  # Needs testing
+    working: true
     file: "/app/backend/receptor_agent/routes/techcards_v2.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Integrated ALT Export Cleanup validator into single XLSX export endpoint (/techcards.v2/export/iiko.xlsx). Added TTK validation with non-blocking warnings for legacy compatibility."
+      - working: true
+        agent: "testing"
+        comment: "✅ EXPORT FUNCTIONAL: XLSX export working with 100% success rate, generating proper Excel files (5000-6000 bytes), correct content-type headers. Quality scores averaging 60/100 indicating room for improvement in data integration."
 
-  - task: "ALT Export Integration - ZIP Export"
+  - task: "Data Quality Validation"
     implemented: true
-    working: "NA"  # Needs testing
-    file: "/app/backend/receptor_agent/routes/export_v2.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Integrated ALT Export Cleanup into ZIP export endpoint (/export/zip). Added automatic archive cleanup with full analysis and file removal for duplicates, invalid TTKs, and superfluous files."
-
-  - task: "ALT Export Integration - TTK-Only Export"
-    implemented: true
-    working: "NA"  # Needs testing
-    file: "/app/backend/receptor_agent/routes/export_v2.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Integrated ALT Export Cleanup validation into TTK-only export endpoint (/export/ttk-only). Added TTK file validation with proper logging."
-
-  - task: "ALT Export Admin Endpoints"
-    implemented: true
-    working: "NA"  # Needs testing
-    file: "/app/backend/receptor_agent/routes/export_v2.py"
-    stuck_count: 0
+    working: false
+    file: "/app/backend/receptor_agent/routes/techcards_v2.py"
+    stuck_count: 1
     priority: "medium"
     needs_retesting: true
     status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Created admin endpoints for monitoring and management: GET /export/cleanup/stats, POST /export/cleanup/audit, POST /export/cleanup/reset-stats. Provides comprehensive cleanup statistics and audit functionality."
+      - working: false
+        agent: "testing"
+        comment: "❌ CONNECTIVITY ISSUES: Some catalog search queries failing due to connectivity issues, preventing full validation of search functionality and data quality checks. Backend responding but HTTP request format issues detected."
+
+  - task: "ALT Export Cleanup Integration"
+    implemented: true
+    working: true
+    file: "/app/backend/receptor_agent/exports/alt_export_cleanup.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FULLY OPERATIONAL: All 3 integration tests passed, admin endpoints /api/v1/export/cleanup/stats returning correct statistics, ZIP exports successfully passing through cleanup pipeline, unified validation system operational."
 
 ## frontend:
   - task: "No Frontend Changes Required"
