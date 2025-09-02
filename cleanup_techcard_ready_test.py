@@ -83,50 +83,50 @@ class CleanupTechCardReadyTester:
                     
                     # Check for READY status
                     is_ready = status == "READY"
-                        has_minimal_issues = len(issues) <= 2  # Allow minimal issues
-                        
-                        # Check for complete data
-                        has_ingredients = len(techcard.get('ingredients', [])) > 0
-                        has_nutrition = techcard.get('nutrition', {}) is not None
-                        has_cost = techcard.get('cost', {}) is not None
-                        
-                        complete_data = has_ingredients and has_nutrition and has_cost
-                        
-                        card_result = {
+                    has_minimal_issues = len(issues) <= 2  # Allow minimal issues
+                    
+                    # Check for complete data
+                    has_ingredients = len(techcard.get('ingredients', [])) > 0
+                    has_nutrition = techcard.get('nutrition', {}) is not None
+                    has_cost = techcard.get('cost', {}) is not None
+                    
+                    complete_data = has_ingredients and has_nutrition and has_cost
+                    
+                    card_result = {
+                        'name': dish_name,
+                        'status': status,
+                        'is_ready': is_ready,
+                        'issues_count': len(issues),
+                        'issues': issues,
+                        'has_minimal_issues': has_minimal_issues,
+                        'has_ingredients': has_ingredients,
+                        'ingredients_count': len(techcard.get('ingredients', [])),
+                        'has_nutrition': has_nutrition,
+                        'has_cost': has_cost,
+                        'complete_data': complete_data,
+                        'generation_time': generation_time,
+                        'techcard_id': techcard.get('id'),
+                        'success': is_ready and has_minimal_issues and complete_data
+                    }
+                    
+                    generation_results.append(card_result)
+                    
+                    if card_result['success']:
+                        ready_cards.append(card_result)
+                        self.generated_techcards.append({
+                            'id': techcard.get('id'),
                             'name': dish_name,
-                            'status': status,
-                            'is_ready': is_ready,
-                            'issues_count': len(issues),
-                            'issues': issues,
-                            'has_minimal_issues': has_minimal_issues,
-                            'has_ingredients': has_ingredients,
-                            'ingredients_count': len(techcard.get('ingredients', [])),
-                            'has_nutrition': has_nutrition,
-                            'has_cost': has_cost,
-                            'complete_data': complete_data,
-                            'generation_time': generation_time,
-                            'techcard_id': techcard.get('id'),
-                            'success': is_ready and has_minimal_issues and complete_data
-                        }
-                        
-                        generation_results.append(card_result)
-                        
-                        if card_result['success']:
-                            ready_cards.append(card_result)
-                            self.generated_techcards.append({
-                                'id': techcard.get('id'),
-                                'name': dish_name,
-                                'data': techcard
-                            })
-                        
-                        status_icon = "✅" if is_ready else "❌"
-                        issues_icon = "✅" if has_minimal_issues else "⚠️"
-                        data_icon = "✅" if complete_data else "❌"
-                        
-                        print(f"      {status_icon} Status: {status}")
-                        print(f"      {issues_icon} Issues: {len(issues)} (minimal: {has_minimal_issues})")
-                        print(f"      {data_icon} Complete data: {complete_data} (ingredients: {len(techcard.get('ingredients', []))}, nutrition: {has_nutrition}, cost: {has_cost})")
-                        print(f"      ⏱️ Generated in {generation_time:.1f}s")
+                            'data': techcard
+                        })
+                    
+                    status_icon = "✅" if is_ready else "❌"
+                    issues_icon = "✅" if has_minimal_issues else "⚠️"
+                    data_icon = "✅" if complete_data else "❌"
+                    
+                    print(f"      {status_icon} Status: {status}")
+                    print(f"      {issues_icon} Issues: {len(issues)} (minimal: {has_minimal_issues})")
+                    print(f"      {data_icon} Complete data: {complete_data} (ingredients: {len(techcard.get('ingredients', []))}, nutrition: {has_nutrition}, cost: {has_cost})")
+                    print(f"      ⏱️ Generated in {generation_time:.1f}s")
                         
                 else:
                     print(f"      ❌ Generation failed: HTTP {response.status_code}")
