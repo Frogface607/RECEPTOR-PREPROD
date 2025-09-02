@@ -3954,8 +3954,8 @@ async def get_user_prices(user_id: str):
 @api_router.get("/user-history/{user_id}")
 async def get_user_history(user_id: str):
     try:
-        # Get user's tech cards history sorted by creation date (newest first)
-        history_docs = await db.tech_cards.find(
+        # CLEANUP TECH CARD DATA & UI: Ищем в правильной коллекции user_history
+        history_docs = await db.user_history.find(
             {"user_id": user_id}
         ).sort("created_at", -1).limit(20).to_list(20)
         
