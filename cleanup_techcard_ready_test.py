@@ -207,25 +207,25 @@ class CleanupTechCardReadyTester:
         # Test 2.2: GET /api/v1/techcards.v2/catalog-search
         print("   🔄 Testing catalog search endpoint...")
         try:
-            async with self.session.get(
+            response = self.session.get(
                 f"{API_BASE}/v1/techcards.v2/catalog-search",
                 params={"q": "говядина", "source": "all"}
-            ) as response:
-                search_success = response.status == 200
-                if search_success:
-                    data = await response.json()
-                    has_results = len(data.get('results', [])) > 0
-                else:
-                    has_results = False
-                
-                health_results['catalog_search_endpoint'] = {
-                    'accessible': search_success,
-                    'has_results': has_results,
-                    'status_code': response.status
-                }
-                
-                print(f"      {'✅' if search_success else '❌'} Catalog search endpoint: HTTP {response.status}")
-                print(f"      {'✅' if has_results else '❌'} Returns search results: {has_results}")
+            )
+            search_success = response.status_code == 200
+            if search_success:
+                data = response.json()
+                has_results = len(data.get('results', [])) > 0
+            else:
+                has_results = False
+            
+            health_results['catalog_search_endpoint'] = {
+                'accessible': search_success,
+                'has_results': has_results,
+                'status_code': response.status_code
+            }
+            
+            print(f"      {'✅' if search_success else '❌'} Catalog search endpoint: HTTP {response.status_code}")
+            print(f"      {'✅' if has_results else '❌'} Returns search results: {has_results}")
                 
         except Exception as e:
             health_results['catalog_search_endpoint'] = {
