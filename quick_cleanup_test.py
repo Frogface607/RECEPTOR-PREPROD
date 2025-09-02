@@ -40,7 +40,7 @@ def test_ready_status():
                 data = response.json()
                 status = data.get('status', 'UNKNOWN')
                 issues = data.get('issues', [])
-                techcard = data.get('techcard', {})
+                techcard = data.get('card', {})
                 
                 # Проверяем что techcard не пустой
                 has_techcard = bool(techcard)
