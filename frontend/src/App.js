@@ -10686,6 +10686,7 @@ function App() {
                         
                         if (isV2 && techcard.techcard_v2_data) {
                           setTcV2(techcard.techcard_v2_data);
+                          setTechCard(null); // Очищаем V1 техkарту
                           setGenerationStatus('success');
                           setCurrentTechCardId(techcard.id);
                           setCurrentView('create');
