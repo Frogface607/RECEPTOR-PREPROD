@@ -119,14 +119,14 @@ class CleanupTechCardDataTester:
                         success = is_ready_status and has_minimal_issues and has_techcard_data
                         print(f"      ✅ Status: {status}, Issues: {len(issues)}, Success: {success}")
                         
-                    else:
-                        print(f"      ❌ Generation failed: HTTP {response.status}")
-                        ready_status_results.append({
-                            'dish_name': dish_name,
-                            'status': 'ERROR',
-                            'error': f"HTTP {response.status}",
-                            'generation_time': generation_time
-                        })
+                else:
+                    print(f"      ❌ Generation failed: HTTP {response.status_code}")
+                    ready_status_results.append({
+                        'dish_name': dish_name,
+                        'status': 'ERROR',
+                        'error': f"HTTP {response.status_code}",
+                        'generation_time': generation_time
+                    })
                         
             except Exception as e:
                 print(f"      ❌ Generation error: {str(e)}")
