@@ -524,57 +524,57 @@ class CleanupTechCardDataTester:
         print("   🔍 Testing POST /api/v1/techcards.v2/export/iiko.xlsx")
         try:
             # First generate a techcard for export testing
-            async with self.session.post(
+            gen_response = self.session.post(
                 f"{API_BASE}/v1/techcards.v2/generate",
                 json={"name": "Тестовое блюдо для экспорта"}
-            ) as gen_response:
-                if gen_response.status == 200:
-                    gen_data = await gen_response.json()
-                    techcard = gen_data.get('techcard', {})
-                    
-                    if techcard:
-                        # Test XLSX export
-                        async with self.session.post(
-                            f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
-                            json=techcard
-                        ) as export_response:
-                            if export_response.status == 200:
-                                content_type = export_response.headers.get('content-type', '')
-                                content_length = len(await export_response.read())
-                                
-                                is_excel = 'spreadsheet' in content_type or 'excel' in content_type
-                                has_content = content_length > 1000
-                                
-                                api_results['xlsx_export'] = {
-                                    'status_code': export_response.status,
-                                    'content_type': content_type,
-                                    'content_length': content_length,
-                                    'is_excel': is_excel,
-                                    'has_content': has_content,
-                                    'success': is_excel and has_content
-                                }
-                                
-                                print(f"      ✅ Export successful: {content_length} bytes, type: {content_type}")
-                                
-                            else:
-                                api_results['xlsx_export'] = {
-                                    'status_code': export_response.status,
-                                    'error': f"HTTP {export_response.status}",
-                                    'success': False
-                                }
-                                print(f"      ❌ Export failed: HTTP {export_response.status}")
+            )
+            if gen_response.status_code == 200:
+                gen_data = gen_response.json()
+                techcard = gen_data.get('techcard', {})
+                
+                if techcard:
+                    # Test XLSX export
+                    export_response = self.session.post(
+                        f"{API_BASE}/v1/techcards.v2/export/iiko.xlsx",
+                        json=techcard
+                    )
+                    if export_response.status_code == 200:
+                        content_type = export_response.headers.get('content-type', '')
+                        content_length = len(export_response.content)
+                        
+                        is_excel = 'spreadsheet' in content_type or 'excel' in content_type
+                        has_content = content_length > 1000
+                        
+                        api_results['xlsx_export'] = {
+                            'status_code': export_response.status_code,
+                            'content_type': content_type,
+                            'content_length': content_length,
+                            'is_excel': is_excel,
+                            'has_content': has_content,
+                            'success': is_excel and has_content
+                        }
+                        
+                        print(f"      ✅ Export successful: {content_length} bytes, type: {content_type}")
+                        
                     else:
                         api_results['xlsx_export'] = {
-                            'error': 'No techcard generated for export testing',
+                            'status_code': export_response.status_code,
+                            'error': f"HTTP {export_response.status_code}",
                             'success': False
                         }
-                        print(f"      ❌ No techcard for export testing")
+                        print(f"      ❌ Export failed: HTTP {export_response.status_code}")
                 else:
                     api_results['xlsx_export'] = {
-                        'error': f'Techcard generation failed: HTTP {gen_response.status}',
+                        'error': 'No techcard generated for export testing',
                         'success': False
                     }
-                    print(f"      ❌ Techcard generation failed: HTTP {gen_response.status}")
+                    print(f"      ❌ No techcard for export testing")
+            else:
+                api_results['xlsx_export'] = {
+                    'error': f'Techcard generation failed: HTTP {gen_response.status_code}',
+                    'success': False
+                }
+                print(f"      ❌ Techcard generation failed: HTTP {gen_response.status_code}")
                     
         except Exception as e:
             api_results['xlsx_export'] = {'error': str(e), 'success': False}
