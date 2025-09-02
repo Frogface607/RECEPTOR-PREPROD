@@ -42,10 +42,13 @@ def test_ready_status():
                 issues = data.get('issues', [])
                 techcard = data.get('techcard', {})
                 
-                has_data = bool(techcard and 
-                              techcard.get('ingredients') and 
-                              techcard.get('nutrition') and 
-                              techcard.get('cost'))
+                # Проверяем что techcard не пустой
+                has_techcard = bool(techcard)
+                has_ingredients = bool(techcard.get('ingredients', []))
+                has_nutrition = bool(techcard.get('nutrition'))
+                has_cost = bool(techcard.get('cost'))
+                
+                has_data = has_techcard and has_ingredients and has_nutrition and has_cost
                 
                 is_ready = status == "READY"
                 has_minimal_issues = len(issues) <= 2
