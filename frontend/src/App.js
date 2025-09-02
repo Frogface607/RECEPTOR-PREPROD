@@ -10785,7 +10785,7 @@ function App() {
                       className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
                       title="Новый экспорт с автоматическим созданием скелетов и двухэтапным импортом"
                     >
-                      {phase3ExportState === 'running_preflight' ? '⏳ Префлайт...' : '🚀 Экспорт в iiko (2 шага)'}
+                      {phase3ExportState === 'running_preflight' ? '⏳ Префлайт...' : '🚀 Экспорт номенклатур'}
                     </button>
                     
                     {/* 3.5. ALT Export - главный экспорт ТК для IIKo */}
