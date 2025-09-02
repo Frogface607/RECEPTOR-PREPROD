@@ -1,0 +1,230 @@
+{
+  "test_results": {
+    "expanded_catalog": false,
+    "nutrition_coverage": false,
+    "xlsx_export": false,
+    "ingredient_search": false,
+    "performance": false,
+    "alt_export_cleanup": true
+  },
+  "success_rate": 16.666666666666664,
+  "total_time": 1.0962800979614258,
+  "critical_tests_passed": false,
+  "artifacts": {
+    "ingredient_search_results": [
+      {
+        "ingredient": "говядина",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "картофель",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "лук",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "морковь",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "молоко",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "яйца",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "масло",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "соль",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "перец",
+        "results_count": 0,
+        "found": false
+      },
+      {
+        "ingredient": "помидоры",
+        "results_count": 0,
+        "found": false
+      }
+    ]
+  },
+  "detailed_results": [
+    {
+      "test": "Expanded Nutrition Catalog Validation",
+      "success": false,
+      "details": "nutrition_catalog.dev.json не найден",
+      "timestamp": 1756790495.520665,
+      "data": null
+    },
+    {
+      "test": "БЖУ Coverage - Борщ украинский с говядиной",
+      "success": false,
+      "details": "Ошибка генерации: HTTP 422",
+      "timestamp": 1756790495.6618657,
+      "data": null
+    },
+    {
+      "test": "БЖУ Coverage - Стейк из говядины с картофельным пюре",
+      "success": false,
+      "details": "Ошибка генерации: HTTP 422",
+      "timestamp": 1756790495.7138233,
+      "data": null
+    },
+    {
+      "test": "БЖУ Coverage - Салат Цезарь с курицей",
+      "success": false,
+      "details": "Ошибка генерации: HTTP 422",
+      "timestamp": 1756790495.7687755,
+      "data": null
+    },
+    {
+      "test": "КРИТИЧЕСКИЙ: Улучшенное БЖУ покрытие",
+      "success": false,
+      "details": "Нет валидных результатов покрытия БЖУ",
+      "timestamp": 1756790495.7688189,
+      "data": null
+    },
+    {
+      "test": "XLSX Export - Tech Card Generation",
+      "success": false,
+      "details": "Не удалось сгенерировать техкарту: HTTP 422",
+      "timestamp": 1756790495.8217294,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - говядина",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790495.8803096,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - картофель",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790495.9343557,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - лук",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790495.9879668,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - морковь",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.0449905,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - молоко",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.0973978,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - яйца",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.1487436,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - масло",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.1985874,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - соль",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.2506368,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - перец",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.3048916,
+      "data": null
+    },
+    {
+      "test": "Поиск ингредиента - помидоры",
+      "success": false,
+      "details": "Найдено результатов: 0",
+      "timestamp": 1756790496.3544188,
+      "data": null
+    },
+    {
+      "test": "Система поиска ингредиентов",
+      "success": false,
+      "details": "Покрытие поиска: 0.0% (цель: ≥90%), найдено: 0/10",
+      "timestamp": 1756790496.3544865,
+      "data": null
+    },
+    {
+      "test": "Performance - Борщ классический",
+      "success": false,
+      "details": "Время генерации: 0.0с, успех: False",
+      "timestamp": 1756790496.4049983,
+      "data": null
+    },
+    {
+      "test": "Performance - Салат Оливье",
+      "success": false,
+      "details": "Время генерации: 0.1с, успех: False",
+      "timestamp": 1756790496.4684176,
+      "data": null
+    },
+    {
+      "test": "Performance - Котлеты по-киевски",
+      "success": false,
+      "details": "Время генерации: 0.0с, успех: False",
+      "timestamp": 1756790496.5167468,
+      "data": null
+    },
+    {
+      "test": "Performance и стабильность",
+      "success": false,
+      "details": "Нет успешных генераций для анализа производительности",
+      "timestamp": 1756790496.5167797,
+      "data": null
+    },
+    {
+      "test": "ALT Export Cleanup Stats",
+      "success": true,
+      "details": "Статистика cleanup доступна: {'status': 'success', 'cleanup_statistics': {'total_processed': 0, 'duplicates_removed': 0, 'invalid_removed': 0, 'superfluous_removed': 0, 'archives_cleaned': 0, 'timestamp': '2025-09-02T05:21:36.566379'}, 'message': 'ALT Export Cleanup statistics retrieved successfully'}",
+      "timestamp": 1756790496.5687907,
+      "data": null
+    },
+    {
+      "test": "ALT Export Cleanup Integration",
+      "success": true,
+      "details": "ALT Export Cleanup система интегрирована и функциональна",
+      "timestamp": 1756790496.614304,
+      "data": null
+    }
+  ]
+}
