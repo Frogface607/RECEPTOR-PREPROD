@@ -6151,7 +6151,8 @@ function App() {
         name: dishName,
         description: dishContext?.description || `Техкарта для блюда ${dishName}`,
         servings: 4,
-        use_llm: false  // Use deterministic mode
+        use_llm: false,  // Use deterministic mode
+        user_id: currentUser?.id || 'anonymous'  // CLEANUP TECH CARD DATA & UI: добавляем user_id для связи с аккаунтом
       };
 
       // Add enhanced context if available (from menu dishes)
