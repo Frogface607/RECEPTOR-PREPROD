@@ -1077,8 +1077,8 @@ function App() {
               <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                 TechCard v2
               </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-bold ${tcV2.status === 'success' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
-                {tcV2.status || 'draft'}
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${(tcV2.status === 'success' || tcV2.status === 'READY') ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
+                {tcV2.status === 'READY' ? 'ГОТОВО' : (tcV2.status || 'draft')}
               </span>
             </div>
           </div>
