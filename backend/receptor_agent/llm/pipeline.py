@@ -660,8 +660,8 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                     entity_names=[validated_card.meta.title]
                 )
                 
-                if allocated_result.get('success') and allocated_result.get('allocated'):
-                    dish_article = allocated_result['allocated'][0]['article']
+                if allocated_result and len(allocated_result) > 0:
+                    dish_article = allocated_result[0]  # First article from the list
                     
                     # Создаем обновленное meta с article
                     updated_meta = validated_card.meta.model_copy(deep=True)
