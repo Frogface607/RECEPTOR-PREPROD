@@ -6321,6 +6321,39 @@ function App() {
         
         setLoadingMessage('⚠️ Техкарта создана (черновик)');
         
+      } else if (normalizedData.status === 'READY' && normalizedData.card) {
+        // TC-001: Handle READY status as success  
+        const techCardV2 = normalizedData.card;
+        setTcV2(techCardV2);
+        
+        if (techCardV2.meta && techCardV2.meta.id) {
+          setCurrentTechCardId(techCardV2.meta.id);
+          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
+        }
+        
+        setGenerationStatus('success'); // Treat READY as success
+        setGenerationIssues(normalizedData.issues || []);
+        
+        console.log('[V2] Generated TechCard V2 with READY status');
+        
+        const displayText = convertV2ToDisplayText(techCardV2);
+        setTechCard(displayText);
+        
+        const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
+          id: index + 1,
+          name: ing.name,
+          quantity: ing.netto_g.toString(),
+          unit: ing.unit,
+          unitPrice: '0',
+          totalPrice: '0',
+          originalQuantity: ing.netto_g.toString(),
+          originalPrice: '0'
+        })) || [];
+        
+        setCurrentIngredients(parsedIngredients);
+        setEditableIngredients(parsedIngredients);
+        setLoadingMessage('✨ Техкарта готова!');
+        
       } else if (normalizedData.status === 'error') {
         // Handle error response with message from server
         const errorMsg = normalizedData.message || 'Ошибка сервера при генерации';
