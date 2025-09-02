@@ -10656,6 +10656,84 @@ function App() {
           </div>
         )}
 
+        {/* TC-002: TechCards History View */}
+        {currentView === 'techcards' && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-purple-300 mb-2">📋 МОИ ТЕХКАРТЫ</h2>
+              <p className="text-gray-400">Все созданные техкарты и их статусы</p>
+            </div>
+            
+            {history && history.length > 0 ? (
+              <div className="grid gap-4">
+                {history.filter(item => !item.is_menu).map((techcard, index) => {
+                  const isV2 = techcard.techcard_v2_data || techcard.status === 'READY';
+                  return (
+                    <div 
+                      key={techcard.id || index}
+                      className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-purple-500/50 transition-all cursor-pointer"
+                      onClick={() => {
+                        // TC-002: Load techcard properly
+                        if (isV2 && techcard.techcard_v2_data) {
+                          setTcV2(techcard.techcard_v2_data);
+                          setCurrentView('create');
+                        } else if (techcard.content) {
+                          try {
+                            const parsedContent = JSON.parse(techcard.content);
+                            setTcV2(parsedContent);
+                            setCurrentView('create');
+                          } catch (e) {
+                            setTechCard(techcard.content);
+                            setCurrentView('create');
+                          }
+                        }
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            {techcard.dish_name || 'Без названия'}
+                          </h3>
+                          <div className="flex items-center space-x-4 text-sm text-gray-400">
+                            <span>
+                              📅 {new Date(techcard.created_at).toLocaleDateString('ru-RU')}
+                            </span>
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              techcard.status === 'READY' ? 'bg-green-600 text-white' : 
+                              techcard.status === 'success' ? 'bg-green-600 text-white' :
+                              'bg-yellow-600 text-black'
+                            }`}>
+                              {techcard.status === 'READY' ? 'ГОТОВО' : (techcard.status || 'draft')}
+                            </span>
+                            <span className={`text-xs ${isV2 ? 'text-purple-400' : 'text-gray-500'}`}>
+                              {isV2 ? '🔧 V2' : '📝 V1'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-purple-400">
+                          👁️
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <div className="text-6xl mb-4">📝</div>
+                <p className="text-xl">Техкарты не найдены</p>
+                <p className="text-gray-500 mt-2">Создайте свою первую техkарту!</p>
+                <button
+                  onClick={() => setCurrentView('create')}
+                  className="mt-6 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                >
+                  Создать техkарту
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Create Tech Card View (existing content) */}
         {currentView === 'create' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
