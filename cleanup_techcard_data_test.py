@@ -231,15 +231,15 @@ class CleanupTechCardDataTester:
                     
                     return success
                     
-                else:
-                    print(f"      ❌ Generation failed: HTTP {response.status}")
-                    self.results['pipeline_clean_output'] = {
-                        'dish_name': test_dish,
-                        'status': 'ERROR',
-                        'error': f"HTTP {response.status}",
-                        'generation_time': generation_time
-                    }
-                    return False
+            else:
+                print(f"      ❌ Generation failed: HTTP {response.status_code}")
+                self.results['pipeline_clean_output'] = {
+                    'dish_name': test_dish,
+                    'status': 'ERROR',
+                    'error': f"HTTP {response.status_code}",
+                    'generation_time': generation_time
+                }
+                return False
                     
         except Exception as e:
             print(f"      ❌ Pipeline test error: {str(e)}")
