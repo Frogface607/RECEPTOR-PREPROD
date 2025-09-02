@@ -492,23 +492,23 @@ class CleanupTechCardDataTester:
                         has_warnings = 'warnings' in data or 'warning' in data
                         results_count = len(data.get('results', data.get('items', [])))
                         
-                        catalog_search_results.append({
-                            'query': query,
-                            'status_code': response.status,
-                            'has_warnings': has_warnings,
-                            'results_count': results_count,
-                            'response_keys': list(data.keys())
-                        })
-                        
-                        print(f"      ✅ Query '{query}': {results_count} results, warnings: {has_warnings}")
-                        
-                    else:
-                        catalog_search_results.append({
-                            'query': query,
-                            'status_code': response.status,
-                            'error': f"HTTP {response.status}"
-                        })
-                        print(f"      ❌ Query '{query}': HTTP {response.status}")
+                    catalog_search_results.append({
+                        'query': query,
+                        'status_code': response.status_code,
+                        'has_warnings': has_warnings,
+                        'results_count': results_count,
+                        'response_keys': list(data.keys())
+                    })
+                    
+                    print(f"      ✅ Query '{query}': {results_count} results, warnings: {has_warnings}")
+                    
+                else:
+                    catalog_search_results.append({
+                        'query': query,
+                        'status_code': response.status_code,
+                        'error': f"HTTP {response.status_code}"
+                    })
+                    print(f"      ❌ Query '{query}': HTTP {response.status_code}")
             
             api_results['catalog_search'] = {
                 'results': catalog_search_results,
