@@ -6808,10 +6808,16 @@ function App() {
       return;
     }
 
+    // FIX JS MODAL SCROLL & OPEN BUG: Prevent multiple simultaneous exports
+    if (exportStatus === 'processing') {
+      return;
+    }
+
     setSelectedExportType(exportType);
     setExportStatus('processing');
     setExportProgress(10);
     setExportResults([]);
+    setGenerationError(null);
 
     try {
       switch (exportType) {
@@ -6844,149 +6850,221 @@ function App() {
   };
 
   const executeXlsxExport = async () => {
-    setCurrentExportStep('Создание XLSX файла...');
-    setExportProgress(30);
-    
-    const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tcV2)
-    });
+    try {
+      setCurrentExportStep('Создание XLSX файла...');
+      setExportProgress(30);
+      
+      const response = await fetch(`${API}/v1/techcards.v2/export/iiko.xlsx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tcV2)
+      });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ошибка сервера: ${response.status} ${errorText}`);
+      }
 
-    setExportProgress(70);
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    
-    const safeTitle = tcV2.meta?.title?.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_') || 'techcard';
-    const filename = `iiko_ttk_${safeTitle}.xlsx`;
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+      setExportProgress(70);
+      const blob = await response.blob();
+      
+      if (blob.size === 0) {
+        throw new Error('Получен пустой файл от сервера');
+      }
 
-    setExportResults([{
-      type: 'xlsx',
-      filename: filename,
-      size: blob.size,
-      description: 'Техкарта для импорта в iiko'
-    }]);
+      const url = window.URL.createObjectURL(blob);
+      
+      const safeTitle = tcV2.meta?.title?.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_') || 'techcard';
+      const filename = `iiko_ttk_${safeTitle}.xlsx`;
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setExportResults([{
+        type: 'xlsx',
+        filename: filename,
+        size: blob.size,
+        description: 'Техкарта для импорта в iiko'
+      }]);
+      
+    } catch (error) {
+      console.error('XLSX export error:', error);
+      throw new Error(`XLSX экспорт: ${error.message}`);
+    }
   };
 
   const executeZipExport = async () => {
-    setCurrentExportStep('Запуск префлайт проверки...');
-    setExportProgress(20);
+    try {
+      setCurrentExportStep('Запуск префлайт проверки...');
+      setExportProgress(20);
 
-    // Run preflight first
-    const preflightResponse = await fetch(`${API}/v1/export/preflight`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ techcardIds: [tcV2.meta.id] })
-    });
+      // Run preflight first
+      const preflightResponse = await fetch(`${API}/v1/export/preflight`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ techcardIds: [tcV2.meta.id] })
+      });
 
-    if (!preflightResponse.ok) throw new Error('Preflight failed');
-    const preflight = await preflightResponse.json();
+      if (!preflightResponse.ok) {
+        const errorText = await preflightResponse.text();
+        throw new Error(`Preflight ошибка: ${preflightResponse.status} ${errorText}`);
+      }
+      
+      const preflight = await preflightResponse.json();
 
-    setCurrentExportStep('Создание ZIP архива...');
-    setExportProgress(60);
+      setCurrentExportStep('Создание ZIP архива...');
+      setExportProgress(60);
 
-    const zipResponse = await fetch(`${API}/v1/export/zip`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        techcardIds: [tcV2.meta.id],
-        preflight_result: preflight
-      })
-    });
+      const zipResponse = await fetch(`${API}/v1/export/zip`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          techcardIds: [tcV2.meta.id],
+          preflight_result: preflight
+        })
+      });
 
-    if (!zipResponse.ok) throw new Error(`ZIP export failed: ${zipResponse.status}`);
+      if (!zipResponse.ok) {
+        const errorText = await zipResponse.text();
+        throw new Error(`ZIP ошибка: ${zipResponse.status} ${errorText}`);
+      }
 
-    setExportProgress(80);
-    const blob = await zipResponse.blob();
-    const url = window.URL.createObjectURL(blob);
-    
-    const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `iiko_export_${timestamp}.zip`;
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+      setExportProgress(80);
+      const blob = await zipResponse.blob();
+      
+      if (blob.size === 0) {
+        throw new Error('Получен пустой ZIP архив');
+      }
 
-    setExportResults([{
-      type: 'zip',
-      filename: filename,
-      size: blob.size,
-      description: `Номенклатуры для iiko (${preflight.counts?.dishSkeletons || 0} блюд, ${preflight.counts?.productSkeletons || 0} продуктов)`
-    }]);
+      const url = window.URL.createObjectURL(blob);
+      
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `iiko_export_${timestamp}.zip`;
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setExportResults([{
+        type: 'zip',
+        filename: filename,
+        size: blob.size,
+        description: `Номенклатуры для iiko (${preflight.counts?.dishSkeletons || 0} блюд, ${preflight.counts?.productSkeletons || 0} продуктов)`
+      }]);
+      
+    } catch (error) {
+      console.error('ZIP export error:', error);
+      throw new Error(`ZIP экспорт: ${error.message}`);
+    }
   };
 
   const executePdfExport = async () => {
-    setCurrentExportStep('Генерация PDF файла...');
-    setExportProgress(40);
+    try {
+      setCurrentExportStep('Генерация PDF файла...');
+      setExportProgress(40);
 
-    const response = await fetch(`${API}/v1/techcards.v2/print`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tcV2)
-    });
+      const response = await fetch(`${API}/v1/techcards.v2/print`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tcV2)
+      });
 
-    if (!response.ok) throw new Error(`PDF generation failed: ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PDF ошибка: ${response.status} ${errorText}`);
+      }
 
-    setExportProgress(70);
-    const htmlContent = await response.text();
-    
-    // Open in new window for printing
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    
-    setTimeout(() => {
-      printWindow.print();
-    }, 1000);
+      setExportProgress(70);
+      const htmlContent = await response.text();
+      
+      if (!htmlContent || htmlContent.trim().length === 0) {
+        throw new Error('Получен пустой HTML контент');
+      }
+      
+      // Open in new window for printing
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        throw new Error('Не удалось открыть окно для печати (возможно заблокировано браузером)');
+      }
+      
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // Trigger print after content loads
+      setTimeout(() => {
+        try {
+          printWindow.print();
+        } catch (e) {
+          console.warn('Print dialog error:', e);
+        }
+      }, 1000);
 
-    setExportResults([{
-      type: 'pdf',
-      filename: 'techcard.pdf',
-      size: htmlContent.length,
-      description: 'Техкарта в PDF формате (без цен для персонала)'
-    }]);
+      setExportResults([{
+        type: 'pdf',
+        filename: 'techcard.pdf',
+        size: htmlContent.length,
+        description: 'Техкарта в PDF формате (без цен для персонала)'
+      }]);
+      
+    } catch (error) {
+      console.error('PDF export error:', error);
+      throw new Error(`PDF экспорт: ${error.message}`);
+    }
   };
 
   const executeFullPackageExport = async () => {
-    setCurrentExportStep('Подготовка полного пакета...');
-    setExportProgress(10);
-    
-    const results = [];
+    try {
+      setCurrentExportStep('Подготовка полного пакета...');
+      setExportProgress(10);
+      
+      const results = [];
 
-    // 1. XLSX Export
-    setCurrentExportStep('Создание XLSX файла...');
-    setExportProgress(25);
-    await executeXlsxExport();
-    results.push(...exportResults);
+      // 1. XLSX Export
+      setCurrentExportStep('Создание XLSX файла...');
+      setExportProgress(25);
+      await executeXlsxExport();
+      if (exportResults.length > 0) {
+        results.push(...exportResults);
+      }
 
-    // 2. ZIP Export  
-    setCurrentExportStep('Создание ZIP архива...');
-    setExportProgress(50);
-    await executeZipExport();
-    results.push(...exportResults);
+      // 2. ZIP Export  
+      setCurrentExportStep('Создание ZIP архива...');
+      setExportProgress(50);
+      await executeZipExport();
+      if (exportResults.length > results.length) {
+        results.push(...exportResults.slice(results.length));
+      }
 
-    // 3. PDF Export
-    setCurrentExportStep('Генерация PDF...');
-    setExportProgress(75);
-    await executePdfExport();
-    results.push(...exportResults);
+      // 3. PDF Export
+      setCurrentExportStep('Генерация PDF...');
+      setExportProgress(75);
+      await executePdfExport();
+      if (exportResults.length > results.length) {
+        results.push(...exportResults.slice(results.length));
+      }
 
-    setExportResults(results);
-    setCurrentExportStep('Полный пакет готов');
+      setExportResults(results);
+      setCurrentExportStep('Полный пакет готов');
+      
+    } catch (error) {
+      console.error('Full package export error:', error);
+      throw new Error(`Полный пакет: ${error.message}`);
+    }
   };
 
   // Phase 3: FE-04-min Export to iiko (2 steps) functions
