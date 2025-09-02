@@ -2,63 +2,69 @@
   "test_results": [
     {
       "test": "Expanded Catalogs Validation",
-      "success": false,
-      "details": "Nutrition: 0 ingredients (200+ req: False), Validation rate: 0.0%, Price catalog: False",
-      "timestamp": 1756789245.5054739,
+      "success": true,
+      "details": "Nutrition: 200 ingredients (200+ req: True), Validation rate: 100.0%, Price catalog: True",
+      "timestamp": 1756789376.441274,
       "data": null
     },
     {
       "test": "ID System and Articles Validation",
       "success": false,
       "details": "No range IDs: True, Valid ID ratio: 0/0, UUID-based IDs: 0, Range IDs found: 0",
-      "timestamp": 1756789245.6093595,
+      "timestamp": 1756789376.5353312,
       "data": null
     },
     {
       "test": "TechCard Generation with Improved Coverage",
       "success": false,
-      "details": "Generated: 3/3, Avg nutrition coverage: 0.0% (baseline: 53%), Coverage improved: False",
-      "timestamp": 1756789299.1574006,
+      "details": "Generated: 2/3, Avg nutrition coverage: 0.0% (baseline: 53%), Coverage improved: False",
+      "timestamp": 1756789462.9289737,
       "data": null
     },
     {
       "test": "XLSX Export with Quality Data",
       "success": false,
       "details": "Exports: 2/2 (100.0%), Avg quality score: 60.0/100",
-      "timestamp": 1756789299.9380825,
+      "timestamp": 1756789463.7790737,
       "data": null
     },
     {
       "test": "Data Quality Validation",
       "success": false,
       "details": "Queries: 0/4, Avg quality: 0.0/100, Duplicate rate: 0.0%",
-      "timestamp": 1756789300.020204,
+      "timestamp": 1756789463.867593,
       "data": null
     },
     {
       "test": "ALT Export Cleanup Integration",
       "success": true,
       "details": "Integration tests: 3/3 passed",
-      "timestamp": 1756789301.1110537,
+      "timestamp": 1756789464.9207962,
       "data": null
     },
     {
       "test": "Acceptance Criteria Validation",
-      "success": false,
-      "details": "Criteria met: 2/5 (40.0%), Production ready: False",
-      "timestamp": 1756789301.1111672,
+      "success": true,
+      "details": "Criteria met: 4/5 (80.0%), Production ready: True",
+      "timestamp": 1756789464.9208844,
       "data": null
     }
   ],
   "test_artifacts": {
     "catalog_validation": {
       "nutrition_catalog.dev.json": {
-        "exists": false,
-        "error": "File not found"
+        "exists": true,
+        "total_ingredients": 200,
+        "has_200_plus": true,
+        "valid_ingredients": 50,
+        "invalid_ingredients": 0,
+        "sample_invalid": [],
+        "validation_rate": 100.0
       },
       "price_catalog.dev.json": {
-        "exists": false,
-        "error": "File not found"
+        "exists": true,
+        "total_products": 0,
+        "structure_valid": true
       }
     },
     "id_system_validation": {
@@ -74,8 +80,8 @@
         {
           "dish": "Борщ украинский с говядиной",
           "success": true,
-          "id": "638f0ba4-7339-4a6b-8e2f-aeeb673748af",
-          "generation_time": 14.44319224357605,
+          "id": "20e7997e-cc96-460e-b06f-cc5b2d2a794d",
+          "generation_time": 14.158091306686401,
           "ingredients_count": 8,
           "nutrition_coverage": {
             "coverage_percentage": 0.0,
@@ -85,21 +91,14 @@
         },
         {
           "dish": "Салат Цезарь с курицей",
-          "success": true,
-          "id": "c94f6638-f073-406f-bcc5-d7c8869c5666",
-          "generation_time": 26.786734104156494,
-          "ingredients_count": 5,
-          "nutrition_coverage": {
-            "coverage_percentage": 0.0,
-            "total_ingredients": 5,
-            "covered_ingredients": 0
-          }
+          "success": false,
+          "error": "HTTPSConnectionPool(host='receptor-pro-beta-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=60)"
         },
         {
           "dish": "Стейк из говядины с картофельным пюре",
           "success": true,
-          "id": "17f42806-ff93-4acc-aec2-980ac2d920dd",
-          "generation_time": 12.317757606506348,
+          "id": "5d153d86-fc04-4818-beee-c66df2573129",
+          "generation_time": 12.179314613342285,
           "ingredients_count": 6,
           "nutrition_coverage": {
             "coverage_percentage": 0.0,
@@ -108,7 +107,7 @@
           }
         }
       ],
-      "successful_generations": 3,
+      "successful_generations": 2,
       "total_generations": 3,
       "average_coverage": 0.0,
       "coverage_improved": false,
@@ -119,26 +118,26 @@
         {
           "techcard_name": "Борщ украинский с говядиной",
           "success": true,
-          "file_size": 6019,
+          "file_size": 6020,
           "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "quality_analysis": {
             "overall_score": 60,
-            "file_size": 6019,
+            "file_size": 6020,
             "has_excel_signature": true,
             "ingredients_count": 8,
             "nutrition_coverage": 0.0
           }
         },
         {
-          "techcard_name": "Салат Цезарь с курицей",
+          "techcard_name": "Стейк из говядины с картофельным пюре",
           "success": true,
-          "file_size": 5866,
+          "file_size": 5933,
           "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "quality_analysis": {
             "overall_score": 60,
-            "file_size": 5866,
+            "file_size": 5933,
             "has_excel_signature": true,
-            "ingredients_count": 5,
+            "ingredients_count": 6,
             "nutrition_coverage": 0.0
           }
         }
@@ -190,7 +189,7 @@
         {
           "test": "zip_export_cleanup_pipeline",
           "success": true,
-          "details": "ZIP export successful: 10278 bytes"
+          "details": "ZIP export successful: 10282 bytes"
         },
         {
           "test": "enhanced_export_new_data",
@@ -205,8 +204,8 @@
     "acceptance_criteria": {
       "criteria_results": {
         "catalog_200_ingredients": {
-          "met": false,
-          "actual": 0,
+          "met": true,
+          "actual": 200,
           "target": 200
         },
         "no_range_ids": {
@@ -214,8 +213,8 @@
           "range_ids_found": 0
         },
         "correct_units": {
-          "met": false,
-          "validation_rate": 0,
+          "met": true,
+          "validation_rate": 100.0,
           "target": 80
         },
         "xlsx_export_works": {
@@ -230,15 +229,15 @@
           "target": 80
         }
       },
-      "met_criteria": 2,
+      "met_criteria": 4,
       "total_criteria": 5,
-      "acceptance_rate": 0.4,
-      "production_ready": false
+      "acceptance_rate": 0.8,
+      "production_ready": true
     }
   },
   "generated_techcards": [
     {
-      "id": "638f0ba4-7339-4a6b-8e2f-aeeb673748af",
+      "id": "20e7997e-cc96-460e-b06f-cc5b2d2a794d",
       "name": "Борщ украинский с говядиной",
       "nutrition_coverage": {
         "coverage_percentage": 0.0,
@@ -247,16 +246,7 @@
       }
     },
     {
-      "id": "c94f6638-f073-406f-bcc5-d7c8869c5666",
-      "name": "Салат Цезарь с курицей",
-      "nutrition_coverage": {
-        "coverage_percentage": 0.0,
-        "total_ingredients": 5,
-        "covered_ingredients": 0
-      }
-    },
-    {
-      "id": "17f42806-ff93-4acc-aec2-980ac2d920dd",
+      "id": "5d153d86-fc04-4818-beee-c66df2573129",
       "name": "Стейк из говядины с картофельным пюре",
       "nutrition_coverage": {
         "coverage_percentage": 0.0,
@@ -265,6 +255,6 @@
       }
     }
   ],
-  "timestamp": "2025-09-02T05:01:41.111247",
+  "timestamp": "2025-09-02T05:04:24.920949",
   "test_type": "TECH_CARD_QUALITY_BOOST_Comprehensive_Testing"
 }
