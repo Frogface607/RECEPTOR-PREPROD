@@ -48,10 +48,11 @@ class TechCardNutritionTester:
         try:
             # Check nutrition catalog
             try:
-                with open('/app/nutrition_catalog.dev.json', 'r', encoding='utf-8') as f:
+                with open('/app/backend/data/nutrition_catalog.dev.json', 'r', encoding='utf-8') as f:
                     nutrition_catalog = json.load(f)
                 
-                ingredient_count = len(nutrition_catalog)
+                ingredients = nutrition_catalog.get('items', [])
+                ingredient_count = len(ingredients)
                 
                 if ingredient_count >= 201:
                     self.log_result(
