@@ -126,7 +126,7 @@ class TechCardNutritionTester:
                 # Generate tech card
                 response = requests.post(
                     f"{API_BASE}/v1/techcards.v2/generate",
-                    json={"dish_name": dish_name},
+                    json={"name": dish_name},
                     timeout=60
                 )
                 
