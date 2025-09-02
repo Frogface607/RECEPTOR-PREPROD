@@ -650,10 +650,15 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             dish_article = getattr(validated_card.meta, 'article', None)
             if not dish_article:
                 # Используем ArticleAllocator для получения артикула
-                from ..integrations.article_allocator import ArticleAllocator
+                from ..integrations.article_allocator import ArticleAllocator, ArticleType
                 allocator = ArticleAllocator()
                 dish_id = validated_card.meta.id or f"dish_{int(time.time())}"
-                allocated_result = allocator.allocate_articles([dish_id])
+                allocated_result = allocator.allocate_articles(
+                    article_type=ArticleType.DISH,
+                    count=1,
+                    entity_ids=[dish_id],
+                    entity_names=[validated_card.meta.title]
+                )
                 
                 if allocated_result.get('success') and allocated_result.get('allocated'):
                     dish_article = allocated_result['allocated'][0]['article']
