@@ -17,7 +17,6 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
     total_netto = 0.0
     
     for ing in card.ingredients:
-        sku_text = ing.skuId or "—"
         allergens_text = ", ".join(ing.allergens) if ing.allergens else "—"
         
         ingredients_html += f"""
@@ -27,7 +26,6 @@ def generate_print_html(card: TechCardV2, status: str = "success", issues: list 
             <td>{ing.loss_pct:.1f}</td>
             <td>{ing.netto_g:.1f}</td>
             <td>{ing.unit}</td>
-            <td>{sku_text}</td>
         </tr>
         """
         total_netto += ing.netto_g
