@@ -10695,6 +10695,7 @@ function App() {
                           try {
                             const parsedContent = JSON.parse(techcard.content);
                             setTcV2(parsedContent);
+                            setTechCard(null); // Очищаем V1 техkарту
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
