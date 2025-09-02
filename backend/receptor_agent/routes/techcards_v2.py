@@ -118,19 +118,10 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
                     "techcard_v2_data": res.card.model_dump()  # Полные данные V2
                 }
                 
-                # Save to user_history collection (как в старой системе)
-                from motor.motor_asyncio import AsyncIOMotorClient
-                async_client = AsyncIOMotorClient(mongo_url)
-                async_db = async_client[db_name]
-                
-                # Используем синхронную вставку через asyncio
-                import asyncio
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(async_db.user_history.insert_one(card_doc))
-                loop.close()
-                
-                async_client.close()
+                # Save to user_history collection (совместимость с существующим UI)
+                db = client[db_name]
+                user_history_collection = db.user_history
+                user_history_collection.insert_one(card_doc)
                 client.close()
                 
                 logger.info(f"Tech card saved to database with ID: {tech_card_id}")
