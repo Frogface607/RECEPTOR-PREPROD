@@ -96,7 +96,7 @@ def test_database_direct_check(user_id, expected_dish_name):
     
     try:
         client = MongoClient(MONGO_URL)
-        db = client.menu_automation
+        db = client.receptor_pro  # Правильное имя базы из .env
         
         # Проверяем коллекцию user_history
         user_history_count = db.user_history.count_documents({"user_id": user_id})
