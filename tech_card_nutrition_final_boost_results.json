@@ -1,0 +1,145 @@
+{
+  "test_start": "2025-09-02T05:59:11.558693",
+  "catalog_validation": {
+    "total_ingredients": 216,
+    "target_ingredients": 216,
+    "meets_target": true,
+    "critical_ingredients_found": [
+      "соль",
+      "лук",
+      "соль",
+      "соль",
+      "вода",
+      "свекла",
+      "лук",
+      "соль"
+    ],
+    "critical_ingredients_target": [
+      "вода",
+      "свекла",
+      "лук",
+      "соль"
+    ],
+    "complete_nutrition_data": 216,
+    "nutrition_completeness_rate": 1.0,
+    "source": "catalog"
+  },
+  "techcard_generation": {
+    "generated_cards": [
+      {
+        "id": null,
+        "name": "Борщ украинский с говядиной",
+        "coverage": 0.0,
+        "generation_time": 12.01870584487915,
+        "ingredients_count": 0,
+        "source": "unknown"
+      },
+      {
+        "id": null,
+        "name": "Стейк из говядины с картофельным пюре",
+        "coverage": 0.0,
+        "generation_time": 10.660373449325562,
+        "ingredients_count": 0,
+        "source": "unknown"
+      },
+      {
+        "id": null,
+        "name": "Салат Цезарь с курицей",
+        "coverage": 0.0,
+        "generation_time": 10.154985904693604,
+        "ingredients_count": 0,
+        "source": "unknown"
+      },
+      {
+        "id": null,
+        "name": "Паста карбонара с беконом",
+        "coverage": 0.0,
+        "generation_time": 11.07250189781189,
+        "ingredients_count": 0,
+        "source": "unknown"
+      },
+      {
+        "id": null,
+        "name": "Рыба запеченная с овощами",
+        "coverage": 0.0,
+        "generation_time": 11.62291955947876,
+        "ingredients_count": 0,
+        "source": "unknown"
+      }
+    ],
+    "total_generated": 5,
+    "target_count": 5,
+    "success_rate": 1.0,
+    "average_generation_time": 11.105897331237793,
+    "performance_target_met": true
+  },
+  "nutrition_coverage": {
+    "individual_scores": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "average_coverage": 0.0,
+    "target_coverage": 80.0,
+    "target_met": false,
+    "cards_above_80": 0,
+    "coverage_improvement": -53.0
+  },
+  "xlsx_export": {
+    "export_results": [
+      {
+        "card_id": null,
+        "card_name": "Борщ украинский с говядиной",
+        "success": false,
+        "error": "HTTP 400"
+      },
+      {
+        "card_id": null,
+        "card_name": "Стейк из говядины с картофельным пюре",
+        "success": false,
+        "error": "HTTP 400"
+      },
+      {
+        "card_id": null,
+        "card_name": "Салат Цезарь с курицей",
+        "success": false,
+        "error": "HTTP 400"
+      }
+    ],
+    "successful_exports": 0,
+    "total_attempts": 3,
+    "success_rate": 0.0,
+    "average_export_time": 0.021875619888305664,
+    "average_file_size": 0,
+    "target_file_size": 6000,
+    "file_size_target_met": false
+  },
+  "performance": {
+    "average_generation_time": 11.105897331237793,
+    "max_generation_time": 12.01870584487915,
+    "average_export_time": 0,
+    "generation_target": 20.0,
+    "performance_target_met": true,
+    "total_workflow_time": 11.105897331237793
+  },
+  "final_assessment": {
+    "overall_success": false,
+    "success_rate": 0.5,
+    "critical_criteria_met": {
+      "expanded_catalog_216": true,
+      "coverage_80_percent": false,
+      "xlsx_export_working": false,
+      "performance_under_20s": true
+    },
+    "key_metrics": {
+      "catalog_ingredients": 216,
+      "average_coverage": 0.0,
+      "coverage_improvement": -53.0,
+      "target_achievement": false
+    },
+    "project_status": "NEEDS_IMPROVEMENT"
+  },
+  "test_end": "2025-09-02T06:00:07.272612"
+}
