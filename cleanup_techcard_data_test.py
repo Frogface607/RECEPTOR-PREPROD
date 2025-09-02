@@ -83,21 +83,21 @@ class CleanupTechCardDataTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                        
-                        # Check status field
-                        status = data.get('status', 'unknown')
-                        techcard = data.get('techcard', {})
-                        issues = data.get('issues', [])
-                        
-                        # Validate READY status requirements
-                        is_ready_status = status == "READY"
-                        has_minimal_issues = len(issues) <= 2  # Allow minimal issues
-                        has_techcard_data = bool(techcard and techcard.get('id'))
-                        
-                        # Check if techcard has required data
-                        has_ingredients = bool(techcard.get('ingredients'))
-                        has_nutrition = bool(techcard.get('nutrition'))
-                        has_cost = bool(techcard.get('cost'))
+                    
+                    # Check status field
+                    status = data.get('status', 'unknown')
+                    techcard = data.get('techcard', {})
+                    issues = data.get('issues', [])
+                    
+                    # Validate READY status requirements
+                    is_ready_status = status == "READY"
+                    has_minimal_issues = len(issues) <= 2  # Allow minimal issues
+                    has_techcard_data = bool(techcard and techcard.get('id'))
+                    
+                    # Check if techcard has required data
+                    has_ingredients = bool(techcard.get('ingredients'))
+                    has_nutrition = bool(techcard.get('nutrition'))
+                    has_cost = bool(techcard.get('cost'))
                         
                         result = {
                             'dish_name': dish_name,
