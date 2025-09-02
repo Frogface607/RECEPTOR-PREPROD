@@ -348,12 +348,12 @@ class CleanupTechCardReadyTester:
                     if range_ids:
                         print(f"      ⚠️ Found range IDs: {range_ids[:5]}...")  # Show first 5
                     
-                else:
-                    validation_results['catalog_ids'] = {
-                        'error': f"HTTP {response.status}",
-                        'no_range_ids': False
-                    }
-                    print(f"      ❌ Catalog access failed: HTTP {response.status}")
+            else:
+                validation_results['catalog_ids'] = {
+                    'error': f"HTTP {response.status_code}",
+                    'no_range_ids': False
+                }
+                print(f"      ❌ Catalog access failed: HTTP {response.status_code}")
                     
         except Exception as e:
             validation_results['catalog_ids'] = {
