@@ -691,12 +691,24 @@ async def create_dual_export_zip(request: Request):
             organization_id=organization_id
         )
         
+        # ALT Export Cleanup: Автоматическая очистка архива
+        from ..exports.alt_export_cleanup import get_alt_export_validator
+        
+        validator = get_alt_export_validator()
+        clean_zip_buffer, cleanup_stats = validator.cleanup_archive(
+            zip_buffer, 
+            context=f"zip_export_{len(techcard_ids)}_cards"
+        )
+        
+        if cleanup_stats["cleaned"]:
+            logger.info(f"ALT Cleanup applied: {cleanup_stats}")
+        
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"iiko_export_{timestamp}.zip"
         
         return StreamingResponse(
-            iter([zip_buffer.getvalue()]),
+            iter([clean_zip_buffer.getvalue()]),
             media_type="application/zip",
             headers={"Content-Disposition": f'attachment; filename="{filename}"'}
         )
