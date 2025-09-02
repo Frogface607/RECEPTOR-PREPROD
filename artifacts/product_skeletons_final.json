@@ -1,19 +1,12 @@
 {
-  "timestamp": "2025-09-02T03:53:02.644520",
+  "timestamp": "2025-09-02T03:57:32.779321",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 2,
+  "total_products": 1,
   "all_types_valid": true,
   "products": [
     {
-      "name": "Оливковое масло",
-      "code": "100007",
-      "type": "GOODS",
-      "unit": "г",
-      "group": "Молочные продукты"
-    },
-    {
-      "name": "Перец черный",
-      "code": "100008",
+      "name": "Перец черный молотый",
+      "code": "100010",
       "type": "GOODS",
       "unit": "г",
       "group": "Бакалея"
