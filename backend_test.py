@@ -147,7 +147,7 @@ class TechCardNutritionTester:
                             'coverage_pct': coverage_pct,
                             'source': source,
                             'generation_time': generation_time,
-                            'card_id': data['card'].get('id')
+                            'card_id': data['card'].get('id') or data['card'].get('meta', {}).get('id')
                         })
                         
                         self.log_result(
