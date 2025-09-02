@@ -419,7 +419,13 @@ class DualExporter:
                                operational_rounding: bool = True,
                                organization_id: str = "default") -> io.BytesIO:
         """
-        Create ZIP with TTK and skeleton files
+        REMOVE INVALID TECH CARD FROM ZIP: Create ZIP with ONLY skeleton files
+        
+        According to requirements, ZIP should contain ONLY:
+        - Dish-Skeletons.xlsx (if dishes missing)
+        - Product-Skeletons.xlsx (if products missing)
+        
+        NO invalid/empty tech cards (iiko_TTK.xlsx removed)
         
         Returns BytesIO buffer with ZIP content
         """
@@ -427,25 +433,38 @@ class DualExporter:
             zip_buffer = io.BytesIO()
             
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                # 1. Create iiko_TTK.xlsx with preflight articles
-                ttk_xlsx = await self._create_ttk_xlsx(techcard_ids, operational_rounding, preflight_result)
-                zip_file.writestr("iiko_TTK.xlsx", ttk_xlsx.getvalue())
+                # REMOVED: iiko_TTK.xlsx (invalid/empty tech card)
+                # OLD: ttk_xlsx = await self._create_ttk_xlsx(techcard_ids, operational_rounding, preflight_result)
+                # OLD: zip_file.writestr("iiko_TTK.xlsx", ttk_xlsx.getvalue())
                 
-                # 2. Create Dish-Skeletons.xlsx if needed
+                # 1. Create Dish-Skeletons.xlsx ONLY if dishes missing
                 if preflight_result["counts"]["dishSkeletons"] > 0:
                     dish_skeletons_xlsx = await self._create_dish_skeletons_xlsx(
                         preflight_result["missing"]["dishes"]
                     )
                     zip_file.writestr("Dish-Skeletons.xlsx", dish_skeletons_xlsx.getvalue())
+                    logger.info(f"Added Dish-Skeletons.xlsx with {preflight_result['counts']['dishSkeletons']} dishes")
                 
-                # 3. Create Product-Skeletons.xlsx if needed
+                # 2. Create Product-Skeletons.xlsx ONLY if products missing
                 if preflight_result["counts"]["productSkeletons"] > 0:
                     product_skeletons_xlsx = await self._create_product_skeletons_xlsx(
                         preflight_result["missing"]["products"]
                     )
                     zip_file.writestr("Product-Skeletons.xlsx", product_skeletons_xlsx.getvalue())
+                    logger.info(f"Added Product-Skeletons.xlsx with {preflight_result['counts']['productSkeletons']} products")
+                
+                # 3. Verify ZIP contains only valid skeleton files
+                files_in_zip = list(zip_file.namelist())
+                valid_files = [f for f in files_in_zip if f in ["Dish-Skeletons.xlsx", "Product-Skeletons.xlsx"]]
+                
+                logger.info(f"ZIP export complete: {len(valid_files)} valid skeleton files created")
+                logger.info(f"Files in ZIP: {files_in_zip}")
+                
+                # 4. Ensure ZIP is not empty (at least one skeleton file should be present)
+                if not files_in_zip:
+                    logger.warning("ZIP export created empty archive - no skeleton files needed")
             
-            # 4. Claim articles after successful skeleton generation
+            # 5. Claim articles after successful skeleton generation
             await self._claim_generated_articles(preflight_result, organization_id)
             
             zip_buffer.seek(0)
