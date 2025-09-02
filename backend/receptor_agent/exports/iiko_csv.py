@@ -15,7 +15,7 @@ def techcard_to_csv(card: TechCardV2) -> str:
         w.writerow([
             card.meta.title,
             "",  # category не используется в V2
-            ing.canonical or ing.name,
+            ing.canonical_id or ing.name,
             ing.uom,
             f"{ing.gross_g:.2f}",
             f"{ing.net_g:.2f}",
