@@ -17960,179 +17960,199 @@ function App() {
       )}
 
       {/* CREATE EXPORT WIZARD UI - Unified Export Wizard Modal */}
+      {/* FIX JS MODAL SCROLL & OPEN BUG: Enhanced modal with proper scroll handling */}
       {showUnifiedExportWizard && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeExportWizard}>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={closeExportWizard}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-wizard-title"
+        >
           <div 
-            className="bg-gray-800 rounded-2xl p-8 max-w-4xl w-full mx-4 shadow-2xl border border-gray-700" 
+            className="bg-gray-800 rounded-2xl p-6 max-w-4xl w-full shadow-2xl border border-gray-700 my-8 max-h-[90vh] overflow-y-auto" 
             onClick={(e) => e.stopPropagation()}
+            data-export-wizard-modal
           >
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-6 sticky top-0 bg-gray-800 pb-4 border-b border-gray-700">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-2">🚀 Мастер экспорта</h2>
-                <p className="text-gray-300">Выберите формат экспорта для вашей техкарты</p>
+                <h2 id="export-wizard-title" className="text-2xl font-bold text-white mb-1">🚀 Мастер экспорта</h2>
+                <p className="text-gray-300 text-sm">Выберите формат экспорта для вашей техкарты</p>
               </div>
               <button
                 onClick={closeExportWizard}
-                className="text-gray-400 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center"
+                className="text-gray-400 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-700 transition-colors"
+                aria-label="Закрыть мастер экспорта"
               >
                 ×
               </button>
             </div>
 
-            {/* Export Options Grid */}
-            {exportStatus === 'idle' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* XLSX Export */}
-                <div 
-                  onClick={() => executeExport('xlsx')}
-                  className="bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <div className="text-white">
-                    <div className="text-4xl mb-3">📊</div>
-                    <h3 className="text-xl font-bold mb-2">XLSX Техкарта</h3>
-                    <p className="text-green-100 text-sm mb-3">
-                      Готовая техкарта для импорта в систему iiko
-                    </p>
-                    <div className="text-green-200 text-xs">
-                      • Полные БЖУ данные<br/>
-                      • Корректные артикулы<br/>
-                      • Совместимость с iiko RMS
+            {/* Scrollable Content Area */}
+            <div className="overflow-y-auto max-h-[calc(90vh-200px)]">
+              {/* Export Options Grid */}
+              {exportStatus === 'idle' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {/* XLSX Export */}
+                  <button 
+                    onClick={() => executeExport('xlsx')}
+                    className="bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-left w-full border-none"
+                    aria-label="Экспорт XLSX техкарты"
+                  >
+                    <div className="text-white">
+                      <div className="text-4xl mb-3">📊</div>
+                      <h3 className="text-xl font-bold mb-2">XLSX Техкарта</h3>
+                      <p className="text-green-100 text-sm mb-3">
+                        Готовая техкарта для импорта в систему iiko
+                      </p>
+                      <div className="text-green-200 text-xs">
+                        • Полные БЖУ данные<br/>
+                        • Корректные артикулы<br/>
+                        • Совместимость с iiko RMS
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* ZIP Export */}
+                  <button 
+                    onClick={() => executeExport('zip')}
+                    className="bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-left w-full border-none"
+                    aria-label="Экспорт ZIP номенклатур"
+                  >
+                    <div className="text-white">
+                      <div className="text-4xl mb-3">📦</div>
+                      <h3 className="text-xl font-bold mb-2">ZIP Номенклатуры</h3>
+                      <p className="text-blue-100 text-sm mb-3">
+                        Архив со скелетонами блюд и продуктов
+                      </p>
+                      <div className="text-blue-200 text-xs">
+                        • Dish-Skeletons.xlsx<br/>
+                        • Product-Skeletons.xlsx<br/>
+                        • Только необходимые файлы
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* PDF Export */}
+                  <button 
+                    onClick={() => executeExport('pdf')}
+                    className="bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-left w-full border-none"
+                    aria-label="Экспорт PDF для персонала"
+                  >
+                    <div className="text-white">
+                      <div className="text-4xl mb-3">📄</div>
+                      <h3 className="text-xl font-bold mb-2">PDF для персонала</h3>
+                      <p className="text-purple-100 text-sm mb-3">
+                        Техкарта для печати на кухню (без цен)
+                      </p>
+                      <div className="text-purple-200 text-xs">
+                        • Готов к печати<br/>
+                        • Без коммерческих данных<br/>
+                        • ГОСТ формат
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Full Package Export */}
+                  <button 
+                    onClick={() => executeExport('full_package')}
+                    className="bg-gradient-to-br from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-left w-full border-none"
+                    aria-label="Экспорт полного пакета"
+                  >
+                    <div className="text-white">
+                      <div className="text-4xl mb-3">🎁</div>
+                      <h3 className="text-xl font-bold mb-2">Полный пакет</h3>
+                      <p className="text-orange-100 text-sm mb-3">
+                        Все форматы сразу: XLSX + ZIP + PDF
+                      </p>
+                      <div className="text-orange-200 text-xs">
+                        • Техкарта для iiko<br/>
+                        • Номенклатуры<br/>
+                        • PDF для кухни
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Progress Section */}
+              {exportStatus === 'processing' && (
+                <div className="mb-6">
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-white">Экспорт в процессе...</h3>
+                      <div className="text-2xl animate-spin">⚙️</div>
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    <div className="w-full bg-gray-600 rounded-full h-4 mb-4">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-500"
+                        style={{ width: `${exportProgress}%` }}
+                        role="progressbar"
+                        aria-valuenow={exportProgress}
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      ></div>
+                    </div>
+                    
+                    {/* Current Step */}
+                    <div className="text-gray-300 text-center" aria-live="polite">
+                      {currentExportStep}
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* ZIP Export */}
-                <div 
-                  onClick={() => executeExport('zip')}
-                  className="bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <div className="text-white">
-                    <div className="text-4xl mb-3">📦</div>
-                    <h3 className="text-xl font-bold mb-2">ZIP Номенклатуры</h3>
-                    <p className="text-blue-100 text-sm mb-3">
-                      Архив со скелетонами блюд и продуктов
-                    </p>
-                    <div className="text-blue-200 text-xs">
-                      • Dish-Skeletons.xlsx<br/>
-                      • Product-Skeletons.xlsx<br/>
-                      • Только необходимые файлы
+              {/* Success Section */}
+              {exportStatus === 'success' && (
+                <div className="mb-6">
+                  <div className="bg-green-800 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-white">✅ Экспорт завершен</h3>
+                      <div className="text-2xl">🎉</div>
                     </div>
-                  </div>
-                </div>
-
-                {/* PDF Export */}
-                <div 
-                  onClick={() => executeExport('pdf')}
-                  className="bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <div className="text-white">
-                    <div className="text-4xl mb-3">📄</div>
-                    <h3 className="text-xl font-bold mb-2">PDF для персонала</h3>
-                    <p className="text-purple-100 text-sm mb-3">
-                      Техкарта для печати на кухню (без цен)
-                    </p>
-                    <div className="text-purple-200 text-xs">
-                      • Готов к печати<br/>
-                      • Без коммерческих данных<br/>
-                      • ГОСТ формат
-                    </div>
-                  </div>
-                </div>
-
-                {/* Full Package Export */}
-                <div 
-                  onClick={() => executeExport('full_package')}
-                  className="bg-gradient-to-br from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl p-6 cursor-pointer transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <div className="text-white">
-                    <div className="text-4xl mb-3">🎁</div>
-                    <h3 className="text-xl font-bold mb-2">Полный пакет</h3>
-                    <p className="text-orange-100 text-sm mb-3">
-                      Все форматы сразу: XLSX + ZIP + PDF
-                    </p>
-                    <div className="text-orange-200 text-xs">
-                      • Техкарта для iiko<br/>
-                      • Номенклатуры<br/>
-                      • PDF для кухни
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Progress Section */}
-            {exportStatus === 'processing' && (
-              <div className="mb-8">
-                <div className="bg-gray-700 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">Экспорт в процессе...</h3>
-                    <div className="text-2xl animate-spin">⚙️</div>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-full bg-gray-600 rounded-full h-4 mb-4">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-500"
-                      style={{ width: `${exportProgress}%` }}
-                    ></div>
-                  </div>
-                  
-                  {/* Current Step */}
-                  <div className="text-gray-300 text-center">
-                    {currentExportStep}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Success Section */}
-            {exportStatus === 'success' && (
-              <div className="mb-8">
-                <div className="bg-green-800 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">✅ Экспорт завершен</h3>
-                    <div className="text-2xl">🎉</div>
-                  </div>
-                  
-                  {/* Export Results */}
-                  <div className="space-y-3">
-                    {exportResults.map((result, index) => (
-                      <div key={index} className="bg-green-700 rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-semibold text-white">{result.filename}</div>
-                            <div className="text-green-200 text-sm">{result.description}</div>
-                          </div>
-                          <div className="text-green-200 text-sm">
-                            {(result.size / 1024).toFixed(1)} KB
+                    
+                    {/* Export Results */}
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {exportResults.map((result, index) => (
+                        <div key={index} className="bg-green-700 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-white">{result.filename}</div>
+                              <div className="text-green-200 text-sm">{result.description}</div>
+                            </div>
+                            <div className="text-green-200 text-sm">
+                              {(result.size / 1024).toFixed(1)} KB
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Error Section */}
-            {exportStatus === 'error' && (
-              <div className="mb-8">
-                <div className="bg-red-800 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">❌ Ошибка экспорта</h3>
-                    <div className="text-2xl">⚠️</div>
-                  </div>
-                  
-                  <div className="text-red-200">
-                    {currentExportStep}
+              {/* Error Section */}
+              {exportStatus === 'error' && (
+                <div className="mb-6">
+                  <div className="bg-red-800 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-white">❌ Ошибка экспорта</h3>
+                      <div className="text-2xl">⚠️</div>
+                    </div>
+                    
+                    <div className="text-red-200" role="alert">
+                      {currentExportStep}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Footer Actions */}
-            <div className="flex justify-between items-center">
+            {/* Footer Actions - Always visible */}
+            <div className="flex justify-between items-center pt-4 border-t border-gray-700 sticky bottom-0 bg-gray-800">
               <div className="text-gray-400 text-sm">
                 {tcV2 ? `Техкарта: ${tcV2.meta?.title || 'Без названия'}` : 'Техкарта не создана'}
               </div>
