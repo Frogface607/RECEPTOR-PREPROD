@@ -245,6 +245,21 @@ def export_tc_v2_to_iiko_ttk_xlsx(card: TechCardV2):
         # Генерируем XLSX файл для импорта ТТК с DISH артикулом
         xlsx_buffer, issues = create_iiko_ttk_xlsx(card, export_options)
         
+        # ALT Export Cleanup: Валидация единичного TTK файла
+        validator = get_alt_export_validator()
+        xlsx_content = xlsx_buffer.getvalue()
+        
+        validation_result = validator.validate_single_ttk(
+            xlsx_content, 
+            filename=f"iiko_ttk_{card.meta.title}.xlsx"
+        )
+        
+        if not validation_result["valid"]:
+            print(f"ALT Export Warning: TTK validation issues - {validation_result['issues']}")
+            # Логируем проблемы, но не блокируем экспорт (может быть legacy данные)
+        else:
+            print(f"ALT Export: TTK validation passed - {validation_result['metadata']}")
+        
         # Создаем безопасное имя файла  
         import re
         safe_title = re.sub(r'[^\w\s-]', '', card.meta.title)  # Remove special chars
