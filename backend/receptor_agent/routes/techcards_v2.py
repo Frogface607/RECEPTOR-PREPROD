@@ -73,7 +73,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
         res = run_pipeline(profile)
         
         # Save tech card to database if generation was successful
-        if res.status in ["success", "draft"] and res.card:
+        if res.status in ["success", "draft", "READY"] and res.card:
             try:
                 # Connect to MongoDB and save the tech card
                 import os
