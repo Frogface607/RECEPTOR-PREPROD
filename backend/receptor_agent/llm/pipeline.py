@@ -32,7 +32,7 @@ class ProfileInput(BaseModel):
 class PipelineResult(BaseModel):
     card: TechCardV2 | None = None
     issues: List[str] = []
-    status: str = "success"  # "success", "draft", никогда не "failed"
+    status: str = "READY"  # Все техкарты создаются со статусом READY
     raw_data: Dict[str, Any] | None = None
 
 def collect_sub_recipe_ids(tech_card_data: Dict[str, Any]) -> Set[str]:
