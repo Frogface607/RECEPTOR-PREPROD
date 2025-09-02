@@ -80,8 +80,8 @@ class CriticalFixesTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    techcard = data.get('techcard', {})
-                    techcard_id = techcard.get('id')
+                    techcard = data.get('card', {})
+                    techcard_id = techcard.get('meta', {}).get('id') if techcard.get('meta') else None
                     generation_time = time.time() - start_time
                     
                     if techcard_id:
