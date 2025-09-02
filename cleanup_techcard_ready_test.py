@@ -300,7 +300,7 @@ class CleanupTechCardReadyTester:
         
         return api_health_score >= 0.8  # At least 80% of endpoints should be healthy
 
-    async def test_3_data_validation(self):
+    def test_3_data_validation(self):
         """Test 3: Data Validation - Подтвердить что данные чистые"""
         print("\n🔍 TEST 3: DATA VALIDATION")
         
@@ -309,12 +309,12 @@ class CleanupTechCardReadyTester:
         # Test 3.1: Check catalog for range IDs
         print("   🔄 Checking catalogs for range IDs...")
         try:
-            async with self.session.get(
+            response = self.session.get(
                 f"{API_BASE}/v1/techcards.v2/catalog-search",
                 params={"q": "", "source": "all", "limit": 50}
-            ) as response:
-                if response.status == 200:
-                    data = await response.json()
+            )
+            if response.status_code == 200:
+                data = response.json()
                     results = data.get('results', [])
                     
                     # Check for range IDs like '9969-86'
