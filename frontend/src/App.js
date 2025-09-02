@@ -6346,7 +6346,7 @@ function App() {
       }
       
       // Add to history if successful
-      if (normalizedData.status === 'success' || normalizedData.status === 'draft') {
+      if (normalizedData.status === 'success' || normalizedData.status === 'draft' || normalizedData.status === 'READY') {
         try {
           await fetchUserHistory();
         } catch (historyError) {
