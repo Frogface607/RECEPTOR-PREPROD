@@ -13,10 +13,10 @@ def techcard_to_xlsx(card: TechCardV2) -> bytes:
     row = 1
     for ing in card.ingredients:
         ws.write_row(row, 0, [
-            card.meta.name, card.meta.category or "",
-            ing.canonical or ing.name, ing.uom,
-            ing.gross_g, ing.net_g, ing.loss_pct,
-            card.yield_.per_portion_g, card.yield_.portions
+            card.meta.title, "",  # category не используется в V2
+            ing.canonical_id or ing.name, ing.unit,
+            ing.brutto_g, ing.netto_g, ing.loss_pct,
+            card.yield_.perPortion_g, 1  # portions не используется в V2
         ])
         row += 1
     wb.close()
