@@ -1052,6 +1052,7 @@ function App() {
 
   // Render TechCardV2 directly from JSON data
   const renderTechCardV2 = (tcV2) => {
+    console.log('renderTechCardV2 called with:', tcV2 ? 'tcV2 data present' : 'tcV2 is null/undefined');
     if (!tcV2) return null;
 
     const meta = tcV2.meta || {};
