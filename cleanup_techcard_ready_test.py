@@ -416,7 +416,7 @@ class CleanupTechCardReadyTester:
         
         return data_clean
 
-    async def generate_final_assessment(self):
+    def generate_final_assessment(self):
         """Generate final assessment of CLEANUP TECH CARD DATA & UI testing"""
         print("\n🎯 FINAL ASSESSMENT: CLEANUP TECH CARD DATA & UI")
         
