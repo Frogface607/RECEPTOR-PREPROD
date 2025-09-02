@@ -14,7 +14,7 @@ import os
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dev-connect-3.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://receptor-pro-beta-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class SubRecipeIntegrationTester:

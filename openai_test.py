@@ -16,7 +16,7 @@ def test_openai_tech_card_generation():
     print("=" * 60)
     
     # Use the public endpoint
-    base_url = "https://dev-connect-3.preview.emergentagent.com/api"
+    base_url = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
     
     # Test data from review request
     test_data = {

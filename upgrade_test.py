@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://dev-connect-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
 
 def log_test(message, status="INFO"):
     """Log test messages with timestamp"""

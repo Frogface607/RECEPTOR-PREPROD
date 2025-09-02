@@ -12,7 +12,7 @@ import os
 from typing import Dict, Any, List, Optional
 
 # Backend URL from environment
-BACKEND_URL = "https://dev-connect-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
 
 def test_chef_rules_implementation():
     """Test Task 2.2 - Chef Rules Implementation"""

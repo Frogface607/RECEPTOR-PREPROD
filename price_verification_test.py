@@ -11,7 +11,7 @@ from datetime import datetime
 
 class PriceVerificationTest:
     def __init__(self):
-        self.base_url = "https://dev-connect-3.preview.emergentagent.com/api"
+        self.base_url = "https://receptor-pro-beta-1.preview.emergentagent.com/api"
         self.user_id = "price_test_user"
         self.city = "москва"
         

@@ -1,109 +1,68 @@
 <analysis>
-The previous AI engineer successfully brought the AI-Menu-Designer application from an MVP to a robust state, focusing on iiko integration and TechCard processing. Initial work established a direct iiko RMS connection for real-time nomenclature and pricing. Subsequent efforts stabilized LLM-driven TechCard generation via timeouts and fallbacks.
-
-The core of the recent work revolved around the IK-04/03 Round-trip golden task, which involved comprehensive backend and frontend development for iiko XLSX import and export. This included implementing a robust XLSX parser (), enhancing export capabilities (), and ensuring data integrity through extensive unit and round-trip tests. Critical fixes addressed SKU preservation, technology parsing (including time/temperature extraction and range patterns), and TechCardV2 schema validation.
-
-After achieving 100% success on IK-04/03 tests and backend validation, the focus shifted to GX-02 + Mapping Sprint. This involved building a Quality Validator with API endpoints and UI integration, and enhancing the auto-mapping system with RU-synonyms and confidence scoring. The trajectory ends with the engineer starting the Export Wizard v1 — Finish task, specifically setting up backend endpoints for export tracking.
+The previous AI engineer successfully initialized the project, troubleshot environment issues, and implemented several key features and bug fixes for the Receptor PRO application. The initial phase involved exploring the codebase, resolving a Name: Debian GNU/Linux 12 (bookworm)
+Version: 12 (bookworm)
+Codename: bookworm module dependency error in the backend, and confirming application functionality. Subsequently, an automated UI test suite was executed. Two major tasks were then completed: a critical bug fix for iiko export's Product Skeletons by enforcing valid 'Тип' mapping and a feature for automatic gram-to-kilogram conversion in iiko XLSX exports. Finally, a UX improvement was delivered, moving the ALT export functionality to a prominent main screen button. The work demonstrates effective codebase understanding, targeted modifications, and thorough testing.
 </analysis>
 
 <product_requirements>
-The AI-Menu-Designer aims to automate menu generation for the HoReCa sector, focusing on creating technical cards, managing costs, and integrating with iiko. Initially using iikoCloud, it transitioned to direct iiko RMS server integration for real-time product nomenclature and pricing, enabling auto-mapping of ingredients to iiko SKUs and streamlining TechCard export to iikoWeb.
+The application, **RECEPTOR PRO Beta** (AI Menu Designer), is a B2B SaaS platform for automating the creation of technical cards (ТТК) and integrating with IIKo POS-systems. The user's explicit requests and work completed include:
 
-Key functionalities implemented and refined include:
-1.  **Direct iiko RMS integration**: For live nomenclature and pricing.
-2.  **Auto-mapping wizard**: Maps ingredients to iiko SKUs with preview/undo.
-3.  **One-click Export Workflow**: Guided process with pre-checks, auto-mapping, GOST preview, and iiko XLSX export.
-4.  **Stabilized TechCard Generation**: Robust LLM integration with retries, timeouts, and fallback to ensure consistent output.
-5.  **iiko Price Integration**: Pulls purchase prices and VAT from iiko RMS for accurate cost calculations.
-6.  **iiko XLSX Import**: Imports existing iiko XLSX technical cards, converting them to  format while preserving SKUs and calculations.
-7.  **Quality Validator (GX-02)**: Ensures TechCard data quality, including yield validation, netto sum, range normalization, and UI banners for issues.
-8.  **Enhanced Auto-mapping**: Utilizes iiko Server API for catalog sync and a RU-synonym dictionary for improved fuzzy matching and confidence-based auto-acceptance.
-9.  **UX Polish**: Improving import/export workflows with drag'n'drop, progress indicators, clear errors, and an undo feature for mapping.
+1.  **Automated UX Test Suite**: Execute 5-7 key integration tests (authorization, manual article mapping, PDF/ALT export, synchronization, ingredient editor, AI editing) with strict credit and step constraints. This was completed successfully.
+2.  **iiko Import Fix — Correct Тип Mapping**: Ensure Dish-Skeletons and Product-Skeletons generate separately and are ready for valid iiko import. Specifically, the Тип column for Product-Skeletons must always contain one of  (e.g., 'Товар' is invalid). If an invalid type is found, export should be stopped with a detailed error report. This bug was fixed and validated.
+3.  **Export to iiko XLSX: Automatic Gram-to-Kilogram Conversion**: Automatically convert all mass fields (brutto, netto, output, etc.) from grams to kilograms (e.g., 30g → 0.030kg) exclusively for iiko XLSX export. Values should be rounded to 3 decimal places, and the unit must be 'кг'. The web interface and PDF exports should retain masses in grams. This feature was implemented and validated.
+4.  **UX Improvement: Move ALT Export Button**: Relocate the ALT export function from the Дополнительно (Additional) dropdown menu to a large, dedicated button titled Экспорт ТК для IIKo on the main application screen. This was implemented and validated.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack**: React.js (frontend), FastAPI (backend), MongoDB (database).
--   **AI/LLM**: OpenAI (gpt-4o-mini) with robust error handling (timeouts, retries, skeleton fallback).
--   **Data Management**: Pydantic for data models, Pandas for data processing, Fuzzywuzzy for matching.
--   **Integration**: Direct iiko RMS API for real-time nomenclature and pricing; iiko XLSX for import/export.
--   **Deployment**: Supervisor, Kubernetes, environment variables.
--   **Testing**: Unit, E2E, and Golden Tests (especially for round-trip data integrity).
+-   **FastAPI**: Backend framework.
+-   **React**: Frontend framework.
+-   **MongoDB**: Database.
+-   **iiko Integration**: Specific requirements for XLSX export, including 'Тип' mapping and mass unit conversion.
+-   **XLSX Manipulation**: Programmatic reading and writing of Excel files.
+-   **Environment Variables**: Configuration management for URLs and database connections.
+-   **Supervisorctl**: Service management for starting/restarting frontend/backend.
+-   **Automated UI Testing**: Using specialized agents for user interface validation.
 </key_technical_concepts>
 
 <code_architecture>
-The application features a React frontend, a FastAPI backend, and a MongoDB database.
+The application follows a standard full-stack architecture with a React frontend and a FastAPI backend, using MongoDB for persistence.
 
 
 
--   **/app/backend/receptor_agent/techcards_v2/quality_validator.py (NEW)**:
-    -   **Summary**: New module for validating the quality of TechCardV2 objects.
-    -   **Changes**: Implements checks for yield, netto sum vs. yield, and normalizes range-based inputs (e.g., 0-4 to a single number). It also generates issues/warnings for UI display.
--   **/app/backend/receptor_agent/exports/iiko_xlsx.py**:
-    -   **Summary**: Handles the export of TechCardV2 objects into iiko XLSX format.
-    -   **Changes**: Added  function to facilitate the round-trip testing and general export functionality, ensuring compatibility with iikoWeb.
--   **/app/backend/receptor_agent/integrations/iiko_xlsx_parser.py (NEW)**:
-    -   **Summary**: New module designed to parse incoming iiko XLSX files and convert their content into  objects.
-    -   **Changes**: Critical for the import functionality. Initially implemented to extract dish name, ingredients (SKUs, units, netto), yield, portions, and process steps. Extensive modifications were made to correctly handle meta-information (e.g., technology descriptions with time/temperature) located both before and after header rows, ensuring SKU preservation, and converting advanced technology patterns (ranges, Fahrenheit) while applying default process steps where time/temperature were missing. This file was heavily refined to ensure robust parsing and data integrity.
--   **/app/backend/receptor_agent/integrations/enhanced_mapping_service.py (NEW)**:
-    -   **Summary**: Manages the improved auto-mapping logic, including catalog synchronization and fuzzy matching with Russian synonyms.
-    -   **Changes**: Implements logic for syncing product catalogs from iiko Server API, building a local index, and providing confidence-scored suggestions for ingredient mapping.
--   **/app/backend/receptor_agent/integrations/export_tracking_service.py (NEW)**:
-    -   **Summary**: Service to track the last successful exports of TechCards.
-    -   **Changes**: Initial creation to store timestamps of exports per organization and TechCard for UI display and auditing.
--   **/app/backend/receptor_agent/routes/techcards_v2.py**:
-    -   **Summary**: FastAPI router for TechCardV2-related API endpoints.
-    -   **Changes**: Integrated new  endpoints () and new  endpoints, also added preliminary endpoints related to .
--   **/app/frontend/src/App.js**:
-    -   **Summary**: The main React component orchestrating all UI interactions and data flows.
-    -   **Changes**: Significantly updated for multiple features:
-        -   **IK-04/02 (XLSX Import UI)**: Added  state, a dedicated button, and functions (, , ) with enhanced progress indicators and detailed error/warning display for the XLSX import workflow.
-        -   **GX-02 (Quality Validator UI)**: Integrated state and functions to display quality banners and messages returned by the new quality validator backend.
-        -   **Enhanced Auto-mapping UI**: Improved the Принять ≥90% functionality, adding loading states, toast notifications, and an undo button for auto-mapping changes.
-        -   **Export Wizard UI**: Prepared for showing last export timestamp and iikoWeb import memo (though these are pending in current work).
--   **/app/tests/fixtures/iiko_xlsx/ (NEW)**:
-    -   **Summary**: Directory to store sample iiko XLSX files for comprehensive testing.
-    -   **Changes**: Created, and , ,  were generated to cover different import scenarios (thermal processes, cold dishes, viscous units).
--   **/app/tests/v2/test_iiko_import_roundtrip.py (NEW)**:
-    -   **Summary**: Tests the end-to-end import-export round-trip for iiko XLSX files.
-    -   **Changes**: New file. Key tests ensure SKU preservation, data integrity, and idempotency after import, recalculation, and re-export, including using the new fixture files. Corrected module import paths.
--   **/app/tests/v2/test_iiko_import_units.py (NEW)**:
-    -   **Summary**: Tests various unit conversion scenarios during iiko XLSX import.
-    -   **Changes**: New file. Validates correct handling of units (kg→g, l→ml) and density-based conversions (ml→g) for specific ingredients. Corrected module import paths.
--   **/app/tests/v2/test_iiko_import_process.py (NEW)**:
-    -   **Summary**: Tests the parsing and extraction of technology steps, including time and temperature.
-    -   **Changes**: New file. Validates the correct parsing of process actions, minimum step count, extraction of  and  from free-text technology fields, and handling of advanced patterns (ranges, Fahrenheit). Corrected module import paths.
--   **/app/tests/v2/test_quality_validator.py (NEW)**:
-    -   **Summary**: Tests the backend  module.
-    -   **Changes**: New file. Contains tests for yield validation, netto sum, range normalization, and error detection logic.
--   **/app/tests/v2/test_enhanced_mapping.py (NEW)**:
-    -   **Summary**: Tests the backend .
-    -   **Changes**: New file. Includes tests for RU-synonym loading, confidence scoring, auto-application of suggestions, and coverage calculation.
+-   
+    -   **Summary**: The main entry point for the FastAPI backend, responsible for defining and routing API endpoints.
+    -   **Changes**: No direct code changes were made to this file in the provided trajectory, but it orchestrates the services that were modified.
+
+-   
+    -   **Summary**: This file contains the core logic for generating iiko-compatible XLSX export files, including Product Skeletons, Dish Skeletons, and full Technical Cards. It's critical for data exchange with iiko.
+    -   **Changes**:
+        -   **iiko Import Fix (Product Skeletons Type Mapping)**:
+            -   Defined  tuple: .
+            -   Modified  (around lines 300-420) to replace  with  and added validation to ensure all 'Тип' values are within . Implemented fail-fast logic for invalid types.
+            -   Modified  (around lines 538-650) to ensure 'Тип' is consistently 'DISH'.
+        -   **Gram-to-Kilogram Conversion**:
+            -   Added a helper function  (around line 1000) to convert mass values and round to 3 decimal places.
+            -   Modified  (around lines 1002-1379) to apply  to mass fields like , , and  for ingredients and dishes, and set 'Ед. изм.' to 'кг'.
+            -   Modified  (around lines 840-880) to apply the gram-to-kilogram conversion to the  of dishes and set the unit to 'кг'.
+
+-   
+    -   **Summary**: This is likely the main React component rendering the application's user interface, including navigation, buttons, and feature access.
+    -   **Changes**:
+        -   **ALT Export Button UX Migration**:
+            -   Removed the ALT export menu item from the Дополнительно dropdown (around lines 10860-10880).
+            -   Added a new, large button labeled Экспорт ТК для IIKo (Export Tech Cards for iiko) on the main screen, likely near other export options (around lines 10760-10770), configuring it to trigger the ALT export functionality.
 </code_architecture>
 
 <pending_tasks>
--   **Export Wizard v1 — Finish (Priority 3, concluding)**:
-    -   Display Last Export timestamp (backend storage and UI).
-    -   Include How to import into iikoWeb memo with copy button.
-    -   Block export button if GX-02 quality validator returns critical errors; show errors and Fix automatically option.
-    -   Audit logging for export operations.
+-   **ALT Export Cleanup**: Analyze archives, identify duplicate and invalid TTKs, and ensure export occurs only through the ALT pipeline, guaranteeing correct components (Dish-Skeletons, Product-Skeletons, reference TTK) and validating archives for correctness and absence of superfluous files.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer completed the GX-02 + Mapping Sprint initiatives. This involved:
+Immediately prior to this summary request, the AI engineer successfully completed the user's explicit request to improve the UX for the ALT export functionality. This involved relocating the ALT export option. Previously, it was nested within a Дополнительно (Additional) dropdown menu, requiring multiple clicks to access. The AI engineer modified the main React frontend file, , to achieve this.
 
-1.  **GX-02 Quality Validator**:
-    *   **Backend**:  was created to implement checks for  being mandatory,  sum approximating  (within 2-3% tolerance), and normalizing range inputs (e.g., 0-4 to a single number). New API endpoints () were added in .
-    *   **Frontend**:  was updated to integrate and display quality banners based on the validator's output, allowing users to see what to fix warnings/errors directly on the TechCard.
-    *   **Testing**:  was created and passed all 6/6 unit tests. Backend API testing confirmed 100% success for quality validation, range normalization, scoring, and error detection.
-
-2.  **Enhanced Catalog-sync + Auto-mapping**:
-    *   **Backend**:  was created to handle catalog synchronization from iiko Server API and to build a local index for improved fuzzy matching. A mini-dictionary of 30 common RU-synonyms was implemented. New API endpoints were created and integrated (likely into ).
-    *   **Frontend**:  was modified to enhance the Принять ≥90% (Accept ≥90%) button, including dynamic states (idle, finding, applying, done/error), toast notifications for accepted ingredients, and improved handling of empty states with suggestions. The UI now triggers the enhanced auto-mapping logic.
-    *   **Testing**:  was created and passed all 6/6 unit tests. Backend API testing confirmed 100% success for RU-Synonyms, enhanced mapping with correct confidence scoring (≥0.90 auto-accept, 0.70-0.89 review), and coverage calculation.
-
-The engineer is currently initiating the **Export Wizard v1 — Finish** task. This involves setting up the backend to track the last successful export of a TechCard, specifically by creating the  and adding relevant API endpoints for this functionality. The trajectory ends with the agent about to update the frontend to integrate these new export tracking endpoints.
+Specifically, the ALT export entry was removed from its previous location within the dropdown menu structure. A new, prominent button labeled Экспорт ТК для IIKo (Export Tech Cards for iiko) was then added to the main application interface, likely alongside other primary action buttons. This new button directly triggers the ALT export process, simplifying the user workflow. The implementation was verified through screenshots and functional tests by navigating the UI and confirming the button's presence and functionality after logging in. The testing agent confirmed the ALT Export Button UX Migration as fully successful, validating the button's functionality and its seamless integration with iikoWeb requirements.
 </current_work>
 
 <optional_next_step>
-The next step is to continue with the Export Wizard v1 — Finish task, focusing on updating the frontend in  to integrate the new export tracking endpoints.
+Address the ALT Export Cleanup task as outlined in the user's request from Chat Message 117.
 </optional_next_step>
