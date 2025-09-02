@@ -694,9 +694,14 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             
             # Выделяем артикулы для ингредиентов
             if ingredient_ids_for_allocation:
-                from ..integrations.article_allocator import ArticleAllocator
+                from ..integrations.article_allocator import ArticleAllocator, ArticleType
                 allocator = ArticleAllocator()
-                allocated_result = allocator.allocate_articles(ingredient_ids_for_allocation)
+                allocated_result = allocator.allocate_articles(
+                    article_type=ArticleType.PRODUCT,
+                    count=len(ingredient_ids_for_allocation),
+                    entity_ids=ingredient_ids_for_allocation,
+                    entity_names=[ing[1].name for ing in ingredients_needing_articles]
+                )
                 
                 if allocated_result.get('success') and allocated_result.get('allocated'):
                     # Обновляем ингредиенты с артикулами
