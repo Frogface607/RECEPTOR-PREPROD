@@ -602,7 +602,7 @@ class CleanupTechCardDataTester:
         
         return catalog_healthy and export_healthy and no_warnings
 
-    async def generate_final_assessment(self):
+    def generate_final_assessment(self):
         """Generate final assessment of CLEANUP TECH CARD DATA & UI"""
         print("\n🎯 FINAL ASSESSMENT: CLEANUP TECH CARD DATA & UI")
         
