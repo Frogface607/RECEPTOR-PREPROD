@@ -3180,6 +3180,8 @@ frontend:
 
 test_plan:
   current_focus:
+    - "REMOVE INVALID TECH CARD FROM ZIP (P0 - КРИТИЧЕСКИЙ) - COMPLETED SUCCESSFULLY"
+    - "RENAME EXPORT STEP BUTTON (P0 - UI) - BACKEND VALIDATED, FRONTEND VERIFICATION NEEDED"
     - "Product Skeletons iiko Import Fix - Type Mapping Validation - COMPLETED SUCCESSFULLY"
     - "ALT Export DISH Article Fix"
     - "CRITICAL FIX: Product-Article Reconcile (No GENERATED_* in TTK, Only Real Articles from Skeletons) - COMPLETED SUCCESSFULLY"
