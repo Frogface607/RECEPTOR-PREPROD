@@ -10681,18 +10681,31 @@ function App() {
                       className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-purple-500/50 transition-all cursor-pointer"
                       onClick={() => {
                         // TC-002: Load techcard properly
+                        console.log('Loading techcard:', techcard);
+                        
                         if (isV2 && techcard.techcard_v2_data) {
                           setTcV2(techcard.techcard_v2_data);
+                          setGenerationStatus('success');
+                          setCurrentTechCardId(techcard.id);
                           setCurrentView('create');
+                          console.log('Loaded V2 techcard from techcard_v2_data');
                         } else if (techcard.content) {
                           try {
                             const parsedContent = JSON.parse(techcard.content);
                             setTcV2(parsedContent);
+                            setGenerationStatus('success');
+                            setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
+                            console.log('Loaded V2 techcard from JSON content');
                           } catch (e) {
                             setTechCard(techcard.content);
+                            setGenerationStatus('success');
+                            setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
+                            console.log('Loaded V1 techcard from content');
                           }
+                        } else {
+                          console.log('No techcard data found');
                         }
                       }}
                     >
