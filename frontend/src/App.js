@@ -8889,13 +8889,13 @@ function App() {
                   ГЛАВНАЯ
                 </button>
                 <button
-                  onClick={() => setCurrentView('create')}
+                  onClick={() => setCurrentView('techcards')}
                   className={`font-semibold text-sm sm:text-base transition-colors ${
-                    currentView === 'create' 
+                    currentView === 'techcards' 
                       ? 'text-purple-200 border-b border-purple-300' 
                       : 'text-purple-300 hover:text-purple-200'
                   }`}
-                  title="🍽️ Создать техкарту"
+                  title="📋 Просмотр всех техкарт"
                 >
                   ТЕХКАРТЫ
                 </button>
