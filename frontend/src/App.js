@@ -10702,6 +10702,7 @@ function App() {
                             console.log('Loaded V2 techcard from JSON content');
                           } catch (e) {
                             setTechCard(techcard.content);
+                            setTcV2(null); // Очищаем V2 техkарту
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
