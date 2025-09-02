@@ -6245,7 +6245,7 @@ function App() {
       }
       
       // Handle standardized response format
-      if (normalizedData.status === 'success' && normalizedData.card) {
+      if ((normalizedData.status === 'success' || normalizedData.status === 'READY') && normalizedData.card) {
         const techCardV2 = normalizedData.card;
         setTcV2(techCardV2);
         
