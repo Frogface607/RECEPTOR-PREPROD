@@ -159,10 +159,24 @@
     - agent: "testing"
       message: "🎉 ZIP EXPORT HTTP 500 VALIDATION FIX TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of HTTP 500 error fix in ZIP export due to Pydantic validation after operational rounding as specified in Russian review request. ✅ CRITICAL FIX VERIFIED: Successfully tested the validation tolerance increase from ±1g to ±3g for operational rounding compatibility - generated multiple tech cards ('Стейк из говядины с гарниром': 170492fc-c18f-4e9a-9b76-ddcf63574493, 'Салат Цезарь с курицей': 769868bd-f5b4-4c70-94a0-1d45808fe349) and confirmed NO HTTP 500 errors during ZIP export with operational_rounding=true parameter. ✅ COMPREHENSIVE WORKFLOW VALIDATION: Tested complete workflow (Generate → Preflight → ZIP Export) with 100% success rate - all ZIP exports completed successfully with file sizes 14,970-15,014 bytes, proper ZIP file structure confirmed with 3 XLSX files including iiko_TTK.xlsx, operational rounding validation passed without Pydantic validation errors. ✅ EDGE CASES TESTED: Validated multiple scenarios including single tech card export, multiple tech cards export (2 cards generating 15,251 bytes ZIP), and complex dishes with many ingredients - all scenarios passed operational rounding validation without HTTP 500 errors. ✅ VALIDATION TOLERANCE FIX OPERATIONAL: Confirmed that the increased tolerance (±3g) successfully prevents validation failures that were previously causing HTTP 500 errors during operational rounding, ZIP export workflow is now stable and reliable for production use. ✅ PERFORMANCE EXCELLENT: All export operations completed within acceptable timeframes - ZIP generation: 0.4-0.6s, preflight validation: <1s, complete workflow: <1s total. 🎯 OUTSTANDING SUCCESS: HTTP 500 error fix in ZIP export is COMPLETELY RESOLVED. The validation tolerance increase from ±1g to ±3g successfully eliminates Pydantic validation errors during operational rounding. ZIP export workflow is now fully operational and ready for production use without HTTP 500 errors."
 ##
+frontend:
+  - task: "FIX JS MODAL SCROLL & OPEN BUG - Export Wizard Modal"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "CRITICAL BUGS IDENTIFIED: Conducted comprehensive testing of 'FIX JS MODAL SCROLL & OPEN BUG' for Export Wizard Modal on https://receptor-pro-beta-1.preview.emergentagent.com. ✅ BUTTON FUNCTIONALITY VERIFIED: Successfully found '🚀 Мастер экспорта' button with correct rocket emoji, proper styling (purple-indigo gradient), and enabled state after tech card creation. Button click executes without JavaScript errors. ❌ CRITICAL MODAL OPENING BUG: Modal does not open when '🚀 Мастер экспорта' button is clicked. Despite no JavaScript console errors, the unified export wizard modal with [data-export-wizard-modal] selector, role='dialog', or aria-modal='true' attributes is not appearing in DOM. ❌ CRITICAL SCROLL HANDLING BUG: Background page scroll is NOT disabled when modal should be open (body overflow remains 'visible' instead of 'hidden'). This violates the core requirement for preventing background scroll during modal interaction. ❌ ACCESSIBILITY ISSUES: No elements with role='dialog' or aria-modal='true' found, indicating missing accessibility attributes for screen readers. ❌ FOCUS MANAGEMENT NOT WORKING: Focus is not being trapped within modal since modal doesn't open. Tab navigation remains on background page instead of being contained within modal. ❌ MODAL CLOSING METHODS UNTESTABLE: Cannot test × button, 'Закрыть' button, Escape key, or click-outside closing since modal doesn't open. ❌ EXPORT FUNCTIONALITY UNTESTABLE: Cannot test '📊 XLSX Техкарта' export, progress indicators, or error handling since modal interface is inaccessible. 🎯 ROOT CAUSE: The openExportWizard() function or showUnifiedExportWizard state management is not working correctly. Despite button click being registered, the modal rendering logic is failing. IMMEDIATE ACTION REQUIRED: Debug and fix modal opening mechanism in frontend export wizard implementation."
+
 ## test_plan:
 ##   current_focus:
-##     - "Standard Portion by Default (no UI) Implementation"
+##     - "FIX JS MODAL SCROLL & OPEN BUG - Export Wizard Modal"
 ##   stuck_tasks:
+##     - "FIX JS MODAL SCROLL & OPEN BUG - Export Wizard Modal"
 ##     - "HACCP Pro Frontend Module (FE-01A)"
 ##     - "HACCP Audit Frontend (FE-01B)"
 ##   test_all: false
