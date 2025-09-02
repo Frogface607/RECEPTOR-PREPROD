@@ -64,8 +64,9 @@ class TechCardNutritionTester:
                     
                     # Validate БЖУ data completeness
                     complete_nutrition = 0
-                    for ingredient in nutrition_catalog:
-                        if all(key in ingredient for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g']):
+                    for ingredient in ingredients:
+                        per100g = ingredient.get('per100g', {})
+                        if all(key in per100g for key in ['kcal', 'proteins_g', 'fats_g', 'carbs_g']):
                             complete_nutrition += 1
                     
                     completeness_pct = (complete_nutrition / ingredient_count) * 100
