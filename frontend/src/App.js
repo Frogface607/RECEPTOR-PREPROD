@@ -11035,7 +11035,7 @@ function App() {
                           className={`w-full ${!techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px] mt-2`}
                           title="🔨 СОЗДАТЬ ТЕХКАРТУ: Создает Assembly Chart в IIKo системе на основе этой техкарты"
                         >
-                          🔨 СОЗДАТЬ ТЕХКАРТУ В IIKo
+                        {/* Removed button text */}
                         {/* Removed button content */}
                       </div>
                     </div>
