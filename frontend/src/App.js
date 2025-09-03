@@ -8916,10 +8916,10 @@ function App() {
                 </button>
                 <button
                   onClick={() => setCurrentView('techcards')}
-                  className={`font-semibold text-sm sm:text-base transition-colors ${
+                  className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
                     currentView === 'techcards' 
-                      ? 'text-purple-200 border-b border-purple-300' 
-                      : 'text-purple-300 hover:text-purple-200'
+                      ? 'bg-purple-600/20 text-purple-200 shadow-lg border border-purple-500/30 backdrop-blur-sm' 
+                      : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm'
                   }`}
                   title="📋 Просмотр всех техкарт"
                 >
