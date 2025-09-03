@@ -8854,12 +8854,27 @@ function App() {
         </div>
       )}
       {/* Header */}
-      <header className="border-b border-purple-400/30 p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-purple-300">
-              RECEPTOR PRO <span className="text-yellow-400 text-lg sm:text-xl">Beta</span>
-            </h1>
+      <header className="border-b border-purple-500/20 bg-gray-900/80 backdrop-blur-xl shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-purple-400/20">
+                <span className="text-white font-bold text-xl">R</span>
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-purple-300 via-purple-200 to-purple-100 bg-clip-text text-transparent tracking-tight">
+                  RECEPTOR PRO
+                </h1>
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-purple-400/80 font-medium tracking-widest uppercase">
+                    Restaurant Tech Platform
+                  </span>
+                  <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-emerald-900 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm">
+                    Enterprise Beta
+                  </span>
+                </div>
+              </div>
+            </div>
             
             {/* Subscription Info */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
