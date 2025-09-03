@@ -8961,7 +8961,9 @@ function App() {
                     <span>Analytics</span>
                   </span>
                 </button>
-                {/* IIKo кнопка убрана - больше не нужна */}
+              </nav>
+              {/* IIKo кнопка убрана - больше не нужна */}
+              <div className="flex items-center space-x-4">
                 <button
                   onClick={() => setShowDataModal(true)}
                   className="text-yellow-300 hover:text-yellow-200 font-semibold text-sm sm:text-base transition-colors"
