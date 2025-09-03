@@ -11036,7 +11036,7 @@ function App() {
                           title="🔨 СОЗДАТЬ ТЕХКАРТУ: Создает Assembly Chart в IIKo системе на основе этой техкарты"
                         >
                           🔨 СОЗДАТЬ ТЕХКАРТУ В IIKo
-                        </button>
+                        {/* Removed button content */}
                       </div>
                     </div>
                   </div>
