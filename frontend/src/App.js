@@ -11015,21 +11015,7 @@ function App() {
                           {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ФИНАНСЫ'}
                         </button>
                         
-                        <button
-                          onClick={() => {
-                            setTechCardToUpload({
-                              dish_name: dishName,
-                              content: techCard,
-                              id: currentTechCardId
-                            });
-                            setShowUploadTechCardModal(true);
-                          }}
-                          disabled={!techCard}
-                          className={`w-full ${!techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
-                          title="🏢 IIKo ИНТЕГРАЦИЯ: Загружает техкарту в систему управления рестораном IIKo для синхронизации с POS-системой"
-                        >
-                          📤 ЗАГРУЗИТЬ В IIKo
-                        </button>
+                        {/* Убрали нерабочую iiko кнопку: "ЗАГРУЗИТЬ В IIKo" */}
                         <button
                           onClick={async () => {
                             if (!techCard) return;
