@@ -8953,10 +8953,13 @@ function App() {
                 </button>
                 <button
                   onClick={() => setShowAnalyticsModal(true)}
-                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
-                  title="📊 Аналитика и OLAP отчеты из IIKo"
+                  className="px-4 py-2.5 rounded-lg font-medium text-sm text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm transition-all duration-200"
+                  title="📊 Business Analytics"
                 >
-                  АНАЛИТИКА
+                  <span className="flex items-center space-x-1.5">
+                    <span className="text-xs">📊</span>
+                    <span>Analytics</span>
+                  </span>
                 </button>
                 {/* IIKo кнопка убрана - больше не нужна */}
                 <button
