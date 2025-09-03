@@ -8938,10 +8938,18 @@ function App() {
                 </button>
                 <button
                   onClick={() => setShowProjectsModal(true)}
-                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
-                  title="📁 Управление проектами меню"
+                  className="px-4 py-2.5 rounded-lg font-medium text-sm text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm transition-all duration-200"
+                  title="📁 Project Management"
                 >
-                  ПРОЕКТЫ {menuProjects.length > 0 && `(${menuProjects.length})`}
+                  <span className="flex items-center space-x-1.5">
+                    <span className="text-xs">📁</span>
+                    <span>Projects</span>
+                    {menuProjects.length > 0 && (
+                      <span className="bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded-full text-xs font-semibold">
+                        {menuProjects.length}
+                      </span>
+                    )}
+                  </span>
                 </button>
                 <button
                   onClick={() => setShowAnalyticsModal(true)}
