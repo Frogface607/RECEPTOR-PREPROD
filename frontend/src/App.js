@@ -11015,10 +11015,7 @@ function App() {
                           {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ФИНАНСЫ'}
                         </button>
                         
-                        {/* Убрали нерабочую iiko кнопку: "ЗАГРУЗИТЬ В IIKo" */}
-                        {/* Removed second iiko button - <button
-                        {/* Removed button text */}
-                        {/* Removed button content */}
+                        {/* Убрали нерабочие iiko кнопки: "ЗАГРУЗИТЬ В IIKo" и "СОЗДАТЬ ТЕХKАРТУ В IIKo" */}
                       </div>
                     </div>
                   </div>
