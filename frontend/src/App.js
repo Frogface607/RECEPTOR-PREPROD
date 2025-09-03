@@ -11025,11 +11025,7 @@ function App() {
                               return;
                             }
                             
-                            const result = await uploadTechCardAsAssemblyChart({
-                              id: currentTechCardId,
-                              dish_name: 'Техкарта из AI-Menu-Designer',
-                              content: techCard
-                            });
+                            // Removed uploadTechCardAsAssemblyChart call
                             
                             if (result?.success) {
                               alert(`✅ Техкарта создана как Assembly Chart в IIKo!`);
