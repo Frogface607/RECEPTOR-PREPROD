@@ -11017,24 +11017,6 @@ function App() {
                         
                         {/* Убрали нерабочую iiko кнопку: "ЗАГРУЗИТЬ В IIKo" */}
                         {/* Removed second iiko button - <button
-                          onClick={async () => {
-                            if (!techCard) return;
-                            
-                            if (!selectedOrganization?.id) {
-                              alert('Сначала выберите организацию в модальном окне IIKo');
-                              return;
-                            }
-                            
-                            // Removed uploadTechCardAsAssemblyChart call
-                            
-                            if (result?.success) {
-                              alert(`✅ Техкарта создана как Assembly Chart в IIKo!`);
-                            }
-                          }}
-                          disabled={!techCard}
-                          className={`w-full ${!techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px] mt-2`}
-                          title="🔨 СОЗДАТЬ ТЕХКАРТУ: Создает Assembly Chart в IIKo системе на основе этой техкарты"
-                        >
                         {/* Removed button text */}
                         {/* Removed button content */}
                       </div>
