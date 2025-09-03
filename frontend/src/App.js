@@ -11016,7 +11016,7 @@ function App() {
                         </button>
                         
                         {/* Убрали нерабочую iiko кнопку: "ЗАГРУЗИТЬ В IIKo" */}
-                        <button
+                        {/* Removed second iiko button - <button
                           onClick={async () => {
                             if (!techCard) return;
                             
