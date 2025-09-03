@@ -8932,13 +8932,7 @@ function App() {
                 >
                   АНАЛИТИКА
                 </button>
-                <button
-                  onClick={() => openIikoIntegration()}
-                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base transition-colors"
-                  title="🏢 Интеграция с системой IIKo для ресторанов"
-                >
-                  IIKo
-                </button>
+                {/* IIKo кнопка убрана - больше не нужна */}
                 <button
                   onClick={() => setShowDataModal(true)}
                   className="text-yellow-300 hover:text-yellow-200 font-semibold text-sm sm:text-base transition-colors"
