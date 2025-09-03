@@ -8934,7 +8934,7 @@ function App() {
                   }`}
                   title="🎯 AI Menu Generator"
                 >
-                  МЕНЮ
+                  <span className="flex items-center space-x-1.5"><span className="text-xs">🎯</span><span>Menu AI</span></span>
                 </button>
                 <button
                   onClick={() => setShowProjectsModal(true)}
