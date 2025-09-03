@@ -8940,13 +8940,7 @@ function App() {
                 >
                   ДАННЫЕ
                 </button>
-                <button
-                  onClick={() => openAssemblyChartsManager()}
-                  className="text-green-300 hover:text-green-200 font-semibold text-sm sm:text-base transition-colors"
-                  title="🔨 Управление техкартами в IIKo (создание, просмотр, удаление)"
-                >
-                  ТЕХКАРТЫ
-                </button>
+                {/* Дублирующая кнопка ТЕХKАРТЫ убрана */}
                 <button
                   onClick={() => {
                     setShowHistory(!showHistory);
