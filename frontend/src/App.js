@@ -8899,7 +8899,7 @@ function App() {
                 )}
               </div>
               
-              <div className="flex items-center space-x-3 sm:space-x-6">
+              <nav className="flex items-center space-x-1">
                 <button
                   onClick={() => setCurrentView('dashboard')}
                   className={`font-semibold text-sm sm:text-base transition-colors ${
