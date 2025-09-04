@@ -142,7 +142,7 @@ function App() {
   const [availableSubRecipes, setAvailableSubRecipes] = useState([]);
   const [recalcError, setRecalcError] = useState(null);
   
-  const [showHistory, setShowHistory] = useState(false);
+
   const [userHistory, setUserHistory] = useState([]);
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [userPrices, setUserPrices] = useState([]);
