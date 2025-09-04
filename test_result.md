@@ -378,13 +378,14 @@ frontend:
 
 ## test_plan:
   current_focus:
-    - "TechCard Generation with Improved Coverage"
-    - "Data Quality Validation"
+    - "Tech Card Generation Error Investigation"
+    - "CRITICAL FRONTEND TESTING: CLEANUP TECH CARD DATA & UI"
   stuck_tasks:
     - "TechCard Generation with Improved Coverage"
     - "Data Quality Validation"
+    - "Tech Card Generation Error Investigation"
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 ## agent_communication:
     - agent: "testing"
