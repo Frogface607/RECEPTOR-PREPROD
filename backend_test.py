@@ -162,8 +162,7 @@ class UnifiedHistoryTester:
                 payload = {
                     "user_id": self.test_user_id,
                     "dish_name": dish_name,
-                    "experiment_type": "standard",
-                    "is_laboratory": False
+                    "is_inspiration": True
                 }
                 
                 # Try save-tech-card endpoint for V2 format
