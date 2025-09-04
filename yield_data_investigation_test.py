@@ -74,27 +74,38 @@ class YieldDataInvestigator:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    tech_card_id = data.get("id")
                     
-                    if tech_card_id:
-                        self.generated_tech_cards.append({
-                            "id": tech_card_id,
-                            "dish_name": dish_name,
-                            "type": "V2_Generated",
-                            "response_data": data
-                        })
+                    # Check if we have a card in the response
+                    card_data = data.get("card")
+                    if card_data:
+                        tech_card_id = card_data.get("meta", {}).get("id")
                         
-                        await self.log_result(
-                            f"V2 Tech Card Generation ({dish_name})", 
-                            True, 
-                            f"Generated with ID: {tech_card_id}"
-                        )
-                        return tech_card_id, data
+                        if tech_card_id:
+                            self.generated_tech_cards.append({
+                                "id": tech_card_id,
+                                "dish_name": dish_name,
+                                "type": "V2_Generated",
+                                "response_data": data
+                            })
+                            
+                            await self.log_result(
+                                f"V2 Tech Card Generation ({dish_name})", 
+                                True, 
+                                f"Generated with ID: {tech_card_id}"
+                            )
+                            return tech_card_id, data
+                        else:
+                            await self.log_result(
+                                f"V2 Tech Card Generation ({dish_name})", 
+                                False, 
+                                f"No ID in card meta: {data}"
+                            )
+                            return None, None
                     else:
                         await self.log_result(
                             f"V2 Tech Card Generation ({dish_name})", 
                             False, 
-                            f"No ID returned: {data}"
+                            f"No card in response: {data}"
                         )
                         return None, None
                 else:
