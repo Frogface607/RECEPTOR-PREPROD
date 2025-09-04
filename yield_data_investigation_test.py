@@ -61,10 +61,12 @@ class YieldDataInvestigator:
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 payload = {
-                    "user_id": self.test_user_id,
-                    "dish_name": dish_name,
-                    "portions": 4,
-                    "city": "moskva"
+                    "name": dish_name,
+                    "cuisine": "русская",
+                    "equipment": [],
+                    "budget": None,
+                    "dietary": [],
+                    "user_id": self.test_user_id
                 }
                 
                 # Use the V2 generation endpoint
