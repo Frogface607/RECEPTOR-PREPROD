@@ -9092,12 +9092,21 @@ function App() {
                           if (isV2 && item.techcard_v2_data) {
                             console.log('Dashboard: Loading V2 techcard_v2_data:', item.techcard_v2_data);
                             console.log('Dashboard: Yield data in techcard_v2_data (yield_):', item.techcard_v2_data.yield_);
+                            console.log('Setting tcV2 state...');
                             setTcV2(item.techcard_v2_data);
                             setTechCard(null);
                             setGenerationStatus('success');
                             setCurrentTechCardId(item.id);
+                            console.log('Setting currentView to create...');
                             setCurrentView('create');
                             console.log('Loaded V2 techcard from techcard_v2_data in dashboard');
+                            
+                            // Debug: проверяем состояния после установки
+                            setTimeout(() => {
+                              console.log('=== STATE CHECK AFTER 100ms ===');
+                              console.log('currentView should be create');
+                              console.log('tcV2 should exist');
+                            }, 100);
                           } else if (item.content) {
                             try {
                               const parsedContent = JSON.parse(item.content);
