@@ -344,7 +344,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -354,6 +354,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🚨 CRITICAL GENERATION ERROR CONFIRMED: Conducted comprehensive testing of tech card generation and persistence as specified in Russian review request. ❌ GENERATION FAILURE: Tech card generation shows 'Ошибка генерации' (Generation Error) at 100% progress, indicating backend generation failure. ❌ DASHBOARD PERSISTENCE ISSUE: Dashboard consistently shows '0 техкарт' before and after generation attempts, confirming tech cards are not being saved to user account. ❌ PARTIAL PERSISTENCE: ТЕХКАРТЫ section shows dish names ('Борщ' found) but without READY status, indicating incomplete generation/saving process. ✅ UI CLEANUP SUCCESS: No problematic warning labels found ('no БЖУ', 'no price', 'Без SKU' patterns not detected), UI cleanup implementation working correctly. 🎯 ROOT CAUSE: Backend tech card generation pipeline is failing during generation process, preventing proper completion and persistence to user account. This explains why dashboard shows 0 tech cards and why generated cards don't appear with READY status."
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL TECH CARD LOADING DATA LOSS CONFIRMED: Conducted comprehensive testing of tech card loading functionality as specified in review request. ❌ CRITICAL FINDINGS: Tech cards ARE being saved (ТЕХКАРТЫ section shows 6 cards with ГОТОВО status) but LOADING mechanism has severe data loss issues. Dashboard loading shows PARTIAL data (ingredients found but no yield/выход), History loading shows COMPLETE data loss (no yield, no ingredients, no measurements). ❌ YIELD DATA LOSS CONFIRMED: The specific issue mentioned in review request about yield (выход) data loss is VERIFIED - no yield information preserved when loading tech cards from dashboard or history. ❌ LOADING CONSISTENCY FAILURE: Multiple loading attempts show systematic data loss, not intermittent issues. 🎯 ROOT CAUSE UPDATE: The issue is NOT generation failure but LOADING/RENDERING failure - tech cards are created and saved but essential data fields (yield, ingredients, measurements) are not properly loaded or displayed when accessing existing tech cards. This affects user experience as saved tech cards appear empty or incomplete when opened."
 
   - task: "UI Warning Labels Cleanup Verification"
     implemented: true
