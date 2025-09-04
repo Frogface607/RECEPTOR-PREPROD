@@ -397,6 +397,7 @@ frontend:
   current_focus:
     - "Tech Card Generation Error Investigation"
     - "CRITICAL FRONTEND TESTING: CLEANUP TECH CARD DATA & UI"
+    - "CRITICAL BUG FIX VALIDATION: Dashboard tech card loading after yield field fix"
   stuck_tasks:
     - "TechCard Generation with Improved Coverage"
     - "Data Quality Validation"
