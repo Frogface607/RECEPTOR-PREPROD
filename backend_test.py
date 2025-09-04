@@ -378,6 +378,12 @@ class UnifiedHistoryTester:
         print(f"Test User ID: {self.test_user_id}")
         print("=" * 80)
         
+        # Test 0: Create test user
+        print("\n📋 TEST 0: Create Test User")
+        user_created = await self.create_test_user()
+        if not user_created:
+            print("⚠️ Could not create test user, proceeding anyway...")
+        
         # Test 1: Initial empty history
         print("\n📋 TEST 1: Initial Empty History")
         initial_history = await self.test_unified_history_api()
