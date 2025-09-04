@@ -10745,7 +10745,7 @@ function App() {
                           try {
                             const parsedContent = JSON.parse(techcard.content);
                             console.log('Parsed content from JSON:', parsedContent);
-                            console.log('Yield data in parsed content:', parsedContent.yield);
+                            console.log('Yield data in parsed content (yield_):', parsedContent.yield_);
                             setTcV2(parsedContent);
                             setTechCard(null); // Очищаем V1 техkарту
                             setGenerationStatus('success');
