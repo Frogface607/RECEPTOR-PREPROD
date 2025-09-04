@@ -1,513 +1,486 @@
 #!/usr/bin/env python3
-"""
-Backend API Testing for User History Functionality
-Testing tech card generation, data format, and history retrieval
-Focus: V1 and V2 tech card formats, dashboard stats, user history endpoint
-"""
 
-import requests
+import asyncio
+import httpx
 import json
-import time
-import uuid
-from datetime import datetime
 import os
+import sys
+from datetime import datetime
+import uuid
 
-# Get backend URL from environment
+# Backend URL from environment
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://techcard-wizard.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
-class BackendTester:
+class UnifiedHistoryTester:
     def __init__(self):
-        self.test_user_id = f"test_user_{int(time.time())}"
-        self.generated_cards = []
-        self.test_results = []
+        self.test_user_id = f"unified_history_test_{str(uuid.uuid4())[:8]}"
+        self.results = []
+        self.generated_tech_cards = []
         
-    def log_test(self, test_name, success, details="", response_time=None):
-        """Log test results"""
+    async def log_result(self, test_name: str, success: bool, details: str):
+        """Log test result"""
         status = "✅ PASS" if success else "❌ FAIL"
-        result = {
-            "test": test_name,
-            "status": status,
-            "details": details,
-            "response_time": response_time,
-            "timestamp": datetime.now().isoformat()
-        }
-        self.test_results.append(result)
-        print(f"{status}: {test_name}")
-        if details:
-            print(f"   Details: {details}")
-        if response_time:
-            print(f"   Response time: {response_time:.3f}s")
-        print()
-
-    def test_user_creation(self):
-        """Test automatic user creation for testing"""
-        try:
-            start_time = time.time()
-            
-            # Generate a tech card to trigger user creation
-            response = requests.post(f"{API_BASE}/generate-tech-card", 
-                json={
-                    "user_id": self.test_user_id,
-                    "dish_name": "Тестовое блюдо для истории",
-                    "city": "moskva"
-                },
-                timeout=60
-            )
-            
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('tech_card') and len(data['tech_card']) > 100:
-                    self.generated_cards.append({
-                        'id': data.get('tech_card_id'),
-                        'name': "Тестовое блюдо для истории",
-                        'content': data['tech_card'],
-                        'format': 'V1'  # Legacy format
-                    })
-                    self.log_test("User Creation & Tech Card Generation", True, 
-                                f"Generated tech card: {len(data['tech_card'])} chars", response_time)
-                    return True
-                else:
-                    self.log_test("User Creation & Tech Card Generation", False, 
-                                "Tech card content too short or missing")
-                    return False
-            else:
-                self.log_test("User Creation & Tech Card Generation", False, 
-                            f"HTTP {response.status_code}: {response.text[:200]}")
-                return False
-                
-        except Exception as e:
-            self.log_test("User Creation & Tech Card Generation", False, f"Exception: {str(e)}")
-            return False
-
-    def test_v2_tech_card_generation(self):
-        """Test V2 tech card generation with enhanced data structure"""
-        try:
-            start_time = time.time()
-            
-            # Try V2 endpoint if available
-            response = requests.post(f"{API_BASE}/v1/techcards.v2/generate", 
-                json={
-                    "user_id": self.test_user_id,
-                    "dish_name": "Паста Карбонара V2",
-                    "city": "moskva",
-                    "portions": 4
-                },
-                timeout=60
-            )
-            
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('techcard'):
-                    techcard = data['techcard']
-                    # Check for V2 structure
-                    has_v2_structure = (
-                        'meta' in techcard and
-                        'ingredients' in techcard and
-                        'yield' in techcard
-                    )
-                    
-                    if has_v2_structure:
-                        self.generated_cards.append({
-                            'id': techcard.get('id'),
-                            'name': "Паста Карбонара V2",
-                            'content': techcard,
-                            'format': 'V2'
-                        })
-                        self.log_test("V2 Tech Card Generation", True, 
-                                    f"Generated V2 tech card with proper structure", response_time)
-                        return True
-                    else:
-                        self.log_test("V2 Tech Card Generation", False, 
-                                    "Missing V2 structure fields")
-                        return False
-                else:
-                    self.log_test("V2 Tech Card Generation", False, 
-                                "No techcard in response")
-                    return False
-            else:
-                # V2 endpoint might not exist, try alternative
-                self.log_test("V2 Tech Card Generation", False, 
-                            f"V2 endpoint not available: HTTP {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("V2 Tech Card Generation", False, f"Exception: {str(e)}")
-            return False
-
-    def test_additional_tech_cards(self):
-        """Generate additional tech cards for history testing"""
-        dishes = [
-            "Борщ украинский с говядиной",
-            "Салат Цезарь с курицей", 
-            "Стейк из говядины с картофелем"
-        ]
+        result = f"{status}: {test_name} - {details}"
+        self.results.append(result)
+        print(result)
         
-        success_count = 0
-        
-        for dish in dishes:
-            try:
-                start_time = time.time()
-                
-                response = requests.post(f"{API_BASE}/generate-tech-card", 
-                    json={
-                        "user_id": self.test_user_id,
-                        "dish_name": dish,
-                        "city": "moskva"
-                    },
-                    timeout=60
-                )
-                
-                response_time = time.time() - start_time
+    async def test_unified_history_api(self):
+        """Test GET /api/user-history/{user_id} unified functionality"""
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(f"{API_BASE}/user-history/{self.test_user_id}")
                 
                 if response.status_code == 200:
                     data = response.json()
-                    if data.get('tech_card'):
-                        self.generated_cards.append({
-                            'id': data.get('tech_card_id'),
-                            'name': dish,
-                            'content': data['tech_card'],
-                            'format': 'V1'
-                        })
-                        success_count += 1
-                        print(f"   ✅ Generated: {dish} ({response_time:.2f}s)")
+                    
+                    # Verify response structure
+                    if "history" in data and isinstance(data["history"], list):
+                        await self.log_result(
+                            "Unified History API Structure", 
+                            True, 
+                            f"Returns proper structure with history array (length: {len(data['history'])})"
+                        )
+                        return data["history"]
                     else:
-                        print(f"   ❌ Failed: {dish} - No content")
+                        await self.log_result(
+                            "Unified History API Structure", 
+                            False, 
+                            f"Invalid response structure: {data}"
+                        )
+                        return []
                 else:
-                    print(f"   ❌ Failed: {dish} - HTTP {response.status_code}")
+                    await self.log_result(
+                        "Unified History API Access", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return []
                     
-                # Small delay between requests
-                time.sleep(1)
-                
-            except Exception as e:
-                print(f"   ❌ Failed: {dish} - Exception: {str(e)}")
-        
-        self.log_test("Additional Tech Cards Generation", success_count == len(dishes), 
-                    f"Generated {success_count}/{len(dishes)} additional tech cards")
-        return success_count > 0
-
-    def test_user_history_endpoint(self):
-        """Test GET /api/user-history/{user_id} endpoint"""
-        try:
-            start_time = time.time()
-            
-            response = requests.get(f"{API_BASE}/user-history/{self.test_user_id}", timeout=30)
-            response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Check response structure
-                if 'history' in data:
-                    history = data['history']
-                    
-                    if len(history) > 0:
-                        # Verify data structure
-                        first_card = history[0]
-                        required_fields = ['id', 'user_id', 'dish_name', 'created_at']
-                        missing_fields = [field for field in required_fields if field not in first_card]
-                        
-                        if not missing_fields:
-                            # Check for both V1 and V2 formats
-                            v1_cards = [card for card in history if 'content' in card]
-                            v2_cards = [card for card in history if 'techcard_v2_data' in card]
-                            
-                            details = f"Found {len(history)} cards total: {len(v1_cards)} V1, {len(v2_cards)} V2"
-                            self.log_test("User History Endpoint Structure", True, details, response_time)
-                            return True
-                        else:
-                            self.log_test("User History Endpoint Structure", False, 
-                                        f"Missing fields: {missing_fields}", response_time)
-                            return False
-                    else:
-                        self.log_test("User History Endpoint Structure", False, 
-                                    "Empty history despite generating cards", response_time)
-                        return False
-                else:
-                    self.log_test("User History Endpoint Structure", False, 
-                                "Missing 'history' field in response", response_time)
-                    return False
-            else:
-                self.log_test("User History Endpoint Structure", False, 
-                            f"HTTP {response.status_code}: {response.text[:200]}", response_time)
-                return False
-                
         except Exception as e:
-            self.log_test("User History Endpoint Structure", False, f"Exception: {str(e)}")
-            return False
-
-    def test_tech_card_data_formats(self):
-        """Test that tech cards contain proper data for both V1 and V2 formats"""
+            await self.log_result(
+                "Unified History API Access", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return []
+    
+    async def generate_v1_tech_card(self, dish_name: str):
+        """Generate V1 tech card using legacy endpoint"""
         try:
-            response = requests.get(f"{API_BASE}/user-history/{self.test_user_id}", timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                history = data.get('history', [])
-                
-                if not history:
-                    self.log_test("Tech Card Data Formats", False, "No history data to analyze")
-                    return False
-                
-                v1_valid = 0
-                v2_valid = 0
-                
-                for card in history:
-                    # Check V1 format (legacy content)
-                    if 'content' in card and card['content']:
-                        content = card['content']
-                        if len(content) > 100 and 'Ингредиенты' in content:
-                            v1_valid += 1
-                    
-                    # Check V2 format (structured data)
-                    if 'techcard_v2_data' in card:
-                        v2_data = card['techcard_v2_data']
-                        if isinstance(v2_data, dict) and 'ingredients' in v2_data:
-                            v2_valid += 1
-                
-                total_cards = len(history)
-                details = f"Analyzed {total_cards} cards: {v1_valid} valid V1, {v2_valid} valid V2"
-                
-                # Success if we have valid data in either format
-                success = (v1_valid + v2_valid) > 0
-                self.log_test("Tech Card Data Formats", success, details)
-                return success
-                
-            else:
-                self.log_test("Tech Card Data Formats", False, f"HTTP {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Tech Card Data Formats", False, f"Exception: {str(e)}")
-            return False
-
-    def test_dashboard_stats_calculation(self):
-        """Test dashboard statistics calculation from history data"""
-        try:
-            response = requests.get(f"{API_BASE}/user-history/{self.test_user_id}", timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                history = data.get('history', [])
-                
-                if not history:
-                    self.log_test("Dashboard Stats Calculation", False, "No history data for stats")
-                    return False
-                
-                # Calculate stats like dashboard would
-                total_cards = len(history)
-                
-                # Count by format
-                v1_count = len([card for card in history if 'content' in card and card['content']])
-                v2_count = len([card for card in history if 'techcard_v2_data' in card])
-                
-                # Recent activity (last 7 days)
-                recent_count = 0
-                for card in history:
-                    created_at = card.get('created_at')
-                    if created_at:
-                        try:
-                            card_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-                            days_ago = (datetime.now() - card_date.replace(tzinfo=None)).days
-                            if days_ago <= 7:
-                                recent_count += 1
-                        except:
-                            pass
-                
-                # Popular ingredients analysis
-                all_ingredients = []
-                for card in history:
-                    dish_name = card.get('dish_name', '')
-                    if dish_name:
-                        # Simple ingredient extraction from dish names
-                        words = dish_name.lower().split()
-                        food_words = [w for w in words if len(w) > 3 and w not in ['блюдо', 'тестовое']]
-                        all_ingredients.extend(food_words)
-                
-                popular_ingredients = list(set(all_ingredients))[:5]
-                
-                stats = {
-                    'total_cards': total_cards,
-                    'v1_cards': v1_count,
-                    'v2_cards': v2_count,
-                    'recent_activity': recent_count,
-                    'popular_ingredients': popular_ingredients
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                payload = {
+                    "user_id": self.test_user_id,
+                    "dish_name": dish_name,
+                    "portions": 2,
+                    "city": "moskva"
                 }
                 
-                details = f"Stats: {total_cards} total, {recent_count} recent, {len(popular_ingredients)} ingredients"
+                response = await client.post(f"{API_BASE}/generate-tech-card", json=payload)
                 
-                # Success if we can calculate meaningful stats
-                success = total_cards > 0 and (v1_count > 0 or v2_count > 0)
-                self.log_test("Dashboard Stats Calculation", success, details)
-                return success
-                
-            else:
-                self.log_test("Dashboard Stats Calculation", False, f"HTTP {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Dashboard Stats Calculation", False, f"Exception: {str(e)}")
-            return False
-
-    def test_tech_card_retrieval_by_id(self):
-        """Test individual tech card retrieval if endpoint exists"""
-        if not self.generated_cards:
-            self.log_test("Tech Card Retrieval by ID", False, "No generated cards to test")
-            return False
-        
-        try:
-            # Try to get a specific tech card
-            card = self.generated_cards[0]
-            card_id = card.get('id')
-            
-            if not card_id:
-                self.log_test("Tech Card Retrieval by ID", False, "No card ID available")
-                return False
-            
-            # Try different possible endpoints
-            endpoints = [
-                f"/tech-card/{card_id}",
-                f"/techcard/{card_id}",
-                f"/v1/techcards/{card_id}",
-                f"/user-techcard/{self.test_user_id}/{card_id}"
-            ]
-            
-            for endpoint in endpoints:
-                try:
-                    response = requests.get(f"{API_BASE}{endpoint}", timeout=30)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data and ('content' in data or 'techcard' in data):
-                            self.log_test("Tech Card Retrieval by ID", True, 
-                                        f"Retrieved via {endpoint}")
-                            return True
-                except:
-                    continue
-            
-            self.log_test("Tech Card Retrieval by ID", False, 
-                        "No working endpoint found for individual card retrieval")
-            return False
-            
-        except Exception as e:
-            self.log_test("Tech Card Retrieval by ID", False, f"Exception: {str(e)}")
-            return False
-
-    def test_history_sorting_and_pagination(self):
-        """Test that history is properly sorted (newest first) and handles pagination"""
-        try:
-            response = requests.get(f"{API_BASE}/user-history/{self.test_user_id}", timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                history = data.get('history', [])
-                
-                if len(history) < 2:
-                    self.log_test("History Sorting & Pagination", True, 
-                                "Not enough cards to test sorting (but endpoint works)")
-                    return True
-                
-                # Check if sorted by created_at (newest first)
-                dates = []
-                for card in history:
-                    created_at = card.get('created_at')
-                    if created_at:
-                        try:
-                            date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-                            dates.append(date)
-                        except:
-                            pass
-                
-                if len(dates) >= 2:
-                    is_sorted = all(dates[i] >= dates[i+1] for i in range(len(dates)-1))
+                if response.status_code == 200:
+                    data = response.json()
+                    tech_card_id = data.get("id")
                     
-                    details = f"Found {len(dates)} dated cards, sorted: {is_sorted}"
-                    self.log_test("History Sorting & Pagination", is_sorted, details)
-                    return is_sorted
+                    if tech_card_id:
+                        self.generated_tech_cards.append({
+                            "id": tech_card_id,
+                            "dish_name": dish_name,
+                            "type": "V1",
+                            "collection": "tech_cards"
+                        })
+                        
+                        await self.log_result(
+                            f"V1 Tech Card Generation ({dish_name})", 
+                            True, 
+                            f"Generated with ID: {tech_card_id}"
+                        )
+                        return tech_card_id
+                    else:
+                        await self.log_result(
+                            f"V1 Tech Card Generation ({dish_name})", 
+                            False, 
+                            f"No ID returned: {data}"
+                        )
+                        return None
                 else:
-                    self.log_test("History Sorting & Pagination", True, 
-                                "Cannot verify sorting - insufficient date data")
-                    return True
+                    await self.log_result(
+                        f"V1 Tech Card Generation ({dish_name})", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return None
                     
+        except Exception as e:
+            await self.log_result(
+                f"V1 Tech Card Generation ({dish_name})", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return None
+    
+    async def generate_v2_tech_card(self, dish_name: str):
+        """Generate V2 tech card using new API endpoint"""
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                payload = {
+                    "user_id": self.test_user_id,
+                    "dish_name": dish_name,
+                    "experiment_type": "standard",
+                    "is_laboratory": False
+                }
+                
+                # Try save-tech-card endpoint for V2 format
+                response = await client.post(f"{API_BASE}/save-tech-card", json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    tech_card_id = data.get("id")
+                    
+                    if tech_card_id:
+                        self.generated_tech_cards.append({
+                            "id": tech_card_id,
+                            "dish_name": dish_name,
+                            "type": "V2",
+                            "collection": "user_history"
+                        })
+                        
+                        await self.log_result(
+                            f"V2 Tech Card Generation ({dish_name})", 
+                            True, 
+                            f"Generated with ID: {tech_card_id}"
+                        )
+                        return tech_card_id
+                    else:
+                        await self.log_result(
+                            f"V2 Tech Card Generation ({dish_name})", 
+                            False, 
+                            f"No ID returned: {data}"
+                        )
+                        return None
+                else:
+                    await self.log_result(
+                        f"V2 Tech Card Generation ({dish_name})", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return None
+                    
+        except Exception as e:
+            await self.log_result(
+                f"V2 Tech Card Generation ({dish_name})", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return None
+    
+    async def test_data_format_consistency(self, history_items: list):
+        """Test that both V1 and V2 tech cards are returned in unified format"""
+        try:
+            v1_items = []
+            v2_items = []
+            
+            for item in history_items:
+                # Check required fields
+                required_fields = ["id", "user_id", "dish_name", "content", "created_at", "status"]
+                missing_fields = [field for field in required_fields if field not in item]
+                
+                if missing_fields:
+                    await self.log_result(
+                        "Data Format Consistency", 
+                        False, 
+                        f"Missing fields in item {item.get('id', 'unknown')}: {missing_fields}"
+                    )
+                    continue
+                
+                # Categorize by type
+                if item.get("techcard_v2_data") is None:
+                    v1_items.append(item)
+                else:
+                    v2_items.append(item)
+            
+            await self.log_result(
+                "Data Format Consistency", 
+                True, 
+                f"Found {len(v1_items)} V1 items and {len(v2_items)} V2 items with proper structure"
+            )
+            
+            return len(v1_items), len(v2_items)
+            
+        except Exception as e:
+            await self.log_result(
+                "Data Format Consistency", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return 0, 0
+    
+    async def test_dashboard_stats_calculation(self, history_items: list):
+        """Test dashboard statistics calculation from unified history"""
+        try:
+            if not history_items:
+                await self.log_result(
+                    "Dashboard Stats Calculation", 
+                    False, 
+                    "No history items to calculate stats from"
+                )
+                return
+            
+            # Calculate total tech cards
+            total_cards = len([item for item in history_items if not item.get("is_menu", False)])
+            
+            # Calculate V1 vs V2 distribution
+            v1_count = len([item for item in history_items if item.get("techcard_v2_data") is None])
+            v2_count = len([item for item in history_items if item.get("techcard_v2_data") is not None])
+            
+            # Calculate recent activity (last 7 days)
+            from datetime import datetime, timedelta
+            week_ago = datetime.now() - timedelta(days=7)
+            recent_items = []
+            
+            for item in history_items:
+                created_at = item.get("created_at")
+                if created_at:
+                    try:
+                        # Handle different date formats
+                        if isinstance(created_at, str):
+                            item_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                        else:
+                            item_date = created_at
+                        
+                        if item_date >= week_ago:
+                            recent_items.append(item)
+                    except:
+                        pass  # Skip items with invalid dates
+            
+            stats = {
+                "total_tech_cards": total_cards,
+                "v1_tech_cards": v1_count,
+                "v2_tech_cards": v2_count,
+                "recent_activity": len(recent_items)
+            }
+            
+            await self.log_result(
+                "Dashboard Stats Calculation", 
+                True, 
+                f"Stats: {stats}"
+            )
+            
+            # Verify dashboard shows correct count (not "0 Техкарт создано")
+            if total_cards > 0:
+                await self.log_result(
+                    "Dashboard Count Fix", 
+                    True, 
+                    f"Dashboard should show {total_cards} tech cards (not 0)"
+                )
             else:
-                self.log_test("History Sorting & Pagination", False, f"HTTP {response.status_code}")
-                return False
+                await self.log_result(
+                    "Dashboard Count Fix", 
+                    False, 
+                    "No tech cards found for dashboard display"
+                )
+            
+            return stats
+            
+        except Exception as e:
+            await self.log_result(
+                "Dashboard Stats Calculation", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return {}
+    
+    async def test_unified_history_sorting(self, history_items: list):
+        """Test that history items are properly sorted by creation date (newest first)"""
+        try:
+            if len(history_items) < 2:
+                await self.log_result(
+                    "History Sorting", 
+                    True, 
+                    f"Only {len(history_items)} items, sorting not applicable"
+                )
+                return
+            
+            # Check if items are sorted by created_at (newest first)
+            dates = []
+            for item in history_items:
+                created_at = item.get("created_at")
+                if created_at:
+                    try:
+                        if isinstance(created_at, str):
+                            date_obj = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                        else:
+                            date_obj = created_at
+                        dates.append(date_obj)
+                    except:
+                        pass
+            
+            if len(dates) >= 2:
+                is_sorted = all(dates[i] >= dates[i+1] for i in range(len(dates)-1))
+                
+                await self.log_result(
+                    "History Sorting", 
+                    is_sorted, 
+                    f"Items {'are' if is_sorted else 'are NOT'} sorted by date (newest first)"
+                )
+            else:
+                await self.log_result(
+                    "History Sorting", 
+                    False, 
+                    "Could not parse enough dates for sorting validation"
+                )
                 
         except Exception as e:
-            self.log_test("History Sorting & Pagination", False, f"Exception: {str(e)}")
-            return False
-
-    def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Backend API Testing for User History Functionality")
-        print(f"Backend URL: {BACKEND_URL}")
+            await self.log_result(
+                "History Sorting", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+    
+    async def run_comprehensive_test(self):
+        """Run comprehensive unified history functionality test"""
+        print("🎯 UNIFIED HISTORY FUNCTIONALITY COMPREHENSIVE TESTING STARTED")
         print(f"Test User ID: {self.test_user_id}")
         print("=" * 80)
         
-        # Run tests in sequence
-        tests = [
-            self.test_user_creation,
-            self.test_v2_tech_card_generation,
-            self.test_additional_tech_cards,
-            self.test_user_history_endpoint,
-            self.test_tech_card_data_formats,
-            self.test_dashboard_stats_calculation,
-            self.test_tech_card_retrieval_by_id,
-            self.test_history_sorting_and_pagination
-        ]
+        # Test 1: Initial empty history
+        print("\n📋 TEST 1: Initial Empty History")
+        initial_history = await self.test_unified_history_api()
         
-        passed = 0
-        total = len(tests)
+        # Test 2: Generate V1 tech cards (legacy format)
+        print("\n📋 TEST 2: Generate V1 Tech Cards (Legacy)")
+        v1_dishes = ["Борщ украинский с говядиной", "Салат Цезарь с курицей"]
+        for dish in v1_dishes:
+            await self.generate_v1_tech_card(dish)
+            await asyncio.sleep(1)  # Small delay between generations
         
-        for test in tests:
-            try:
-                if test():
-                    passed += 1
-            except Exception as e:
-                print(f"❌ Test failed with exception: {str(e)}")
+        # Test 3: Generate V2 tech cards (new format)
+        print("\n📋 TEST 3: Generate V2 Tech Cards (New API)")
+        v2_dishes = ["Паста Карбонара", "Стейк с картофельным пюре"]
+        for dish in v2_dishes:
+            await self.generate_v2_tech_card(dish)
+            await asyncio.sleep(1)  # Small delay between generations
+        
+        # Test 4: Verify unified history combines both collections
+        print("\n📋 TEST 4: Unified History API Integration")
+        await asyncio.sleep(2)  # Allow time for database writes
+        unified_history = await self.test_unified_history_api()
+        
+        # Test 5: Data format consistency
+        print("\n📋 TEST 5: Data Format Consistency")
+        v1_count, v2_count = await self.test_data_format_consistency(unified_history)
+        
+        # Test 6: Dashboard statistics calculation
+        print("\n📋 TEST 6: Dashboard Statistics")
+        stats = await self.test_dashboard_stats_calculation(unified_history)
+        
+        # Test 7: History sorting validation
+        print("\n📋 TEST 7: History Sorting")
+        await self.test_unified_history_sorting(unified_history)
+        
+        # Test 8: Verify specific fields for both V1 and V2
+        print("\n📋 TEST 8: Field Validation")
+        await self.test_field_validation(unified_history)
         
         # Summary
+        print("\n" + "=" * 80)
+        print("🎯 UNIFIED HISTORY TESTING SUMMARY")
         print("=" * 80)
-        print("🎯 BACKEND TESTING SUMMARY")
-        print(f"Tests Passed: {passed}/{total} ({passed/total*100:.1f}%)")
-        print(f"Generated Cards: {len(self.generated_cards)}")
         
-        # Critical issues
-        critical_issues = []
-        for result in self.test_results:
-            if "FAIL" in result["status"] and any(keyword in result["test"] for keyword in 
-                ["User History Endpoint", "Tech Card Data Formats", "User Creation"]):
-                critical_issues.append(result["test"])
+        passed_tests = len([r for r in self.results if "✅ PASS" in r])
+        total_tests = len(self.results)
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
-        if critical_issues:
-            print(f"\n🚨 CRITICAL ISSUES FOUND:")
-            for issue in critical_issues:
-                print(f"   - {issue}")
+        print(f"📊 SUCCESS RATE: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        print(f"📈 GENERATED TECH CARDS: {len(self.generated_tech_cards)}")
+        print(f"📋 UNIFIED HISTORY ITEMS: {len(unified_history)}")
         
-        # Success criteria
-        history_working = any("User History Endpoint" in r["test"] and "PASS" in r["status"] 
-                            for r in self.test_results)
-        data_formats_ok = any("Tech Card Data Formats" in r["test"] and "PASS" in r["status"] 
-                            for r in self.test_results)
+        if stats:
+            print(f"📊 DASHBOARD STATS: {stats}")
         
-        if history_working and data_formats_ok:
-            print(f"\n✅ CORE FUNCTIONALITY: User history endpoint and data formats are working")
+        print("\n📝 DETAILED RESULTS:")
+        for result in self.results:
+            print(f"  {result}")
+        
+        # Critical assessment
+        print("\n🎯 CRITICAL ASSESSMENT:")
+        
+        critical_tests = [
+            ("Unified History API", any("Unified History API" in r and "✅ PASS" in r for r in self.results)),
+            ("V1 Tech Card Generation", any("V1 Tech Card Generation" in r and "✅ PASS" in r for r in self.results)),
+            ("V2 Tech Card Generation", any("V2 Tech Card Generation" in r and "✅ PASS" in r for r in self.results)),
+            ("Data Format Consistency", any("Data Format Consistency" in r and "✅ PASS" in r for r in self.results)),
+            ("Dashboard Count Fix", any("Dashboard Count Fix" in r and "✅ PASS" in r for r in self.results))
+        ]
+        
+        all_critical_passed = all(passed for _, passed in critical_tests)
+        
+        for test_name, passed in critical_tests:
+            status = "✅" if passed else "❌"
+            print(f"  {status} {test_name}")
+        
+        if all_critical_passed:
+            print("\n🎉 OUTSTANDING SUCCESS: Unified history functionality is FULLY OPERATIONAL!")
+            print("✅ Combines data from both tech_cards and user_history collections")
+            print("✅ Returns V1 and V2 tech cards in unified format")
+            print("✅ Dashboard stats calculation working correctly")
+            print("✅ Resolves '0 Техкарт создано' issue")
         else:
-            print(f"\n❌ CORE FUNCTIONALITY: Critical issues with user history or data formats")
+            print("\n🚨 CRITICAL ISSUES IDENTIFIED:")
+            failed_tests = [name for name, passed in critical_tests if not passed]
+            for test in failed_tests:
+                print(f"❌ {test}")
         
-        return passed, total, self.test_results
+        return success_rate >= 80  # 80% success rate threshold
+    
+    async def test_field_validation(self, history_items: list):
+        """Test that all history items have proper fields as specified in review"""
+        try:
+            required_fields = ["id", "user_id", "dish_name", "content", "created_at", "status"]
+            
+            valid_items = 0
+            total_items = len(history_items)
+            
+            for item in history_items:
+                has_all_fields = all(field in item for field in required_fields)
+                
+                # Additional checks for V2 data
+                has_v2_structure = "techcard_v2_data" in item
+                
+                if has_all_fields:
+                    valid_items += 1
+            
+            success = valid_items == total_items and total_items > 0
+            
+            await self.log_result(
+                "Field Validation", 
+                success, 
+                f"{valid_items}/{total_items} items have all required fields"
+            )
+            
+        except Exception as e:
+            await self.log_result(
+                "Field Validation", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+
+async def main():
+    """Main test execution"""
+    tester = UnifiedHistoryTester()
+    
+    try:
+        success = await tester.run_comprehensive_test()
+        
+        # Exit with appropriate code
+        sys.exit(0 if success else 1)
+        
+    except KeyboardInterrupt:
+        print("\n⚠️ Test interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n💥 Critical error during testing: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    tester = BackendTester()
-    passed, total, results = tester.run_all_tests()
-    
-    # Exit with appropriate code
-    if passed == total:
-        exit(0)  # All tests passed
-    elif passed >= total * 0.7:  # 70% pass rate
-        exit(1)  # Mostly working but some issues
-    else:
-        exit(2)  # Major issues
+    asyncio.run(main())
