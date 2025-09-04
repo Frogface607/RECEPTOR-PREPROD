@@ -3287,7 +3287,7 @@ test_plan:
     - "Product Skeletons iiko Import Fix - Type Mapping Validation - COMPLETED SUCCESSFULLY"
     - "ALT Export DISH Article Fix"
     - "CRITICAL FIX: Product-Article Reconcile (No GENERATED_* in TTK, Only Real Articles from Skeletons) - COMPLETED SUCCESSFULLY"
-    - "User History API Endpoint Integration - CRITICAL DUAL STORAGE SYSTEM ISSUE IDENTIFIED"
+    - "User History API Endpoint Integration - Unified Fix - COMPLETED SUCCESSFULLY"
   stuck_tasks:
     - "Tech Card Generation Backend Pipeline Failure - Generation Error at 100% progress"
     - "HACCP Pro Frontend Module (FE-01A)"
