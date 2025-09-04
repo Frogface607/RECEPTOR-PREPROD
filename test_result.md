@@ -3292,7 +3292,6 @@ test_plan:
     - "Tech Card Generation Backend Pipeline Failure - Generation Error at 100% progress"
     - "HACCP Pro Frontend Module (FE-01A)"
     - "HACCP Audit Frontend (FE-01B)"
-    - "User History API Endpoint Integration - Dual Storage System Inconsistency"
   test_all: false
   test_priority: "high_first"
 
