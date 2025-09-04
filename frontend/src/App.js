@@ -9083,7 +9083,7 @@ function App() {
                           
                           if (isV2 && item.techcard_v2_data) {
                             console.log('Dashboard: Loading V2 techcard_v2_data:', item.techcard_v2_data);
-                            console.log('Dashboard: Yield data in techcard_v2_data:', item.techcard_v2_data.yield);
+                            console.log('Dashboard: Yield data in techcard_v2_data (yield_):', item.techcard_v2_data.yield_);
                             setTcV2(item.techcard_v2_data);
                             setTechCard(null);
                             setGenerationStatus('success');
