@@ -11410,6 +11410,8 @@ function App() {
                 {/* CLEANUP TECH CARD DATA & UI: Убираем отображение проблем генерации */}
                 
                 <div className="prose prose-invert max-w-none">
+                  {/* DEBUG: Проверяем состояние tcV2 */}
+                  {console.log('=== RENDER DEBUG ===', 'tcV2 exists:', !!tcV2, 'FORCE_TECHCARD_V2:', FORCE_TECHCARD_V2)}
                   {FORCE_TECHCARD_V2 ? (
                     tcV2 ? renderTechCardV2(tcV2) : (
                       <div className="text-center py-12 text-gray-400 space-y-4">
