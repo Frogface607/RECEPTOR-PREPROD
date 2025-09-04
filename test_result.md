@@ -3323,6 +3323,7 @@ frontend:
 
 test_plan:
   current_focus:
+    - "CRITICAL BUG FIX: Dashboard tech card loading - blank screen on click"
     - "CRITICAL FRONTEND TESTING: CLEANUP TECH CARD DATA & UI - COMPLETED WITH FINDINGS"
     - "Tech Card Generation Error Investigation - CRITICAL BACKEND GENERATION FAILURE CONFIRMED"
     - "UI Warning Labels Cleanup Verification - COMPLETED SUCCESSFULLY"
