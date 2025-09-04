@@ -10734,7 +10734,7 @@ function App() {
                         
                         if (isV2 && techcard.techcard_v2_data) {
                           console.log('Loading V2 techcard_v2_data:', techcard.techcard_v2_data);
-                          console.log('Yield data in techcard_v2_data:', techcard.techcard_v2_data.yield);
+                          console.log('Yield data in techcard_v2_data (yield_):', techcard.techcard_v2_data.yield_);
                           setTcV2(techcard.techcard_v2_data);
                           setTechCard(null); // Очищаем V1 техkарту
                           setGenerationStatus('success');
