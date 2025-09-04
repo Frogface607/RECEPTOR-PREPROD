@@ -371,16 +371,19 @@ frontend:
         comment: "✅ WARNING LABELS CLEANUP SUCCESSFUL: Comprehensive testing confirmed no problematic warning labels present in UI. Patterns '⚠ no БЖУ', '⚠ no price', 'Без SKU', '⚠️ Покрытие' not found in generated content. No yellow DRAFT banners detected. No red validation errors in ingredients table. UI cleanup implementation working as intended."
 
   - task: "Tech Card Loading Functionality - Data Preservation"
-    implemented: false
+    implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "🚨 CRITICAL TECH CARD LOADING DATA LOSS IDENTIFIED: Comprehensive testing revealed severe data preservation issues in tech card loading functionality. ❌ DASHBOARD LOADING: Partial data loss - ingredients found but yield (выход) data completely missing, no process steps, no portions. ❌ HISTORY LOADING: Complete data loss - no yield, no ingredients, no measurements preserved when loading from history. ❌ LOADING CONSISTENCY: Systematic failure across multiple loading attempts, indicating persistent issue not intermittent problem. ❌ YIELD DATA LOSS CONFIRMED: Specific issue mentioned in user report about yield (выход) data loss is verified - essential tech card data not preserved during loading process. 🎯 ROOT CAUSE: Tech card loading/rendering mechanism fails to properly display saved data fields when accessing existing tech cards from dashboard or history sections. Tech cards are saved (6 cards with ГОТОВО status found) but loading mechanism has critical data preservation failure. IMMEDIATE FIX REQUIRED: Debug and fix tech card data loading to ensure yield, ingredients, and measurement data are properly preserved and displayed when loading existing tech cards."
+      - working: false
+        agent: "testing"
+        comment: "🎯 UI CLEANUP & TECH CARD LOADING COMPREHENSIVE TESTING COMPLETED: Conducted detailed end-to-end testing of RECEPTOR PRO Beta application after UI cleanup and tech card loading fixes as specified in review request. ✅ UI CLEANUP VERIFICATION SUCCESSFUL: ИСТОРИЯ button successfully removed from navigation (confirmed absent from all navigation elements), no duplicate functionality detected, interface is cleaner without redundant elements, dashboard no longer shows '0 Техkарт создано' issue resolved. ✅ DASHBOARD FUNCTIONALITY OPERATIONAL: Dashboard accessible and functional, shows correct tech card counts (6 техkарт создано), found 5 'Открыть' buttons in recent activity section, dashboard buttons work correctly for tech card access. ❌ CRITICAL TECH CARD DATA PRESERVATION ISSUE REMAINS: Tech card loading from dashboard shows PARTIAL data preservation - yield (выход) data found but ingredients and process steps missing, no ingredient tables detected (0/0), no weight measurements or portion references found. Data completeness score: 1/5 indicating severe data loss during loading process. ❌ ТЕХKАРТЫ SECTION ACCESS ISSUE: ТЕХKАРТЫ navigation button not consistently accessible, section navigation needs improvement for proper tech card management. ⚠️ PARTIAL SUCCESS: Major UI cleanup improvements verified (historia removal, correct counts, cleaner interface) but critical tech card data preservation issues persist. SUCCESS RATE: 58.3% (7/12 tests passed). 🎯 IMMEDIATE ACTION REQUIRED: Fix tech card data loading mechanism to preserve yield, ingredients, measurements, and process steps when loading existing tech cards from dashboard and ТЕХKАРТЫ sections."
 
 ## metadata:
   created_by: "main_agent"
