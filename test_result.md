@@ -2816,6 +2816,18 @@ frontend:
         comment: "PHASE 2 ENHANCEMENT: Fixed real-time recalculation in interactive ingredients editor. Changes made: 1) Enhanced updateIngredient function with proportional price recalculation logic 2) Fixed onChange handler for quantity changes to properly recalculate prices 3) Updated addNewIngredient to create ingredients with correct structure 4) Enhanced saveIngredientsToTechCard to properly format ingredients with units and prices. Now quantity changes automatically recalculate prices proportionally."
     message: "🔑 OPENAI API KEY TESTING COMPLETED: Conducted specific test for review request 'Паста Карбонара на 4 порции' with exact parameters (user_id: test_user_12345, city: moskva). ❌ CRITICAL FINDING: OpenAI API key is invalid (401 Unauthorized). ✅ INFRASTRUCTURE FIXED: Resolved MongoDB connection issue by updating MONGO_URL to localhost. ✅ BACKEND SYSTEMS: All other functionality working correctly (user management, subscriptions, database). ❌ ROOT CAUSE: Current OpenAI API key returns 401 error from OpenAI API. The backend correctly uses gpt-4o-mini model as specified. 🔧 URGENT ACTION REQUIRED: Main agent must provide valid OpenAI API key to resolve tech card generation failures. All review test requirements (status 200, content, ID, sections) cannot be verified until API key is fixed."
 
+  - task: "CRITICAL BUG FIX: Dashboard tech card loading - blank screen on click"
+    implemented: true
+    working: false
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL DASHBOARD TECH CARD LOADING BUG CONFIRMED: Conducted comprehensive investigation of dashboard tech card loading functionality focusing on blank screen issue when clicking 'Открыть' buttons. ❌ ROOT CAUSE IDENTIFIED: Tech card data loading fails to preserve essential fields (yield, ingredients) during dashboard loading process. Navigation occurs (currentView changes to 'create') but rendering fails due to missing data. Console shows 'yield data: undefined' preventing proper tech card display. ❌ CRITICAL FINDINGS: 1) Tech cards are generated successfully but not properly saved/associated with user account, 2) Dashboard loading retrieves data but yield information becomes undefined during loading process, 3) State management between dashboard and tech card view has data preservation issues. ✅ CODE ANALYSIS: Dashboard loading logic in App.js lines 9084-9092 has proper implementation but data preservation fails. Expected console messages ('Loading techcard from dashboard', 'Dashboard: Yield data in techcard_v2_data (yield_)') are missing indicating loading mechanism failure. 🎯 IMMEDIATE ACTION REQUIRED: Fix tech card data preservation in dashboard loading mechanism, ensure yield (выход) data is properly maintained when loading existing tech cards, debug and resolve state management issues between dashboard and tech card view rendering. The blank screen issue is a critical data loading/rendering failure, not a navigation problem."
+
   - task: "VENUE CUSTOMIZATION SYSTEM Frontend"
     implemented: true
     working: false
