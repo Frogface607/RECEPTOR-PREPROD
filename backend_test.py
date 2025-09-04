@@ -79,10 +79,13 @@ class UnifiedHistoryTester:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    actual_user_id = data.get('id', self.test_user_id)
+                    # Update the test user ID to the actual one returned
+                    self.test_user_id = actual_user_id
                     await self.log_result(
                         "Test User Creation", 
                         True, 
-                        f"Created user with ID: {data.get('id', self.test_user_id)}"
+                        f"Created user with ID: {actual_user_id}"
                     )
                     return True
                 else:
