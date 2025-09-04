@@ -988,7 +988,7 @@ function App() {
     
     const meta = tcV2.meta || {};
     const title = meta.title || 'Техкарта';
-    const yield_data = tcV2.yield || {};
+    const yield_data = tcV2.yield_ || {}; // Fix: Database stores yield_ not yield
     const ingredients = tcV2.ingredients || [];
     const process = tcV2.process || [];
     const storage = tcV2.storage || {};
