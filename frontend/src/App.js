@@ -9076,10 +9076,18 @@ function App() {
                       </div>
                       <button 
                         onClick={() => {
+                          console.log('=== DASHBOARD DEBUG START ===');
                           console.log('Loading techcard from dashboard:', item);
+                          console.log('item.techcard_v2_data exists:', !!item.techcard_v2_data);
+                          console.log('item.content exists:', !!item.content);
+                          console.log('item.content type:', typeof item.content);
+                          if (item.content) {
+                            console.log('item.content preview:', item.content.substring(0, 200));
+                          }
                           
                           // Unified loading logic for both V1 and V2 formats
                           const isV2 = item.techcard_v2_data || (item.content && item.content.includes('"meta"'));
+                          console.log('Detected as V2:', isV2);
                           
                           if (isV2 && item.techcard_v2_data) {
                             console.log('Dashboard: Loading V2 techcard_v2_data:', item.techcard_v2_data);
@@ -9118,6 +9126,7 @@ function App() {
                           } else {
                             console.log('No techcard data found in dashboard item');
                           }
+                          console.log('=== DASHBOARD DEBUG END ===');
                         }}
                         className="text-purple-400 hover:text-purple-300 text-sm"
                       >
