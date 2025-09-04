@@ -395,7 +395,7 @@ class YieldDataInvestigator:
     async def test_data_completeness_comparison(self):
         """Compare data completeness between user_history and tech_cards collections"""
         try:
-            if not self.db:
+            if self.db is None:
                 await self.log_result(
                     "Data Completeness Comparison", 
                     False, 
