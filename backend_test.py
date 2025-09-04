@@ -244,7 +244,14 @@ class UnifiedHistoryTester:
             v1_items = []
             v2_items = []
             
-            for item in history_items:
+            print(f"\n🔍 DEBUG: Analyzing {len(history_items)} history items:")
+            
+            for i, item in enumerate(history_items):
+                print(f"  Item {i+1}: ID={item.get('id', 'N/A')[:8]}..., "
+                      f"dish_name='{item.get('dish_name', 'N/A')}', "
+                      f"techcard_v2_data={'present' if item.get('techcard_v2_data') is not None else 'None'}, "
+                      f"is_menu={item.get('is_menu', 'N/A')}")
+                
                 # Check required fields
                 required_fields = ["id", "user_id", "dish_name", "content", "created_at", "status"]
                 missing_fields = [field for field in required_fields if field not in item]
