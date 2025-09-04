@@ -9082,6 +9082,8 @@ function App() {
                           const isV2 = item.techcard_v2_data || (item.content && item.content.includes('"meta"'));
                           
                           if (isV2 && item.techcard_v2_data) {
+                            console.log('Dashboard: Loading V2 techcard_v2_data:', item.techcard_v2_data);
+                            console.log('Dashboard: Yield data in techcard_v2_data:', item.techcard_v2_data.yield);
                             setTcV2(item.techcard_v2_data);
                             setTechCard(null);
                             setGenerationStatus('success');
@@ -9091,6 +9093,8 @@ function App() {
                           } else if (item.content) {
                             try {
                               const parsedContent = JSON.parse(item.content);
+                              console.log('Dashboard: Parsed content from JSON:', parsedContent);
+                              console.log('Dashboard: Yield data in parsed content:', parsedContent.yield);
                               if (parsedContent.ingredients) {
                                 setTcV2(parsedContent);
                                 setTechCard(null);
@@ -9103,6 +9107,7 @@ function App() {
                               }
                             } catch (e) {
                               // V1 tech card
+                              console.log('Dashboard: Failed to parse as JSON, loading as V1:', e);
                               setTechCard(item.content);
                               setTcV2(null);
                               setGenerationStatus('success');
