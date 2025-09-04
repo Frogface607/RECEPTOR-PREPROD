@@ -340,6 +340,72 @@ class YieldDataInvestigator:
             )
             return None
     
+    async def analyze_existing_tech_cards(self):
+        """Analyze existing tech cards in the database for yield data patterns"""
+        try:
+            if self.db is None:
+                await self.log_result(
+                    "Existing Tech Cards Analysis", 
+                    False, 
+                    "No database connection"
+                )
+                return None
+            
+            # Get sample of existing tech cards from user_history
+            existing_cards = await self.db.user_history.find().limit(10).to_list(10)
+            
+            analysis = {
+                "total_cards_found": len(existing_cards),
+                "cards_with_techcard_v2_data": 0,
+                "cards_with_yield_data": 0,
+                "yield_data_samples": [],
+                "field_structures": []
+            }
+            
+            for i, card in enumerate(existing_cards):
+                if "_id" in card:
+                    del card["_id"]
+                
+                # Check for techcard_v2_data
+                if "techcard_v2_data" in card and card["techcard_v2_data"] is not None:
+                    analysis["cards_with_techcard_v2_data"] += 1
+                    
+                    techcard_v2_data = card["techcard_v2_data"]
+                    
+                    # Check for yield data
+                    if "yield" in techcard_v2_data and techcard_v2_data["yield"] is not None:
+                        analysis["cards_with_yield_data"] += 1
+                        analysis["yield_data_samples"].append({
+                            "card_index": i,
+                            "dish_name": card.get("dish_name", "Unknown"),
+                            "yield_data": techcard_v2_data["yield"],
+                            "yield_type": type(techcard_v2_data["yield"]).__name__
+                        })
+                    
+                    # Record field structure
+                    if isinstance(techcard_v2_data, dict):
+                        analysis["field_structures"].append({
+                            "card_index": i,
+                            "fields": list(techcard_v2_data.keys()),
+                            "has_yield": "yield" in techcard_v2_data
+                        })
+            
+            await self.log_result(
+                "Existing Tech Cards Analysis", 
+                True, 
+                f"Analyzed {analysis['total_cards_found']} existing cards, {analysis['cards_with_yield_data']} have yield data"
+            )
+            
+            return analysis
+            
+        except Exception as e:
+            await self.log_result(
+                "Existing Tech Cards Analysis", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return None
+    
     async def test_field_naming_consistency(self):
         """Test for field naming inconsistencies (yield vs yield_ vs yieldData)"""
         try:
