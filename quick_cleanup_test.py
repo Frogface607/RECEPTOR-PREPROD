@@ -10,7 +10,7 @@ import time
 import os
 
 # Backend URL
-BACKEND_URL = "https://menu-automation.preview.emergentagent.com"
+BACKEND_URL = "https://techcard-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_ready_status():

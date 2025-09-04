@@ -11,7 +11,7 @@ import os
 from pymongo import MongoClient
 
 # URLs
-BACKEND_URL = "https://menu-automation.preview.emergentagent.com"
+BACKEND_URL = "https://techcard-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # MongoDB connection (for direct validation)

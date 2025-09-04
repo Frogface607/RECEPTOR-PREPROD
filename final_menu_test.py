@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://menu-automation.preview.emergentagent.com/api"
+BACKEND_URL = "https://techcard-wizard.preview.emergentagent.com/api"
 
 def test_exact_dish_count_generation():
     """КРИТИЧНЫЙ ТЕСТ: Проверить точное количество блюд (28 вместо 10)"""

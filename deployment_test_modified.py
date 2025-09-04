@@ -20,7 +20,7 @@ from datetime import datetime
 
 class DeploymentTestModified:
     def __init__(self):
-        self.base_url = "https://menu-automation.preview.emergentagent.com/api"
+        self.base_url = "https://techcard-wizard.preview.emergentagent.com/api"
         self.test_user_id = "test_user_deploy_123"
         self.test_dish_name = "Тестовое блюдо для проверки"
         self.test_city = "moskva"
