@@ -9087,8 +9087,43 @@ function App() {
                       </div>
                       <button 
                         onClick={() => {
-                          setTechCard(item.content);
-                          setCurrentView('create');
+                          console.log('Loading techcard from dashboard:', item);
+                          
+                          // Unified loading logic for both V1 and V2 formats
+                          const isV2 = item.techcard_v2_data || (item.content && item.content.includes('"meta"'));
+                          
+                          if (isV2 && item.techcard_v2_data) {
+                            setTcV2(item.techcard_v2_data);
+                            setTechCard(null);
+                            setGenerationStatus('success');
+                            setCurrentTechCardId(item.id);
+                            setCurrentView('create');
+                            console.log('Loaded V2 techcard from techcard_v2_data in dashboard');
+                          } else if (item.content) {
+                            try {
+                              const parsedContent = JSON.parse(item.content);
+                              if (parsedContent.ingredients) {
+                                setTcV2(parsedContent);
+                                setTechCard(null);
+                                setGenerationStatus('success');
+                                setCurrentTechCardId(item.id);
+                                setCurrentView('create');
+                                console.log('Loaded V2 techcard from JSON content in dashboard');
+                              } else {
+                                throw new Error('Not V2 format');
+                              }
+                            } catch (e) {
+                              // V1 tech card
+                              setTechCard(item.content);
+                              setTcV2(null);
+                              setGenerationStatus('success');
+                              setCurrentTechCardId(item.id);
+                              setCurrentView('create');
+                              console.log('Loaded V1 techcard from content in dashboard');
+                            }
+                          } else {
+                            console.log('No techcard data found in dashboard item');
+                          }
                         }}
                         className="text-purple-400 hover:text-purple-300 text-sm"
                       >
