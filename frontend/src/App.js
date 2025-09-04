@@ -9094,7 +9094,7 @@ function App() {
                             try {
                               const parsedContent = JSON.parse(item.content);
                               console.log('Dashboard: Parsed content from JSON:', parsedContent);
-                              console.log('Dashboard: Yield data in parsed content:', parsedContent.yield);
+                              console.log('Dashboard: Yield data in parsed content (yield_):', parsedContent.yield_);
                               if (parsedContent.ingredients) {
                                 setTcV2(parsedContent);
                                 setTechCard(null);
