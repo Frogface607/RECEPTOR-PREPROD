@@ -3954,18 +3954,50 @@ async def get_user_prices(user_id: str):
 @api_router.get("/user-history/{user_id}")
 async def get_user_history(user_id: str):
     try:
-        # CLEANUP TECH CARD DATA & UI: Ищем в правильной коллекции user_history
+        # UNIFIED HISTORY: Объединяем данные из user_history и tech_cards коллекций
+        
+        # Получаем V2 техкарты из user_history (новый API)
         history_docs = await db.user_history.find(
             {"user_id": user_id}
-        ).sort("created_at", -1).limit(20).to_list(20)
+        ).sort("created_at", -1).to_list(100)
+        
+        # Получаем V1 техкарты из tech_cards (старый API)
+        tech_cards_docs = await db.tech_cards.find(
+            {"user_id": user_id}
+        ).sort("created_at", -1).to_list(100)
         
         # Convert to serializable format by removing MongoDB ObjectId
         history = []
+        
+        # Добавляем V2 техкарты из user_history
         for doc in history_docs:
-            # Remove the MongoDB _id field to avoid serialization issues
             if "_id" in doc:
                 del doc["_id"]
             history.append(doc)
+        
+        # Добавляем V1 техкарты из tech_cards как legacy записи  
+        for doc in tech_cards_docs:
+            if "_id" in doc:
+                del doc["_id"]
+            
+            # Конвертируем V1 формат в unified формат
+            unified_doc = {
+                "id": doc.get("id"),
+                "user_id": doc.get("user_id"),
+                "dish_name": doc.get("dish_name"),
+                "content": doc.get("content"),
+                "created_at": doc.get("created_at"),
+                "is_menu": False,
+                "status": "success",  # V1 техкарты всегда были успешными
+                "techcard_v2_data": None  # V1 не имеет V2 данных
+            }
+            history.append(unified_doc)
+        
+        # Сортируем все по дате создания (новые сверху)
+        history.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        
+        # Ограничиваем до 50 записей
+        history = history[:50]
         
         return {"history": history}
         
