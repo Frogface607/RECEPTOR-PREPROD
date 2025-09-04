@@ -162,9 +162,35 @@ class UnifiedHistoryTester:
         """Generate V2 tech card using new API endpoint"""
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
+                # Generate some sample content for the tech card
+                sample_content = f"""
+# {dish_name}
+
+## Ингредиенты:
+- Основной ингредиент: 500г
+- Специи: по вкусу
+- Соль: 5г
+
+## Приготовление:
+1. Подготовить ингредиенты
+2. Смешать компоненты
+3. Готовить до готовности
+
+## Пищевая ценность:
+- Калории: 250 ккал
+- Белки: 15г
+- Жиры: 10г
+- Углеводы: 25г
+
+## Себестоимость:
+Примерно 150 рублей за порцию
+"""
+                
                 payload = {
                     "user_id": self.test_user_id,
                     "dish_name": dish_name,
+                    "content": sample_content,
+                    "city": "moskva",
                     "is_inspiration": True
                 }
                 
