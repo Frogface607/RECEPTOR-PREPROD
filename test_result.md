@@ -370,6 +370,18 @@ frontend:
         agent: "testing"
         comment: "✅ WARNING LABELS CLEANUP SUCCESSFUL: Comprehensive testing confirmed no problematic warning labels present in UI. Patterns '⚠ no БЖУ', '⚠ no price', 'Без SKU', '⚠️ Покрытие' not found in generated content. No yellow DRAFT banners detected. No red validation errors in ingredients table. UI cleanup implementation working as intended."
 
+  - task: "Tech Card Loading Functionality - Data Preservation"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL TECH CARD LOADING DATA LOSS IDENTIFIED: Comprehensive testing revealed severe data preservation issues in tech card loading functionality. ❌ DASHBOARD LOADING: Partial data loss - ingredients found but yield (выход) data completely missing, no process steps, no portions. ❌ HISTORY LOADING: Complete data loss - no yield, no ingredients, no measurements preserved when loading from history. ❌ LOADING CONSISTENCY: Systematic failure across multiple loading attempts, indicating persistent issue not intermittent problem. ❌ YIELD DATA LOSS CONFIRMED: Specific issue mentioned in user report about yield (выход) data loss is verified - essential tech card data not preserved during loading process. 🎯 ROOT CAUSE: Tech card loading/rendering mechanism fails to properly display saved data fields when accessing existing tech cards from dashboard or history sections. Tech cards are saved (6 cards with ГОТОВО status found) but loading mechanism has critical data preservation failure. IMMEDIATE FIX REQUIRED: Debug and fix tech card data loading to ensure yield, ingredients, and measurement data are properly preserved and displayed when loading existing tech cards."
+
 ## metadata:
   created_by: "main_agent"
   version: "2.0"
