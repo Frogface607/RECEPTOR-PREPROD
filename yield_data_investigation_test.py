@@ -281,10 +281,10 @@ class YieldDataInvestigator:
             
             # Step 2: Check generation response for yield data
             yield_in_response = None
-            if generation_response and "techcard_v2_data" in generation_response:
-                techcard_v2_data = generation_response["techcard_v2_data"]
-                if techcard_v2_data and "yield" in techcard_v2_data:
-                    yield_in_response = techcard_v2_data["yield"]
+            if generation_response and "card" in generation_response:
+                card_data = generation_response["card"]
+                if card_data and "yield" in card_data:
+                    yield_in_response = card_data["yield"]
             
             await self.log_result(
                 "Pipeline Trace - Generation Response", 
