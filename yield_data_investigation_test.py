@@ -344,7 +344,7 @@ class YieldDataInvestigator:
         """Test for field naming inconsistencies (yield vs yield_ vs yieldData)"""
         try:
             # Check all user_history documents for field naming patterns
-            if not self.db:
+            if self.db is None:
                 await self.log_result(
                     "Field Naming Consistency", 
                     False, 
