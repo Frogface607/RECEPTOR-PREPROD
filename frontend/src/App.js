@@ -17319,7 +17319,7 @@ function App() {
             </div>
             
             {/* Results Table */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-y-auto max-h-[60vh]">
               <div className="p-4 space-y-2">
                 {getFilteredAutoMappingResults().map((result, index) => (
                   <div
