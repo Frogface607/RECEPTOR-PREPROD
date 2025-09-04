@@ -127,7 +127,7 @@ class YieldDataInvestigator:
     async def inspect_database_structure(self, tech_card_id: str):
         """Inspect the actual database structure of saved tech cards"""
         try:
-            if not self.db:
+            if self.db is None:
                 await self.log_result(
                     "Database Structure Analysis", 
                     False, 
