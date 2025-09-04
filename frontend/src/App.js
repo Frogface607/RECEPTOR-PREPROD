@@ -10728,6 +10728,8 @@ function App() {
                         console.log('Loading techcard:', techcard);
                         
                         if (isV2 && techcard.techcard_v2_data) {
+                          console.log('Loading V2 techcard_v2_data:', techcard.techcard_v2_data);
+                          console.log('Yield data in techcard_v2_data:', techcard.techcard_v2_data.yield);
                           setTcV2(techcard.techcard_v2_data);
                           setTechCard(null); // Очищаем V1 техkарту
                           setGenerationStatus('success');
@@ -10737,6 +10739,8 @@ function App() {
                         } else if (techcard.content) {
                           try {
                             const parsedContent = JSON.parse(techcard.content);
+                            console.log('Parsed content from JSON:', parsedContent);
+                            console.log('Yield data in parsed content:', parsedContent.yield);
                             setTcV2(parsedContent);
                             setTechCard(null); // Очищаем V1 техkарту
                             setGenerationStatus('success');
@@ -10744,6 +10748,7 @@ function App() {
                             setCurrentView('create');
                             console.log('Loaded V2 techcard from JSON content');
                           } catch (e) {
+                            console.log('Failed to parse as JSON, loading as V1:', e);
                             setTechCard(techcard.content);
                             setTcV2(null); // Очищаем V2 техkарту
                             setGenerationStatus('success');
