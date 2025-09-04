@@ -559,8 +559,8 @@ class YieldDataInvestigator:
                 pipeline_traces.append(trace_result)
             await asyncio.sleep(2)  # Delay between generations
         
-        # Test 5: API response analysis
-        print("\n📋 TEST 5: API Response Analysis")
+        # Test 6: API response analysis
+        print("\n📋 TEST 6: API Response Analysis")
         await asyncio.sleep(3)  # Allow time for database writes
         api_analysis = await self.test_api_response_structure(self.test_user_id)
         
