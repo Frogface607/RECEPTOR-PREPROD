@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-09-02T17:41:43.214349",
+  "timestamp": "2025-09-04T08:51:11.701676",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Тако с уткой и черничным соусом",
-      "code": "100070",
+      "name": "Драники",
+      "code": "100011",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 240
+      "yield_g": 150
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
