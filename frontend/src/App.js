@@ -8972,18 +8972,7 @@ function App() {
                   ДАННЫЕ
                 </button>
                 {/* Дублирующая кнопка ТЕХKАРТЫ убрана */}
-                <button
-                  onClick={() => {
-                    setShowHistory(!showHistory);
-                    if (!showHistory) {
-                      fetchUserHistory();
-                    }
-                  }}
-                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
-                  title="📋 Просмотреть все созданные техкарты и сохраненные эксперименты"
-                >
-                  ИСТОРИЯ
-                </button>
+                {/* Кнопка ИСТОРИЯ убрана - дублирует функциональность дашборда */}
                 <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUser.name}</span>
                 <button
                   onClick={handleLogout}
