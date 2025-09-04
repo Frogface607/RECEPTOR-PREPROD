@@ -7864,7 +7864,7 @@ function App() {
     setShowRegistration(false);
     setShowPricingModal(false);
     setShowEquipmentModal(false);
-    setShowHistory(false);
+
     setShowPriceModal(false);
     setShowInstructions(false);
     setShowProAIModal(false);
