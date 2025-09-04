@@ -11837,21 +11837,79 @@ function App() {
                   <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-lg font-bold text-purple-300">
-                        {item.content.split('\n')[0].replace('**Название:**', '').trim()}
+                        {(() => {
+                          // Check if it's a V2 tech card
+                          if (item.techcard_v2_data) {
+                            return item.techcard_v2_data.meta?.title || item.dish_name || 'Без названия';
+                          }
+                          // Try to parse JSON content for V2
+                          try {
+                            const parsedContent = JSON.parse(item.content);
+                            if (parsedContent.meta?.title) {
+                              return parsedContent.meta.title;
+                            }
+                          } catch (e) {
+                            // Not JSON, treat as V1
+                          }
+                          // V1 tech card - extract title from text
+                          return item.content.split('\n')[0].replace('**Название:**', '').trim();
+                        })()}
                       </h4>
                       <span className="text-sm text-gray-400">
                         {new Date(item.created_at).toLocaleDateString('ru-RU')}
                       </span>
                     </div>
                     <p className="text-gray-300 text-sm mb-3">
-                      {item.content.split('\n').find(line => line.includes('**Описание:**'))?.replace('**Описание:**', '').trim() || 'Без описания'}
+                      {(() => {
+                        // Check if it's a V2 tech card
+                        if (item.techcard_v2_data) {
+                          return `${item.techcard_v2_data.ingredients?.length || 0} ингредиентов • Выход: ${item.techcard_v2_data.yield?.perPortion_g || 0}г`;
+                        }
+                        // Try to parse JSON content for V2
+                        try {
+                          const parsedContent = JSON.parse(item.content);
+                          if (parsedContent.ingredients) {
+                            return `${parsedContent.ingredients.length} ингредиентов • Выход: ${parsedContent.yield?.perPortion_g || 0}г`;
+                          }
+                        } catch (e) {
+                          // Not JSON, treat as V1
+                        }
+                        // V1 tech card - extract description
+                        return item.content.split('\n').find(line => line.includes('**Описание:**'))?.replace('**Описание:**', '').trim() || 'Без описания';
+                      })()}
                     </p>
                     <div className="flex space-x-2">
                       <button
                         onClick={() => {
-                          setTechCard(item.content);
-                          setCurrentIngredients(parseIngredientsFromTechCard(item.content));
-                          setCurrentTechCardId(item.id);
+                          // Handle both V1 and V2 tech cards
+                          if (item.techcard_v2_data) {
+                            setTcV2(item.techcard_v2_data);
+                            setTechCard(null);
+                            setGenerationStatus('success');
+                            setCurrentTechCardId(item.id);
+                            setCurrentView('create');
+                          } else {
+                            try {
+                              const parsedContent = JSON.parse(item.content);
+                              if (parsedContent.ingredients) {
+                                setTcV2(parsedContent);
+                                setTechCard(null);
+                                setGenerationStatus('success');
+                                setCurrentTechCardId(item.id);
+                                setCurrentView('create');
+                              } else {
+                                throw new Error('Not V2 format');
+                              }
+                            } catch (e) {
+                              // V1 tech card
+                              setTechCard(item.content);
+                              setTcV2(null);
+                              setCurrentIngredients(parseIngredientsFromTechCard(item.content));
+                              setCurrentTechCardId(item.id);
+                              setGenerationStatus('success');
+                              setCurrentView('create');
+                            }
+                          }
                           setShowHistory(false);
                         }}
                         className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm"
@@ -11859,7 +11917,12 @@ function App() {
                         ОТКРЫТЬ
                       </button>
                       <button
-                        onClick={() => navigator.clipboard.writeText(item.content)}
+                        onClick={() => {
+                          const contentToCopy = item.techcard_v2_data 
+                            ? JSON.stringify(item.techcard_v2_data, null, 2)
+                            : item.content;
+                          navigator.clipboard.writeText(contentToCopy);
+                        }}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
                       >
                         КОПИРОВАТЬ
