@@ -65,6 +65,42 @@ class UnifiedHistoryTester:
             )
             return []
     
+    async def create_test_user(self):
+        """Create a test user for testing"""
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                payload = {
+                    "email": f"{self.test_user_id}@test.com",
+                    "name": f"Test User {self.test_user_id[:8]}",
+                    "city": "moskva"
+                }
+                
+                response = await client.post(f"{API_BASE}/register", json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    await self.log_result(
+                        "Test User Creation", 
+                        True, 
+                        f"Created user with ID: {data.get('id', self.test_user_id)}"
+                    )
+                    return True
+                else:
+                    await self.log_result(
+                        "Test User Creation", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return False
+                    
+        except Exception as e:
+            await self.log_result(
+                "Test User Creation", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return False
+
     async def generate_v1_tech_card(self, dish_name: str):
         """Generate V1 tech card using legacy endpoint"""
         try:
