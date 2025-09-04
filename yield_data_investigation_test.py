@@ -536,16 +536,20 @@ class YieldDataInvestigator:
             print("⚠️ Cannot proceed without database connection")
             return False
         
-        # Test 2: Data completeness comparison
-        print("\n📋 TEST 2: Data Completeness Comparison")
+        # Test 2: Analyze existing tech cards
+        print("\n📋 TEST 2: Existing Tech Cards Analysis")
+        existing_analysis = await self.analyze_existing_tech_cards()
+        
+        # Test 3: Data completeness comparison
+        print("\n📋 TEST 3: Data Completeness Comparison")
         completeness_data = await self.test_data_completeness_comparison()
         
-        # Test 3: Field naming consistency check
-        print("\n📋 TEST 3: Field Naming Consistency")
+        # Test 4: Field naming consistency check
+        print("\n📋 TEST 4: Field Naming Consistency")
         field_patterns = await self.test_field_naming_consistency()
         
-        # Test 4: Generate test tech cards and trace pipeline
-        print("\n📋 TEST 4: Tech Card Generation Pipeline Trace")
+        # Test 5: Generate test tech cards and trace pipeline
+        print("\n📋 TEST 5: Tech Card Generation Pipeline Trace")
         test_dishes = ["Борщ украинский с говядиной", "Паста Карбонара"]
         
         pipeline_traces = []
