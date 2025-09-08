@@ -6373,8 +6373,8 @@ function App() {
         console.log('[V2] Generated draft tcV2 - validation issues found');
         console.log('[V2] Issues:', normalizedData.issues);
         
-        const displayText = convertV2ToDisplayText(techCardV2);
-        setTechCard(displayText);
+        // Clear any previous V1 tech card state to avoid conflicts
+        setTechCard(null);
         
         // Parse ingredients for draft version too
         const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
