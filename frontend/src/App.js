@@ -9076,66 +9076,36 @@ function App() {
                       </div>
                       <button 
                         onClick={() => {
-                          console.log('=== DASHBOARD DEBUG START ===');
-                          console.log('Loading techcard from dashboard:', item);
-                          console.log('item.techcard_v2_data exists:', !!item.techcard_v2_data);
-                          console.log('item.content exists:', !!item.content);
-                          console.log('item.content type:', typeof item.content);
-                          if (item.content) {
-                            console.log('item.content preview:', item.content.substring(0, 200));
-                          }
-                          
                           // Unified loading logic for both V1 and V2 formats
                           const isV2 = item.techcard_v2_data || (item.content && item.content.includes('"meta"'));
-                          console.log('Detected as V2:', isV2);
                           
                           if (isV2 && item.techcard_v2_data) {
-                            console.log('Dashboard: Loading V2 techcard_v2_data:', item.techcard_v2_data);
-                            console.log('Dashboard: Yield data in techcard_v2_data (yield_):', item.techcard_v2_data.yield_);
-                            console.log('Setting tcV2 state...');
                             setTcV2(item.techcard_v2_data);
                             setTechCard(null);
                             setGenerationStatus('success');
                             setCurrentTechCardId(item.id);
-                            console.log('Setting currentView to create...');
                             setCurrentView('create');
-                            console.log('Loaded V2 techcard from techcard_v2_data in dashboard');
-                            
-                            // Debug: проверяем состояния после установки
-                            setTimeout(() => {
-                              console.log('=== STATE CHECK AFTER 100ms ===');
-                              console.log('currentView should be create');
-                              console.log('tcV2 should exist');
-                            }, 100);
                           } else if (item.content) {
                             try {
                               const parsedContent = JSON.parse(item.content);
-                              console.log('Dashboard: Parsed content from JSON:', parsedContent);
-                              console.log('Dashboard: Yield data in parsed content (yield_):', parsedContent.yield_);
                               if (parsedContent.ingredients) {
                                 setTcV2(parsedContent);
                                 setTechCard(null);
                                 setGenerationStatus('success');
                                 setCurrentTechCardId(item.id);
                                 setCurrentView('create');
-                                console.log('Loaded V2 techcard from JSON content in dashboard');
                               } else {
                                 throw new Error('Not V2 format');
                               }
                             } catch (e) {
                               // V1 tech card
-                              console.log('Dashboard: Failed to parse as JSON, loading as V1:', e);
                               setTechCard(item.content);
                               setTcV2(null);
                               setGenerationStatus('success');
                               setCurrentTechCardId(item.id);
                               setCurrentView('create');
-                              console.log('Loaded V1 techcard from content in dashboard');
                             }
-                          } else {
-                            console.log('No techcard data found in dashboard item');
                           }
-                          console.log('=== DASHBOARD DEBUG END ===');
                         }}
                         className="text-purple-400 hover:text-purple-300 text-sm"
                       >
