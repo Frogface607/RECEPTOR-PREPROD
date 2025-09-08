@@ -10721,36 +10721,26 @@ function App() {
                         console.log('Loading techcard:', techcard);
                         
                         if (isV2 && techcard.techcard_v2_data) {
-                          console.log('Loading V2 techcard_v2_data:', techcard.techcard_v2_data);
-                          console.log('Yield data in techcard_v2_data (yield_):', techcard.techcard_v2_data.yield_);
                           setTcV2(techcard.techcard_v2_data);
                           setTechCard(null); // Очищаем V1 техkарту
                           setGenerationStatus('success');
                           setCurrentTechCardId(techcard.id);
                           setCurrentView('create');
-                          console.log('Loaded V2 techcard from techcard_v2_data');
                         } else if (techcard.content) {
                           try {
                             const parsedContent = JSON.parse(techcard.content);
-                            console.log('Parsed content from JSON:', parsedContent);
-                            console.log('Yield data in parsed content (yield_):', parsedContent.yield_);
                             setTcV2(parsedContent);
                             setTechCard(null); // Очищаем V1 техkарту
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
-                            console.log('Loaded V2 techcard from JSON content');
                           } catch (e) {
-                            console.log('Failed to parse as JSON, loading as V1:', e);
                             setTechCard(techcard.content);
                             setTcV2(null); // Очищаем V2 техkарту
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
-                            console.log('Loaded V1 techcard from content');
                           }
-                        } else {
-                          console.log('No techcard data found');
                         }
                       }}
                     >
