@@ -6,7 +6,7 @@ import requests
 import json
 
 def test_tech_card_content():
-    base_url = "https://techcard-wizard.preview.emergentagent.com/api"
+    base_url = "https://dashboard-rescue-8.preview.emergentagent.com/api"
     
     # Register user
     data = {

@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://techcard-wizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com/api"
 
 def test_all_review_requirements():
     """Test all specific requirements from the review request"""

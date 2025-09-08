@@ -8,7 +8,7 @@ import json
 import time
 
 def test_finances_detailed():
-    base_url = "https://techcard-wizard.preview.emergentagent.com/api"
+    base_url = "https://dashboard-rescue-8.preview.emergentagent.com/api"
     test_user_id = "test_user_12345"
     
     sample_tech_card = """**Название:** Паста Карбонара на 4 порции

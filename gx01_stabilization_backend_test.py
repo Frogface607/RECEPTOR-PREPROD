@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Test configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://techcard-wizard.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dashboard-rescue-8.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 # GX-01 Test dishes

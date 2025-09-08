@@ -15,7 +15,7 @@ def test_final_sku_removal():
     try:
         # Создаем техkарту
         response = requests.post(
-            "https://techcard-wizard.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={"name": "Финальный тест SKU", "user_id": "final_sku_test"},
             timeout=60
         )
@@ -33,7 +33,7 @@ def test_final_sku_removal():
             # Тест 1: HTML ГОСТ-печать
             print("\n   📄 Тестируем HTML ГОСТ-печать...")
             print_response = requests.post(
-                "https://techcard-wizard.preview.emergentagent.com/api/v1/techcards.v2/print",
+                "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/print",
                 json=card,
                 timeout=30
             )
@@ -54,7 +54,7 @@ def test_final_sku_removal():
             # Тест 2: PDF в составе экспорта
             print("\n   📦 Тестируем PDF в ZIP экспорте...")
             export_response = requests.post(
-                "https://techcard-wizard.preview.emergentagent.com/api/v1/techcards.v2/export",
+                "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/export",
                 json={"card": card, "options": {"operational_rounding": False}},
                 timeout=30
             )

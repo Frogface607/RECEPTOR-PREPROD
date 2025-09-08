@@ -29,7 +29,7 @@ import openpyxl
 from openpyxl.styles import NamedStyle
 
 # Test Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://techcard-wizard.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dashboard-rescue-8.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1"
 
 class TechCardWorkflowTester:

@@ -14,7 +14,7 @@ from typing import Dict, List, Any, Tuple
 import tempfile
 
 # Backend URL from environment
-BACKEND_URL = "https://techcard-wizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com/api"
 
 class IK01IikoXLSXTester:
     """Comprehensive tester for IK-01 iiko XLSX Export implementation"""

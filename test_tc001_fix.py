@@ -13,7 +13,7 @@ def test_tc001_api_response():
     
     try:
         response = requests.post(
-            "https://techcard-wizard.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={
                 "name": "TC-001 READY Status Test",
                 "user_id": "tc001_test_user"

@@ -1,68 +1,64 @@
 <analysis>
-The previous AI engineer successfully initialized the project, troubleshot environment issues, and implemented several key features and bug fixes for the Receptor PRO application. The initial phase involved exploring the codebase, resolving a Name: Debian GNU/Linux 12 (bookworm)
-Version: 12 (bookworm)
-Codename: bookworm module dependency error in the backend, and confirming application functionality. Subsequently, an automated UI test suite was executed. Two major tasks were then completed: a critical bug fix for iiko export's Product Skeletons by enforcing valid 'Тип' mapping and a feature for automatic gram-to-kilogram conversion in iiko XLSX exports. Finally, a UX improvement was delivered, moving the ALT export functionality to a prominent main screen button. The work demonstrates effective codebase understanding, targeted modifications, and thorough testing.
+The AI engineer successfully diagnosed and resolved critical bugs in the RECEPTOR PRO Beta application. The process began with identifying three core issues: history display showing raw code, automapping modal lacking scroll, and tech cards not loading from the dashboard. Initial fixes included updating the backend to query both  and  collections, and adding  to the automapping modal.
+
+Subsequent debugging revealed a frontend issue where the  field was  in the backend, which was corrected. The most significant fix involved updating the main rendering condition in  from  to  to correctly render V2 tech cards from the dashboard. Throughout this, the UI was also cleaned by removing redundant 'History' functionality. The trajectory concluded with all reported bugs resolved and the user's confirmation to continue UI/UX modernization.
 </analysis>
 
 <product_requirements>
-The application, **RECEPTOR PRO Beta** (AI Menu Designer), is a B2B SaaS platform for automating the creation of technical cards (ТТК) and integrating with IIKo POS-systems. The user's explicit requests and work completed include:
+The RECEPTOR PRO Beta application aims to automate technical card (ТТК) creation, with initial features including iiko export fixes, ALT export enhancements, and a 'TECH CARD QUALITY BOOST' for BJU data coverage. A unified 'EXPORT WIZARD UI' was implemented, along with a P0 cleanup to ensure all tech cards were 'READY,' using UUIDs for IDs and eliminating UI warnings. Key issues addressed included tech cards not persisting due to incorrect  handling and collection usage, and various regressions in UI display and analytics. More recently, the focus shifted to comprehensive UI/UX modernization, starting with the application header and navigation.
 
-1.  **Automated UX Test Suite**: Execute 5-7 key integration tests (authorization, manual article mapping, PDF/ALT export, synchronization, ingredient editor, AI editing) with strict credit and step constraints. This was completed successfully.
-2.  **iiko Import Fix — Correct Тип Mapping**: Ensure Dish-Skeletons and Product-Skeletons generate separately and are ready for valid iiko import. Specifically, the Тип column for Product-Skeletons must always contain one of  (e.g., 'Товар' is invalid). If an invalid type is found, export should be stopped with a detailed error report. This bug was fixed and validated.
-3.  **Export to iiko XLSX: Automatic Gram-to-Kilogram Conversion**: Automatically convert all mass fields (brutto, netto, output, etc.) from grams to kilograms (e.g., 30g → 0.030kg) exclusively for iiko XLSX export. Values should be rounded to 3 decimal places, and the unit must be 'кг'. The web interface and PDF exports should retain masses in grams. This feature was implemented and validated.
-4.  **UX Improvement: Move ALT Export Button**: Relocate the ALT export function from the Дополнительно (Additional) dropdown menu to a large, dedicated button titled Экспорт ТК для IIKo on the main application screen. This was implemented and validated.
+The immediate problem at hand was fixing critical functional bugs: the user's history feature was not working (showing raw code), tech cards were not opening, and the automapping window lacked scrolling. Additionally, tech cards were not loading from the dashboard, leading to empty screens, and the  data was missing due to a field name mismatch. The user also explicitly requested to clean up the interface by removing redundant History functionality. All these issues have been identified and fixed.
 </product_requirements>
 
 <key_technical_concepts>
--   **FastAPI**: Backend framework.
--   **React**: Frontend framework.
--   **MongoDB**: Database.
--   **iiko Integration**: Specific requirements for XLSX export, including 'Тип' mapping and mass unit conversion.
--   **XLSX Manipulation**: Programmatic reading and writing of Excel files.
--   **Environment Variables**: Configuration management for URLs and database connections.
--   **Supervisorctl**: Service management for starting/restarting frontend/backend.
--   **Automated UI Testing**: Using specialized agents for user interface validation.
+-   **FastAPI**: Backend RESTful API development.
+-   **React**: Frontend UI development (JavaScript, JSX).
+-   **MongoDB**: NoSQL database for persistence.
+-   **iiko Integration**: POS system data exchange.
+-   **LLM Pipeline**: Tech card generation.
+-   **UI/UX Modernization**: Premium SaaS design principles.
+-   **Data Validation & Cleanup**: Catalog management, UUIDs.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture with a React frontend and a FastAPI backend, using MongoDB for persistence.
 
-
-
--   
-    -   **Summary**: The main entry point for the FastAPI backend, responsible for defining and routing API endpoints.
-    -   **Changes**: No direct code changes were made to this file in the provided trajectory, but it orchestrates the services that were modified.
-
--   
-    -   **Summary**: This file contains the core logic for generating iiko-compatible XLSX export files, including Product Skeletons, Dish Skeletons, and full Technical Cards. It's critical for data exchange with iiko.
-    -   **Changes**:
-        -   **iiko Import Fix (Product Skeletons Type Mapping)**:
-            -   Defined  tuple: .
-            -   Modified  (around lines 300-420) to replace  with  and added validation to ensure all 'Тип' values are within . Implemented fail-fast logic for invalid types.
-            -   Modified  (around lines 538-650) to ensure 'Тип' is consistently 'DISH'.
-        -   **Gram-to-Kilogram Conversion**:
-            -   Added a helper function  (around line 1000) to convert mass values and round to 3 decimal places.
-            -   Modified  (around lines 1002-1379) to apply  to mass fields like , , and  for ingredients and dishes, and set 'Ед. изм.' to 'кг'.
-            -   Modified  (around lines 840-880) to apply the gram-to-kilogram conversion to the  of dishes and set the unit to 'кг'.
-
--   
-    -   **Summary**: This is likely the main React component rendering the application's user interface, including navigation, buttons, and feature access.
-    -   **Changes**:
-        -   **ALT Export Button UX Migration**:
-            -   Removed the ALT export menu item from the Дополнительно dropdown (around lines 10860-10880).
-            -   Added a new, large button labeled Экспорт ТК для IIKo (Export Tech Cards for iiko) on the main screen, likely near other export options (around lines 10760-10770), configuring it to trigger the ALT export functionality.
+-   : Important for generating printable tech card views. Modified to remove SKU column and .
+-   : Important for CSV exports. Modified to use  and  fields , , , .
+-   : Important for XLSX exports. Fixed attribute access for  and .
+-   : Important for correct ZIP and other data exports. Modified to fetch tech cards from  instead of .
+-   : Important for tech card generation, saving, and printing. Ensured new tech cards are created with  status, accepted  in  endpoint, updated saving logic to , and fixed .
+-   : Important for LLM-driven tech card generation. Updated to set  to  and fixed  calls.
+-   : Important for article ID generation. Modified to expect  enum.
+-   : Main FastAPI entry point and for user history retrieval. The  API endpoint was modified to query *both*  and  collections, merging results to ensure all historical tech cards are displayed.
+-   : Main React component.
+    -   **Export Wizard UI**: Implemented  with scroll, focus, and escape key fixes.
+    -   **Warnings/Errors Cleanup**: Removed various UI validation errors/labels.
+    -   **Tech Card Persistence/Display**: Modified , , and dashboard loading to correctly fetch and process tech card history. Critically, the  function and the dashboard's rendering logic were updated to correctly handle V2 tech cards, including addressing a  vs  field name mismatch. The main rendering conditional for the tech card display in the create view was changed from  to  to correctly render V2 tech cards.
+    -   **UI Cleanup**: Removed 'IIko' navigation tab, related buttons, and the entire  component. All 'History' related buttons, modals, and states were removed to streamline the UI.
+    -   **UI/UX Modernization**: Updated the header with a new logo, subtitle, badge, and redesigned navigation buttons for a premium look; fixed related JSX syntax errors.
+-   : Used for feature flags, not directly modified in this trajectory.
+-   : (NEW FILE) Python script for data quality boost, replacing range-based IDs with UUIDs in .
 </code_architecture>
 
 <pending_tasks>
--   **ALT Export Cleanup**: Analyze archives, identify duplicate and invalid TTKs, and ensure export occurs only through the ALT pipeline, guaranteeing correct components (Dish-Skeletons, Product-Skeletons, reference TTK) and validating archives for correctness and absence of superfluous files.
+-   Integrate establishment profile data into the tech card generation pipeline.
+-   Implement Pump up dish cascading generation for detailed tech cards.
+-   Further UX/UI modernization beyond the header and navigation (e.g., tech card cards, forms, loading states).
+-   Re-enable tech card editing through AI and manual input.
+-   Address TC-007: Implement basic CRUD for menu projects and link tech cards.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary request, the AI engineer successfully completed the user's explicit request to improve the UX for the ALT export functionality. This involved relocating the ALT export option. Previously, it was nested within a Дополнительно (Additional) dropdown menu, requiring multiple clicks to access. The AI engineer modified the main React frontend file, , to achieve this.
+Immediately before this summary, the AI engineer was engaged in a critical bug-fixing phase, addressing multiple user-reported issues:
+1.  **Dashboard Tech Card Loading**: The primary issue was that generated tech cards were not loading from the dashboard, resulting in a blank create screen. Debugging revealed that the main rendering conditional in  was , which only checked for the older V1  state. This was fixed by changing the condition to  to correctly account for the  state.
+2.  ** Data Loss**: It was discovered that  data was not displaying because the frontend expected  while the backend stored it as . All instances in  were updated to correctly reference .
+3.  **Automapping Scroll**: The automapping modal was not scrolling. This was fixed by adding  to the relevant container in .
+4.  **Backend History Merge**: The dashboard initially showed 0 tech cards because the  endpoint only queried the  collection. The backend  was modified to query and merge results from both  and  collections.
+5.  **UI Cleanup**: The redundant История (History) navigation button and its associated modal (over 11,000 lines of code) were entirely removed from  to streamline the user interface.
 
-Specifically, the ALT export entry was removed from its previous location within the dropdown menu structure. A new, prominent button labeled Экспорт ТК для IIKo (Export Tech Cards for iiko) was then added to the main application interface, likely alongside other primary action buttons. This new button directly triggers the ALT export process, simplifying the user workflow. The implementation was verified through screenshots and functional tests by navigating the UI and confirming the button's presence and functionality after logging in. The testing agent confirmed the ALT Export Button UX Migration as fully successful, validating the button's functionality and its seamless integration with iikoWeb requirements.
+All these issues have been successfully resolved, and the code has been cleaned of temporary debug messages. The application is now in a stable state where tech cards load correctly from the dashboard with all data preserved, automapping scrolls, and the UI is cleaner.
 </current_work>
 
 <optional_next_step>
-Address the ALT Export Cleanup task as outlined in the user's request from Chat Message 117.
+Continue with the UI/UX modernization, focusing on improving the design of existing tech card components and adding loading states and animations.
 </optional_next_step>

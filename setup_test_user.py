@@ -6,7 +6,7 @@ Setup test user with PRO subscription for menu generation testing
 import requests
 import json
 
-BACKEND_URL = "https://techcard-wizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com/api"
 
 def setup_test_user():
     """Setup test user with PRO subscription"""

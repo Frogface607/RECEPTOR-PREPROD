@@ -44,7 +44,7 @@ class TechCardQualityBooster:
     def __init__(self):
         self.mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
         self.db_name = os.getenv('DB_NAME', 'receptor_pro')
-        self.backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://techcard-wizard.preview.emergentagent.com')
+        self.backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://dashboard-rescue-8.preview.emergentagent.com')
         
         # USDA API configuration
         self.usda_api_key = None  # Will be requested if needed
