@@ -92,7 +92,7 @@ class TechCardEditingTester:
                                 self.test_tech_card_id = tech_card_id
                                 self.generated_tech_cards.append({
                                     "id": tech_card_id,
-                                    "dish_name": payload["dish_name"],
+                                    "dish_name": payload["name"],
                                     "type": "V2"
                                 })
                                 
