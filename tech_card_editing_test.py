@@ -64,6 +64,60 @@ class TechCardEditingTester:
             )
             return False
 
+    async def test_v1_tech_card_generation(self):
+        """Test V1 tech card generation using legacy endpoint"""
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                payload = {
+                    "user_id": self.test_user_id,
+                    "dish_name": "Салат Цезарь",
+                    "portions": 2,
+                    "city": "moskva"
+                }
+                
+                response = await client.post(f"{API_BASE}/generate-tech-card", json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    tech_card_id = data.get("id")
+                    
+                    if tech_card_id:
+                        self.generated_tech_cards.append({
+                            "id": tech_card_id,
+                            "dish_name": payload["dish_name"],
+                            "type": "V1",
+                            "collection": "tech_cards"
+                        })
+                        
+                        await self.log_result(
+                            "V1 Tech Card Generation", 
+                            True, 
+                            f"Generated V1 tech card with ID: {tech_card_id}"
+                        )
+                        return tech_card_id
+                    else:
+                        await self.log_result(
+                            "V1 Tech Card Generation", 
+                            False, 
+                            f"No ID returned: {data}"
+                        )
+                        return None
+                else:
+                    await self.log_result(
+                        "V1 Tech Card Generation", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return None
+                    
+        except Exception as e:
+            await self.log_result(
+                "V1 Tech Card Generation", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return None
+
     async def test_v2_tech_card_generation(self):
         """Test POST /api/v1/techcards.v2/generate - Basic tech card generation"""
         try:
