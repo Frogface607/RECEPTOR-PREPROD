@@ -680,11 +680,18 @@ class TechCardEditingTester:
         # Detailed diagnosis
         print("\n🔍 DETAILED DIAGNOSIS:")
         
-        if not any("V2 Tech Card Generation" in r and "✅ PASS" in r for r in self.results):
-            print("❌ CRITICAL: Tech card generation is not working - this blocks all editing functionality")
+        if not any("V1 Tech Card Generation" in r and "✅ PASS" in r for r in self.results):
+            print("❌ CRITICAL: V1 tech card generation is not working")
             
-        if not any("Edit Tech Card Endpoint" in r and "✅ PASS" in r for r in self.results):
-            print("❌ CRITICAL: Edit endpoint is not working - this is the main reported issue")
+        if not any("V2 Tech Card Generation" in r and "✅ PASS" in r for r in self.results):
+            print("❌ CRITICAL: V2 tech card generation is not working - this blocks all editing functionality")
+            
+        if not any("Edit Tech Card Endpoint (V1)" in r and "✅ PASS" in r for r in self.results):
+            print("❌ CRITICAL: Edit endpoint not working with V1 tech cards")
+            
+        if not any("Edit Tech Card Endpoint (V2)" in r and "✅ PASS" in r for r in self.results):
+            print("❌ CRITICAL BUG IDENTIFIED: Edit endpoint cannot find V2 tech cards - Collection mismatch!")
+            print("   🔧 ROOT CAUSE: Edit endpoint looks in 'tech_cards' collection but V2 cards are saved in 'user_history'")
             
         if not any("OpenAI Integration" in r and "✅ PASS" in r for r in self.results):
             print("❌ CRITICAL: OpenAI integration failure - check API key and model availability")
