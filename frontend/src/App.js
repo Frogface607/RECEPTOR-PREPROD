@@ -5909,6 +5909,45 @@ function App() {
     );
   };
 
+  // V2 Tech Card Editing with AI
+  const handleEditTechCardV2 = async () => {
+    if (!editInstruction.trim() || !tcV2?.meta?.id) return;
+
+    setIsEditingAI(true);
+    try {
+      const response = await axios.post(`${API}/techcards.v2/edit`, {
+        tech_card_id: tcV2.meta.id,
+        edit_instruction: editInstruction,
+        user_id: currentUser?.id || 'anonymous',
+        edit_type: 'modify'
+      });
+      
+      if (response.data.status === 'success') {
+        setTcV2(response.data.updated_card);
+        setEditInstruction('');
+        
+        // Show success message with changes
+        if (response.data.changes_made && response.data.changes_made.length > 0) {
+          alert(`✅ Техкарта обновлена!\n\nИзменения:\n${response.data.changes_made.join('\n')}`);
+        } else {
+          alert('✅ Техкарта обновлена успешно!');
+        }
+        
+        // Update user tech cards list
+        await fetchUserHistory();
+      } else {
+        alert(`Ошибка редактирования: ${response.data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error editing V2 tech card:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Неизвестная ошибка';
+      alert(`Ошибка при редактировании техкарты: ${errorMessage}`);
+    } finally {
+      setIsEditingAI(false);
+    }
+  };
+
+  // V1 Tech Card Editing (existing functionality)
   const handleEditTechCard = async () => {
     if (!editInstruction.trim() || !currentTechCardId) return;
 
