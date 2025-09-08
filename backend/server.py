@@ -4031,8 +4031,24 @@ async def get_user_history(user_id: str):
             }
             history.append(unified_doc)
         
-        # Сортируем все по дате создания (новые сверху)
-        history.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        # Сортируем все по дате создания (новые сверху) с безопасным сравнением
+        def safe_sort_key(x):
+            created_at = x.get("created_at", "")
+            if isinstance(created_at, str):
+                try:
+                    # Пробуем парсить ISO datetime строку
+                    from datetime import datetime
+                    return datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                except:
+                    # Если не получается, возвращаем очень старую дату
+                    return datetime(1970, 1, 1)
+            elif hasattr(created_at, 'year'):  # datetime object
+                return created_at
+            else:
+                # Fallback для других типов
+                return datetime(1970, 1, 1)
+        
+        history.sort(key=safe_sort_key, reverse=True)
         
         # Ограничиваем до 50 записей
         history = history[:50]
