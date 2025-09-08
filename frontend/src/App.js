@@ -11135,7 +11135,7 @@ function App() {
                       rows={4}
                     />
                     <button
-                      onClick={handleEditTechCard}
+                      onClick={tcV2 ? handleEditTechCardV2 : handleEditTechCard}
                       disabled={!editInstruction.trim() || isEditingAI}
                       className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
                       title="🤖 Изменить техкарту с помощью ИИ на основе ваших инструкций"
