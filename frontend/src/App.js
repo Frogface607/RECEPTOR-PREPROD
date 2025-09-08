@@ -5921,19 +5921,21 @@ function App() {
         user_id: currentUser?.id || 'anonymous'
       });
       
-      if (response.data.status === 'success') {
-        setTcV2(response.data.updated_card);
-        setEditInstruction('');
-        
-        // Show success message with changes
-        if (response.data.changes_made && response.data.changes_made.length > 0) {
-          alert(`✅ Техкарта обновлена!\n\nИзменения:\n${response.data.changes_made.join('\n')}`);
-        } else {
-          alert('✅ Техкарта обновлена успешно!');
+      if (response.data.success) {
+        // Parse the tech_card string back to object for V2 cards
+        try {
+          const updatedCard = JSON.parse(response.data.tech_card);
+          setTcV2(updatedCard);
+          setEditInstruction('');
+          
+          alert('✅ Техкарта обновлена успешно через AI!');
+          
+          // Update user tech cards list
+          await fetchUserHistory();
+        } catch (parseError) {
+          console.error('Error parsing updated tech card:', parseError);
+          alert('✅ Техкарта обновлена, но произошла ошибка при обновлении интерфейса. Перезагрузите страницу.');
         }
-        
-        // Update user tech cards list
-        await fetchUserHistory();
       } else {
         alert(`Ошибка редактирования: ${response.data.message || 'Unknown error'}`);
       }
