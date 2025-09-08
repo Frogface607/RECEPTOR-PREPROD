@@ -180,7 +180,8 @@ class CriticalFixesTester:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 payload = {
                     "tech_card_id": tech_card_id,
-                    "edit_instruction": "Увеличить порцию в 2 раза"
+                    "edit_instruction": "Увеличить порцию в 2 раза",
+                    "user_id": self.test_user_id
                 }
                 
                 response = await client.post(f"{API_BASE}/edit-tech-card", json=payload)
