@@ -10791,8 +10791,6 @@ function App() {
         {/* Create Tech Card View (existing content) */}
         {currentView === 'create' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
-          {/* DEBUG: Проверяем состояние при входе в create view */}
-          {console.log('=== CREATE VIEW ENTERED ===', 'tcV2:', !!tcV2, 'techCard:', !!techCard, 'currentView:', currentView)}
           {/* Left Panel */}
           <div className="lg:col-span-1">
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700 space-y-6 sm:space-y-8">
