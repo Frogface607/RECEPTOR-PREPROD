@@ -2223,6 +2223,7 @@ class DishRequest(BaseModel):
 class EditRequest(BaseModel):
     tech_card_id: str
     edit_instruction: str
+    user_id: Optional[str] = None  # Required for V2 tech cards
 
 class IngredientUpdate(BaseModel):
     tech_card_id: str
