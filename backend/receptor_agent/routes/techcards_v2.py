@@ -1903,7 +1903,7 @@ def _create_v2_edit_prompt(current_card: TechCardV2, edit_instruction: str, edit
     """Создает промпт для редактирования V2 техкарты"""
     
     base_prompt = f"""
-Ты — RECEPTOR AI, профессиональный помощник для редактирования технологических карт ресторанов.
+Ты - RECEPTOR AI, профессиональный помощник для редактирования технологических карт ресторанов.
 
 ТЕКУЩАЯ ТЕХКАРТА (JSON):
 {current_card.model_dump_json(indent=2)}
