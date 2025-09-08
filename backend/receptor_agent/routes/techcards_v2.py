@@ -1592,12 +1592,6 @@ async def generate_product_codes_api(request: dict):
     {
         "ingredient_names": ["Куриное филе", "Соль", "Перец"],
         "start_code": 10000,
-# ======================================
-# AI EDITING & IMPROVEMENT ENDPOINTS 
-# ======================================
-
-@router.post("/techcards.v2/edit")
-async def edit_techcard_v2(request: dict):
     """
     AI powered TechCardV2 editing with enhanced capabilities
     
