@@ -3362,11 +3362,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "CRITICAL BUG FIX: Tech Card Editing Functionality Broken"
-    - "Investigate and Fix Editing Errors - Both V1 and V2 Systems" 
-    - "Backend Edit Endpoint Testing (/api/edit-tech-card)"
-    - "Frontend Edit Integration Testing - handleEditTechCard function"
-    - "System Recovery Testing After Code Restoration"
+    - "CRITICAL FRONTEND BUG INVESTIGATION: Tech cards exist in backend but not displaying in dashboard"
+    - "Dashboard Tech Card Display Issue Resolution"
+    - "Frontend API Integration Testing"
   - task: "AI-POWERED TECH CARD EDITING V2 - Frontend Integration"
     implemented: true
     working: "pending_test"
