@@ -1751,7 +1751,7 @@ async def edit_techcard_v2(request: dict):
 @router.post("/techcards.v2/suggest-improvements")
 async def suggest_improvements(request: dict):
     """
-    AI-предложения по улучшению техкарты без изменения
+    AI suggestions for tech card improvements without changes
     
     Body:
     {
