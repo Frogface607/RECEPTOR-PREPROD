@@ -662,11 +662,13 @@ class TechCardEditingTester:
         print("\n🎯 CRITICAL ASSESSMENT:")
         
         critical_tests = [
+            ("V1 Tech Card Generation", any("V1 Tech Card Generation" in r and "✅ PASS" in r for r in self.results)),
             ("V2 Tech Card Generation", any("V2 Tech Card Generation" in r and "✅ PASS" in r for r in self.results)),
             ("User History Endpoint", any("User History Endpoint" in r and "✅ PASS" in r for r in self.results)),
             ("Database Connectivity", any("Database Connectivity" in r and "✅ PASS" in r for r in self.results)),
             ("OpenAI Integration", any("OpenAI Integration" in r and "✅ PASS" in r for r in self.results)),
-            ("Edit Tech Card Endpoint", any("Edit Tech Card Endpoint" in r and "✅ PASS" in r for r in self.results))
+            ("Edit Tech Card Endpoint (V1)", any("Edit Tech Card Endpoint (V1)" in r and "✅ PASS" in r for r in self.results)),
+            ("Edit Tech Card Endpoint (V2)", any("Edit Tech Card Endpoint (V2)" in r and "✅ PASS" in r for r in self.results))
         ]
         
         all_critical_passed = all(passed for _, passed in critical_tests)
