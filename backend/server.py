@@ -3616,7 +3616,9 @@ async def edit_tech_card(request: EditRequest):
         
         return {
             "success": True,
-            "tech_card": edited_content
+            "tech_card": edited_content,
+            "card_type": "V2" if is_v2_card else "V1",
+            "updated_in_collection": "user_history" if is_v2_card else "tech_cards"
         }
         
     except Exception as e:
