@@ -1599,12 +1599,12 @@ async def generate_product_codes_api(request: dict):
 @router.post("/techcards.v2/edit")
 async def edit_techcard_v2(request: dict):
     """
-    AI-редактирование TechCardV2 с улучшенными возможностями
+    AI-powered TechCardV2 editing with enhanced capabilities
     
     Body:
     {
         "tech_card_id": "uuid",
-        "edit_instruction": "Увеличить порцию в 2 раза и добавить лук",
+        "edit_instruction": "Edit instruction in Russian",
         "user_id": "user123",
         "edit_type": "modify" | "optimize" | "suggest_alternatives" | "adjust_portions"
     }
