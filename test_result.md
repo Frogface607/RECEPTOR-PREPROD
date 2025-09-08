@@ -3323,11 +3323,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "CRITICAL BUG FIX: Dashboard tech card loading - blank screen on click"
-    - "CRITICAL FRONTEND TESTING: CLEANUP TECH CARD DATA & UI - COMPLETED WITH FINDINGS"
-    - "Tech Card Generation Error Investigation - CRITICAL BACKEND GENERATION FAILURE CONFIRMED"
-    - "UI Warning Labels Cleanup Verification - COMPLETED SUCCESSFULLY"
-    - "REMOVE INVALID TECH CARD FROM ZIP (P0 - КРИТИЧЕСКИЙ) - COMPLETED SUCCESSFULLY"
+    - "AI-POWERED TECH CARD EDITING V2 - Backend and Frontend Implementation"
+    - "TechCardV2 Edit Endpoint Testing (/api/v1/techcards.v2/edit)"
+    - "AI Suggestions System Testing (/api/v1/techcards.v2/suggest-improvements)"
+    - "Frontend Integration Testing - handleEditTechCardV2 and getAISuggestions functions"
+    - "GPT-4o-mini Integration with Existing OpenAI API Key"
     - "RENAME EXPORT STEP BUTTON (P0 - UI) - BACKEND VALIDATED, FRONTEND VERIFICATION NEEDED"
     - "Product Skeletons iiko Import Fix - Type Mapping Validation - COMPLETED SUCCESSFULLY"
     - "ALT Export DISH Article Fix"
