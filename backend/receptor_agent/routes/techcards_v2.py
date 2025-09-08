@@ -2042,7 +2042,7 @@ async def _generate_ai_suggestions(card: TechCardV2, suggestion_type: str) -> li
 
 ТЕХКАРТА: {card.meta.title}
 ИНГРЕДИЕНТЫ: {', '.join([ing.name for ing in card.ingredients])}
-СЕБЕСТОИМОСТЬ: {getattr(card.cost, 'rawCost', 0)}₽
+СЕБЕСТОИМОСТЬ: {getattr(card.cost, 'rawCost', 0)} руб
 ВРЕМЯ ГОТОВКИ: {sum(step.time_min for step in card.process if step.time_min)} мин
 
 ТИП ПРЕДЛОЖЕНИЙ: {suggestion_type}
