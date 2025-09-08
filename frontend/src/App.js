@@ -5915,11 +5915,10 @@ function App() {
 
     setIsEditingAI(true);
     try {
-      const response = await axios.post(`${API}/techcards.v2/edit`, {
+      const response = await axios.post(`${API}/edit-tech-card`, {
         tech_card_id: tcV2.meta.id,
         edit_instruction: editInstruction,
-        user_id: currentUser?.id || 'anonymous',
-        edit_type: 'modify'
+        user_id: currentUser?.id || 'anonymous'
       });
       
       if (response.data.status === 'success') {
