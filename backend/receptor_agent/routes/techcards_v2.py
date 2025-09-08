@@ -1592,6 +1592,520 @@ async def generate_product_codes_api(request: dict):
     {
         "ingredient_names": ["Куриное филе", "Соль", "Перец"],
         "start_code": 10000,
+# ======================================
+# AI EDITING & IMPROVEMENT ENDPOINTS 
+# ======================================
+
+@router.post("/techcards.v2/edit")
+async def edit_techcard_v2(request: dict):
+    """
+    AI-редактирование TechCardV2 с улучшенными возможностями
+    
+    Body:
+    {
+        "tech_card_id": "uuid",
+        "edit_instruction": "Увеличить порцию в 2 раза и добавить лук",
+        "user_id": "user123",
+        "edit_type": "modify" | "optimize" | "suggest_alternatives" | "adjust_portions"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "updated_card": TechCardV2,
+        "changes_made": ["increased portions", "added ingredient"],
+        "ai_suggestions": ["optional improvement suggestions"]
+    }
+    """
+    try:
+        tech_card_id = request.get('tech_card_id')
+        edit_instruction = request.get('edit_instruction', '')
+        user_id = request.get('user_id')
+        edit_type = request.get('edit_type', 'modify')
+        
+        if not tech_card_id or not edit_instruction.strip():
+            raise HTTPException(400, "tech_card_id and edit_instruction are required")
+        
+        # Получаем текущую техкарту V2 из базы данных
+        import os
+        from pymongo import MongoClient
+        
+        mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+        db_name = os.getenv('DB_NAME', 'receptor_pro')
+        
+        client = MongoClient(mongo_url)
+        db = client[db_name.strip('"')]
+        
+        # Ищем в user_history (где хранятся V2 техкарты)
+        tech_card_doc = db.user_history.find_one({"id": tech_card_id})
+        if not tech_card_doc:
+            # Также проверим в techcards_v2 коллекции
+            tech_card_doc = db.techcards_v2.find_one({"meta.id": tech_card_id})
+            
+        if not tech_card_doc:
+            client.close()
+            raise HTTPException(404, "Tech card not found")
+        
+        # Извлекаем данные V2
+        if 'techcard_v2_data' in tech_card_doc:
+            current_card_data = tech_card_doc['techcard_v2_data']
+        else:
+            # Если нет V2 data, попробуем распарсить content
+            import json
+            try:
+                current_card_data = json.loads(tech_card_doc.get('content', '{}'))
+            except:
+                client.close()
+                raise HTTPException(400, "Tech card data is corrupted")
+        
+        # Создаем TechCardV2 объект
+        current_card = TechCardV2.model_validate(current_card_data)
+        
+        # Подготавливаем промпт для редактирования
+        edit_prompt = _create_v2_edit_prompt(current_card, edit_instruction, edit_type)
+        
+        # Используем OpenAI для редактирования
+        import openai
+        from openai import OpenAI
+        
+        openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+        
+        # Определяем схему для структурированного ответа
+        from ..techcards_v2.schemas import get_techcard_v2_schema
+        json_schema = get_techcard_v2_schema()
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system", 
+                    "content": "Ты профессиональный AI-помощник для редактирования технологических карт. Всегда возвращаешь валидный JSON соответствующий схеме TechCardV2."
+                },
+                {"role": "user", "content": edit_prompt}
+            ],
+            max_tokens=4000,
+            temperature=0.3,
+            response_format={
+                "type": "json_object"
+            }
+        )
+        
+        # Парсим ответ
+        try:
+            edited_data = json.loads(response.choices[0].message.content)
+            # Валидируем отредактированную техкарту
+            edited_card = TechCardV2.model_validate(edited_data)
+        except Exception as e:
+            client.close()
+            raise HTTPException(500, f"AI response validation failed: {str(e)}")
+        
+        # Пересчитываем cost и nutrition после редактирования
+        try:
+            from ..techcards_v2.cost_calculator import calculate_cost_for_tech_card
+            from ..techcards_v2.nutrition_calculator import calculate_nutrition_for_tech_card
+            
+            edited_card = calculate_cost_for_tech_card(edited_card)
+            edited_card = calculate_nutrition_for_tech_card(edited_card)
+        except Exception as e:
+            logger.warning(f"Calculation warning after edit: {e}")
+        
+        # Обновляем техкарту в базе данных
+        updated_doc = {
+            "content": edited_card.model_dump_json(),
+            "techcard_v2_data": edited_card.model_dump(),
+            "updated_at": datetime.utcnow().isoformat(),
+            "last_edit_instruction": edit_instruction,
+            "edit_type": edit_type
+        }
+        
+        db.user_history.update_one(
+            {"id": tech_card_id},
+            {"$set": updated_doc}
+        )
+        
+        # Анализируем изменения
+        changes_made = _analyze_changes(current_card, edited_card)
+        
+        # Генерируем AI предложения (опционально)
+        ai_suggestions = []
+        if edit_type == "optimize":
+            ai_suggestions = _generate_optimization_suggestions(edited_card)
+        
+        client.close()
+        
+        return {
+            "status": "success",
+            "updated_card": edited_card.model_dump(by_alias=True, mode="json"),
+            "changes_made": changes_made,
+            "ai_suggestions": ai_suggestions,
+            "message": "Tech card updated successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Edit techcard V2 error: {e}")
+        raise HTTPException(500, f"Edit failed: {str(e)}")
+
+
+@router.post("/techcards.v2/suggest-improvements")
+async def suggest_improvements(request: dict):
+    """
+    AI-предложения по улучшению техкарты без изменения
+    
+    Body:
+    {
+        "tech_card_id": "uuid",
+        "suggestion_type": "ingredients" | "process" | "cost" | "nutrition" | "all"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "suggestions": [
+            {
+                "type": "ingredient_substitution",
+                "title": "Замена дорогих ингредиентов",
+                "suggestion": "Заменить говядину на свинину для снижения себестоимости",
+                "impact": "Снижение себестоимости на 15%"
+            }
+        ]
+    }
+    """
+    try:
+        tech_card_id = request.get('tech_card_id')
+        suggestion_type = request.get('suggestion_type', 'all')
+        
+        if not tech_card_id:
+            raise HTTPException(400, "tech_card_id is required")
+        
+        # Получаем техкарту
+        import os
+        from pymongo import MongoClient
+        
+        mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+        db_name = os.getenv('DB_NAME', 'receptor_pro')
+        
+        client = MongoClient(mongo_url)
+        db = client[db_name.strip('"')]
+        
+        tech_card_doc = db.user_history.find_one({"id": tech_card_id})
+        if not tech_card_doc:
+            client.close()
+            raise HTTPException(404, "Tech card not found")
+        
+        # Извлекаем V2 данные
+        if 'techcard_v2_data' in tech_card_doc:
+            card_data = tech_card_doc['techcard_v2_data']
+        else:
+            import json
+            card_data = json.loads(tech_card_doc.get('content', '{}'))
+        
+        card = TechCardV2.model_validate(card_data)
+        
+        # Генерируем предложения через AI
+        suggestions = await _generate_ai_suggestions(card, suggestion_type)
+        
+        client.close()
+        
+        return {
+            "status": "success",
+            "suggestions": suggestions,
+            "card_title": card.meta.title
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Suggest improvements error: {e}")
+        raise HTTPException(500, f"Suggestions failed: {str(e)}")
+
+
+@router.post("/techcards.v2/batch-edit")
+async def batch_edit_techcards(request: dict):
+    """
+    Батчевое редактирование нескольких техкарт
+    
+    Body:
+    {
+        "tech_card_ids": ["uuid1", "uuid2"],
+        "edit_instruction": "Увеличить все порции в 1.5 раза",
+        "user_id": "user123"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "processed": 2,
+        "results": [
+            {"id": "uuid1", "status": "success", "message": "Updated"},
+            {"id": "uuid2", "status": "error", "message": "Failed to parse"}
+        ]
+    }
+    """
+    try:
+        tech_card_ids = request.get('tech_card_ids', [])
+        edit_instruction = request.get('edit_instruction', '')
+        user_id = request.get('user_id')
+        
+        if not tech_card_ids or not edit_instruction.strip():
+            raise HTTPException(400, "tech_card_ids and edit_instruction are required")
+        
+        results = []
+        
+        # Обрабатываем каждую техкарту
+        for tech_card_id in tech_card_ids:
+            try:
+                # Вызываем индивидуальное редактирование
+                edit_result = await edit_techcard_v2({
+                    'tech_card_id': tech_card_id,
+                    'edit_instruction': edit_instruction,
+                    'user_id': user_id,
+                    'edit_type': 'modify'
+                })
+                
+                results.append({
+                    "id": tech_card_id,
+                    "status": "success",
+                    "message": "Updated successfully",
+                    "changes": edit_result.get('changes_made', [])
+                })
+                
+            except Exception as e:
+                results.append({
+                    "id": tech_card_id,
+                    "status": "error", 
+                    "message": str(e)
+                })
+        
+        success_count = len([r for r in results if r['status'] == 'success'])
+        
+        return {
+            "status": "success",
+            "processed": len(tech_card_ids),
+            "successful": success_count,
+            "failed": len(tech_card_ids) - success_count,
+            "results": results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Batch edit error: {e}")
+        raise HTTPException(500, f"Batch edit failed: {str(e)}")
+
+
+# ======================================
+# HELPER FUNCTIONS FOR AI EDITING
+# ======================================
+
+def _create_v2_edit_prompt(current_card: TechCardV2, edit_instruction: str, edit_type: str) -> str:
+    """Создает промпт для редактирования V2 техкарты"""
+    
+    base_prompt = f"""
+Ты — RECEPTOR AI, профессиональный помощник для редактирования технологических карт ресторанов.
+
+ТЕКУЩАЯ ТЕХКАРТА (JSON):
+{current_card.model_dump_json(indent=2)}
+
+ИНСТРУКЦИЯ ПО РЕДАКТИРОВАНИЮ: {edit_instruction}
+
+ТИП РЕДАКТИРОВАНИЯ: {edit_type}
+
+ПРАВИЛА РЕДАКТИРОВАНИЯ:
+1. ВСЕГДА возвращай полную валидную JSON структуру TechCardV2
+2. Сохраняй все обязательные поля: meta, portions, yield_, ingredients, process, storage, nutrition, cost
+3. При изменении количества ингредиентов пересчитывай пропорции
+4. При изменении порций обновляй yield_.perPortion_g и yield_.perBatch_g
+5. Сохраняй meta.id и meta.version
+6. Обновляй meta.timings если добавляешь новые шаги
+
+СПЕЦИАЛЬНЫЕ ИНСТРУКЦИИ ПО ТИПУ:
+"""
+
+    if edit_type == "optimize":
+        base_prompt += """
+- Ищи возможности оптимизации: замена дорогих ингредиентов, упрощение процесса
+- Предлагай альтернативы с лучшим соотношением цена/качество
+- Сохраняй качество и вкус блюда
+"""
+    elif edit_type == "suggest_alternatives":
+        base_prompt += """
+- Предлагай альтернативные ингредиенты (например, для аллергиков)
+- Сохраняй пищевую ценность и вкусовой профиль
+- Указывай причины замены в process шагах
+"""
+    elif edit_type == "adjust_portions":
+        base_prompt += """
+- Точно пересчитывай все количества ингредиентов пропорционально
+- Обновляй yield_ значения
+- Проверяй логичность порций для подачи
+"""
+    else:  # modify
+        base_prompt += """
+- Точно следуй инструкции пользователя
+- Вноси только запрошенные изменения
+- Сохраняй структуру и логику рецепта
+"""
+
+    base_prompt += """
+
+ВАЖНО: Верни ТОЛЬКО валидный JSON объект TechCardV2, без дополнительных комментариев.
+"""
+    
+    return base_prompt
+
+
+def _analyze_changes(old_card: TechCardV2, new_card: TechCardV2) -> list:
+    """Анализирует изменения между техкартами"""
+    changes = []
+    
+    # Сравниваем порции
+    if old_card.portions != new_card.portions:
+        changes.append(f"Изменены порции: {old_card.portions} → {new_card.portions}")
+    
+    # Сравниваем yield
+    old_yield = getattr(old_card, 'yield_', {})
+    new_yield = getattr(new_card, 'yield_', {})
+    
+    if old_yield.get('perPortion_g') != new_yield.get('perPortion_g'):
+        changes.append(f"Изменен выход на порцию: {old_yield.get('perPortion_g', 0)}г → {new_yield.get('perPortion_g', 0)}г")
+    
+    # Сравниваем ингредиенты
+    old_ingredients = {ing.name: ing.netto_g for ing in old_card.ingredients}
+    new_ingredients = {ing.name: ing.netto_g for ing in new_card.ingredients}
+    
+    # Новые ингредиенты
+    for name in new_ingredients:
+        if name not in old_ingredients:
+            changes.append(f"Добавлен ингредиент: {name}")
+    
+    # Удаленные ингредиенты  
+    for name in old_ingredients:
+        if name not in new_ingredients:
+            changes.append(f"Удален ингредиент: {name}")
+    
+    # Измененные количества
+    for name in old_ingredients:
+        if name in new_ingredients and old_ingredients[name] != new_ingredients[name]:
+            changes.append(f"Изменено количество {name}: {old_ingredients[name]}г → {new_ingredients[name]}г")
+    
+    # Сравниваем процесс
+    if len(old_card.process) != len(new_card.process):
+        changes.append(f"Изменено количество шагов: {len(old_card.process)} → {len(new_card.process)}")
+    
+    return changes
+
+
+def _generate_optimization_suggestions(card: TechCardV2) -> list:
+    """Генерирует предложения по оптимизации"""
+    suggestions = []
+    
+    # Анализ себестоимости
+    if card.cost and hasattr(card.cost, 'rawCost') and card.cost.rawCost:
+        if card.cost.rawCost > 500:  # Если себестоимость высокая
+            suggestions.append({
+                "type": "cost_optimization",
+                "title": "Высокая себестоимость",
+                "suggestion": "Рассмотрите замену дорогих ингредиентов на более доступные аналоги",
+                "impact": "Потенциальная экономия 10-20%"
+            })
+    
+    # Анализ времени приготовления
+    total_time = sum(step.time_min for step in card.process if step.time_min)
+    if total_time > 60:
+        suggestions.append({
+            "type": "time_optimization", 
+            "title": "Долгое время приготовления",
+            "suggestion": "Можно оптимизировать процесс или подготовить часть ингредиентов заранее",
+            "impact": f"Сокращение времени с {total_time} мин"
+        })
+    
+    # Анализ сложности
+    if len(card.process) > 8:
+        suggestions.append({
+            "type": "process_simplification",
+            "title": "Сложный процесс",
+            "suggestion": "Рассмотрите упрощение рецепта для ускорения работы кухни",
+            "impact": "Упрощение обучения персонала"
+        })
+    
+    return suggestions
+
+
+async def _generate_ai_suggestions(card: TechCardV2, suggestion_type: str) -> list:
+    """Генерирует AI предложения по улучшению"""
+    
+    # Создаем промпт для генерации предложений
+    prompt = f"""
+Проанализируй техкарту и дай предложения по улучшению.
+
+ТЕХКАРТА: {card.meta.title}
+ИНГРЕДИЕНТЫ: {', '.join([ing.name for ing in card.ingredients])}
+СЕБЕСТОИМОСТЬ: {getattr(card.cost, 'rawCost', 0)}₽
+ВРЕМЯ ГОТОВКИ: {sum(step.time_min for step in card.process if step.time_min)} мин
+
+ТИП ПРЕДЛОЖЕНИЙ: {suggestion_type}
+
+Дай 3-5 конкретных предложений по улучшению в формате:
+- Тип: [ingredient_substitution/process_optimization/cost_reduction/nutrition_improvement]
+- Заголовок: [краткое описание]
+- Предложение: [детальное описание]
+- Влияние: [ожидаемый эффект]
+
+Отвечай только списком предложений, без дополнительного текста.
+"""
+    
+    try:
+        import openai
+        from openai import OpenAI
+        
+        openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Ты эксперт по оптимизации ресторанных рецептов. Даешь конкретные практические советы."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.7
+        )
+        
+        # Парсим ответ и преобразуем в структурированный формат
+        content = response.choices[0].message.content
+        suggestions = []
+        
+        # Простой парсинг предложений (можно улучшить)
+        lines = content.split('\n')
+        current_suggestion = {}
+        
+        for line in lines:
+            line = line.strip()
+            if line.startswith('- Тип:'):
+                if current_suggestion:
+                    suggestions.append(current_suggestion)
+                current_suggestion = {"type": line.replace('- Тип:', '').strip()}
+            elif line.startswith('- Заголовок:'):
+                current_suggestion["title"] = line.replace('- Заголовок:', '').strip()
+            elif line.startswith('- Предложение:'):
+                current_suggestion["suggestion"] = line.replace('- Предложение:', '').strip()
+            elif line.startswith('- Влияние:'):
+                current_suggestion["impact"] = line.replace('- Влияние:', '').strip()
+        
+        if current_suggestion:
+            suggestions.append(current_suggestion)
+        
+        return suggestions
+        
+    except Exception as e:
+        logger.warning(f"AI suggestions generation failed: {e}")
+        return [{
+            "type": "fallback",
+            "title": "Базовые предложения",
+            "suggestion": "Рассмотрите оптимизацию времени приготовления и замену дорогих ингредиентов",
+            "impact": "Улучшение эффективности кухни"
+        }]
         "code_width": 5,
         "organization_id": "default"
     }
