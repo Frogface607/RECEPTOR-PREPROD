@@ -78,7 +78,10 @@ class CriticalFixesTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    tech_card_id = data.get("id")
+                    # For V2 API, the ID is in data.card.meta.id
+                    tech_card_id = None
+                    if data.get("card") and data["card"].get("meta"):
+                        tech_card_id = data["card"]["meta"].get("id")
                     
                     if tech_card_id:
                         self.generated_tech_cards.append({
