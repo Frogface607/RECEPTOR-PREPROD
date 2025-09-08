@@ -69,10 +69,11 @@ class TechCardEditingTester:
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 payload = {
-                    "dish_name": "Борщ украинский с говядиной",
+                    "name": "Борщ украинский с говядиной",
                     "user_id": self.test_user_id,
-                    "city": "moskva",
-                    "portions": 1
+                    "cuisine": "русская",
+                    "equipment": ["плита", "кастрюля"],
+                    "budget": 300.0
                 }
                 
                 response = await client.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload)
