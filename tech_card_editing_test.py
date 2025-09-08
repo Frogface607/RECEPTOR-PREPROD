@@ -243,19 +243,19 @@ class TechCardEditingTester:
             )
             return []
 
-    async def test_edit_tech_card_endpoint(self):
-        """Test POST /api/edit-tech-card - Main V1 tech card editing endpoint"""
+    async def test_edit_tech_card_endpoint_v2(self):
+        """Test POST /api/edit-tech-card with V2 tech card - Should fail due to collection mismatch"""
         if not self.test_tech_card_id:
             await self.log_result(
-                "Edit Tech Card Endpoint", 
+                "Edit Tech Card Endpoint (V2)", 
                 False, 
-                "No tech card ID available for editing test"
+                "No V2 tech card ID available for editing test"
             )
             return False
             
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
-                # Test edit request
+                # Test edit request with V2 tech card ID
                 edit_payload = {
                     "tech_card_id": self.test_tech_card_id,
                     "edit_instruction": "Увеличить порцию в 2 раза"
@@ -267,41 +267,105 @@ class TechCardEditingTester:
                     data = response.json()
                     
                     if "success" in data and data["success"]:
-                        if "tech_card" in data and data["tech_card"]:
-                            await self.log_result(
-                                "Edit Tech Card Endpoint", 
-                                True, 
-                                f"Successfully edited tech card, content length: {len(data['tech_card'])}"
-                            )
-                            return True
-                        else:
-                            await self.log_result(
-                                "Edit Tech Card Endpoint", 
-                                False, 
-                                f"Success=True but no tech_card content: {data}"
-                            )
+                        await self.log_result(
+                            "Edit Tech Card Endpoint (V2)", 
+                            True, 
+                            f"Successfully edited V2 tech card, content length: {len(data.get('tech_card', ''))}"
+                        )
+                        return True
                     else:
                         await self.log_result(
-                            "Edit Tech Card Endpoint", 
+                            "Edit Tech Card Endpoint (V2)", 
                             False, 
                             f"Success=False or missing: {data}"
                         )
-                elif response.status_code == 404:
+                elif response.status_code == 404 or "Tech card not found" in response.text:
                     await self.log_result(
-                        "Edit Tech Card Endpoint", 
+                        "Edit Tech Card Endpoint (V2)", 
                         False, 
-                        f"Tech card not found (404) - ID may be invalid: {self.test_tech_card_id}"
+                        f"CRITICAL BUG: V2 tech card not found - Edit endpoint looks in 'tech_cards' collection but V2 cards are in 'user_history'"
+                    )
+                elif response.status_code == 500 and "Tech card not found" in response.text:
+                    await self.log_result(
+                        "Edit Tech Card Endpoint (V2)", 
+                        False, 
+                        f"CRITICAL BUG: V2 tech card not found (500 error) - Edit endpoint collection mismatch"
                     )
                 else:
                     await self.log_result(
-                        "Edit Tech Card Endpoint", 
+                        "Edit Tech Card Endpoint (V2)", 
                         False, 
                         f"HTTP {response.status_code}: {response.text}"
                     )
                     
         except Exception as e:
             await self.log_result(
-                "Edit Tech Card Endpoint", 
+                "Edit Tech Card Endpoint (V2)", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            
+        return False
+
+    async def test_edit_tech_card_endpoint_v1(self, v1_tech_card_id):
+        """Test POST /api/edit-tech-card with V1 tech card - Should work"""
+        if not v1_tech_card_id:
+            await self.log_result(
+                "Edit Tech Card Endpoint (V1)", 
+                False, 
+                "No V1 tech card ID available for editing test"
+            )
+            return False
+            
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                # Test edit request with V1 tech card ID
+                edit_payload = {
+                    "tech_card_id": v1_tech_card_id,
+                    "edit_instruction": "Увеличить порцию в 2 раза"
+                }
+                
+                response = await client.post(f"{API_BASE}/edit-tech-card", json=edit_payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if "success" in data and data["success"]:
+                        if "tech_card" in data and data["tech_card"]:
+                            await self.log_result(
+                                "Edit Tech Card Endpoint (V1)", 
+                                True, 
+                                f"Successfully edited V1 tech card, content length: {len(data['tech_card'])}"
+                            )
+                            return True
+                        else:
+                            await self.log_result(
+                                "Edit Tech Card Endpoint (V1)", 
+                                False, 
+                                f"Success=True but no tech_card content: {data}"
+                            )
+                    else:
+                        await self.log_result(
+                            "Edit Tech Card Endpoint (V1)", 
+                            False, 
+                            f"Success=False or missing: {data}"
+                        )
+                elif response.status_code == 404:
+                    await self.log_result(
+                        "Edit Tech Card Endpoint (V1)", 
+                        False, 
+                        f"V1 tech card not found (404) - ID may be invalid: {v1_tech_card_id}"
+                    )
+                else:
+                    await self.log_result(
+                        "Edit Tech Card Endpoint (V1)", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    
+        except Exception as e:
+            await self.log_result(
+                "Edit Tech Card Endpoint (V1)", 
                 False, 
                 f"Exception: {str(e)}"
             )
