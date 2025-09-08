@@ -11192,7 +11192,7 @@ function App() {
 
           {/* Right Panel */}
           <div className="lg:col-span-2">
-            {techCard ? (
+            {techCard || tcV2 ? (
               <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-4">
                   <div>
