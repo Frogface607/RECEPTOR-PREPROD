@@ -6559,7 +6559,7 @@ function App() {
       
       // Update dashboard stats
       const historyData = response.data.history || [];
-      const totalTechCards = historyData.length;
+      const totalTechCards = historyData.filter(item => !item.is_menu).length;
       const totalMenus = historyData.filter(item => item.is_menu).length;
       const thisMonth = new Date();
       const thisMonthCards = historyData.filter(item => {
