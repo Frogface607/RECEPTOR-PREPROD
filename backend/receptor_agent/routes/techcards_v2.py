@@ -1599,7 +1599,7 @@ async def generate_product_codes_api(request: dict):
 @router.post("/techcards.v2/edit")
 async def edit_techcard_v2(request: dict):
     """
-    AI-powered TechCardV2 editing with enhanced capabilities
+    AI powered TechCardV2 editing with enhanced capabilities
     
     Body:
     {
