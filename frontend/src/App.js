@@ -11420,6 +11420,8 @@ function App() {
                 
                 {/* CLEANUP TECH CARD DATA & UI: Убираем отображение проблем генерации */}
                 
+                {console.log('🔥 BEFORE RENDER BLOCK - tcV2:', !!tcV2, 'FORCE_TECHCARD_V2:', FORCE_TECHCARD_V2)}
+                
                 <div className="prose prose-invert max-w-none">
                   {/* DEBUG: Проверяем состояние tcV2 */}
                   {console.log('=== RENDER DEBUG START ===', 'tcV2 exists:', !!tcV2, 'FORCE_TECHCARD_V2:', FORCE_TECHCARD_V2)}
