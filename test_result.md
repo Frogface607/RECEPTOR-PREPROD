@@ -3358,9 +3358,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "AI-POWERED TECH CARD EDITING V2 - Backend and Frontend Implementation"
-    - "TechCardV2 Edit Endpoint Testing (/api/v1/techcards.v2/edit)"
-    - "AI Suggestions System Testing (/api/v1/techcards.v2/suggest-improvements)"
+    - "CRITICAL BUG FIX: Tech Card Editing Functionality Broken"
+    - "Investigate and Fix Editing Errors - Both V1 and V2 Systems" 
+    - "Backend Edit Endpoint Testing (/api/edit-tech-card)"
+    - "Frontend Edit Integration Testing - handleEditTechCard function"
+    - "System Recovery Testing After Code Restoration"
   - task: "AI-POWERED TECH CARD EDITING V2 - Frontend Integration"
     implemented: true
     working: "pending_test"
