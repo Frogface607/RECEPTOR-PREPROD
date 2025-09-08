@@ -155,3 +155,81 @@ Ingredient = BaseModel  # Placeholder
 ProcessStep = BaseModel  # Placeholder
 CCP = BaseModel  # Placeholder
 HACCP = BaseModel  # Placeholder
+
+def get_techcard_v2_schema() -> dict:
+    """
+    Возвращает JSON схему для TechCardV2 для использования в OpenAI structured outputs
+    """
+    return TechCardV2.model_json_schema()
+
+
+def get_techcard_v2_example() -> dict:
+    """
+    Возвращает пример валидной TechCardV2 для промптов
+    """
+    return {
+        "meta": {
+            "id": "example-123",
+            "title": "Салат Цезарь",
+            "version": "2.0",
+            "createdAt": "2025-01-20T10:00:00Z",
+            "cuisine": "Европейская",
+            "tags": ["салат", "классический"]
+        },
+        "portions": 4,
+        "yield": {
+            "perPortion_g": 150,
+            "perBatch_g": 600
+        },
+        "ingredients": [
+            {
+                "name": "Салат Романо",
+                "unit": "g",
+                "brutto_g": 200,
+                "loss_pct": 15,
+                "netto_g": 170
+            },
+            {
+                "name": "Куриное филе",
+                "unit": "g", 
+                "brutto_g": 300,
+                "loss_pct": 5,
+                "netto_g": 285
+            }
+        ],
+        "process": [
+            {
+                "n": 1,
+                "action": "Промыть и нарезать салат",
+                "time_min": 5
+            },
+            {
+                "n": 2,
+                "action": "Обжарить куриное филе",
+                "time_min": 10,
+                "temp_c": 180
+            },
+            {
+                "n": 3,
+                "action": "Смешать ингредиенты и заправить",
+                "time_min": 3
+            }
+        ],
+        "storage": {
+            "conditions": "Хранить в холодильнике",
+            "shelfLife_hours": 24,
+            "servingTemp_c": 5
+        },
+        "nutrition": {
+            "per100g": {
+                "kcal": 180,
+                "proteins_g": 12,
+                "fats_g": 8,
+                "carbs_g": 6
+            }
+        },
+        "cost": {
+            "rawCost": 250,
+            "costPerPortion": 62.5
+        }
+    }
