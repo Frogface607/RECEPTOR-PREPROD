@@ -634,12 +634,12 @@ class TechCardEditingTester:
         print("\n📋 TEST 8: Edit Tech Card Endpoint (V2)")
         v2_edit_working = await self.test_edit_tech_card_endpoint_v2()
         
-        # Test 7: Test EditRequest validation
-        print("\n📋 TEST 7: EditRequest Validation")
+        # Test 9: Test EditRequest validation
+        print("\n📋 TEST 9: EditRequest Validation")
         await self.test_edit_request_validation()
         
-        # Test 8: Test error handling
-        print("\n📋 TEST 8: Error Handling")
+        # Test 10: Test error handling
+        print("\n📋 TEST 10: Error Handling")
         await self.test_error_handling()
         
         # Summary
