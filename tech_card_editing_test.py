@@ -323,10 +323,10 @@ class TechCardEditingTester:
             # We'll test this indirectly by trying to generate a simple tech card
             async with httpx.AsyncClient(timeout=60.0) as client:
                 payload = {
-                    "dish_name": "Простой салат",
+                    "name": "Простой салат",
                     "user_id": self.test_user_id,
-                    "city": "moskva",
-                    "portions": 1
+                    "cuisine": "европейская",
+                    "equipment": ["нож", "доска"]
                 }
                 
                 response = await client.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload)
