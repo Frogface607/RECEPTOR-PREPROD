@@ -5947,6 +5947,38 @@ function App() {
     }
   };
 
+  // Get AI suggestions for improvements
+  const getAISuggestions = async () => {
+    if (!tcV2?.meta?.id) {
+      alert('Нет техкарты для анализа');
+      return;
+    }
+
+    try {
+      setLoadingMessage('Генерирую предложения по улучшению...');
+      
+      const response = await axios.post(`${API}/techcards.v2/suggest-improvements`, {
+        tech_card_id: tcV2.meta.id,
+        suggestion_type: 'all'
+      });
+      
+      if (response.data.status === 'success' && response.data.suggestions.length > 0) {
+        const suggestionsText = response.data.suggestions.map((s, i) => 
+          `${i + 1}. ${s.title}\n${s.suggestion}\nВлияние: ${s.impact}`
+        ).join('\n\n');
+        
+        alert(`🤖 AI ПРЕДЛОЖЕНИЯ ПО УЛУЧШЕНИЮ:\n\n${suggestionsText}`);
+      } else {
+        alert('AI не смог найти предложений по улучшению для этой техкарты');
+      }
+    } catch (error) {
+      console.error('Error getting AI suggestions:', error);
+      alert('Ошибка при получении предложений от AI');
+    } finally {
+      setLoadingMessage('');
+    }
+  };
+
   // V1 Tech Card Editing (existing functionality)
   const handleEditTechCard = async () => {
     if (!editInstruction.trim() || !currentTechCardId) return;
