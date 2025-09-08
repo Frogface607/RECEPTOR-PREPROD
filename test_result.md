@@ -3361,6 +3361,29 @@ test_plan:
     - "AI-POWERED TECH CARD EDITING V2 - Backend and Frontend Implementation"
     - "TechCardV2 Edit Endpoint Testing (/api/v1/techcards.v2/edit)"
     - "AI Suggestions System Testing (/api/v1/techcards.v2/suggest-improvements)"
+  - task: "AI-POWERED TECH CARD EDITING V2 - Frontend Integration"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "Implemented handleEditTechCardV2() function for V2 tech card editing, updated edit button to use correct function based on tech card version (V1 vs V2), added comprehensive error handling and success messaging. Ready for frontend testing."
+
+  - task: "AI Suggestions UI for Tech Cards"
+    implemented: true
+    working: "pending_test"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "pending_test"
+        agent: "main"
+        comment: "Implemented getAISuggestions() function and added 'AI ПРЕДЛОЖЕНИЯ' button for V2 tech cards. Button appears only for V2 tech cards and displays AI suggestions in user-friendly format. Ready for testing."
     - "Frontend Integration Testing - handleEditTechCardV2 and getAISuggestions functions"
     - "GPT-4o-mini Integration with Existing OpenAI API Key"
     - "RENAME EXPORT STEP BUTTON (P0 - UI) - BACKEND VALIDATED, FRONTEND VERIFICATION NEEDED"
