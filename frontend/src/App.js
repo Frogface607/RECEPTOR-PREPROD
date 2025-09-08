@@ -11153,7 +11153,7 @@ function App() {
               </div>
 
               {/* AI Editing */}
-              {techCard && (
+              {(techCard || tcV2) && (
                 <div className="border-t border-purple-400/30 pt-6 sm:pt-8">
                   <h3 className="text-lg sm:text-xl font-bold text-purple-300 mb-4 sm:mb-6">
                     РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
