@@ -87,7 +87,8 @@ class TechCardEditingTester:
                         card = data.get("card")
                         
                         if status in ["success", "draft", "READY"] and card:
-                            tech_card_id = card.get("id")
+                            # Try to get ID from different possible locations
+                            tech_card_id = card.get("id") or card.get("meta", {}).get("id")
                             if tech_card_id:
                                 self.test_tech_card_id = tech_card_id
                                 self.generated_tech_cards.append({
