@@ -1592,8 +1592,53 @@ async def generate_product_codes_api(request: dict):
     {
         "ingredient_names": ["Куриное филе", "Соль", "Перец"],
         "start_code": 10000,
+        "code_width": 5,
+        "organization_id": "default"
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "product_codes": [
+            {"name": "Куриное филе", "code": "10001"},
+            {"name": "Соль", "code": "10002"}
+        ],
+        "codes_generated": 3
+    }
     """
-    AI powered TechCardV2 editing with enhanced capabilities
+    try:
+        ingredient_names = request.get('ingredient_names', [])
+        start_code = request.get('start_code', 10000)
+        code_width = request.get('code_width', 5)
+        organization_id = request.get('organization_id', 'default')
+        
+        if not ingredient_names:
+            raise HTTPException(400, "ingredient_names list is required")
+        
+        # Generate product codes for ingredients
+        product_codes = []
+        current_code = start_code
+        
+        for name in ingredient_names:
+            code_str = str(current_code).zfill(code_width)
+            product_codes.append({
+                "name": name,
+                "code": code_str
+            })
+            current_code += 1
+        
+        return {
+            "status": "success",
+            "product_codes": product_codes,
+            "codes_generated": len(product_codes),
+            "next_available_code": current_code
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Generate product codes error: {e}")
+        raise HTTPException(500, f"Generate product codes failed: {str(e)}")
     
     Body:
     {
