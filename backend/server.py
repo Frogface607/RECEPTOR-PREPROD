@@ -3547,17 +3547,32 @@ async def edit_tech_card(request: EditRequest):
         if not tech_card:
             raise HTTPException(status_code=404, detail="Tech card not found in both collections")
         
-        # Get user to determine regional coefficient
-        user = await db.users.find_one({"id": tech_card["user_id"]})
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+        # Get user_id and content based on card type
+        if is_v2_card:
+            user_id = request.user_id  # V2 cards: use user_id from request
+            # For V2 cards, content might be in different field
+            current_content = tech_card.get("content", "")
+            if not current_content and "techcard_v2_data" in tech_card:
+                # If no content field, try to construct from V2 data
+                v2_data = tech_card["techcard_v2_data"]
+                current_content = f"**{v2_data.get('meta', {}).get('title', 'Tech Card')}**\n\nИнгредиенты:\n"
+                for ing in v2_data.get('ingredients', []):
+                    current_content += f"- {ing.get('name', '')} — {ing.get('netto_g', 0)}г\n"
+        else:
+            user_id = tech_card["user_id"]  # V1 cards: use user_id from tech_card
+            current_content = tech_card["content"]
         
-        # Get regional coefficient (safe access to city field)
-        regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
+        # Get user to determine regional coefficient
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            # For V2 cards, user might not exist, use default values
+            regional_coefficient = 1.0
+        else:
+            regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
         
         # Prepare the edit prompt
         prompt = EDIT_PROMPT.format(
-            current_tech_card=tech_card["content"],
+            current_tech_card=current_content,
             edit_instruction=request.edit_instruction,
             regional_coefficient=regional_coefficient
         )
