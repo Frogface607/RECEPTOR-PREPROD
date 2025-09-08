@@ -3535,10 +3535,17 @@ async def update_tech_card(tech_card_id: str, update_data: dict):
 @api_router.post("/edit-tech-card")
 async def edit_tech_card(request: EditRequest):
     try:
-        # Get the current tech card
+        # Get the current tech card - check both collections
         tech_card = await db.tech_cards.find_one({"id": request.tech_card_id})
+        is_v2_card = False
+        
+        # If not found in tech_cards, check user_history for V2 cards
         if not tech_card:
-            raise HTTPException(status_code=404, detail="Tech card not found")
+            tech_card = await db.user_history.find_one({"id": request.tech_card_id})
+            is_v2_card = True
+            
+        if not tech_card:
+            raise HTTPException(status_code=404, detail="Tech card not found in both collections")
         
         # Get user to determine regional coefficient
         user = await db.users.find_one({"id": tech_card["user_id"]})
