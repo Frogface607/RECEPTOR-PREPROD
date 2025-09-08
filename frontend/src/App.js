@@ -6337,9 +6337,8 @@ function App() {
         console.log('[V2] tcV2.status:', normalizedData.status);
         console.log('[V2] API endpoint used:', endpoint);
         
-        // Convert V2 to display format for backwards compatibility
-        const displayText = convertV2ToDisplayText(techCardV2);
-        setTechCard(displayText);
+        // Clear any previous V1 tech card state to avoid conflicts
+        setTechCard(null);
         
         // Parse ingredients from V2 format
         const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
