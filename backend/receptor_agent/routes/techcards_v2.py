@@ -1824,12 +1824,12 @@ async def suggest_improvements(request: dict):
 @router.post("/techcards.v2/batch-edit")
 async def batch_edit_techcards(request: dict):
     """
-    Батчевое редактирование нескольких техкарт
+    Batch editing of multiple tech cards
     
     Body:
     {
         "tech_card_ids": ["uuid1", "uuid2"],
-        "edit_instruction": "Увеличить все порции в 1.5 раза",
+        "edit_instruction": "Edit instruction in Russian",
         "user_id": "user123"
     }
     
