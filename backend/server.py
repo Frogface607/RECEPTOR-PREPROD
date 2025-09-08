@@ -3594,10 +3594,24 @@ async def edit_tech_card(request: EditRequest):
         
         edited_content = response.choices[0].message.content
         
-        # Update tech card in database
-        await db.tech_cards.update_one(
-            {"id": request.tech_card_id},
-            {"$set": {"content": edited_content, "updated_at": datetime.utcnow()}}
+        # Update tech card in appropriate database collection
+        update_data = {
+            "content": edited_content, 
+            "updated_at": datetime.utcnow(),
+            "last_edit_instruction": request.edit_instruction
+        }
+        
+        if is_v2_card:
+            # Update V2 card in user_history
+            await db.user_history.update_one(
+                {"id": request.tech_card_id},
+                {"$set": update_data}
+            )
+        else:
+            # Update V1 card in tech_cards
+            await db.tech_cards.update_one(
+                {"id": request.tech_card_id},
+                {"$set": update_data}
         )
         
         return {
