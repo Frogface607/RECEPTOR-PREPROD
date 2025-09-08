@@ -6408,8 +6408,8 @@ function App() {
         
         console.log('[V2] Generated TechCard V2 with READY status');
         
-        const displayText = convertV2ToDisplayText(techCardV2);
-        setTechCard(displayText);
+        // Clear any previous V1 tech card state to avoid conflicts
+        setTechCard(null);
         
         const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
           id: index + 1,
