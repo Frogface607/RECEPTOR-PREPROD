@@ -605,25 +605,34 @@ class TechCardEditingTester:
         print("\n📋 TEST 1: Create Test User")
         user_created = await self.create_test_user()
         
-        # Test 2: Test V2 tech card generation (prerequisite for editing)
-        print("\n📋 TEST 2: V2 Tech Card Generation")
-        tech_card_id = await self.test_v2_tech_card_generation()
+        # Test 2: Test V1 tech card generation (legacy)
+        print("\n📋 TEST 2: V1 Tech Card Generation")
+        v1_tech_card_id = await self.test_v1_tech_card_generation()
         
-        # Test 3: Test user history endpoint
-        print("\n📋 TEST 3: User History Endpoint")
+        # Test 3: Test V2 tech card generation (new)
+        print("\n📋 TEST 3: V2 Tech Card Generation")
+        v2_tech_card_id = await self.test_v2_tech_card_generation()
+        self.test_tech_card_id = v2_tech_card_id  # Set for other tests
+        
+        # Test 4: Test user history endpoint
+        print("\n📋 TEST 4: User History Endpoint")
         history = await self.test_user_history_endpoint()
         
-        # Test 4: Test database connectivity
-        print("\n📋 TEST 4: Database Connectivity")
+        # Test 5: Test database connectivity
+        print("\n📋 TEST 5: Database Connectivity")
         db_connected = await self.test_database_connectivity()
         
-        # Test 5: Test OpenAI integration
-        print("\n📋 TEST 5: OpenAI Integration")
+        # Test 6: Test OpenAI integration
+        print("\n📋 TEST 6: OpenAI Integration")
         openai_working = await self.test_openai_integration()
         
-        # Test 6: Test edit tech card endpoint (main functionality)
-        print("\n📋 TEST 6: Edit Tech Card Endpoint")
-        edit_working = await self.test_edit_tech_card_endpoint()
+        # Test 7: Test edit tech card endpoint with V1 tech card
+        print("\n📋 TEST 7: Edit Tech Card Endpoint (V1)")
+        v1_edit_working = await self.test_edit_tech_card_endpoint_v1(v1_tech_card_id)
+        
+        # Test 8: Test edit tech card endpoint with V2 tech card (should fail)
+        print("\n📋 TEST 8: Edit Tech Card Endpoint (V2)")
+        v2_edit_working = await self.test_edit_tech_card_endpoint_v2()
         
         # Test 7: Test EditRequest validation
         print("\n📋 TEST 7: EditRequest Validation")
