@@ -712,19 +712,25 @@ class TechCardEditingTester:
                 print(f"❌ {test}")
             
             print("\n🔧 RECOMMENDED ACTIONS:")
+            if not any("Edit Tech Card Endpoint (V2)" in r and "✅ PASS" in r for r in self.results):
+                print("1. 🚨 URGENT: Fix edit endpoint to support V2 tech cards")
+                print("   - Modify /api/edit-tech-card to look in 'user_history' collection for V2 cards")
+                print("   - Add logic to detect V2 vs V1 tech cards and query appropriate collection")
+                print("   - Update tech card content handling for V2 format")
+                
             if not any("OpenAI Integration" in r and "✅ PASS" in r for r in self.results):
-                print("1. Check OpenAI API key configuration in backend/.env")
-                print("2. Verify GPT-4o-mini model availability")
-                print("3. Check OpenAI API quota and billing")
+                print("2. Check OpenAI API key configuration in backend/.env")
+                print("3. Verify GPT-4o-mini model availability")
+                print("4. Check OpenAI API quota and billing")
                 
             if not any("Database Connectivity" in r and "✅ PASS" in r for r in self.results):
-                print("4. Verify MongoDB connection string in backend/.env")
-                print("5. Check if tech_cards collection exists and is accessible")
+                print("5. Verify MongoDB connection string in backend/.env")
+                print("6. Check if collections exist and are accessible")
                 
-            if not any("Edit Tech Card Endpoint" in r and "✅ PASS" in r for r in self.results):
-                print("6. Check EditRequest model validation")
-                print("7. Verify EDIT_PROMPT template formatting")
-                print("8. Check tech card ID format and database queries")
+            if not any("Edit Tech Card Endpoint (V1)" in r and "✅ PASS" in r for r in self.results):
+                print("7. Check V1 tech card generation and storage")
+                print("8. Verify EditRequest model validation")
+                print("9. Check EDIT_PROMPT template formatting")
         
         return success_rate >= 60  # 60% success rate threshold for critical functionality
 
