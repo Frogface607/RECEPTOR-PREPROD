@@ -1057,12 +1057,6 @@ function App() {
 
     const meta = tcV2.meta || {};
     const yield_data = tcV2.yield_ || {}; // Fix: Database stores yield_ not yield
-    
-    // DEBUG: Log yield data extraction
-    console.log('renderTechCardV2: yield_ field from tcV2:', tcV2.yield_);
-    console.log('renderTechCardV2: yield_data object:', yield_data);
-    console.log('renderTechCardV2: perPortion_g:', yield_data.perPortion_g);
-    console.log('renderTechCardV2: perBatch_g:', yield_data.perBatch_g);
     const ingredients = tcV2.ingredients || {};
     const process = tcV2.process || [];
     const storage = tcV2.storage || {};
