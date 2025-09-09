@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-09-04T08:51:11.701676",
+  "timestamp": "2025-09-09T09:05:25.373589",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
       "name": "Драники",
-      "code": "100011",
+      "code": "100067",
       "type": "DISH",
       "unit": "порц",
       "yield_g": 150
