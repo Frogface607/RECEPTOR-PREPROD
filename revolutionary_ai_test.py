@@ -90,7 +90,7 @@ class RevolutionaryAITester:
                 f"Exception: {str(e)}"
             )
         
-        return None
+        return None, None
     
     async def test_article_regression_fix(self, tech_card):
         """Test 2: ARTICLE REGRESSION FIX"""
