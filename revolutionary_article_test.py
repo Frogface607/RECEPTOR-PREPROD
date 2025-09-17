@@ -99,6 +99,10 @@ class RevolutionaryArticleRegressionTester:
                             
                             # CRITICAL: Check if dish.article is populated (not null)
                             dish_article = card_data.get("article")
+                            print(f"🔍 DEBUG: Full card_data keys: {list(card_data.keys())}")
+                            print(f"🔍 DEBUG: dish_article value: {dish_article}")
+                            print(f"🔍 DEBUG: meta data: {card_data.get('meta', {})}")
+                            
                             if dish_article and dish_article != "null" and dish_article.strip():
                                 await self.log_result(
                                     "CRITICAL: Dish Article Generation", 
