@@ -37,11 +37,10 @@ class RevolutionaryAITester:
                 
                 # Generate tech card with real LLM
                 response = await client.post(
-                    f"{API_BASE}/v1/techcards.v2/generate",
+                    f"{API_BASE}/v1/techcards.v2/generate?use_llm=true",
                     json={
-                        "dish_name": self.test_dish_name,
-                        "user_id": self.test_user_id,
-                        "use_llm": True  # Force LLM usage
+                        "name": self.test_dish_name,
+                        "user_id": self.test_user_id
                     }
                 )
                 
