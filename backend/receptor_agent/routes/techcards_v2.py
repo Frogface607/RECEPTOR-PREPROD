@@ -168,6 +168,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
             
     except Exception as e:
         # Always return JSON even for exceptions
+        import os
         error_message = str(e)
         stack_trace = traceback.format_exc()
         
