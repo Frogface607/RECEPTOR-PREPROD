@@ -350,7 +350,7 @@ class RevolutionaryArticleRegressionTester:
                     
                     if found_card:
                         # Check if article is preserved in saved data
-                        saved_article = found_card.get("article")
+                        saved_article = found_card.get("article") or found_card.get("techcard_v2_data", {}).get("meta", {}).get("article")
                         if saved_article and saved_article != "null":
                             await self.log_result(
                                 "User History Article Persistence", 
