@@ -201,10 +201,12 @@ class CriticalBackendTester:
             # Try to generate a simple tech card to test OpenAI integration
             async with httpx.AsyncClient(timeout=60.0) as client:
                 payload = {
+                    "name": "Простой салат",
                     "user_id": self.test_user_id,
-                    "dish_name": "Простой салат",
-                    "portions": 1,
-                    "city": "moskva"
+                    "cuisine": "европейская",
+                    "equipment": [],
+                    "budget": None,
+                    "dietary": []
                 }
                 
                 response = await client.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload)
@@ -212,7 +214,7 @@ class CriticalBackendTester:
                 if response.status_code == 200:
                     data = response.json()
                     # Check if the response contains generated content
-                    if data.get("content") or data.get("ingredients"):
+                    if data.get("status") in ["success", "draft"] and data.get("card"):
                         await self.log_result(
                             "OpenAI Integration", 
                             True, 
@@ -223,7 +225,7 @@ class CriticalBackendTester:
                         await self.log_result(
                             "OpenAI Integration", 
                             False, 
-                            "No content generated - possible OpenAI API issue"
+                            f"No content generated - response: {data}"
                         )
                         return False
                 elif response.status_code == 401:
