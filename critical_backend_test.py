@@ -119,10 +119,12 @@ class CriticalBackendTester:
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
                 payload = {
+                    "name": "Омлет",
                     "user_id": self.test_user_id,
-                    "dish_name": "Омлет",
-                    "portions": 1,
-                    "city": "moskva"
+                    "cuisine": "русская",
+                    "equipment": [],
+                    "budget": None,
+                    "dietary": []
                 }
                 
                 response = await client.post(f"{API_BASE}/v1/techcards.v2/generate", json=payload)
