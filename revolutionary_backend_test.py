@@ -165,10 +165,10 @@ class RevolutionaryTester:
         """ТЕСТ ИЗВЛЕЧЕНИЯ АРТИКУЛОВ: из реального iiko"""
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                # Test article extraction from real iiko data
+                # Test article extraction using v2 catalog search
                 test_products = [
                     "говядина",
-                    "свекла",
+                    "свекла", 
                     "капуста",
                     "морковь",
                     "лук репчатый"
@@ -178,27 +178,29 @@ class RevolutionaryTester:
                 
                 for product_name in test_products:
                     response = await client.get(
-                        f"{API_BASE}/iiko/product-code",
-                        params={"product_name": product_name}
+                        f"{API_BASE}/v1/techcards.v2/catalog-search",
+                        params={"q": product_name, "source": "iiko"}
                     )
                     
                     if response.status_code == 200:
                         data = response.json()
                         
-                        product_code = data.get('product_code')
-                        article = data.get('article')
-                        found_in_rms = data.get('found_in_rms', False)
+                        results = data.get('results', [])
+                        has_results = len(results) > 0
                         
-                        has_real_article = (
-                            product_code is not None and 
-                            str(product_code).isdigit() and 
-                            len(str(product_code)) >= 4
-                        )
+                        # Check if any results have real articles
+                        has_real_article = False
+                        if has_results:
+                            for result in results[:3]:  # Check first 3 results
+                                article = result.get('article') or result.get('product_code')
+                                if article and str(article).isdigit() and len(str(article)) >= 4:
+                                    has_real_article = True
+                                    break
                         
                         await self.log_result(
                             f"Article Extraction ({product_name})", 
                             has_real_article, 
-                            f"code={product_code}, article={article}, found_in_rms={found_in_rms}"
+                            f"results={len(results)}, has_real_article={has_real_article}"
                         )
                     else:
                         await self.log_result(
