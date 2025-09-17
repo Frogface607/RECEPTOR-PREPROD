@@ -268,34 +268,33 @@ class RevolutionaryTester:
         """ПРОВЕРКА DASHBOARD: показывает созданные техкарты"""
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                # Get user's tech cards from dashboard
+                # Get user's tech cards from user history
                 response = await client.get(
-                    f"{API_BASE}/user-tech-cards",
-                    params={"user_id": self.test_user_id}
+                    f"{API_BASE}/user-history/{self.test_user_id}"
                 )
                 
                 if response.status_code == 200:
                     data = response.json()
-                    tech_cards = data.get('tech_cards', [])
+                    history = data.get('history', [])
                     
-                    # Check if generated tech cards appear in dashboard
+                    # Check if generated tech cards appear in history
                     generated_count = len(self.generated_tech_cards)
-                    dashboard_count = len(tech_cards)
+                    history_count = len(history)
                     
                     # Verify no warning labels
                     has_warnings = any(
-                        'warning' in str(tc).lower() or 
-                        'draft' in str(tc).lower() or
-                        'error' in str(tc).lower()
-                        for tc in tech_cards
+                        'warning' in str(item).lower() or 
+                        'draft' in str(item).lower() or
+                        'error' in str(item).lower()
+                        for item in history
                     )
                     
-                    dashboard_working = dashboard_count >= generated_count and not has_warnings
+                    dashboard_working = history_count >= generated_count and not has_warnings
                     
                     await self.log_result(
                         "Dashboard Display", 
                         dashboard_working, 
-                        f"generated={generated_count}, dashboard={dashboard_count}, warnings={has_warnings}"
+                        f"generated={generated_count}, history={history_count}, warnings={has_warnings}"
                     )
                 else:
                     await self.log_result(
