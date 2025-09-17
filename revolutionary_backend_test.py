@@ -405,6 +405,11 @@ class RevolutionaryTester:
         print("🔥 РЕВОЛЮЦИОННЫЙ ТЕСТ: Проверка работы с правильными кредами от iiko и Emergent LLM ключом")
         print("=" * 80)
         
+        # Create test user first
+        user_created = await self.create_test_user()
+        if not user_created:
+            print("❌ Failed to create test user, continuing with existing user...")
+        
         # Test environment setup
         await self.test_environment_variables()
         
