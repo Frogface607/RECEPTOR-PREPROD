@@ -394,13 +394,13 @@ class RevolutionaryAITester:
         print("=" * 80)
         
         # Test 1: Real AI Generation
-        tech_card = await self.test_real_ai_generation()
+        tech_card, response_data = await self.test_real_ai_generation()
         
         # Test 2: Article Regression Fix
         await self.test_article_regression_fix(tech_card)
         
         # Test 3: Status Ready
-        await self.test_status_ready(tech_card)
+        await self.test_status_ready(tech_card, response_data)
         
         # Test 4: Database Persistence
         await self.test_database_persistence(tech_card)
