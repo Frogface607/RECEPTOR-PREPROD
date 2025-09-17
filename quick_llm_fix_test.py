@@ -65,10 +65,12 @@ class TechCardGenerationTest:
         try:
             # Prepare generation request
             generation_data = {
-                "dish_name": "Омлет с зеленью",
+                "name": "Омлет с зеленью",
                 "user_id": self.test_user_id,
-                "city": "moskva",
-                "use_llm": True
+                "cuisine": "русская",
+                "equipment": [],
+                "budget": None,
+                "dietary": []
             }
             
             print(f"   Генерируем техкарту: {generation_data['dish_name']}")
