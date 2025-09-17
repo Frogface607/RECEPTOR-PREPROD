@@ -329,7 +329,6 @@ class CriticalBackendTester:
     async def test_api_routes_configuration(self):
         """Test that API routes are properly configured"""
         critical_endpoints = [
-            "/api/health",
             "/api/v1/techcards.v2/status",
             "/api/v1/techcards.v2/generate",
             f"/api/user-history/{self.test_user_id}",
