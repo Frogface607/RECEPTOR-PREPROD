@@ -95,6 +95,12 @@ class TechCardGenerationTest:
                 
             result = response.json()
             
+            # Debug: print the actual response
+            print(f"   Response status: {result.get('status')}")
+            print(f"   Response keys: {list(result.keys())}")
+            if 'card' in result:
+                print(f"   Card keys: {list(result['card'].keys()) if result['card'] else 'None'}")
+            
             # Check for UnboundLocalError
             if 'error' in result and 'UnboundLocalError' in str(result.get('error', '')):
                 self.log_result(
