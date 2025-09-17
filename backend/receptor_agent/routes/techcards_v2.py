@@ -67,6 +67,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
         
         # Set LLM override if provided
         if use_llm is not None:
+            import os
             os.environ["TECHCARDS_V2_USE_LLM"] = "true" if use_llm else "false"
         
         # Run pipeline
