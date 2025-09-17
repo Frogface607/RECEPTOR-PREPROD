@@ -231,7 +231,8 @@ class RevolutionaryAITester:
                         )
                         
                         # Check user_id association
-                        if found_tech_card.get('user_id') == self.test_user_id:
+                        found_user_id = found_tech_card.get('user_id') or found_tech_card.get('meta', {}).get('user_id')
+                        if found_user_id == self.test_user_id:
                             await self.log_result(
                                 "User ID Association", 
                                 True, 
@@ -241,7 +242,7 @@ class RevolutionaryAITester:
                             await self.log_result(
                                 "User ID Association", 
                                 False, 
-                                f"Tech card user_id mismatch: {found_tech_card.get('user_id')} vs {self.test_user_id}"
+                                f"Tech card user_id mismatch: {found_user_id} vs {self.test_user_id}"
                             )
                     else:
                         await self.log_result(
