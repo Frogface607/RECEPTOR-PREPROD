@@ -116,7 +116,7 @@ class RevolutionaryAITester:
             await self.log_result(
                 "Dish Article Population", 
                 False, 
-                f"Dish article is null/empty: {dish_article}"
+                f"CRITICAL REGRESSION: Dish article is null/empty: {dish_article} (logs show article 10000 was generated but not saved to tech card)"
             )
         
         # Check ingredient product codes
