@@ -60,16 +60,16 @@ class RevolutionaryAITester:
                                 True, 
                                 f"Generated in {generation_time:.1f}s with {len(tech_card.get('ingredients', []))} ingredients, status: {status}"
                             )
-                            self.generated_tech_cards.append(tech_card)
-                            return tech_card
+                            self.generated_tech_cards.append({'card': tech_card, 'response': data})
+                            return tech_card, data
                         else:
                             await self.log_result(
                                 "Real AI Generation", 
                                 False, 
                                 f"Generation time {generation_time:.1f}s suspicious (expected 15-45s), status: {status}"
                             )
-                            self.generated_tech_cards.append(tech_card)
-                            return tech_card  # Still return for further testing
+                            self.generated_tech_cards.append({'card': tech_card, 'response': data})
+                            return tech_card, data  # Still return for further testing
                     else:
                         await self.log_result(
                             "Real AI Generation", 
