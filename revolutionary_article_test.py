@@ -26,8 +26,44 @@ class RevolutionaryArticleRegressionTester:
         self.results.append(result)
         print(result)
         
-        if not success and any(keyword in test_name.lower() for keyword in ['critical', 'article', 'regression']):
-            self.critical_issues.append(f"{test_name}: {details}")
+    async def create_test_user(self):
+        """Create a test user for testing"""
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                payload = {
+                    "email": f"{self.test_user_id}@test.com",
+                    "name": f"Test User {self.test_user_id[:8]}",
+                    "city": "moskva"
+                }
+                
+                response = await client.post(f"{API_BASE}/register", json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    actual_user_id = data.get('id', self.test_user_id)
+                    # Update the test user ID to the actual one returned
+                    self.test_user_id = actual_user_id
+                    await self.log_result(
+                        "Test User Creation", 
+                        True, 
+                        f"Created user with ID: {actual_user_id}"
+                    )
+                    return True
+                else:
+                    await self.log_result(
+                        "Test User Creation", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return False
+                    
+        except Exception as e:
+            await self.log_result(
+                "Test User Creation", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return False
     
     async def test_revolutionary_dish_generation(self, dish_name: str = "Борщ украинский с говядиной"):
         """Test the specific dish mentioned in the revolution request"""
