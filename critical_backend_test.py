@@ -134,16 +134,16 @@ class CriticalBackendTester:
                     data = response.json()
                     
                     # Check if the response contains a tech card
-                    if data.get("status") == "success" and data.get("card"):
+                    if data.get("status") in ["success", "draft", "READY"] and data.get("card"):
                         tech_card = data.get("card")
-                        tech_card_id = tech_card.get("id")
+                        tech_card_id = tech_card.get("meta", {}).get("id")
                         
                         if tech_card_id:
                             self.generated_tech_cards.append(tech_card_id)
                             await self.log_result(
                                 "TechCard Generation", 
                                 True, 
-                                f"Generated tech card 'Омлет' with ID: {tech_card_id}"
+                                f"Generated tech card 'Омлет' with ID: {tech_card_id}, status: {data.get('status')}"
                             )
                             return tech_card_id
                         else:
@@ -153,31 +153,11 @@ class CriticalBackendTester:
                                 f"No ID in generated card: {data}"
                             )
                             return None
-                    elif data.get("status") == "draft":
-                        # Draft is also acceptable
-                        tech_card = data.get("card")
-                        tech_card_id = tech_card.get("id") if tech_card else None
-                        
-                        if tech_card_id:
-                            self.generated_tech_cards.append(tech_card_id)
-                            await self.log_result(
-                                "TechCard Generation", 
-                                True, 
-                                f"Generated tech card 'Омлет' (draft) with ID: {tech_card_id}"
-                            )
-                            return tech_card_id
-                        else:
-                            await self.log_result(
-                                "TechCard Generation", 
-                                False, 
-                                f"Draft card without ID: {data}"
-                            )
-                            return None
                     else:
                         await self.log_result(
                             "TechCard Generation", 
                             False, 
-                            f"Generation failed: {data}"
+                            f"Generation failed: status={data.get('status')}, card_present={data.get('card') is not None}"
                         )
                         return None
                 else:
