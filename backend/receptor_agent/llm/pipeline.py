@@ -663,12 +663,7 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         # GX-01-FINAL: Собираем timings локально, присваиваем один раз
         timings["total_ms"] = int((time.perf_counter() - start_total) * 1000)
         
-        # Обновляем meta с timings - безопасная сериализация
-        validated_card = validated_card.model_copy(update={
-            "meta": validated_card.meta.model_copy(update={"timings": timings})
-        })
-        
-        # Шаг 9: Генерация артикулов для блюда и ингредиентов
+        # Шаг 9: Генерация артикулов для блюда и ингредиентов (ПЕРЕД обновлением timings)
         start_articles = time.perf_counter()
         try:
             # CRITICAL FIX: Генерируем артикул для блюда, сначала ищем в iiko RMS
@@ -814,6 +809,11 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             # Не блокируем pipeline из-за ошибки генерации артикулов
             
         timings["article_generation_ms"] = int((time.perf_counter() - start_articles) * 1000)
+        
+        # Обновляем meta с timings - безопасная сериализация (ПОСЛЕ генерации артикулов)
+        validated_card = validated_card.model_copy(update={
+            "meta": validated_card.meta.model_copy(update={"timings": timings})
+        })
         
         # Объединяем все issues
         all_issues.extend([issue.get("hint", "") for issue in content_issues])
