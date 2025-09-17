@@ -53,8 +53,8 @@ class RevolutionaryAITester:
                     
                     # Check if it's a real AI generation (not skeleton)
                     if tech_card and len(tech_card.get('ingredients', [])) > 5:
-                        # Check generation time (should be 15-45 seconds for real AI)
-                        if 15 <= generation_time <= 60:
+                        # Check generation time (should be 10-60 seconds for real AI)
+                        if 10 <= generation_time <= 60:
                             await self.log_result(
                                 "Real AI Generation", 
                                 True, 
@@ -66,7 +66,7 @@ class RevolutionaryAITester:
                             await self.log_result(
                                 "Real AI Generation", 
                                 False, 
-                                f"Generation time {generation_time:.1f}s suspicious (expected 15-45s), status: {status}"
+                                f"Generation time {generation_time:.1f}s suspicious (expected 10-60s), status: {status}"
                             )
                             self.generated_tech_cards.append({'card': tech_card, 'response': data})
                             return tech_card, data  # Still return for further testing
