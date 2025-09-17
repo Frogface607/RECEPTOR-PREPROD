@@ -441,8 +441,8 @@ class CriticalBackendTester:
         print("\n📋 TEST 1: Backend Error Logs Analysis")
         await self.test_backend_logs_for_errors()
         
-        # Test 2: Basic Health Check
-        print("\n📋 TEST 2: Basic Health Check")
+        # Test 2: Basic Backend Connectivity
+        print("\n📋 TEST 2: Basic Backend Connectivity")
         await self.test_health_endpoint()
         
         # Test 3: API Routes Configuration
