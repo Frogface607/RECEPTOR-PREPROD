@@ -98,6 +98,8 @@ class TechCardGenerationTest:
             # Debug: print the actual response
             print(f"   Response status: {result.get('status')}")
             print(f"   Response keys: {list(result.keys())}")
+            print(f"   Message: {result.get('message')}")
+            print(f"   Issues: {result.get('issues', [])}")
             if 'card' in result:
                 print(f"   Card keys: {list(result['card'].keys()) if result['card'] else 'None'}")
             
