@@ -142,7 +142,7 @@ class RevolutionaryAITester:
                 f"All {total_ingredients} ingredients have null product_code"
             )
     
-    async def test_status_ready(self, tech_card):
+    async def test_status_ready(self, tech_card, response_data=None):
         """Test 3: STATUS READY (not DRAFT)"""
         print(f"\n🔥 ТЕСТ 3: СТАТУС READY")
         
@@ -154,7 +154,8 @@ class RevolutionaryAITester:
             )
             return
         
-        status = tech_card.get('status', '').upper()
+        # Status is in the response root, not in the card
+        status = response_data.get('status', '') if response_data else tech_card.get('status', '')
         if status == 'READY':
             await self.log_result(
                 "Status Ready", 
@@ -169,8 +170,8 @@ class RevolutionaryAITester:
             )
         
         # Check for validation errors
-        issues = tech_card.get('issues', [])
-        critical_issues = [issue for issue in issues if issue.get('level') == 'error']
+        issues = response_data.get('issues', []) if response_data else tech_card.get('issues', [])
+        critical_issues = [issue for issue in issues if isinstance(issue, dict) and issue.get('level') == 'error']
         
         if len(critical_issues) == 0:
             await self.log_result(
