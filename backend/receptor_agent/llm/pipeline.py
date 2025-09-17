@@ -140,7 +140,32 @@ def _create_skeleton_techcard(profile: ProfileInput, error_reason: str = "LLM un
             "perPortion_g": 250.0,  # GX-01-FINAL: 250г на порцию
             "perBatch_g": 250.0     # GX-01-FINAL: 250г на batch (1 порция)
         },
-        "ingredients": [],  # GX-01-FINAL: пустой список ингредиентов
+        "ingredients": [  # CLEANUP TECH CARD DATA & UI: Базовые ингредиенты для тестирования артикулов
+            {
+                "name": "Основной ингредиент 1",
+                "canonical_id": None,
+                "skuId": "test-sku-001",  # Тестовый GUID для поиска в iiko RMS
+                "product_code": None,  # Будет заполнен в pipeline
+                "subRecipe": None,
+                "unit": "g",
+                "brutto_g": 100.0,
+                "loss_pct": 10.0,
+                "netto_g": 90.0,
+                "allergens": []
+            },
+            {
+                "name": "Основной ингредиент 2", 
+                "canonical_id": None,
+                "skuId": "test-sku-002",  # Тестовый GUID для поиска в iiko RMS
+                "product_code": None,  # Будет заполнен в pipeline
+                "subRecipe": None,
+                "unit": "g",
+                "brutto_g": 50.0,
+                "loss_pct": 5.0,
+                "netto_g": 47.5,
+                "allergens": []
+            }
+        ],
         "process": [
             {
                 "n": 1,
