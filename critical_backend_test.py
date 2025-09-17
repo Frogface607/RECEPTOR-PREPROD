@@ -519,7 +519,7 @@ class CriticalBackendTester:
                 print(f"❌ {test}")
             
             print("\n🔧 RECOMMENDED ACTIONS:")
-            if not any("Health Endpoint" in r and "✅ PASS" in r for r in self.results):
+            if not any("Backend Connectivity" in r and "✅ PASS" in r for r in self.results):
                 print("- Check if backend service is running: sudo supervisorctl status backend")
                 print("- Check backend logs: tail -f /var/log/supervisor/backend.*.log")
             
