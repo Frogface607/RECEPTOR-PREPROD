@@ -493,7 +493,7 @@ class CriticalBackendTester:
         print("\n🎯 CRITICAL ASSESSMENT:")
         
         critical_tests = [
-            ("Health Endpoint", any("Health Endpoint" in r and "✅ PASS" in r for r in self.results)),
+            ("Backend Connectivity", any("Backend Connectivity" in r and "✅ PASS" in r for r in self.results)),
             ("API Routes Configuration", any("API Routes Configuration" in r and "✅ PASS" in r for r in self.results)),
             ("MongoDB Connectivity", any("MongoDB Connectivity" in r and "✅ PASS" in r for r in self.results)),
             ("V2 API Status", any("V2 Status Endpoint" in r and "✅ PASS" in r for r in self.results)),
