@@ -646,24 +646,43 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
         # Шаг 9: Генерация артикулов для блюда и ингредиентов
         start_articles = time.perf_counter()
         try:
-            # Генерируем артикул для блюда, если отсутствует
+            # CRITICAL FIX: Генерируем артикул для блюда, сначала ищем в iiko RMS
             dish_article = getattr(validated_card.meta, 'article', None)
             if not dish_article:
-                # Используем ArticleAllocator для получения артикула
-                from ..integrations.article_allocator import ArticleAllocator, ArticleType
-                allocator = ArticleAllocator()
-                dish_id = validated_card.meta.id or f"dish_{int(time.time())}"
-                allocated_result = allocator.allocate_articles(
-                    article_type=ArticleType.DISH,
-                    count=1,
-                    entity_ids=[dish_id],
-                    entity_names=[validated_card.meta.title]
-                )
-                
-                if allocated_result and len(allocated_result) > 0:
-                    dish_article = allocated_result[0]  # First article from the list
+                # STEP 1: Попробуем найти блюдо в iiko RMS
+                dish_found_in_rms = False
+                try:
+                    from ..integrations.iiko_rms_service import IikoRmsService
+                    from ..exports.iiko_xlsx import find_dish_in_iiko_rms
                     
-                    # Создаем обновленное meta с article
+                    rms_service = IikoRmsService()
+                    dish_search_result = find_dish_in_iiko_rms(validated_card.meta.title, rms_service)
+                    
+                    if dish_search_result.get('status') == 'found' and dish_search_result.get('dish_code'):
+                        dish_article = dish_search_result['dish_code']
+                        dish_found_in_rms = True
+                        print(f"✅ Found existing dish in iiko RMS: {validated_card.meta.title} -> {dish_article}")
+                except Exception as e:
+                    print(f"⚠️ Error searching dish in RMS: {e}")
+                
+                # STEP 2: Если не нашли в RMS - используем ArticleAllocator
+                if not dish_found_in_rms:
+                    from ..integrations.article_allocator import ArticleAllocator, ArticleType
+                    allocator = ArticleAllocator()
+                    dish_id = validated_card.meta.id or f"dish_{int(time.time())}"
+                    allocated_result = allocator.allocate_articles(
+                        article_type=ArticleType.DISH,
+                        count=1,
+                        entity_ids=[dish_id],
+                        entity_names=[validated_card.meta.title]
+                    )
+                    
+                    if allocated_result and len(allocated_result) > 0:
+                        dish_article = allocated_result[0]  # First article from the list
+                        print(f"✅ Generated new dish article: {dish_article}")
+                
+                # Обновляем meta с найденным или сгенерированным артикулом
+                if dish_article:
                     updated_meta = validated_card.meta.model_copy(deep=True)
                     if hasattr(updated_meta, 'article'):
                         updated_meta.article = dish_article
@@ -675,7 +694,6 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
                         updated_meta = MetaV2.model_validate(meta_dict)
                     
                     validated_card = validated_card.model_copy(update={"meta": updated_meta})
-                    print(f"✅ Generated dish article: {dish_article}")
             
             # Генерируем артикулы для ингредиентов, если отсутствуют
             updated_ingredients = []
