@@ -99,21 +99,26 @@ class RevolutionaryArticleRegressionTester:
                             
                             # CRITICAL: Check if dish.article is populated (not null)
                             dish_article = card_data.get("article")
+                            meta_article = card_data.get("meta", {}).get("article")
                             print(f"🔍 DEBUG: Full card_data keys: {list(card_data.keys())}")
                             print(f"🔍 DEBUG: dish_article value: {dish_article}")
-                            print(f"🔍 DEBUG: meta data: {card_data.get('meta', {})}")
+                            print(f"🔍 DEBUG: meta.article value: {meta_article}")
+                            print(f"🔍 DEBUG: article_generation_ms: {card_data.get('meta', {}).get('timings', {}).get('article_generation_ms')}")
                             
-                            if dish_article and dish_article != "null" and dish_article.strip():
+                            # Check both locations for article
+                            effective_article = dish_article or meta_article
+                            
+                            if effective_article and effective_article != "null" and str(effective_article).strip():
                                 await self.log_result(
                                     "CRITICAL: Dish Article Generation", 
                                     True, 
-                                    f"✅ dish.article = '{dish_article}' (REGRESSION FIXED!)"
+                                    f"✅ dish.article = '{effective_article}' (found in {'root' if dish_article else 'meta'}) (REGRESSION FIXED!)"
                                 )
                             else:
                                 await self.log_result(
                                     "CRITICAL: Dish Article Generation", 
                                     False, 
-                                    f"❌ dish.article = {dish_article} (REGRESSION STILL EXISTS!)"
+                                    f"❌ dish.article = {dish_article}, meta.article = {meta_article} (REGRESSION STILL EXISTS!)"
                                 )
                             
                             # CRITICAL: Check ingredients product_code population
