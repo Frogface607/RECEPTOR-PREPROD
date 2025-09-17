@@ -69,12 +69,14 @@ class RevolutionaryArticleRegressionTester:
         """Test the specific dish mentioned in the revolution request using V2 API"""
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
-                # Use the V2 API endpoint for tech card generation
+                # Use the V2 API endpoint for tech card generation with correct ProfileInput format
                 payload = {
-                    "user_id": self.test_user_id,
-                    "dish_name": dish_name,
-                    "portions": 1,  # Standard portion as per recent fixes
-                    "city": "moskva"
+                    "name": dish_name,
+                    "cuisine": "русская",
+                    "equipment": [],
+                    "budget": None,
+                    "dietary": [],
+                    "user_id": self.test_user_id
                 }
                 
                 print(f"🔥 REVOLUTIONARY TEST: Generating '{dish_name}' using V2 API...")
@@ -82,75 +84,91 @@ class RevolutionaryArticleRegressionTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    tech_card_id = data.get("id")
+                    card_data = data.get("card")
+                    status = data.get("status")
                     
-                    if tech_card_id:
-                        self.generated_tech_cards.append({
-                            "id": tech_card_id,
-                            "dish_name": dish_name,
-                            "data": data
-                        })
+                    if card_data:
+                        tech_card_id = card_data.get("meta", {}).get("id")
                         
-                        # CRITICAL: Check if dish.article is populated (not null)
-                        dish_article = data.get("article")
-                        if dish_article and dish_article != "null" and dish_article.strip():
-                            await self.log_result(
-                                "CRITICAL: Dish Article Generation", 
-                                True, 
-                                f"✅ dish.article = '{dish_article}' (REGRESSION FIXED!)"
-                            )
-                        else:
-                            await self.log_result(
-                                "CRITICAL: Dish Article Generation", 
-                                False, 
-                                f"❌ dish.article = {dish_article} (REGRESSION STILL EXISTS!)"
-                            )
-                        
-                        # CRITICAL: Check ingredients product_code population
-                        ingredients = data.get("ingredients", [])
-                        if ingredients:
-                            populated_codes = 0
-                            total_ingredients = len(ingredients)
+                        if tech_card_id:
+                            self.generated_tech_cards.append({
+                                "id": tech_card_id,
+                                "dish_name": dish_name,
+                                "data": card_data
+                            })
                             
-                            for ingredient in ingredients:
-                                product_code = ingredient.get("product_code")
-                                if product_code and product_code != "null" and product_code.strip():
-                                    populated_codes += 1
-                            
-                            if populated_codes > 0:
+                            # CRITICAL: Check if dish.article is populated (not null)
+                            dish_article = card_data.get("article")
+                            if dish_article and dish_article != "null" and dish_article.strip():
                                 await self.log_result(
-                                    "CRITICAL: Ingredients Product Code Generation", 
+                                    "CRITICAL: Dish Article Generation", 
                                     True, 
-                                    f"✅ {populated_codes}/{total_ingredients} ingredients have product_code (REGRESSION FIXED!)"
+                                    f"✅ dish.article = '{dish_article}' (REGRESSION FIXED!)"
                                 )
                             else:
                                 await self.log_result(
-                                    "CRITICAL: Ingredients Product Code Generation", 
+                                    "CRITICAL: Dish Article Generation", 
                                     False, 
-                                    f"❌ 0/{total_ingredients} ingredients have product_code (REGRESSION STILL EXISTS!)"
+                                    f"❌ dish.article = {dish_article} (REGRESSION STILL EXISTS!)"
                                 )
-                        
-                        # Check status is READY (not DRAFT)
-                        status = data.get("status", "").upper()
-                        if status == "READY":
-                            await self.log_result(
-                                "Tech Card Status", 
-                                True, 
-                                f"✅ Status = {status} (not DRAFT)"
-                            )
+                            
+                            # CRITICAL: Check ingredients product_code population
+                            ingredients = card_data.get("ingredients", [])
+                            if ingredients:
+                                populated_codes = 0
+                                total_ingredients = len(ingredients)
+                                
+                                for ingredient in ingredients:
+                                    product_code = ingredient.get("product_code")
+                                    if product_code and product_code != "null" and product_code.strip():
+                                        populated_codes += 1
+                                
+                                if populated_codes > 0:
+                                    await self.log_result(
+                                        "CRITICAL: Ingredients Product Code Generation", 
+                                        True, 
+                                        f"✅ {populated_codes}/{total_ingredients} ingredients have product_code (REGRESSION FIXED!)"
+                                    )
+                                else:
+                                    await self.log_result(
+                                        "CRITICAL: Ingredients Product Code Generation", 
+                                        False, 
+                                        f"❌ 0/{total_ingredients} ingredients have product_code (REGRESSION STILL EXISTS!)"
+                                    )
+                            
+                            # Check status is READY (not DRAFT)
+                            if status == "success":
+                                await self.log_result(
+                                    "Tech Card Status", 
+                                    True, 
+                                    f"✅ Status = {status} (SUCCESS)"
+                                )
+                            elif status == "draft":
+                                await self.log_result(
+                                    "Tech Card Status", 
+                                    False, 
+                                    f"⚠️ Status = {status} (DRAFT - has validation issues)"
+                                )
+                            else:
+                                await self.log_result(
+                                    "Tech Card Status", 
+                                    False, 
+                                    f"❌ Status = {status} (ERROR)"
+                                )
+                            
+                            return tech_card_id, card_data
                         else:
                             await self.log_result(
-                                "Tech Card Status", 
+                                "Revolutionary Dish Generation", 
                                 False, 
-                                f"⚠️ Status = {status} (expected READY)"
+                                f"No ID in card meta: {card_data.get('meta', {})}"
                             )
-                        
-                        return tech_card_id, data
+                            return None, None
                     else:
                         await self.log_result(
                             "Revolutionary Dish Generation", 
                             False, 
-                            f"No ID returned: {data}"
+                            f"No card data returned: {data}"
                         )
                         return None, None
                 else:
