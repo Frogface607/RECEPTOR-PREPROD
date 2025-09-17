@@ -66,9 +66,10 @@ class RevolutionaryArticleRegressionTester:
             return False
     
     async def test_revolutionary_dish_generation(self, dish_name: str = "Борщ украинский с говядиной"):
-        """Test the specific dish mentioned in the revolution request"""
+        """Test the specific dish mentioned in the revolution request using V2 API"""
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
+                # Use the V2 API endpoint for tech card generation
                 payload = {
                     "user_id": self.test_user_id,
                     "dish_name": dish_name,
@@ -76,8 +77,8 @@ class RevolutionaryArticleRegressionTester:
                     "city": "moskva"
                 }
                 
-                print(f"🔥 REVOLUTIONARY TEST: Generating '{dish_name}'...")
-                response = await client.post(f"{API_BASE}/generate-tech-card", json=payload)
+                print(f"🔥 REVOLUTIONARY TEST: Generating '{dish_name}' using V2 API...")
+                response = await client.post(f"{API_BASE}/v1/techcards.v2/generate?use_llm=true", json=payload)
                 
                 if response.status_code == 200:
                     data = response.json()
