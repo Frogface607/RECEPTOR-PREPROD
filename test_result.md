@@ -14,7 +14,7 @@
 # Main and testing agents must follow this exact format to maintain testing data. 
 # The testing data must be entered in yaml format Below is the data structure:
 # 
-## user_problem_statement: CLEANUP TECH CARD DATA & UI - P0 Priority Task. Навести полный порядок в данных и интерфейсе: только READY техкарты, чистые ID, убрать все warning'и и ошибки. Batch 1: Обновить pipeline так, чтобы все новые и существующие техкарты сразу создавались со статусом READY, заменить диапазоны типа '9969-86' на чистые ID (UUID или последовательные числа), провести проверку и удалить некорректные ID во всех каталогах. Batch 2: Убрать все warning-метки: 'Без SKU', 'no БЖУ', 'no price' на главном экране и внутри техкарты, спрятать/исправить все ошибки валидации — техкарты должны быть без красного текста и ошибок, проверить отображение: только актуальные и работающие метки.
+## user_problem_statement: URGENT REGRESSION DIAGNOSIS: Критический анализ проблемы с извлечением артикулов из iiko - Пользователь сообщает, что раньше система правильно извлекала артикулы из его iiko, но теперь все техкарты генерируются с article=null и product_code=null. Это регрессия!
 ## backend:
 ##   - task: "Task name"
 ##     implemented: true
