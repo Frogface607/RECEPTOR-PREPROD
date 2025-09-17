@@ -122,14 +122,12 @@ class RevolutionaryTester:
         """ТЕСТ ПОДКЛЮЧЕНИЯ К IIKO RMS: с кредами Sergey/metkamfetamin"""
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                # Test iiko RMS connection with real credentials
+                # Test iiko connection with real credentials using v2 API
                 connection_data = {
-                    "login": "Sergey",
-                    "password": "metkamfetamin",
-                    "base_url": "https://iikoffice1.api.rms.ru"
+                    "user_id": self.test_user_id
                 }
                 
-                print(f"🔌 Testing iiko RMS connection with Sergey credentials...")
+                print(f"🔌 Testing iiko connection with Sergey credentials...")
                 
                 response = await client.post(
                     f"{API_BASE}/iiko/connect", 
@@ -139,14 +137,15 @@ class RevolutionaryTester:
                 if response.status_code == 200:
                     data = response.json()
                     
-                    is_connected = data.get('success', False)
-                    organization_name = data.get('organization_name', '')
-                    products_count = data.get('products_count', 0)
+                    status = data.get('status', '')
+                    organizations = data.get('organizations', [])
+                    
+                    is_connected = status == 'connected' and len(organizations) > 0
                     
                     await self.log_result(
                         "iiko RMS Connection", 
                         is_connected, 
-                        f"Connected={is_connected}, org='{organization_name}', products={products_count}"
+                        f"status={status}, organizations={len(organizations)}"
                     )
                     
                     return data
