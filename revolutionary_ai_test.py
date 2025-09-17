@@ -48,7 +48,8 @@ class RevolutionaryAITester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    tech_card = data.get('techcard', {})
+                    tech_card = data.get('card', {})
+                    status = data.get('status', '')
                     
                     # Check if it's a real AI generation (not skeleton)
                     if tech_card and len(tech_card.get('ingredients', [])) > 5:
@@ -57,7 +58,7 @@ class RevolutionaryAITester:
                             await self.log_result(
                                 "Real AI Generation", 
                                 True, 
-                                f"Generated in {generation_time:.1f}s with {len(tech_card.get('ingredients', []))} ingredients"
+                                f"Generated in {generation_time:.1f}s with {len(tech_card.get('ingredients', []))} ingredients, status: {status}"
                             )
                             self.generated_tech_cards.append(tech_card)
                             return tech_card
@@ -65,13 +66,15 @@ class RevolutionaryAITester:
                             await self.log_result(
                                 "Real AI Generation", 
                                 False, 
-                                f"Generation time {generation_time:.1f}s suspicious (expected 15-45s)"
+                                f"Generation time {generation_time:.1f}s suspicious (expected 15-45s), status: {status}"
                             )
+                            self.generated_tech_cards.append(tech_card)
+                            return tech_card  # Still return for further testing
                     else:
                         await self.log_result(
                             "Real AI Generation", 
                             False, 
-                            f"Generated skeleton with only {len(tech_card.get('ingredients', []))} ingredients"
+                            f"Generated skeleton with only {len(tech_card.get('ingredients', []))} ingredients, status: {status}"
                         )
                 else:
                     await self.log_result(
