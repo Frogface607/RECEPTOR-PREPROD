@@ -456,6 +456,12 @@ class RevolutionaryArticleRegressionTester:
         print(f"Expected: dish.article ≠ null, ingredients.product_code ≠ null, status = READY")
         print("=" * 80)
         
+        # Test 0: Create test user
+        print("\n🔥 TEST 0: CREATE TEST USER")
+        user_created = await self.create_test_user()
+        if not user_created:
+            print("⚠️ Could not create test user, proceeding anyway...")
+        
         # Test 1: Revolutionary dish generation with article validation
         print("\n🔥 TEST 1: REVOLUTIONARY DISH GENERATION")
         tech_card_id, tech_card_data = await self.test_revolutionary_dish_generation()
