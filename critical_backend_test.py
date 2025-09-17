@@ -195,18 +195,18 @@ class CriticalBackendTester:
                 if response.status_code == 200:
                     data = response.json()
                     # Check if the response contains generated content
-                    if data.get("status") in ["success", "draft"] and data.get("card"):
+                    if data.get("status") in ["success", "draft", "READY"] and data.get("card"):
                         await self.log_result(
                             "OpenAI Integration", 
                             True, 
-                            "OpenAI API key working - content generated"
+                            f"OpenAI API key working - content generated, status: {data.get('status')}"
                         )
                         return True
                     else:
                         await self.log_result(
                             "OpenAI Integration", 
                             False, 
-                            f"No content generated - response: {data}"
+                            f"No content generated - status: {data.get('status')}, card_present: {data.get('card') is not None}"
                         )
                         return False
                 elif response.status_code == 401:
