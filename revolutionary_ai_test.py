@@ -198,12 +198,12 @@ class RevolutionaryAITester:
             )
             return
         
-        tech_card_id = tech_card.get('id')
+        tech_card_id = tech_card.get('id') or tech_card.get('meta', {}).get('id')
         if not tech_card_id:
             await self.log_result(
                 "Database Persistence", 
                 False, 
-                "Tech card has no ID"
+                f"Tech card has no ID in card or meta: {list(tech_card.keys())}"
             )
             return
         
