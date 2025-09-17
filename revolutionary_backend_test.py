@@ -45,22 +45,25 @@ class RevolutionaryTester:
         """ТЕСТ РЕАЛЬНОЙ ГЕНЕРАЦИИ ТЕХКАРТЫ: Борщ украинский с говядиной"""
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
-                # Test tech card generation with real LLM
+                # Test tech card generation with real LLM using v2 API
                 dish_name = "Борщ украинский с говядиной"
                 
                 generation_data = {
                     "dish_name": dish_name,
                     "user_id": self.test_user_id,
-                    "use_llm": True,  # Ensure LLM is used
-                    "model": "gpt-4o-mini"  # Specified model
+                    "region": "moskva",
+                    "venue_type": "restaurant",
+                    "cuisine_focus": ["russian"],
+                    "average_check": 1500
                 }
                 
                 print(f"🔥 Generating tech card for '{dish_name}' with real LLM...")
                 start_time = time.time()
                 
                 response = await client.post(
-                    f"{API_BASE}/generate-tech-card", 
-                    json=generation_data
+                    f"{API_BASE}/v1/techcards.v2/generate", 
+                    json=generation_data,
+                    params={"use_llm": "true"}
                 )
                 
                 generation_time = time.time() - start_time
@@ -69,20 +72,22 @@ class RevolutionaryTester:
                     data = response.json()
                     
                     # Check if it's real LLM generation (not skeleton)
-                    tech_card_content = data.get('tech_card', '')
+                    tech_card = data.get('techcard', {})
+                    meta = tech_card.get('meta', {})
+                    title = meta.get('title', '')
                     
                     # Verify it's not a skeleton response
                     is_real_llm = (
-                        len(tech_card_content) > 500 and  # Substantial content
-                        dish_name.lower() in tech_card_content.lower() and  # Contains dish name
-                        'ингредиент' in tech_card_content.lower() and  # Has ingredients
-                        'приготовление' in tech_card_content.lower() and  # Has preparation
-                        'skeleton' not in tech_card_content.lower()  # Not skeleton
+                        len(str(tech_card)) > 500 and  # Substantial content
+                        dish_name.lower() in title.lower() and  # Contains dish name
+                        len(tech_card.get('ingredients', [])) > 0 and  # Has ingredients
+                        len(tech_card.get('process', [])) > 0 and  # Has process steps
+                        'skeleton' not in str(tech_card).lower()  # Not skeleton
                     )
                     
                     # Check for article and product_code fields
-                    has_article = data.get('dish', {}).get('article') is not None
-                    ingredients = data.get('ingredients', [])
+                    has_article = tech_card.get('article') is not None
+                    ingredients = tech_card.get('ingredients', [])
                     has_product_codes = any(ing.get('product_code') for ing in ingredients)
                     
                     self.generated_tech_cards.append({
@@ -90,7 +95,8 @@ class RevolutionaryTester:
                         'name': dish_name,
                         'has_article': has_article,
                         'has_product_codes': has_product_codes,
-                        'generation_time': generation_time
+                        'generation_time': generation_time,
+                        'techcard': tech_card
                     })
                     
                     await self.log_result(
