@@ -293,7 +293,7 @@ class RevolutionaryArticleRegressionTester:
                 return
             
             # Check if timing metadata exists
-            timing_data = tech_card_data.get("timing", {})
+            timing_data = tech_card_data.get("meta", {}).get("timings", {})
             article_generation_time = timing_data.get("article_generation_ms")
             
             if article_generation_time is not None:
@@ -304,7 +304,7 @@ class RevolutionaryArticleRegressionTester:
                 )
                 
                 # Check if article was actually populated despite timing being recorded
-                dish_article = tech_card_data.get("article")
+                dish_article = tech_card_data.get("article") or tech_card_data.get("meta", {}).get("article")
                 if dish_article and dish_article != "null":
                     await self.log_result(
                         "Pipeline Order Verification", 
