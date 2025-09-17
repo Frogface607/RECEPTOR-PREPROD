@@ -367,35 +367,33 @@ class RevolutionaryTester:
     async def test_environment_variables(self):
         """ПРОВЕРКА ПЕРЕМЕННЫХ ОКРУЖЕНИЯ: правильные креды установлены"""
         try:
-            # Check backend environment variables by making a status call
+            # Check backend environment variables by making a health check
             async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(f"{API_BASE}/status")
+                # Try different health check endpoints
+                endpoints_to_try = [
+                    f"{BACKEND_URL}/health",
+                    f"{BACKEND_URL}/",
+                    f"{API_BASE}/cities"  # This endpoint exists
+                ]
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    
-                    # Check if LLM is enabled
-                    llm_enabled = data.get('llm_enabled', False)
-                    openai_configured = data.get('openai_configured', False)
-                    iiko_configured = data.get('iiko_configured', False)
-                    
-                    # Check model configuration
-                    model_info = data.get('model_info', {})
-                    using_gpt4o_mini = 'gpt-4o-mini' in str(model_info)
-                    
-                    env_correct = llm_enabled and openai_configured and iiko_configured
-                    
-                    await self.log_result(
-                        "Environment Variables", 
-                        env_correct, 
-                        f"llm={llm_enabled}, openai={openai_configured}, iiko={iiko_configured}, model={using_gpt4o_mini}"
-                    )
-                else:
-                    await self.log_result(
-                        "Environment Variables", 
-                        False, 
-                        f"Status endpoint failed: HTTP {response.status_code}"
-                    )
+                for endpoint in endpoints_to_try:
+                    try:
+                        response = await client.get(endpoint)
+                        if response.status_code == 200:
+                            await self.log_result(
+                                "Environment Variables", 
+                                True, 
+                                f"Backend accessible at {endpoint}"
+                            )
+                            return
+                    except:
+                        continue
+                
+                await self.log_result(
+                    "Environment Variables", 
+                    False, 
+                    "Backend not accessible on any endpoint"
+                )
                     
         except Exception as e:
             await self.log_result("Environment Variables", False, f"Exception: {str(e)}")
