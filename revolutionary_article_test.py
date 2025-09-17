@@ -8,8 +8,8 @@ import sys
 from datetime import datetime
 import uuid
 
-# Backend URL from environment - using the external URL for testing
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://digital-horeca.preview.emergentagent.com')
+# Backend URL - using internal URL for testing
+BACKEND_URL = "http://localhost:8001"
 API_BASE = f"{BACKEND_URL}/api"
 
 class RevolutionaryArticleRegressionTester:
