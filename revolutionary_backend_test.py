@@ -49,12 +49,12 @@ class RevolutionaryTester:
                 dish_name = "Борщ украинский с говядиной"
                 
                 generation_data = {
-                    "dish_name": dish_name,
-                    "user_id": self.test_user_id,
-                    "region": "moskva",
-                    "venue_type": "restaurant",
-                    "cuisine_focus": ["russian"],
-                    "average_check": 1500
+                    "name": dish_name,  # Correct field name for v2 API
+                    "cuisine": "russian",
+                    "equipment": [],
+                    "budget": 1500.0,
+                    "dietary": [],
+                    "user_id": self.test_user_id
                 }
                 
                 print(f"🔥 Generating tech card for '{dish_name}' with real LLM...")
@@ -72,7 +72,17 @@ class RevolutionaryTester:
                     data = response.json()
                     
                     # Check if it's real LLM generation (not skeleton)
-                    tech_card = data.get('techcard', {})
+                    status = data.get('status', '')
+                    tech_card = data.get('card', {})
+                    
+                    if not tech_card:
+                        await self.log_result(
+                            "Real LLM Generation", 
+                            False, 
+                            f"No tech card returned, status={status}"
+                        )
+                        return None
+                    
                     meta = tech_card.get('meta', {})
                     title = meta.get('title', '')
                     
@@ -82,7 +92,7 @@ class RevolutionaryTester:
                         dish_name.lower() in title.lower() and  # Contains dish name
                         len(tech_card.get('ingredients', [])) > 0 and  # Has ingredients
                         len(tech_card.get('process', [])) > 0 and  # Has process steps
-                        'skeleton' not in str(tech_card).lower()  # Not skeleton
+                        status in ['success', 'draft']  # Valid status
                     )
                     
                     # Check for article and product_code fields
@@ -91,18 +101,19 @@ class RevolutionaryTester:
                     has_product_codes = any(ing.get('product_code') for ing in ingredients)
                     
                     self.generated_tech_cards.append({
-                        'id': data.get('id'),
+                        'id': tech_card.get('id'),
                         'name': dish_name,
                         'has_article': has_article,
                         'has_product_codes': has_product_codes,
                         'generation_time': generation_time,
-                        'techcard': tech_card
+                        'techcard': tech_card,
+                        'status': status
                     })
                     
                     await self.log_result(
                         "Real LLM Generation", 
                         is_real_llm, 
-                        f"Generated '{dish_name}' in {generation_time:.1f}s, real_llm={is_real_llm}, has_article={has_article}, has_product_codes={has_product_codes}"
+                        f"Generated '{dish_name}' in {generation_time:.1f}s, status={status}, real_llm={is_real_llm}, has_article={has_article}, has_product_codes={has_product_codes}"
                     )
                     
                     return data
