@@ -21,7 +21,7 @@ import time
 from typing import Dict, Any, List
 
 # Backend URL from environment
-BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com"
+BACKEND_URL = "https://digital-horeca.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class PortionNormalizationBugFixValidator:

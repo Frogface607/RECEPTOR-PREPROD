@@ -8,7 +8,7 @@ import requests
 import json
 import re
 
-BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com/api"
+BACKEND_URL = "https://digital-horeca.preview.emergentagent.com/api"
 
 def analyze_tech_card_pricing(dish_name):
     """Analyze pricing in a specific tech card"""

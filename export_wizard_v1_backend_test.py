@@ -16,7 +16,7 @@ import os
 from datetime import datetime, timezone
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dashboard-rescue-8.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://digital-horeca.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1/techcards.v2"
 
 # Test data - sample TechCardV2 for testing

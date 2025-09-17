@@ -13,7 +13,7 @@ import httpx
 import asyncio
 
 # Get backend URL from environment
-BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com/api"
+BACKEND_URL = "https://digital-horeca.preview.emergentagent.com/api"
 
 # IIKo credentials from user
 IIKO_LOGIN = "Sergey"

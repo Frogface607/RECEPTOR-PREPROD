@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://dashboard-rescue-8.preview.emergentagent.com/api"
+BACKEND_URL = "https://digital-horeca.preview.emergentagent.com/api"
 
 def test_venue_types():
     """Test GET /api/venue-types - Should return 14 venue types"""

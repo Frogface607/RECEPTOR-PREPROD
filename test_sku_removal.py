@@ -13,7 +13,7 @@ def test_html_sku_removal():
     try:
         # Создаем техkарту
         response = requests.post(
-            "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://digital-horeca.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={"name": "Тест удаления SKU", "user_id": "sku_test"},
             timeout=60
         )
@@ -25,7 +25,7 @@ def test_html_sku_removal():
             if card:
                 # Отправляем техkарту на print endpoint
                 print_response = requests.post(
-                    "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/print",
+                    "https://digital-horeca.preview.emergentagent.com/api/v1/techcards.v2/print",
                     json=card,
                     timeout=30
                 )
@@ -74,7 +74,7 @@ def test_pdf_still_works():
     try:
         # Создаем техkарту
         response = requests.post(
-            "https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://digital-horeca.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={"name": "PDF тест", "user_id": "pdf_test"},
             timeout=60
         )
@@ -86,7 +86,7 @@ def test_pdf_still_works():
             if card_id:
                 # Пробуем сгенерировать PDF
                 pdf_response = requests.get(
-                    f"https://dashboard-rescue-8.preview.emergentagent.com/api/v1/techcards.v2/{card_id}/pdf",
+                    f"https://digital-horeca.preview.emergentagent.com/api/v1/techcards.v2/{card_id}/pdf",
                     timeout=30
                 )
                 

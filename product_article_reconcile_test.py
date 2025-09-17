@@ -43,7 +43,7 @@ backend_dir = Path(__file__).parent / "backend"
 sys.path.insert(0, str(backend_dir))
 
 # Backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://dashboard-rescue-8.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://digital-horeca.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class ProductArticleReconcileTest:
