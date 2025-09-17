@@ -354,7 +354,8 @@ class RevolutionaryAITester:
                         
                         # Check if our generated tech card is visible
                         if self.generated_tech_cards:
-                            our_card_id = self.generated_tech_cards[0].get('id')
+                            our_card_data = self.generated_tech_cards[0]
+                            our_card_id = our_card_data.get('card', {}).get('id') or our_card_data.get('card', {}).get('meta', {}).get('id')
                             found = any(item.get('id') == our_card_id for item in history)
                             
                             if found:
@@ -367,7 +368,7 @@ class RevolutionaryAITester:
                                 await self.log_result(
                                     "Generated Card Visible", 
                                     False, 
-                                    f"Our generated tech card not found in dashboard"
+                                    f"Our generated tech card not found in dashboard (looking for ID: {our_card_id})"
                                 )
                     else:
                         await self.log_result(
