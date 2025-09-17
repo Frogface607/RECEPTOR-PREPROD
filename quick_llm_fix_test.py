@@ -73,11 +73,11 @@ class TechCardGenerationTest:
                 "dietary": []
             }
             
-            print(f"   Генерируем техкарту: {generation_data['dish_name']}")
+            print(f"   Генерируем техкарту: {generation_data['name']}")
             
-            # Make generation request
+            # Make generation request with use_llm query parameter
             response = self.session.post(
-                f"{API_BASE}/v1/techcards.v2/generate",
+                f"{API_BASE}/v1/techcards.v2/generate?use_llm=true",
                 json=generation_data,
                 timeout=60
             )
