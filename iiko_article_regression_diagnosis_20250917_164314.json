@@ -1,0 +1,18 @@
+{
+  "total_tests": 7,
+  "passed_tests": 0,
+  "has_regression": false,
+  "iiko_connection": null,
+  "rms_debug_result": null,
+  "generation_result": null,
+  "config_result": null,
+  "all_results": [
+    "❌ FAIL: IIKo Connection Status - Health endpoint failed: 502",
+    "❌ FAIL: RMS Product Debug Endpoint - HTTP 502: ",
+    "❌ FAIL: Tech Card Article Generation - Generation failed: HTTP 502: ",
+    "❌ FAIL: Tech Card Article Generation - Generation failed: HTTP 502: ",
+    "❌ FAIL: Article Generation Pipeline - Could not analyze pipeline - no tech card data",
+    "❌ FAIL: Export Workflow Test - No tech cards available for export testing",
+    "❌ FAIL: Configuration Analysis - Config endpoint not accessible: HTTP 502"
+  ]
+}
