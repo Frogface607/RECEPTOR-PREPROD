@@ -18,6 +18,7 @@ class RevolutionaryTester:
         self.test_user_id = f"revolutionary_test_{str(uuid.uuid4())[:8]}"
         self.results = []
         self.generated_tech_cards = []
+        self.user_created = False
         
     async def log_result(self, test_name: str, success: bool, details: str):
         """Log test result"""
