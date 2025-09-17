@@ -106,17 +106,17 @@ class TechCardGenerationTest:
                 return None
                 
             # Check if generation was successful
-            if not result.get('success', False):
+            if result.get('status') != 'success':
                 self.log_result(
                     "LLM Tech Card Generation", 
                     False, 
-                    f"Generation failed: {result.get('error', 'Unknown error')}", 
+                    f"Generation failed: status={result.get('status')}, message={result.get('message', 'Unknown error')}", 
                     duration
                 )
                 return None
                 
             # Check if real LLM was used (not skeleton)
-            techcard = result.get('techcard', {})
+            techcard = result.get('card', {})
             if not techcard:
                 self.log_result(
                     "LLM Tech Card Generation", 
