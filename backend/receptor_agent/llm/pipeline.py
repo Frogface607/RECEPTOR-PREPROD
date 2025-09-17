@@ -682,15 +682,55 @@ def run_pipeline(profile: ProfileInput) -> PipelineResult:
             ingredient_ids_for_allocation = []
             ingredients_needing_articles = []
             
+            # CRITICAL FIX: Сначала ищем артикулы в iiko RMS, затем используем ArticleAllocator
+            try:
+                from ..integrations.iiko_rms_service import IikoRmsService
+                rms_service = IikoRmsService()
+            except Exception as e:
+                print(f"⚠️ Could not initialize RMS service: {e}")
+                rms_service = None
+            
             for i, ingredient in enumerate(validated_card.ingredients):
                 product_code = getattr(ingredient, 'product_code', None)
-                if not product_code:
-                    # Создаем временный ID для ингредиента
-                    temp_id = f"ingredient_{i}_{ingredient.name[:10].lower().replace(' ', '_')}"
-                    ingredient_ids_for_allocation.append(temp_id)
-                    ingredients_needing_articles.append((i, ingredient))
+                updated_ingredient = ingredient
                 
-                updated_ingredients.append(ingredient)
+                if not product_code:
+                    # STEP 1: Попробуем найти артикул в iiko RMS по skuId
+                    sku_id = getattr(ingredient, 'skuId', None)
+                    
+                    if sku_id and rms_service:
+                        try:
+                            from ..exports.iiko_xlsx import get_product_code_from_rms
+                            found_article = get_product_code_from_rms(sku_id, rms_service)
+                            
+                            # Если нашли артикул и это не тот же skuId (значит нашли реальный артикул)
+                            if found_article and found_article != sku_id:
+                                # Обновляем ингредиент с найденным артикулом
+                                ingredient_dict = ingredient.model_dump()
+                                ingredient_dict['product_code'] = found_article
+                                
+                                from ..techcards_v2.schemas import IngredientV2
+                                updated_ingredient = IngredientV2.model_validate(ingredient_dict)
+                                
+                                print(f"✅ Found existing article in iiko RMS for {ingredient.name}: {found_article}")
+                            else:
+                                # STEP 2: Если не нашли в RMS - добавляем в список для ArticleAllocator
+                                temp_id = f"ingredient_{i}_{ingredient.name[:10].lower().replace(' ', '_')}"
+                                ingredient_ids_for_allocation.append(temp_id)
+                                ingredients_needing_articles.append((i, ingredient))
+                        except Exception as e:
+                            print(f"⚠️ Error searching RMS for {ingredient.name}: {e}")
+                            # Fallback: добавляем в список для ArticleAllocator
+                            temp_id = f"ingredient_{i}_{ingredient.name[:10].lower().replace(' ', '_')}"
+                            ingredient_ids_for_allocation.append(temp_id)
+                            ingredients_needing_articles.append((i, ingredient))
+                    else:
+                        # Нет skuId или RMS - используем ArticleAllocator
+                        temp_id = f"ingredient_{i}_{ingredient.name[:10].lower().replace(' ', '_')}"
+                        ingredient_ids_for_allocation.append(temp_id)
+                        ingredients_needing_articles.append((i, ingredient))
+                
+                updated_ingredients.append(updated_ingredient)
             
             # Выделяем артикулы для ингредиентов
             if ingredient_ids_for_allocation:
