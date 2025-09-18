@@ -63,7 +63,13 @@ class DishArticleFixTester:
                     return False
                 
                 tech_card_data = gen_response.json()
-                tech_card_id = tech_card_data.get('id')
+                
+                # Extract tech card from nested response structure
+                if 'card' in tech_card_data:
+                    card_data = tech_card_data['card']
+                    tech_card_id = card_data.get('meta', {}).get('id')
+                else:
+                    tech_card_id = tech_card_data.get('id')
                 
                 if not tech_card_id:
                     await self.log_result(
