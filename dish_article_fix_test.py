@@ -42,8 +42,8 @@ class DishArticleFixTester:
                 generation_payload = {
                     "name": "Борщ с мясом",
                     "cuisine": "русская",
-                    "equipment": "плита, кастрюля",
-                    "budget": "средний",
+                    "equipment": ["плита", "кастрюля"],
+                    "budget": 500.0,
                     "dietary": [],
                     "user_id": self.test_user_id
                 }
