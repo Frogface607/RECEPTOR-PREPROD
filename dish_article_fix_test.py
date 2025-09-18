@@ -302,8 +302,8 @@ class DishArticleFixTester:
                     generation_payload = {
                         "name": dish_name,
                         "cuisine": "европейская",
-                        "equipment": "плита, духовка",
-                        "budget": "средний",
+                        "equipment": ["плита", "духовка"],
+                        "budget": 600.0,
                         "dietary": [],
                         "user_id": self.test_user_id
                     }
