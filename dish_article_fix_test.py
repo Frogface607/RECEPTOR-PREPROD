@@ -322,7 +322,12 @@ class DishArticleFixTester:
                     
                     if response.status_code == 200:
                         data = response.json()
-                        meta = data.get('meta', {})
+                        
+                        # Handle nested response structure
+                        if 'card' in data and 'meta' in data['card']:
+                            meta = data['card']['meta']
+                        else:
+                            meta = data.get('meta', {})
                         
                         article = meta.get('article')
                         dish_code = meta.get('dish_code')
