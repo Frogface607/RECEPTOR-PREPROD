@@ -89,8 +89,8 @@ class DishArticleFixTester:
                 print(f"\n🔍 Step 2: Verifying dish article in meta...")
                 
                 dish_article = None
-                if 'meta' in tech_card_data and isinstance(tech_card_data['meta'], dict):
-                    meta = tech_card_data['meta']
+                if 'card' in tech_card_data and 'meta' in tech_card_data['card']:
+                    meta = tech_card_data['card']['meta']
                     dish_article = meta.get('article') or meta.get('dish_code')
                     
                     if dish_article:
@@ -110,7 +110,7 @@ class DishArticleFixTester:
                     await self.log_result(
                         "Dish Article in Meta", 
                         False, 
-                        f"No meta field or invalid meta structure: {tech_card_data.get('meta', 'MISSING')}"
+                        f"No meta field or invalid structure: {tech_card_data}"
                     )
                     return False
                 
