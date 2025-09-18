@@ -1,0 +1,50 @@
+/* Typography system */
+@layer base {
+  .text-display-xl {
+    @apply text-5xl font-bold tracking-tight;
+  }
+  
+  .text-display-lg {
+    @apply text-4xl font-bold tracking-tight;
+  }
+  
+  .text-display-md {
+    @apply text-3xl font-bold tracking-tight;
+  }
+  
+  .text-display-sm {
+    @apply text-2xl font-bold tracking-tight;
+  }
+  
+  .text-heading-xl {
+    @apply text-xl font-semibold;
+  }
+  
+  .text-heading-lg {
+    @apply text-lg font-semibold;
+  }
+  
+  .text-heading-md {
+    @apply text-base font-semibold;
+  }
+  
+  .text-heading-sm {
+    @apply text-sm font-semibold;
+  }
+  
+  .text-body-lg {
+    @apply text-lg font-normal;
+  }
+  
+  .text-body-md {
+    @apply text-base font-normal;
+  }
+  
+  .text-body-sm {
+    @apply text-sm font-normal;
+  }
+  
+  .text-body-xs {
+    @apply text-xs font-normal;
+  }
+}
