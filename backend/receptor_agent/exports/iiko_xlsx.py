@@ -1201,7 +1201,10 @@ def create_iiko_ttk_xlsx(card: TechCardV2,
     dish_code = dish_codes_mapping.get(dish_title)
     if not dish_code:
         meta_dict = working_card.meta.model_dump() if hasattr(working_card.meta, 'model_dump') else working_card.meta
-        dish_code = meta_dict.get('dish_code') if isinstance(meta_dict, dict) else None
+        # CRITICAL FIX: Ищем артикул блюда в правильном поле meta.article (не dish_code)
+        dish_code = meta_dict.get('article') or meta_dict.get('dish_code') if isinstance(meta_dict, dict) else None
+        if dish_code:
+            logger.info(f"Found dish article in meta: {dish_code} for '{dish_title}'")
     
     # Check preflight result for dish article
     if not dish_code and preflight_result:
