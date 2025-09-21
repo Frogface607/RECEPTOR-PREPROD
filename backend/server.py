@@ -7182,7 +7182,7 @@ async def save_tech_card(request: dict):
         raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
     
     # Auto-create test user if needed
-    if user_id.startswith("test_user_"):
+    if user_id and user_id.startswith("test_user_"):
         user = await db.users.find_one({"id": user_id})
         if not user:
             test_user = {
