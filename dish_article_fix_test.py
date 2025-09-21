@@ -12,7 +12,7 @@ import openpyxl
 from io import BytesIO
 
 # Backend URL from supervisor config
-BACKEND_URL = "https://e54b08b7-b2c4-44c3-ac3c-3d8ace96d336.preview.emergentagent.com"
+BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class DishArticleFixTester:

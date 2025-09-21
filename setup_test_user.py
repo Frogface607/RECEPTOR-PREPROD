@@ -6,7 +6,7 @@ Setup test user with PRO subscription for menu generation testing
 import requests
 import json
 
-BACKEND_URL = "https://digital-horeca.preview.emergentagent.com/api"
+BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com/api"
 
 def setup_test_user():
     """Setup test user with PRO subscription"""

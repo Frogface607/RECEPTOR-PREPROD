@@ -6,7 +6,7 @@ Debug test for GOST print functionality
 import requests
 import json
 
-BACKEND_URL = "https://digital-horeca.preview.emergentagent.com/api"
+BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com/api"
 
 def create_minimal_valid_techcard():
     """Create minimal valid TechCardV2"""

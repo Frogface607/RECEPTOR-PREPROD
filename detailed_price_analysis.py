@@ -10,7 +10,7 @@ import re
 def analyze_detailed_pricing():
     """Detailed analysis of pricing in tech card generation"""
     
-    base_url = "https://digital-horeca.preview.emergentagent.com/api"
+    base_url = "https://kitchen-pro-2.preview.emergentagent.com/api"
     
     # Register user
     user_data = {

@@ -12,7 +12,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://digital-horeca.preview.emergentagent.com"
+BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_techcard_generation():

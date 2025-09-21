@@ -12,7 +12,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://digital-horeca.preview.emergentagent.com/api"
+BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com/api"
 
 def test_pricing_fix():
     """Test PRICING FIX - Generate tech card with premium ingredients and verify realistic pricing"""
