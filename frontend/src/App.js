@@ -6222,10 +6222,10 @@ function App() {
       
       const requestData = {
         name: dishName,
-        cuisine: selectedCuisine || "европейская", 
-        equipment: selectedEquipment || ["плита", "кастрюля"],
-        budget: selectedBudget ? parseFloat(selectedBudget) : 300.0,
-        dietary: selectedDietary || [],
+        cuisine: venueProfile?.cuisine || "европейская", 
+        equipment: userEquipment.length > 0 ? userEquipment : ["плита", "кастрюля"],
+        budget: venueProfile?.averageCheck ? parseFloat(venueProfile.averageCheck) : 300.0,
+        dietary: [],
         user_id: currentUser?.id || 'test_user_quick'
       };
 
