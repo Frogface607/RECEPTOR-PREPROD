@@ -7081,7 +7081,7 @@ async def generate_inspiration(request: dict):
     user = await db.users.find_one({"id": user_id})
     
     # Если пользователь не найден и это тестовый ID, создаем временного пользователя
-    if not user and user_id.startswith("test_user_"):
+    if not user and user_id and user_id.startswith("test_user_"):
         user = {
             "id": user_id,
             "email": "test@example.com",
