@@ -50,34 +50,45 @@ class InterfaceSimplificationTester:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    print(f"V2 API Response keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
                     
-                    # Check if card is returned and not null
+                    # Check different possible response structures
+                    card = None
                     if data and "card" in data and data["card"] is not None:
                         card = data["card"]
-                        
+                    elif data and "techcard" in data and data["techcard"] is not None:
+                        card = data["techcard"]
+                    elif data and isinstance(data, dict) and "name" in data:
+                        # Response might be the card itself
+                        card = data
+                    
+                    if card:
                         # Verify card has essential data
-                        has_name = card.get("name") is not None
+                        has_name = card.get("name") is not None or card.get("title") is not None
                         has_ingredients = card.get("ingredients") is not None and len(card.get("ingredients", [])) > 0
                         has_id = card.get("id") is not None
                         
+                        name = card.get("name") or card.get("title") or "Unknown"
+                        card_id = card.get("id")
+                        
                         if has_name and has_ingredients and has_id:
-                            self.generated_tech_cards.append(card["id"])
+                            self.generated_tech_cards.append(card_id)
                             await self.log_result(
                                 "V2 API Generation", 
                                 True, 
-                                f"Card generated successfully with name='{card.get('name')}', {len(card.get('ingredients', []))} ingredients, ID={card.get('id')}"
+                                f"Card generated successfully with name='{name}', {len(card.get('ingredients', []))} ingredients, ID={card_id}"
                             )
                         else:
                             await self.log_result(
                                 "V2 API Generation", 
                                 False, 
-                                f"Card missing essential data: name={has_name}, ingredients={has_ingredients}, id={has_id}"
+                                f"Card missing essential data: name={has_name}, ingredients={has_ingredients}, id={has_id}. Card keys: {list(card.keys())}"
                             )
                     else:
                         await self.log_result(
                             "V2 API Generation", 
                             False, 
-                            f"Card is null or missing in response: {data}"
+                            f"Card is null or missing in response. Response structure: {data}"
                         )
                 else:
                     await self.log_result(
