@@ -47,8 +47,8 @@ logger = logging.getLogger(__name__)
 # IIKo Integration Classes
 class IikoServerAuthManager:
     def __init__(self):
-        self.api_login = os.environ.get('IIKO_API_LOGIN')
-        self.api_password = os.environ.get('IIKO_API_PASSWORD')
+        self.api_login = os.environ.get('IIKO_API_LOGIN', 'Sergey')
+        self.api_password = os.environ.get('IIKO_API_PASSWORD', 'metkamfetamin')
         self.base_url = os.environ.get('IIKO_BASE_URL', 'https://iikoffice1.api.rms.ru')
         self.session_key = None
         self.token_expires_at = None
