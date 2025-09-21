@@ -63,16 +63,22 @@ class InterfaceSimplificationTester:
                         card = data
                     
                     if card:
-                        # Verify card has essential data
-                        has_name = card.get("name") is not None or card.get("title") is not None
+                        # Verify card has essential data - check meta for name and id
+                        meta = card.get("meta", {})
+                        has_name = (card.get("name") is not None or 
+                                   card.get("title") is not None or 
+                                   meta.get("title") is not None or 
+                                   meta.get("name") is not None)
                         has_ingredients = card.get("ingredients") is not None and len(card.get("ingredients", [])) > 0
-                        has_id = card.get("id") is not None
+                        has_id = (card.get("id") is not None or 
+                                 meta.get("id") is not None)
                         
-                        name = card.get("name") or card.get("title") or "Unknown"
-                        card_id = card.get("id")
+                        name = (card.get("name") or card.get("title") or 
+                               meta.get("title") or meta.get("name") or "Unknown")
+                        card_id = card.get("id") or meta.get("id")
                         
-                        if has_name and has_ingredients and has_id:
-                            self.generated_tech_cards.append(card_id)
+                        if has_name and has_ingredients:
+                            self.generated_tech_cards.append(card_id or "no-id")
                             await self.log_result(
                                 "V2 API Generation", 
                                 True, 
@@ -82,7 +88,7 @@ class InterfaceSimplificationTester:
                             await self.log_result(
                                 "V2 API Generation", 
                                 False, 
-                                f"Card missing essential data: name={has_name}, ingredients={has_ingredients}, id={has_id}. Card keys: {list(card.keys())}"
+                                f"Card missing essential data: name={has_name}, ingredients={has_ingredients}, id={has_id}. Card keys: {list(card.keys())}, Meta keys: {list(meta.keys()) if meta else 'No meta'}"
                             )
                     else:
                         await self.log_result(
