@@ -1056,7 +1056,7 @@ function App() {
     if (!tcV2) return null;
 
     const meta = tcV2.meta || {};
-    const yield_data = tcV2.yield_ || {}; // Fix: Database stores yield_ not yield
+    const yield_data = tcV2.yield || tcV2.yield_ || {}; // Fix: Support both yield and yield_ formats
     const ingredients = tcV2.ingredients || {};
     const process = tcV2.process || [];
     const storage = tcV2.storage || {};
