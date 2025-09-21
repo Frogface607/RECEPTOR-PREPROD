@@ -3816,7 +3816,7 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
 @app.post("/api/upload-nutrition")
 async def upload_nutrition(file: UploadFile = File(...), user_id: str = Form(...)):
     # Auto-create test user with PRO subscription if needed
-    if user_id.startswith("test_user_"):
+    if user_id and user_id.startswith("test_user_"):
         user = await db.users.find_one({"id": user_id})
         if not user:
             # Create test user with PRO subscription
