@@ -42,6 +42,11 @@ def status_tc_v2():
         "model": os.getenv("TECHCARDS_V2_MODEL","gpt-4o-mini") if _llm_enabled() else None
     }
 
+@router.get("/techcards.v2/test")
+def test_endpoint():
+    """Test endpoint to verify router is working"""
+    return {"message": "TechCards V2 router is working!", "timestamp": datetime.now().isoformat()}
+
 @router.post("/techcards.v2/generate")
 def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, description="override env flag")):
     """
