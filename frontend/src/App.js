@@ -8972,18 +8972,19 @@ function App() {
               </div>
               
               <nav className="flex items-center space-x-1">
+                {/* УПРОЩЕННАЯ НАВИГАЦИЯ: только основные разделы */}
                 <button
-                  onClick={() => setCurrentView('dashboard')}
+                  onClick={() => setCurrentView('create')}
                   className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-                    currentView === 'dashboard' 
+                    currentView === 'create' 
                       ? 'bg-purple-600/20 text-purple-200 shadow-lg border border-purple-500/30 backdrop-blur-sm' 
                       : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm'
                   }`}
-                  title="📊 Dashboard & Analytics"
+                  title="🍽️ Создание техкарт"
                 >
                   <span className="flex items-center space-x-1.5">
-                    <span className="text-xs">📊</span>
-                    <span>Dashboard</span>
+                    <span className="text-xs">🍽️</span>
+                    <span>Главная</span>
                   </span>
                 </button>
                 <button
@@ -9008,31 +9009,32 @@ function App() {
                 >
                   <span className="flex items-center space-x-1.5"><span className="text-xs">🎯</span><span>Menu AI</span></span>
                 </button>
-                <button
-                  onClick={() => setShowProjectsModal(true)}
-                  className="px-4 py-2.5 rounded-lg font-medium text-sm text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm transition-all duration-200"
-                  title="📁 Project Management"
-                >
-                  <span className="flex items-center space-x-1.5">
-                    <span className="text-xs">📁</span>
-                    <span>Projects</span>
-                    {menuProjects.length > 0 && (
-                      <span className="bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded-full text-xs font-semibold">
-                        {menuProjects.length}
+                
+                {/* PRO ФУНКЦИИ - скрыты до PRO версии */}
+                {false && (
+                  <>
+                    <button
+                      onClick={() => setShowProjectsModal(true)}
+                      className="px-4 py-2.5 rounded-lg font-medium text-sm text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm transition-all duration-200"
+                      title="📁 Project Management (PRO)"
+                    >
+                      <span className="flex items-center space-x-1.5">
+                        <span className="text-xs">📁</span>
+                        <span>Projects</span>
                       </span>
-                    )}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setShowAnalyticsModal(true)}
-                  className="px-4 py-2.5 rounded-lg font-medium text-sm text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm transition-all duration-200"
-                  title="📊 Business Analytics"
-                >
-                  <span className="flex items-center space-x-1.5">
-                    <span className="text-xs">📊</span>
-                    <span>Analytics</span>
-                  </span>
-                </button>
+                    </button>
+                    <button
+                      onClick={() => setShowAnalyticsModal(true)}
+                      className="px-4 py-2.5 rounded-lg font-medium text-sm text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm transition-all duration-200"
+                      title="📊 Business Analytics (PRO)"
+                    >
+                      <span className="flex items-center space-x-1.5">
+                        <span className="text-xs">📊</span>
+                        <span>Analytics</span>
+                      </span>
+                    </button>
+                  </>
+                )}
               </nav>
               {/* IIKo кнопка убрана - больше не нужна */}
               <div className="flex items-center space-x-4">
