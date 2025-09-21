@@ -34,7 +34,7 @@ class InterfaceSimplificationTester:
                     "name": "Борщ украинский с говядиной",
                     "cuisine": "русская",
                     "equipment": ["плита", "кастрюля"],
-                    "budget": "средний",
+                    "budget": 500.0,  # Budget expects float, not string
                     "dietary": [],
                     "user_id": self.test_user_id
                 }
