@@ -41,6 +41,9 @@ db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 openai_api_key = os.environ.get('OPENAI_API_KEY', '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')
 openai_client = OpenAI(api_key=openai_api_key)
 
+# КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
+os.environ['TECHCARDS_V2_USE_LLM'] = 'true'
+
 # Setup logging
 logger = logging.getLogger(__name__)
 
