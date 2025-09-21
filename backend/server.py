@@ -6881,7 +6881,7 @@ async def generate_food_pairing(request: dict):
     tech_card = request.get("tech_card")
     
     # Auto-create test user with PRO subscription if needed
-    if user_id.startswith("test_user_"):
+    if user_id and user_id.startswith("test_user_"):
         user = await db.users.find_one({"id": user_id})
         if not user:
             # Create test user with PRO subscription
