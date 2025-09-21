@@ -9038,15 +9038,16 @@ function App() {
               </nav>
               {/* IIKo кнопка убрана - больше не нужна */}
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setShowDataModal(true)}
-                  className="text-yellow-300 hover:text-yellow-200 font-semibold text-sm sm:text-base transition-colors"
-                  title="📂 Загрузить прайсы и данные по БЖУ"
-                >
-                  ДАННЫЕ
-                </button>
-                {/* Дублирующая кнопка ТЕХKАРТЫ убрана */}
-                {/* Кнопка ИСТОРИЯ убрана - дублирует функциональность дашборда */}
+                {/* ДАННЫЕ перенесены в настройки профиля - упрощаем интерфейс */}
+                {false && (
+                  <button
+                    onClick={() => setShowDataModal(true)}
+                    className="text-yellow-300 hover:text-yellow-200 font-semibold text-sm sm:text-base transition-colors"
+                    title="📂 Загрузить прайсы и данные по БЖУ (PRO)"
+                  >
+                    ДАННЫЕ
+                  </button>
+                )}
                 <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUser.name}</span>
                 <button
                   onClick={handleLogout}
