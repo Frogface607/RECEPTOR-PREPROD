@@ -3062,7 +3062,7 @@ async def update_venue_profile(user_id: str, profile_data: VenueProfileUpdate):
     user = await db.users.find_one({"id": user_id})
     if not user:
         # Auto-create test user with PRO subscription if needed
-        if user_id.startswith("test_user_"):
+        if user_id and user_id.startswith("test_user_"):
             test_user = {
                 "id": user_id,
                 "email": f"{user_id}@example.com",
