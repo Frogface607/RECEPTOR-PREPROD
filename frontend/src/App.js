@@ -6222,10 +6222,11 @@ function App() {
       
       const requestData = {
         name: dishName,
-        description: dishContext?.description || `Техкарта для блюда ${dishName}`,
-        servings: 4,
-        use_llm: false,  // Use deterministic mode
-        user_id: currentUser?.id || 'anonymous'  // CLEANUP TECH CARD DATA & UI: добавляем user_id для связи с аккаунтом
+        cuisine: selectedCuisine || "европейская", 
+        equipment: selectedEquipment || ["плита", "кастрюля"],
+        budget: selectedBudget ? parseFloat(selectedBudget) : 300.0,
+        dietary: selectedDietary || [],
+        user_id: currentUser?.id || 'test_user_quick'
       };
 
       // Add enhanced context if available (from menu dishes)
