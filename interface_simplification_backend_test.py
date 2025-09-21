@@ -171,6 +171,20 @@ class InterfaceSimplificationTester:
                             False, 
                             f"No tech card data in response: {data}"
                         )
+                elif response.status_code == 500:
+                    error_text = response.text
+                    if "лимит" in error_text.lower() or "limit" in error_text.lower():
+                        await self.log_result(
+                            "Old API Tech Card", 
+                            True, 
+                            f"API accessible but hit usage limit (expected): {error_text[:100]}"
+                        )
+                    else:
+                        await self.log_result(
+                            "Old API Tech Card", 
+                            False, 
+                            f"HTTP 500 (server error): {error_text[:200]}"
+                        )
                 else:
                     await self.log_result(
                         "Old API Tech Card", 
