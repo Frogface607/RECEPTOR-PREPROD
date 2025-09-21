@@ -3344,7 +3344,7 @@ async def generate_tech_card(request: DishRequest):
         user = await db.users.find_one({"id": request.user_id})
         
         # Если пользователь не найден и это тестовый ID, создаем временного пользователя
-        if not user and request.user_id.startswith("test_user_"):
+        if not user and request.user_id and request.user_id.startswith("test_user_"):
             user = {
                 "id": request.user_id,
                 "email": "test@example.com",
