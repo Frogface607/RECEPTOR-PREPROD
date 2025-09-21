@@ -6744,7 +6744,9 @@ def _generate_diagnostic_recommendations(tests: List[Dict]) -> List[str]:
 app.include_router(api_router)
 
 # Подключаем v2-функционал только по флагу
-if os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on"):
+# КРИТИЧЕСКИ ВАЖНО для iiko интеграции: принудительно включаем V2
+techcards_v2_enabled = os.getenv("FEATURE_TECHCARDS_V2", "true").lower() in ("1","true","yes","on")
+if techcards_v2_enabled:
     from receptor_agent.routes.menus_v2 import router as menus_v2_router
     app.include_router(menus_v2_router, prefix="/api/v1", tags=["menus.v2"])
     from receptor_agent.routes.haccp_v2 import router as haccp_v2_router
