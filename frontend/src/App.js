@@ -11046,7 +11046,7 @@ function App() {
                 )}
                 
                 {/* Upgrade prompt for Free users */}
-                {currentUser.subscription_plan === 'free' && currentUser.monthly_tech_cards_used >= 3 && (
+                {currentUserOrDemo.subscription_plan === 'free' && currentUserOrDemo.monthly_tech_cards_used >= 3 && (
                   <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-4 mt-4">
                     <h3 className="text-base sm:text-lg font-bold text-purple-300 mb-2">ЛИМИТ ИСЧЕРПАН</h3>
                     <p className="text-gray-300 text-sm mb-3">
