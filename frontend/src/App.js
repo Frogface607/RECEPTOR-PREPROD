@@ -17509,10 +17509,9 @@ function App() {
                         setShowXlsxImportModal(false);
                         resetXlsxImport();
                       }}
-                      <button
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                      >
-                        Готово
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      Готово
                     </button>
                   </div>
                 </div>
