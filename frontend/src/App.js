@@ -8846,9 +8846,7 @@ function App() {
                   <span className="text-xs text-purple-400/80 font-medium tracking-widest uppercase">
                     Restaurant Tech Platform
                   </span>
-                  <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-emerald-900 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm">
-                    Enterprise Beta
-                  </span>
+
                 </div>
               </div>
             </div>
