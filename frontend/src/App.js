@@ -6235,7 +6235,7 @@ function App() {
         equipment: userEquipment.length > 0 ? userEquipment : ["плита", "кастрюля"],
         budget: venueProfile?.averageCheck ? parseFloat(venueProfile.averageCheck) : 300.0,
         dietary: [],
-        user_id: currentUser?.id || 'test_user_quick'
+        user_id: currentUserOrDemo?.id || 'demo_user'
       };
 
       // Add enhanced context if available (from menu dishes)
