@@ -7293,9 +7293,9 @@ function App() {
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       
-      // Extract filename from response headers
+      // Extract filename from response headers or create smart filename
       const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = 'iiko_export.zip';
+      let filename = `iiko_export_${(tcV2?.meta?.title || 'techcard').replace(/\s+/g, '_')}.zip`;
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
