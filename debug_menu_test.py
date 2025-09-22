@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://menupro-revival.preview.emergentagent.com/api"
 
 def debug_menu_generation():
     """Debug what's actually returned by the menu generation API"""

@@ -10,7 +10,7 @@ def test_golden_prompt_requirements():
     and related functionality as requested in the review.
     """
     
-    base_url = "https://kitchen-pro-2.preview.emergentagent.com/api"
+    base_url = "https://menupro-revival.preview.emergentagent.com/api"
     
     print("🚀 RECEPTOR PRO GOLDEN PROMPT TESTING")
     print("=" * 60)

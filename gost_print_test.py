@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = "https://kitchen-pro-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://menupro-revival.preview.emergentagent.com/api"
 
 class TechCardV2PrintTester:
     def __init__(self):
