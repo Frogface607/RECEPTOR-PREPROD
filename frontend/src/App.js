@@ -9607,13 +9607,13 @@ function App() {
                       : 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
                 >
-                  {isGenerating ? 'СОЗДАЮ...' : '🎭 ЗАПУСТИТЬ'}
+                  {isGenerating ? 'СОЗДАЮ...' : 'ЗАПУСТИТЬ'}
                 </button>
               </div>
 
               {/* 6. Финансовый анализ */}
               <div className="bg-gradient-to-br from-indigo-600/20 to-blue-600/20 border border-indigo-400/30 rounded-xl p-6 hover:border-indigo-300/50 transition-all duration-300 cursor-pointer group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💼</div>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform"></div>
                 <h3 className="text-xl font-bold text-indigo-300 mb-3">Финансовый анализ</h3>
                 <p className="text-gray-300 text-sm mb-4">
                   Детальный анализ рентабельности блюда с советами по оптимизации затрат
