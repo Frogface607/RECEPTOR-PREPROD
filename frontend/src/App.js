@@ -11233,6 +11233,8 @@ function App() {
                     РУЧНОЕ РЕДАКТИРОВАНИЕ
                   </h3>
                   <div className="space-y-4">
+                    {/* УПРОЩЕНИЕ: Убрали кнопки редактирования ингредиентов и этапов - функционал не используется */}
+                    {/* 
                     <button
                       onClick={() => setIsEditingIngredients(true)}
                       className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
@@ -11245,6 +11247,11 @@ function App() {
                     >
                       РЕДАКТИРОВАТЬ ЭТАПЫ
                     </button>
+                    */}
+                    <div className="text-center text-gray-400 py-8">
+                      <p>Ручное редактирование временно недоступно</p>
+                      <p className="text-sm mt-2">Используйте ИИ-редактирование выше</p>
+                    </div>
                   </div>
                 </div>
               )}
