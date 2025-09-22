@@ -6358,7 +6358,8 @@ function App() {
         })) || [];
         
         setCurrentIngredients(parsedIngredients);
-        setEditableIngredients(parsedIngredients);
+        // УПРОЩЕНИЕ: Убрали setEditableIngredients - редактор не используется
+        // setEditableIngredients(parsedIngredients);
         
         setLoadingMessage('✨ Техкарта готова!');
         
