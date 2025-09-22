@@ -8926,7 +8926,7 @@ function App() {
             {/* Welcome Section */}
             <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 sm:p-8">
               <h2 className="text-2xl sm:text-3xl font-bold text-purple-300 mb-4">
-                Добро пожаловать, {currentUser.name}! 👋
+                Добро пожаловать, {currentUserOrDemo.name}! 👋
               </h2>
               <p className="text-gray-300 text-base sm:text-lg mb-6">
                 {venueProfile.venue_name ? 
