@@ -9535,7 +9535,7 @@ function App() {
                       : 'btn-inspiration'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
                 >
-                  {isGenerating ? 'ГЕНЕРИРУЮ...' : '🌟 ЗАПУСТИТЬ'}
+                  {isGenerating ? 'ГЕНЕРИРУЮ...' : 'ЗАПУСТИТЬ'}
                 </button>
               </div>
 
