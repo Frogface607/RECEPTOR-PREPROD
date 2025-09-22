@@ -9504,8 +9504,9 @@ function App() {
           </div>
         )}
 
-        {/* Placeholder for future wizard content */}
-        {false && (
+        {/* Placeholder for future wizard content - removed for now */}
+
+        {/* TC-002: TechCards History View */}
               // 5-Step Menu Creation Wizard with Enhanced UI/UX
               <div className="wizard-container max-w-4xl mx-auto">
                 {/* Enhanced Header */}
