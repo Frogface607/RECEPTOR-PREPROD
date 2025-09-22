@@ -9590,14 +9590,8 @@ function App() {
 
               </div>
             ) : (
-                      <div className="text-sm text-gray-400">умные ингредиенты</div>
-                    </div>
-                    <div className="bg-purple-900/30 rounded-xl p-4">
-                      <div className="text-3xl mb-2">💰</div>
-                      <div className="font-bold text-purple-300">Экономия</div>
-                      <div className="text-sm text-gray-400">до 100.000₽</div>
-                    </div>
-                  </div>
+              // Menu Wizard (существующий код)
+              <div>
                   
                   <button
                     onClick={() => {
