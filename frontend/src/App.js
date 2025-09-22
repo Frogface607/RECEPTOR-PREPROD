@@ -12797,7 +12797,7 @@ function App() {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-purple-300 flex items-center gap-3">
-                🏢 ПРОФИЛЬ ЗАВЕДЕНИЯ
+                🏪 МОЕ ЗАВЕДЕНИЕ
                 {profileStep > 1 && (
                   <span className="text-sm bg-purple-600 text-white px-3 py-1 rounded-full">
                     Шаг {profileStep}/4
