@@ -9493,7 +9493,7 @@ function App() {
               
               {/* 1. Лаборатория */}
               <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 hover:border-cyan-300/50 transition-all duration-300 cursor-pointer group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🧪</div>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform"></div>
                 <h3 className="text-xl font-bold text-cyan-300 mb-3">Лаборатория</h3>
                 <p className="text-gray-300 text-sm mb-4">
                   Создавайте экспериментальные блюда с неожиданными сочетаниями ингредиентов + изображение от AI
