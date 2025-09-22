@@ -7656,7 +7656,7 @@ function App() {
   };
 
   useEffect(() => {
-    fetchCities();
+    // fetchCities(); // УПРОЩЕНИЕ: Убрали - город больше не нужен
     fetchSubscriptionPlans();
     fetchKitchenEquipment();
     // Load venue profile data
