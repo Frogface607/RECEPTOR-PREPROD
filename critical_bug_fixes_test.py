@@ -212,10 +212,10 @@ class CriticalBugFixesTester:
                 data = response.json()
                 
                 # Check if tech card was generated successfully - V2 API returns different structure
-                if data.get('status') == 'success' and data.get('card'):
+                if data.get('status') in ['READY', 'success'] and data.get('card'):
                     card = data.get('card', {})
                     card_id = card.get('id')
-                    card_status = card.get('status', 'UNKNOWN')
+                    card_status = data.get('status', 'UNKNOWN')
                     
                     # Check for article generation (critical bug area)
                     dish_article = card.get('dish', {}).get('article')
