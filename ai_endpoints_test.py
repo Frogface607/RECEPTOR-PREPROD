@@ -6,7 +6,7 @@ and find why laboratory works while others don't.
 """
 
 import asyncio
-import aiohttp
+import httpx
 import json
 import os
 from datetime import datetime
@@ -20,7 +20,7 @@ class AIEndpointTester:
         self.results = {}
         self.test_user_id = "test_user_ai_endpoints"
         
-    async def test_endpoint(self, session, endpoint_name, endpoint_path, payload):
+    async def test_endpoint(self, client, endpoint_name, endpoint_path, payload):
         """Test a single AI endpoint"""
         url = f"{API_BASE}{endpoint_path}"
         
@@ -29,26 +29,26 @@ class AIEndpointTester:
             print(f"   URL: {url}")
             print(f"   Payload: {json.dumps(payload, indent=2)}")
             
-            async with session.post(url, json=payload) as response:
-                status = response.status
-                
-                try:
-                    response_data = await response.json()
-                except:
-                    response_data = await response.text()
-                
-                print(f"   Status: {status}")
-                print(f"   Response: {str(response_data)[:200]}...")
-                
-                self.results[endpoint_name] = {
-                    'endpoint': endpoint_path,
-                    'url': url,
-                    'status': status,
-                    'response': response_data,
-                    'payload_sent': payload
-                }
-                
-                return status, response_data
+            response = await client.post(url, json=payload)
+            status = response.status_code
+            
+            try:
+                response_data = response.json()
+            except:
+                response_data = response.text
+            
+            print(f"   Status: {status}")
+            print(f"   Response: {str(response_data)[:200]}...")
+            
+            self.results[endpoint_name] = {
+                'endpoint': endpoint_path,
+                'url': url,
+                'status': status,
+                'response': response_data,
+                'payload_sent': payload
+            }
+            
+            return status, response_data
                 
         except Exception as e:
             print(f"   ERROR: {str(e)}")
@@ -151,10 +151,10 @@ class AIEndpointTester:
         print(f"Test User ID: {self.test_user_id}")
         print(f"Total endpoints to test: {len(endpoints_to_test)}")
         
-        async with aiohttp.ClientSession() as session:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             for endpoint_info in endpoints_to_test:
                 await self.test_endpoint(
-                    session,
+                    client,
                     endpoint_info['name'],
                     endpoint_info['path'],
                     endpoint_info['payload']
