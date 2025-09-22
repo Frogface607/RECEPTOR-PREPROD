@@ -8907,15 +8907,19 @@ function App() {
                   ТЕХКАРТЫ
                 </button>
                 <button
-                  onClick={() => setCurrentView('menu-generator')}
+                  onClick={() => setCurrentView('ai-kitchen')}
                   className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-                    currentView === 'menu-generator' 
+                    currentView === 'ai-kitchen' 
                       ? 'bg-purple-600/20 text-purple-200 shadow-lg border border-purple-500/30 backdrop-blur-sm' 
                       : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm'
                   }`}
-                  title="🎯 AI Menu Generator"
+                  title="🤖 AI-Кухня: фудпейринг, генерация меню, AI рекомендации"
                 >
-                  <span className="flex items-center space-x-1.5"><span className="text-xs">🎯</span><span>Menu AI</span></span>
+                  <span className="flex items-center space-x-1.5">
+                    <span className="text-xs">🤖</span>
+                    <span>AI-Кухня</span>
+                    <span className="bg-gradient-to-r from-pink-500 to-violet-500 text-white px-1.5 py-0.5 rounded text-xs font-bold">AI</span>
+                  </span>
                 </button>
                 
                 {/* PRO ФУНКЦИИ - скрыты до PRO версии */}
