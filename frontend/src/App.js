@@ -6074,43 +6074,44 @@ function App() {
   //   setIsEditingIngredients(false);
   // };
 
-  const saveStepsChanges = () => {
-    // Rebuild tech card with new steps
-    const lines = techCard.split('\n');
-    const newLines = [];
-    let inStepsSection = false;
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      if (line.includes('**Пошаговый рецепт:**')) {
-        inStepsSection = true;
-        newLines.push(line);
-        newLines.push('');
-        
-        // Add updated steps
-        editableSteps.forEach((step, index) => {
-          newLines.push(`${index + 1}. ${step}`);
-        });
-        
-        continue;
-      }
-      
-      if (inStepsSection && line.match(/^\d+\./)) {
-        // Skip original step lines
-        continue;
-      }
-      
-      if (inStepsSection && line.startsWith('**') && !line.includes('Пошаговый рецепт')) {
-        inStepsSection = false;
-      }
-      
-      newLines.push(line);
-    }
-    
-    setTechCard(newLines.join('\n'));
-    setIsEditingSteps(false);
-  };
+  // УПРОЩЕНИЕ: Убрали функцию saveStepsChanges - редактор этапов не используется
+  // const saveStepsChanges = () => {
+  //   // Rebuild tech card with new steps
+  //   const lines = techCard.split('\n');
+  //   const newLines = [];
+  //   let inStepsSection = false;
+  //   
+  //   for (let i = 0; i < lines.length; i++) {
+  //     const line = lines[i];
+  //     
+  //     if (line.includes('**Пошаговый рецепт:**')) {
+  //       inStepsSection = true;
+  //       newLines.push(line);
+  //       newLines.push('');
+  //       
+  //       // Add updated steps
+  //       editableSteps.forEach((step, index) => {
+  //         newLines.push(`${index + 1}. ${step}`);
+  //       });
+  //       
+  //       continue;
+  //     }
+  //     
+  //     if (inStepsSection && line.match(/^\d+\./)) {
+  //       // Skip original step lines
+  //       continue;
+  //     }
+  //     
+  //     if (inStepsSection && line.startsWith('**') && !line.includes('Пошаговый рецепт')) {
+  //       inStepsSection = false;
+  //     }
+  //     
+  //     newLines.push(line);
+  //   }
+  //   
+  //   setTechCard(newLines.join('\n'));
+  //   setIsEditingSteps(false);
+  // };
 
   const handleLogin = async (e) => {
     e.preventDefault();
