@@ -6376,7 +6376,9 @@ function App() {
       // Handle standardized response format
       if ((normalizedData.status === 'success' || normalizedData.status === 'READY') && normalizedData.card) {
         const techCardV2 = normalizedData.card;
+        console.log('🎯 FIXING: About to call setTcV2 with:', techCardV2 ? 'techcard data' : 'null');
         setTcV2(techCardV2);
+        console.log('🎯 FIXING: Called setTcV2, should trigger re-render');
         
         // Set the current tech card ID from the generated tech card
         if (techCardV2.meta && techCardV2.meta.id) {
