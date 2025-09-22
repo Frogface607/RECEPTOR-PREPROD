@@ -28,7 +28,7 @@ class DemoModeTester:
         """Create demo_user if it doesn't exist"""
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                # First check if demo_user exists
+                # First check if demo_user exists by trying to get user info
                 response = await client.get(f"{API_BASE}/user-history/{self.demo_user_id}")
                 
                 if response.status_code == 200:
@@ -37,6 +37,25 @@ class DemoModeTester:
                         True, 
                         "Demo user already exists in system"
                     )
+                    
+                    # Now try to create the demo_user in the users collection for old API
+                    # We'll use the register endpoint but with demo_user ID
+                    register_payload = {
+                        "email": "demo@example.com",
+                        "name": "Demo User",
+                        "city": "moskva"
+                    }
+                    
+                    register_response = await client.post(f"{API_BASE}/register", json=register_payload)
+                    
+                    if register_response.status_code == 200:
+                        register_data = register_response.json()
+                        await self.log_result(
+                            "Demo user registration for old API", 
+                            True, 
+                            f"Registered user for old API compatibility: {register_data.get('id', 'N/A')}"
+                        )
+                    
                     return True
                 
                 # If user doesn't exist, create it
@@ -52,7 +71,6 @@ class DemoModeTester:
                     data = response.json()
                     actual_user_id = data.get('id', self.demo_user_id)
                     
-                    # If the system assigned a different ID, we'll use demo_user anyway
                     await self.log_result(
                         "Demo user creation", 
                         True, 
