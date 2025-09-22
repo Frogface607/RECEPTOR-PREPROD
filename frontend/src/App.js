@@ -5667,7 +5667,9 @@ function App() {
   };
 
   const conductExperiment = async () => {
-    if (!currentUser?.id) return;
+    // Support both V1 and V2 tech cards and demo users
+    const hasCard = techCard || tcV2;
+    if (!hasCard || !currentUserOrDemo?.id) return;
 
     setIsExperimenting(true);
     setLoadingType('laboratory');
