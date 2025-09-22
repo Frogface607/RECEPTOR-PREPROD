@@ -15574,7 +15574,7 @@ function App() {
                             disabled={isRecalculating}
                             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:bg-gray-600"
                           >
-                            {isRecalculating ? 'Пересчитываю...' : '🔄 Пересчитать текущую ТК'}
+                            {isRecalculating ? 'Пересчитываю...' : 'Пересчитать текущую ТК'}
                           </button>
                         )}
                       </div>
