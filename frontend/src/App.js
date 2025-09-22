@@ -6768,7 +6768,7 @@ function App() {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `iiko_export_${(tcV2.meta?.title || 'techcard').replace(/\s+/g, '_')}.xlsx`;
+      a.download = `iiko_export_${(tcV2.meta?.title || 'techcard').replace(/[^\wа-яё\s-]/gi, '').replace(/\s+/g, '_')}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
