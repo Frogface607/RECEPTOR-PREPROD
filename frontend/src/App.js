@@ -7442,7 +7442,7 @@ function App() {
       
       // Extract filename from response headers or create smart filename
       const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = `iiko_TTK_${(tcV2?.meta?.title || 'techcard').replace(/\s+/g, '_')}.xlsx`;
+      let filename = `iiko_TTK_${(tcV2?.meta?.title || 'techcard').replace(/[^\wа-яё\s-]/gi, '').replace(/\s+/g, '_')}.xlsx`;
       console.log('🎯 TTK FILENAME DEBUG: tcV2?.meta?.title:', tcV2?.meta?.title, 'filename:', filename);
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
