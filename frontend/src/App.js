@@ -11303,15 +11303,7 @@ function App() {
                       🔍 Назначить SKU
                     </button>
                     
-                    {/* 3. Phase 3: Экспорт номенклатур */}
-                    <button 
-                      onClick={startPhase3Export}
-                      disabled={!tcV2 || phase3ExportState === 'running_preflight'}
-                      className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
-                      title="Новый экспорт с автоматическим созданием скелетов и двухэтапным импортом"
-                    >
-                      {phase3ExportState === 'running_preflight' ? '⏳ Префлайт...' : '🚀 Экспорт номенклатур'}
-                    </button>
+                    {/* УПРОЩЕНИЕ UI: Убрали дублирующуюся кнопку "Экспорт номенклатур" - функция есть в мастере экспорта */}
                     
                     {/* CREATE EXPORT WIZARD UI - Unified Export Button */}
                     <button 
