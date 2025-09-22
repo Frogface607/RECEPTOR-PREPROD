@@ -6201,8 +6201,9 @@ function App() {
       return;
     }
     
-    if (!currentUser?.id) {
-      setGenerationError('Пожалуйста, войдите в систему');
+    // Demo mode allows immediate access
+    if (!currentUserOrDemo?.id) {
+      setGenerationError('Ошибка инициализации пользователя');
       setGenerationStatus('error');
       return;
     }
