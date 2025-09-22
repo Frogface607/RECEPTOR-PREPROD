@@ -8980,12 +8980,26 @@ function App() {
                       РЕГИСТРАЦИЯ
                     </button>
                     <span className="text-gray-400 text-sm hidden sm:inline">|</span>
-                    <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUserOrDemo.name} 🧪</span>
+                    <button
+                      onClick={() => setShowVenueProfileModal(true)}
+                      className="text-purple-300 hover:text-purple-200 font-bold text-sm sm:text-base transition-colors flex items-center space-x-2"
+                      title="🏪 Личный кабинет: настройки заведения, подключение iiko"
+                    >
+                      <span>🏪</span>
+                      <span>{currentUserOrDemo.name}</span>
+                    </button>
                   </>
                 ) : (
-                  // Зарегистрированный пользователь - показываем имя и выход
+                  // Зарегистрированный пользователь - личный кабинет + выход
                   <>
-                    <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUserOrDemo.name}</span>
+                    <button
+                      onClick={() => setShowVenueProfileModal(true)}
+                      className="text-purple-300 hover:text-purple-200 font-bold text-sm sm:text-base transition-colors flex items-center space-x-2"
+                      title="🏪 Личный кабинет: настройки заведения, iiko, тарифы"
+                    >
+                      <span>🏪</span>
+                      <span>{currentUserOrDemo.name}</span>
+                    </button>
                     <button
                       onClick={handleLogout}
                       className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
