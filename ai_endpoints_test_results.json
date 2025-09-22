@@ -1,0 +1,178 @@
+{
+  "Generate Sales Script": {
+    "endpoint": "/generate-sales-script",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/generate-sales-script",
+    "status": 500,
+    "response": "Internal Server Error",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "tech_card": {
+        "name": "Тестовое блюдо",
+        "ingredients": [
+          {
+            "name": "Мука",
+            "quantity": 200,
+            "unit": "г"
+          },
+          {
+            "name": "Яйца",
+            "quantity": 2,
+            "unit": "шт"
+          }
+        ],
+        "description": "Тестовое описание блюда"
+      }
+    }
+  },
+  "Generate Food Pairing": {
+    "endpoint": "/generate-food-pairing",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/generate-food-pairing",
+    "status": 500,
+    "response": "Internal Server Error",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "tech_card": {
+        "name": "Тестовое блюдо",
+        "ingredients": [
+          {
+            "name": "Мука",
+            "quantity": 200,
+            "unit": "г"
+          },
+          {
+            "name": "Яйца",
+            "quantity": 2,
+            "unit": "шт"
+          }
+        ],
+        "description": "Тестовое описание блюда"
+      }
+    }
+  },
+  "Generate Photo Tips": {
+    "endpoint": "/generate-photo-tips",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/generate-photo-tips",
+    "status": 500,
+    "response": "Internal Server Error",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "tech_card": {
+        "name": "Тестовое блюдо",
+        "ingredients": [
+          {
+            "name": "Мука",
+            "quantity": 200,
+            "unit": "г"
+          },
+          {
+            "name": "Яйца",
+            "quantity": 2,
+            "unit": "шт"
+          }
+        ],
+        "description": "Тестовое описание блюда"
+      }
+    }
+  },
+  "Generate Inspiration": {
+    "endpoint": "/generate-inspiration",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/generate-inspiration",
+    "status": 500,
+    "response": "Internal Server Error",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "tech_card": {
+        "name": "Тестовое блюдо",
+        "ingredients": [
+          {
+            "name": "Мука",
+            "quantity": 200,
+            "unit": "г"
+          },
+          {
+            "name": "Яйца",
+            "quantity": 2,
+            "unit": "шт"
+          }
+        ],
+        "description": "Тестовое описание блюда"
+      }
+    }
+  },
+  "Analyze Finances": {
+    "endpoint": "/analyze-finances",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/analyze-finances",
+    "status": 500,
+    "response": "Internal Server Error",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "tech_card": {
+        "name": "Тестовое блюдо",
+        "ingredients": [
+          {
+            "name": "Мука",
+            "quantity": 200,
+            "unit": "г"
+          },
+          {
+            "name": "Яйца",
+            "quantity": 2,
+            "unit": "шт"
+          }
+        ],
+        "description": "Тестовое описание блюда"
+      }
+    }
+  },
+  "Improve Dish": {
+    "endpoint": "/improve-dish",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/improve-dish",
+    "status": 500,
+    "response": "Internal Server Error",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "tech_card": {
+        "name": "Тестовое блюдо",
+        "ingredients": [
+          {
+            "name": "Мука",
+            "quantity": 200,
+            "unit": "г"
+          },
+          {
+            "name": "Яйца",
+            "quantity": 2,
+            "unit": "шт"
+          }
+        ],
+        "description": "Тестовое описание блюда"
+      }
+    }
+  },
+  "Laboratory Experiment (WORKING)": {
+    "endpoint": "/laboratory-experiment",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/laboratory-experiment",
+    "status": "ERROR",
+    "response": "",
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "experiment_type": "random",
+      "base_dish": "Тестовое блюдо"
+    }
+  },
+  "Save Laboratory Experiment": {
+    "endpoint": "/save-laboratory-experiment",
+    "url": "https://menupro-revival.preview.emergentagent.com/api/save-laboratory-experiment",
+    "status": 400,
+    "response": {
+      "detail": "Не предоставлены обязательные параметры"
+    },
+    "payload_sent": {
+      "user_id": "test_user_ai_endpoints",
+      "experiment_data": {
+        "name": "Тестовый эксперимент",
+        "description": "Описание эксперимента"
+      }
+    }
+  }
+}
