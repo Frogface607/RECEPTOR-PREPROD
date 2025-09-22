@@ -9712,6 +9712,7 @@ function App() {
                         if (isV2 && techcard.techcard_v2_data) {
                           setTcV2(techcard.techcard_v2_data);
                           setTechCard(null); // Очищаем V1 техkарту
+                          setDishName(techcard.name || techcard.techcard_v2_data?.meta?.title || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
                           setGenerationStatus('success');
                           setCurrentTechCardId(techcard.id);
                           setCurrentView('create');
@@ -9720,12 +9721,14 @@ function App() {
                             const parsedContent = JSON.parse(techcard.content);
                             setTcV2(parsedContent);
                             setTechCard(null); // Очищаем V1 техkарту
+                            setDishName(techcard.name || parsedContent?.meta?.title || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
                           } catch (e) {
                             setTechCard(techcard.content);
                             setTcV2(null); // Очищаем V2 техkарту
+                            setDishName(techcard.name || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
