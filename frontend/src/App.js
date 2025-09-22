@@ -3061,6 +3061,17 @@ function App() {
           text: `✅ Подключение успешно! Организация: ${orgName}` 
         });
         
+        // 💾 НОВИНКА: Сохраняем креды для автоматического входа
+        const savedCreds = {
+          host: iikoRmsCredentials.host,
+          login: iikoRmsCredentials.login,
+          password: iikoRmsCredentials.password,
+          user_id: currentUserOrDemo.id,
+          saved_at: new Date().toISOString()
+        };
+        localStorage.setItem('receptor_iiko_creds', JSON.stringify(savedCreds));
+        console.log('💾 iiko креды сохранены для автоматического входа');
+        
         // Check connection status
         await checkIikoRmsStatus();
       } else {
