@@ -2332,25 +2332,25 @@ function App() {
     );
   };
 
-  // Basic functions
-  const fetchCities = async () => {
-    try {
-      const response = await axios.get(`${API}/cities`);
-      setCities(response.data);
-    } catch (error) {
-      console.error('Error fetching cities:', error);
-      // Fallback cities if API fails
-      const fallbackCities = [
-        { code: 'moskva', name: 'Москва' },
-        { code: 'spb', name: 'Санкт-Петербург' },
-        { code: 'novosibirsk', name: 'Новосибирск' },
-        { code: 'yekaterinburg', name: 'Екатеринбург' },
-        { code: 'kazan', name: 'Казань' },
-        { code: 'nizhniy-novgorod', name: 'Нижний Новгород' }
-      ];
-      setCities(fallbackCities);
-    }
-  };
+  // УПРОЩЕНИЕ: Убрали fetchCities - город больше не нужен
+  // const fetchCities = async () => {
+  //   try {
+  //     const response = await axios.get(`${API}/cities`);
+  //     setCities(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching cities:', error);
+  //     // Fallback cities if API fails
+  //     const fallbackCities = [
+  //       { code: 'moskva', name: 'Москва' },
+  //       { code: 'spb', name: 'Санкт-Петербург' },
+  //       { code: 'novosibirsk', name: 'Новосибирск' },
+  //       { code: 'yekaterinburg', name: 'Екатеринбург' },
+  //       { code: 'kazan', name: 'Казань' },
+  //       { code: 'nizhniy-novgorod', name: 'Нижний Новгород' }
+  //     ];
+  //     setCities(fallbackCities);
+  //   }
+  // };
 
   const fetchSubscriptionPlans = async () => {
     try {
