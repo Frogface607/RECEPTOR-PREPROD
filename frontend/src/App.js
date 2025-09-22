@@ -8910,8 +8910,7 @@ function App() {
                   title="🤖 AI-Кухня: фудпейринг, генерация меню, AI рекомендации"
                 >
                   <span className="flex items-center space-x-1.5">
-                    <span className="text-xs">🤖</span>
-                    <span>AI-Кухня</span>
+                    <span>AI-КУХНЯ</span>
                     <span className="bg-gradient-to-r from-pink-500 to-violet-500 text-white px-1.5 py-0.5 rounded text-xs font-bold">AI</span>
                   </span>
                 </button>
