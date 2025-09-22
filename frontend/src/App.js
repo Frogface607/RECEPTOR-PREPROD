@@ -3753,7 +3753,7 @@ function App() {
       return;
     }
 
-    if (iikoRmsConnection.status !== 'connected' || iikoRmsConnection.products_count === 0) {
+    if (iikoRmsConnection.status !== 'connected' || !iikoRmsConnection.products_count) {
       setAutoMappingMessage({ 
         type: 'error', 
         text: 'Подключитесь к iiko RMS и выполните синхронизацию номенклатуры' 
