@@ -9507,9 +9507,6 @@ function App() {
         {/* Placeholder for future wizard content - removed for now */}
 
         {/* TC-002: TechCards History View */}
-        )}
-
-        {/* TC-002: TechCards History View */}
         {currentView === 'techcards' && (
           <div className="space-y-6">
             <div className="text-center">
