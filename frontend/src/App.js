@@ -9713,8 +9713,11 @@ function App() {
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
                           } catch (e) {
-                            setTechCard(techcard.content);
-                            setTcV2(null); // Очищаем V2 техkарту
+                            // V1 tech card - only clear tcV2 if not forced to V2
+                            if (!FORCE_TECHCARD_V2) {
+                              setTechCard(techcard.content);
+                              setTcV2(null); // Очищаем V2 техkарту только если не принудительный V2 режим
+                            }
                             setDishName(techcard.name || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
