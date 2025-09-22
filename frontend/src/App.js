@@ -8721,174 +8721,19 @@ function App() {
     }
   };
 
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md border border-gray-700">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">
-              RECEPTOR <span className="text-purple-400">PRO</span> <span className="text-yellow-400 text-2xl">Beta</span>
-            </h1>
-            <p className="text-gray-300 text-lg mb-2">
-              Нейросеть для создания техкарт для ресторанов
-            </p>
-            <p className="text-yellow-400 text-sm mb-8">
-              🧪 Тестовая версия для получения обратной связи
-            </p>
-            
-            <div className="mb-6">
-              <label className="block text-purple-300 text-sm font-bold mb-2">
-                ВЫБЕРИТЕ ВАШ ГОРОД
-              </label>
-              <select 
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-purple-400 focus:outline-none"
-              >
-                <option value="">Выберите город</option>
-                {cities.map(city => (
-                  <option key={city.code} value={city.code}>{city.name}</option>
-                ))}
-              </select>
-            </div>
-            
-            <button
-              onClick={() => {
-                if (!selectedCity) {
-                  alert('Пожалуйста, выберите город');
-                  return;
-                }
-                // Создаем тестового пользователя
-                const testUser = {
-                  id: 'test_user_quick',  // Фиксированный ID для совместимости с историей
-                  name: 'Тестовый пользователь',
-                  email: 'test@example.com',
-                  city: selectedCity.toLowerCase(),
-                  subscription_plan: 'pro',
-                  monthly_tech_cards_used: 0,
-                  created_at: new Date().toISOString()
-                };
-                setCurrentUser(testUser);
-                localStorage.setItem('receptor_user', JSON.stringify(testUser));
-              }}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mb-4"
-            >
-              НАЧАТЬ ТЕСТИРОВАНИЕ
-            </button>
-            
-            {/* BYPASS BUTTON FOR TESTING */}
-            <button
-              onClick={() => {
-                // Создаем тестового пользователя без выбора города
-                const testUser = {
-                  id: 'test_user_quick',  // Фиксированный ID для совместимости с историей
-                  name: 'Тест Предприниматель',
-                  email: 'entrepreneur@test.com',
-                  city: 'moskva',
-                  subscription_plan: 'pro',
-                  monthly_tech_cards_used: 0,
-                  created_at: new Date().toISOString()
-                };
-                setCurrentUser(testUser);
-                localStorage.setItem('receptor_user', JSON.stringify(testUser));
-              }}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm"
-            >
-              🚀 БЫСТРЫЙ ТЕСТ (обход регистрации)
-            </button>
-            
-            <p className="text-gray-400 text-sm mt-4">
-              🧪 RECEPTOR PRO Beta - тестируйте все функции бесплатно!
-            </p>
-          </div>
-
-          {!showRegistration && !showLogin ? (
-            <div className="space-y-6">
-              <button
-                onClick={() => setShowRegistration(true)}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                НАЧАТЬ РАБОТУ
-              </button>
-              <button
-                onClick={() => setShowLogin(true)}
-                className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all"
-              >
-                ВОЙТИ
-              </button>
-            </div>
-          ) : showLogin ? (
-            <form onSubmit={handleLogin} className="space-y-6">
-              <input
-                type="email"
-                placeholder="Email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none"
-                required
-              />
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all"
-              >
-                ВОЙТИ
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowLogin(false)}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
-              >
-                НАЗАД
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-6">
-              <input
-                type="email"
-                placeholder="Email"
-                value={registrationData.email}
-                onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
-                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Имя"
-                value={registrationData.name}
-                onChange={(e) => setRegistrationData({...registrationData, name: e.target.value})}
-                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none"
-                required
-              />
-              <select
-                value={registrationData.city}
-                onChange={(e) => setRegistrationData({...registrationData, city: e.target.value})}
-                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none"
-                required
-              >
-                <option value="">Выберите город</option>
-                {cities.map(city => (
-                  <option key={city.code} value={city.code}>{city.name}</option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                ЗАРЕГИСТРИРОВАТЬСЯ
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowRegistration(false)}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
-              >
-                НАЗАД
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-    );
-  }
+  // РЕВОЛЮЦИЯ UX: Убираем принудительную регистрацию!
+  // Теперь пользователи сразу могут создавать техкарты в демо-режиме
+  // Регистрация нужна только для сохранения результатов
+  
+  // Создаем демо-пользователя если нет текущего
+  const currentUserOrDemo = currentUser || {
+    id: 'demo_user',
+    name: 'Демо пользователь', 
+    email: 'demo@receptor.pro',
+    subscription_plan: 'demo',
+    monthly_tech_cards_used: 0,
+    demo_mode: true
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white font-['Montserrat']">
