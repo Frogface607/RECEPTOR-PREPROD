@@ -6022,8 +6022,9 @@ function App() {
         }
       });
       
-      setEditableIngredients(ingredients);
-      setEditableSteps(steps);
+      // УПРОЩЕНИЕ: Убрали setEditableIngredients и setEditableSteps - функция не используется
+      // setEditableIngredients(ingredients);
+      // setEditableSteps(steps);
       
     } catch (error) {
       console.error('Error editing tech card:', error);
