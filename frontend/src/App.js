@@ -7085,6 +7085,7 @@ function App() {
       const safeTitle = dishName.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_');
       const filename = `iiko_export_${safeTitle}.zip`;
       console.log('🎯 MASTER EXPORT ZIP DEBUG: tcV2?.meta?.title:', tcV2?.meta?.title, 'filename:', filename);
+      console.log('🎯 MASTER EXPORT ZIP DEBUG: tcV2 object:', tcV2);
       
       const a = document.createElement('a');
       a.href = url;
