@@ -8886,8 +8886,7 @@ function App() {
                   title="🍽️ Создание техкарт"
                 >
                   <span className="flex items-center space-x-1.5">
-                    <span className="text-xs">🍽️</span>
-                    <span>Главная</span>
+                    <span>ГЛАВНАЯ</span>
                   </span>
                 </button>
                 <button
