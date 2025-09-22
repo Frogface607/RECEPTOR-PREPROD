@@ -9000,7 +9000,7 @@ function App() {
                 </div>
                 <div className="bg-yellow-800/30 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-yellow-300">
-                    {currentUser.subscription_plan?.toUpperCase() || 'FREE'}
+                    {currentUserOrDemo.subscription_plan?.toUpperCase() || 'FREE'}
                   </div>
                   <div className="text-sm text-gray-400">Ваш план</div>
                 </div>
