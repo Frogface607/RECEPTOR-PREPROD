@@ -9472,7 +9472,7 @@ function App() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <div className="bg-gradient-to-r from-pink-600/20 to-violet-600/20 border border-pink-400/30 rounded-2xl p-8 sm:p-12 mb-8">
-                <div className="text-6xl sm:text-8xl mb-6">🤖</div>
+                <div className="text-6xl sm:text-8xl mb-6"></div>
                 <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent mb-6">
                   AI-КУХНЯ
                 </h2>
