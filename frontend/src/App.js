@@ -6855,8 +6855,8 @@ function App() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         
-        // Create safe filename
-        const safeTitle = tcV2.meta?.title?.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_') || 'techcard';
+        // Create safe filename with Cyrillic support
+        const safeTitle = tcV2.meta?.title?.replace(/[^\wа-яё\s-]/gi, '').replace(/\s+/g, '_') || 'techcard';
         a.href = url;
         a.download = `iiko_ttk_${safeTitle}.xlsx`;
         document.body.appendChild(a);
