@@ -12,8 +12,11 @@ function App() {
   
   const [currentUser, setCurrentUser] = useState(null);
   const [showRegistration, setShowRegistration] = useState(false);
-  const [cities, setCities] = useState([]);
-  const [selectedCity, setSelectedCity] = useState('');
+  
+  // УПРОЩЕНИЕ: Убрали выбор города - он не влияет на функционал
+  // const [cities, setCities] = useState([]);
+  // const [selectedCity, setSelectedCity] = useState('');
+  
   const [dishName, setDishName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(null); // 'success' | 'draft' | 'error'
