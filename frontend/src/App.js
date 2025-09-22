@@ -4645,7 +4645,8 @@ function App() {
       // Trigger download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `iiko_ttk_${tcV2.meta?.title?.replace(/\s+/g, '_') || 'techcard'}.xlsx`;
+      link.download = `iiko_ttk_${(tcV2?.meta?.title || 'techcard').replace(/\s+/g, '_')}.xlsx`;
+      console.log('🎯 PERFORM IIKO EXPORT DEBUG: tcV2?.meta?.title:', tcV2?.meta?.title, 'filename:', link.download);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
