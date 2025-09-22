@@ -24,6 +24,57 @@ class DemoModeTester:
         self.results.append(result)
         print(result)
         
+    async def create_demo_user_if_needed(self):
+        """Create demo_user if it doesn't exist"""
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                # First check if demo_user exists
+                response = await client.get(f"{API_BASE}/user-history/{self.demo_user_id}")
+                
+                if response.status_code == 200:
+                    await self.log_result(
+                        "Demo user exists", 
+                        True, 
+                        "Demo user already exists in system"
+                    )
+                    return True
+                
+                # If user doesn't exist, create it
+                payload = {
+                    "email": "demo@example.com",
+                    "name": "Demo User",
+                    "city": "moskva"
+                }
+                
+                response = await client.post(f"{API_BASE}/register", json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    actual_user_id = data.get('id', self.demo_user_id)
+                    
+                    # If the system assigned a different ID, we'll use demo_user anyway
+                    await self.log_result(
+                        "Demo user creation", 
+                        True, 
+                        f"Created demo user (assigned ID: {actual_user_id})"
+                    )
+                    return True
+                else:
+                    await self.log_result(
+                        "Demo user creation", 
+                        False, 
+                        f"HTTP {response.status_code}: {response.text}"
+                    )
+                    return False
+                    
+        except Exception as e:
+            await self.log_result(
+                "Demo user creation", 
+                False, 
+                f"Exception: {str(e)}"
+            )
+            return False
+
     async def test_v2_api_with_demo_user(self):
         """Test V2 API with demo_user - POST /api/v1/techcards.v2/generate"""
         try:
