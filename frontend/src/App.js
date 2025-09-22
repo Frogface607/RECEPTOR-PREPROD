@@ -8907,7 +8907,7 @@ function App() {
                       ? 'bg-purple-600/20 text-purple-200 shadow-lg border border-purple-500/30 backdrop-blur-sm' 
                       : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-600/10 hover:backdrop-blur-sm'
                   }`}
-                  title="🤖 AI-Кухня: фудпейринг, генерация меню, AI рекомендации"
+                  title="AI-Кухня: фудпейринг, генерация меню, AI рекомендации"
                 >
                   <span className="flex items-center space-x-1.5">
                     <span>AI-КУХНЯ</span>
