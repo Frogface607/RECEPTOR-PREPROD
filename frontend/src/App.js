@@ -9517,7 +9517,7 @@ function App() {
 
               {/* 2. Вдохновение */}
               <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-xl p-6 hover:border-orange-300/50 transition-all duration-300 cursor-pointer group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🌟</div>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform"></div>
                 <h3 className="text-xl font-bold text-orange-300 mb-3">Вдохновение</h3>
                 <p className="text-gray-300 text-sm mb-4">
                   Креативные твисты на блюда, используя техники и ингредиенты кухонь других стран
