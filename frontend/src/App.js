@@ -8905,7 +8905,7 @@ function App() {
                     ДАННЫЕ
                   </button>
                 )}
-                <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUser.name}</span>
+                <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUserOrDemo.name}</span>
                 <button
                   onClick={handleLogout}
                   className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
