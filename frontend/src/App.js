@@ -8791,12 +8791,12 @@ function App() {
   // Теперь пользователи сразу могут создавать техкарты в демо-режиме
   // Регистрация нужна только для сохранения результатов
   
-  // Создаем демо-пользователя если нет текущего
+  // Создаем демо-пользователя если нет текущего (с PRO планом для доступа к AI)
   const currentUserOrDemo = currentUser || {
     id: 'demo_user',
     name: 'Демо пользователь', 
     email: 'demo@receptor.pro',
-    subscription_plan: 'demo',
+    subscription_plan: 'pro',  // PRO план для доступа к AI-дополнениям
     monthly_tech_cards_used: 0,
     demo_mode: true
   };
