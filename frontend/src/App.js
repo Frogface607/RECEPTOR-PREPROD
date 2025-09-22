@@ -17565,6 +17565,50 @@ function App() {
         </div>
       )}
 
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Вход в аккаунт</h2>
+            
+            <form onSubmit={handleLogin}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Введите ваш email"
+                  required
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogin(false);
+                    setLoginEmail('');
+                  }}
+                  className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                >
+                  Войти
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
