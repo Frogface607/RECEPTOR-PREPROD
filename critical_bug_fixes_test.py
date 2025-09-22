@@ -192,12 +192,12 @@ class CriticalBugFixesTester:
         try:
             start_time = time.time()
             
-            # Test data for tech card generation
+            # Test data for tech card generation - using correct V2 schema
             test_data = {
                 "name": "Тестовое блюдо для проверки исправлений",
                 "cuisine": "русская",
                 "equipment": ["плита", "сковорода"],
-                "budget": "средний",
+                "budget": 500.0,  # Use numeric budget instead of string
                 "dietary": [],
                 "user_id": "demo_user"
             }
