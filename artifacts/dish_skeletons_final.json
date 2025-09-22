@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-09-22T15:35:42.977069",
+  "timestamp": "2025-09-22T15:46:25.190398",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Ребра в соусе кола-барбекю",
-      "code": "100054",
+      "name": "Омлет с грибами",
+      "code": "100057",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 40
+      "yield_g": 200
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
