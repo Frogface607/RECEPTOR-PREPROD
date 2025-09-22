@@ -9159,8 +9159,8 @@ function App() {
           </div>
         )}
 
-        {/* Generated Menu View */}
-        {currentView === 'menu-generator' && generatedMenu && !showMenuWizard && (
+        {/* Generated Menu View - в AI-Kitchen */}
+        {currentView === 'ai-kitchen' && generatedMenu && !showMenuWizard && (
           <div className="max-w-6xl mx-auto">
             {/* Menu Header */}  
             <div className="bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-400/30 rounded-xl p-6 mb-8">
