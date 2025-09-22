@@ -5625,7 +5625,9 @@ function App() {
   };
 
   const improveDish = async () => {
-    if (!techCard || !currentUser?.id) return;
+    // Support both V1 and V2 tech cards and demo users  
+    const hasCard = techCard || tcV2;
+    if (!hasCard || !currentUserOrDemo?.id) return;
     
     setIsImprovingDish(true);
     setLoadingType('improve');
@@ -5635,9 +5637,10 @@ function App() {
     const progressInterval = simulateProgress('improve', 6000); // 6 секунд загрузки
     
     try {
+      const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/improve-dish`, {
-        user_id: currentUser.id,
-        tech_card: techCard
+        user_id: currentUserOrDemo.id,
+        tech_card: cardData
       });
       
       setImproveDishResult(response.data.improved_dish);
