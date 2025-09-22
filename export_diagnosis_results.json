@@ -1,0 +1,106 @@
+{
+  "timestamp": "2025-09-22T14:47:23.558710",
+  "summary": {
+    "total_tests": 13,
+    "successful_tests": 9,
+    "success_rate": 69.23076923076923,
+    "critical_issues": [],
+    "techcard_created": false,
+    "backend_accessible": true,
+    "endpoints_accessible": true,
+    "exports_working": false
+  },
+  "detailed_results": [
+    {
+      "test": "Backend Connectivity",
+      "success": true,
+      "details": "Status: {'feature_enabled': True, 'llm_enabled': True, 'model': 'gpt-4o-mini'}",
+      "timestamp": "2025-09-22T14:47:23.236117",
+      "response_time_ms": 96
+    },
+    {
+      "test": "Endpoint: TTK Only Export (GET)",
+      "success": false,
+      "details": "HTTP 405: {\"detail\":\"Method Not Allowed\"}",
+      "timestamp": "2025-09-22T14:47:23.283116",
+      "response_time_ms": 46
+    },
+    {
+      "test": "Endpoint: TTK Only Export (POST)",
+      "success": true,
+      "details": "HTTP 400 (endpoint accessible)",
+      "timestamp": "2025-09-22T14:47:23.292570",
+      "response_time_ms": 9
+    },
+    {
+      "test": "Endpoint: ZIP Export",
+      "success": true,
+      "details": "HTTP 400 (endpoint accessible)",
+      "timestamp": "2025-09-22T14:47:23.307471",
+      "response_time_ms": 14
+    },
+    {
+      "test": "Endpoint: PDF Export",
+      "success": true,
+      "details": "HTTP 422 (endpoint accessible)",
+      "timestamp": "2025-09-22T14:47:23.355585",
+      "response_time_ms": 48
+    },
+    {
+      "test": "Endpoint: Enhanced Export",
+      "success": true,
+      "details": "HTTP 400 (endpoint accessible)",
+      "timestamp": "2025-09-22T14:47:23.402466",
+      "response_time_ms": 46
+    },
+    {
+      "test": "Endpoint: iiko XLSX Export",
+      "success": true,
+      "details": "HTTP 422 (endpoint accessible)",
+      "timestamp": "2025-09-22T14:47:23.449461",
+      "response_time_ms": 46
+    },
+    {
+      "test": "Endpoint: Preflight Check",
+      "success": true,
+      "details": "HTTP 400 (endpoint accessible)",
+      "timestamp": "2025-09-22T14:47:23.458229",
+      "response_time_ms": 8
+    },
+    {
+      "test": "TTK-Only GET",
+      "success": false,
+      "details": "HTTP 405: {\"detail\":\"Method Not Allowed\"}",
+      "timestamp": "2025-09-22T14:47:23.505263",
+      "response_time_ms": 46
+    },
+    {
+      "test": "TTK-Only POST",
+      "success": true,
+      "details": "HTTP 400 (accessible)",
+      "timestamp": "2025-09-22T14:47:23.552277",
+      "response_time_ms": 46
+    },
+    {
+      "test": "Test TechCard Creation",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"float_parsing\",\"loc\":[\"body\",\"budget\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"средний\",\"url\":\"https://errors.pydantic.dev/2.11/v/float_",
+      "timestamp": "2025-09-22T14:47:23.558446",
+      "response_time_ms": 6
+    },
+    {
+      "test": "Export with Real Data",
+      "success": false,
+      "details": "No techcard ID available",
+      "timestamp": "2025-09-22T14:47:23.558497",
+      "response_time_ms": null
+    },
+    {
+      "test": "Backend Logs Check",
+      "success": true,
+      "details": "Logs checked via supervisor - see console output above",
+      "timestamp": "2025-09-22T14:47:23.558518",
+      "response_time_ms": null
+    }
+  ]
+}
