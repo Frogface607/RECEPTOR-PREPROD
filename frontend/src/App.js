@@ -5458,16 +5458,19 @@ function App() {
   };
 
   const generateFoodPairing = async () => {
-    if (!techCard || !currentUser?.id) return;
+    // Support both V1 and V2 tech cards
+    const hasCard = techCard || tcV2;
+    if (!hasCard || !currentUserOrDemo?.id) return;
     
     setIsGenerating(true);
     setLoadingType('pairing');
     const progressInterval = simulateProgress('pairing', 12000);
     
     try {
+      const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/generate-food-pairing`, {
-        tech_card: techCard,
-        user_id: currentUser.id
+        tech_card: cardData,
+        user_id: currentUserOrDemo.id
       });
       
       setFoodPairingResult(response.data.pairing);
