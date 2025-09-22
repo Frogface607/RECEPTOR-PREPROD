@@ -147,15 +147,17 @@ function App() {
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [userPrices, setUserPrices] = useState([]);
   const [uploadingPrices, setUploadingPrices] = useState(false);
-  const [editableIngredients, setEditableIngredients] = useState([]);
-  const [isEditingIngredients, setIsEditingIngredients] = useState(false);
-  const [editableSteps, setEditableSteps] = useState([]);
-  const [isEditingSteps, setIsEditingSteps] = useState(false);
+  
+  // УПРОЩЕНИЕ: Убрали неиспользуемые состояния редактора ингредиентов
+  // const [editableIngredients, setEditableIngredients] = useState([]);
+  // const [isEditingIngredients, setIsEditingIngredients] = useState(false);
+  // const [editableSteps, setEditableSteps] = useState([]);
+  // const [isEditingSteps, setIsEditingSteps] = useState(false);
 
   // Instructions state
   const [showInstructions, setShowInstructions] = useState(false);
 
-  // Interactive ingredients state
+  // Interactive ingredients state (оставили для совместимости)
   const [currentIngredients, setCurrentIngredients] = useState([]);
 
   // PRO AI features state
