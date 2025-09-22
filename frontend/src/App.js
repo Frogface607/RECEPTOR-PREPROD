@@ -9999,7 +9999,7 @@ function App() {
                           onClick={generateInspiration}
                           disabled={isGenerating}
                           className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'btn-inspiration'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
-                          title="🌟 ВДОХНОВЕНИЕ: Создает креативный твист на ваше блюдо, используя техники и ингредиенты кухонь других стран"
+                          title="ВДОХНОВЕНИЕ: Создает креативный твист на ваше блюдо, используя техники и ингредиенты кухонь других стран"
                         >
                           🌟 ВДОХНОВЕНИЕ
                         </button>
