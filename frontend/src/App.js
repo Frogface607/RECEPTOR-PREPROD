@@ -8809,21 +8809,21 @@ function App() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
               <div className="text-center sm:text-left">
                 <div className="text-sm text-purple-300 font-bold">
-                  {currentUser.subscription_plan?.toUpperCase() || 'FREE'}
+                  {currentUserOrDemo.subscription_plan?.toUpperCase() || 'FREE'}
                 </div>
-                {currentUser.subscription_plan === 'free' && (
+                {currentUserOrDemo.subscription_plan === 'free' && (
                   <div className="text-xs text-gray-400">
-                    {currentUser.monthly_tech_cards_used || 0}/3 техкарт
+                    {currentUserOrDemo.monthly_tech_cards_used || 0}/3 техкарт
                   </div>
                 )}
-                {currentUser.subscription_plan === 'starter' && (
+                {currentUserOrDemo.subscription_plan === 'starter' && (
                   <div className="text-xs text-gray-400">
-                    {currentUser.monthly_tech_cards_used || 0}/25 техкарт
+                    {currentUserOrDemo.monthly_tech_cards_used || 0}/25 техкарт
                   </div>
                 )}
-                {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
+                {(currentUserOrDemo.subscription_plan === 'pro' || currentUserOrDemo.subscription_plan === 'business') && (
                   <div className="text-xs text-gray-400">
-                    {currentUser.monthly_tech_cards_used || 0} техкарт
+                    {currentUserOrDemo.monthly_tech_cards_used || 0} техкарт
                   </div>
                 )}
               </div>
