@@ -9583,13 +9583,13 @@ function App() {
                       : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
                 >
-                  {isImprovingDish ? 'ПРОКАЧИВАЮ...' : '⚡ ЗАПУСТИТЬ'}
+                  {isImprovingDish ? 'ПРОКАЧИВАЮ...' : 'ЗАПУСТИТЬ'}
                 </button>
               </div>
 
               {/* 5. Скрипт продаж */}
               <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-400/30 rounded-xl p-6 hover:border-yellow-300/50 transition-all duration-300 cursor-pointer group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🎭</div>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform"></div>
                 <h3 className="text-xl font-bold text-yellow-300 mb-3">Скрипт продаж</h3>
                 <p className="text-gray-300 text-sm mb-4">
                   Создавайте убедительные тексты для официантов и продвижения блюд в соцсетях
