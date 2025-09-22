@@ -5416,16 +5416,19 @@ function App() {
 
   // ПРО AI ФУНКЦИИ
   const generateSalesScript = async () => {
-    if (!techCard || !currentUser?.id) return;
+    // Support both V1 and V2 tech cards
+    const hasCard = techCard || tcV2;
+    if (!hasCard || !currentUserOrDemo?.id) return;
     
     setIsGenerating(true);
     setLoadingType('sales');
     const progressInterval = simulateProgress('sales', 12000);
     
     try {
+      const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/generate-sales-script`, {
-        tech_card: techCard,
-        user_id: currentUser.id
+        tech_card: cardData,
+        user_id: currentUserOrDemo.id
       });
       
       setSalesScriptResult(response.data.script);
