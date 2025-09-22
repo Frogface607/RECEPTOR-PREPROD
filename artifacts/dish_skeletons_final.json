@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-09-22T15:46:25.190398",
+  "timestamp": "2025-09-22T16:02:19.338371",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Омлет с грибами",
-      "code": "100057",
+      "name": "Бургер с рыбой",
+      "code": "100064",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 200
+      "yield_g": 240
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."

@@ -7083,10 +7083,9 @@ function App() {
       
       // Use dish name instead of timestamp for meaningful filename  
       const dishName = tcV2?.meta?.title || 'techcard';
-      // Fix: Support Cyrillic characters in filename
+      // Support Cyrillic characters in filename
       const safeTitle = dishName.replace(/[^\wа-яё\s-]/gi, '').replace(/\s+/g, '_');
       const filename = `iiko_export_${safeTitle}.zip`;
-      console.log('🎯 MASTER EXPORT ZIP DEBUG: tcV2?.meta?.title:', tcV2?.meta?.title, 'safeTitle:', safeTitle, 'filename:', filename);
       
       const a = document.createElement('a');
       a.href = url;
