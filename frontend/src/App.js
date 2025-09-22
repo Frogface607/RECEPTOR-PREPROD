@@ -650,6 +650,46 @@ function App() {
   // Load iiko RMS status on component mount (IK-02B-FE/01)
   useEffect(() => {
     checkIikoRmsStatus();
+    
+    // 🚀 НОВИНКА: Автоматическое подключение с сохраненными кредами
+    const tryAutoConnect = async () => {
+      try {
+        const savedCreds = localStorage.getItem('receptor_iiko_creds');
+        if (savedCreds) {
+          const creds = JSON.parse(savedCreds);
+          console.log('🔄 Найдены сохраненные iiko креды, пробуем автоподключение...');
+          
+          // Проверяем что креды не слишком старые (7 дней)
+          const savedAt = new Date(creds.saved_at);
+          const daysSince = (new Date() - savedAt) / (1000 * 60 * 60 * 24);
+          
+          if (daysSince < 7) {
+            setIikoRmsCredentials({
+              host: creds.host,
+              login: creds.login,
+              password: creds.password,
+              user_id: creds.user_id
+            });
+            
+            // Ждем немного и пробуем подключиться
+            setTimeout(async () => {
+              if (iikoRmsConnection.status !== 'connected') {
+                console.log('🔗 Автоматическое подключение к iiko...');
+                await connectToIikoRms();
+              }
+            }, 2000);
+          } else {
+            console.log('⏰ Сохраненные креды устарели, удаляем');
+            localStorage.removeItem('receptor_iiko_creds');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Ошибка автоподключения:', error);
+        localStorage.removeItem('receptor_iiko_creds');
+      }
+    };
+    
+    tryAutoConnect();
   }, []);
 
   // Animated loading messages
