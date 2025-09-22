@@ -3318,20 +3318,26 @@ function App() {
           type: 'warning', 
           text: '⚠️ Подключение к iiko требует повторной авторизации' 
         });
-      } else if (response.data.status === 'not_connected' && attemptRestore) {
-        // Check if we had a connection before (sticky flag exists)
-        const wasConnected = localStorage.getItem('iikoRmsConnected');
-        if (wasConnected) {
-          // Try to restore connection
-          const restored = await restoreIikoRmsConnection();
-          if (!restored) {
-            // Clear sticky flag if restore failed
-            localStorage.removeItem('iikoRmsConnected');
-          }
+      } else if (response.data.status === 'not_connected') {
+        // Используем бэкенд для автоматического восстановления подключения
+        // вместо проверки localStorage
+        const restoreResponse = await axios.post(`${API}/v1/iiko/rms/restore-connection`, null, {
+          params: { user_id: currentUserOrDemo.id }
+        });
+        
+        if (restoreResponse.data.status === 'connected') {
+          console.log('✅ Подключение автоматически восстановлено через бэкенд');
+          setIikoRmsConnection(prev => ({
+            ...prev,
+            status: 'connected',
+            organization_id: restoreResponse.data.organization_id,
+            organization_name: restoreResponse.data.organization_name,
+            last_connection: new Date().toISOString()
+          }));
         }
       } else {
-        // Clear sticky flag for other statuses
-        localStorage.removeItem('iikoRmsConnected');
+        // Статус управляется через бэкенд
+        console.log('ℹ️ Статус подключения управляется через бэкенд');
       }
     } catch (error) {
       console.error('Error checking iiko RMS status:', error);
