@@ -92,7 +92,10 @@ class DemoModeTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    tech_card_id = data.get("id")
+                    # V2 API returns the ID in card.meta.id, not at root level
+                    tech_card_id = None
+                    if data.get("card") and data["card"].get("meta"):
+                        tech_card_id = data["card"]["meta"].get("id")
                     
                     if tech_card_id:
                         await self.log_result(
@@ -105,7 +108,7 @@ class DemoModeTester:
                         await self.log_result(
                             "V2 API with demo_user", 
                             False, 
-                            f"HTTP 200 but no ID returned: {data}"
+                            f"HTTP 200 but no ID found in card.meta.id: {data}"
                         )
                         return None
                 else:
