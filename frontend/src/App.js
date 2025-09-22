@@ -10931,7 +10931,7 @@ function App() {
                 )}
                 
                 {/* PRO Price Management */}
-                {(currentUser.subscription_plan === 'pro' || currentUser.subscription_plan === 'business') && (
+                {(currentUserOrDemo.subscription_plan === 'pro' || currentUserOrDemo.subscription_plan === 'business' || currentUserOrDemo.demo_mode) && (
                   <div className="border-t border-purple-400/30 pt-4 sm:pt-6">
                     <h3 className="text-base sm:text-lg font-bold text-purple-300 mb-3 sm:mb-4">PRO ФУНКЦИИ</h3>
                     
