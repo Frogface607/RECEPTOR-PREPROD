@@ -15,6 +15,7 @@ API_BASE = f"{BACKEND_URL}/api"
 class DemoModeTester:
     def __init__(self):
         self.demo_user_id = "demo_user"
+        self.test_user_id = "test_user_demo_mode"  # For old API compatibility
         self.results = []
         
     async def log_result(self, test_name: str, success: bool, details: str):
