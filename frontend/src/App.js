@@ -9462,32 +9462,134 @@ function App() {
           </div>
         )}
 
-        {/* AI-Kitchen View - Новая вкладка со всеми AI функциями */}
+        {/* AI-Kitchen View - Центральная AI платформа */}
         {currentView === 'ai-kitchen' && (
           <div className="max-w-6xl mx-auto">
             {!showMenuWizard ? (
-              // Menu Generator Landing
-              <div className="text-center space-y-8">
+              // AI-Kitchen Dashboard  
+              <div className="space-y-8">
                 {/* Hero Section */}
-                <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-2xl p-8 sm:p-12">
-                  <div className="text-6xl sm:text-8xl mb-6">🎯</div>
-                  <h2 className="text-3xl sm:text-5xl font-bold text-cyan-300 mb-6">
-                    ГЕНЕРАТОР МЕНЮ
-                  </h2>
-                  <p className="text-xl sm:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
-                    Создайте <span className="text-cyan-400 font-bold">сбалансированное меню</span> за 15 минут вместо месяца работы!
-                  </p>
-                  
-                  {/* Key Benefits */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-cyan-900/30 rounded-xl p-4">
-                      <div className="text-3xl mb-2">⚡</div>
-                      <div className="font-bold text-cyan-300">15 минут</div>
-                      <div className="text-sm text-gray-400">вместо месяца</div>
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-pink-600/20 to-violet-600/20 border border-pink-400/30 rounded-2xl p-8 sm:p-12 mb-8">
+                    <div className="text-6xl sm:text-8xl mb-6">🤖</div>
+                    <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent mb-6">
+                      AI-КУХНЯ
+                    </h2>
+                    <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto">
+                      Все <span className="text-pink-400 font-bold">AI-возможности</span> для вашей кухни в одном месте
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2 text-sm">
+                      <span className="bg-pink-600 px-3 py-1 rounded-full text-white">GPT-4o</span>
+                      <span className="bg-violet-600 px-3 py-1 rounded-full text-white">Claude Sonnet</span>
+                      <span className="bg-blue-600 px-3 py-1 rounded-full text-white">Gemini Pro</span>
                     </div>
-                    <div className="bg-blue-900/30 rounded-xl p-4">
-                      <div className="text-3xl mb-2">🧠</div>
-                      <div className="font-bold text-blue-300">AI оптимизация</div>
+                  </div>
+                </div>
+
+                {/* AI Functions Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  
+                  {/* 1. Menu Generator */}
+                  <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 hover:border-cyan-300/50 transition-all duration-300 cursor-pointer group" 
+                       onClick={() => setShowMenuWizard(true)}>
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
+                    <h3 className="text-xl font-bold text-cyan-300 mb-3">Генератор меню</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Создайте сбалансированное меню за 15 минут с учетом целевой аудитории и сезонности
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-cyan-400 text-xs font-semibold">⚡ 15 минут</span>
+                      <span className="text-cyan-300 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+
+                  {/* 2. Food Pairing */}
+                  <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-xl p-6 hover:border-orange-300/50 transition-all duration-300 cursor-pointer group">
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🍷</div>
+                    <h3 className="text-xl font-bold text-orange-300 mb-3">Фудпейринг</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      AI подберет идеальные сочетания вкусов, напитков и ингредиентов для ваших блюд
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-orange-400 text-xs font-semibold">🧠 Smart Pairing</span>
+                      <span className="text-orange-300 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+
+                  {/* 3. Recipe Optimizer */}
+                  <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-xl p-6 hover:border-green-300/50 transition-all duration-300 cursor-pointer group">
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
+                    <h3 className="text-xl font-bold text-green-300 mb-3">Оптимизация рецептов</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Улучшите существующие техкарты: сократите время, снизите себестоимость, улучшите вкус
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-green-400 text-xs font-semibold">💰 Экономия 30%</span>
+                      <span className="text-green-300 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+
+                  {/* 4. Trend Analysis */}
+                  <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 hover:border-purple-300/50 transition-all duration-300 cursor-pointer group">
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📈</div>
+                    <h3 className="text-xl font-bold text-purple-300 mb-3">Анализ трендов</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Узнайте актуальные гастрономические тренды и адаптируйте меню под современные запросы
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-purple-400 text-xs font-semibold">🔥 Hot Trends</span>
+                      <span className="text-purple-300 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+
+                  {/* 5. Cost Calculator */}
+                  <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-400/30 rounded-xl p-6 hover:border-yellow-300/50 transition-all duration-300 cursor-pointer group">
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💰</div>
+                    <h3 className="text-xl font-bold text-yellow-300 mb-3">AI калькулятор затрат</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Точный расчет себестоимости с учетом сезонности, региона и поставщиков
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-yellow-400 text-xs font-semibold">📊 Точность 95%</span>
+                      <span className="text-yellow-300 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+
+                  {/* 6. Customer Feedback */}
+                  <div className="bg-gradient-to-br from-indigo-600/20 to-blue-600/20 border border-indigo-400/30 rounded-xl p-6 hover:border-indigo-300/50 transition-all duration-300 cursor-pointer group">
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⭐</div>
+                    <h3 className="text-xl font-bold text-indigo-300 mb-3">Анализ отзывов</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      AI анализирует отзывы гостей и предлагает улучшения для блюд и сервиса
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-indigo-400 text-xs font-semibold">⭐ 5.0 Rating</span>
+                      <span className="text-indigo-300 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Pro Features Banner */}
+                <div className="bg-gradient-to-r from-amber-600/20 to-yellow-600/20 border border-amber-400/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="text-3xl">🚀</div>
+                      <div>
+                        <h3 className="text-lg font-bold text-amber-300">AI-Кухня PRO</h3>
+                        <p className="text-gray-300 text-sm">
+                          Расширенные AI функции, больше моделей, приоритетная поддержка
+                        </p>
+                      </div>
+                    </div>
+                    <button className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-bold px-6 py-3 rounded-lg transition-all">
+                      Попробовать PRO
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            ) : (
                       <div className="text-sm text-gray-400">умные ингредиенты</div>
                     </div>
                     <div className="bg-purple-900/30 rounded-xl p-4">
