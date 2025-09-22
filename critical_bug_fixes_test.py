@@ -211,11 +211,15 @@ class CriticalBugFixesTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check if tech card was generated successfully
-                if data.get('id') and data.get('status') in ['READY', 'DRAFT']:
+                # Check if tech card was generated successfully - V2 API returns different structure
+                if data.get('status') == 'success' and data.get('card'):
+                    card = data.get('card', {})
+                    card_id = card.get('id')
+                    card_status = card.get('status', 'UNKNOWN')
+                    
                     # Check for article generation (critical bug area)
-                    dish_article = data.get('dish', {}).get('article')
-                    ingredients = data.get('ingredients', [])
+                    dish_article = card.get('dish', {}).get('article')
+                    ingredients = card.get('ingredients', [])
                     
                     article_info = []
                     if dish_article:
@@ -232,14 +236,14 @@ class CriticalBugFixesTester:
                     self.log_result(
                         "V2 Tech Card Generation", 
                         True, 
-                        f"Generated {data.get('status')} tech card (ID: {data.get('id')[:8]}...), {'; '.join(article_info) if article_info else 'no articles generated'}", 
+                        f"Generated {card_status} tech card (ID: {card_id[:8] if card_id else 'N/A'}...), {'; '.join(article_info) if article_info else 'no articles generated'}", 
                         response_time
                     )
                 else:
                     self.log_result(
                         "V2 Tech Card Generation", 
                         False, 
-                        f"Invalid response structure: {list(data.keys())}", 
+                        f"Generation failed - status: {data.get('status')}, message: {data.get('message', 'N/A')}", 
                         response_time
                     )
             else:
