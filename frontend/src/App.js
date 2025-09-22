@@ -11602,7 +11602,7 @@ function App() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto border border-cyan-500/30 laboratory-modal">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-cyan-300">🧪 ЛАБОРАТОРИЯ: ЭКСПЕРИМЕНТ ЗАВЕРШЕН!</h2>
+              <h2 className="text-2xl font-bold text-cyan-300">ЛАБОРАТОРИЯ: ЭКСПЕРИМЕНТ ЗАВЕРШЕН!</h2>
               <button
                 onClick={() => setShowLaboratoryModal(false)}
                 className="text-gray-400 hover:text-white text-2xl"
