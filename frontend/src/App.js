@@ -3292,8 +3292,8 @@ function App() {
           last_connection: response.data.last_connection || prev.last_connection
         }));
         
-        // Set sticky connection flag
-        localStorage.setItem('iikoRmsConnected', 'true');
+        // Статус подключения теперь управляется через бэкенд
+        console.log('🔗 Статус подключения обновлён через бэкенд');
         
         // Also get sync status
         const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default`);
