@@ -33,7 +33,7 @@ class DemoModeTester:
                     "name": "Тестовое блюдо для демо",
                     "cuisine": "русская",
                     "equipment": ["плита", "сковорода"],
-                    "budget": "средний",
+                    "budget": 500.0,  # Fixed: budget should be float, not string
                     "dietary": []
                 }
                 
