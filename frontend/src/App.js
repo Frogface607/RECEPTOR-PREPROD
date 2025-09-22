@@ -9134,9 +9134,11 @@ function App() {
                                 throw new Error('Not V2 format');
                               }
                             } catch (e) {
-                              // V1 tech card
-                              setTechCard(item.content);
-                              setTcV2(null);
+                              // V1 tech card - only clear tcV2 if not forced to V2
+                              if (!FORCE_TECHCARD_V2) {
+                                setTechCard(item.content);
+                                setTcV2(null);
+                              }
                               setGenerationStatus('success');
                               setCurrentTechCardId(item.id);
                               setCurrentView('create');
