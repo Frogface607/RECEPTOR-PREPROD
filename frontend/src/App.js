@@ -9462,24 +9462,193 @@ function App() {
           </div>
         )}
 
-        {/* AI-Kitchen View - Временно упрощенная версия */}
+        {/* AI-Kitchen View - AI-дополнения: Лаборатория, Вдохновение и т.д. */}
         {currentView === 'ai-kitchen' && (
-          <div className="max-w-6xl mx-auto text-center py-20">
-            <div className="bg-gradient-to-r from-pink-600/20 to-violet-600/20 border border-pink-400/30 rounded-2xl p-12">
-              <div className="text-8xl mb-6">🤖</div>
-              <h2 className="text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent mb-6">
-                AI-КУХНЯ
-              </h2>
-              <p className="text-2xl text-gray-300 mb-8">
-                Все AI-возможности для вашей кухни скоро здесь!
-              </p>
-              <button 
-                onClick={() => setShowMenuWizard(true)}
-                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-lg text-lg transition-all"
-              >
-                🎯 Генератор меню (пока что)
-              </button>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="bg-gradient-to-r from-pink-600/20 to-violet-600/20 border border-pink-400/30 rounded-2xl p-8 sm:p-12 mb-8">
+                <div className="text-6xl sm:text-8xl mb-6">🤖</div>
+                <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent mb-6">
+                  AI-КУХНЯ
+                </h2>
+                <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto">
+                  Творческие <span className="text-pink-400 font-bold">AI-дополнения</span> для создания уникальных блюд
+                </p>
+                <div className="flex flex-wrap justify-center gap-2 text-sm">
+                  <span className="bg-pink-600 px-3 py-1 rounded-full text-white">Лаборатория</span>
+                  <span className="bg-violet-600 px-3 py-1 rounded-full text-white">Вдохновение</span>
+                  <span className="bg-blue-600 px-3 py-1 rounded-full text-white">Фудпейринг</span>
+                  <span className="bg-green-600 px-3 py-1 rounded-full text-white">Прокачка блюд</span>
+                </div>
+              </div>
             </div>
+
+            {/* AI Functions Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              
+              {/* 1. Лаборатория */}
+              <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 hover:border-cyan-300/50 transition-all duration-300 cursor-pointer group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🧪</div>
+                <h3 className="text-xl font-bold text-cyan-300 mb-3">Лаборатория</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Создавайте экспериментальные блюда с неожиданными сочетаниями ингредиентов + изображение от AI
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-cyan-400 text-xs font-semibold">⚗️ Эксперименты</span>
+                  <span className="text-cyan-300 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <button
+                  onClick={conductExperiment}
+                  disabled={isExperimenting || !tcV2}
+                  className={`w-full ${
+                    isExperimenting || !tcV2 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
+                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 ЗАПУСТИТЬ'}
+                </button>
+              </div>
+
+              {/* 2. Вдохновение */}
+              <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-xl p-6 hover:border-orange-300/50 transition-all duration-300 cursor-pointer group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🌟</div>
+                <h3 className="text-xl font-bold text-orange-300 mb-3">Вдохновение</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Креативные твисты на блюда, используя техники и ингредиенты кухонь других стран
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-orange-400 text-xs font-semibold">✨ Твисты</span>
+                  <span className="text-orange-300 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <button
+                  onClick={generateInspiration}
+                  disabled={isGenerating || !tcV2}
+                  className={`w-full ${
+                    isGenerating || !tcV2 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'btn-inspiration'
+                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isGenerating ? 'ГЕНЕРИРУЮ...' : '🌟 ЗАПУСТИТЬ'}
+                </button>
+              </div>
+
+              {/* 3. Фудпейринг */}
+              <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-xl p-6 hover:border-green-300/50 transition-all duration-300 cursor-pointer group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🍷</div>
+                <h3 className="text-xl font-bold text-green-300 mb-3">Фудпейринг</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  AI подберет идеальные сочетания вкусов, напитков и ингредиентов для ваших блюд
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-green-400 text-xs font-semibold">🧠 Smart Pairing</span>
+                  <span className="text-green-300 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <button
+                  onClick={generateFoodPairing}
+                  disabled={isGenerating || !tcV2}
+                  className={`w-full ${
+                    isGenerating || !tcV2 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isGenerating ? 'ПОДБИРАЮ...' : '🍷 ЗАПУСТИТЬ'}
+                </button>
+              </div>
+
+              {/* 4. Прокачать блюдо */}
+              <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 hover:border-purple-300/50 transition-all duration-300 cursor-pointer group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
+                <h3 className="text-xl font-bold text-purple-300 mb-3">Прокачать блюдо</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Улучшите существующие техкарты: сократите время, снизите себестоимость, улучшите вкус
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-purple-400 text-xs font-semibold">💪 Upgrade</span>
+                  <span className="text-purple-300 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <button
+                  onClick={improveDish}
+                  disabled={isImprovingDish || !tcV2}
+                  className={`w-full ${
+                    isImprovingDish || !tcV2 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isImprovingDish ? 'ПРОКАЧИВАЮ...' : '⚡ ЗАПУСТИТЬ'}
+                </button>
+              </div>
+
+              {/* 5. Скрипт продаж */}
+              <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-400/30 rounded-xl p-6 hover:border-yellow-300/50 transition-all duration-300 cursor-pointer group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🎭</div>
+                <h3 className="text-xl font-bold text-yellow-300 mb-3">Скрипт продаж</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Создавайте убедительные тексты для официантов и продвижения блюд в соцсетях
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-yellow-400 text-xs font-semibold">💰 Sales</span>
+                  <span className="text-yellow-300 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <button
+                  onClick={generateSalesScript}
+                  disabled={isGenerating || !tcV2}
+                  className={`w-full ${
+                    isGenerating || !tcV2 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700'
+                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isGenerating ? 'СОЗДАЮ...' : '🎭 ЗАПУСТИТЬ'}
+                </button>
+              </div>
+
+              {/* 6. Финансовый анализ */}
+              <div className="bg-gradient-to-br from-indigo-600/20 to-blue-600/20 border border-indigo-400/30 rounded-xl p-6 hover:border-indigo-300/50 transition-all duration-300 cursor-pointer group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💼</div>
+                <h3 className="text-xl font-bold text-indigo-300 mb-3">Финансовый анализ</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Детальный анализ рентабельности блюда с советами по оптимизации затрат
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-indigo-400 text-xs font-semibold">📊 Analytics</span>
+                  <span className="text-indigo-300 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <button
+                  onClick={analyzeFinances}
+                  disabled={isAnalyzingFinances || !tcV2}
+                  className={`w-full ${
+                    isAnalyzingFinances || !tcV2 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
+                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ЗАПУСТИТЬ'}
+                </button>
+              </div>
+
+            </div>
+
+            {/* Requirement: Need tech card */}
+            {!tcV2 && (
+              <div className="mt-8 bg-yellow-600/20 border border-yellow-400/30 rounded-xl p-6 text-center">
+                <div className="text-3xl mb-4">🍽️</div>
+                <h3 className="text-lg font-bold text-yellow-300 mb-2">Сначала создайте техкарту</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Для использования AI-дополнений нужна готовая техкарта
+                </p>
+                <button
+                  onClick={() => setCurrentView('create')}
+                  className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold px-6 py-3 rounded-lg transition-all"
+                >
+                  Создать техкарту
+                </button>
+              </div>
+            )}
+
           </div>
         )}
 
