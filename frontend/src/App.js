@@ -8737,8 +8737,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white font-['Montserrat']">
-      {/* Hero Section */}
-      {!currentUser && (
+      {/* Hero Section - only show if no user at all (not even demo) */}
+      {!currentUser && !currentUserOrDemo.demo_mode && (
         <div className="hero-section">
           <div className="hero-particles">
             {[...Array(9)].map((_, i) => (
