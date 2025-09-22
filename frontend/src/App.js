@@ -7155,7 +7155,7 @@ function App() {
 
       setExportResults([{
         type: 'pdf',
-        filename: `${(tcV2?.meta?.title || 'techcard').replace(/\s+/g, '_')}.pdf`,
+        filename: `${(tcV2?.meta?.title || 'techcard').replace(/[^\wа-яё\s-]/gi, '').replace(/\s+/g, '_')}.pdf`,
         size: htmlContent.length,
         description: 'Техкарта в PDF формате (без цен для персонала)'
       }]);
