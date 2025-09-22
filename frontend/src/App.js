@@ -9511,7 +9511,7 @@ function App() {
                       : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
                 >
-                  {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 ЗАПУСТИТЬ'}
+                  {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : 'ЗАПУСТИТЬ'}
                 </button>
               </div>
 
