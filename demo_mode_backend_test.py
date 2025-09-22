@@ -385,6 +385,10 @@ class DemoModeTester:
         print("\n📋 TEST 0: Backend Connectivity")
         await self.test_backend_connectivity()
         
+        # Test 0.5: Create demo user if needed
+        print("\n📋 TEST 0.5: Create demo user if needed")
+        await self.create_demo_user_if_needed()
+        
         # Test 1: V2 API with demo_user
         print("\n📋 TEST 1: V2 API with demo_user")
         v2_result = await self.test_v2_api_with_demo_user()
