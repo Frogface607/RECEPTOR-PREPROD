@@ -9559,13 +9559,13 @@ function App() {
                       : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
                 >
-                  {isGenerating ? 'ПОДБИРАЮ...' : '🍷 ЗАПУСТИТЬ'}
+                  {isGenerating ? 'ПОДБИРАЮ...' : 'ЗАПУСТИТЬ'}
                 </button>
               </div>
 
               {/* 4. Прокачать блюдо */}
               <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 hover:border-purple-300/50 transition-all duration-300 cursor-pointer group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform"></div>
                 <h3 className="text-xl font-bold text-purple-300 mb-3">Прокачать блюдо</h3>
                 <p className="text-gray-300 text-sm mb-4">
                   Улучшите существующие техкарты: сократите время, снизите себестоимость, улучшите вкус
