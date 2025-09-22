@@ -7697,11 +7697,11 @@ function App() {
   }, [currentUser?.id]);
 
   useEffect(() => {
-    if (currentUser && currentView === 'dashboard') {
+    if (currentUserOrDemo && currentView === 'dashboard') {
       fetchUserHistory();
     }
     // Load projects when user is available
-    if (currentUser && menuProjects.length === 0) {
+    if (currentUserOrDemo && menuProjects.length === 0) {
       fetchMenuProjects();
     }
   }, [currentView, currentUser]);
