@@ -150,8 +150,9 @@ class DemoModeTester:
         """Test Old API with demo_user - POST /api/generate-tech-card"""
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
+                # Use test_user_ prefix for old API compatibility
                 payload = {
-                    "user_id": self.demo_user_id,
+                    "user_id": self.test_user_id,  # Use test_user_ prefix
                     "dish_name": "Демо блюдо старый API",
                     "portions": 1,
                     "city": "moskva"
@@ -167,7 +168,7 @@ class DemoModeTester:
                         await self.log_result(
                             "Old API with demo_user", 
                             True, 
-                            f"HTTP 200, Generated tech card ID: {tech_card_id}"
+                            f"HTTP 200, Generated tech card ID: {tech_card_id} (using test_user_ prefix)"
                         )
                         return tech_card_id
                     else:
