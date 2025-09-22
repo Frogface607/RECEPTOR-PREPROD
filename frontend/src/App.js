@@ -8905,14 +8905,41 @@ function App() {
                     ДАННЫЕ
                   </button>
                 )}
-                <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUserOrDemo.name}</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
-                  title="🚪 Выйти из аккаунта и очистить данные сессии"
-                >
-                  ВЫЙТИ
-                </button>
+                
+                {/* Показываем разные элементы для демо и зарегистрированных пользователей */}
+                {currentUserOrDemo.demo_mode ? (
+                  // Демо режим - показываем Login/Signup
+                  <>
+                    <button
+                      onClick={() => setShowLogin(true)}
+                      className="text-blue-300 hover:text-blue-200 font-semibold text-sm sm:text-base transition-colors"
+                      title="Войти в существующий аккаунт"
+                    >
+                      ВОЙТИ
+                    </button>
+                    <button
+                      onClick={() => setShowRegistrationModal(true)}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-all"
+                      title="Создать аккаунт для сохранения техкарт"
+                    >
+                      РЕГИСТРАЦИЯ
+                    </button>
+                    <span className="text-gray-400 text-sm hidden sm:inline">|</span>
+                    <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUserOrDemo.name} 🧪</span>
+                  </>
+                ) : (
+                  // Зарегистрированный пользователь - показываем имя и выход
+                  <>
+                    <span className="text-purple-300 font-bold text-sm sm:text-base">{currentUserOrDemo.name}</span>
+                    <button
+                      onClick={handleLogout}
+                      className="text-purple-300 hover:text-purple-200 font-semibold text-sm sm:text-base"
+                      title="🚪 Выйти из аккаунта и очистить данные сессии"
+                    >
+                      ВЫЙТИ
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
