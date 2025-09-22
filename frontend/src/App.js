@@ -651,41 +651,37 @@ function App() {
   useEffect(() => {
     checkIikoRmsStatus();
     
-    // 🚀 НОВИНКА: Автоматическое подключение с сохраненными кредами
+    // 🚀 УЛУЧШЕНИЕ: Автоматическое восстановление подключения через бэкенд
     const tryAutoConnect = async () => {
       try {
-        const savedCreds = localStorage.getItem('receptor_iiko_creds');
-        if (savedCreds) {
-          const creds = JSON.parse(savedCreds);
-          console.log('🔄 Найдены сохраненные iiko креды, пробуем автоподключение...');
+        console.log('🔄 Проверяем сохраненные учетные данные на бэкенде...');
+        
+        // Используем бэкенд эндпоинт для восстановления подключения
+        const response = await axios.post(`${API}/v1/iiko/rms/restore-connection`, null, {
+          params: { user_id: currentUserOrDemo.id }
+        });
+        
+        if (response.data.status === 'connected') {
+          console.log('✅ Автоматическое подключение к iiko успешно через бэкенд');
+          setIikoRmsConnection(prev => ({
+            ...prev,
+            status: 'connected',
+            organization_id: response.data.organization_id,
+            organization_name: response.data.organization_name,
+            last_connection: new Date().toISOString()
+          }));
           
-          // Проверяем что креды не слишком старые (7 дней)
-          const savedAt = new Date(creds.saved_at);
-          const daysSince = (new Date() - savedAt) / (1000 * 60 * 60 * 24);
-          
-          if (daysSince < 7) {
-            setIikoRmsCredentials({
-              host: creds.host,
-              login: creds.login,
-              password: creds.password,
-              user_id: creds.user_id
-            });
-            
-            // Ждем немного и пробуем подключиться
-            setTimeout(async () => {
-              if (iikoRmsConnection.status !== 'connected') {
-                console.log('🔗 Автоматическое подключение к iiko...');
-                await connectToIikoRms();
-              }
-            }, 2000);
-          } else {
-            console.log('⏰ Сохраненные креды устарели, удаляем');
-            localStorage.removeItem('receptor_iiko_creds');
-          }
+          // Обновляем статус подключения
+          await checkIikoRmsStatus();
+        } else if (response.data.status === 'no_stored_credentials') {
+          console.log('ℹ️ Нет сохраненных учетных данных на бэкенде');
+        } else if (response.data.status === 'manually_disconnected') {
+          console.log('ℹ️ Подключение было отключено вручную');
+        } else {
+          console.log('⚠️ Не удалось восстановить подключение:', response.data.status);
         }
       } catch (error) {
-        console.error('❌ Ошибка автоподключения:', error);
-        localStorage.removeItem('receptor_iiko_creds');
+        console.error('❌ Ошибка автоподключения через бэкенд:', error);
       }
     };
     
