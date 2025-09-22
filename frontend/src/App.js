@@ -9631,7 +9631,7 @@ function App() {
                       : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
                 >
-                  {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ЗАПУСТИТЬ'}
+                  {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : 'ЗАПУСТИТЬ'}
                 </button>
               </div>
 
@@ -9640,7 +9640,7 @@ function App() {
             {/* Requirement: Need tech card */}
             {!tcV2 && (
               <div className="mt-8 bg-yellow-600/20 border border-yellow-400/30 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-4">🍽️</div>
+                <div className="text-3xl mb-4"></div>
                 <h3 className="text-lg font-bold text-yellow-300 mb-2">Сначала создайте техкарту</h3>
                 <p className="text-gray-300 text-sm mb-4">
                   Для использования AI-дополнений нужна готовая техкарта
