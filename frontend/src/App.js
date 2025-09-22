@@ -11571,53 +11571,7 @@ function App() {
 
       {/* УПРОЩЕНИЕ UI: Убрали модальное окно редактора ингредиентов - не использовалось */}
 
-      {/* Steps Editor Modal */}
-      {isEditingSteps && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-purple-500/30">
-            <h3 className="text-2xl font-bold text-purple-300 mb-6">РЕДАКТОР ЭТАПОВ</h3>
-            
-            {editableSteps.map((step, index) => (
-              <div key={index} className="mb-4">
-                <textarea
-                  value={step}
-                  onChange={(e) => {
-                    const newSteps = [...editableSteps];
-                    newSteps[index] = e.target.value;
-                    setEditableSteps(newSteps);
-                  }}
-                  className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
-                  placeholder={`Этап ${index + 1}`}
-                  rows={3}
-                />
-              </div>
-            ))}
-            
-            <div className="flex space-x-4 mt-6">
-              <button
-                onClick={() => {
-                  setEditableSteps([...editableSteps, '']);
-                }}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-              >
-                ДОБАВИТЬ ЭТАП
-              </button>
-              <button
-                onClick={saveStepsChanges}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
-              >
-                СОХРАНИТЬ
-              </button>
-              <button
-                onClick={() => setIsEditingSteps(false)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-              >
-                ОТМЕНА
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* УПРОЩЕНИЕ UI: Убрали модальное окно редактора этапов - не использовалось */}
 
       {/* Price Management Modal - PRO only */}
       {showPriceModal && (
