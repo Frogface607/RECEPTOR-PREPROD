@@ -9462,8 +9462,8 @@ function App() {
           </div>
         )}
 
-        {/* Menu Generator View */}
-        {currentView === 'menu-generator' && (
+        {/* AI-Kitchen View - Новая вкладка со всеми AI функциями */}
+        {currentView === 'ai-kitchen' && (
           <div className="max-w-6xl mx-auto">
             {!showMenuWizard ? (
               // Menu Generator Landing
