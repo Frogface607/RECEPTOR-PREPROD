@@ -13093,6 +13093,62 @@ function App() {
                   </div>
                 )}
                 
+                {/* iiko RMS Integration Section */}
+                <div className="pt-6 border-t border-purple-400/30">
+                  <h4 className="text-lg font-bold text-blue-300 mb-4 flex items-center space-x-2">
+                    <span>🔗</span>
+                    <span>iiko RMS подключение</span>
+                    <span className="bg-blue-600 px-2 py-1 rounded text-xs">ИНТЕГРАЦИЯ</span>
+                  </h4>
+                  
+                  {iikoRmsConnection.status === 'connected' ? (
+                    <div className="bg-green-900/30 border border-green-400/30 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-green-300 font-semibold flex items-center gap-2">
+                            ✅ Подключено к {iikoRmsConnection.host}
+                          </div>
+                          <div className="text-green-400 text-sm mt-1">
+                            Логин: {iikoRmsConnection.login} | Организация: {iikoRmsConnection.organization_name}
+                          </div>
+                          <div className="text-green-500 text-xs mt-1">
+                            Сессия до: {iikoRmsConnection.session_expires_at ? new Date(iikoRmsConnection.session_expires_at).toLocaleString() : 'N/A'}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setShowIikoRmsModal(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                        >
+                          ⚙️ Настроить
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-800/30 border border-gray-600/30 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-gray-300 font-semibold">
+                            ⚪ iiko RMS не подключен
+                          </div>
+                          <div className="text-gray-400 text-sm mt-1">
+                            Подключите для экспорта техкарт в iiko
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setShowIikoRmsModal(true)}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                        >
+                          🔗 Подключить
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="text-gray-400 text-xs mt-2">
+                    💡 После подключения пароль будет сохранен для автоматического входа
+                  </div>
+                </div>
+                
                 <div className="flex justify-between pt-6 border-t border-purple-400/30">
                   <button
                     onClick={() => setProfileStep(3)}
