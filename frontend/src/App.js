@@ -8928,6 +8928,28 @@ function App() {
               <h2 className="text-2xl sm:text-3xl font-bold text-purple-300 mb-4">
                 Добро пожаловать, {currentUserOrDemo.name}! 👋
               </h2>
+              
+              {/* Demo Mode Banner */}
+              {currentUserOrDemo.demo_mode && (
+                <div className="bg-yellow-900/30 border border-yellow-400/50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🧪</span>
+                    <div>
+                      <div className="font-bold text-yellow-300">Демо режим</div>
+                      <div className="text-yellow-400 text-sm">
+                        Создавайте техкарты бесплатно! Для сохранения результатов зарегистрируйтесь.
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowRegistrationModal(true)}
+                      className="ml-auto bg-yellow-600 hover:bg-yellow-700 text-black px-3 py-1 rounded text-sm font-bold transition-colors"
+                    >
+                      Регистрация
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               <p className="text-gray-300 text-base sm:text-lg mb-6">
                 {venueProfile.venue_name ? 
                   `Управляйте ${venueProfile.venue_name} с помощью AI` : 
