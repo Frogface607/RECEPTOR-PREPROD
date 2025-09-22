@@ -6611,14 +6611,11 @@ function App() {
 
   const fetchUserHistory = async () => {
     if (!currentUser?.id) {
-      console.log('No user ID available for history fetch');
       return;
     }
     
     try {
-      console.log('Fetching history for user:', currentUser.id);
       const response = await axios.get(`${API}/user-history/${currentUser.id}`);
-      console.log('History response:', response.data);
       setUserHistory(response.data.history || []);
       
       // Update dashboard stats
