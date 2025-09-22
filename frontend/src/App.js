@@ -17,6 +17,10 @@ function App() {
   // const [cities, setCities] = useState([]);
   // const [selectedCity, setSelectedCity] = useState('');
   
+  // Новые состояния для демо-режима
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  
   const [dishName, setDishName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(null); // 'success' | 'draft' | 'error'
