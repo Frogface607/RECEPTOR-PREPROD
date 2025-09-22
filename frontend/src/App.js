@@ -5134,7 +5134,7 @@ function App() {
       
       if (response.data.success) {
         setVenueProfile(prev => ({ ...prev, ...profileData }));
-        alert('Профиль заведения обновлен успешно!');
+        alert('Настройки заведения обновлены успешно!');
         return true;
       }
     } catch (error) {
