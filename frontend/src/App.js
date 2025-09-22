@@ -5578,7 +5578,9 @@ function App() {
   };
 
   const analyzeFinances = async () => {
-    if (!techCard || !currentUser?.id) return;
+    // Support both V1 and V2 tech cards and demo users
+    const hasCard = techCard || tcV2;
+    if (!hasCard || !currentUserOrDemo?.id) return;
     
     setIsAnalyzingFinances(true);
     setLoadingType('finances');
@@ -5593,9 +5595,10 @@ function App() {
     }, 10000); // 10 секунд для детального анализа
     
     try {
+      const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/analyze-finances`, {
-        user_id: currentUser.id,
-        tech_card: techCard
+        user_id: currentUserOrDemo.id,
+        tech_card: cardData
       });
       
       setFinancesResult(response.data.analysis);
