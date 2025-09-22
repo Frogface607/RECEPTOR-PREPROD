@@ -3126,7 +3126,10 @@ function App() {
     try {
       setIikoRmsMessage({ type: 'info', text: '🔄 Отключение от iiko RMS...' });
       
-      const response = await axios.post(`${API}/v1/iiko/rms/disconnect?user_id=${currentUser?.id || 'anonymous'}`);
+      // Отключение теперь происходит через бэкенд API
+      const response = await axios.post(`${API}/v1/iiko/rms/disconnect`, null, {
+        params: { user_id: currentUserOrDemo.id }
+      });
       
       if (response.data.status === 'disconnected') {
         setIikoRmsConnection({
@@ -3141,12 +3144,9 @@ function App() {
           error_message: ''
         });
         
-        // Clear sticky connection flag
-        localStorage.removeItem('iikoRmsConnected');
-        
         setIikoRmsMessage({ 
           type: 'success', 
-          text: '✅ Подключение разорвано. Данные авторизации удалены.' 
+          text: '✅ Подключение разорвано. Данные авторизации удалены с бэкенда.' 
         });
       }
     } catch (error) {
