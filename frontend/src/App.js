@@ -8987,9 +8987,8 @@ function App() {
                     <button
                       onClick={() => setShowVenueProfileModal(true)}
                       className="text-purple-300 hover:text-purple-200 font-bold text-sm sm:text-base transition-colors flex items-center space-x-2"
-                      title="🏪 Личный кабинет: настройки заведения, iiko, тарифы"
+                      title="Личный кабинет: настройки заведения, iiko, тарифы"
                     >
-                      <span>🏪</span>
                       <span>{currentUserOrDemo.name}</span>
                     </button>
                     <button
