@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-09-22T13:50:53.332583",
+  "timestamp": "2025-09-22T14:42:35.669146",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Омлет с ветчиной",
-      "code": "10082",
+      "name": "Тако с уткой",
+      "code": "100034",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 200
+      "yield_g": 240
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
