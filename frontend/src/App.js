@@ -9483,64 +9483,29 @@ function App() {
           </div>
         )}
 
-        {/* Menu Wizard */}
+        {/* Menu Wizard - Placeholder for now */}
         {showMenuWizard && (
-          <div>
-                  
-                  <button
-                    onClick={() => {
-                      // Ensure we're in the menu-generator view
-                      setCurrentView('menu-generator');
-                      
-                      // Initialize simple menu data with venue profile defaults
-                      setSimpleMenuData({
-                        menuType: '',
-                        expectations: '',
-                        dishCount: venueProfile.default_dish_count || 12,
-                        customCategories: null,
-                        projectId: null
-                      });
-                      setShowSimpleMenuModal(true);
-                    }}
-                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl text-xl transform hover:scale-105 transition-all shadow-lg"
-                    title="🎯 Простое создание меню"
-                  >
-                    🚀 СОЗДАТЬ МЕНЮ ЗА 4 КЛИКА
-                  </button>
-                </div>
+          <div className="max-w-4xl mx-auto text-center py-20">
+            <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-2xl p-12">
+              <div className="text-8xl mb-6">🎯</div>
+              <h2 className="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-6">
+                ГЕНЕРАТОР МЕНЮ
+              </h2>
+              <p className="text-2xl text-gray-300 mb-8">
+                Мастер создания меню временно недоступен
+              </p>
+              <button 
+                onClick={() => setShowMenuWizard(false)}
+                className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold px-8 py-4 rounded-lg text-lg transition-all"
+              >
+                ← Назад
+              </button>
+            </div>
+          </div>
+        )}
 
-                {/* Profile Setup Section */}
-                <div className="bg-purple-900/20 border border-purple-400/30 rounded-xl p-6">
-                  <div className="text-4xl mb-4">⚙️</div>
-                  <h3 className="text-xl font-bold text-purple-300 mb-4">Настройте профиль заведения для лучших результатов</h3>
-                  <p className="text-gray-400 mb-6">
-                    Укажите подробности о вашем заведении один раз, чтобы ИИ создавал идеальные меню автоматически.
-                  </p>
-                  <button
-                    onClick={() => setShowVenueProfileModal(true)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mr-4"
-                  >
-                    ⚙️ НАСТРОИТЬ ПРОФИЛЬ
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Auto-fill from venue profile
-                      if (venueProfile.cuisine_type && !menuProfile.cuisineStyle) {
-                        setMenuProfile(prev => ({
-                          ...prev,
-                          cuisineStyle: venueProfile.cuisine_type,
-                          region: currentUser.city || 'moskva'
-                        }));
-                      }
-                      setShowMenuWizard(true);
-                    }}
-                    className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                  >
-                    🧙‍♂️ РАСШИРЕННЫЙ МАСТЕР
-                  </button>
-                </div>
-              </div>
-            ) : (
+        {/* Placeholder for future wizard content */}
+        {false && (
               // 5-Step Menu Creation Wizard with Enhanced UI/UX
               <div className="wizard-container max-w-4xl mx-auto">
                 {/* Enhanced Header */}
