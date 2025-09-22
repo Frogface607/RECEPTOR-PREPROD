@@ -5537,16 +5537,19 @@ function App() {
   };
 
   const generateInspiration = async () => {
-    if (!techCard || !currentUser?.id) return;
+    // Support both V1 and V2 tech cards
+    const hasCard = techCard || tcV2;
+    if (!hasCard || !currentUserOrDemo?.id) return;
     
     setIsGenerating(true);
     setLoadingType('inspiration');
     const progressInterval = simulateProgress('inspiration', 15000);
     
     try {
+      const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/generate-inspiration`, {
-        user_id: currentUser.id,
-        tech_card: techCard,
+        user_id: currentUserOrDemo.id,
+        tech_card: cardData,
         inspiration_prompt: inspirationPrompt || 'Создай креативный и жизнеспособный твист на это блюдо'
       });
       
