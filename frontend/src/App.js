@@ -7298,10 +7298,12 @@ function App() {
       // Extract filename from response headers or create smart filename
       const contentDisposition = response.headers.get('Content-Disposition');
       let filename = `iiko_export_${(tcV2?.meta?.title || 'techcard').replace(/\s+/g, '_')}.zip`;
+      console.log('🎯 ZIP FILENAME DEBUG: tcV2?.meta?.title:', tcV2?.meta?.title, 'filename:', filename);
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
           filename = filenameMatch[1];
+          console.log('🎯 ZIP FILENAME DEBUG: Using server filename:', filename);
         }
       }
       
