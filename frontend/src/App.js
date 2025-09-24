@@ -10229,14 +10229,14 @@ function App() {
                       {isAutoMapping ? '⏳ Анализ...' : '🔗 Связать с IIKO'}
                     </button>
                     
-                    {/* 2. Назначить SKU вручную (лупа) */}
+                    {/* 2. Выбрать товары из IIKO вручную */}
                     <button 
                       onClick={() => setMappingModalOpen(true)}
                       disabled={!tcV2}
                       className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
-                      title="Ручное назначение SKU для ингредиентов"
+                      title="Выбрать товары из вашей IIKO системы для каждого ингредиента"
                     >
-                      🔍 Назначить SKU
+                      🔍 Выбрать товары
                     </button>
                     
                     {/* УПРОЩЕНИЕ UI: Убрали дублирующуюся кнопку "Экспорт номенклатур" - функция есть в мастере экспорта */}
