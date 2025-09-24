@@ -16218,6 +16218,22 @@ function App() {
                               ✓ Принять
                             </button>
                             <button
+                              onClick={() => {
+                                // Открываем поиск товаров IIKO для этого ингредиента
+                                const ingredientIndex = tcV2.ingredients.findIndex(
+                                  ing => ing.name === result.ingredient.name
+                                );
+                                if (ingredientIndex >= 0) {
+                                  handleOpenIngredientMapping(ingredientIndex);
+                                  setShowAutoMappingModal(false);
+                                }
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                              title="Выбрать другой товар из IIKO вручную"
+                            >
+                              🔍 Изменить
+                            </button>
+                            <button
                               onClick={() => acceptAutoMappingSuggestion(index, false)}
                               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                                 result.status === 'rejected'
@@ -16228,6 +16244,25 @@ function App() {
                               ✗ Отклонить
                             </button>
                           </>
+                        )}
+                        
+                        {/* Если предложения нет, показываем только кнопку ручного поиска */}
+                        {!result.suggestion && (
+                          <button
+                            onClick={() => {
+                              const ingredientIndex = tcV2.ingredients.findIndex(
+                                ing => ing.name === result.ingredient.name
+                              );
+                              if (ingredientIndex >= 0) {
+                                handleOpenIngredientMapping(ingredientIndex);
+                                setShowAutoMappingModal(false);
+                              }
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                            title="Найти товар в IIKO вручную"
+                          >
+                            🔍 Найти в IIKO
+                          </button>
                         )}
                       </div>
                     </div>
