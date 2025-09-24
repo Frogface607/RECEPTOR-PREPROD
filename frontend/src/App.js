@@ -16804,8 +16804,8 @@ function App() {
             {/* Header */}
             <div className="flex justify-between items-center mb-6 sticky top-0 bg-gray-800 pb-4 border-b border-gray-700">
               <div>
-                <h2 id="export-wizard-title" className="text-2xl font-bold text-white mb-1">📦 Подготовка для IIKO</h2>
-                <p className="text-gray-300 text-sm">Выберите формат экспорта для импорта в вашу IIKO систему</p>
+                <h2 id="export-wizard-title" className="text-2xl font-bold text-white mb-1">📄 Экспорт техкарты</h2>
+                <p className="text-gray-300 text-sm">Выберите формат экспорта для вашей техкарты</p>
               </div>
               <button
                 onClick={closeExportWizard}
