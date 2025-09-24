@@ -16077,6 +16077,16 @@ function App() {
               </div>
             )}
             
+            {/* Instructions */}
+            <div className="p-4 border-b border-gray-600/50 bg-blue-900/20">
+              <h4 className="text-blue-300 font-bold mb-2">💡 Как это работает:</h4>
+              <ul className="text-sm text-blue-200 space-y-1">
+                <li>• <strong>Принять</strong> - использовать найденный товар IIKO</li>
+                <li>• <strong>Изменить</strong> - выбрать другой товар вручную</li>
+                <li>• <strong>Отклонить</strong> - не связывать с IIKO (артикул не назначится)</li>
+              </ul>
+            </div>
+            
             {/* Filters */}
             <div className="p-4 border-b border-gray-600/50 bg-gray-700/30">
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
