@@ -4025,6 +4025,9 @@ function App() {
   const getFilteredAutoMappingResults = () => {
     let filtered = autoMappingResults;
     
+    // Filter out invalid results
+    filtered = filtered.filter(r => r && r.ingredient && r.ingredient.name);
+    
     // Apply filter
     switch (autoMappingFilter) {
       case 'no_product_code':
