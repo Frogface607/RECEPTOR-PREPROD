@@ -129,7 +129,7 @@ function App() {
     error_message: ''
   });
   const [iikoRmsCredentials, setIikoRmsCredentials] = useState({
-    host: 'edison-bar.iiko.it',
+    host: '',  // Пользователь вводит свои данные
     login: '',
     password: ''
   });
