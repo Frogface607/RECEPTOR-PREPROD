@@ -1577,16 +1577,17 @@ function App() {
                           ) : '-'}
                         </td>
                         <td className="text-center py-2">
-                          <div className="flex justify-center gap-1">
+                          <div className="flex justify-center gap-2">
+                            {/* Улучшенная кнопка сопоставления с IIKO */}
                             <button
-                              className="text-purple-400 hover:text-purple-300 transition-colors"
+                              className="bg-blue-600/20 border border-blue-500/50 text-blue-300 hover:bg-blue-500 hover:text-white px-3 py-1 rounded-lg text-sm font-medium transition-all hover:scale-105 flex items-center gap-1"
                               onClick={() => handleOpenIngredientMapping(index)}
-                              title="Назначить продукт/SKU из каталога"
+                              title="Связать с товаром из IIKO системы"
                             >
-                              ✏️
+                              🔗 IIKO
                             </button>
                             <button
-                              className="text-blue-400 hover:text-blue-300 transition-colors"
+                              className="text-gray-400 hover:text-blue-300 transition-colors p-1"
                               onClick={() => openSubRecipeModal(index)}
                               title="Назначить подрецепт"
                             >
@@ -1594,7 +1595,7 @@ function App() {
                             </button>
                             {ing.subRecipe && (
                               <button
-                                className="text-red-400 hover:text-red-300 transition-colors"
+                                className="text-red-400 hover:text-red-300 transition-colors p-1"
                                 onClick={() => removeSubRecipe(index)}
                                 title="Убрать подрецепт"
                               >
