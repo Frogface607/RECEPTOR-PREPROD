@@ -16810,7 +16810,7 @@ function App() {
               <button
                 onClick={closeExportWizard}
                 className="text-gray-400 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-700 transition-colors"
-                aria-label="Закрыть подготовку для IIKO"
+                aria-label="Закрыть экспорт"
               >
                 ×
               </button>
