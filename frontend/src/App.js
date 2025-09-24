@@ -10246,10 +10246,10 @@ function App() {
                       onClick={() => { openExportWizard(); }}
                       disabled={!tcV2}
                       className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-bold transition-all text-lg min-h-[64px] flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
-                      title="Открыть мастер экспорта - все форматы в одном месте"
+                      title="Подготовить файлы для импорта в IIKO - все форматы в одном месте"
                     >
-                      <span className="mr-3">🚀</span>
-                      Мастер экспорта
+                      <span className="mr-3">📦</span>
+                      Подготовить для IIKO
                     </button>
                     
                     {/* 4. Импорт TTK (XLSX) */}
