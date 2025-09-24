@@ -598,10 +598,10 @@ def get_iiko_rms_client() -> IikoRmsClient:
     global _iiko_rms_client
     
     if _iiko_rms_client is None:
-        # Get credentials from environment
-        host = os.getenv('IIKO_RMS_HOST', 'edison-bar.iiko.it')
-        login = os.getenv('IIKO_RMS_LOGIN', 'Sergey') 
-        password = os.getenv('IIKO_RMS_PASSWORD', 'metkamfetamin')
+        # Get credentials from environment (no hardcoded defaults)
+        host = os.getenv('IIKO_RMS_HOST', '')
+        login = os.getenv('IIKO_RMS_LOGIN', '') 
+        password = os.getenv('IIKO_RMS_PASSWORD', '')
         timeout = int(os.getenv('IIKO_RMS_TIMEOUT', '30'))
         
         _iiko_rms_client = IikoRmsClient(
