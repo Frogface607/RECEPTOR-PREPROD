@@ -202,7 +202,7 @@ function App() {
   const [cuisineTypes, setCuisineTypes] = useState({});
   const [averageCheckCategories, setAverageCheckCategories] = useState({});
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  const [profileStep, setProfileStep] = useState(1); // For wizard steps
+  const [profileStep, setProfileStep] = useState(0); // 0 = IIKO, 1-4 = Profile wizard
 
   // Dashboard states
   const [currentView, setCurrentView] = useState('create'); // 'dashboard', 'create', 'menu-generator', 'my-venue'
