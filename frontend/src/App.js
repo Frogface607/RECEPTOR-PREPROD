@@ -11838,6 +11838,148 @@ function App() {
               </button>
             </div>
 
+            {/* Navigation Tabs */}
+            <div className="flex space-x-4 mb-6 border-b border-gray-600">
+              <button
+                onClick={() => setProfileStep(0)}
+                className={`px-4 py-2 font-bold transition-colors ${
+                  profileStep === 0 
+                    ? 'border-b-2 border-purple-400 text-purple-300' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                🔗 IIKO Подключение
+              </button>
+              <button
+                onClick={() => setProfileStep(1)}
+                className={`px-4 py-2 font-bold transition-colors ${
+                  profileStep >= 1 
+                    ? 'border-b-2 border-purple-400 text-purple-300' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                🏢 Профиль заведения
+              </button>
+            </div>
+
+            {/* IIKO Connection Tab */}
+            {profileStep === 0 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-purple-200 mb-2">Подключение к IIKO</h3>
+                  <p className="text-gray-300">Введите данные вашей IIKO системы для экспорта техкарт</p>
+                  <p className="text-sm text-yellow-300 mt-2">⚠️ Эти данные нужны только для экспорта в IIKO. Создание техкарт работает без подключения.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-400/30 rounded-xl p-6">
+                    <h4 className="text-lg font-bold text-blue-300 mb-4">📡 Данные для подключения</h4>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Адрес сервера IIKO
+                        </label>
+                        <input
+                          type="text"
+                          value={iikoRmsCredentials.host}
+                          onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, host: e.target.value }))}
+                          placeholder="Например: ваше-заведение.iiko.it"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Логин
+                        </label>
+                        <input
+                          type="text"
+                          value={iikoRmsCredentials.login}
+                          onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, login: e.target.value }))}
+                          placeholder="Ваш логин IIKO"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Пароль
+                        </label>
+                        <input
+                          type="password"
+                          value={iikoRmsCredentials.password}
+                          onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, password: e.target.value }))}
+                          placeholder="Ваш пароль IIKO"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      
+                      {iikoRmsCredentials.host && iikoRmsCredentials.login && iikoRmsCredentials.password && (
+                        <button
+                          onClick={connectToIikoRms}
+                          disabled={isConnectingIikoRms}
+                          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-3 rounded-lg font-bold transition-colors"
+                        >
+                          {isConnectingIikoRms ? 'Подключаюсь...' : '🔗 Проверить подключение'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-400/30 rounded-xl p-6">
+                    <h4 className="text-lg font-bold text-green-300 mb-4">ℹ️ Как получить данные?</h4>
+                    
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div>
+                        <span className="font-bold text-green-400">Адрес сервера:</span>
+                        <p>Обычно имеет вид: ваше-заведение.iiko.it</p>
+                      </div>
+                      
+                      <div>
+                        <span className="font-bold text-green-400">Логин и пароль:</span>
+                        <p>Те же, что вы используете для входа в IIKO Office</p>
+                      </div>
+                      
+                      <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-3 mt-4">
+                        <p className="text-yellow-200 text-xs">
+                          💡 Если не знаете данные, обратитесь к системному администратору IIKO в вашем заведении
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {iikoRmsConnection.status === 'connected' && (
+                      <div className="bg-green-900/20 border border-green-400/30 rounded-lg p-3 mt-4">
+                        <p className="text-green-200 text-sm font-bold">✅ Подключение активно</p>
+                        <p className="text-green-300 text-xs">
+                          {iikoRmsConnection.organization_name} • {iikoRmsConnection.products_count} товаров
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {iikoRmsMessage.text && (
+                  <div className={`p-4 rounded-lg ${
+                    iikoRmsMessage.type === 'success' ? 'bg-green-900/20 border border-green-400/30 text-green-200' :
+                    iikoRmsMessage.type === 'error' ? 'bg-red-900/20 border border-red-400/30 text-red-200' :
+                    'bg-blue-900/20 border border-blue-400/30 text-blue-200'
+                  }`}>
+                    {iikoRmsMessage.text}
+                  </div>
+                )}
+                
+                <div className="text-center">
+                  <button
+                    onClick={() => setProfileStep(1)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                  >
+                    НАСТРОИТЬ ПРОФИЛЬ ЗАВЕДЕНИЯ →
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Wizard Step 1: Venue Type */}
             {profileStep === 1 && (
               <div className="space-y-6">
