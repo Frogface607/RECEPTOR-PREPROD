@@ -11830,7 +11830,7 @@ function App() {
               <button
                 onClick={() => {
                   setShowVenueProfileModal(false);
-                  setProfileStep(1);
+                  setProfileStep(0); // Reset to IIKO tab
                 }}
                 className="text-gray-400 hover:text-white transition-colors text-2xl"
               >
