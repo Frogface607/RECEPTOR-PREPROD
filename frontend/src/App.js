@@ -10224,9 +10224,9 @@ function App() {
                       onClick={debouncedStartAutoMapping}
                       disabled={isAutoMapping || iikoRmsConnection.status !== 'connected'}
                       className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
-                      title="Автоматическое сопоставление ингредиентов с номенклатурой iiko"
+                      title="Связать ингредиенты техкарты с товарами в вашей IIKO системе"
                     >
-                      {isAutoMapping ? '⏳ Анализ...' : '🤖 Автомаппинг'}
+                      {isAutoMapping ? '⏳ Анализ...' : '🔗 Связать с IIKO'}
                     </button>
                     
                     {/* 2. Назначить SKU вручную (лупа) */}
