@@ -916,8 +916,12 @@ class IikoRmsService:
         try:
             logger.info(f"Attempting to restore RMS connection for user: {user_id}")
             
+            # КРИТИЧЕСКИ ВАЖНО: всегда требовать user_id для изоляции пользователей
+            if not user_id:
+                return {"status": "no_stored_credentials"}
+                
             # Find most recent connection for user
-            query = {"user_id": user_id} if user_id else {}
+            query = {"user_id": user_id}
             credentials_record = self.credentials.find_one(
                 query,
                 sort=[("last_connection", DESCENDING)]
