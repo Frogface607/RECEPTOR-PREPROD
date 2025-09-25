@@ -155,16 +155,16 @@ class IikoRmsService:
                               user_id: Optional[str] = None) -> Dict[str, Any]:
         """Select organization for RMS operations"""
         try:
-            # Find credentials record
-            query = {"user_id": user_id} if user_id else {}
+            # КРИТИЧЕСКИ ВАЖНО: всегда требовать user_id для изоляции пользователей
             if not user_id:
-                # Find the most recent connection
-                credentials_record = self.credentials.find_one(
-                    {"status": IikoRmsConnectionStatus.CONNECTED},
-                    sort=[("last_connection", DESCENDING)]
-                )
-            else:
-                credentials_record = self.credentials.find_one(query)
+                return {"error": "user_id is required"}
+                
+            # Find credentials record for specific user
+            query = {"user_id": user_id}
+            credentials_record = self.credentials.find_one(
+                query,
+                sort=[("last_connection", DESCENDING)]
+            )
             
             if not credentials_record:
                 raise IikoRmsAPIError("No active RMS connection found. Please connect first.")
