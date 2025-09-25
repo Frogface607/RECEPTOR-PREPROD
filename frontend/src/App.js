@@ -3297,7 +3297,7 @@ function App() {
         console.log('🔗 Статус подключения обновлён через бэкенд');
         
         // Also get sync status
-        const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default`);
+        const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default&user_id=${currentUser?.id || 'anonymous'}`);
         if (syncResponse.data.status) {
           setIikoRmsConnection(prev => ({
             ...prev,
