@@ -3424,9 +3424,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "CRITICAL FRONTEND BUG INVESTIGATION: Tech cards exist in backend but not displaying in dashboard"
-    - "Dashboard Tech Card Display Issue Resolution"
-    - "Frontend API Integration Testing"
+    - "USER ISOLATION FIX VALIDATION: Test real user functionality restoration"
+    - "IIKO RMS Integration Testing for Real Users"
+    - "Anonymous User Mapping Access Verification"
   - task: "AI-POWERED TECH CARD EDITING V2 - Frontend Integration"
     implemented: true
     working: "pending_test"
