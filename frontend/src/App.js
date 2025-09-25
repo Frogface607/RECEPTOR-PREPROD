@@ -3301,7 +3301,7 @@ function App() {
         
         // Also get sync status
         try {
-          const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default&user_id=${currentUser?.id || 'anonymous'}`);
+          const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default&user_id=${userId}`);
           if (syncResponse.data.status) {
             setIikoRmsConnection(prev => ({
               ...prev,
