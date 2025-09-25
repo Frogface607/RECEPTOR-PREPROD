@@ -367,8 +367,8 @@ async def get_rms_sync_status(
         
         # Проверяем что у пользователя есть активное подключение к этой организации
         connection_status = service.get_rms_connection_status(user_id=user_id, auto_restore=False)
-        if connection_status.get("status") not in ["connected", "disconnected"]:
-            raise HTTPException(status_code=403, detail="No RMS connection found for this user")
+        if connection_status.get("status") != "connected":
+            raise HTTPException(status_code=403, detail="Active RMS connection required for sync status access")
         
         status = service.get_rms_sync_status(organization_id)
         
