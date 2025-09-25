@@ -878,10 +878,11 @@ class IikoRmsService:
         try:
             logger.info(f"Disconnecting iiko RMS for user: {user_id}")
             
-            query = {"user_id": user_id} if user_id else {}
+            # КРИТИЧЕСКИ ВАЖНО: всегда требовать user_id для изоляции пользователей
             if not user_id:
-                # Clear all connections if no user specified
-                query = {"status": IikoRmsConnectionStatus.CONNECTED}
+                return {"status": "error", "message": "user_id is required"}
+                
+            query = {"user_id": user_id}
             
             # Update connection status to disconnected and clear session
             result = self.credentials.update_many(
