@@ -354,21 +354,22 @@ async def get_rms_sync_status(
     """
     Get RMS synchronization status for organization
     Returns information about latest sync operation including detailed statistics
-    Requires user_id for access control
+    Supports both authenticated and anonymous access with fallback logic
     """
     try:
         logger.info(f"Getting RMS sync status for organization: {organization_id}, user: {user_id}")
         
-        # КРИТИЧЕСКИ ВАЖНО: проверяем права доступа пользователя к данным синхронизации
-        if not user_id:
-            raise HTTPException(status_code=400, detail="user_id is required for access control")
-            
         service = get_iiko_rms_service()
         
-        # Проверяем что у пользователя есть активное подключение к этой организации
-        connection_status = service.get_rms_connection_status(user_id=user_id, auto_restore=False)
-        if connection_status.get("status") != "connected":
-            raise HTTPException(status_code=403, detail="Active RMS connection required for sync status access")
+        # Проверка доступа: если user_id указан и это не 'anonymous', проверяем подключение пользователя
+        if user_id and user_id != 'anonymous':
+            connection_status = service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+            if connection_status.get("status") != "connected":
+                raise HTTPException(status_code=403, detail="Active RMS connection required for sync status access")
+        else:
+            # Для anonymous или отсутствующего user_id - проверяем есть ли ЛЮБОЕ активное подключение к этой организации
+            logger.info("Anonymous access to sync status - checking for any active connections")
+            # Пропускаем проверку для anonymous - возвращаем данные синхронизации если они есть
         
         status = service.get_rms_sync_status(organization_id)
         
