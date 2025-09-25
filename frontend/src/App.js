@@ -3297,13 +3297,24 @@ function App() {
         console.log('🔗 Статус подключения обновлён через бэкенд');
         
         // Also get sync status
-        const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default&user_id=${currentUser?.id || 'anonymous'}`);
-        if (syncResponse.data.status) {
+        try {
+          const syncResponse = await axios.get(`${API}/v1/iiko/rms/sync/status?organization_id=default&user_id=${currentUser?.id || 'anonymous'}`);
+          if (syncResponse.data.status) {
+            setIikoRmsConnection(prev => ({
+              ...prev,
+              sync_status: syncResponse.data.status,
+              products_count: syncResponse.data.stats?.products_processed || 0,
+              last_sync: syncResponse.data.completed_at || prev.last_sync
+            }));
+          }
+        } catch (syncError) {
+          // Пользователь не имеет доступа к данным синхронизации или нет подключения
+          console.log('ℹ️ Нет доступа к данным синхронизации для текущего пользователя');
           setIikoRmsConnection(prev => ({
             ...prev,
-            sync_status: syncResponse.data.status,
-            products_count: syncResponse.data.stats?.products_processed || 0,
-            last_sync: syncResponse.data.completed_at || prev.last_sync
+            sync_status: null,
+            products_count: 0,
+            last_sync: null
           }));
         }
       } else if (response.data.status === 'needs_reconnection') {
