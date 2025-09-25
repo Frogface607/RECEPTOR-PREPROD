@@ -347,15 +347,29 @@ async def sync_rms_prices(
         raise HTTPException(status_code=500, detail=f"Price sync failed: {str(e)}")
 
 @router.get("/sync/status")
-async def get_rms_sync_status(organization_id: str = Query(description="Organization ID")):
+async def get_rms_sync_status(
+    organization_id: str = Query(description="Organization ID"),
+    user_id: Optional[str] = Query(None, description="User ID for access control")
+):
     """
     Get RMS synchronization status for organization
     Returns information about latest sync operation including detailed statistics
+    Requires user_id for access control
     """
     try:
-        logger.info(f"Getting RMS sync status for organization: {organization_id}")
+        logger.info(f"Getting RMS sync status for organization: {organization_id}, user: {user_id}")
         
+        # КРИТИЧЕСКИ ВАЖНО: проверяем права доступа пользователя к данным синхронизации
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id is required for access control")
+            
         service = get_iiko_rms_service()
+        
+        # Проверяем что у пользователя есть активное подключение к этой организации
+        connection_status = service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+        if connection_status.get("status") not in ["connected", "disconnected"]:
+            raise HTTPException(status_code=403, detail="No RMS connection found for this user")
+        
         status = service.get_rms_sync_status(organization_id)
         
         return status
