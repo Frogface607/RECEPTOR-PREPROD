@@ -43,10 +43,15 @@ db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 # OpenAI client
 openai_api_key = os.environ.get('OPENAI_API_KEY')
 if not openai_api_key:
-    logger.warning("OPENAI_API_KEY not found in environment variables")
+    logger.error("OPENAI_API_KEY not found in environment variables - AI functions will be disabled")
     openai_client = None
 else:
-    openai_client = OpenAI(api_key=openai_api_key)
+    try:
+        openai_client = OpenAI(api_key=openai_api_key)
+        logger.info("✅ OpenAI client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize OpenAI client: {e}")
+        openai_client = None
 
 # КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
 os.environ['TECHCARDS_V2_USE_LLM'] = 'true'
