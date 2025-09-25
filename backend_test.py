@@ -215,12 +215,12 @@ class IIKORMSIntegrationTester:
         try:
             url = f"{API_BASE}/v1/techcards.v2/generate"
             
-            # Simple tech card for testing
+            # Simple tech card for testing - fix budget to be numeric
             payload = {
                 "name": "Омлет с зеленью",
                 "cuisine": "европейская",
                 "equipment": ["плита", "сковорода"],
-                "budget": "средний",
+                "budget": 500.0,  # Use numeric budget instead of string
                 "dietary": [],
                 "user_id": TEST_USER_ID
             }
