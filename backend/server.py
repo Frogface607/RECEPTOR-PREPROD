@@ -32,20 +32,24 @@ except ImportError as e:
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Setup logging
+logger = logging.getLogger(__name__)
+
 # MongoDB connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 
 # OpenAI client
-openai_api_key = os.environ.get('OPENAI_API_KEY', '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')
-openai_client = OpenAI(api_key=openai_api_key)
+openai_api_key = os.environ.get('OPENAI_API_KEY')
+if not openai_api_key:
+    logger.warning("OPENAI_API_KEY not found in environment variables")
+    openai_client = None
+else:
+    openai_client = OpenAI(api_key=openai_api_key)
 
 # КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
 os.environ['TECHCARDS_V2_USE_LLM'] = 'true'
-
-# Setup logging
-logger = logging.getLogger(__name__)
 
 # IIKo Integration Classes
 class IikoServerAuthManager:
