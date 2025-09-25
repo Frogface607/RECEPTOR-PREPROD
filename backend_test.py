@@ -303,8 +303,19 @@ class IIKORMSIntegrationTester:
             # This tests the auto-mapping functionality directly
             url = f"{API_BASE}/v1/techcards.v2/mapping/enhanced"
             
-            # Test with common Russian ingredients
+            # Test with common Russian ingredients and include techcard data
             payload = {
+                "techcard": {
+                    "id": self.generated_techcard_id or "test-id",
+                    "name": "Омлет с зеленью",
+                    "ingredients": [
+                        {"name": "яйца", "quantity": 100, "unit": "g"},
+                        {"name": "молоко", "quantity": 50, "unit": "ml"},
+                        {"name": "зелень", "quantity": 20, "unit": "g"},
+                        {"name": "соль", "quantity": 5, "unit": "g"},
+                        {"name": "перец", "quantity": 2, "unit": "g"}
+                    ]
+                },
                 "ingredients": [
                     {"name": "яйца", "quantity": 100, "unit": "g"},
                     {"name": "молоко", "quantity": 50, "unit": "ml"},
