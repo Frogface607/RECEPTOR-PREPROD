@@ -3280,8 +3280,11 @@ function App() {
   };
 
   const checkIikoRmsStatus = async (attemptRestore = true) => {
+    // Определяем правильный user_id для запроса (демо пользователь или реальный)
+    const userId = currentUser?.id || 'demo_user';
+    
     try {
-      const response = await axios.get(`${API}/v1/iiko/rms/connection/status?user_id=${currentUser?.id || 'anonymous'}`);
+      const response = await axios.get(`${API}/v1/iiko/rms/connection/status?user_id=${userId}`);
       
       if (response.data.status === 'connected') {
         setIikoRmsConnection(prev => ({
