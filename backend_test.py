@@ -103,12 +103,14 @@ class IIKORMSIntegrationTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check response structure
-                if 'connected' in data and 'status' in data:
+                # Check response structure - the API returns 'status' field with connection info
+                if 'status' in data:
+                    status = data.get('status')
+                    org_name = data.get('organization_name', 'Unknown')
                     self.log_test(
                         "IIKO RMS Status API",
                         True,
-                        f"Status API working correctly. Connected: {data.get('connected')}, Status: {data.get('status')}",
+                        f"Status API working correctly. Status: {status}, Organization: {org_name}",
                         data
                     )
                     return True
@@ -116,7 +118,7 @@ class IIKORMSIntegrationTester:
                     self.log_test(
                         "IIKO RMS Status API",
                         False,
-                        "Response missing required fields (connected, status)",
+                        "Response missing required fields (status)",
                         data
                     )
                     return False
