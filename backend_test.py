@@ -166,10 +166,10 @@ class IIKORMSIntegrationTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check for successful connection
-                if data.get('success') or data.get('connected'):
-                    organization = data.get('organization', {})
-                    org_name = organization.get('name', 'Unknown') if isinstance(organization, dict) else str(organization)
+                # Check for successful connection - the API returns status and organizations
+                if data.get('status') == 'connected' and 'organizations' in data:
+                    organizations = data.get('organizations', [])
+                    org_name = organizations[0].get('name', 'Unknown') if organizations else 'Unknown'
                     
                     self.log_test(
                         "IIKO RMS Connect API",
