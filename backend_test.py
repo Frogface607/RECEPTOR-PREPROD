@@ -232,30 +232,43 @@ class IIKORMSIntegrationTester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check for successful generation
-                if 'id' in data and 'status' in data:
-                    self.generated_techcard_id = data['id']
+                # Check for successful generation - the API returns 'status' and 'card' with nested structure
+                if 'status' in data and 'card' in data:
+                    card = data['card']
+                    card_id = card.get('meta', {}).get('id')
+                    status = data['status']
                     
-                    # Check for ingredients (needed for auto-mapping test)
-                    ingredients = data.get('ingredients', [])
-                    
-                    self.log_test(
-                        "Tech Card Generation",
-                        True,
-                        f"Tech card generated successfully. ID: {data['id']}, Status: {data['status']}, Ingredients: {len(ingredients)}",
-                        {
-                            'id': data['id'],
-                            'status': data['status'],
-                            'ingredients_count': len(ingredients),
-                            'ingredients': [ing.get('name', 'Unknown') for ing in ingredients[:3]]  # First 3 ingredients
-                        }
-                    )
-                    return True
+                    if card_id:
+                        self.generated_techcard_id = card_id
+                        
+                        # Check for ingredients (needed for auto-mapping test)
+                        ingredients = card.get('ingredients', [])
+                        
+                        self.log_test(
+                            "Tech Card Generation",
+                            True,
+                            f"Tech card generated successfully. ID: {card_id}, Status: {status}, Ingredients: {len(ingredients)}",
+                            {
+                                'id': card_id,
+                                'status': status,
+                                'ingredients_count': len(ingredients),
+                                'ingredients': [ing.get('name', 'Unknown') for ing in ingredients[:3]]  # First 3 ingredients
+                            }
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Tech Card Generation",
+                            False,
+                            "Response missing card ID in meta",
+                            data
+                        )
+                        return False
                 else:
                     self.log_test(
                         "Tech Card Generation",
                         False,
-                        "Response missing required fields (id, status)",
+                        "Response missing required fields (status, card)",
                         data
                     )
                     return False
