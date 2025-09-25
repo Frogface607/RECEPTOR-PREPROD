@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://menupro-revival.preview.emergentagent.com/api"
+BACKEND_URL = "https://menu-ai-platform-1.preview.emergentagent.com/api"
 
 class TechCardV2ValidationTester:
     """Comprehensive tester for TechCardV2 validation fixes"""

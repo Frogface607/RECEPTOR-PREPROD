@@ -12,7 +12,7 @@ def test_tc001_ready_status():
     
     try:
         response = requests.post(
-            "https://menupro-revival.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://menu-ai-platform-1.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={"name": "P1 Test Card", "user_id": "p1_test"},
             timeout=60
         )
@@ -47,7 +47,7 @@ def test_tc003_analytics():
     try:
         # Test user-history
         response = requests.get(
-            "https://menupro-revival.preview.emergentagent.com/api/user-history/p1_test",
+            "https://menu-ai-platform-1.preview.emergentagent.com/api/user-history/p1_test",
             timeout=30
         )
         
@@ -62,7 +62,7 @@ def test_tc003_analytics():
         
         # Test menu-projects  
         response = requests.get(
-            "https://menupro-revival.preview.emergentagent.com/api/menu-projects/p1_test",
+            "https://menu-ai-platform-1.preview.emergentagent.com/api/menu-projects/p1_test",
             timeout=30
         )
         

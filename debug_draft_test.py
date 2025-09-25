@@ -6,7 +6,7 @@ Debug draft test
 import requests
 import json
 
-BACKEND_URL = "https://menupro-revival.preview.emergentagent.com/api"
+BACKEND_URL = "https://menu-ai-platform-1.preview.emergentagent.com/api"
 
 def create_draft_techcard():
     """Create draft TechCardV2 with validation issues"""

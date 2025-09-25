@@ -8,7 +8,7 @@ import re
 
 class DetailedReviewTest:
     def __init__(self):
-        self.base_url = "https://menupro-revival.preview.emergentagent.com/api"
+        self.base_url = "https://menu-ai-platform-1.preview.emergentagent.com/api"
         self.test_user_id = "test_user_123"
         self.test_email = "detailed_test@example.com"
         
