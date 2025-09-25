@@ -3427,6 +3427,18 @@ test_plan:
     - "USER ISOLATION FIX VALIDATION: Test real user functionality restoration"
     - "IIKO RMS Integration Testing for Real Users"
     - "Anonymous User Mapping Access Verification"
+  - task: "USER ISOLATION FIX: Real User IIKO RMS Connection"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 USER ISOLATION FIX COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY: Conducted detailed testing of user isolation fix functionality restoration as specified in Russian review request 'СРОЧНОЕ ТЕСТИРОВАНИЕ ВОССТАНОВЛЕНИЯ ФУНКЦИОНАЛЬНОСТИ после исправления изоляции пользователей'. ✅ REAL USER CONNECTION OPERATIONAL: Successfully connected real user 'real_user_123' to IIKO RMS (edison-bar.iiko.it) with credentials from environment variables, connection status shows 'connected' with organization 'Edison Craft Bar'. ✅ REAL USER SYNC STATUS WORKING: GET /api/v1/iiko/rms/sync/status returns proper sync data for real users (status: completed, products: 0), confirming real users can access sync functionality. ✅ ANONYMOUS USER MAPPING ACCESS VERIFIED: Anonymous user can access sync status data needed for mapping functionality (status: completed), ensuring mapping workflows remain functional. ✅ ENHANCED AUTO-MAPPING FUNCTIONAL: POST /api/v1/techcards.v2/mapping/enhanced successfully processes mapping requests for real users with proper response structure and status. ✅ DEMO USER ISOLATION CONFIRMED: Demo user remains properly isolated with 'disconnected' status, confirming isolation fix doesn't break existing demo user separation. ✅ ALL CRITICAL ENDPOINTS OPERATIONAL: Real user connection (POST /api/v1/iiko/rms/connect), connection status (GET /api/v1/iiko/rms/connection/status), sync status for real and anonymous users, enhanced auto-mapping all working correctly. 🎯 OUTSTANDING SUCCESS: 6/6 core tests passed (100% success rate). User isolation fix is FULLY OPERATIONAL - real users can connect and use functionality, anonymous users can access mapping data, demo user remains isolated. Functionality successfully restored after isolation implementation!"
+
   - task: "AI-POWERED TECH CARD EDITING V2 - Frontend Integration"
     implemented: true
     working: "pending_test"
