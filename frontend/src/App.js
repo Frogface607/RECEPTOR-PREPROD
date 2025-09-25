@@ -3317,6 +3317,20 @@ function App() {
             last_sync: null
           }));
         }
+      } else if (response.data.status === 'demo_mode') {
+        // КРИТИЧЕСКИ ВАЖНО: полная изоляция для demo пользователей
+        console.log('🧪 Demo пользователь - изоляция данных активна');
+        setIikoRmsConnection(prev => ({
+          ...prev,
+          status: 'not_connected',
+          host: null,
+          login: null,
+          organization_name: null,
+          last_connection: null,
+          sync_status: null,
+          products_count: 0,
+          last_sync: null
+        }));
       } else if (response.data.status === 'needs_reconnection') {
         setIikoRmsConnection(prev => ({
           ...prev,
