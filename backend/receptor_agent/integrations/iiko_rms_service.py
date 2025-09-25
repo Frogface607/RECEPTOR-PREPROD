@@ -1046,7 +1046,11 @@ class IikoRmsService:
         Implements sticky connection functionality
         """
         try:
-            query = {"user_id": user_id} if user_id else {}
+            # КРИТИЧЕСКИ ВАЖНО: всегда требовать user_id для изоляции пользователей
+            if not user_id:
+                return {"status": "not_connected"}
+                
+            query = {"user_id": user_id}
             credentials_record = self.credentials.find_one(
                 query,
                 sort=[("last_connection", DESCENDING)]
