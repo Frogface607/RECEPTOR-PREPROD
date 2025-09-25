@@ -1054,6 +1054,19 @@ class IikoRmsService:
             # КРИТИЧЕСКИ ВАЖНО: всегда требовать user_id для изоляции пользователей
             if not user_id:
                 return {"status": "not_connected"}
+            
+            # КРИТИЧЕСКИ ВАЖНО: полная изоляция для demo пользователей
+            if user_id == 'demo_user' or (user_id and user_id.startswith('demo')):
+                return {
+                    "status": "demo_mode",
+                    "host": None,
+                    "login": None,
+                    "organization_id": None,
+                    "organization_name": None,
+                    "last_connection": None,
+                    "session_expires_at": None,
+                    "demo": True
+                }
                 
             query = {"user_id": user_id}
             credentials_record = self.credentials.find_one(
