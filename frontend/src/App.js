@@ -10254,9 +10254,9 @@ function App() {
                     {/* 1. Автомаппинг (iiko) */}
                     <button 
                       onClick={debouncedStartAutoMapping}
-                      disabled={isAutoMapping || iikoRmsConnection.status !== 'connected'}
+                      disabled={isAutoMapping || (currentUser && iikoRmsConnection.status !== 'connected')}
                       className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
-                      title="Связать ингредиенты техкарты с товарами в вашей IIKO системе"
+                      title={currentUser ? "Связать ингредиенты техкарты с товарами в вашей IIKO системе" : "Демо-автомаппинг доступен без подключения"}
                     >
                       {isAutoMapping ? '⏳ Анализ...' : '🔗 Связать с IIKO'}
                     </button>
