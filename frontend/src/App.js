@@ -16238,7 +16238,7 @@ function App() {
                               onClick={() => {
                                 // Открываем поиск товаров IIKO для этого ингредиента
                                 const ingredientIndex = tcV2.ingredients.findIndex(
-                                  ing => ing.name === result.ingredient.name
+                                  ing => ing && ing.name === (result.ingredient_name || (result.ingredient && result.ingredient.name))
                                 );
                                 if (ingredientIndex >= 0) {
                                   handleOpenIngredientMapping(ingredientIndex);
