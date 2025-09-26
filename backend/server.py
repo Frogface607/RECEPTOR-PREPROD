@@ -40,19 +40,39 @@ mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro'
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 
-# OpenAI client - использование оригинального ключа 
-openai_api_key = os.environ.get('OPENAI_API_KEY')
+from openai import OpenAI
+from emergentintegrations import get_client
 
-if openai_api_key:
+# Emergent LLM client setup
+emergent_llm_key = os.environ.get('EMERGENT_LLM_KEY')
+if emergent_llm_key:
     try:
-        openai_client = OpenAI(api_key=openai_api_key)
-        logger.info("✅ OpenAI client initialized successfully")
+        # Используем emergentintegrations для универсального доступа к LLM
+        openai_client = get_client("openai", api_key=emergent_llm_key)
+        logger.info("✅ Emergent LLM client initialized successfully (universal key)")
     except Exception as e:
-        logger.error(f"Failed to initialize OpenAI client: {e}")
-        openai_client = None
+        logger.error(f"Failed to initialize Emergent LLM client: {e}")
+        # Fallback to regular OpenAI
+        openai_api_key = os.environ.get('OPENAI_API_KEY')
+        if openai_api_key:
+            openai_client = OpenAI(api_key=openai_api_key)
+            logger.info("✅ Fallback to standard OpenAI client")
+        else:
+            logger.error("No LLM client available - AI functions will be disabled")  
+            openai_client = None
 else:
-    logger.error("OPENAI_API_KEY not found - AI functions will be disabled")  
-    openai_client = None
+    # Fallback to regular OpenAI if no Emergent key
+    openai_api_key = os.environ.get('OPENAI_API_KEY')
+    if openai_api_key:
+        try:
+            openai_client = OpenAI(api_key=openai_api_key)
+            logger.info("✅ Standard OpenAI client initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize OpenAI client: {e}")
+            openai_client = None
+    else:
+        logger.error("No API keys found - AI functions will be disabled")
+        openai_client = None
 
 # КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
 os.environ['TECHCARDS_V2_USE_LLM'] = 'true'
