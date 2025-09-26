@@ -182,16 +182,28 @@ async def sync_rms_nomenclature(
 async def search_rms_products(
     organization_id: str = Query(description="Organization ID"),
     q: str = Query(description="Search query"),
-    limit: int = Query(default=10, ge=1, le=50, description="Maximum number of results")
+    limit: int = Query(default=10, ge=1, le=50, description="Maximum number of results"),
+    user_id: Optional[str] = Query(None, description="User ID for access control")
 ):
     """
     Search products in RMS organization
     Returns matching products with relevance scores and enhanced fuzzy matching
+    CRITICAL: Now requires user_id for data isolation
     """
     try:
-        logger.info(f"Searching RMS products in organization {organization_id}: '{q}'")
+        logger.info(f"Searching RMS products in organization {organization_id}: '{q}' for user: {user_id}")
         
+        # КРИТИЧЕСКИ ВАЖНО: проверка доступа пользователя к данным RMS
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id is required for RMS access")
+            
+        # Проверяем что у пользователя есть активное подключение
         service = get_iiko_rms_service()
+        connection_status = service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+        
+        if connection_status.get("status") != "connected":
+            raise HTTPException(status_code=403, detail="Active RMS connection required for product search")
+        
         products = service.search_rms_products(
             organization_id=organization_id,
             query=q,
