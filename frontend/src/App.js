@@ -5896,15 +5896,25 @@ function App() {
                         />
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <button
-                          onClick={() => {
-                            const newIngredients = displayIngredients.filter((_, i) => i !== index);
-                            setCurrentIngredients(newIngredients);
-                          }}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                        >
-                          ✕
-                        </button>
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleOpenIngredientMapping(index)}
+                            className="text-blue-400 hover:text-blue-300 text-sm"
+                            title="Редактировать сопоставление"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newIngredients = displayIngredients.filter((_, i) => i !== index);
+                              setCurrentIngredients(newIngredients);
+                            }}
+                            className="text-red-400 hover:text-red-300 text-sm"
+                            title="Удалить ингредиент"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
