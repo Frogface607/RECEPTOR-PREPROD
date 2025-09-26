@@ -3594,14 +3594,17 @@ function App() {
       return;
     }
 
-    // Check iiko RMS connection  
-    if (iikoRmsConnection.status !== 'connected') {
+    // Check iiko RMS connection для реальных пользователей
+    if (currentUser && iikoRmsConnection.status !== 'connected') {
       setAutoMappingMessage({ 
         type: 'error', 
-        text: '🔗 Требуется подключение к iiko RMS для автомаппинга. Перейдите в ДАННЫЕ → iiko RMS.' 
+        text: '🔗 Требуется подключение к iiko RMS для автомаппинга. Перейдите в МОЕ ЗАВЕДЕНИЕ → IIKO Подключение.' 
       });
       return;
     }
+
+    // Для демо-пользователей разрешаем автомаппинг без подключения
+    const userId = currentUser?.id || 'demo_user';
 
     // P0-2: Block buttons during request (disable state)
     setIsAutoMapping(true);
