@@ -55,15 +55,36 @@ class QualityValidator:
         issues = []
         
         yield_data = techcard.get('yield')
+        
+        # ИСПРАВЛЕНИЕ: Более толерантная проверка для техкарт из истории
+        # Если нет yield данных, пытаемся их сгенерировать из portions и ingredients
         if not yield_data:
-            issues.append({
-                "type": "yieldMissing",
-                "level": "error",
-                "field": "yield",
-                "message": "Выход обязателен (г/мл/шт)",
-                "fix_suggestion": "Добавить информацию о выходе готового блюда"
-            })
-            return issues
+            portions = techcard.get('portions', 1)
+            ingredients = techcard.get('ingredients', [])
+            
+            # Попытка автоматически рассчитать yield
+            if ingredients:
+                total_netto = sum(ing.get('netto_g', 0) for ing in ingredients if isinstance(ing.get('netto_g', 0), (int, float)))
+                if total_netto > 0:
+                    # Создаем базовый yield из ingredients
+                    per_portion_g = total_netto / max(portions, 1)
+                    techcard['yield'] = {
+                        'perPortion_g': per_portion_g,
+                        'perBatch_g': total_netto,
+                        'auto_calculated': True
+                    }
+                    yield_data = techcard['yield']
+            
+            # Если все еще нет данных - показываем предупреждение вместо ошибки
+            if not yield_data:
+                issues.append({
+                    "type": "yieldMissing",
+                    "level": "warning",  # Изменено с "error" на "warning"
+                    "field": "yield", 
+                    "message": "Рекомендуется указать выход блюда",
+                    "fix_suggestion": "Добавить информацию о выходе готового блюда"
+                })
+                return issues
         
         # Check perPortion_g
         per_portion = yield_data.get('perPortion_g')
