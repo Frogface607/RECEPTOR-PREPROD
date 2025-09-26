@@ -508,8 +508,8 @@ def search_catalog(
                 # P0: Use provided orgId parameter, fallback to connection status
                 organization_id = orgId or "default"
                 
-                # Get RMS connection status to verify connectivity
-                connection_status = rms_service.get_rms_connection_status()
+                # Get RMS connection status to verify connectivity (CRITICAL FIX: Pass user_id)
+                connection_status = rms_service.get_rms_connection_status(user_id=user_id)
                 if connection_status.get("status") == "connected":
                     # Override orgId with actual connected organization if available
                     if connection_status.get("organization_id"):
