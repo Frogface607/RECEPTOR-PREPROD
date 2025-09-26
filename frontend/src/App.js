@@ -5791,13 +5791,13 @@ function App() {
       
       // Используем parsedIngredients напрямую
       const displayIngredients = parsedIngredients;
-        
-        // Рассчитываем общую стоимость
-        const totalCost = displayIngredients.reduce((sum, ing) => sum + (ing.numericPrice || 0), 0);
-        
-        console.log('Total cost calculated:', totalCost);
-        
-        return (
+      
+      // Рассчитываем общую стоимость
+      const totalCost = displayIngredients.reduce((sum, ing) => sum + (ing.numericPrice || 0), 0);
+      
+      console.log('Total cost calculated:', totalCost);
+      
+      return (
           <div key="ingredients-table" className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-purple-300">ИНГРЕДИЕНТЫ</h3>
