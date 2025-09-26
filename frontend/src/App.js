@@ -4058,8 +4058,8 @@ function App() {
   const getFilteredAutoMappingResults = () => {
     let filtered = autoMappingResults;
     
-    // Filter out invalid results
-    filtered = filtered.filter(r => r && r.ingredient && r.ingredient.name);
+    // Filter out invalid results - исправляем структуру данных
+    filtered = filtered.filter(r => r && (r.ingredient_name || (r.ingredient && r.ingredient.name)));
     
     // Apply filter
     switch (autoMappingFilter) {
@@ -4073,12 +4073,15 @@ function App() {
         break;
     }
     
-    // Apply search
+    // Apply search - исправляем доступ к имени ингредиента
     if (autoMappingSearch) {
-      filtered = filtered.filter(r => 
-        r.ingredient.name.toLowerCase().includes(autoMappingSearch.toLowerCase())
-      );
+      filtered = filtered.filter(r => {
+        const ingredientName = r.ingredient_name || (r.ingredient && r.ingredient.name) || '';
+        return ingredientName.toLowerCase().includes(autoMappingSearch.toLowerCase());
+      });
     }
+    
+    console.log('Filtered auto-mapping results:', filtered);
     
     return filtered;
   };
