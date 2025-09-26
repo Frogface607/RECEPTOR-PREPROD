@@ -5765,66 +5765,32 @@ function App() {
   // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
   const renderIngredientsTable = (content) => {
     console.log('=== INGREDIENTS TABLE DEBUG ===');
-    console.log('Content received:', !!content);
+    console.log('tcV2 available:', !!tcV2);
+    console.log('tcV2.ingredients available:', tcV2?.ingredients?.length);
     
-    if (!content) {
-      console.log('No content provided');
-      return null;
-    }
-    
-    // Извлекаем ингредиенты из техкарты 
-    const ingredientsMatch = content.match(/\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)/s);
-    console.log('Ingredients match found:', !!ingredientsMatch);
-    
-    if (ingredientsMatch) {
-      const ingredientsText = ingredientsMatch[1];
-      console.log('Ingredients text:', ingredientsText);
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем tcV2.ingredients вместо парсинга старого текста
+    if (tcV2 && tcV2.ingredients && tcV2.ingredients.length > 0) {
+      console.log('Using tcV2.ingredients:', tcV2.ingredients);
       
-      const ingredientLines = ingredientsText
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.startsWith('-') && line.length > 5);
+      // Преобразуем tcV2.ingredients в формат для отображения
+      const parsedIngredients = tcV2.ingredients.map((ingredient, index) => {
+        return {
+          id: index,
+          name: ingredient.name || 'Неизвестный ингредиент',
+          quantity: `${ingredient.brutto_g || ingredient.netto_g || 0} ${ingredient.unit || 'г'}`,
+          price: '~0 ₽', // Цену можно добавить позже
+          numericPrice: 0,
+          // Добавляем данные из tcV2 для автомаппинга
+          skuId: ingredient.skuId || null,
+          product_code: ingredient.product_code || null,
+          canonical_id: ingredient.canonical_id || null
+        };
+      });
       
-      console.log('Parsed ingredient lines:', ingredientLines);
+      console.log('Parsed tcV2 ingredients:', parsedIngredients);
       
-      if (ingredientLines.length > 0) {
-        // Парсим ингредиенты в структурированный формат
-        const parsedIngredients = ingredientLines.map((line, index) => {
-          const cleanLine = line.replace(/^-\s*/, '').trim();
-          let name = '', quantity = '', price = '';
-          
-          // Парсим по формату: "Продукт — количество — ~цена"
-          if (cleanLine.includes(' — ')) {
-            const parts = cleanLine.split(' — ');
-            name = parts[0] || '';
-            quantity = parts[1] || '';
-            price = parts[2] || '';
-          } else if (cleanLine.includes(' - ')) {
-            const parts = cleanLine.split(' - ');
-            name = parts[0] || '';
-            quantity = parts[1] || '';
-            price = parts[2] || '';
-          } else {
-            name = cleanLine;
-          }
-          
-          // Извлекаем числовую цену для расчетов
-          const priceMatch = price.match(/(\d+(?:[.,]\d+)?)/);
-          const numericPrice = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : 0;
-          
-          return {
-            id: index,
-            name: name.trim(),
-            quantity: quantity.trim(),
-            price: price.trim(),
-            numericPrice: numericPrice
-          };
-        });
-        
-        console.log('Parsed ingredients:', parsedIngredients);
-        
-        // Используем parsedIngredients напрямую вместо состояния
-        const displayIngredients = parsedIngredients;
+      // Используем parsedIngredients напрямую
+      const displayIngredients = parsedIngredients;
         
         // Рассчитываем общую стоимость
         const totalCost = displayIngredients.reduce((sum, ing) => sum + (ing.numericPrice || 0), 0);
