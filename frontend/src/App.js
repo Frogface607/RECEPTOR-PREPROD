@@ -6065,10 +6065,10 @@ function App() {
 
     setIsEditingAI(true);
     try {
-      const response = await axios.post(`${API}/edit-tech-card`, {
-        tech_card_id: currentTechCardId,
+      const response = await axios.post(`${API}/v1/techcards.v2/edit`, {
+        techcard_id: currentTechCardId,
         edit_instruction: editInstruction,
-        user_id: currentUser.id
+        user_id: currentUser?.id || 'demo_user'
       });
       
       setTechCard(response.data.tech_card);
