@@ -3423,7 +3423,8 @@ function App() {
             q: normalizedQuery,
             source: 'iiko',          // P0: Always use iiko source
             orgId: orgId,            // P0: Always send orgId
-            limit: options.limit || 5
+            limit: options.limit || 5,
+            user_id: currentUser?.id || 'demo_user'  // КРИТИЧЕСКИ ВАЖНО: передаем user_id для изоляции данных
           }
         });
 
