@@ -617,7 +617,19 @@ def search_catalog(
         
         # Get iiko product count for badge display
         iiko_count = len(rms_results)
-        last_sync = connection_status.get("last_connection") if connection_status else None
+        last_sync = None
+        connection_status_for_badge = None
+        
+        # Get connection status for badge (if we have RMS results)
+        if source in ("rms", "iiko", "all"):
+            try:
+                from ..integrations.iiko_rms_service import get_iiko_rms_service
+                rms_service = get_iiko_rms_service()
+                connection_status_for_badge = rms_service.get_rms_connection_status(user_id=user_id)
+                last_sync = connection_status_for_badge.get("last_connection") if connection_status_for_badge else None
+            except Exception as e:
+                logger.error(f"Error getting connection status for badge: {e}")
+                last_sync = None
         if last_sync and hasattr(last_sync, 'isoformat'):
             last_sync = last_sync.isoformat()
         elif last_sync:
