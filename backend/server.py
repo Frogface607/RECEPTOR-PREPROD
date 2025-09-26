@@ -40,26 +40,18 @@ mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro'
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 
-# OpenAI client with Emergent fallback
+# OpenAI client - использование оригинального ключа 
 openai_api_key = os.environ.get('OPENAI_API_KEY')
-emergent_llm_key = os.environ.get('EMERGENT_LLM_KEY')
 
 if openai_api_key:
     try:
         openai_client = OpenAI(api_key=openai_api_key)
-        logger.info("✅ OpenAI client initialized successfully with standard key")
+        logger.info("✅ OpenAI client initialized successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize OpenAI client with standard key: {e}")
-        openai_client = None
-elif emergent_llm_key:
-    try:
-        openai_client = OpenAI(api_key=emergent_llm_key)
-        logger.info("✅ OpenAI client initialized successfully with Emergent LLM key")
-    except Exception as e:
-        logger.error(f"Failed to initialize OpenAI client with Emergent key: {e}")
+        logger.error(f"Failed to initialize OpenAI client: {e}")
         openai_client = None
 else:
-    logger.error("Neither OPENAI_API_KEY nor EMERGENT_LLM_KEY found - AI functions will be disabled")
+    logger.error("OPENAI_API_KEY not found - AI functions will be disabled")  
     openai_client = None
 
 # КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
