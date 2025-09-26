@@ -1758,29 +1758,90 @@ function App() {
 
         {/* СТОИМОСТЬ И МЕТАДАННЫЕ */}
         {cost.rawCost && (
-          <div className="bg-yellow-900/20 rounded-lg p-4">
-            <h3 className="text-lg font-bold text-yellow-400 mb-3 uppercase tracking-wide">💸 СЕБЕСТОИМОСТЬ</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-yellow-300">{cost.rawCost}₽</div>
-                <div className="text-gray-400">Общая себестоимость</div>
+          <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-6 border border-yellow-400/30">
+            <h3 className="text-xl font-bold text-yellow-300 mb-4 uppercase tracking-wide flex items-center">
+              💸 ФИНАНСОВЫЙ АНАЛИЗ
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              
+              {/* Общая себестоимость */}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-300 mb-1">{cost.rawCost}₽</div>
+                <div className="text-gray-400 text-sm">Общая себестоимость</div>
+                <div className="text-xs text-gray-500 mt-1">{tcV2.portions || 1} порций</div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-yellow-300">{cost.costPerPortion}₽</div>
-                <div className="text-gray-400">За порцию</div>
+              
+              {/* За порцию */}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-300 mb-1">{cost.costPerPortion}₽</div>
+                <div className="text-gray-400 text-sm">За порцию</div>
+                <div className="text-xs text-gray-500 mt-1">~{Math.round((tcV2.yield?.perPortion_g || 200))}г</div>
               </div>
-              {cost.markup_pct && (
-                <div>
-                  <div className="text-2xl font-bold text-green-300">{cost.markup_pct}%</div>
-                  <div className="text-gray-400">Наценка</div>
+              
+              {/* На 100г */}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-300 mb-1">
+                  {tcV2.yield?.perPortion_g ? Math.round((parseFloat(cost.costPerPortion) * 100) / tcV2.yield.perPortion_g * 10) / 10 : 'N/A'}₽
                 </div>
-              )}
-            </div>
-            {costMeta.source && (
-              <div className="mt-3 text-sm text-gray-400 text-center">
-                Источник: {costMeta.source}, покрытие: {costMeta.coveragePct}%, дата: {costMeta.asOf}
+                <div className="text-gray-400 text-sm">На 100г</div>
+                <div className="text-xs text-gray-500 mt-1">базовый расчет</div>
               </div>
-            )}
+              
+              {/* Рекомендуемая цена */}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-300 mb-1">
+                  {Math.round(parseFloat(cost.costPerPortion) * 3.5)}₽
+                </div>
+                <div className="text-gray-400 text-sm">Рекомендуемая цена</div>
+                <div className="text-xs text-gray-500 mt-1">наценка 250%</div>
+              </div>
+              
+            </div>
+            
+            {/* Дополнительная информация */}
+            <div className="mt-4 pt-4 border-t border-yellow-400/20">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                
+                {/* Покрытие цен */}
+                {costMeta.coveragePct && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Покрытие цен:</span>
+                    <span className={`font-bold ${costMeta.coveragePct >= 80 ? 'text-green-300' : 'text-yellow-300'}`}>
+                      {costMeta.coveragePct}%
+                    </span>
+                  </div>
+                )}
+                
+                {/* Источник данных */}
+                {costMeta.source && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Источник:</span>
+                    <span className="text-blue-300">{costMeta.source}</span>
+                  </div>
+                )}
+                
+                {/* Маржинальность */}
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Маржа при рек. цене:</span>
+                  <span className="text-green-300 font-bold">~71%</span>
+                </div>
+                
+                {/* Дата обновления */}
+                {costMeta.asOf && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Обновлено:</span>
+                    <span className="text-gray-300">{costMeta.asOf}</span>
+                  </div>
+                )}
+                
+              </div>
+            </div>
+            
+            <div className="mt-3 text-center">
+              <div className="text-xs text-gray-500">
+                💡 Рекомендуемая цена рассчитана с учетом стандартной ресторанной наценки
+              </div>
+            </div>
           </div>
         )}
       </div>
