@@ -390,6 +390,7 @@ def search_catalog(
         
         results = []
         query = q.lower().strip()
+        organization_id = orgId or "default"  # Initialize organization_id at function level
         
         # Инициализируем USDA провайдер если нужен
         usda_results = []
