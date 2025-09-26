@@ -10262,7 +10262,8 @@ function App() {
                       📥 Импорт TTK
                     </button>
                     
-                    {/* 5. Синхронизация цен */}
+                    {/* УДАЛЕНО: Кнопка синхронизации перенесена в МОЕ ЗАВЕДЕНИЕ */}
+                    {/* 
                     <button 
                       onClick={() => setShowIikoRmsModal(true)}
                       className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
@@ -10270,8 +10271,10 @@ function App() {
                     >
                       🔄 Синхронизация
                     </button>
+                    */}
                     
-                    {/* P1: Advanced Actions Dropdown */}
+                    {/* УДАЛЕНО: Кнопка дополнительно с legacy функциями */}
+                    {/*
                     <div className="relative advanced-actions-dropdown">
                       <button 
                         onClick={() => setShowAdvancedActions(!showAdvancedActions)}
