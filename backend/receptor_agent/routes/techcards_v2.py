@@ -353,7 +353,8 @@ def search_catalog(
     limit: int = Query(10, ge=1, le=50),
     source: str = Query("iiko", description="Data source: iiko, usda, price, nutrition, rms, all"),
     orgId: Optional[str] = Query("default", description="Organization ID for iiko RMS search"),  # P0: Add orgId parameter
-    search_by: Optional[str] = Query("name", description="Search type: name, article, id")  # FIX-A: Add search_by parameter
+    search_by: Optional[str] = Query("name", description="Search type: name, article, id"),  # FIX-A: Add search_by parameter
+    user_id: Optional[str] = Query(None, description="User ID for RMS connection isolation")  # CRITICAL FIX: Add user_id parameter
 ):
     """
     Поиск по объединенному каталогу цен, питания и USDA для маппинга ингредиентов.
