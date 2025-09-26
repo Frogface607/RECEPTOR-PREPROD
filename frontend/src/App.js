@@ -10314,7 +10314,8 @@ function App() {
                       ЭКСПОРТ
                     </button>
                     
-                    {/* 4. Импорт TTK (XLSX) */}
+                    {/* СКРЫТО: Кнопка импорта TTK временно недоступна */}
+                    {/*
                     <button 
                       onClick={() => setShowXlsxImportModal(true)}
                       className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm min-h-[44px] flex items-center"
@@ -10322,6 +10323,7 @@ function App() {
                     >
                       📥 Импорт TTK
                     </button>
+                    */}
                     
                     {/* УДАЛЕНО: Кнопка синхронизации перенесена в МОЕ ЗАВЕДЕНИЕ */}
                     {/* 
