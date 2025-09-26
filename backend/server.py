@@ -41,28 +41,43 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 
 from openai import OpenAI
-from emergentintegrations import get_client
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+import uuid
 
-# Emergent LLM client setup
+# LLM client setup - Emergent Universal Key + Fallback
 emergent_llm_key = os.environ.get('EMERGENT_LLM_KEY')
+openai_api_key = os.environ.get('OPENAI_API_KEY')
+
+# Приоритет: Emergent ключ → OpenAI ключ → отключение
 if emergent_llm_key:
     try:
-        # Используем emergentintegrations для универсального доступа к LLM
-        openai_client = get_client("openai", api_key=emergent_llm_key)
-        logger.info("✅ Emergent LLM client initialized successfully (universal key)")
+        # Создаем Emergent LLM клиент для gpt-4o-mini (экономичный)
+        emergent_chat = LlmChat(
+            api_key=emergent_llm_key,
+            session_id=f"receptor_session_{uuid.uuid4()}",
+            system_message="You are a professional culinary AI assistant."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        # Также создаем обычный OpenAI клиент для совместимости
+        openai_client = OpenAI(api_key=emergent_llm_key)
+        
+        logger.info("✅ Emergent LLM client initialized (gpt-4o-mini with universal key)")
+        USE_EMERGENT = True
     except Exception as e:
         logger.error(f"Failed to initialize Emergent LLM client: {e}")
-        # Fallback to regular OpenAI
-        openai_api_key = os.environ.get('OPENAI_API_KEY')
+        emergent_chat = None
+        USE_EMERGENT = False
+        # Fallback to standard OpenAI
         if openai_api_key:
             openai_client = OpenAI(api_key=openai_api_key)
             logger.info("✅ Fallback to standard OpenAI client")
         else:
-            logger.error("No LLM client available - AI functions will be disabled")  
             openai_client = None
+            logger.error("No LLM client available - AI functions disabled")
 else:
-    # Fallback to regular OpenAI if no Emergent key
-    openai_api_key = os.environ.get('OPENAI_API_KEY')
+    # Только стандартный OpenAI
+    emergent_chat = None
+    USE_EMERGENT = False
     if openai_api_key:
         try:
             openai_client = OpenAI(api_key=openai_api_key)
@@ -71,7 +86,7 @@ else:
             logger.error(f"Failed to initialize OpenAI client: {e}")
             openai_client = None
     else:
-        logger.error("No API keys found - AI functions will be disabled")
+        logger.error("No API keys found - AI functions disabled")
         openai_client = None
 
 # КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
