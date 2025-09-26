@@ -3617,7 +3617,8 @@ function App() {
         body: JSON.stringify({ 
           techcard: tcV2,
           organization_id: 'default',
-          auto_apply: false
+          auto_apply: false,
+          user_id: userId  // КРИТИЧЕСКИ ВАЖНО: передаем user_id для изоляции данных
         })
       });
 
