@@ -203,6 +203,98 @@ function App() {
       </div>
     );
   };
+  
+  // Step 1: Базовая информация
+  const WizardStep1 = () => {
+    const cuisines = [
+      'русская', 'итальянская', 'французская', 'японская', 'китайская', 
+      'мексиканская', 'индийская', 'средиземноморская', 'американская', 'грузинская'
+    ];
+    
+    const restaurantTypes = [
+      { value: 'fine-dining', label: 'Fine Dining', desc: 'Высокая кухня' },
+      { value: 'casual', label: 'Casual Dining', desc: 'Повседневное' },
+      { value: 'fast-casual', label: 'Fast Casual', desc: 'Быстрое питание' },
+      { value: 'cafe', label: 'Кафе/Бистро', desc: 'Легкие блюда' }
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h3 className="text-2xl font-bold text-purple-300 mb-2">Расскажите о блюде</h3>
+          <p className="text-gray-400">Базовая информация для создания техкарты</p>
+        </div>
+        
+        {/* Название блюда */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            📝 Название и описание блюда
+          </label>
+          <div className="relative">
+            <textarea
+              value={wizardData.dishName}
+              onChange={(e) => updateWizardData(1, { dishName: e.target.value })}
+              placeholder="Опишите блюдо подробно. Например: Стейк из говядины с картофельным пюре и грибным соусом"
+              className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none min-h-[120px] resize-none"
+              rows={5}
+              required
+            />
+            <div className="absolute bottom-3 right-3 text-xs text-gray-500">
+              {wizardData.dishName.length}/500
+            </div>
+          </div>
+        </div>
+
+        {/* Тип кухни */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            🍽️ Тип кухни
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {cuisines.map(cuisine => (
+              <button
+                key={cuisine}
+                type="button"
+                onClick={() => updateWizardData(1, { cuisine })}
+                className={`px-3 py-2 rounded-lg border transition-colors capitalize ${
+                  wizardData.cuisine === cuisine
+                    ? 'bg-purple-600 border-purple-500 text-white'
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-purple-500'
+                }`}
+              >
+                {cuisine}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Тип заведения */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            🏪 Тип заведения
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {restaurantTypes.map(type => (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => updateWizardData(1, { restaurantType: type.value })}
+                className={`p-4 rounded-lg border text-left transition-colors ${
+                  wizardData.restaurantType === type.value
+                    ? 'bg-purple-600/20 border-purple-500 text-white'
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-purple-500'
+                }`}
+              >
+                <div className="font-medium">{type.label}</div>
+                <div className="text-sm opacity-70">{type.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const canProceedToNextStep = () => {
     switch(wizardStep) {
       case 1:
