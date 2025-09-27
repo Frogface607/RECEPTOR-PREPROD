@@ -136,7 +136,73 @@ function App() {
     }));
   };
 
-  // Validation for each step
+  // ===== WIZARD COMPONENTS =====
+  
+  // Progress Bar Component
+  const WizardProgressBar = () => {
+    const steps = [
+      { number: 1, title: "Основное", icon: "📝" },
+      { number: 2, title: "Настройки", icon: "⚙️" },
+      { number: 3, title: "Генерация", icon: "🤖" },
+      { number: 4, title: "Результат", icon: "✨" }
+    ];
+
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between relative">
+          {/* Progress line background */}
+          <div className="absolute top-6 left-0 right-0 h-1 bg-gray-700 rounded-full" />
+          
+          {/* Active progress line */}
+          <div 
+            className="absolute top-6 left-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-in-out"
+            style={{ width: `${((wizardStep - 1) / (steps.length - 1)) * 100}%` }}
+          />
+          
+          {steps.map((step, index) => {
+            const isActive = wizardStep === step.number;
+            const isCompleted = wizardStep > step.number;
+            const isAccessible = wizardStep >= step.number;
+            
+            return (
+              <div key={step.number} className="relative z-10">
+                <button
+                  onClick={() => {
+                    // Можно вернуться к предыдущим шагам
+                    if (step.number < wizardStep) {
+                      setWizardStep(step.number);
+                    }
+                  }}
+                  disabled={!isAccessible && step.number > wizardStep}
+                  className={`
+                    w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 border-2
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30 scale-110' 
+                      : isCompleted 
+                        ? 'bg-green-500 text-white border-green-400 hover:scale-105' 
+                        : 'bg-gray-700 text-gray-400 border-gray-600'
+                    }
+                    ${isAccessible && step.number < wizardStep ? 'cursor-pointer hover:scale-105' : 'cursor-default'}
+                  `}
+                  title={`${step.title} ${isCompleted ? '(завершено)' : isActive ? '(текущий)' : ''}`}
+                >
+                  {isCompleted ? '✓' : step.icon}
+                </button>
+                
+                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                  <div className={`text-xs font-medium whitespace-nowrap ${
+                    isActive ? 'text-purple-300' : isCompleted ? 'text-green-300' : 'text-gray-500'
+                  }`}>
+                    {step.title}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
   const canProceedToNextStep = () => {
     switch(wizardStep) {
       case 1:
