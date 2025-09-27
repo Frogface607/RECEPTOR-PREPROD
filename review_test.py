@@ -10,7 +10,7 @@ import string
 
 class ReceptorReviewTest:
     def __init__(self):
-        self.base_url = "https://menu-ai-platform-1.preview.emergentagent.com/api"
+        self.base_url = "https://iiko-bridge.preview.emergentagent.com/api"
         self.test_user_id = "test_user_123"
         self.test_email = f"test_{self.random_string(6)}@example.com"
         self.test_name = "Test User Review"

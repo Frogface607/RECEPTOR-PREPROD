@@ -11,7 +11,7 @@ import os
 from pymongo import MongoClient
 
 # URLs
-BACKEND_URL = "https://menu-ai-platform-1.preview.emergentagent.com"
+BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # MongoDB connection (for direct validation)

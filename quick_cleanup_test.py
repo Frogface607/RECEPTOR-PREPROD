@@ -10,7 +10,7 @@ import time
 import os
 
 # Backend URL
-BACKEND_URL = "https://menu-ai-platform-1.preview.emergentagent.com"
+BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_ready_status():

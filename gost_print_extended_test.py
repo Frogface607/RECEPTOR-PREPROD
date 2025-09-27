@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any
 
-BACKEND_URL = "https://menu-ai-platform-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com/api"
 
 class ExtendedGOSTPrintTester:
     def __init__(self):

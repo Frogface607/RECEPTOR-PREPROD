@@ -10,7 +10,7 @@ import re
 def test_golden_prompt_changes():
     """Test the specific requirements from the review request"""
     
-    base_url = "https://menu-ai-platform-1.preview.emergentagent.com/api"
+    base_url = "https://iiko-bridge.preview.emergentagent.com/api"
     
     print("🧪 GOLDEN_PROMPT CHANGES TEST")
     print("=" * 50)

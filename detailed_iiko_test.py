@@ -9,7 +9,7 @@ import json
 import os
 from datetime import datetime
 
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menu-ai-platform-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://iiko-bridge.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_specific_endpoints():

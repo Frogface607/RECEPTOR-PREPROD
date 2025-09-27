@@ -22,7 +22,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menu-ai-platform-1.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://iiko-bridge.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class IK04FinalValidationTester:

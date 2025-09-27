@@ -23,7 +23,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Backend URL from environment
-BACKEND_URL = "https://menu-ai-platform-1.preview.emergentagent.com"
+BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # IIKO RMS credentials from environment variables (NOT hardcoded!)

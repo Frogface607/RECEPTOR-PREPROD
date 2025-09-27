@@ -8,7 +8,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menu-ai-platform-1.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://iiko-bridge.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_llm_fallback():

@@ -6,7 +6,7 @@ import requests
 import json
 
 def test_tech_card_content():
-    base_url = "https://menu-ai-platform-1.preview.emergentagent.com/api"
+    base_url = "https://iiko-bridge.preview.emergentagent.com/api"
     
     # Register user
     data = {
