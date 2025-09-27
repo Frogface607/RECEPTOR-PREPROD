@@ -603,7 +603,7 @@ function App() {
       handleFinishWizard();
       // Open export modal or navigate to export section
       setTimeout(() => {
-        setShowExportModal(true);
+        setShowPhase3ExportModal(true);
       }, 500);
     };
 
