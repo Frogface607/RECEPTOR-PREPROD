@@ -284,12 +284,13 @@ class WizardBackendTester:
             if len(ingredients) == 0:
                 validation_issues.append("No ingredients found")
             else:
-                # Validate ingredient structure
+                # Validate ingredient structure - check for brutto_g/netto_g instead of quantity
                 for i, ingredient in enumerate(ingredients[:3]):  # Check first 3 ingredients
                     if not ingredient.get('name'):
                         validation_issues.append(f"Ingredient {i+1} missing name")
-                    if not ingredient.get('quantity'):
-                        validation_issues.append(f"Ingredient {i+1} missing quantity")
+                    # Check for either quantity or brutto_g/netto_g
+                    if not (ingredient.get('quantity') or ingredient.get('brutto_g') or ingredient.get('netto_g')):
+                        validation_issues.append(f"Ingredient {i+1} missing quantity/weight data")
             
             # Check process steps
             process = card.get('process', [])
