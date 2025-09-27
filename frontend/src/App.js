@@ -451,19 +451,19 @@ function App() {
 
   // Step 3: AI Генерация 
   const WizardStep3 = () => {
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [generationProgress, setGenerationProgress] = useState(0);
-
     const handleGenerateCard = async () => {
+      // Use global isGenerating state
       setIsGenerating(true);
-      setGenerationProgress(0);
+      setGenerationStatus(null);
+      setGenerationError(null);
+      setGenerationIssues([]);
       
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setGenerationProgress(prev => Math.min(prev + 5, 95));
-      }, 200);
+      // Set dishName from wizard data for compatibility
+      setDishName(wizardData.dishName);
       
       try {
+        console.log('🚀 Generating tech card with wizard data:', wizardData);
+        
         const response = await axios.post(`${API}/v1/techcards.v2/generate`, {
           name: wizardData.dishName,
           cuisine: wizardData.cuisine,
@@ -475,20 +475,31 @@ function App() {
           user_id: currentUser?.id || 'demo_user'
         });
 
-        clearInterval(progressInterval);
-        setGenerationProgress(100);
+        console.log('✅ Tech card generation response:', response.data);
         
-        if (response.data.status === 'READY') {
+        if (response.data.status === 'READY' || response.data.status === 'DRAFT') {
+          // Store the generated card in global state
+          setTcV2(response.data.card);
+          setTechCard(null); // Clear V1 card
+          setCurrentTechCardId(response.data.card?.meta?.id || null);
+          
+          // Update wizard data
           updateWizardData(3, { generatedCard: response.data.card });
+          
+          // Set generation status
+          setGenerationStatus(response.data.status.toLowerCase());
+          setGenerationIssues(response.data.issues || []);
+          
+          // Auto-advance to next step
           setTimeout(() => nextWizardStep(), 1000);
         } else {
           throw new Error(response.data.message || 'Generation failed');
         }
       } catch (error) {
-        clearInterval(progressInterval);
-        console.error('Generation error:', error);
+        console.error('❌ Generation error:', error);
+        setGenerationError('Ошибка генерации техкарты: ' + (error.response?.data?.detail || error.message));
+        setGenerationStatus('error');
         alert('Ошибка генерации техкарты. Попробуйте еще раз.');
-        setGenerationProgress(0);
       } finally {
         setIsGenerating(false);
       }
