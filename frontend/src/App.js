@@ -556,13 +556,8 @@ function App() {
           <div className="text-center">
             {isGenerating ? (
               <div className="space-y-4">
-                <div className="w-full bg-gray-700 rounded-full h-3">
-                  <div 
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${generationProgress}%` }}
-                  />
-                </div>
-                <p className="text-purple-300">🤖 Создаю техкарту... {generationProgress}%</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+                <p className="text-purple-300 font-medium">🤖 Создаю техкарту...</p>
                 <div className="animate-pulse text-gray-400 text-sm">
                   Анализирую ингредиенты • Рассчитываю пропорции • Создаю рецепт...
                 </div>
@@ -575,12 +570,35 @@ function App() {
                 🚀 Создать техкарту
               </button>
             )}
+            
+            {/* Error display */}
+            {generationError && (
+              <div className="mt-4 bg-red-900/30 border border-red-400/50 rounded-lg p-4">
+                <div className="text-red-300 font-medium">❌ Ошибка генерации</div>
+                <div className="text-red-400 text-sm mt-1">{generationError}</div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center space-y-4">
             <div className="text-6xl">✅</div>
             <h4 className="text-xl font-bold text-green-400">Техкарта создана успешно!</h4>
             <p className="text-gray-400">Переходим к финальному просмотру...</p>
+            
+            {/* Show generation issues if any */}
+            {generationIssues && generationIssues.length > 0 && (
+              <div className="bg-yellow-900/30 border border-yellow-400/50 rounded-lg p-4 max-w-md mx-auto">
+                <div className="text-yellow-300 font-medium mb-2">⚠️ Замечания</div>
+                <div className="text-yellow-400 text-sm space-y-1">
+                  {generationIssues.slice(0, 3).map((issue, idx) => (
+                    <div key={idx}>• {typeof issue === 'string' ? issue : issue.message || issue.type}</div>
+                  ))}
+                  {generationIssues.length > 3 && (
+                    <div className="text-yellow-500">...и еще {generationIssues.length - 3}</div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
