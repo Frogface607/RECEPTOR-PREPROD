@@ -608,23 +608,19 @@ function App() {
   // Step 4: Финальный просмотр
   const WizardStep4 = () => {
     const handleFinishWizard = () => {
-      // Set the generated card as the current tech card
-      if (wizardData.generatedCard) {
-        setTcV2(wizardData.generatedCard);
-        
-        // Reset wizard and return to main view
-        setWizardStep(1);
-        setWizardData({
-          dishName: '',
-          cuisine: '',
-          restaurantType: 'casual',
-          budget: 500,
-          equipment: [],
-          dietary: [],
-          portions: 1,
-          generatedCard: null
-        });
-      }
+      // Tech card is already set in global state from Step 3
+      // Just reset wizard to create a new card
+      setWizardStep(1);
+      setWizardData({
+        dishName: '',
+        cuisine: '',
+        restaurantType: 'casual',
+        budget: 500,
+        equipment: [],
+        dietary: [],
+        portions: 1,
+        generatedCard: null
+      });
     };
 
     const handleExportToIIKO = () => {
