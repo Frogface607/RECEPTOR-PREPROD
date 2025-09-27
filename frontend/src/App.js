@@ -449,6 +449,133 @@ function App() {
     );
   };
 
+  // Step 3: AI Генерация 
+  const WizardStep3 = () => {
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generationProgress, setGenerationProgress] = useState(0);
+
+    const handleGenerateCard = async () => {
+      setIsGenerating(true);
+      setGenerationProgress(0);
+      
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setGenerationProgress(prev => Math.min(prev + 5, 95));
+      }, 200);
+      
+      try {
+        const response = await axios.post(`${API}/v1/techcards.v2/generate`, {
+          name: wizardData.dishName,
+          cuisine: wizardData.cuisine,
+          equipment: wizardData.equipment,
+          budget: wizardData.budget,
+          dietary: wizardData.dietary,
+          portions: wizardData.portions,
+          restaurant_type: wizardData.restaurantType,
+          user_id: currentUser?.id || 'demo_user'
+        });
+
+        clearInterval(progressInterval);
+        setGenerationProgress(100);
+        
+        if (response.data.status === 'READY') {
+          updateWizardData(3, { generatedCard: response.data.card });
+          setTimeout(() => nextWizardStep(), 1000);
+        } else {
+          throw new Error(response.data.message || 'Generation failed');
+        }
+      } catch (error) {
+        clearInterval(progressInterval);
+        console.error('Generation error:', error);
+        alert('Ошибка генерации техкарты. Попробуйте еще раз.');
+        setGenerationProgress(0);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold text-purple-300 mb-2">Создание техкарты</h3>
+          <p className="text-gray-400">AI создаст техкарту на основе ваших данных</p>
+        </div>
+
+        {/* Summary */}
+        <div className="bg-gray-700/50 rounded-lg p-6 space-y-4">
+          <h4 className="text-lg font-semibold text-white mb-4">📋 Краткое содержание:</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-400">Блюдо:</span>
+              <span className="text-white ml-2 font-medium">{wizardData.dishName.slice(0, 50)}...</span>
+            </div>
+            
+            <div>
+              <span className="text-gray-400">Кухня:</span>
+              <span className="text-white ml-2 capitalize">{wizardData.cuisine}</span>
+            </div>
+            
+            <div>
+              <span className="text-gray-400">Бюджет:</span>
+              <span className="text-white ml-2">{wizardData.budget}₽ на порцию</span>
+            </div>
+            
+            <div>
+              <span className="text-gray-400">Порций:</span>
+              <span className="text-white ml-2">{wizardData.portions}</span>
+            </div>
+            
+            <div className="col-span-1 md:col-span-2">
+              <span className="text-gray-400">Оборудование:</span>
+              <span className="text-white ml-2">{wizardData.equipment.join(', ')}</span>
+            </div>
+            
+            {wizardData.dietary.length > 0 && (
+              <div className="col-span-1 md:col-span-2">
+                <span className="text-gray-400">Особенности:</span>
+                <span className="text-white ml-2">{wizardData.dietary.join(', ')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Generation Button or Progress */}
+        {!wizardData.generatedCard ? (
+          <div className="text-center">
+            {isGenerating ? (
+              <div className="space-y-4">
+                <div className="w-full bg-gray-700 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${generationProgress}%` }}
+                  />
+                </div>
+                <p className="text-purple-300">🤖 Создаю техкарту... {generationProgress}%</p>
+                <div className="animate-pulse text-gray-400 text-sm">
+                  Анализирую ингредиенты • Рассчитываю пропорции • Создаю рецепт...
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleGenerateCard}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-purple-500/25"
+              >
+                🚀 Создать техкарту
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="text-center space-y-4">
+            <div className="text-6xl">✅</div>
+            <h4 className="text-xl font-bold text-green-400">Техкарта создана успешно!</h4>
+            <p className="text-gray-400">Переходим к финальному просмотру...</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const canProceedToNextStep = () => {
     switch(wizardStep) {
       case 1:
