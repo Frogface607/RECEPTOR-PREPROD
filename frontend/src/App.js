@@ -576,6 +576,135 @@ function App() {
     );
   };
 
+  // Step 4: Финальный просмотр
+  const WizardStep4 = () => {
+    const handleFinishWizard = () => {
+      // Set the generated card as the current tech card
+      if (wizardData.generatedCard) {
+        setTcV2(wizardData.generatedCard);
+        
+        // Reset wizard and return to main view
+        setWizardStep(1);
+        setWizardData({
+          dishName: '',
+          cuisine: '',
+          restaurantType: 'casual',
+          budget: 500,
+          equipment: [],
+          dietary: [],
+          portions: 1,
+          generatedCard: null
+        });
+      }
+    };
+
+    const handleExportToIIKO = () => {
+      // This will trigger the existing IIKO export workflow
+      handleFinishWizard();
+      // Open export modal or navigate to export section
+      setTimeout(() => {
+        setShowExportModal(true);
+      }, 500);
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold text-green-400 mb-2">🎉 Техкарта готова!</h3>
+          <p className="text-gray-400">Просмотрите результат и выберите дальнейшие действия</p>
+        </div>
+
+        {/* Tech Card Preview */}
+        {wizardData.generatedCard && (
+          <div className="bg-gray-700/50 rounded-lg p-6 space-y-6">
+            <h4 className="text-xl font-semibold text-white">
+              📋 {wizardData.generatedCard.meta?.title || wizardData.dishName}
+            </h4>
+            
+            {/* Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="bg-purple-600/20 rounded-lg p-4">
+                <div className="text-purple-300 font-medium">Кухня</div>
+                <div className="text-white capitalize">{wizardData.cuisine}</div>
+              </div>
+              
+              <div className="bg-blue-600/20 rounded-lg p-4">
+                <div className="text-blue-300 font-medium">Порций</div>
+                <div className="text-white">{wizardData.portions}</div>
+              </div>
+              
+              <div className="bg-green-600/20 rounded-lg p-4">
+                <div className="text-green-300 font-medium">Бюджет</div>
+                <div className="text-white">{wizardData.budget}₽</div>
+              </div>
+            </div>
+
+            {/* Ingredients Preview */}
+            {wizardData.generatedCard.ingredients && (
+              <div>
+                <h5 className="text-lg font-semibold text-white mb-3">🥘 Ингредиенты:</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {wizardData.generatedCard.ingredients.slice(0, 6).map((ingredient, index) => (
+                    <div key={index} className="bg-gray-600/50 rounded px-3 py-2 text-sm">
+                      <span className="text-white">{ingredient.name}</span>
+                      <span className="text-gray-400 ml-2">
+                        {ingredient.brutto_g || ingredient.netto_g}г
+                      </span>
+                    </div>
+                  ))}
+                  {wizardData.generatedCard.ingredients.length > 6 && (
+                    <div className="text-gray-400 text-sm">
+                      и еще {wizardData.generatedCard.ingredients.length - 6} ингредиентов...
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button
+            onClick={handleFinishWizard}
+            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center"
+          >
+            ✏️ Редактировать техкарту
+          </button>
+          
+          <button
+            onClick={handleExportToIIKO}
+            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center"
+          >
+            📤 Экспортировать в IIKO
+          </button>
+        </div>
+
+        {/* Additional Actions */}
+        <div className="text-center space-y-3">
+          <button
+            onClick={() => {
+              setWizardStep(1);
+              setWizardData({
+                dishName: '',
+                cuisine: '',
+                restaurantType: 'casual',
+                budget: 500,
+                equipment: [],
+                dietary: [],
+                portions: 1,
+                generatedCard: null
+              });
+            }}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            🔄 Создать новую техкарту
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const canProceedToNextStep = () => {
     switch(wizardStep) {
       case 1:
