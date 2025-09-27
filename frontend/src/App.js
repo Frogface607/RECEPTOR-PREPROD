@@ -295,6 +295,160 @@ function App() {
     );
   };
 
+  // Step 2: Настройки
+  const WizardStep2 = () => {
+    const equipmentOptions = [
+      { id: 'плита', label: '🔥 Плита', category: 'basic' },
+      { id: 'духовка', label: '🔥 Духовка', category: 'basic' },
+      { id: 'гриль', label: '🥩 Гриль', category: 'cooking' },
+      { id: 'фритюр', label: '🍟 Фритюр', category: 'cooking' },
+      { id: 'пароварка', label: '💨 Пароварка', category: 'cooking' },
+      { id: 'блендер', label: '🌪️ Блендер', category: 'prep' },
+      { id: 'миксер', label: '🥄 Миксер', category: 'prep' },
+      { id: 'мясорубка', label: '🥩 Мясорубка', category: 'prep' }
+    ];
+
+    const dietaryOptions = [
+      { id: 'vegetarian', label: '🌱 Вегетарианское', color: 'green' },
+      { id: 'vegan', label: '🌿 Веганское', color: 'green' },
+      { id: 'gluten-free', label: '🌾 Без глютена', color: 'blue' },
+      { id: 'lactose-free', label: '🥛 Без лактозы', color: 'blue' },
+      { id: 'keto', label: '🥑 Кето', color: 'purple' },
+      { id: 'low-carb', label: '🥬 Низкоуглеводное', color: 'purple' }
+    ];
+
+    const toggleEquipment = (equipmentId) => {
+      const newEquipment = wizardData.equipment.includes(equipmentId)
+        ? wizardData.equipment.filter(id => id !== equipmentId)
+        : [...wizardData.equipment, equipmentId];
+      updateWizardData(2, { equipment: newEquipment });
+    };
+
+    const toggleDietary = (dietaryId) => {
+      const newDietary = wizardData.dietary.includes(dietaryId)
+        ? wizardData.dietary.filter(id => id !== dietaryId)
+        : [...wizardData.dietary, dietaryId];
+      updateWizardData(2, { dietary: newDietary });
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h3 className="text-2xl font-bold text-purple-300 mb-2">Настройки техкарты</h3>
+          <p className="text-gray-400">Бюджет, оборудование и особенности блюда</p>
+        </div>
+
+        {/* Бюджет */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            💰 Бюджет на порцию
+          </label>
+          <div className="space-y-3">
+            <input
+              type="range"
+              min="100"
+              max="2000"
+              step="50"
+              value={wizardData.budget}
+              onChange={(e) => updateWizardData(2, { budget: parseInt(e.target.value) })}
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+            />
+            <div className="flex justify-between text-sm text-gray-400">
+              <span>100₽</span>
+              <span className="text-white font-bold">{wizardData.budget}₽</span>
+              <span>2000₽</span>
+            </div>
+            <div className="text-center">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                wizardData.budget <= 300 ? 'bg-green-600/20 text-green-300' :
+                wizardData.budget <= 700 ? 'bg-yellow-600/20 text-yellow-300' :
+                'bg-red-600/20 text-red-300'
+              }`}>
+                {wizardData.budget <= 300 ? '💚 Эконом' :
+                 wizardData.budget <= 700 ? '💛 Стандарт' : '💎 Премиум'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Количество порций */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            🍽️ Количество порций
+          </label>
+          <div className="flex items-center space-x-4">
+            <button
+              type="button"
+              onClick={() => updateWizardData(2, { portions: Math.max(1, wizardData.portions - 1) })}
+              className="w-10 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded-lg flex items-center justify-center font-bold"
+            >
+              -
+            </button>
+            <span className="text-2xl font-bold text-white min-w-[60px] text-center">
+              {wizardData.portions}
+            </span>
+            <button
+              type="button"
+              onClick={() => updateWizardData(2, { portions: Math.min(20, wizardData.portions + 1) })}
+              className="w-10 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded-lg flex items-center justify-center font-bold"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Оборудование */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            🔧 Доступное оборудование
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {equipmentOptions.map(equipment => (
+              <button
+                key={equipment.id}
+                type="button"
+                onClick={() => toggleEquipment(equipment.id)}
+                className={`p-3 rounded-lg border text-left transition-colors ${
+                  wizardData.equipment.includes(equipment.id)
+                    ? 'bg-purple-600/20 border-purple-500 text-white'
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-purple-500'
+                }`}
+              >
+                <div className="text-sm font-medium">{equipment.label}</div>
+              </button>
+            ))}
+          </div>
+          {wizardData.equipment.length === 0 && (
+            <p className="text-orange-400 text-sm mt-2">⚠️ Выберите хотя бы одну единицу оборудования</p>
+          )}
+        </div>
+
+        {/* Диетические ограничения */}
+        <div>
+          <label className="block text-purple-300 text-sm font-bold mb-3 uppercase tracking-wide">
+            🥗 Диетические особенности (опционально)
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {dietaryOptions.map(dietary => (
+              <button
+                key={dietary.id}
+                type="button"
+                onClick={() => toggleDietary(dietary.id)}
+                className={`p-3 rounded-lg border text-left transition-colors ${
+                  wizardData.dietary.includes(dietary.id)
+                    ? `bg-${dietary.color}-600/20 border-${dietary.color}-500 text-white`
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500'
+                }`}
+              >
+                <div className="text-sm font-medium">{dietary.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const canProceedToNextStep = () => {
     switch(wizardStep) {
       case 1:
