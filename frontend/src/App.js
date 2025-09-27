@@ -98,6 +98,58 @@ function App() {
   const [currentTechCardId, setCurrentTechCardId] = useState(null);
   const [ingredients, setIngredients] = useState([]);
 
+  // ===== WIZARD STATE MANAGEMENT =====
+  const [wizardStep, setWizardStep] = useState(1);
+  const [wizardData, setWizardData] = useState({
+    // Step 1: Базовая информация
+    dishName: '',
+    cuisine: '',
+    restaurantType: 'casual',
+    
+    // Step 2: Настройки
+    budget: 500,
+    equipment: [],
+    dietary: [],
+    portions: 1,
+    
+    // Step 3: AI результат (будет заполнено после генерации)
+    generatedCard: null
+  });
+
+  // Wizard navigation functions
+  const nextWizardStep = () => {
+    if (wizardStep < 4) {
+      setWizardStep(wizardStep + 1);
+    }
+  };
+  
+  const prevWizardStep = () => {
+    if (wizardStep > 1) {
+      setWizardStep(wizardStep - 1);
+    }
+  };
+  
+  const updateWizardData = (step, data) => {
+    setWizardData(prev => ({
+      ...prev,
+      ...data
+    }));
+  };
+
+  // Validation for each step
+  const canProceedToNextStep = () => {
+    switch(wizardStep) {
+      case 1:
+        return wizardData.dishName.trim().length > 5 && wizardData.cuisine;
+      case 2: 
+        return wizardData.budget > 0 && wizardData.equipment.length > 0;
+      case 3:
+        return wizardData.generatedCard !== null;
+      default:
+        return false;
+    }
+  };
+
   // Subscription states
   const [subscriptionPlans, setSubscriptionPlans] = useState({});
   const [userSubscription, setUserSubscription] = useState(null);
