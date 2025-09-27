@@ -733,7 +733,7 @@ function App() {
   const canProceedToNextStep = () => {
     switch(wizardStep) {
       case 1:
-        return wizardData.dishName.trim().length > 5 && wizardData.cuisine;
+        return wizardData.dishName.trim().length > 5 && wizardData.cuisine && wizardData.restaurantType;
       case 2: 
         return wizardData.budget > 0 && wizardData.equipment.length > 0;
       case 3:
