@@ -10663,6 +10663,33 @@ function App() {
               </div>
             </div>
           </div>
+            ) : (
+              // Demo user fallback - redirect to create view with message
+              <div className="text-center py-12">
+                <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-xl p-8 max-w-md mx-auto">
+                  <div className="text-6xl mb-4">🔒</div>
+                  <h3 className="text-xl font-bold text-yellow-300 mb-3">Личный кабинет недоступен</h3>
+                  <p className="text-gray-400 mb-6">
+                    Для доступа к личному кабинету необходимо зарегистрироваться или войти в систему
+                  </p>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setCurrentView('create')}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                    >
+                      ← Вернуться к созданию техкарт
+                    </button>
+                    <button
+                      onClick={() => setShowRegistrationModal(true)}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                    >
+                      📝 Зарегистрироваться
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Create Tech Card View (existing content) */}
