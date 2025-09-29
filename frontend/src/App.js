@@ -10916,6 +10916,16 @@ function App() {
                       <h4 className="text-sm sm:text-base font-bold text-purple-200 mb-3">AI ДОПОЛНЕНИЯ</h4>
                       
                       <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                        {/* V1 Recipe Creation - Star Feature */}
+                        <button
+                          onClick={() => generateRecipeV1()}
+                          disabled={isGenerating}
+                          className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105 text-xs sm:text-sm min-h-[44px] shadow-lg shadow-pink-500/25`}
+                          title="🍳 СОЗДАТЬ РЕЦЕПТ V1: Генерирует красивый подробный рецепт с пошаговыми инструкциями - идеально для экспериментов и обучения"
+                        >
+                          🍳 СОЗДАТЬ РЕЦЕПТ V1
+                        </button>
+                        
                         <button
                           onClick={() => generateSalesScript()}
                           disabled={isGenerating}
