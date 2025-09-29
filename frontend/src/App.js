@@ -1265,6 +1265,13 @@ function App() {
   const [recognition, setRecognition] = useState(null);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
+  // Simple tech card generation states
+  const [dishName, setDishName] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState(null);
+  const [generationError, setGenerationError] = useState(null);
+  const [generationIssues, setGenerationIssues] = useState([]);
+
   // Login states
   const [showLogin, setShowLogin] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
