@@ -6838,6 +6838,123 @@ logger = logging.getLogger(__name__)
 async def shutdown_db_client():
     client.close()
 
+@app.post("/api/v1/generate-recipe")
+async def generate_recipe_v1(request: dict):
+    """Generate beautiful V1 recipe with detailed steps for creativity and experimentation"""
+    dish_name = request.get("dish_name")
+    cuisine = request.get("cuisine", "европейская")
+    restaurant_type = request.get("restaurant_type", "casual")
+    user_id = request.get("user_id")
+    
+    if not dish_name or not user_id:
+        raise HTTPException(status_code=400, detail="dish_name and user_id are required")
+    
+    try:
+        print(f"🍳 Generating V1 Recipe for: {dish_name}")
+        
+        # Enhanced prompt for beautiful V1 recipes
+        prompt = f"""Ты — шеф-повар мирового уровня и кулинарный писатель. 
+        
+Создай КРАСИВЫЙ И ПОДРОБНЫЙ рецепт для блюда "{dish_name}" в стиле {cuisine} кухни для {restaurant_type} заведения.
+
+ФОРМАТ РЕЦЕПТА V1 (для творчества и экспериментов):
+
+**{dish_name}**
+
+🎯 **ОПИСАНИЕ**
+Вдохновляющее описание блюда с историей, традициями и особенностями
+
+⏱️ **ВРЕМЕННЫЕ РАМКИ**
+Подготовка: X минут
+Приготовление: X минут
+Общее время: X минут
+
+👥 **ПОРЦИИ**
+На X порций
+
+🛒 **ИНГРЕДИЕНТЫ**
+Основные ингредиенты:
+• Ингредиент 1 - количество (подробное описание, зачем нужен)
+• Ингредиент 2 - количество (подробное описание, зачем нужен)
+...
+
+Специи и приправы:
+• Специя 1 - количество (влияние на вкус)
+• Специя 2 - количество (влияние на вкус)
+...
+
+🔥 **ПОШАГОВОЕ ПРИГОТОВЛЕНИЕ**
+
+**Шаг 1: Подготовка ингредиентов**
+Детальное описание подготовительного этапа с советами
+
+**Шаг 2: [Название этапа]**  
+Подробные инструкции с температурами, временем, техниками
+
+**Шаг 3: [Название этапа]**
+Еще более детальные инструкции...
+
+[Продолжить до завершения - обычно 5-8 шагов]
+
+👨‍🍳 **СЕКРЕТЫ ШЕФА**
+• Профессиональный совет 1
+• Профессиональный совет 2
+• Секретная техника 3
+
+🎨 **ПОДАЧА И ПРЕЗЕНТАЦИЯ**
+Как красиво подать блюдо, украшения, посуда
+
+🔄 **ВАРИАЦИИ И ЭКСПЕРИМЕНТЫ**
+• Интересная вариация 1
+• Креативная замена ингредиентов 2
+• Сезонная адаптация 3
+
+💡 **ПОЛЕЗНЫЕ СОВЕТЫ**
+• Как сохранить
+• Что делать если что-то пошло не так
+• Как заранее подготовить
+
+Сделай рецепт МАКСИМАЛЬНО ПОДРОБНЫМ, ВДОХНОВЛЯЮЩИМ и КРАСИВЫМ для чтения!"""
+
+        # Use OpenAI for V1 recipe generation
+        client = OpenAI(api_key=openai_api_key)
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.8,
+            max_tokens=3000
+        )
+        
+        recipe_content = response.choices[0].message.content
+        
+        # Create V1 recipe structure
+        recipe_v1 = {
+            "id": str(uuid.uuid4()),
+            "name": dish_name,
+            "cuisine": cuisine,
+            "restaurant_type": restaurant_type,
+            "content": recipe_content,
+            "version": "v1",
+            "type": "recipe",
+            "created_at": datetime.now().isoformat(),
+            "user_id": user_id
+        }
+        
+        # Save to database for history
+        try:
+            await db.recipes_v1.insert_one(recipe_v1.copy())
+        except Exception as e:
+            print(f"Warning: Failed to save V1 recipe to database: {e}")
+        
+        print(f"✅ V1 Recipe generated successfully for: {dish_name}")
+        
+        return {"recipe": recipe_content, "meta": {"id": recipe_v1["id"], "version": "v1"}}
+        
+    except Exception as e:
+        print(f"❌ Error generating V1 recipe: {e}")
+        raise HTTPException(status_code=500, detail=f"Recipe generation failed: {str(e)}")
+
 @app.post("/api/generate-sales-script")
 async def generate_sales_script(request: dict):
     user_id = request.get("user_id")
