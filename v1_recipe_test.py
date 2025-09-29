@@ -377,10 +377,16 @@ class V1RecipeGenerationTester:
             db = self.mongo_client.get_database()
             recipes_v1_collection = db.recipes_v1
             
-            # Find the recipe by ID
-            saved_recipe = recipes_v1_collection.find_one({"_id": recipe_id})
+            # Find the recipe by ID (the correct field is 'id', not '_id')
+            saved_recipe = recipes_v1_collection.find_one({"id": recipe_id})
             
             if saved_recipe:
+                # Verify the structure matches V1 format
+                has_content = 'content' in saved_recipe and len(saved_recipe['content']) > 100
+                has_version = saved_recipe.get('version') == 'v1'
+                has_type = saved_recipe.get('type') == 'recipe'
+                has_dish_name = saved_recipe.get('name') == TEST_RECIPE_DATA['dish_name']
+                
                 self.log_test(
                     "Database Storage Verification",
                     True,
@@ -388,43 +394,34 @@ class V1RecipeGenerationTester:
                     {
                         'recipe_id': recipe_id,
                         'collection': 'recipes_v1',
-                        'has_recipe_field': 'recipe' in saved_recipe,
-                        'has_meta_field': 'meta' in saved_recipe,
-                        'saved_at': saved_recipe.get('created_at', 'unknown')
+                        'has_content': has_content,
+                        'content_length': len(saved_recipe.get('content', '')),
+                        'version': saved_recipe.get('version'),
+                        'type': saved_recipe.get('type'),
+                        'dish_name': saved_recipe.get('name'),
+                        'created_at': saved_recipe.get('created_at', 'unknown'),
+                        'structure_valid': has_content and has_version and has_type and has_dish_name
                     }
                 )
                 return True
             else:
-                # Check if recipe exists with different ID format
-                alt_recipe = recipes_v1_collection.find_one({"meta.id": recipe_id})
+                # Check total count in collection and recent recipes
+                total_recipes = recipes_v1_collection.count_documents({})
+                recent_recipes = list(recipes_v1_collection.find({}).sort('_id', -1).limit(3))
+                recent_ids = [r.get('id') for r in recent_recipes]
                 
-                if alt_recipe:
-                    self.log_test(
-                        "Database Storage Verification",
-                        True,
-                        f"V1 recipe found in recipes_v1 collection with meta.id: {recipe_id}",
-                        {
-                            'recipe_id': recipe_id,
-                            'collection': 'recipes_v1',
-                            'storage_format': 'nested_meta_id'
-                        }
-                    )
-                    return True
-                else:
-                    # Check total count in collection
-                    total_recipes = recipes_v1_collection.count_documents({})
-                    
-                    self.log_test(
-                        "Database Storage Verification",
-                        False,
-                        f"Recipe not found in recipes_v1 collection. Total recipes in collection: {total_recipes}",
-                        {
-                            'recipe_id': recipe_id,
-                            'collection': 'recipes_v1',
-                            'total_recipes': total_recipes
-                        }
-                    )
-                    return False
+                self.log_test(
+                    "Database Storage Verification",
+                    False,
+                    f"Recipe with ID {recipe_id} not found in recipes_v1 collection. Total recipes: {total_recipes}",
+                    {
+                        'recipe_id': recipe_id,
+                        'collection': 'recipes_v1',
+                        'total_recipes': total_recipes,
+                        'recent_recipe_ids': recent_ids
+                    }
+                )
+                return False
                 
         except Exception as e:
             self.log_test(
