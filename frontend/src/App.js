@@ -10752,7 +10752,7 @@ function App() {
                       <div className="mt-3 text-xs text-gray-400">
                         💡 Настройки кухни и заведения используются автоматически. Изменить в 
                         <button 
-                          onClick={() => setShowVenueModal(true)}
+                          onClick={() => setShowVenueProfileModal(true)}
                           className="text-purple-400 hover:text-purple-300 ml-1 underline"
                         >
                           МОЕ ЗАВЕДЕНИЕ
