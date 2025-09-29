@@ -10339,7 +10339,6 @@ function App() {
                   )}
                 </div>
 
-                {/* Simplified Tech Card Creation Form */}
                 <form onSubmit={handleGenerateTechCard} className="space-y-4 sm:space-y-6">
                   <div>
                     <label className="block text-purple-300 text-sm font-bold mb-2 sm:mb-3 uppercase tracking-wide">
@@ -10373,54 +10372,17 @@ function App() {
                         ) : (
                           // Microphone icon when not recording
                           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 715 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
                           </svg>
                         )}
                       </button>
                     </div>
                   </div>
-                  
-                  {/* Smart Settings from Venue Profile */}
-                  {venueProfile.venue_name && (
-                    <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-400/30 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-purple-300 font-bold text-sm">🏪 НАСТРОЙКИ ИЗ ПРОФИЛЯ ЗАВЕДЕНИЯ</span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                        <div className="bg-gray-700/30 rounded-lg p-3">
-                          <div className="text-gray-400">Заведение</div>
-                          <div className="text-white font-medium">{venueProfile.venue_name}</div>
-                        </div>
-                        {venueProfile.cuisine_type && (
-                          <div className="bg-gray-700/30 rounded-lg p-3">
-                            <div className="text-gray-400">Кухня</div>
-                            <div className="text-white font-medium capitalize">{venueProfile.cuisine_type}</div>
-                          </div>
-                        )}
-                        {venueProfile.venue_type && (
-                          <div className="bg-gray-700/30 rounded-lg p-3">
-                            <div className="text-gray-400">Тип</div>
-                            <div className="text-white font-medium">{venueProfile.venue_type}</div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-3 text-xs text-gray-400">
-                        💡 Настройки кухни и заведения используются автоматически. Изменить в 
-                        <button 
-                          onClick={() => setShowVenueProfileModal(true)}
-                          className="text-purple-400 hover:text-purple-300 ml-1 underline"
-                        >
-                          МОЕ ЗАВЕДЕНИЕ
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
                   <button
                     type="submit"
                     disabled={!wizardData.dishName.trim() || isGenerating}
                     className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'btn-primary'} text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px]`}
-                    title="Создать техкарту с учетом настроек профиля заведения"
+                    title="Создать техкарту с расчетом себестоимости и рецептом"
                   >
                     {isGenerating ? (
                       <>
