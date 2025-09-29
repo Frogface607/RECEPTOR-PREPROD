@@ -10448,6 +10448,228 @@ function App() {
           </div>
         )}
 
+        {/* Personal Cabinet View */}
+        {currentView === 'personal-cabinet' && (
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/30 rounded-xl p-6 sm:p-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-blue-300 mb-2">
+                    👤 Личный кабинет
+                  </h2>
+                  <p className="text-gray-400">Управление профилем, подключениями и настройками</p>
+                </div>
+                <button
+                  onClick={() => setCurrentView('create')}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  ← Вернуться
+                </button>
+              </div>
+            </div>
+
+            {/* Personal Cabinet Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Left Column - Profile & Settings */}
+              <div className="space-y-6">
+                
+                {/* Venue Profile Section */}
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-purple-300 mb-4 flex items-center gap-3">
+                    🏪 Профиль заведения
+                  </h3>
+                  
+                  {venueProfile.venue_name ? (
+                    <div className="space-y-4">
+                      <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-400/30">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-gray-400 text-sm">Название</div>
+                            <div className="text-white font-medium">{venueProfile.venue_name}</div>
+                          </div>
+                          {venueProfile.venue_type && (
+                            <div>
+                              <div className="text-gray-400 text-sm">Тип заведения</div>
+                              <div className="text-white font-medium">{venueTypes[venueProfile.venue_type]?.name}</div>
+                            </div>
+                          )}
+                          {venueProfile.cuisine_focus && (
+                            <div>
+                              <div className="text-gray-400 text-sm">Кухня</div>
+                              <div className="text-white font-medium">{venueProfile.cuisine_focus?.map(c => cuisineTypes[c]?.name).join(', ')}</div>
+                            </div>
+                          )}
+                          {venueProfile.average_check && (
+                            <div>
+                              <div className="text-gray-400 text-sm">Средний чек</div>
+                              <div className="text-white font-medium">{venueProfile.average_check}₽</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowVenueProfileModal(true)}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                      >
+                        ⚙️ Редактировать профиль
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <div className="text-gray-400 mb-4">Профиль заведения не настроен</div>
+                      <button
+                        onClick={() => setShowVenueProfileModal(true)}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                      >
+                        🚀 Настроить профиль
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Price Management Section */}
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-3">
+                    💰 Управление прайсами
+                  </h3>
+                  
+                  {userPrices.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="bg-green-900/20 rounded-lg p-4 border border-green-400/30">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-green-300 font-medium">✅ Прайс-лист загружен</div>
+                            <div className="text-gray-400 text-sm">{userPrices.length} позиций в базе данных</div>
+                          </div>
+                          <div className="text-green-300 text-2xl">📊</div>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowPriceModal(true)}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                      >
+                        📝 Обновить прайсы
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <div className="text-gray-400 mb-4">Прайс-листы не загружены</div>
+                      <button
+                        onClick={() => setShowPriceModal(true)}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+                      >
+                        📋 Загрузить прайсы
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column - IIKO & Integrations */}
+              <div className="space-y-6">
+                
+                {/* IIKO RMS Section */}
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-orange-300 mb-4 flex items-center gap-3">
+                    🔗 IIKO RMS
+                  </h3>
+                  
+                  {iikoRmsConnection.status === 'connected' ? (
+                    <div className="space-y-4">
+                      <div className="bg-green-900/20 rounded-lg p-4 border border-green-400/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <div className="text-green-300 font-medium">✅ Подключено к IIKO</div>
+                            <div className="text-gray-400 text-sm">{iikoRmsConnection.organization_name}</div>
+                          </div>
+                          <div className="text-green-300 text-2xl">🏢</div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <div className="text-gray-400">Товаров синхронизировано</div>
+                            <div className="text-white font-medium">{iikoRmsConnection.products_count || 0}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-400">Последняя синхронизация</div>
+                            <div className="text-white font-medium">
+                              {iikoRmsConnection.last_sync ? new Date(iikoRmsConnection.last_sync).toLocaleDateString('ru-RU') : 'Никогда'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setShowIikoRmsModal(true)}
+                          className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                        >
+                          ⚙️ Настройки
+                        </button>
+                        <button
+                          onClick={syncIikoRmsNomenclature}
+                          disabled={isSyncingIikoRms}
+                          className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                        >
+                          {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизация'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <div className="text-gray-400 mb-4">
+                        {iikoRmsConnection.status === 'needs_reconnection' ? 
+                          '⚠️ Требуется переподключение к IIKO' : 
+                          'IIKO RMS не подключен'
+                        }
+                      </div>
+                      <button
+                        onClick={() => setShowIikoRmsModal(true)}
+                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                      >
+                        🔗 Подключить IIKO RMS
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Account & Subscription Section */}
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                  <h3 className="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-3">
+                    💳 Подписка и аккаунт
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-400/30">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-yellow-300 font-medium">🎯 Базовый план</div>
+                          <div className="text-gray-400 text-sm">Создание техкарт, экспорт в IIKO</div>
+                        </div>
+                        <div className="text-yellow-300 text-2xl">⭐</div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center py-4">
+                      <div className="text-gray-400 mb-3">Управление подпиской</div>
+                      <button
+                        onClick={() => alert('Функция в разработке! 🚀')}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+                      >
+                        💎 Улучшить план
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Create Tech Card View (existing content) */}
         {currentView === 'create' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
