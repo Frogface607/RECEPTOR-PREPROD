@@ -17,11 +17,7 @@ function App() {
   // const [cities, setCities] = useState([]);
   // const [selectedCity, setSelectedCity] = useState('');
   
-  const [dishName, setDishName] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStatus, setGenerationStatus] = useState(null); // 'success' | 'draft' | 'error'
-  const [generationError, setGenerationError] = useState(null);
-  const [generationIssues, setGenerationIssues] = useState([]);
+  // Moved to later section with other generation states
   
   // Ingredient mapping states
   const [mappingModalOpen, setMappingModalOpen] = useState(false);
