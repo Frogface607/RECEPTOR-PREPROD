@@ -16081,11 +16081,11 @@ function App() {
                       <button
                         onClick={() => {
                           setMappingModalOpen(false);
-                          setShowDataModal(true);
+                          setShowIikoRmsModal(true);
                         }}
                         className="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors"
                       >
-                        Подключить iiko RMS
+                        🔗 Подключить IIKO RMS
                       </button>
                     </div>
                   )}
