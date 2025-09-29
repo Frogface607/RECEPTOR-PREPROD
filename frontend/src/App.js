@@ -747,7 +747,7 @@ function App() {
   const handleGenerateTechCard = async (e) => {
     e.preventDefault();
     
-    if (!dishName.trim()) {
+    if (!wizardData.dishName.trim()) {
       alert('Пожалуйста, введите название блюда');
       return;
     }
@@ -758,11 +758,11 @@ function App() {
     setGenerationIssues([]);
     
     try {
-      console.log('🚀 Generating tech card:', dishName);
+      console.log('🚀 Generating tech card:', wizardData.dishName);
       
       // Prepare generation data using venue profile or defaults
       const generationData = {
-        name: dishName.trim(),
+        name: wizardData.dishName.trim(),
         cuisine: venueProfile.cuisine_type || 'русская',
         restaurant_type: venueProfile.venue_type || 'casual',
         budget: 500, // Default budget
@@ -772,7 +772,7 @@ function App() {
         user_id: currentUser?.id || 'demo_user'
       };
 
-      console.log('📊 Generation data:', generationData);
+      console.log('📊 Generation data with venue profile:', generationData);
 
       const response = await axios.post(`${API}/v1/techcards.v2/generate`, generationData);
 
@@ -788,11 +788,11 @@ function App() {
         setGenerationStatus(response.data.status.toLowerCase());
         setGenerationIssues(response.data.issues || []);
         
-        // Clear the form
-        setDishName('');
+        // Clear the form and reset wizard data
+        updateWizardData(1, { dishName: '' });
         
         // Show success message
-        alert('✅ Техкарта успешно создана!');
+        alert('✅ Техкарта успешно создана! Проверьте результат ниже.');
       } else {
         throw new Error(response.data.message || 'Generation failed');
       }
