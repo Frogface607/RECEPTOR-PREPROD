@@ -1330,7 +1330,6 @@ function App() {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
   // Simple tech card generation states
-  const [dishName, setDishName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(null);
   const [generationError, setGenerationError] = useState(null);
