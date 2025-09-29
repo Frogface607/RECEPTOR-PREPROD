@@ -463,9 +463,9 @@ def search_catalog(
             except Exception as e:
                 print(f"Price search error: {e}")
         
-        # iiko search results (if needed)
+        # iiko search results (if needed) - SECURITY: Only for authenticated users
         iiko_results = []
-        if source in ("iiko", "all"):
+        if source in ("iiko", "all") and user_id and user_id != 'demo_user':
             try:
                 from ..integrations.iiko_service import get_iiko_service
                 iiko_service = get_iiko_service()
