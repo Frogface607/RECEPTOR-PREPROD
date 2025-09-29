@@ -770,6 +770,18 @@ backend:
         agent: "main"
         comment: "🔧 CRITICAL EXPORT BUGFIX IMPLEMENTED: Fixed TypeError 'str' object has no attribute 'get' in enhanced export process. ISSUE ANALYSIS: The error occurred when accessing working_card.meta.title in three locations (lines 523, 567, 587) where working_card.meta could potentially be a string instead of an object with .title attribute. ROOT CAUSE: After operational rounding process and TechCardV2.model_validate(rounded_dict), the meta field might become serialized differently causing attribute access errors. SOLUTION IMPLEMENTED: 1) Added comprehensive debugging and safe access pattern for working_card.meta.title with fallbacks for dict, string, and unexpected types, 2) Replaced direct working_card.meta.title access with dish_title variable in error reporting sections (lines 567, 587), 3) Added detailed logging to track meta object type throughout the process. Ready for backend testing to validate export functionality with operational rounding enabled."
 
+  - task: "V1 Recipe Generation Endpoint Testing"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 V1 RECIPE GENERATION COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY: Conducted detailed testing of new V1 recipe generation endpoint POST /api/v1/generate-recipe as specified in Russian review request with outstanding results (100% success rate, 5/5 tests passed). ✅ ENDPOINT FULLY OPERATIONAL: Successfully tested V1 recipe generation for 'Паста карбонара' with proper request structure (dish_name, cuisine, restaurant_type, user_id), endpoint responds correctly with HTTP 200 and proper JSON structure. ✅ RESPONSE STRUCTURE PERFECT: Response contains required 'recipe' field with detailed formatted text (3637+ characters) and 'meta' field with proper id (UUID format) and version='v1' as specified. Recipe content is comprehensive and beautifully formatted. ✅ RECIPE CONTENT QUALITY EXCELLENT: Generated recipes contain all required sections - 🎯 ОПИСАНИЕ (inspiring description with history), ⏱️ ВРЕМЕННЫЕ РАМКИ (timing information), 👥 ПОРЦИИ (serving information), 🛒 ИНГРЕДИЕНТЫ (detailed ingredients with descriptions), 🔥 ПОШАГОВОЕ ПРИГОТОВЛЕНИЕ (step-by-step instructions), 👨‍🍳 СЕКРЕТЫ ШЕФА (chef secrets), 🎨 ПОДАЧА И ПРЕЗЕНТАЦИЯ (presentation), 🔄 ВАРИАЦИИ И ЭКСПЕРИМЕНТЫ (variations), 💡 ПОЛЕЗНЫЕ СОВЕТЫ (useful tips). Quality score: 5/5 for comprehensive content. ✅ DATABASE STORAGE VERIFIED: V1 recipes are correctly saved to recipes_v1 MongoDB collection with proper structure (id, name, cuisine, restaurant_type, content, version='v1', type='recipe', created_at, user_id). Database persistence working perfectly. ✅ MONGODB INTEGRATION CONFIRMED: Successfully found and retrieved saved V1 recipes from database, proper document structure with all required fields, content preservation working correctly with full recipe text stored. 🎯 OUTSTANDING SUCCESS: V1 recipe generation endpoint is FULLY OPERATIONAL and generates beautiful, detailed Russian recipes for AI-кухня with proper database storage in recipes_v1 collection. System ready for production use."
+
 backend:
   - task: "iiko Import Reliability - Feature A: Product Code Toggle"
     implemented: true
