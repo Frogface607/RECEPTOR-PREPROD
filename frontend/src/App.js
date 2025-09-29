@@ -743,6 +743,70 @@ function App() {
     }
   };
 
+  // Simple Tech Card Generation Function
+  const handleGenerateTechCard = async (e) => {
+    e.preventDefault();
+    
+    if (!dishName.trim()) {
+      alert('Пожалуйста, введите название блюда');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationStatus(null);
+    setGenerationError(null);
+    setGenerationIssues([]);
+    
+    try {
+      console.log('🚀 Generating tech card:', dishName);
+      
+      // Prepare generation data using venue profile or defaults
+      const generationData = {
+        name: dishName.trim(),
+        cuisine: venueProfile.cuisine_type || 'русская',
+        restaurant_type: venueProfile.venue_type || 'casual',
+        budget: 500, // Default budget
+        equipment: ['плита', 'кастрюля'], // Default equipment
+        dietary: [],
+        portions: 1,
+        user_id: currentUser?.id || 'demo_user'
+      };
+
+      console.log('📊 Generation data:', generationData);
+
+      const response = await axios.post(`${API}/v1/techcards.v2/generate`, generationData);
+
+      console.log('✅ Generation response:', response.data);
+      
+      if (response.data.status === 'READY' || response.data.status === 'DRAFT') {
+        // Store the generated card
+        setTcV2(response.data.card);
+        setTechCard(null); // Clear V1 card
+        setCurrentTechCardId(response.data.card?.meta?.id || null);
+        
+        // Set generation status
+        setGenerationStatus(response.data.status.toLowerCase());
+        setGenerationIssues(response.data.issues || []);
+        
+        // Clear the form
+        setDishName('');
+        
+        // Show success message
+        alert('✅ Техкарта успешно создана!');
+      } else {
+        throw new Error(response.data.message || 'Generation failed');
+      }
+    } catch (error) {
+      console.error('❌ Generation error:', error);
+      const errorMessage = error.response?.data?.detail || error.message;
+      setGenerationError('Ошибка генерации техкарты: ' + errorMessage);
+      setGenerationStatus('error');
+      alert('Ошибка генерации техкарты: ' + errorMessage);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Subscription states
   const [subscriptionPlans, setSubscriptionPlans] = useState({});
   const [userSubscription, setUserSubscription] = useState(null);
