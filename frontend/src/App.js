@@ -10208,27 +10208,35 @@ function App() {
             {/* AI Functions Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
-              {/* 1. Лаборатория */}
-              <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 hover:border-cyan-300/50 transition-all duration-300 cursor-pointer group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform"></div>
+              {/* 1. Лаборатория с V1 Рецептами */}
+              <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 hover:border-cyan-300/50 transition-all duration-300 group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🧪</div>
                 <h3 className="text-xl font-bold text-cyan-300 mb-3">Лаборатория</h3>
                 <p className="text-gray-300 text-sm mb-4">
-                  Создавайте экспериментальные блюда с неожиданными сочетаниями ингредиентов + изображение от AI
+                  Создавайте красивые рецепты V1 для экспериментов и проводите кулинарные эксперименты с AI
                 </p>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-cyan-400 text-xs font-semibold">⚗️ Эксперименты</span>
-                  <span className="text-cyan-300 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-cyan-400 text-xs font-semibold">🍳 Рецепты V1</span>
+                  <span className="text-cyan-400 text-xs">⚗️ Эксперименты</span>
                 </div>
-                <button
-                  onClick={conductExperiment}
-                  disabled={isExperimenting || !tcV2}
-                  className={`w-full ${
-                    isExperimenting || !tcV2 
-                      ? 'bg-gray-600 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
-                  } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                
+                {/* V1 Recipe Creation Button */}
+                <button 
+                  onClick={() => generateRecipeV1()}
+                  disabled={isGenerating}
+                  className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105 text-sm mb-3 shadow-lg shadow-pink-500/25`}
+                  title="🍳 СОЗДАТЬ РЕЦЕПТ V1: Генерирует красивый подробный рецепт с пошаговыми инструкциями - идеально для экспериментов и обучения"
                 >
-                  {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : 'ЗАПУСТИТЬ'}
+                  🍳 СОЗДАТЬ РЕЦЕПТ V1
+                </button>
+                
+                {/* Laboratory Experiment Button */}
+                <button 
+                  onClick={() => conductExperiment()}
+                  disabled={isGenerating || isExperimenting}
+                  className={`w-full ${(isGenerating || isExperimenting) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
+                >
+                  {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 Провести эксперимент'}
                 </button>
               </div>
 
