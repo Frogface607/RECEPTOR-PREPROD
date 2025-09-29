@@ -10442,8 +10442,10 @@ function App() {
         )}
 
         {/* Personal Cabinet View - Only for authenticated users */}
-        {currentView === 'personal-cabinet' && currentUser && currentUser.id !== 'demo_user' && (
-          <div className="space-y-8">
+        {currentView === 'personal-cabinet' && (
+          <>
+            {currentUser && currentUser.id !== 'demo_user' ? (
+              <div className="space-y-8">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/30 rounded-xl p-6 sm:p-8">
               <div className="flex items-center justify-between">
