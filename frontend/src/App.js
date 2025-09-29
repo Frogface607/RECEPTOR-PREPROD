@@ -10614,7 +10614,8 @@ function App() {
                   <div className="border-t border-purple-400/30 pt-4 sm:pt-6">
                     <h3 className="text-base sm:text-lg font-bold text-purple-300 mb-3 sm:mb-4">PRO ФУНКЦИИ</h3>
                     
-                    {/* Venue Profile Button */}
+                    {/* Venue Profile and Price Management moved to Personal Cabinet */}
+                    {/* 
                     <button
                       onClick={() => setShowVenueProfileModal(true)}
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all transform hover:scale-105 mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px] shadow-lg"
@@ -10622,18 +10623,22 @@ function App() {
                     >
                       🏪 МОЕ ЗАВЕДЕНИЕ
                     </button>
+                    */}
+                    
+                    {/* Show venue info if configured */}
                     {venueProfile.venue_type && (
                       <div className="text-xs sm:text-sm text-purple-300 text-center mb-3 sm:mb-4 p-2 bg-purple-900/20 rounded">
-                        {venueTypes[venueProfile.venue_type]?.name} • {venueProfile.cuisine_focus?.map(c => cuisineTypes[c]?.name).join(', ')} • {venueProfile.average_check}₽
+                        📍 {venueTypes[venueProfile.venue_type]?.name} • {venueProfile.cuisine_focus?.map(c => cuisineTypes[c]?.name).join(', ')} • {venueProfile.average_check}₽
                       </div>
                     )}
                     {userEquipment.length > 0 && (
                       <div className="text-xs sm:text-sm text-purple-400 text-center mb-3 sm:mb-4">
-                        Выбрано {userEquipment.length} единиц оборудования
+                        🔧 Выбрано {userEquipment.length} единиц оборудования
                       </div>
                     )}
                     
-                    {/* Price Management Button */}
+                    {/* Price Management moved to Personal Cabinet */}
+                    {/* 
                     <button
                       onClick={() => setShowPriceModal(true)}
                       className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-colors mb-3 sm:mb-4 text-sm sm:text-base min-h-[48px]"
@@ -10641,9 +10646,10 @@ function App() {
                     >
                       УПРАВЛЕНИЕ ПРАЙСАМИ
                     </button>
+                    */}
                     {userPrices.length > 0 && (
                       <div className="text-xs sm:text-sm text-green-400 text-center mb-3 sm:mb-4">
-                        Загружено {userPrices.length} позиций
+                        💰 Загружено {userPrices.length} позиций
                       </div>
                     )}
                     <div className="text-xs sm:text-sm text-green-400 text-center mb-3 sm:mb-4 p-2 bg-green-900/20 rounded">
