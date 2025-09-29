@@ -11374,26 +11374,38 @@ function App() {
                 {/* CLEANUP TECH CARD DATA & UI: Убираем отображение проблем генерации */}
                 
                 <div className="prose prose-invert max-w-none">
-                  {FORCE_TECHCARD_V2 ? (
-                    tcV2 ? renderTechCardV2(tcV2) : (
-                      <div className="text-center py-12 text-gray-400 space-y-4">
-                        <div className="text-6xl">🔧</div>
+                  {/* Support both V1 Recipes/Tech Cards and V2 Tech Cards */}
+                  {tcV2 ? (
+                    renderTechCardV2(tcV2)
+                  ) : techCard ? (
+                    <div className="bg-gradient-to-r from-pink-900/20 to-rose-900/20 border border-pink-400/30 rounded-xl p-4 mb-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-pink-300 text-2xl">🍳</span>
                         <div>
-                          <p className="text-xl font-bold text-purple-300">TechCard v2 Required</p>
-                          <p className="text-lg">Создайте техкарту для просмотра данных V2</p>
-                          <div className="mt-4 bg-purple-900/20 rounded-lg p-4 max-w-md mx-auto">
-                            <p className="text-sm">
-                              <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">
-                                FORCE_TECHCARD_V2=true
-                              </span>
-                              Только современный формат TechCard v2
-                            </p>
+                          <h3 className="text-pink-300 font-bold">Рецепт V1</h3>
+                          <p className="text-pink-400/70 text-sm">Красивый рецепт для экспериментов и обучения</p>
+                        </div>
+                      </div>
+                      {formatTechCard(techCard)}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-400 space-y-4">
+                      <div className="text-6xl">📝</div>
+                      <div>
+                        <p className="text-xl font-bold text-purple-300">ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ</p>
+                        <p className="text-lg">После создания техкарты или рецепта</p>
+                        <div className="flex gap-4 justify-center mt-6">
+                          <div className="bg-purple-900/20 rounded-lg p-3">
+                            <div className="text-purple-300 font-medium">🔧 Техкарты V2</div>
+                            <div className="text-purple-400/70 text-sm">Для бизнеса и IIKO</div>
+                          </div>
+                          <div className="bg-pink-900/20 rounded-lg p-3">
+                            <div className="text-pink-300 font-medium">🍳 Рецепты V1</div>
+                            <div className="text-pink-400/70 text-sm">Для экспериментов</div>
                           </div>
                         </div>
                       </div>
-                    )
-                  ) : (
-                    tcV2 ? renderTechCardV2(tcV2) : formatTechCard(techCard)
+                    </div>
                   )}
                 </div>
                 
