@@ -1363,9 +1363,26 @@ function App() {
     }
   }, [typingIndex, fullText]);
 
+  // Load venue profile for smart tech card generation
+  const loadVenueProfile = async () => {
+    try {
+      const userId = currentUser?.id || 'demo_user';
+      const response = await axios.get(`${API}/v1/venue/profile?user_id=${userId}`);
+      if (response.data) {
+        setVenueProfile(response.data);
+        console.log('📍 Venue profile loaded:', response.data);
+      }
+    } catch (error) {
+      console.log('ℹ️ No venue profile found, using defaults');
+      // Set empty profile - form will work without it
+      setVenueProfile({});
+    }
+  };
+
   // Load iiko RMS status on component mount (IK-02B-FE/01)
   useEffect(() => {
     checkIikoRmsStatus();
+    loadVenueProfile();
     
     // 🚀 УЛУЧШЕНИЕ: Автоматическое восстановление подключения через бэкенд
     const tryAutoConnect = async () => {
