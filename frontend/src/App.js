@@ -1328,7 +1328,8 @@ function App() {
   const [recognition, setRecognition] = useState(null);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
-  // Simple tech card generation states (reusing existing states)
+  // Simple tech card generation states
+  const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(null);
   const [generationError, setGenerationError] = useState(null);
   const [generationIssues, setGenerationIssues] = useState([]);
