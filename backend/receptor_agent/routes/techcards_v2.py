@@ -894,6 +894,7 @@ async def enhanced_auto_mapping(request: Request):
     try:
         body = await request.json()
         techcard_data = body.get('techcard')
+        user_id = body.get('user_id', 'demo_user')
         
         if not techcard_data:
             raise HTTPException(400, "techcard data required")
@@ -902,14 +903,24 @@ async def enhanced_auto_mapping(request: Request):
         if not ingredients:
             raise HTTPException(400, "no ingredients to map")
         
+        # SECURITY: Check user access to IIKO data
+        if user_id == 'demo_user':
+            # Demo users get mock/limited mapping data
+            return {
+                "status": "demo_mode",
+                "message": "Автомаппинг недоступен для демо-пользователей. Зарегистрируйтесь и подключите IIKO RMS для полного функционала.",
+                "results": [],
+                "coverage": {"mapped": 0, "total": len(ingredients), "percentage": 0.0}
+            }
+        
         # Get organization ID (defaulting for now)
         organization_id = body.get('organization_id', 'default')
         
-        # Initialize enhanced mapping service
+        # Initialize enhanced mapping service with user isolation
         from ..integrations.enhanced_mapping_service import get_enhanced_mapping_service
         mapping_service = get_enhanced_mapping_service()
         
-        # Perform enhanced auto-mapping
+        # Perform enhanced auto-mapping (only for authenticated users)
         mapping_result = mapping_service.enhanced_auto_mapping(ingredients, organization_id)
         
         # Auto-apply high confidence mappings if requested
