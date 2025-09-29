@@ -3003,13 +3003,12 @@ function App() {
   };
 
   const formatTechCard = (content) => {
-    // V1 fallback - only used when FORCE_TECHCARD_V2 is disabled
-    if (FORCE_TECHCARD_V2) {
+    // V1 Recipes and V1 Tech Cards support - always show them
+    // FORCE_TECHCARD_V2 only affects tech card GENERATION, not display
+    if (!content) {
       return (
-        <div className="text-center py-8 text-red-400">
-          <p className="text-lg">⚠️ V1 Tech Cards не поддерживаются</p>
-          <p className="text-sm">FORCE_TECHCARD_V2 включен - используется только TechCard v2</p>
-          <p className="text-xs mt-2">Сгенерируйте новую техкарту для получения данных V2</p>
+        <div className="text-center py-8 text-gray-400">
+          <p className="text-lg">🍳 Контент не найден</p>
         </div>
       );
     }
