@@ -10691,8 +10691,8 @@ function App() {
                     </label>
                     <div className="relative">
                       <textarea
-                        value={dishName}
-                        onChange={(e) => setDishName(e.target.value)}
+                        value={wizardData.dishName}
+                        onChange={(e) => updateWizardData(1, { dishName: e.target.value })}
                         placeholder="Опишите блюдо подробно. Например: Стейк из говядины с картофельным пюре и грибным соусом"
                         className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-purple-500 outline-none min-h-[120px] resize-none text-sm sm:text-base"
                         rows={5}
