@@ -445,15 +445,12 @@ class V1RecipeGenerationTester:
             db = self.mongo_client.get_database()
             recipes_v1_collection = db.recipes_v1
             
-            # Find recent recipes (last 10 minutes)
-            from datetime import datetime, timedelta
-            recent_time = datetime.now() - timedelta(minutes=10)
-            
-            # Try different query approaches
+            # Try different query approaches based on the actual V1 recipe structure
             queries = [
-                {"created_at": {"$gte": recent_time}},
-                {"meta.dish_name": TEST_RECIPE_DATA["dish_name"]},
-                {"dish_name": TEST_RECIPE_DATA["dish_name"]},
+                {"name": TEST_RECIPE_DATA["dish_name"]},  # Correct field name
+                {"cuisine": TEST_RECIPE_DATA["cuisine"]},
+                {"version": "v1"},
+                {"type": "recipe"},
                 {}  # Get any recent recipe
             ]
             
@@ -462,23 +459,26 @@ class V1RecipeGenerationTester:
             
             for i, query in enumerate(queries):
                 try:
-                    recipes = list(recipes_v1_collection.find(query).limit(5))
+                    recipes = list(recipes_v1_collection.find(query).sort('_id', -1).limit(5))
                     if recipes:
-                        found_recipe = recipes[0]  # Take the first one
+                        found_recipe = recipes[0]  # Take the most recent one
                         query_used = f"Query {i+1}: {query}"
                         break
                 except Exception as e:
                     continue
             
             if found_recipe:
-                recipe_id = found_recipe.get('_id') or found_recipe.get('meta', {}).get('id')
-                dish_name = (found_recipe.get('meta', {}).get('dish_name') or 
-                           found_recipe.get('dish_name') or 
-                           'Unknown')
+                recipe_id = found_recipe.get('id')  # Correct field for V1 recipes
+                dish_name = found_recipe.get('name', 'Unknown')
                 
-                # Check recipe content
-                recipe_content = found_recipe.get('recipe', '')
+                # Check recipe content (stored in 'content' field for V1)
+                recipe_content = found_recipe.get('content', '')
                 has_content = len(recipe_content) > 100 if recipe_content else False
+                
+                # Verify V1 structure
+                version = found_recipe.get('version')
+                recipe_type = found_recipe.get('type')
+                cuisine = found_recipe.get('cuisine')
                 
                 self.log_test(
                     "Find Saved Recipe in MongoDB",
@@ -487,16 +487,24 @@ class V1RecipeGenerationTester:
                     {
                         'recipe_id': recipe_id,
                         'dish_name': dish_name,
+                        'cuisine': cuisine,
+                        'version': version,
+                        'type': recipe_type,
                         'query_used': query_used,
                         'has_recipe_content': has_content,
-                        'recipe_length': len(recipe_content) if recipe_content else 0,
-                        'collection': 'recipes_v1'
+                        'content_length': len(recipe_content) if recipe_content else 0,
+                        'collection': 'recipes_v1',
+                        'content_preview': recipe_content[:100] + "..." if len(recipe_content) > 100 else recipe_content
                     }
                 )
                 return True
             else:
                 # Check if collection exists and has any documents
                 total_count = recipes_v1_collection.count_documents({})
+                
+                # Get sample document structure
+                sample_doc = recipes_v1_collection.find_one({})
+                sample_keys = list(sample_doc.keys()) if sample_doc else []
                 
                 self.log_test(
                     "Find Saved Recipe in MongoDB",
@@ -505,7 +513,8 @@ class V1RecipeGenerationTester:
                     {
                         'collection': 'recipes_v1',
                         'total_documents': total_count,
-                        'queries_tried': len(queries)
+                        'queries_tried': len(queries),
+                        'sample_document_keys': sample_keys
                     }
                 )
                 return False
