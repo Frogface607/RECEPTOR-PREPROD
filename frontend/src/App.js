@@ -16603,7 +16603,7 @@ function App() {
                       type="text"
                       value={iikoRmsCredentials.host}
                       onChange={(e) => setIikoRmsCredentials(prev => ({ ...prev, host: e.target.value }))}
-                      placeholder="edison-bar.iiko.it"
+                      placeholder="your-restaurant.iiko.it"
                       className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none"
                     />
                   </div>
