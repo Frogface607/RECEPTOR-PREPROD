@@ -10871,14 +10871,16 @@ function App() {
                       ✅ Загрузка Excel/CSV прайс-листов полностью готова!
                     </div>
                     
-                    {/* Personal Cabinet Button */}
-                    <button
-                      onClick={() => setCurrentView('personal-cabinet')}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all transform hover:scale-105 mb-4 text-sm sm:text-base min-h-[48px] shadow-lg"
-                      title="👤 Личный кабинет: Настройки профиля, подключение IIKO, управление прайсами"
-                    >
-                      👤 ЛИЧНЫЙ КАБИНЕТ
-                    </button>
+                    {/* Personal Cabinet Button - Only for authenticated users */}
+                    {currentUser && currentUser.id !== 'demo_user' && (
+                      <button
+                        onClick={() => setCurrentView('personal-cabinet')}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all transform hover:scale-105 mb-4 text-sm sm:text-base min-h-[48px] shadow-lg"
+                        title="👤 Личный кабинет: Настройки профиля, подключение IIKO, управление прайсами"
+                      >
+                        👤 ЛИЧНЫЙ КАБИНЕТ
+                      </button>
+                    )}
                     
                     {/* ПРО AI функции */}
                     <div className="border-t border-purple-400/20 pt-3 sm:pt-4">
