@@ -458,8 +458,7 @@ function App() {
       setGenerationError(null);
       setGenerationIssues([]);
       
-      // Set dishName from wizard data for compatibility
-      setDishName(wizardData.dishName);
+      // Using wizard data directly
       
       try {
         console.log('🚀 Generating tech card with wizard data:', wizardData);
