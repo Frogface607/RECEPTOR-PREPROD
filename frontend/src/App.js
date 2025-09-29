@@ -6432,6 +6432,56 @@ function App() {
   };
 
   // ПРО AI ФУНКЦИИ
+  const generateRecipeV1 = async () => {
+    // Generate V1 Recipe from dish name or existing tech card
+    const dishInput = wizardData.dishName || (tcV2?.name) || (techCard?.name);
+    if (!dishInput?.trim() || !currentUserOrDemo?.id) {
+      alert('Введите название блюда для создания рецепта V1');
+      return;
+    }
+    
+    setIsGenerating(true);
+    setLoadingType('recipe');
+    const progressInterval = simulateProgress('recipe', 15000);
+    
+    try {
+      console.log('🍳 Generating V1 Recipe for:', dishInput);
+      
+      const response = await axios.post(`${API}/v1/generate-recipe`, {
+        dish_name: dishInput.trim(),
+        cuisine: venueProfile?.cuisine || 'европейская',
+        restaurant_type: venueProfile?.venue_type || 'casual',
+        user_id: currentUserOrDemo.id
+      });
+      
+      // Clear any existing tech cards
+      setTechCard(response.data.recipe);
+      setTcV2(null); // Clear V2 card to show V1
+      
+      // Завершаем анимацию
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setLoadingMessage('🍳 Рецепт V1 готов!');
+      
+      setTimeout(() => {
+        setIsGenerating(false);
+        setLoadingProgress(0);
+        setLoadingMessage('');
+        setLoadingType('');
+        alert('✨ Красивый рецепт V1 создан! Теперь можно использовать AI функции для экспериментов.');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error generating V1 recipe:', error);
+      clearInterval(progressInterval);
+      setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка генерации рецепта V1: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const generateSalesScript = async () => {
     // Support both V1 and V2 tech cards
     const hasCard = techCard || tcV2;
@@ -6470,7 +6520,7 @@ function App() {
       setLoadingProgress(0);
       setLoadingMessage('');
       setLoadingType('');
-      alert('Ошибка при генерации скрипта продаж');
+      alert('Ошибка генерации скрипта продаж');
     }
   };
 
