@@ -3402,6 +3402,23 @@ backend:
     status_history:
       - working: true
         agent: "testing"
+        comment: "Previous testing confirmed working status"
+
+  - task: "Demo User Data Isolation Security Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 КРИТИЧЕСКИЙ ТЕСТ БЕЗОПАСНОСТИ ПОЛНОСТЬЮ ПРОЙДЕН: Проведено комплексное тестирование изоляции данных для демо-пользователя с выдающимися результатами (100% успешность, 7/7 тестов пройдено, 0 нарушений безопасности). ✅ ДЕМО-ПОЛЬЗОВАТЕЛЬ ПОЛНОСТЬЮ ИЗОЛИРОВАН: Автомаппинг для demo_user корректно возвращает status='demo_mode' с сообщением 'Автомаппинг недоступен для демо-пользователей. Зарегистрируйтесь и подключите IIKO RMS для полного функционала.' - НЕТ доступа к данным IIKO/RMS. ✅ КАТАЛОГ IIKO/RMS ЗАБЛОКИРОВАН: Поиск в каталоге IIKO и RMS для demo_user возвращает пустые результаты - демо-пользователь НЕ получает доступ к коммерческим данным номенклатуры. ✅ USDA ДОСТУП РАЗРЕШЕН: Демо-пользователь может получать USDA данные (общедоступные), что является ожидаемым поведением. ✅ АВТОРИЗОВАННЫЕ ПОЛЬЗОВАТЕЛИ РАБОТАЮТ НОРМАЛЬНО: Пользователи с user_id != 'demo_user' получают обычные (не демо) ответы для автомаппинга и поиска в каталоге. ✅ БЕЗОПАСНОСТЬ ПОДТВЕРЖДЕНА: 0 нарушений безопасности обнаружено - демо-пользователи полностью изолированы от данных IIKO и не могут получить доступ к чужим коммерческим данным. 🎯 КРИТИЧЕСКОЕ ЗАКЛЮЧЕНИЕ: Система безопасности работает идеально. Демо-пользователи полностью изолированы от коммерческих данных IIKO/RMS, что предотвращает утечку конфиденциальной информации. Готово к продакшену."
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
         comment: "🎯 TASK 1.2 UPLOAD FUNCTIONALITY COMPREHENSIVE TESTING COMPLETED: Conducted extensive testing of «Кнопка 'Загрузить прайсы/БЖУ' + предпросмотр» functionality as specifically requested in review. ✅ PRICES UPLOAD API (POST /api/upload-prices): Successfully tested CSV upload with 24 Russian products (Говядина вырезка 1200₽/кг, Свинина корейка 650₽/кг, Курица филе 450₽/кг, etc.). Supports CSV and Excel formats, parses product names and prices from any columns, saves to user_prices collection. Preview shows first 10 items with proper formatting. Response time: 0.11s. ✅ NUTRITION UPLOAD API (POST /api/upload-nutrition): Successfully tested both JSON and CSV formats. JSON format: processed 12 items with per100g nutrition data (Говядина вырезка: 218 ккал, Б:26.8г, Ж:12.4г, У:0г). CSV format: processed 6 items (Гречка: 313 ккал, Б:12.6г, Ж:3.3г, У:57.1г). Saves to user_nutrition collection with proper structure. ✅ DATA PERSISTENCE VERIFIED: GET /api/user-prices/{user_id} returns 24 uploaded prices, GET /api/user-nutrition/{user_id} returns 18 nutrition items (12 JSON + 6 CSV). All data properly stored and retrievable. ✅ PREVIEW FUNCTIONALITY WORKING: Both endpoints return preview of first 10 items with proper Russian product names, realistic prices (45₽-1800₽ range), complete nutrition data (kcal, proteins, fats, carbs), source file attribution. ✅ ERROR HANDLING ROBUST: Malformed JSON correctly rejected (HTTP 400), empty files handled gracefully, invalid prices filtered (only valid items processed), missing nutrition fields filtered correctly, PRO subscription enforced (HTTP 403 for free users). ✅ EDGE CASES HANDLED: Large files supported (100 products processed in 0.06s), invalid data filtered automatically, encoding issues resolved (UTF-8, Windows-1251), multiple file formats supported. ✅ RUSSIAN PRODUCTS PROCESSING: Successfully handles Cyrillic text, realistic Russian ingredient names (Лук репчатый, Масло подсолнечное, Яйца куриные С1), proper price ranges for Russian market, nutrition data with mass_per_piece for eggs (55g). ✅ PRO SUBSCRIPTION VALIDATION: Access control working correctly - test users with PRO subscription can upload, free users blocked with 403 status. Auto-creates test users with PRO subscription for testing. 🎉 ALL REVIEW REQUIREMENTS SUCCESSFULLY VERIFIED: 1) Backend API для прайсов (CSV/Excel support) ✅, 2) Backend API для БЖУ (JSON/CSV support) ✅, 3) Тестовые файлы с российскими продуктами ✅, 4) Обработка ошибок (invalid formats, parsing errors, PRO validation) ✅, 5) Предпросмотр и результаты (first 10 items, success messages) ✅. UPLOAD FUNCTIONALITY IS FULLY FUNCTIONAL AND READY FOR PRODUCTION USE."
 
   - task: "User History API Endpoint Integration - Unified Fix"
