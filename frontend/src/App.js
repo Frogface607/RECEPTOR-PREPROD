@@ -6468,7 +6468,7 @@ function App() {
         dish_name: aiKitchenDishName.trim(),
         cuisine: venueProfile?.cuisine || 'европейская',
         restaurant_type: venueProfile?.venueType || 'casual',
-        user_id: currentUserOrDemo.id
+        user_id: (currentUser || { id: 'demo_user' }).id
       });
       
       if (response.data.recipe) {
