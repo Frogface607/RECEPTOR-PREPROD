@@ -875,7 +875,7 @@ function App() {
       let errorMessage = 'Неизвестная ошибка при генерации рецепта';
       
       if (error.name === 'AbortError') {
-        errorMessage = 'Превышено время ожидания ответа сервера (30 сек). Попробуйте позже.';
+        errorMessage = 'Превышено время ожидания генерации рецепта (60 сек). Рецепты генерируются дольше техкарт - попробуйте позже.';
       } else if (error.message) {
         errorMessage = error.message;
       }
