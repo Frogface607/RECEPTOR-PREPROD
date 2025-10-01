@@ -10337,9 +10337,27 @@ function App() {
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-cyan-300 font-semibold text-sm">🍳 Рецепт V1</h4>
                       <button 
-                        onClick={() => {
-                          // Сохранить в историю
-                          alert('Функция сохранения в историю будет добавлена следующей!');
+                        onClick={async () => {
+                          try {
+                            // Сохраняем V1 рецепт в историю
+                            const response = await axios.post(`${API}/v1/user/save-recipe`, {
+                              recipe_content: aiKitchenRecipe.content,
+                              recipe_name: aiKitchenRecipe.name,
+                              recipe_type: 'v1',
+                              user_id: currentUserOrDemo.id
+                            });
+                            
+                            if (response.data.success) {
+                              alert('✅ Рецепт V1 сохранен в историю!');
+                              // Обновляем список пользовательских техкарт
+                              loadUserTechCards();
+                            } else {
+                              alert('❌ Ошибка сохранения: ' + (response.data.message || 'Неизвестная ошибка'));
+                            }
+                          } catch (error) {
+                            console.error('Error saving V1 recipe:', error);
+                            alert('❌ Ошибка сохранения рецепта: ' + (error.response?.data?.detail || error.message));
+                          }
                         }}
                         className="text-xs bg-green-600/20 text-green-300 border border-green-500/30 px-2 py-1 rounded hover:bg-green-600/30 transition-colors"
                       >
