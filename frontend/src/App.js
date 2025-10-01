@@ -2921,8 +2921,6 @@ function App() {
         </div>
       );
     }
-    
-    if (!content) return null;
 
     // Извлекаем основные секции с помощью regex
     const extractSection = (pattern) => {
