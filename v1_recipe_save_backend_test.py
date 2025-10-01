@@ -281,7 +281,7 @@ class V1RecipeSaveTester:
             
             if response.status_code == 200:
                 data = response.json()
-                recipes = data.get('recipes', []) if isinstance(data, dict) else []
+                recipes = data.get('history', []) if isinstance(data, dict) else []
                 
                 # Find our specific recipe
                 target_recipe = None
