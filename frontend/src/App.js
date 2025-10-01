@@ -10298,15 +10298,29 @@ function App() {
                   <span className="text-cyan-400 text-xs">⚗️ Эксперименты</span>
                 </div>
                 
-                {/* V1 Recipe Creation Button */}
-                <button 
-                  onClick={() => generateRecipeV1()}
-                  disabled={isGenerating}
-                  className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105 text-sm mb-3 shadow-lg shadow-pink-500/25`}
-                  title="🧬 СОЗДАТЬ ТЕХКАРТУ: Генерирует профессиональную техническую карту с ингредиентами, процессом приготовления и экспортом в IIKO"
-                >
-                  🧬 СОЗДАТЬ ТЕХКАРТУ
-                </button>
+                {/* V1 Recipe Creation Form */}
+                <div className="space-y-3 mb-4">
+                  <input
+                    type="text"
+                    value={aiKitchenDishName}
+                    onChange={(e) => setAiKitchenDishName(e.target.value)}
+                    placeholder="Введите название блюда..."
+                    className="w-full bg-gray-800/50 border border-gray-600/50 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:border-cyan-400/50 focus:outline-none"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !isGenerating && aiKitchenDishName.trim()) {
+                        generateAiKitchenRecipe();
+                      }
+                    }}
+                  />
+                  <button 
+                    onClick={generateAiKitchenRecipe}
+                    disabled={isGenerating || !aiKitchenDishName.trim()}
+                    className={`w-full ${(isGenerating || !aiKitchenDishName.trim()) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105 text-sm mb-2 shadow-lg shadow-pink-500/25`}
+                    title="🍳 СОЗДАТЬ РЕЦЕПТ V1: Генерирует красивый подробный рецепт для экспериментов"
+                  >
+                    {isGenerating && loadingType === 'recipe' ? 'СОЗДАЮ РЕЦЕПТ...' : '🍳 СОЗДАТЬ РЕЦЕПТ V1'}
+                  </button>
+                </div>
                 
                 {/* Laboratory Experiment Button */}
                 <button 
