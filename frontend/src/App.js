@@ -841,12 +841,12 @@ function App() {
           name: wizardData.dishName.trim()
         };
         
-        // Сохраняем V1 рецепт - передаем только контент для совместимости
-        setTechCard(responseData.recipe);
-        
-        // Очищаем V2 состояние
+        // Очищаем V2 состояние СНАЧАЛА
         setTcV2(null);
         setCurrentIngredients([]);
+        
+        // Сохраняем V1 рецепт - передаем только контент для совместимости
+        setTechCard(responseData.recipe);
         
         setGenerationStatus('success');
         setGenerationIssues([]);
