@@ -185,7 +185,7 @@ class V1RecipeSaveTester:
                 data = response.json()
                 
                 # Look for our saved recipe in the history
-                recipes = data.get('recipes', []) if isinstance(data, dict) else []
+                recipes = data.get('history', []) if isinstance(data, dict) else []
                 
                 # Find our recipe by ID or name
                 found_recipe = None
