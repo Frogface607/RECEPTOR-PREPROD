@@ -740,7 +740,7 @@ function App() {
 
   const handleGenerateTechCard = async (e) => {
     e.preventDefault();
-    console.log('Generate button clicked');
+    console.log('Generate recipe button clicked');
     console.log('Dish name:', wizardData.dishName);
     console.log('Current user:', currentUser);
     
@@ -764,8 +764,8 @@ function App() {
     
     // Запускаем анимированную загрузку
     setIsGenerating(true);
-    setLoadingType('techcard');
-    const progressInterval = simulateProgress('techcard', 15000);
+    setLoadingType('recipe');
+    const progressInterval = simulateProgress('recipe', 15000);
     
     const requestStartTime = Date.now();
     
@@ -776,7 +776,7 @@ function App() {
     }, 30000); // 30 second timeout
     
     try {
-      const endpoint = `${API}/v1/techcards.v2/generate`;
+      const endpoint = `${API}/v1/generate-recipe`;
       
       if (isDebugMode) {
         console.log('[DEBUG] Starting request to:', endpoint);
