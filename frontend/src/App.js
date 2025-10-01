@@ -7428,6 +7428,11 @@ function App() {
     }
   };
 
+  // Simple alias for fetchUserHistory to maintain compatibility
+  const loadUserTechCards = () => {
+    fetchUserHistory();
+  };
+
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('receptor_user');
