@@ -845,23 +845,24 @@ function App() {
         setTcV2(null);
         setCurrentIngredients([]);
         
-        // Сохраняем V1 рецепт - передаем только контент для совместимости
-        setTechCard(responseData.recipe);
+        console.log('[V1] Recipe received, content length:', responseData.recipe?.length);
+        console.log('[V1] Recipe content preview:', responseData.recipe?.substring(0, 200));
+        
+        // Принудительно устанавливаем V1 рецепт
+        if (responseData.recipe && responseData.recipe.length > 0) {
+          setTechCard(responseData.recipe);
+          console.log('[V1] TechCard set with recipe content');
+        } else {
+          console.error('[V1] ERROR: Empty recipe content received');
+        }
         
         setGenerationStatus('success');
         setGenerationIssues([]);
         
         console.log('[V1] Generated Recipe V1 successfully');
         console.log('[V1] Recipe ID:', recipeV1.id);
-        console.log('[V1] Setting techCard with content length:', responseData.recipe?.length);
-        console.log('[V1] Recipe content preview:', responseData.recipe?.substring(0, 200));
         
         setLoadingMessage('✨ Рецепт готов!');
-        
-        // Дополнительная проверка для отладки
-        setTimeout(() => {
-          console.log('[V1] techCard state after 1 second:', techCard ? 'SET' : 'NOT SET');
-        }, 1000);
         
       } else {
         // Handle error cases
