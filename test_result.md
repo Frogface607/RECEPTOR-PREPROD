@@ -14,7 +14,7 @@
 # Main and testing agents must follow this exact format to maintain testing data. 
 # The testing data must be entered in yaml format Below is the data structure:
 # 
-## user_problem_statement: URGENT REGRESSION DIAGNOSIS: Критический анализ проблемы с извлечением артикулов из iiko - Пользователь сообщает, что раньше система правильно извлекала артикулы из его iiko, но теперь все техкарты генерируются с article=null и product_code=null. Это регрессия!
+## user_problem_statement: V1 Recipe Generation Timeout Fix Testing - Testing the fixed V1 recipe generation functionality after increasing timeout from 30 to 60 seconds, improving loading messages, extending progress bar to 45 seconds, and better AbortError handling.
 ## backend:
 ##   - task: "Task name"
 ##     implemented: true
