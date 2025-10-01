@@ -146,6 +146,18 @@
           agent: "testing"
           comment: "✅ NEW CENTRAL GENERATOR DESIGN FULLY OPERATIONAL - Beautiful purple-pink gradient design (from-purple-600/20 to-pink-600/20) with 🍳 emoji, large input field with correct placeholder 'Введите название блюда для создания рецепта...', beautiful '🍳 СОЗДАТЬ РЕЦЕПТ V1' button with gradient styling, proper description text 'Создайте красивый рецепт, а затем используйте AI-инструменты для его улучшения', 18 AI function cards in grid below, Laboratory section correctly updated without recipe creation forms, new UX workflow implemented (create recipe first, then enhance with AI tools), responsive design excellent with 31 gradient elements, generation workflow functional (tested with 'Суши' input), all visual and functional requirements met perfectly"
 
+  - task: "V1 Recipe Display Fix - currentUserOrDemo"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ CRITICAL DISPLAY ISSUE COMPLETELY RESOLVED - V1 recipe generation and display working perfectly after currentUserOrDemo fix. Successfully tested complete workflow: entered 'Чай' in central generator, clicked '🍳 СОЗДАТЬ РЕЦЕПТ V1' button, generation completed in 30.2 seconds without errors, recipe content (3144 characters) properly displays in central block, '💾 Сохранить в историю' and '✨ Создать новый' buttons visible and enabled. Console logs show proper execution ('🍳 [AI-Kitchen] V1 Recipe generated successfully'), no JavaScript errors detected, frontend display logic working correctly. The previous issue where backend generated recipes successfully but frontend failed to display them has been completely fixed."
+
 ## backend:
   - task: "V1 Recipe Generation API Endpoint"
     implemented: true
