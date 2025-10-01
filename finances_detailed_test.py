@@ -8,7 +8,7 @@ import json
 import time
 
 def test_finances_detailed():
-    base_url = "https://iiko-bridge.preview.emergentagent.com/api"
+    base_url = "https://ai-menu-wizard.preview.emergentagent.com/api"
     test_user_id = "test_user_12345"
     
     sample_tech_card = """**Название:** Паста Карбонара на 4 порции

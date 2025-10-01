@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com/api"
 
 def test_financial_analysis_detailed_output():
     """Test POST /api/analyze-finances for detailed practical recommendations"""

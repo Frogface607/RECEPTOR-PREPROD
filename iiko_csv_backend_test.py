@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com/api"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com/api"
 
 class IikoCsvExportTester:
     """Comprehensive tester for iiko CSV export functionality"""

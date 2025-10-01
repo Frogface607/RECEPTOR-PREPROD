@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 
 # Backend URL
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 TEST_USER_ID = "demo_user"
 

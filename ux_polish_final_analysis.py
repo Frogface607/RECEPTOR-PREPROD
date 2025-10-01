@@ -13,7 +13,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def analyze_current_export_system():

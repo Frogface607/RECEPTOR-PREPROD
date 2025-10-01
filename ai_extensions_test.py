@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
 
 def log_test(message):
     """Log test message with timestamp"""

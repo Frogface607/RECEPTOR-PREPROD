@@ -14,7 +14,7 @@ import httpx
 import openpyxl
 
 # Test Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://iiko-bridge.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://ai-menu-wizard.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1"
 
 async def analyze_dish_skeletons_issue():

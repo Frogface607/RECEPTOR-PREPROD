@@ -9,7 +9,7 @@ from datetime import datetime
 import uuid
 
 # Backend URL from supervisor configuration
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class CriticalBackendTester:

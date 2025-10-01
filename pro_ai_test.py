@@ -12,7 +12,7 @@ import json
 import time
 
 def test_pro_ai_functions():
-    base_url = "https://iiko-bridge.preview.emergentagent.com/api"
+    base_url = "https://ai-menu-wizard.preview.emergentagent.com/api"
     
     # First, register a PRO user for testing
     print("🔧 Setting up PRO user for testing...")

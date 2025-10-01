@@ -33,7 +33,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Backend URL from environment
-BACKEND_URL = "https://iiko-bridge.preview.emergentagent.com"
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test users
