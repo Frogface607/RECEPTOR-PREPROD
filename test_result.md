@@ -167,7 +167,7 @@
 
 ## test_plan:
   current_focus:
-    - "V1 Recipe Generation Complete Workflow"
+    - "V1 Recipe Save Endpoint Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
