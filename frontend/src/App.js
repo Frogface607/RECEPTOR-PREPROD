@@ -858,6 +858,11 @@ function App() {
         
         setLoadingMessage('✨ Рецепт готов!');
         
+        // Дополнительная проверка для отладки
+        setTimeout(() => {
+          console.log('[V1] techCard state after 1 second:', techCard ? 'SET' : 'NOT SET');
+        }, 1000);
+        
       } else {
         // Handle error cases
         const errorMsg = responseData.message || 'Неизвестная ошибка генерации рецепта';
