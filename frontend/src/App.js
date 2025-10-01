@@ -772,8 +772,8 @@ function App() {
     // Create AbortController for timeout handling
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => {
-      abortController.abort();
-    }, 30000); // 30 second timeout
+      abortController.abort('Recipe generation timeout - exceeded 60 seconds');
+    }, 60000); // 60 second timeout for V1 recipes
     
     try {
       const endpoint = `${API}/v1/generate-recipe`;
