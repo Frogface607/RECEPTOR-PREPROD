@@ -191,7 +191,7 @@
 
 ## test_plan:
   current_focus:
-    - "Central V1 Recipe Generator Design"
+    - "V1 Recipe Display Fix - currentUserOrDemo"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
