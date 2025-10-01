@@ -179,7 +179,7 @@
 
 ## test_plan:
   current_focus:
-    - "V1 Recipe Save Endpoint Testing"
+    - "Central V1 Recipe Generator Design"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
