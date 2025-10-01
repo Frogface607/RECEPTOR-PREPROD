@@ -744,7 +744,10 @@ function App() {
     console.log('Dish name:', wizardData.dishName);
     console.log('Current user:', currentUser);
     
-    // Clear previous status
+    // Clear ALL previous state (V1 and V2)
+    setTechCard(null);
+    setTcV2(null);
+    setCurrentIngredients([]);
     setGenerationStatus(null);
     setGenerationError(null);
     setGenerationIssues([]);
