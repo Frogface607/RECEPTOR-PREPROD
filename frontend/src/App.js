@@ -813,7 +813,7 @@ function App() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[V1] HTTP Error:', response.status, errorText);
+        console.error('[V2] HTTP Error:', response.status, errorText);
         throw new Error(`Ошибка сервера (${response.status}): ${errorText}`);
       }
       
