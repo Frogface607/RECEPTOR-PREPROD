@@ -2931,7 +2931,19 @@ function App() {
       );
     }
 
-    // Извлекаем основные секции с помощью regex
+    // Проверяем, это V1 рецепт (с эмодзи) или V2 техкарта
+    const isV1Recipe = content.includes('🎯') || content.includes('⏱️') || content.includes('👥');
+    
+    if (isV1Recipe) {
+      // Для V1 рецептов просто отображаем как есть с базовым форматированием
+      return (
+        <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
+          {content}
+        </div>
+      );
+    }
+
+    // Для V2 техкарт используем старую логику парсинга
     const extractSection = (pattern) => {
       const match = content.match(pattern);
       return match ? match[1].trim() : '';
