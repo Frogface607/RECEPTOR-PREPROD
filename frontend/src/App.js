@@ -830,115 +830,34 @@ function App() {
       
       console.log('[V1] V1 Recipe response:', responseData);
       
-      if (normalizedData.status === 'success' && normalizedData.card) {
-        const techCardV2 = normalizedData.card;
-        setTcV2(techCardV2);
+      if (responseData.recipe) {
+        // V1 Recipe успешно сгенерирован
+        const recipeV1 = {
+          id: responseData.meta?.id || 'temp-id',
+          content: responseData.recipe,
+          version: 'v1',
+          type: 'recipe',
+          name: wizardData.dishName.trim()
+        };
         
-        // Set the current tech card ID from the generated tech card
-        if (techCardV2.meta && techCardV2.meta.id) {
-          setCurrentTechCardId(techCardV2.meta.id);
-          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
-        }
+        // Сохраняем V1 рецепт
+        setTechCard(recipeV1);
+        
+        // Очищаем V2 состояние
+        setTcV2(null);
+        setCurrentIngredients([]);
         
         setGenerationStatus('success');
-        setGenerationIssues(normalizedData.issues || []);
+        setGenerationIssues([]);
         
-        // Log success for debugging
-        console.log('[V2] Generated TechCard V2 successfully');
-        console.log('[V2] tcV2.version:', techCardV2.meta?.version);
-        console.log('[V2] tcV2.status:', normalizedData.status);
-        console.log('[V2] API endpoint used:', endpoint);
+        console.log('[V1] Generated Recipe V1 successfully');
+        console.log('[V1] Recipe ID:', recipeV1.id);
         
-        // Clear any previous V1 tech card state to avoid conflicts
-        setTechCard(null);
-        
-        // Parse ingredients from V2 format
-        const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
-          id: index + 1,
-          name: ing.name,
-          quantity: ing.netto_g.toString(),
-          unit: ing.unit,
-          unitPrice: '0', // Will be calculated from cost data
-          totalPrice: '0',
-          originalQuantity: ing.netto_g.toString(),
-          originalPrice: '0'
-        })) || [];
-        
-        setCurrentIngredients(parsedIngredients);
-        
-        setLoadingMessage('✨ Техкарта готова!');
-        
-      } else if (normalizedData.status === 'draft' && normalizedData.card) {
-        const techCardV2 = normalizedData.card;
-        setTcV2(techCardV2);
-        
-        // Set the current tech card ID from the generated tech card
-        if (techCardV2.meta && techCardV2.meta.id) {
-          setCurrentTechCardId(techCardV2.meta.id);
-          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
-        }
-        
-        setGenerationStatus('draft');
-        setGenerationIssues(normalizedData.issues || []);
-        
-        console.log('[V2] Generated draft tcV2 - validation issues found');
-        console.log('[V2] Issues:', normalizedData.issues);
-        
-        // Clear any previous V1 tech card state to avoid conflicts
-        setTechCard(null);
-        
-        // Parse ingredients for draft version too
-        const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
-          id: index + 1,
-          name: ing.name,
-          quantity: ing.netto_g.toString(),
-          unit: ing.unit,
-          unitPrice: '0',
-          totalPrice: '0',
-          originalQuantity: ing.netto_g.toString(),
-          originalPrice: '0'
-        })) || [];
-        
-        setCurrentIngredients(parsedIngredients);
-        
-        setLoadingMessage('⚠️ Техкарта создана (черновик)');
-        
-      } else if (normalizedData.status === 'READY' && normalizedData.card) {
-        // TC-001: Handle READY status as success  
-        const techCardV2 = normalizedData.card;
-        setTcV2(techCardV2);
-        
-        if (techCardV2.meta && techCardV2.meta.id) {
-          setCurrentTechCardId(techCardV2.meta.id);
-          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
-        }
-        
-        setGenerationStatus('success'); // Treat READY as success
-        setGenerationIssues(normalizedData.issues || []);
-        
-        console.log('[V2] Generated TechCard V2 with READY status');
-        
-        // Clear any previous V1 tech card state to avoid conflicts
-        setTechCard(null);
-        
-        const parsedIngredients = techCardV2.ingredients?.map((ing, index) => ({
-          id: index + 1,
-          name: ing.name,
-          quantity: ing.netto_g.toString(),
-          unit: ing.unit,
-          unitPrice: '0',
-          totalPrice: '0',
-          originalQuantity: ing.netto_g.toString(),
-          originalPrice: '0'
-        })) || [];
-        
-        setCurrentIngredients(parsedIngredients);
-        
-        setLoadingMessage('✨ Техкарта готова!');
+        setLoadingMessage('✨ Рецепт готов!');
         
       } else {
         // Handle error cases
-        const errorMsg = normalizedData.message || 'Неизвестная ошибка генерации';
+        const errorMsg = responseData.message || 'Неизвестная ошибка генерации рецепта';
         throw new Error(errorMsg);
       }
       
