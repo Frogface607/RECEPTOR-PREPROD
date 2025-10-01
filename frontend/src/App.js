@@ -10425,45 +10425,7 @@ function App() {
                   {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 Провести эксперимент'}
                 </button>
                 
-                {/* AI Kitchen Recipe Display */}
-                {aiKitchenRecipe && (
-                  <div className="mt-4 p-4 bg-gray-800/30 border border-cyan-400/30 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-cyan-300 font-semibold text-sm">🍳 Рецепт V1</h4>
-                      <button 
-                        onClick={async () => {
-                          try {
-                            // Сохраняем V1 рецепт в историю
-                            const response = await axios.post(`${API}/v1/user/save-recipe`, {
-                              recipe_content: aiKitchenRecipe.content,
-                              recipe_name: aiKitchenRecipe.name,
-                              recipe_type: 'v1',
-                              user_id: currentUserOrDemo.id
-                            });
-                            
-                            if (response.data.success) {
-                              alert('✅ Рецепт V1 сохранен в историю!');
-                              // Обновляем список пользовательских техкарт
-                              loadUserTechCards();
-                            } else {
-                              alert('❌ Ошибка сохранения: ' + (response.data.message || 'Неизвестная ошибка'));
-                            }
-                          } catch (error) {
-                            console.error('Error saving V1 recipe:', error);
-                            alert('❌ Ошибка сохранения рецепта: ' + (error.response?.data?.detail || error.message));
-                          }
-                        }}
-                        className="text-xs bg-green-600/20 text-green-300 border border-green-500/30 px-2 py-1 rounded hover:bg-green-600/30 transition-colors"
-                      >
-                        💾 Сохранить
-                      </button>
-                    </div>
-                    <div className="text-xs text-gray-400 mb-2">{aiKitchenRecipe.name}</div>
-                    <div className="max-h-40 overflow-y-auto text-xs text-gray-300 whitespace-pre-wrap">
-                      {aiKitchenRecipe.content}
-                    </div>
-                  </div>
-                )}
+                {/* Раздел экспериментов - теперь без генерации рецептов */}
               </div>
 
               {/* 2. Вдохновение */}
