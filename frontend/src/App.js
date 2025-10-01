@@ -10290,6 +10290,117 @@ function App() {
               </div>
             </div>
 
+            {/* Central V1 Recipe Generator */}
+            <div className="mb-8">
+              <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-2xl p-6 sm:p-8">
+                <div className="text-center mb-6">
+                  <div className="text-5xl mb-4">🍳</div>
+                  <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
+                    Генератор Рецептов V1
+                  </h3>
+                  <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+                    Создайте красивый рецепт, а затем используйте AI-инструменты для его улучшения
+                  </p>
+                </div>
+                
+                {!aiKitchenRecipe ? (
+                  /* Recipe Creation Form */
+                  <div className="max-w-2xl mx-auto space-y-4">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={aiKitchenDishName}
+                        onChange={(e) => setAiKitchenDishName(e.target.value)}
+                        placeholder="Введите название блюда для создания рецепта..."
+                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-xl px-6 py-4 text-lg text-white placeholder-gray-400 focus:border-purple-400/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && !isGenerating && aiKitchenDishName.trim()) {
+                            generateAiKitchenRecipe();
+                          }
+                        }}
+                      />
+                    </div>
+                    <button 
+                      onClick={generateAiKitchenRecipe}
+                      disabled={isGenerating || !aiKitchenDishName.trim()}
+                      className={`w-full ${(isGenerating || !aiKitchenDishName.trim()) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'} text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 text-lg shadow-2xl shadow-purple-500/25`}
+                      title="🍳 СОЗДАТЬ РЕЦЕПТ V1: Генерирует красивый подробный рецепт для экспериментов"
+                    >
+                      {isGenerating && loadingType === 'recipe' ? 
+                        <span className="flex items-center justify-center">
+                          <span className="animate-spin mr-3">⚡</span>
+                          СОЗДАЮ РЕЦЕПТ...
+                        </span>
+                        : '🍳 СОЗДАТЬ РЕЦЕПТ V1'
+                      }
+                    </button>
+                  </div>
+                ) : (
+                  /* Generated Recipe Display */
+                  <div className="max-w-4xl mx-auto">
+                    <div className="bg-gray-800/30 border border-purple-400/30 rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-purple-300 font-bold text-xl flex items-center">
+                          🍳 <span className="ml-2">{aiKitchenRecipe.name}</span>
+                        </h4>
+                        <div className="flex space-x-3">
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const response = await axios.post(`${API}/v1/user/save-recipe`, {
+                                  recipe_content: aiKitchenRecipe.content,
+                                  recipe_name: aiKitchenRecipe.name,
+                                  recipe_type: 'v1',
+                                  user_id: currentUserOrDemo.id
+                                });
+                                
+                                if (response.data.success) {
+                                  alert('✅ Рецепт V1 сохранен в историю!');
+                                  loadUserTechCards();
+                                } else {
+                                  alert('❌ Ошибка сохранения: ' + (response.data.message || 'Неизвестная ошибка'));
+                                }
+                              } catch (error) {
+                                console.error('Error saving V1 recipe:', error);
+                                alert('❌ Ошибка сохранения рецепта: ' + (error.response?.data?.detail || error.message));
+                              }
+                            }}
+                            className="bg-green-600/20 text-green-300 border border-green-500/30 px-4 py-2 rounded-lg hover:bg-green-600/30 transition-colors"
+                          >
+                            💾 Сохранить в историю
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setAiKitchenRecipe(null);
+                              setAiKitchenDishName('');
+                            }}
+                            className="bg-gray-600/20 text-gray-300 border border-gray-500/30 px-4 py-2 rounded-lg hover:bg-gray-600/30 transition-colors"
+                          >
+                            ✨ Создать новый
+                          </button>
+                        </div>
+                      </div>
+                      <div className="max-h-80 overflow-y-auto text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
+                        {aiKitchenRecipe.content}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6 text-center">
+                      <p className="text-purple-300 text-lg font-medium mb-2">
+                        🎯 Теперь используйте AI-инструменты ниже для улучшения рецепта
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-2 text-sm">
+                        <span className="bg-cyan-600 px-3 py-1 rounded-full text-white">🧪 Эксперименты</span>
+                        <span className="bg-orange-600 px-3 py-1 rounded-full text-white">💡 Вдохновение</span>
+                        <span className="bg-blue-600 px-3 py-1 rounded-full text-white">🍷 Фудпейринг</span>
+                        <span className="bg-green-600 px-3 py-1 rounded-full text-white">📸 Фото</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* AI Functions Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
