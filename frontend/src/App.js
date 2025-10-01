@@ -7398,12 +7398,12 @@ function App() {
   };
 
   const fetchUserHistory = async () => {
-    if (!currentUser?.id) {
+    if (!currentUserOrDemo?.id) {
       return;
     }
     
     try {
-      const response = await axios.get(`${API}/user-history/${currentUser.id}`);
+      const response = await axios.get(`${API}/user-history/${currentUserOrDemo.id}`);
       setUserHistory(response.data.history || []);
       
       // Update dashboard stats
