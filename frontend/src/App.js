@@ -11296,6 +11296,8 @@ function App() {
                     <div className="bg-yellow-900/20 border border-yellow-600 p-2 mb-4 text-xs">
                       <p>DEBUG: tcV2 = {tcV2 ? 'YES' : 'NO'}, techCard = {techCard ? 'YES' : 'NO'}</p>
                       <p>TechCard length: {techCard?.length || 0}</p>
+                      <p>TechCard type: {typeof techCard}</p>
+                      <p>Preview: {techCard ? techCard.substring(0, 50) + '...' : 'null'}</p>
                     </div>
                   )}
                   
