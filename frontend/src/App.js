@@ -7421,7 +7421,7 @@ function App() {
       setDashboardStats({
         totalTechCards,
         totalMenus,
-        tokensUsed: currentUserOrDemo.monthly_tech_cards_used || 0,
+        tokensUsed: userToFetch.monthly_tech_cards_used || 0,
         thisMonthCards
       });
     } catch (error) {
