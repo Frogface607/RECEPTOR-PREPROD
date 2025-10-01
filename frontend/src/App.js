@@ -822,24 +822,13 @@ function App() {
       }
       
       const requestDuration = Date.now() - requestStartTime;
-      console.log(`[V2] API request completed in ${requestDuration}ms`);
+      console.log(`[V1] API request completed in ${requestDuration}ms`);
       
       // Complete the animation quickly
       clearInterval(progressInterval);
       setLoadingProgress(100);
       
-      // ТС-001: Normalize response structure (handle both formats)
-      const normalizedData = {
-        status: responseData.status || (responseData.card ? 'success' : 'error'),
-        card: responseData.card || responseData.techcard || responseData,
-        issues: responseData.issues || responseData.validation_issues || []
-      };
-      
-      console.log('[V2] Normalized data structure:', {
-        status: normalizedData.status,
-        hasCard: !!normalizedData.card,
-        issuesCount: normalizedData.issues?.length || 0
-      });
+      console.log('[V1] V1 Recipe response:', responseData);
       
       if (normalizedData.status === 'success' && normalizedData.card) {
         const techCardV2 = normalizedData.card;
