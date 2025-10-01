@@ -306,8 +306,8 @@ class V1RecipeSaveTester:
                         actual_value = target_recipe.get(field)
                         
                         if field == 'content':
-                            # For content, check if it contains the expected text
-                            is_valid = expected_value in str(actual_value)
+                            # For content, check exact match
+                            is_valid = actual_value == expected_value
                         else:
                             is_valid = actual_value == expected_value
                         
