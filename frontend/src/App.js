@@ -762,10 +762,11 @@ function App() {
       return;
     }
     
-    // Запускаем анимированную загрузку
+    // Запускаем анимированную загрузку для V1 рецепта (дольше чем техкарты)
     setIsGenerating(true);
     setLoadingType('recipe');
-    const progressInterval = simulateProgress('recipe', 15000);
+    setLoadingMessage('🍳 Создаем красивый рецепт... это займет больше времени');
+    const progressInterval = simulateProgress('recipe', 45000); // Дольше для V1
     
     const requestStartTime = Date.now();
     
