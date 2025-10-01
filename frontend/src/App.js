@@ -956,7 +956,7 @@ function App() {
       }
       
     } catch (error) {
-      console.error('[V1] Generation error:', error);
+      console.error('[V2] Generation error:', error);
       
       // Clear timeout if still active
       clearTimeout(timeoutId);
@@ -966,10 +966,10 @@ function App() {
       setLoadingProgress(100);
       
       // Handle different error types
-      let errorMessage = 'Неизвестная ошибка при генерации рецепта';
+      let errorMessage = 'Неизвестная ошибка при генерации техкарты';
       
       if (error.name === 'AbortError') {
-        errorMessage = 'Превышено время ожидания генерации рецепта (60 сек). Рецепты генерируются дольше техкарт - попробуйте позже.';
+        errorMessage = 'Превышено время ожидания ответа сервера (30 сек). Попробуйте позже.';
       } else if (error.message) {
         errorMessage = error.message;
       }
