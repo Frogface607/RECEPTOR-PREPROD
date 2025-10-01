@@ -776,7 +776,7 @@ function App() {
     }, 30000); // 30 second timeout
     
     try {
-      const endpoint = `${API}/v1/generate-recipe`;
+      const endpoint = `${API}/v1/techcards.v2/generate`;
       
       if (isDebugMode) {
         console.log('[DEBUG] Starting request to:', endpoint);
@@ -784,9 +784,11 @@ function App() {
       }
       
       const requestData = {
-        dish_name: wizardData.dishName.trim(),
+        name: wizardData.dishName.trim(),
         cuisine: venueProfile?.cuisine || "европейская", 
-        restaurant_type: venueProfile?.venueType || "casual",
+        equipment: userEquipment.length > 0 ? userEquipment : ["плита", "кастрюля"],
+        budget: venueProfile?.averageCheck ? parseFloat(venueProfile.averageCheck) : 300.0,
+        dietary: [],
         user_id: currentUserOrDemo?.id || 'demo_user'
       };
 
