@@ -784,11 +784,9 @@ function App() {
       }
       
       const requestData = {
-        name: wizardData.dishName.trim(),
+        dish_name: wizardData.dishName.trim(),
         cuisine: venueProfile?.cuisine || "европейская", 
-        equipment: userEquipment.length > 0 ? userEquipment : ["плита", "кастрюля"],
-        budget: venueProfile?.averageCheck ? parseFloat(venueProfile.averageCheck) : 300.0,
-        dietary: [],
+        restaurant_type: venueProfile?.venueType || "casual",
         user_id: currentUserOrDemo?.id || 'demo_user'
       };
 
