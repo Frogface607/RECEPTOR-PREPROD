@@ -6445,6 +6445,70 @@ function App() {
   };
 
   // ПРО AI ФУНКЦИИ
+  // AI Kitchen V1 Recipe Generation
+  const generateAiKitchenRecipe = async () => {
+    if (!aiKitchenDishName.trim()) {
+      alert('Введите название блюда для создания рецепта');
+      return;
+    }
+    
+    if (!currentUserOrDemo?.id) {
+      alert('Ошибка авторизации пользователя');
+      return;
+    }
+    
+    setIsGenerating(true);
+    setLoadingType('recipe');
+    const progressInterval = simulateProgress('recipe', 45000);
+    
+    try {
+      console.log('🍳 [AI-Kitchen] Generating V1 Recipe for:', aiKitchenDishName);
+      
+      const response = await axios.post(`${API}/v1/generate-recipe`, {
+        dish_name: aiKitchenDishName.trim(),
+        cuisine: venueProfile?.cuisine || 'европейская',
+        restaurant_type: venueProfile?.venueType || 'casual',
+        user_id: currentUserOrDemo.id
+      });
+      
+      if (response.data.recipe) {
+        // Сохраняем рецепт для AI-кухни
+        setAiKitchenRecipe({
+          content: response.data.recipe,
+          id: response.data.meta?.id || 'temp-id',
+          name: aiKitchenDishName.trim(),
+          created_at: new Date().toISOString()
+        });
+        
+        console.log('🍳 [AI-Kitchen] V1 Recipe generated successfully');
+        
+        // Завершаем анимацию
+        clearInterval(progressInterval);
+        setLoadingProgress(100);
+        setLoadingMessage('🍳 Рецепт готов для экспериментов!');
+        
+        setTimeout(() => {
+          setIsGenerating(false);
+          setLoadingProgress(0);
+          setLoadingMessage('');
+          setLoadingType('');
+        }, 2000);
+        
+      } else {
+        throw new Error('Пустой ответ от сервера');
+      }
+      
+    } catch (error) {
+      console.error('🍳 [AI-Kitchen] Error generating recipe:', error);
+      clearInterval(progressInterval);
+      setIsGenerating(false);
+      setLoadingProgress(0);
+      setLoadingMessage('');
+      setLoadingType('');
+      alert('Ошибка генерации рецепта: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const generateRecipeV1 = async () => {
     // Generate V1 Recipe from dish name or existing tech card
     const dishInput = wizardData.dishName || (tcV2?.name) || (techCard?.name);
