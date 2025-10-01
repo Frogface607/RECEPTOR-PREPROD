@@ -147,6 +147,18 @@
           agent: "testing"
           comment: "✅ Backend API endpoint /api/v1/generate-recipe fully operational - successfully processes requests, generates comprehensive recipes using GPT-4o, proper error handling, saves to MongoDB database, returns structured response with recipe content and metadata"
 
+  - task: "V1 Recipe Save API Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ V1 Recipe Save endpoint /api/v1/user/save-recipe fully operational - successfully saves V1 recipes with test data (recipe_content: 'Тестовый рецепт V1 с эмодзи 🍳', recipe_name: 'Тестовое блюдо V1', recipe_type: 'v1', user_id: 'demo_user'), returns proper response structure (success: true, id, message), persists to MongoDB tech_cards collection with correct fields (type: 'v1', is_recipe: true), recipes retrievable through user-history endpoint. All 5 test cases passed (100% success rate): endpoint availability ✅, recipe saving ✅, response structure ✅, MongoDB persistence ✅, field validation ✅. Ready for production use."
+
 ## metadata:
   created_by: "testing_agent"
   version: "1.1"
