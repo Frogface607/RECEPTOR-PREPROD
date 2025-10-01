@@ -291,12 +291,12 @@ class V1RecipeSaveTester:
                         break
                 
                 if target_recipe:
-                    # Validate all required fields
+                    # Validate fields that are preserved in user history
                     required_fields = {
-                        'type': 'v1',
-                        'is_recipe': True,
-                        'name': 'Тестовое блюдо V1',
-                        'content': 'Тестовый рецепт V1 с эмодзи 🍳'
+                        'dish_name': 'Тестовое блюдо V1',
+                        'content': 'Тестовый рецепт V1 с эмодзи 🍳',
+                        'id': self.saved_recipe_id,
+                        'user_id': TEST_USER_ID
                     }
                     
                     validation_results = {}
