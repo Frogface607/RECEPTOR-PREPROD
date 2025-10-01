@@ -290,13 +290,6 @@ class V1RecipeSaveTester:
                         target_recipe = recipe
                         break
                 
-                # Debug: print first few recipes if not found
-                if not target_recipe:
-                    print(f"   DEBUG: Looking for ID {self.saved_recipe_id}")
-                    print(f"   DEBUG: Found {len(recipes)} recipes")
-                    for i, recipe in enumerate(recipes[:3]):
-                        print(f"   DEBUG: Recipe {i+1}: ID={recipe.get('id')}, Name={recipe.get('dish_name')}")
-                
                 if target_recipe:
                     # Validate fields that are preserved in user history
                     required_fields = {
