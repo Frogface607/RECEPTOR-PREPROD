@@ -10235,9 +10235,9 @@ function App() {
                   onClick={() => generateRecipeV1()}
                   disabled={isGenerating}
                   className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105 text-sm mb-3 shadow-lg shadow-pink-500/25`}
-                  title="🍳 СОЗДАТЬ РЕЦЕПТ V1: Генерирует красивый подробный рецепт с пошаговыми инструкциями - идеально для экспериментов и обучения"
+                  title="🧬 СОЗДАТЬ ТЕХКАРТУ: Генерирует профессиональную техническую карту с ингредиентами, процессом приготовления и экспортом в IIKO"
                 >
-                  🍳 СОЗДАТЬ РЕЦЕПТ V1
+                  🧬 СОЗДАТЬ ТЕХКАРТУ
                 </button>
                 
                 {/* Laboratory Experiment Button */}
