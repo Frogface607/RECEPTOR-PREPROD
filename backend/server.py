@@ -7388,6 +7388,44 @@ async def save_tech_card(request: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка сохранения: {str(e)}")
 
+@app.post("/api/v1/user/save-recipe")
+async def save_v1_recipe(request: dict):
+    """Сохранение V1 рецепта в историю пользователя"""
+    user_id = request.get("user_id")
+    recipe_content = request.get("recipe_content")
+    recipe_name = request.get("recipe_name", "Рецепт V1")
+    recipe_type = request.get("recipe_type", "v1")
+    
+    if not user_id or not recipe_content:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    try:
+        # Create V1 recipe object
+        recipe = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "dish_name": recipe_name,
+            "content": recipe_content,
+            "type": recipe_type,  # 'v1' for recipes, 'v2' for tech cards
+            "version": "v1",
+            "is_recipe": True,  # Flag to distinguish from tech cards
+            "created_at": datetime.now(),
+            "city": "moscow"  # Default city
+        }
+        
+        # Save to the same collection as tech cards but with type distinction
+        await db.tech_cards.insert_one(recipe)
+        
+        return {
+            "success": True,
+            "id": recipe["id"],
+            "message": f"Рецепт V1 '{recipe_name}' сохранен в историю"
+        }
+        
+    except Exception as e:
+        print(f"Error saving V1 recipe: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка сохранения рецепта: {str(e)}")
+
 @app.post("/api/analyze-finances")
 async def analyze_finances(request: dict):
     """Анализ финансов блюда для PRO пользователей"""
