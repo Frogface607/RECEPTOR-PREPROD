@@ -34,7 +34,7 @@ from pymongo import MongoClient
 from typing import Dict, Any, List, Optional
 
 # Configuration
-API_BASE = os.environ.get('REACT_APP_BACKEND_URL', 'https://ai-menu-wizard.preview.emergentagent.com')
+API_BASE = 'http://localhost:8001'  # Use local backend for testing
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
 
 class V1RecipeEndpointTester:
