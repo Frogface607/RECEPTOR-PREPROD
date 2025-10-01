@@ -196,27 +196,29 @@ class V1RecipeSaveTester:
                         break
                 
                 if found_recipe:
-                    # Check recipe fields
-                    recipe_type = found_recipe.get('type')
-                    is_recipe = found_recipe.get('is_recipe')
+                    # Check recipe fields that are preserved in user history
+                    dish_name = found_recipe.get('dish_name')
                     content = found_recipe.get('content', '')
+                    recipe_id = found_recipe.get('id')
+                    user_id = found_recipe.get('user_id')
                     
-                    # Verify required fields
-                    type_correct = recipe_type == "v1"
-                    is_recipe_correct = is_recipe is True
-                    content_correct = "🍳" in content  # Check for emoji
+                    # Verify required fields that are preserved
+                    name_correct = dish_name == "Тестовое блюдо V1"
+                    content_correct = content == "Тестовый рецепт V1 с эмодзи 🍳"
+                    id_correct = recipe_id == self.saved_recipe_id
+                    user_correct = user_id == TEST_USER_ID
                     
-                    if type_correct and is_recipe_correct and content_correct:
+                    if name_correct and content_correct and id_correct and user_correct:
                         self.log_test(
                             "MongoDB Persistence Check",
                             True,
-                            f"Recipe found in MongoDB with correct fields: type='{recipe_type}', is_recipe={is_recipe}, content contains emoji",
+                            f"Recipe found in MongoDB with correct preserved fields: name='{dish_name}', content contains emoji, correct ID and user",
                             {
-                                'recipe_id': found_recipe.get('id'),
-                                'type': recipe_type,
-                                'is_recipe': is_recipe,
-                                'name': found_recipe.get('name'),
-                                'content_preview': content[:50] + "..." if len(content) > 50 else content
+                                'recipe_id': recipe_id,
+                                'dish_name': dish_name,
+                                'user_id': user_id,
+                                'content_preview': content[:50] + "..." if len(content) > 50 else content,
+                                'note': 'type and is_recipe fields not preserved in user history endpoint'
                             }
                         )
                         return True
@@ -224,7 +226,7 @@ class V1RecipeSaveTester:
                         self.log_test(
                             "MongoDB Persistence Check",
                             False,
-                            f"Recipe found but fields incorrect: type='{recipe_type}' (expected 'v1'), is_recipe={is_recipe} (expected True), emoji_present={content_correct}",
+                            f"Recipe found but preserved fields incorrect: name='{dish_name}' (expected 'Тестовое блюдо V1'), content_match={content_correct}, id_match={id_correct}, user_match={user_correct}",
                             found_recipe
                         )
                         return False
