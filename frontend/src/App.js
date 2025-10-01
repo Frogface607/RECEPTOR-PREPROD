@@ -740,14 +740,11 @@ function App() {
 
   const handleGenerateTechCard = async (e) => {
     e.preventDefault();
-    console.log('Generate recipe button clicked');
+    console.log('Generate button clicked');
     console.log('Dish name:', wizardData.dishName);
     console.log('Current user:', currentUser);
     
-    // Clear ALL previous state (V1 and V2)
-    setTechCard(null);
-    setTcV2(null);
-    setCurrentIngredients([]);
+    // Clear previous status
     setGenerationStatus(null);
     setGenerationError(null);
     setGenerationIssues([]);
