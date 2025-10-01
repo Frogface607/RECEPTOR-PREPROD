@@ -10330,6 +10330,28 @@ function App() {
                 >
                   {isExperimenting ? 'ЭКСПЕРИМЕНТИРУЮ...' : '🧪 Провести эксперимент'}
                 </button>
+                
+                {/* AI Kitchen Recipe Display */}
+                {aiKitchenRecipe && (
+                  <div className="mt-4 p-4 bg-gray-800/30 border border-cyan-400/30 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-cyan-300 font-semibold text-sm">🍳 Рецепт V1</h4>
+                      <button 
+                        onClick={() => {
+                          // Сохранить в историю
+                          alert('Функция сохранения в историю будет добавлена следующей!');
+                        }}
+                        className="text-xs bg-green-600/20 text-green-300 border border-green-500/30 px-2 py-1 rounded hover:bg-green-600/30 transition-colors"
+                      >
+                        💾 Сохранить
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-400 mb-2">{aiKitchenRecipe.name}</div>
+                    <div className="max-h-40 overflow-y-auto text-xs text-gray-300 whitespace-pre-wrap">
+                      {aiKitchenRecipe.content}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 2. Вдохновение */}
