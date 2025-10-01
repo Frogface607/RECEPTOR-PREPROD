@@ -382,7 +382,7 @@ class V1RecipeSaveTester:
                         # Look for our recipe in the response
                         items = []
                         if isinstance(data, dict):
-                            items = data.get('recipes', data.get('techcards', data.get('items', [])))
+                            items = data.get('history', data.get('recipes', data.get('techcards', data.get('items', []))))
                         elif isinstance(data, list):
                             items = data
                         
