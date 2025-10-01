@@ -11288,6 +11288,14 @@ function App() {
                 {/* CLEANUP TECH CARD DATA & UI: Убираем отображение проблем генерации */}
                 
                 <div className="prose prose-invert max-w-none">
+                  {/* DEBUG INFO */}
+                  {isDebugMode && (
+                    <div className="bg-yellow-900/20 border border-yellow-600 p-2 mb-4 text-xs">
+                      <p>DEBUG: tcV2 = {tcV2 ? 'YES' : 'NO'}, techCard = {techCard ? 'YES' : 'NO'}</p>
+                      <p>TechCard length: {techCard?.length || 0}</p>
+                    </div>
+                  )}
+                  
                   {/* Support both V1 Recipes/Tech Cards and V2 Tech Cards */}
                   {tcV2 ? (
                     renderTechCardV2(tcV2)
