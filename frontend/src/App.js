@@ -853,8 +853,13 @@ function App() {
         
         // Принудительно устанавливаем V1 рецепт
         if (responseData.recipe && responseData.recipe.length > 0) {
-          setTechCard(responseData.recipe);
-          console.log('[V1] TechCard set with recipe content');
+          // ТЕСТ: Устанавливаем простой тестовый контент чтобы проверить отображение
+          const testContent = "**Тестовый рецепт V1**\n\n🎯 **ОПИСАНИЕ**\nЭто тест отображения V1 рецепта\n\n⏱️ **ВРЕМЯ**\nТест: 5 минут";
+          setTechCard(testContent);
+          console.log('[V1] TechCard set with TEST content for debugging');
+          
+          // Также попробуем с реальным контентом
+          // setTechCard(responseData.recipe);
         } else {
           console.error('[V1] ERROR: Empty recipe content received');
         }
