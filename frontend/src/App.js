@@ -10351,7 +10351,7 @@ function App() {
                                   recipe_content: aiKitchenRecipe.content,
                                   recipe_name: aiKitchenRecipe.name,
                                   recipe_type: 'v1',
-                                  user_id: currentUserOrDemo.id
+                                  user_id: (currentUser || { id: 'demo_user' }).id
                                 });
                                 
                                 if (response.data.success) {
