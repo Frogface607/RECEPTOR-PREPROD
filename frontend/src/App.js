@@ -8842,10 +8842,11 @@ function App() {
 
   // Load user history when switching to techcards view
   useEffect(() => {
-    if (currentView === 'techcards' && currentUserOrDemo?.id) {
+    const userToCheck = currentUser || { id: 'demo_user' };
+    if (currentView === 'techcards' && userToCheck?.id) {
       fetchUserHistory();
     }
-  }, [currentView, currentUserOrDemo?.id]);
+  }, [currentView, currentUser?.id]);
 
   // Generate simple menu function - MOVED UP for better React binding
   const generateSimpleMenu = async () => {
