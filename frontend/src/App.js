@@ -840,8 +840,8 @@ function App() {
           name: wizardData.dishName.trim()
         };
         
-        // Сохраняем V1 рецепт
-        setTechCard(recipeV1);
+        // Сохраняем V1 рецепт - передаем только контент для совместимости
+        setTechCard(responseData.recipe);
         
         // Очищаем V2 состояние
         setTcV2(null);
