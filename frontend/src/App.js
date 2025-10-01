@@ -94,6 +94,10 @@ function App() {
   const [currentTechCardId, setCurrentTechCardId] = useState(null);
   const [ingredients, setIngredients] = useState([]);
 
+  // ===== AI-KITCHEN STATE =====
+  const [aiKitchenDishName, setAiKitchenDishName] = useState('');
+  const [aiKitchenRecipe, setAiKitchenRecipe] = useState(null);
+
   // ===== WIZARD STATE MANAGEMENT =====
   const [wizardStep, setWizardStep] = useState(1);
   const [wizardData, setWizardData] = useState({
