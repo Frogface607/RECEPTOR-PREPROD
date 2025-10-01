@@ -853,6 +853,8 @@ function App() {
         
         console.log('[V1] Generated Recipe V1 successfully');
         console.log('[V1] Recipe ID:', recipeV1.id);
+        console.log('[V1] Setting techCard with content length:', responseData.recipe?.length);
+        console.log('[V1] Recipe content preview:', responseData.recipe?.substring(0, 200));
         
         setLoadingMessage('✨ Рецепт готов!');
         
