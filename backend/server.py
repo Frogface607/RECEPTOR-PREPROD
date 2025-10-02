@@ -7556,6 +7556,169 @@ async def convert_recipe_to_techcard(request: dict):
         print(f"❌ Error in V1→V2 conversion: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка конвертации: {str(e)}")
 
+@app.post("/api/generate-food-pairing")
+async def generate_food_pairing(request: dict):
+    """AI Фудпейринг - подбор идеальных сочетаний для блюда"""
+    tech_card = request.get("tech_card")
+    user_id = request.get("user_id")
+    
+    if not tech_card or not user_id:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    try:
+        # Извлекаем название блюда
+        dish_name = "блюдо"
+        if isinstance(tech_card, dict):
+            dish_name = tech_card.get("meta", {}).get("title", "блюдо")
+            if not dish_name and tech_card.get("name"):
+                dish_name = tech_card.get("name")
+        
+        # Создаем промпт для фудпейринга
+        pairing_prompt = f"""
+Ты эксперт по фудпейрингу. Проанализируй блюдо "{dish_name}" и создай профессиональные рекомендации по сочетаниям.
+
+БЛЮДО: {dish_name}
+
+Создай подробные рекомендации в следующих категориях:
+
+🍷 **НАПИТКИ:**
+• Вина (указать сорта и причины сочетания)
+• Безалкогольные напитки
+• Коктейли (если подходят)
+
+🥗 **ГАРНИРЫ И ДОБАВКИ:**
+• Идеальные гарниры
+• Соусы и заправки
+• Травы и специи для усиления вкуса
+
+🧀 **ДОПОЛНИТЕЛЬНЫЕ ПРОДУКТЫ:**
+• Сыры (если подходят)
+• Орехи, семена
+• Фрукты или овощи для баланса
+
+💡 **ПРОФЕССИОНАЛЬНЫЕ СОВЕТЫ:**
+• Температурные контрасты
+• Текстурные сочетания
+• Сезонные рекомендации
+
+Дай конкретные и практичные советы для ресторана.
+"""
+
+        # Используем OpenAI для генерации фудпейринга
+        import openai
+        
+        openai_api_key = os.environ.get('OPENAI_API_KEY')
+        if not openai_api_key:
+            raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
+        
+        client = openai.OpenAI(api_key=openai_api_key)
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Ты мастер фудпейринга с опытом работы в мишленовских ресторанах. Создавай точные и вкусные сочетания."},
+                {"role": "user", "content": pairing_prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.7
+        )
+        
+        pairing_content = response.choices[0].message.content
+        
+        return {
+            "success": True,
+            "pairing": pairing_content,
+            "dish_name": dish_name,
+            "message": f"Фудпейринг для '{dish_name}' создан"
+        }
+        
+    except Exception as e:
+        print(f"Error generating food pairing: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка создания фудпейринга: {str(e)}")
+
+@app.post("/api/generate-inspiration")
+async def generate_inspiration(request: dict):
+    """AI Вдохновение - креативные твисты на блюда"""
+    tech_card = request.get("tech_card")
+    user_id = request.get("user_id")
+    inspiration_prompt = request.get("inspiration_prompt", "Создай креативный твист на это блюдо")
+    
+    if not tech_card or not user_id:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    try:
+        # Извлекаем название блюда
+        dish_name = "блюдо"
+        if isinstance(tech_card, dict):
+            dish_name = tech_card.get("meta", {}).get("title", "блюдо")
+            if not dish_name and tech_card.get("name"):
+                dish_name = tech_card.get("name")
+        
+        # Создаем промпт для творческого вдохновения
+        creativity_prompt = f"""
+Ты креативный шеф-повар с мировым опытом. Создай инновационные варианты блюда "{dish_name}".
+
+ИСХОДНОЕ БЛЮДО: {dish_name}
+
+{inspiration_prompt}
+
+Создай 3-4 креативных варианта:
+
+🌍 **FUSION-ВАРИАНТЫ:**
+• Азиатский твист
+• Средиземноморская интерпретация  
+• Скандинавский подход
+
+🎨 **СОВРЕМЕННЫЕ ТЕХНИКИ:**
+• Молекулярная гастрономия
+• Ферментация
+• Копчение или гриль
+
+🌱 **АЛЬТЕРНАТИВЫ:**
+• Веганская версия
+• Безглютеновый вариант
+• Кето-адаптация
+
+🎭 **ПРЕЗЕНТАЦИЯ:**
+• Необычная подача
+• Интерактивные элементы
+• Сезонное оформление
+
+Для каждого варианта опиши ключевые изменения и почему это будет вкусно.
+"""
+
+        # Используем OpenAI для генерации вдохновения
+        import openai
+        
+        openai_api_key = os.environ.get('OPENAI_API_KEY')
+        if not openai_api_key:
+            raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
+        
+        client = openai.OpenAI(api_key=openai_api_key)
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Ты новаторский шеф-повар, который создает революционные интерпретации классических блюд. Твои идеи всегда практичны и вкусны."},
+                {"role": "user", "content": creativity_prompt}
+            ],
+            max_tokens=1200,
+            temperature=0.8
+        )
+        
+        inspiration_content = response.choices[0].message.content
+        
+        return {
+            "success": True,
+            "inspiration": inspiration_content,
+            "dish_name": dish_name,
+            "message": f"Креативные идеи для '{dish_name}' созданы"
+        }
+        
+    except Exception as e:
+        print(f"Error generating inspiration: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка создания вдохновения: {str(e)}")
+
 @app.post("/api/analyze-finances")
 async def analyze_finances(request: dict):
     """Анализ финансов блюда для PRO пользователей"""
