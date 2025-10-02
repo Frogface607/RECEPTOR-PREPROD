@@ -6760,7 +6760,8 @@ function App() {
   const analyzeFinances = async () => {
     // Support both V1 and V2 tech cards and demo users
     const hasCard = techCard || tcV2;
-    if (!hasCard || !currentUserOrDemo?.id) return;
+    const userToUse = currentUser || { id: 'demo_user' };
+    if (!hasCard || !userToUse?.id) return;
     
     setIsAnalyzingFinances(true);
     setLoadingType('finances');
