@@ -292,9 +292,11 @@
 
 ## test_plan:
   current_focus:
+    - "AI Kitchen AI Tools Activation Testing"
     - "V2 Tech Card Generation API Endpoint"
     - "V1→V2 Recipe Converter API Endpoint - Fixed"
-  stuck_tasks: []
+  stuck_tasks:
+    - "AI Kitchen AI Tools Activation Testing"
   test_all: false
   test_priority: "high_first"
 
