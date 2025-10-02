@@ -7272,8 +7272,6 @@ async def generate_inspiration(request: dict):
     # Извлекаем название блюда из техкарты
     dish_name = "блюдо"
     if isinstance(tech_card, dict): dish_name = tech_card.get("name", "блюдо")
-    if title_match:
-        dish_name = title_match.group(1).strip()
     
     # Специальный промт для создания вдохновения
     prompt = f"""Ты - креативный шеф-повар высшего класса, который создает неожиданные но жизнеспособные твисты на классические блюда.
