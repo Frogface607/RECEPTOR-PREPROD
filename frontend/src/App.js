@@ -777,7 +777,7 @@ function App() {
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => {
       abortController.abort();
-    }, 30000); // 30 second timeout
+    }, 90000); // 90 second timeout for V2 techcards
     
     try {
       const endpoint = `${API}/v1/techcards.v2/generate`;
