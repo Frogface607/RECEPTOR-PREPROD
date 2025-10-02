@@ -7271,7 +7271,7 @@ async def generate_inspiration(request: dict):
     
     # Извлекаем название блюда из техкарты
     dish_name = "блюдо"
-    title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card)
+    if isinstance(tech_card, dict): dish_name = tech_card.get("name", "блюдо")
     if title_match:
         dish_name = title_match.group(1).strip()
     
