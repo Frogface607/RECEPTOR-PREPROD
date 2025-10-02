@@ -6871,8 +6871,8 @@ function App() {
   };
 
   const conductExperiment = async () => {
-    // Support both V1 and V2 tech cards and demo users
-    const hasCard = techCard || tcV2;
+    // Support V1 recipes, V1 tech cards, V2 tech cards, and AI Kitchen recipes
+    const hasCard = techCard || tcV2 || aiKitchenRecipe;
     if (!hasCard || !currentUserOrDemo?.id) return;
 
     setIsExperimenting(true);
