@@ -10155,7 +10155,7 @@ function App() {
                                   };
                                   
                                   setDishContext(fullDishContext);
-                                  setWizardData(prev => ({...prev, dishName: `${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}"`});
+                                  setWizardData(prev => ({...prev, dishName: `${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")}`}));
                                   
                                   setCurrentView('create');
                                 }}
