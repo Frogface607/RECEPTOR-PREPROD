@@ -6495,6 +6495,8 @@ function App() {
         cuisine: venueProfile?.cuisine || 'европейская',
         restaurant_type: venueProfile?.venueType || 'casual',
         user_id: (currentUser || { id: 'demo_user' }).id
+      }, {
+        timeout: 90000 // 90 seconds timeout
       });
       
       if (response.data.recipe) {
