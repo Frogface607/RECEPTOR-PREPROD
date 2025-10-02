@@ -26,51 +26,32 @@ API_BASE = f"{BACKEND_URL}/api"
 # Test user
 TEST_USER_ID = "demo_user"
 
-class AIEndpointTester:
+class AIEndpointsTester:
     def __init__(self):
-        self.results = {}
-        self.test_user_id = "test_user_ai_endpoints"
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'User-Agent': 'AI-Endpoints-Tester/1.0'
+        })
+        self.test_results = []
         
-    async def test_endpoint(self, client, endpoint_name, endpoint_path, payload):
-        """Test a single AI endpoint"""
-        url = f"{API_BASE}{endpoint_path}"
+    def log_test(self, test_name: str, success: bool, details: str, response_data: Any = None):
+        """Log test result"""
+        result = {
+            'test_name': test_name,
+            'success': success,
+            'details': details,
+            'timestamp': datetime.now().isoformat(),
+            'response_data': response_data
+        }
+        self.test_results.append(result)
         
-        try:
-            print(f"\n🔍 Testing {endpoint_name}: {endpoint_path}")
-            print(f"   URL: {url}")
-            print(f"   Payload: {json.dumps(payload, indent=2)}")
-            
-            response = await client.post(url, json=payload)
-            status = response.status_code
-            
-            try:
-                response_data = response.json()
-            except:
-                response_data = response.text
-            
-            print(f"   Status: {status}")
-            print(f"   Response: {str(response_data)[:200]}...")
-            
-            self.results[endpoint_name] = {
-                'endpoint': endpoint_path,
-                'url': url,
-                'status': status,
-                'response': response_data,
-                'payload_sent': payload
-            }
-            
-            return status, response_data
-                
-        except Exception as e:
-            print(f"   ERROR: {str(e)}")
-            self.results[endpoint_name] = {
-                'endpoint': endpoint_path,
-                'url': url,
-                'status': 'ERROR',
-                'response': str(e),
-                'payload_sent': payload
-            }
-            return 'ERROR', str(e)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}")
+        print(f"   {details}")
+        if not success and response_data:
+            print(f"   Response: {response_data}")
+        print()
     
     async def test_all_ai_endpoints(self):
         """Test all AI endpoints found in the backend"""
