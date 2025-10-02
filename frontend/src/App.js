@@ -6558,6 +6558,8 @@ function App() {
         cuisine: venueProfile?.cuisine || 'европейская',
         restaurant_type: venueProfile?.venue_type || 'casual',
         user_id: userToUse.id
+      }, {
+        timeout: 90000 // 90 seconds timeout
       });
       
       // Clear any existing tech cards
