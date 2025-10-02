@@ -10650,7 +10650,8 @@ function App() {
             {userHistory && userHistory.length > 0 ? (
               <div className="grid gap-4">
                 {userHistory.filter(item => !item.is_menu).map((techcard, index) => {
-                  const isV2 = techcard.techcard_v2_data || techcard.status === 'READY';
+                  const isV1Recipe = techcard.is_recipe === true || techcard.type === 'v1';
+                  const isV2 = !isV1Recipe && (techcard.techcard_v2_data || techcard.status === 'READY');
                   return (
                     <div 
                       key={techcard.id || index}
