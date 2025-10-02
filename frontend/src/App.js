@@ -8472,7 +8472,7 @@ function App() {
       
       recognitionInstance.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        setDishName(transcript);
+        setWizardData(prev => ({...prev, dishName: transcript}));
         setVoiceStatus('Распознано: ' + transcript);
         setTimeout(() => {
           setShowVoiceModal(false);
