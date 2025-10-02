@@ -10670,7 +10670,7 @@ function App() {
                             const parsedContent = JSON.parse(techcard.content);
                             setTcV2(parsedContent);
                             setTechCard(null); // Очищаем V1 техkарту
-                            setDishName(techcard.name || parsedContent?.meta?.title || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
+                            setWizardData(prev => ({...prev, dishName: techcard.name || parsedContent?.meta?.title || 'Блюдо из истории'}));
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
