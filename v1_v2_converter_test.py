@@ -86,8 +86,8 @@ class V1V2ConverterTester:
                     
                     if status == 'READY' and has_ingredients and has_process and has_meta:
                         card_id = card['meta']['id']
-                        ingredients_count = len(card['ingredients'])
-                        process_steps = len(card['process'])
+                        ingredients_count = len(card.get('ingredients', []))
+                        process_steps = len(card.get('process', []))
                         
                         # Check timeout requirement (≤90 seconds)
                         timeout_ok = duration <= 90
