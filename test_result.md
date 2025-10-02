@@ -158,6 +158,41 @@
           agent: "testing"
           comment: "✅ CRITICAL DISPLAY ISSUE COMPLETELY RESOLVED - V1 recipe generation and display working perfectly after currentUserOrDemo fix. Successfully tested complete workflow: entered 'Чай' in central generator, clicked '🍳 СОЗДАТЬ РЕЦЕПТ V1' button, generation completed in 30.2 seconds without errors, recipe content (3144 characters) properly displays in central block, '💾 Сохранить в историю' and '✨ Создать новый' buttons visible and enabled. Console logs show proper execution ('🍳 [AI-Kitchen] V1 Recipe generated successfully'), no JavaScript errors detected, frontend display logic working correctly. The previous issue where backend generated recipes successfully but frontend failed to display them has been completely fixed."
 
+  - task: "V1→V2 Recipe Converter Button and UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ V1→V2 converter button fully operational - 'Превратить в техкарту' button appears correctly next to other action buttons after V1 recipe generation, properly styled with orange gradient design, enabled and clickable, positioned appropriately in recipe action area"
+
+  - task: "V1→V2 Recipe Conversion Process"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Conversion process working perfectly - conversion initiates correctly when button clicked, console logs show proper workflow execution ('🔄 Converting V1 recipe to V2 techcard'), loading indicator displays 'Конвертируем...' text as expected, conversion completes within ~5 seconds, no JavaScript errors during process"
+
+  - task: "V2 Tech Card Display After Conversion"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ V2 tech card display working correctly - conversion successfully produces structured V2 format, found key V2 elements including 'ИНГРЕДИЕНТЫ:' section, 'приготовление' technology section, 'СЕБЕСТОИМОСТЬ' cost section, structured format confirmed with proper sectioning and professional layout. Minor: КБЖУ nutrition section not clearly visible but core functionality working"
 ## backend:
   - task: "V1 Recipe Generation API Endpoint"
     implemented: true
