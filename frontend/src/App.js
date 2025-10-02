@@ -10680,7 +10680,7 @@ function App() {
                               setTechCard(techcard.content);
                               setTcV2(null); // Очищаем V2 техkарту только если не принудительный V2 режим
                             }
-                            setDishName(techcard.name || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
+                            setWizardData(prev => ({...prev, dishName: techcard.name || 'Блюдо из истории'}));
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
