@@ -7428,7 +7428,7 @@ async def save_v1_recipe(request: dict):
 
 @app.post("/api/v1/convert-recipe-to-techcard")
 async def convert_recipe_to_techcard(request: dict):
-    """Конвертация V1 рецепта в V2 техкарту"""
+    """Настоящая конвертация V1 рецепта в полноценную V2 техкарту через pipeline"""
     user_id = request.get("user_id")
     recipe_content = request.get("recipe_content")
     recipe_name = request.get("recipe_name", "Техкарта из рецепта")
@@ -7437,147 +7437,126 @@ async def convert_recipe_to_techcard(request: dict):
         raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
     
     try:
-        # Создаем промпт для конвертации V1 рецепта в структурированную V2 техкарту
-        conversion_prompt = f"""
-ЗАДАЧА: Преобразовать творческий рецепт в профессиональную техническую карту для ресторана.
-
-ИСХОДНЫЙ РЕЦЕПТ V1:
-{recipe_content}
-
-ТРЕБОВАНИЯ К ТЕХНИЧЕСКОЙ КАРТЕ V2:
-1. Структурированный список ингредиентов с точными весами (в граммах)
-2. Пошаговая технология приготовления 
-3. Время приготовления и выход готового блюда
-4. КБЖУ на 100г готового продукта
-5. Себестоимость и технологические требования
-
-ФОРМАТ ОТВЕТА (строго придерживайся):
-
-**ТЕХНОЛОГИЧЕСКАЯ КАРТА**
-**Название:** {recipe_name}
-
-**ИНГРЕДИЕНТЫ:**
-• Продукт 1 — XXX г
-• Продукт 2 — XXX г
-[точные веса в граммах]
-
-**ТЕХНОЛОГИЯ ПРИГОТОВЛЕНИЯ:**
-1. Четкий пошаговый процесс
-2. Указание температур и времени
-3. Критические точки контроля
-
-**ВРЕМЯ ПРИГОТОВЛЕНИЯ:** XX минут
-**ВЫХОД:** XXX г готового блюда
-
-**КБЖУ на 100 г:**
-• Белки: XX г
-• Жиры: XX г  
-• Углеводы: XX г
-• Калории: XXX ккал
-
-**СЕБЕСТОИМОСТЬ:** примерно XXX ₽
-**КАТЕГОРИЯ:** [горячее/холодное/десерт/напиток]
-
-Преобразуй творческий рецепт в четкую техническую карту, сохранив суть блюда, но добавив профессиональную структуру.
-"""
-
-        # Используем OpenAI для конвертации
+        print(f"🔄 Converting V1 recipe to real V2 techcard: {recipe_name}")
+        
+        # ШАГ 1: Парсим V1 рецепт через LLM для извлечения данных
         import openai
         
-        # Get OpenAI API key
         openai_api_key = os.environ.get('OPENAI_API_KEY')
         if not openai_api_key:
             raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
         
         client = openai.OpenAI(api_key=openai_api_key)
         
-        response = client.chat.completions.create(
-            model="gpt-4o",  # Используем GPT-4o для качественной конвертации
+        parsing_prompt = f"""
+Проанализируй этот рецепт и извлеки ключевые данные для генерации профессиональной техкарты:
+
+РЕЦЕПТ V1:
+{recipe_content}
+
+ВЕРНИ JSON в точном формате:
+{{
+    "dish_name": "точное название блюда",
+    "cuisine": "тип кухни (европейская/азиатская/русская и т.д.)",
+    "category": "категория (горячее/холодное/десерт/салат/суп)",
+    "main_ingredients": ["основной ингредиент 1", "основной ингредиент 2", "основной ингредиент 3"],
+    "cooking_method": "способ приготовления (жарка/варка/тушение и т.д.)",
+    "estimated_time": число_минут,
+    "difficulty": "простое/среднее/сложное"
+}}
+
+Отвечай ТОЛЬКО JSON без дополнительного текста.
+"""
+
+        parse_response = client.chat.completions.create(
+            model="gpt-4o",
             messages=[
-                {"role": "system", "content": "Ты профессиональный технолог ресторана. Преобразуй творческий рецепт в техническую карту высочайшего качества."},
-                {"role": "user", "content": conversion_prompt}
+                {"role": "system", "content": "Ты эксперт по анализу рецептов. Возвращай только корректный JSON."},
+                {"role": "user", "content": parsing_prompt}
             ],
-            max_tokens=2000,
-            temperature=0.3  # Низкая температура для точности
+            max_tokens=500,
+            temperature=0.1
         )
         
-        converted_content = response.choices[0].message.content
-        
-        # Парсим базовые данные из конвертированного контента
+        # Парсим JSON ответ
+        import json
         try:
-            # Простое извлечение времени приготовления (если есть)
-            import re
-            time_match = re.search(r'(\d+)\s*мин', converted_content)
-            cook_time = int(time_match.group(1)) if time_match else 30
+            parsed_data = json.loads(parse_response.choices[0].message.content.strip())
+            print(f"✅ Parsed recipe data: {parsed_data}")
         except:
-            cook_time = 30
+            # Fallback если JSON не распарсился
+            parsed_data = {
+                "dish_name": recipe_name,
+                "cuisine": "европейская", 
+                "category": "горячее",
+                "main_ingredients": ["основной продукт"],
+                "cooking_method": "комбинированная обработка",
+                "estimated_time": 30,
+                "difficulty": "среднее"
+            }
+            print(f"⚠️ JSON parse failed, using fallback: {parsed_data}")
         
-        # Создаем полноценную V2 техкарту для правильного рендеринга
-        techcard_v2 = {
-            "meta": {
-                "id": str(uuid.uuid4()),
-                "version": "v2", 
-                "title": recipe_name,
+        # ШАГ 2: Вызываем НАСТОЯЩУЮ V2 генерацию через techcards_v2 pipeline
+        from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
+        
+        # Создаем профиль для V2 pipeline с данными из V1 рецепта
+        profile = ProfileInput(
+            name=parsed_data["dish_name"],
+            cuisine=parsed_data["cuisine"],
+            equipment=["плита", "кастрюля", "сковорода"],  # Базовое оборудование
+            budget=300.0,  # Средний бюджет
+            dietary=[],
+            user_id=user_id
+        )
+        
+        print(f"🚀 Running V2 pipeline with profile: {profile}")
+        
+        # Запускаем полноценный V2 pipeline
+        pipeline_result = run_pipeline(profile)
+        
+        if pipeline_result.status in ["success", "draft", "READY"] and pipeline_result.card:
+            print(f"✅ V2 pipeline succeeded with status: {pipeline_result.status}")
+            
+            # Получаем настоящую V2 техкарту
+            real_techcard_v2 = pipeline_result.card
+            
+            # Добавляем метку что это конвертация из V1
+            if hasattr(real_techcard_v2, 'meta'):
+                real_techcard_v2.meta['converted_from_v1'] = True
+                real_techcard_v2.meta['original_v1_recipe'] = recipe_content[:500]  # Сохраняем кусок оригинала
+            
+            # Сохраняем в базу как настоящую V2 техкарту
+            from pymongo import MongoClient
+            mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+            db_name = os.getenv('DB_NAME', 'receptor_pro')
+            
+            mongo_client = MongoClient(mongo_url)
+            db = mongo_client[db_name]
+            
+            await db.tech_cards.insert_one({
+                "id": real_techcard_v2.meta.id,
+                "user_id": user_id,
+                "name": parsed_data["dish_name"],
+                "techcard_v2_data": real_techcard_v2.dict() if hasattr(real_techcard_v2, 'dict') else real_techcard_v2,
                 "status": "READY",
-                "cuisine": "европейская"
-            },
-            "status": "READY",
-            "ingredients": [],  # Пустой массив - будет парситься из content
-            "process": [
-                {
-                    "step": 1,
-                    "description": f"Следуйте инструкциям в технической карте для {recipe_name}",
-                    "time_minutes": cook_time,
-                    "temperature": None
-                }
-            ],
-            "yield": {
-                "weight_g": 300,
-                "portions": 1,
-                "description": "Готовое блюдо"
-            },
-            "nutrition": {
-                "per_100g": {
-                    "calories": 250,
-                    "protein": 15,
-                    "fat": 12,
-                    "carbs": 20
-                }
-            },
-            "cost": {
-                "total_rub": 150,
-                "per_portion_rub": 150
-            },
-            "storage": {
-                "temp_celsius": 4,
-                "shelf_life_hours": 24
-            },
-            "content": converted_content,  # Полный контент от OpenAI
-            "converted_from_v1": True,    # Флаг конвертации
-            "created_at": datetime.now().isoformat(),
-            "user_id": user_id
-        }
-        
-        # Сохраняем конвертированную техкарту в базу
-        await db.tech_cards.insert_one({
-            "id": techcard_v2["meta"]["id"],
-            "user_id": user_id,
-            "name": recipe_name,
-            "content": converted_content,
-            "techcard_v2_data": techcard_v2,
-            "status": "READY",
-            "created_at": datetime.now(),
-            "converted_from_v1": True  # Метка конвертации
-        })
-        
-        return {
-            "success": True,
-            "techcard": techcard_v2,
-            "message": f"Рецепт '{recipe_name}' успешно преобразован в техкарту V2"
-        }
+                "created_at": datetime.now(),
+                "converted_from_v1": True,
+                "original_recipe_preview": recipe_content[:200]
+            })
+            
+            return {
+                "success": True,
+                "techcard": real_techcard_v2.dict() if hasattr(real_techcard_v2, 'dict') else real_techcard_v2,
+                "message": f"Рецепт '{parsed_data['dish_name']}' успешно преобразован в настоящую V2 техкарту"
+            }
+        else:
+            # Если V2 pipeline не сработал, падаем с ошибкой
+            error_msg = f"V2 pipeline failed with status: {pipeline_result.status}"
+            print(f"❌ {error_msg}")
+            raise HTTPException(status_code=500, detail=f"Ошибка V2 генерации: {error_msg}")
         
     except Exception as e:
-        print(f"Error converting V1 to V2: {e}")
+        print(f"❌ Error in V1→V2 conversion: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка конвертации: {str(e)}")
 
 @app.post("/api/analyze-finances")
