@@ -10074,12 +10074,6 @@ function App() {
                                     setDishContext(fullDishContext);
                                     setWizardData(prev => ({...prev, dishName: `${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")}`}));
                                     
-Категория: ${category.category_name}
-Описание: ${dish.description}
-Основные ингредиенты: ${(dish.main_ingredients || []).join(', ')}
-Ориентировочная себестоимость: ${dish.estimated_cost}₽
-Время готовки: ${dish.cook_time} мин
-Сложность: ${dish.difficulty}`);
                                     setCurrentView('create');
                                   }}
                                   className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 px-3 py-1 rounded-lg text-sm border border-emerald-600/30 transition-all"
