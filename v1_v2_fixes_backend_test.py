@@ -239,13 +239,16 @@ class V1V2FixesTester:
             if response.status_code == 200:
                 data = response.json()
                 
+                # The API returns data nested under 'techcard' key
+                techcard_data = data.get('techcard', {})
+                
                 # Check response structure as specified in review request
                 required_fields = ['ingredients', 'process', 'yield', 'nutrition', 'cost']
                 structure_checks = {}
                 
                 for field in required_fields:
-                    if field in data:
-                        field_data = data[field]
+                    if field in techcard_data:
+                        field_data = techcard_data[field]
                         if field in ['ingredients', 'process']:
                             # Should be arrays
                             structure_checks[field] = isinstance(field_data, list)
@@ -258,8 +261,8 @@ class V1V2FixesTester:
                 all_fields_valid = all(structure_checks.values())
                 
                 # Additional checks
-                ingredients_count = len(data.get('ingredients', [])) if isinstance(data.get('ingredients'), list) else 0
-                process_count = len(data.get('process', [])) if isinstance(data.get('process'), list) else 0
+                ingredients_count = len(techcard_data.get('ingredients', [])) if isinstance(techcard_data.get('ingredients'), list) else 0
+                process_count = len(techcard_data.get('process', [])) if isinstance(techcard_data.get('process'), list) else 0
                 
                 if all_fields_valid and ingredients_count > 0 and process_count > 0:
                     self.log_test(
