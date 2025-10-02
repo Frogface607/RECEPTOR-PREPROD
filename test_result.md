@@ -274,7 +274,8 @@
 
 ## test_plan:
   current_focus:
-    - "V1 Recipe Display Fix - currentUserOrDemo"
+    - "V2 Tech Card Generation API Endpoint"
+    - "V1→V2 Recipe Converter API Endpoint - Fixed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
