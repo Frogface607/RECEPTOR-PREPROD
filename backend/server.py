@@ -7426,6 +7426,119 @@ async def save_v1_recipe(request: dict):
         print(f"Error saving V1 recipe: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка сохранения рецепта: {str(e)}")
 
+@app.post("/api/v1/convert-recipe-to-techcard")
+async def convert_recipe_to_techcard(request: dict):
+    """Конвертация V1 рецепта в V2 техкарту"""
+    user_id = request.get("user_id")
+    recipe_content = request.get("recipe_content")
+    recipe_name = request.get("recipe_name", "Техкарта из рецепта")
+    
+    if not user_id or not recipe_content:
+        raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
+    
+    try:
+        # Создаем промпт для конвертации V1 рецепта в структурированную V2 техкарту
+        conversion_prompt = f"""
+ЗАДАЧА: Преобразовать творческий рецепт в профессиональную техническую карту для ресторана.
+
+ИСХОДНЫЙ РЕЦЕПТ V1:
+{recipe_content}
+
+ТРЕБОВАНИЯ К ТЕХНИЧЕСКОЙ КАРТЕ V2:
+1. Структурированный список ингредиентов с точными весами (в граммах)
+2. Пошаговая технология приготовления 
+3. Время приготовления и выход готового блюда
+4. КБЖУ на 100г готового продукта
+5. Себестоимость и технологические требования
+
+ФОРМАТ ОТВЕТА (строго придерживайся):
+
+**ТЕХНОЛОГИЧЕСКАЯ КАРТА**
+**Название:** {recipe_name}
+
+**ИНГРЕДИЕНТЫ:**
+• Продукт 1 — XXX г
+• Продукт 2 — XXX г
+[точные веса в граммах]
+
+**ТЕХНОЛОГИЯ ПРИГОТОВЛЕНИЯ:**
+1. Четкий пошаговый процесс
+2. Указание температур и времени
+3. Критические точки контроля
+
+**ВРЕМЯ ПРИГОТОВЛЕНИЯ:** XX минут
+**ВЫХОД:** XXX г готового блюда
+
+**КБЖУ на 100 г:**
+• Белки: XX г
+• Жиры: XX г  
+• Углеводы: XX г
+• Калории: XXX ккал
+
+**СЕБЕСТОИМОСТЬ:** примерно XXX ₽
+**КАТЕГОРИЯ:** [горячее/холодное/десерт/напиток]
+
+Преобразуй творческий рецепт в четкую техническую карту, сохранив суть блюда, но добавив профессиональную структуру.
+"""
+
+        # Используем OpenAI для конвертации
+        import openai
+        
+        # Get OpenAI API key
+        openai_api_key = os.environ.get('OPENAI_API_KEY')
+        if not openai_api_key:
+            raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
+        
+        client = openai.OpenAI(api_key=openai_api_key)
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Используем GPT-4o для качественной конвертации
+            messages=[
+                {"role": "system", "content": "Ты профессиональный технолог ресторана. Преобразуй творческий рецепт в техническую карту высочайшего качества."},
+                {"role": "user", "content": conversion_prompt}
+            ],
+            max_tokens=2000,
+            temperature=0.3  # Низкая температура для точности
+        )
+        
+        converted_content = response.choices[0].message.content
+        
+        # Создаем V2 техкарту в правильном формате
+        techcard_v2 = {
+            "meta": {
+                "id": str(uuid.uuid4()),
+                "version": "v2",
+                "title": recipe_name,
+                "status": "READY"
+            },
+            "content": converted_content,
+            "ingredients": [],  # Будет заполнено при парсинге
+            "created_at": datetime.now().isoformat(),
+            "user_id": user_id
+        }
+        
+        # Сохраняем конвертированную техкарту в базу
+        await db.tech_cards.insert_one({
+            "id": techcard_v2["meta"]["id"],
+            "user_id": user_id,
+            "name": recipe_name,
+            "content": converted_content,
+            "techcard_v2_data": techcard_v2,
+            "status": "READY",
+            "created_at": datetime.now(),
+            "converted_from_v1": True  # Метка конвертации
+        })
+        
+        return {
+            "success": True,
+            "techcard": techcard_v2,
+            "message": f"Рецепт '{recipe_name}' успешно преобразован в техкарту V2"
+        }
+        
+    except Exception as e:
+        print(f"Error converting V1 to V2: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка конвертации: {str(e)}")
+
 @app.post("/api/analyze-finances")
 async def analyze_finances(request: dict):
     """Анализ финансов блюда для PRO пользователей"""
