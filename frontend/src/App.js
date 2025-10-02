@@ -10389,7 +10389,7 @@ function App() {
                         <h4 className="text-purple-300 font-bold text-2xl">
                           {aiKitchenRecipe.name}
                         </h4>
-                        <div className="flex space-x-3">
+                        <div className="flex space-x-4">
                           <button 
                             onClick={async () => {
                               try {
@@ -10401,28 +10401,28 @@ function App() {
                                 });
                                 
                                 if (response.data.success) {
-                                  alert('✅ Рецепт V1 сохранен в историю!');
+                                  alert('Рецепт успешно сохранен в историю');
                                   loadUserTechCards();
                                 } else {
-                                  alert('❌ Ошибка сохранения: ' + (response.data.message || 'Неизвестная ошибка'));
+                                  alert('Ошибка сохранения: ' + (response.data.message || 'Неизвестная ошибка'));
                                 }
                               } catch (error) {
                                 console.error('Error saving V1 recipe:', error);
-                                alert('❌ Ошибка сохранения рецепта: ' + (error.response?.data?.detail || error.message));
+                                alert('Ошибка сохранения рецепта: ' + (error.response?.data?.detail || error.message));
                               }
                             }}
-                            className="bg-green-600/20 text-green-300 border border-green-500/30 px-4 py-2 rounded-lg hover:bg-green-600/30 transition-colors"
+                            className="bg-gradient-to-r from-green-600/30 to-emerald-600/30 hover:from-green-600/50 hover:to-emerald-600/50 text-green-300 border border-green-500/50 px-6 py-3 rounded-xl hover:border-green-400/70 transition-all duration-300 font-medium"
                           >
-                            💾 Сохранить в историю
+                            Сохранить в историю
                           </button>
                           <button 
                             onClick={() => {
                               setAiKitchenRecipe(null);
                               setAiKitchenDishName('');
                             }}
-                            className="bg-gray-600/20 text-gray-300 border border-gray-500/30 px-4 py-2 rounded-lg hover:bg-gray-600/30 transition-colors"
+                            className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 text-purple-300 border border-purple-500/50 px-6 py-3 rounded-xl hover:border-purple-400/70 transition-all duration-300 font-medium"
                           >
-                            ✨ Создать новый
+                            Создать новый рецепт
                           </button>
                         </div>
                       </div>
