@@ -7079,7 +7079,7 @@ async def generate_food_pairing(request: dict):
     
     # Extract dish name from tech card
     dish_name = "блюдо"
-    for line in tech_card.split('\n'):
+    if isinstance(tech_card, dict): dish_name = tech_card.get("name", "блюдо"); continue
         if 'Название:' in line:
             dish_name = line.split('Название:')[1].strip().replace('**', '')
             break
