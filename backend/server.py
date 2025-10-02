@@ -7529,14 +7529,7 @@ async def convert_recipe_to_techcard(request: dict):
                 updated_meta.timings['original_recipe_length'] = len(recipe_content)
                 real_techcard_v2 = real_techcard_v2.model_copy(update={"meta": updated_meta})
             
-            # Сохраняем в базу как настоящую V2 техкарту
-            from pymongo import MongoClient
-            mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
-            db_name = os.getenv('DB_NAME', 'receptor_pro')
-            
-            mongo_client = MongoClient(mongo_url)
-            db = mongo_client[db_name]
-            
+            # Сохраняем в базу как настоящую V2 техкарту (используем уже существующий async db)
             await db.tech_cards.insert_one({
                 "id": real_techcard_v2.meta.id,
                 "user_id": user_id,
