@@ -230,7 +230,7 @@ class V1V2FixesTester:
             }
             
             print(f"   Converting V1 recipe to V2 tech card: {payload['recipe_name']}")
-            print(f"   Checking response structure: ingredients[], process[], yield{}, nutrition{}, cost{}")
+            print("   Checking response structure: ingredients[], process[], yield{}, nutrition{}, cost{}")
             
             start_time = time.time()
             response = self.session.post(url, json=payload, timeout=60)
