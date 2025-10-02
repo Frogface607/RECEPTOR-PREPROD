@@ -2023,6 +2023,56 @@ function App() {
     console.log('renderTechCardV2 called with:', tcV2 ? 'tcV2 data present' : 'tcV2 is null/undefined');
     if (!tcV2) return null;
 
+    // Специальная обработка для конвертированных V1→V2 техкарт
+    if (tcV2.converted_from_v1 && tcV2.content) {
+      return (
+        <div className="space-y-6">
+          {/* Заголовок конвертированной техкарты */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <h1 className="text-3xl font-bold text-purple-300">
+                {tcV2.meta?.title || 'Техкарта'}
+              </h1>
+              <div className="flex gap-2">
+                <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                  V2 Техкарта
+                </span>
+                <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                  Из рецепта
+                </span>
+                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                  ГОТОВО
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Контент конвертированной техкарты */}
+          <div className="bg-gray-800/30 border border-purple-400/30 rounded-xl p-6">
+            <div className="prose prose-invert max-w-none">
+              <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
+                {tcV2.content}
+              </div>
+            </div>
+          </div>
+
+          {/* Примечание о конвертации */}
+          <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔄</span>
+              <div>
+                <div className="font-bold text-blue-300">Техкарта создана из рецепта</div>
+                <div className="text-blue-400 text-sm mt-1">
+                  Эта техкарта была автоматически структурирована из творческого рецепта. 
+                  Вы можете её отредактировать или экспортировать в IIKO.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const meta = tcV2.meta || {};
     const yield_data = tcV2.yield || tcV2.yield_ || {}; // Fix: Support both yield and yield_ formats
     const ingredients = tcV2.ingredients || {};
