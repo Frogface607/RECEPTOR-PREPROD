@@ -10367,15 +10367,18 @@ function App() {
                     <button 
                       onClick={generateAiKitchenRecipe}
                       disabled={isGenerating || !aiKitchenDishName.trim()}
-                      className={`w-full ${(isGenerating || !aiKitchenDishName.trim()) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'} text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 text-lg shadow-2xl shadow-purple-500/25`}
-                      title="🍳 СОЗДАТЬ РЕЦЕПТ V1: Генерирует красивый подробный рецепт для экспериментов"
+                      className={`w-full ${(isGenerating || !aiKitchenDishName.trim()) ? 'bg-gray-600/50 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-2xl hover:shadow-purple-500/30'} text-white font-bold py-5 px-12 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] text-xl shadow-xl shadow-purple-500/20 border border-purple-500/20`}
+                      title="Создать детальный рецепт с пошаговыми инструкциями для дальнейших экспериментов"
                     >
                       {isGenerating && loadingType === 'recipe' ? 
                         <span className="flex items-center justify-center">
-                          <span className="animate-spin mr-3">⚡</span>
-                          СОЗДАЮ РЕЦЕПТ...
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          СОЗДАНИЕ РЕЦЕПТА...
                         </span>
-                        : '🍳 СОЗДАТЬ РЕЦЕПТ V1'
+                        : 'СОЗДАТЬ РЕЦЕПТ'
                       }
                     </button>
                   </div>
