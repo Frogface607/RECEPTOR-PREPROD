@@ -2027,46 +2027,22 @@ function App() {
     if (tcV2.converted_from_v1 && tcV2.content) {
       return (
         <div className="space-y-6">
-          {/* Заголовок конвертированной техкарты */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <h1 className="text-3xl font-bold text-purple-300">
-                {tcV2.meta?.title || 'Техкарта'}
-              </h1>
-              <div className="flex gap-2">
-                <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  V2 Техкарта
-                </span>
-                <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  Из рецепта
-                </span>
-                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  ГОТОВО
-                </span>
-              </div>
+          {/* Заголовок с метками */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-purple-300 mb-3">
+              {tcV2.meta?.title || 'Техкарта'}
+            </h1>
+            <div className="flex justify-center gap-2 mb-4">
+              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">V2 Техкарта</span>
+              <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm">Из рецепта</span>
+              <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">ГОТОВО</span>
             </div>
           </div>
 
-          {/* Контент конвертированной техкарты */}
-          <div className="bg-gray-800/30 border border-purple-400/30 rounded-xl p-6">
-            <div className="prose prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
-                {tcV2.content}
-              </div>
-            </div>
-          </div>
-
-          {/* Примечание о конвертации */}
-          <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🔄</span>
-              <div>
-                <div className="font-bold text-blue-300">Техкарта создана из рецепта</div>
-                <div className="text-blue-400 text-sm mt-1">
-                  Эта техкарта была автоматически структурирована из творческого рецепта. 
-                  Вы можете её отредактировать или экспортировать в IIKO.
-                </div>
-              </div>
+          {/* Контент */}
+          <div className="bg-gray-800/50 border border-gray-600/30 rounded-xl p-6">
+            <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
+              {tcV2.content}
             </div>
           </div>
         </div>
