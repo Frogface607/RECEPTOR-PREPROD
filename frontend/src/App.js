@@ -10661,7 +10661,7 @@ function App() {
                         if (isV2 && techcard.techcard_v2_data) {
                           setTcV2(techcard.techcard_v2_data);
                           setTechCard(null); // Очищаем V1 техkарту
-                          setDishName(techcard.name || techcard.techcard_v2_data?.meta?.title || 'Блюдо из истории'); // ИСПРАВЛЕНИЕ: устанавливаем название
+                          setWizardData(prev => ({...prev, dishName: techcard.name || techcard.techcard_v2_data?.meta?.title || 'Блюдо из истории'}));
                           setGenerationStatus('success');
                           setCurrentTechCardId(techcard.id);
                           setCurrentView('create');
