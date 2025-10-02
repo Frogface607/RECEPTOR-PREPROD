@@ -183,6 +183,16 @@
           comment: "✅ Conversion process working perfectly - conversion initiates correctly when button clicked, console logs show proper workflow execution ('🔄 Converting V1 recipe to V2 techcard'), loading indicator displays 'Конвертируем...' text as expected, conversion completes within ~5 seconds, no JavaScript errors during process"
 
   - task: "V2 Tech Card Display After Conversion"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL RENDERING BUG IDENTIFIED: V1→V2 conversion API works correctly (HTTP 200) but frontend fails to display V2 tech card due to JavaScript error 'tcV2.ingredients.filter is not a function'. The conversion process completes successfully on backend but crashes during frontend rendering when tcV2.ingredients is not an array. This prevents the expected V2 tech card display with special labels ('V2 Техкарта', 'Из рецепта', 'ГОТОВО') and blue conversion notification. The automatic switch to main page (currentView='create') also fails due to this rendering error."
   - task: "V1→V2 Recipe Converter API Endpoint"
     implemented: true
     working: true
