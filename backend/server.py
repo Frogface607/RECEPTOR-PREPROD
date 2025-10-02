@@ -7503,7 +7503,7 @@ async def convert_recipe_to_techcard(request: dict):
         
         converted_content = response.choices[0].message.content
         
-        # Создаем V2 техкарту в правильном формате
+        # Создаем V2 техкарту в правильном формате для renderTechCardV2
         techcard_v2 = {
             "meta": {
                 "id": str(uuid.uuid4()),
@@ -7511,10 +7511,17 @@ async def convert_recipe_to_techcard(request: dict):
                 "title": recipe_name,
                 "status": "READY"
             },
-            "content": converted_content,
-            "ingredients": [],  # Будет заполнено при парсинге
+            "status": "READY",
+            "content": converted_content,  # Сохраняем исходный контент
+            "ingredients": {},  # Пустая структура для совместимости
+            "process": [],      # Пустая структура для совместимости  
+            "yield": {"weight_g": 0, "portions": 1},  # Базовые данные
+            "nutrition": {},    # Пустая структура для совместимости
+            "cost": {},         # Пустая структура для совместимости
+            "storage": {},      # Пустая структура для совместимости
             "created_at": datetime.now().isoformat(),
-            "user_id": user_id
+            "user_id": user_id,
+            "converted_from_v1": True  # Флаг конвертации
         }
         
         # Сохраняем конвертированную техкарту в базу
