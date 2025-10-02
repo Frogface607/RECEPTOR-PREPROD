@@ -273,7 +273,7 @@ class V1V2FixesTester:
                     self.log_test(
                         "V1→V2 Recipe Converter",
                         True,
-                        f"V1→V2 conversion successful. Duration: {duration:.1f}s, Structure valid ✅, Ingredients: {ingredients_count}, Process steps: {process_count}",
+                        f"V1→V2 conversion successful. Duration: {duration:.1f}s, Structure valid ✅, Content generated ✅, Process steps: {process_count}, ID: {techcard_data.get('meta', {}).get('id')}",
                         {
                             'duration_seconds': duration,
                             'structure_checks': structure_checks,
