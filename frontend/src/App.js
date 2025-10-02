@@ -10657,31 +10657,39 @@ function App() {
                       key={techcard.id || index}
                       className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-purple-500/50 transition-all cursor-pointer"
                       onClick={() => {
-                        // TC-002: Load techcard properly
+                        // Правильная загрузка V1 рецептов и V2 техкарт
                         
-                        if (isV2 && techcard.techcard_v2_data) {
+                        if (isV1Recipe) {
+                          // Загружаем V1 рецепт
+                          setTechCard(techcard.content);
+                          setTcV2(null);
+                          setWizardData(prev => ({...prev, dishName: techcard.dish_name || techcard.name || 'Рецепт из истории'}));
+                          setGenerationStatus('success');
+                          setCurrentTechCardId(techcard.id);
+                          setCurrentView('create');
+                        } else if (isV2 && techcard.techcard_v2_data) {
+                          // Загружаем V2 техкарту
                           setTcV2(techcard.techcard_v2_data);
-                          setTechCard(null); // Очищаем V1 техkарту
-                          setWizardData(prev => ({...prev, dishName: techcard.name || techcard.techcard_v2_data?.meta?.title || 'Блюдо из истории'}));
+                          setTechCard(null);
+                          setWizardData(prev => ({...prev, dishName: techcard.name || techcard.techcard_v2_data?.meta?.title || 'Техкарта из истории'}));
                           setGenerationStatus('success');
                           setCurrentTechCardId(techcard.id);
                           setCurrentView('create');
                         } else if (techcard.content) {
+                          // Попытка парсинга контента
                           try {
                             const parsedContent = JSON.parse(techcard.content);
                             setTcV2(parsedContent);
-                            setTechCard(null); // Очищаем V1 техkарту
-                            setWizardData(prev => ({...prev, dishName: techcard.name || parsedContent?.meta?.title || 'Блюдо из истории'}));
+                            setTechCard(null);
+                            setWizardData(prev => ({...prev, dishName: techcard.name || parsedContent?.meta?.title || 'Техкарта из истории'}));
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
                           } catch (e) {
-                            // V1 tech card - only clear tcV2 if not forced to V2
-                            if (!FORCE_TECHCARD_V2) {
-                              setTechCard(techcard.content);
-                              setTcV2(null); // Очищаем V2 техkарту только если не принудительный V2 режим
-                            }
-                            setWizardData(prev => ({...prev, dishName: techcard.name || 'Блюдо из истории'}));
+                            // Если парсинг не удался, это V1
+                            setTechCard(techcard.content);
+                            setTcV2(null);
+                            setWizardData(prev => ({...prev, dishName: techcard.dish_name || techcard.name || 'Рецепт из истории'}));
                             setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
