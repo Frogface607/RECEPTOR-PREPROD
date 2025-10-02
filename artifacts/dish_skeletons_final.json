@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-09-26T10:50:00.790130",
+  "timestamp": "2025-10-02T16:21:10.927085",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
       "name": "Тако с уткой",
-      "code": "100115",
+      "code": "100059",
       "type": "DISH",
       "unit": "порц",
       "yield_g": 240
