@@ -195,11 +195,11 @@ class V1V2ConverterTester:
                         
                         # Check that this is a REAL V2 tech card, not fake
                         ingredients_have_content = any(
-                            ing.get('name') and ing.get('quantity') 
+                            ing.get('name') and (ing.get('quantity') or ing.get('brutto_g') or ing.get('netto_g'))
                             for ing in techcard['ingredients']
                         )
                         process_has_content = any(
-                            step.get('description') or step.get('instruction')
+                            step.get('description') or step.get('instruction') or step.get('action')
                             for step in techcard['process']
                         )
                         
