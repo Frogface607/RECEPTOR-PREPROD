@@ -10712,8 +10712,8 @@ function App() {
                             }`}>
                               {techcard.status === 'READY' ? 'ГОТОВО' : (techcard.status || 'draft')}
                             </span>
-                            <span className={`text-xs ${isV2 ? 'text-purple-400' : 'text-gray-500'}`}>
-                              {isV2 ? '🔧 V2' : '📝 V1'}
+                            <span className={`text-xs ${isV2 ? 'text-purple-400' : isV1Recipe ? 'text-pink-400' : 'text-gray-500'}`}>
+                              {isV2 ? 'V2 Техкарта' : isV1Recipe ? 'V1 Рецепт' : 'V1'}
                             </span>
                           </div>
                         </div>
