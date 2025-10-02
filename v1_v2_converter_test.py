@@ -80,9 +80,9 @@ class V1V2ConverterTester:
                     card = data['card']
                     
                     # Validate V2 tech card structure
-                    has_ingredients = 'ingredients' in card and isinstance(card['ingredients'], list)
-                    has_process = 'process' in card and isinstance(card['process'], list)
-                    has_meta = 'meta' in card and 'id' in card['meta']
+                    has_ingredients = 'ingredients' in card and isinstance(card.get('ingredients'), list)
+                    has_process = 'process' in card and isinstance(card.get('process'), list)
+                    has_meta = 'meta' in card and isinstance(card.get('meta'), dict) and 'id' in card.get('meta', {})
                     
                     if status == 'READY' and has_ingredients and has_process and has_meta:
                         card_id = card['meta']['id']
