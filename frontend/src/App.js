@@ -10293,13 +10293,12 @@ function App() {
             {/* Central V1 Recipe Generator */}
             <div className="mb-8">
               <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-2xl p-6 sm:p-8">
-                <div className="text-center mb-6">
-                  <div className="text-5xl mb-4">🍳</div>
-                  <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
-                    Генератор Рецептов V1
+                <div className="text-center mb-8">
+                  <h3 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+                    Генератор Рецептов
                   </h3>
-                  <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-                    Создайте красивый рецепт, а затем используйте AI-инструменты для его улучшения
+                  <p className="text-gray-300 text-xl max-w-3xl mx-auto leading-relaxed">
+                    Создайте детальный рецепт с пошаговыми инструкциями, а затем используйте AI-инструменты для его профессионального развития
                   </p>
                 </div>
                 
