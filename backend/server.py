@@ -7522,8 +7522,12 @@ async def convert_recipe_to_techcard(request: dict):
             
             # Добавляем метку что это конвертация из V1
             if hasattr(real_techcard_v2, 'meta'):
-                real_techcard_v2.meta['converted_from_v1'] = True
-                real_techcard_v2.meta['original_v1_recipe'] = recipe_content[:500]  # Сохраняем кусок оригинала
+                # Правильно обновляем Pydantic модель meta
+                updated_meta = real_techcard_v2.meta.model_copy(deep=True)
+                # Добавляем информацию о конвертации в timings (это разрешенное поле)
+                updated_meta.timings['converted_from_v1'] = 1.0
+                updated_meta.timings['original_recipe_length'] = len(recipe_content)
+                real_techcard_v2 = real_techcard_v2.model_copy(update={"meta": updated_meta})
             
             # Сохраняем в базу как настоящую V2 техкарту
             from pymongo import MongoClient
