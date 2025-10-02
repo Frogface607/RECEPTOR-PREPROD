@@ -10383,11 +10383,11 @@ function App() {
                   </div>
                 ) : (
                   /* Generated Recipe Display */
-                  <div className="max-w-4xl mx-auto">
-                    <div className="bg-gray-800/30 border border-purple-400/30 rounded-xl p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-purple-300 font-bold text-xl flex items-center">
-                          🍳 <span className="ml-2">{aiKitchenRecipe.name}</span>
+                  <div className="max-w-5xl mx-auto">
+                    <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-purple-400/40 rounded-2xl p-8 backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-6">
+                        <h4 className="text-purple-300 font-bold text-2xl">
+                          {aiKitchenRecipe.name}
                         </h4>
                         <div className="flex space-x-3">
                           <button 
