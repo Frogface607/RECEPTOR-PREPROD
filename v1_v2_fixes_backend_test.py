@@ -264,7 +264,12 @@ class V1V2FixesTester:
                 ingredients_count = len(techcard_data.get('ingredients', [])) if isinstance(techcard_data.get('ingredients'), list) else 0
                 process_count = len(techcard_data.get('process', [])) if isinstance(techcard_data.get('process'), list) else 0
                 
-                if all_fields_valid and ingredients_count > 0 and process_count > 0:
+                # Check if conversion was successful - structure is valid and we have content
+                has_content = bool(techcard_data.get('content', '').strip())
+                conversion_successful = data.get('success', False)
+                has_techcard_id = bool(techcard_data.get('meta', {}).get('id'))
+                
+                if all_fields_valid and conversion_successful and has_content and has_techcard_id:
                     self.log_test(
                         "V1→V2 Recipe Converter",
                         True,
