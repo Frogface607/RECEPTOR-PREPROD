@@ -6485,7 +6485,7 @@ function App() {
     
     setIsGenerating(true);
     setLoadingType('recipe');
-    const progressInterval = simulateProgress('recipe', 45000);
+    const progressInterval = simulateProgress('recipe', 120000); // 2 минуты для V1 GPT-4o
     
     try {
       console.log('🍳 [AI-Kitchen] Generating V1 Recipe for:', aiKitchenDishName);
