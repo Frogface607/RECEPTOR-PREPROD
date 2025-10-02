@@ -10157,12 +10157,6 @@ function App() {
                                   setDishContext(fullDishContext);
                                   setWizardData(prev => ({...prev, dishName: `${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}"`});
                                   
-Категория: ${category.category_name}
-Описание: ${dish.description}
-Основные ингредиенты: ${(dish.main_ingredients || []).join(', ')}
-Ориентировочная себестоимость: ${dish.estimated_cost}₽
-Время готовки: ${dish.cook_time} мин
-Сложность: ${dish.difficulty}`);
                                   setCurrentView('create');
                                 }}
                                 className="text-cyan-400 hover:text-cyan-300 text-sm"
