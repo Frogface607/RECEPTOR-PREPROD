@@ -6628,16 +6628,23 @@ function App() {
   };
 
   const generateFoodPairing = async () => {
-    // Support both V1 and V2 tech cards
-    const hasCard = techCard || tcV2;
-    if (!hasCard || !currentUserOrDemo?.id) return;
+    // Support V1 recipes, V1 tech cards, V2 tech cards, and AI Kitchen recipes
+    const hasCard = techCard || tcV2 || aiKitchenRecipe;
+    if (!hasCard) return;
+    
+    const userToUse = currentUser || { id: 'demo_user' };
+    if (!userToUse?.id) return;
     
     setIsGenerating(true);
     setLoadingType('pairing');
     const progressInterval = simulateProgress('pairing', 12000);
     
     try {
-      const cardData = tcV2 || techCard;
+      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
+      const cardData = tcV2 || techCard || {
+        name: aiKitchenRecipe?.name || 'рецепт',
+        content: aiKitchenRecipe?.content || ''
+      };
       const response = await axios.post(`${API}/generate-food-pairing`, {
         tech_card: cardData,
         user_id: currentUserOrDemo.id
