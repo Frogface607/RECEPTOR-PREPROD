@@ -10599,9 +10599,9 @@ function App() {
                 </div>
                 <button
                   onClick={generateFoodPairing}
-                  disabled={isGenerating || !tcV2}
+                  disabled={isGenerating || !(techCard || tcV2 || aiKitchenRecipe)}
                   className={`w-full ${
-                    isGenerating || !tcV2 
+                    isGenerating || !(techCard || tcV2 || aiKitchenRecipe)
                       ? 'bg-gray-600 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
