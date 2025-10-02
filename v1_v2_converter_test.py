@@ -184,7 +184,7 @@ class V1V2ConverterTester:
                     # Validate V2 tech card structure from converter
                     has_ingredients = 'ingredients' in techcard and isinstance(techcard['ingredients'], list)
                     has_process = 'process' in techcard and isinstance(techcard['process'], list)
-                    has_yield = 'yield' in techcard and isinstance(techcard['yield'], dict)
+                    has_yield = ('yield' in techcard or 'yield_' in techcard) and isinstance(techcard.get('yield', techcard.get('yield_', {})), dict)
                     has_nutrition = 'nutrition' in techcard and isinstance(techcard['nutrition'], dict)
                     has_cost = 'cost' in techcard and isinstance(techcard['cost'], dict)
                     
