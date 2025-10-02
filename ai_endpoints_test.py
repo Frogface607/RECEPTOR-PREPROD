@@ -412,22 +412,20 @@ class AIEndpointsTester:
             'results': self.test_results
         }
 
-async def main():
+def main():
     """Main test execution"""
-    tester = AIEndpointTester()
+    print("AI Endpoints Testing - Unified OpenAI Client Fix Verification")
+    print("Протестировать исправленные AI endpoints с unified OpenAI client")
+    print()
     
-    print("🚀 AI ENDPOINTS 403 ERROR DIAGNOSIS")
-    print("="*50)
+    tester = AIEndpointsTester()
+    results = tester.run_all_tests()
     
-    await tester.test_all_ai_endpoints()
-    tester.analyze_results()
-    tester.generate_summary()
-    
-    # Save results to file for reference
-    with open('/app/ai_endpoints_test_results.json', 'w', encoding='utf-8') as f:
-        json.dump(tester.results, f, indent=2, ensure_ascii=False, default=str)
-    
-    print(f"\n💾 Results saved to: /app/ai_endpoints_test_results.json")
+    # Exit with appropriate code
+    if results['success_rate'] == 100:
+        sys.exit(0)  # Success
+    else:
+        sys.exit(1)  # Failure
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
