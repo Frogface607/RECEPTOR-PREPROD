@@ -357,144 +357,60 @@ class AIEndpointsTester:
             )
             return False
     
-    def analyze_results(self):
-        """Analyze test results and categorize issues"""
-        print(f"\n" + "="*80)
-        print(f"📊 AI ENDPOINTS TEST RESULTS ANALYSIS")
-        print(f"="*80)
+    def run_all_tests(self) -> Dict[str, Any]:
+        """Run all AI endpoints tests"""
+        print("🚀 STARTING AI ENDPOINTS TESTING - UNIFIED OPENAI CLIENT FIX VERIFICATION")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test User: {TEST_USER_ID}")
+        print("=" * 80)
+        print()
         
-        status_404 = []  # Not found
-        status_403 = []  # Forbidden
-        status_200 = []  # Working
-        status_500 = []  # Server error
-        status_other = []  # Other errors
+        # Run tests in sequence
+        tests = [
+            self.test_food_pairing_endpoint,
+            self.test_inspiration_endpoint,
+            self.test_v1_to_v2_converter_endpoint
+        ]
         
-        for name, result in self.results.items():
-            status = result['status']
-            
-            if status == 404:
-                status_404.append(name)
-            elif status == 403:
-                status_403.append(name)
-            elif status == 200:
-                status_200.append(name)
-            elif status == 500:
-                status_500.append(name)
-            else:
-                status_other.append((name, status))
+        passed = 0
+        total = len(tests)
         
-        print(f"\n✅ WORKING ENDPOINTS (HTTP 200): {len(status_200)}")
-        for name in status_200:
-            print(f"   ✅ {name}")
-            
-        print(f"\n❌ FORBIDDEN ENDPOINTS (HTTP 403): {len(status_403)}")
-        for name in status_403:
-            print(f"   🚫 {name}")
-            
-        print(f"\n❓ NOT FOUND ENDPOINTS (HTTP 404): {len(status_404)}")
-        for name in status_404:
-            print(f"   ❓ {name}")
-            
-        print(f"\n💥 SERVER ERROR ENDPOINTS (HTTP 500): {len(status_500)}")
-        for name in status_500:
-            print(f"   💥 {name}")
-            
-        print(f"\n🔍 OTHER STATUS ENDPOINTS: {len(status_other)}")
-        for name, status in status_other:
-            print(f"   🔍 {name}: {status}")
+        for test_func in tests:
+            try:
+                if test_func():
+                    passed += 1
+                time.sleep(2)  # Brief pause between tests
+            except Exception as e:
+                print(f"❌ CRITICAL ERROR in {test_func.__name__}: {str(e)}")
         
-        # Detailed analysis
-        print(f"\n" + "="*80)
-        print(f"🔬 DETAILED ANALYSIS")
-        print(f"="*80)
+        # Summary
+        print("=" * 80)
+        print("🎯 AI ENDPOINTS TEST SUMMARY")
+        print("=" * 80)
         
-        # Find working laboratory endpoint
-        lab_endpoints = [name for name in self.results.keys() if 'Laboratory' in name]
-        print(f"\n🧪 LABORATORY ENDPOINTS:")
-        for name in lab_endpoints:
-            result = self.results[name]
-            print(f"   {name}: HTTP {result['status']}")
-            if result['status'] == 200:
-                print(f"      ✅ WORKING - This is the endpoint that works!")
-            
-        # Analyze 403 errors
-        if status_403:
-            print(f"\n🚫 403 FORBIDDEN ANALYSIS:")
-            print(f"   These endpoints require PRO subscription validation")
-            print(f"   User ID used: {self.test_user_id}")
-            
-            # Check first 403 response for details
-            first_403 = status_403[0]
-            response = self.results[first_403]['response']
-            print(f"   Sample 403 response: {response}")
+        success_rate = (passed / total) * 100
         
-        # Compare working vs non-working
-        if status_200 and status_403:
-            print(f"\n🔍 DIFFERENCE ANALYSIS:")
-            working = status_200[0]
-            failing = status_403[0]
-            
-            print(f"   WORKING: {working}")
-            print(f"   FAILING: {failing}")
-            print(f"   ")
-            print(f"   The key difference is likely in subscription validation logic.")
-            print(f"   Laboratory endpoint may have different or more lenient validation.")
+        for result in self.test_results:
+            status = "✅" if result['success'] else "❌"
+            print(f"{status} {result['test_name']}: {result['details']}")
+        
+        print()
+        print(f"📊 RESULTS: {passed}/{total} tests passed ({success_rate:.1f}%)")
+        
+        if success_rate == 100:
+            print("🎉 AI ENDPOINTS: UNIFIED OPENAI CLIENT FIX SUCCESSFUL - ALL HTTP 500 ERRORS RESOLVED")
+        elif success_rate >= 66:
+            print("⚠️ AI ENDPOINTS: PARTIALLY FIXED - SOME HTTP 500 ERRORS REMAIN")
+        else:
+            print("🚨 AI ENDPOINTS: CRITICAL ISSUES - HTTP 500 ERRORS NOT RESOLVED")
         
         return {
-            'working': status_200,
-            'forbidden': status_403,
-            'not_found': status_404,
-            'server_error': status_500,
-            'other': status_other,
-            'total_tested': len(self.results)
+            'total_tests': total,
+            'passed_tests': passed,
+            'success_rate': success_rate,
+            'results': self.test_results
         }
-    
-    def generate_summary(self):
-        """Generate summary for main agent"""
-        analysis = self.analyze_results()
-        
-        print(f"\n" + "="*80)
-        print(f"📋 SUMMARY FOR MAIN AGENT")
-        print(f"="*80)
-        
-        print(f"\n🎯 KEY FINDINGS:")
-        print(f"   • Total AI endpoints tested: {analysis['total_tested']}")
-        print(f"   • Working endpoints: {len(analysis['working'])}")
-        print(f"   • Forbidden (403) endpoints: {len(analysis['forbidden'])}")
-        print(f"   • Not found (404) endpoints: {len(analysis['not_found'])}")
-        
-        if analysis['working']:
-            print(f"\n✅ WORKING ENDPOINTS:")
-            for endpoint in analysis['working']:
-                print(f"   • {endpoint}")
-        
-        if analysis['forbidden']:
-            print(f"\n❌ 403 FORBIDDEN ENDPOINTS:")
-            for endpoint in analysis['forbidden']:
-                print(f"   • {endpoint}")
-        
-        if analysis['not_found']:
-            print(f"\n❓ 404 NOT FOUND ENDPOINTS:")
-            for endpoint in analysis['not_found']:
-                print(f"   • {endpoint}")
-        
-        print(f"\n🔍 ROOT CAUSE ANALYSIS:")
-        if analysis['forbidden']:
-            print(f"   • 403 errors are caused by PRO subscription validation")
-            print(f"   • These endpoints check user.subscription_plan in ['pro', 'business']")
-            print(f"   • Test user '{self.test_user_id}' may not have proper subscription")
-        
-        if analysis['working']:
-            print(f"   • Working endpoints have different validation logic")
-            print(f"   • Laboratory endpoint creates test users automatically")
-            print(f"   • Laboratory has more lenient subscription checking")
-        
-        print(f"\n💡 RECOMMENDED FIXES:")
-        if analysis['forbidden']:
-            print(f"   1. Check user creation logic for test users")
-            print(f"   2. Ensure test users get PRO subscription by default")
-            print(f"   3. Review subscription validation consistency across endpoints")
-            print(f"   4. Consider making AI features available to all users or fix validation")
 
 async def main():
     """Main test execution"""
