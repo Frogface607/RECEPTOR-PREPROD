@@ -6554,7 +6554,7 @@ function App() {
         dish_name: dishInput.trim(),
         cuisine: venueProfile?.cuisine || 'европейская',
         restaurant_type: venueProfile?.venue_type || 'casual',
-        user_id: currentUserOrDemo.id
+        user_id: userToUse.id
       });
       
       // Clear any existing tech cards
@@ -6598,7 +6598,7 @@ function App() {
       const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/generate-sales-script`, {
         tech_card: cardData,
-        user_id: currentUserOrDemo.id
+        user_id: userToUse.id
       });
       
       setSalesScriptResult(response.data.script);
@@ -6647,7 +6647,7 @@ function App() {
       };
       const response = await axios.post(`${API}/generate-food-pairing`, {
         tech_card: cardData,
-        user_id: currentUserOrDemo.id
+        user_id: userToUse.id
       });
       
       setFoodPairingResult(response.data.pairing);
@@ -6725,7 +6725,7 @@ function App() {
     try {
       const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/generate-inspiration`, {
-        user_id: currentUserOrDemo.id,
+        user_id: userToUse.id,
         tech_card: cardData,
         inspiration_prompt: inspirationPrompt || 'Создай креативный и жизнеспособный твист на это блюдо'
       });
@@ -6774,7 +6774,7 @@ function App() {
     try {
       const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/analyze-finances`, {
-        user_id: currentUserOrDemo.id,
+        user_id: userToUse.id,
         tech_card: cardData
       });
       
@@ -6819,7 +6819,7 @@ function App() {
     try {
       const cardData = tcV2 || techCard;
       const response = await axios.post(`${API}/improve-dish`, {
-        user_id: currentUserOrDemo.id,
+        user_id: userToUse.id,
         tech_card: cardData
       });
       
