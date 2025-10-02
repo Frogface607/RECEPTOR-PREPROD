@@ -7513,7 +7513,7 @@ async def convert_recipe_to_techcard(request: dict):
             },
             "status": "READY",
             "content": converted_content,  # Сохраняем исходный контент
-            "ingredients": {},  # Пустая структура для совместимости
+            "ingredients": [],  # Пустой массив для совместимости с filter()
             "process": [],      # Пустая структура для совместимости  
             "yield": {"weight_g": 0, "portions": 1},  # Базовые данные
             "nutrition": {},    # Пустая структура для совместимости
