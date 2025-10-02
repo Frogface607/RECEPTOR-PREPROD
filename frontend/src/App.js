@@ -10431,15 +10431,15 @@ function App() {
                       </div>
                     </div>
                     
-                    <div className="mt-6 text-center">
-                      <p className="text-purple-300 text-lg font-medium mb-2">
-                        🎯 Теперь используйте AI-инструменты ниже для улучшения рецепта
+                    <div className="mt-8 text-center">
+                      <p className="text-purple-300 text-xl font-medium mb-4">
+                        Используйте AI-инструменты ниже для профессионального развития рецепта
                       </p>
-                      <div className="flex flex-wrap justify-center gap-2 text-sm">
-                        <span className="bg-cyan-600 px-3 py-1 rounded-full text-white">🧪 Эксперименты</span>
-                        <span className="bg-orange-600 px-3 py-1 rounded-full text-white">💡 Вдохновение</span>
-                        <span className="bg-blue-600 px-3 py-1 rounded-full text-white">🍷 Фудпейринг</span>
-                        <span className="bg-green-600 px-3 py-1 rounded-full text-white">📸 Фото</span>
+                      <div className="flex flex-wrap justify-center gap-3 text-sm">
+                        <span className="bg-gradient-to-r from-cyan-600/20 to-cyan-700/20 border border-cyan-500/30 px-4 py-2 rounded-xl text-cyan-300">Лабораторные эксперименты</span>
+                        <span className="bg-gradient-to-r from-orange-600/20 to-orange-700/20 border border-orange-500/30 px-4 py-2 rounded-xl text-orange-300">Творческое вдохновение</span>
+                        <span className="bg-gradient-to-r from-blue-600/20 to-blue-700/20 border border-blue-500/30 px-4 py-2 rounded-xl text-blue-300">Фудпейринг</span>
+                        <span className="bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 px-4 py-2 rounded-xl text-green-300">Фотопрезентация</span>
                       </div>
                     </div>
                   </div>
