@@ -7604,16 +7604,16 @@ async def generate_food_pairing(request: dict):
 Дай конкретные и практичные советы для ресторана.
 """
 
-        # Используем OpenAI для генерации фудпейринга
-        import openai
+        # Используем Emergent LLM для генерации фудпейринга
+        from emergentintegrations import EmergentLLM
         
-        openai_api_key = os.environ.get('OPENAI_API_KEY')
-        if not openai_api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="Emergent LLM key не настроен")
         
-        client = openai.OpenAI(api_key=openai_api_key)
+        llm_client = EmergentLLM(api_key=emergent_key)
         
-        response = client.chat.completions.create(
+        response = llm_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "Ты мастер фудпейринга с опытом работы в мишленовских ресторанах. Создавай точные и вкусные сочетания."},
