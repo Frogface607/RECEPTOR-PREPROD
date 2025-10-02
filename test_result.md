@@ -302,6 +302,18 @@
           agent: "testing"
           comment: "✅ FOOD PAIRING ENDPOINT FULLY OPERATIONAL: Successfully tested /api/generate-food-pairing endpoint as specified in Russian review request 'ПРОСТАЯ проверка - работает ли хотя бы один AI endpoint'. CRITICAL API KEY ISSUE RESOLVED: Fixed invalid Emergent API key (sk-emergent-2148f31Ac76E6E1844) that was causing HTTP 500 errors with OpenAI integration. Root cause: Emergent key is not a valid OpenAI API key and was being prioritized over standard OpenAI key. SOLUTION: Temporarily disabled Emergent key in backend/.env to force fallback to working OpenAI API key (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). ✅ ENDPOINT TESTING SUCCESSFUL: Tested with exact data from review request - tech_card: {'name': 'Борщ'}, user_id: 'demo_user'. Response: HTTP 200 with 3612 characters of OpenAI-generated food pairing content. Goal achieved: Got ANY response from OpenAI (not HTTP 500). ✅ CONTENT VALIDATION PASSED: Generated professional food pairing recommendations including алкогольные напитки, безалкогольные напитки, гарниры и дополнения, специальные предложения - all properly formatted and contextually relevant for семейный ресторан venue type. Backend logs show successful OpenAI API calls without errors. Food pairing endpoint now delivers proper AI-generated content as expected."
 
+  - task: "Inspiration AI Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ INSPIRATION ENDPOINT FULLY OPERATIONAL: Successfully tested /api/generate-inspiration endpoint as specified in Russian review request 'Быстрый тест endpoint вдохновения'. SIMPLE TEST COMPLETED: Tested with exact data from review request - tech_card: {'name': 'Борщ'}, user_id: 'demo_user'. Response: HTTP 200 with 2858 characters of OpenAI-generated inspiration content in 16.14 seconds. GOAL ACHIEVED: Endpoint responds correctly. ✅ CONTENT VALIDATION PASSED: Generated creative twist on classic Борщ with Asian fusion elements including coconut milk and Thai curry, proper structured format with all required sections (название, категория, описание, ингредиенты, рецепт, время, себестоимость), comprehensive content with creative modifications while maintaining dish viability. ✅ API INTEGRATION WORKING: OpenAI GPT-4o-mini model successfully processes inspiration prompts, proper error handling for missing parameters (HTTP 400), user validation working correctly, subscription plan checks operational. Backend logs show successful LLM calls without errors. Inspiration endpoint delivers proper AI-generated creative content as expected."
+
 ## metadata:
   created_by: "testing_agent"
   version: "1.1"
