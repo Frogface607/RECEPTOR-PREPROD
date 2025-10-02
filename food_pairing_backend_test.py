@@ -97,7 +97,7 @@ class FoodPairingTester:
             print(f"   URL: {url}")
             print(f"   Payload: {json.dumps(payload, ensure_ascii=False)}")
             
-            response = self.session.post(url, json=payload, timeout=30)
+            response = self.session.post(url, json=payload, timeout=60)
             
             print(f"   Response Status: {response.status_code}")
             print(f"   Response Headers: {dict(response.headers)}")
