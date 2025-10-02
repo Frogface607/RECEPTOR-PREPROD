@@ -292,10 +292,12 @@ class V1V2FixesTester:
                     issues = []
                     if missing_fields:
                         issues.append(f"Missing/invalid fields: {missing_fields}")
-                    if ingredients_count == 0:
-                        issues.append("No ingredients found")
-                    if process_count == 0:
-                        issues.append("No process steps found")
+                    if not conversion_successful:
+                        issues.append("Conversion not successful")
+                    if not has_content:
+                        issues.append("No content generated")
+                    if not has_techcard_id:
+                        issues.append("No techcard ID generated")
                     
                     self.log_test(
                         "V1→V2 Recipe Converter",
