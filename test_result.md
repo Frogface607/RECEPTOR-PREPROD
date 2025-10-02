@@ -183,6 +183,17 @@
           comment: "✅ Conversion process working perfectly - conversion initiates correctly when button clicked, console logs show proper workflow execution ('🔄 Converting V1 recipe to V2 techcard'), loading indicator displays 'Конвертируем...' text as expected, conversion completes within ~5 seconds, no JavaScript errors during process"
 
   - task: "V2 Tech Card Display After Conversion"
+  - task: "V1→V2 Recipe Converter API Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ V1→V2 converter API endpoint fully operational - POST /api/v1/convert-recipe-to-techcard working correctly, GPT-4o model successfully converts V1 creative recipes to structured V2 tech cards, proper request/response handling with recipe content and metadata, MongoDB persistence of converted tech cards confirmed"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
