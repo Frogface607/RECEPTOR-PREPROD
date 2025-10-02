@@ -10527,6 +10527,24 @@ function App() {
                       <p className="text-purple-300 text-xl font-medium mb-4">
                         Используйте AI-инструменты ниже для профессионального развития рецепта
                       </p>
+                      
+                      {/* ТЕСТОВАЯ КНОПКА ВДОХНОВЕНИЯ */}
+                      <div className="mb-4">
+                        <button
+                          onClick={() => {
+                            console.log('🎯 Testing inspiration with aiKitchenRecipe:', aiKitchenRecipe?.name);
+                            if (aiKitchenRecipe) {
+                              generateInspiration();
+                            } else {
+                              alert('Сначала создайте рецепт выше');
+                            }
+                          }}
+                          disabled={!aiKitchenRecipe || isGenerating}
+                          className={`${!aiKitchenRecipe || isGenerating ? 'bg-gray-600/50' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'} text-white px-6 py-3 rounded-xl font-medium transition-all`}
+                        >
+                          {isGenerating && loadingType === 'inspiration' ? 'Создаю твист...' : '💡 ТЕСТ: Творческий твист'}
+                        </button>
+                      </div>
                       <div className="flex flex-wrap justify-center gap-3 text-sm">
                         <span className="bg-gradient-to-r from-cyan-600/20 to-cyan-700/20 border border-cyan-500/30 px-4 py-2 rounded-xl text-cyan-300">Лабораторные эксперименты</span>
                         <span className="bg-gradient-to-r from-orange-600/20 to-orange-700/20 border border-orange-500/30 px-4 py-2 rounded-xl text-orange-300">Творческое вдохновение</span>
