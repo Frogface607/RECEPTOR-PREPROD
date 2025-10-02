@@ -6538,7 +6538,8 @@ function App() {
   const generateRecipeV1 = async () => {
     // Generate V1 Recipe from dish name or existing tech card
     const dishInput = wizardData.dishName || (tcV2?.name) || (techCard?.name);
-    if (!dishInput?.trim() || !currentUserOrDemo?.id) {
+    const userToUse = currentUser || { id: 'demo_user' };
+    if (!dishInput?.trim() || !userToUse?.id) {
       alert('Введите название блюда для создания рецепта V1');
       return;
     }
