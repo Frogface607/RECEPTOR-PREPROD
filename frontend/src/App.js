@@ -6597,7 +6597,11 @@ function App() {
     const progressInterval = simulateProgress('sales', 12000);
     
     try {
-      const cardData = tcV2 || techCard;
+      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
+      const cardData = tcV2 || techCard || {
+        name: aiKitchenRecipe?.name || 'рецепт',
+        content: aiKitchenRecipe?.content || ''
+      };
       const response = await axios.post(`${API}/generate-sales-script`, {
         tech_card: cardData,
         user_id: userToUse.id
@@ -6726,7 +6730,11 @@ function App() {
     const progressInterval = simulateProgress('inspiration', 15000);
     
     try {
-      const cardData = tcV2 || techCard;
+      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
+      const cardData = tcV2 || techCard || {
+        name: aiKitchenRecipe?.name || 'рецепт',
+        content: aiKitchenRecipe?.content || ''
+      };
       const response = await axios.post(`${API}/generate-inspiration`, {
         user_id: userToUse.id,
         tech_card: cardData,
@@ -6776,7 +6784,11 @@ function App() {
     }, 10000); // 10 секунд для детального анализа
     
     try {
-      const cardData = tcV2 || techCard;
+      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
+      const cardData = tcV2 || techCard || {
+        name: aiKitchenRecipe?.name || 'рецепт',
+        content: aiKitchenRecipe?.content || ''
+      };
       const response = await axios.post(`${API}/analyze-finances`, {
         user_id: userToUse.id,
         tech_card: cardData
@@ -6822,7 +6834,11 @@ function App() {
     const progressInterval = simulateProgress('improve', 6000); // 6 секунд загрузки
     
     try {
-      const cardData = tcV2 || techCard;
+      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
+      const cardData = tcV2 || techCard || {
+        name: aiKitchenRecipe?.name || 'рецепт',
+        content: aiKitchenRecipe?.content || ''
+      };
       const response = await axios.post(`${API}/improve-dish`, {
         user_id: userToUse.id,
         tech_card: cardData
