@@ -11674,7 +11674,7 @@ function App() {
                           </span>
                         </div>
                       )}
-                      {tcV2.ingredients && (
+                      {tcV2.ingredients && Array.isArray(tcV2.ingredients) && (
                         <div className="flex items-center space-x-2">
                           <span className="text-gray-400">⚠ Без SKU:</span>
                           <span className="text-orange-300 font-bold">
