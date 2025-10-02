@@ -274,9 +274,10 @@ class V1V2FixesTester:
                             'structure_checks': structure_checks,
                             'ingredients_count': ingredients_count,
                             'process_steps_count': process_count,
-                            'yield_data': data.get('yield', {}),
-                            'nutrition_data': data.get('nutrition', {}),
-                            'cost_data': data.get('cost', {})
+                            'yield_data': techcard_data.get('yield', {}),
+                            'nutrition_data': techcard_data.get('nutrition', {}),
+                            'cost_data': techcard_data.get('cost', {}),
+                            'techcard_id': techcard_data.get('meta', {}).get('id')
                         },
                         duration
                     )
