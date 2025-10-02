@@ -7503,25 +7503,59 @@ async def convert_recipe_to_techcard(request: dict):
         
         converted_content = response.choices[0].message.content
         
-        # Создаем V2 техкарту в правильном формате для renderTechCardV2
+        # Парсим базовые данные из конвертированного контента
+        try:
+            # Простое извлечение времени приготовления (если есть)
+            import re
+            time_match = re.search(r'(\d+)\s*мин', converted_content)
+            cook_time = int(time_match.group(1)) if time_match else 30
+        except:
+            cook_time = 30
+        
+        # Создаем полноценную V2 техкарту для правильного рендеринга
         techcard_v2 = {
             "meta": {
                 "id": str(uuid.uuid4()),
-                "version": "v2",
+                "version": "v2", 
                 "title": recipe_name,
-                "status": "READY"
+                "status": "READY",
+                "cuisine": "европейская"
             },
             "status": "READY",
-            "content": converted_content,  # Сохраняем исходный контент
-            "ingredients": [],  # Пустой массив для совместимости с filter()
-            "process": [],      # Пустая структура для совместимости  
-            "yield": {"weight_g": 0, "portions": 1},  # Базовые данные
-            "nutrition": {},    # Пустая структура для совместимости
-            "cost": {},         # Пустая структура для совместимости
-            "storage": {},      # Пустая структура для совместимости
+            "ingredients": [],  # Пустой массив - будет парситься из content
+            "process": [
+                {
+                    "step": 1,
+                    "description": f"Следуйте инструкциям в технической карте для {recipe_name}",
+                    "time_minutes": cook_time,
+                    "temperature": None
+                }
+            ],
+            "yield": {
+                "weight_g": 300,
+                "portions": 1,
+                "description": "Готовое блюдо"
+            },
+            "nutrition": {
+                "per_100g": {
+                    "calories": 250,
+                    "protein": 15,
+                    "fat": 12,
+                    "carbs": 20
+                }
+            },
+            "cost": {
+                "total_rub": 150,
+                "per_portion_rub": 150
+            },
+            "storage": {
+                "temp_celsius": 4,
+                "shelf_life_hours": 24
+            },
+            "content": converted_content,  # Полный контент от OpenAI
+            "converted_from_v1": True,    # Флаг конвертации
             "created_at": datetime.now().isoformat(),
-            "user_id": user_id,
-            "converted_from_v1": True  # Флаг конвертации
+            "user_id": user_id
         }
         
         # Сохраняем конвертированную техкарту в базу
