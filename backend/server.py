@@ -7682,16 +7682,11 @@ async def generate_inspiration(request: dict):
 Для каждого варианта опиши ключевые изменения и почему это будет вкусно.
 """
 
-        # Используем OpenAI для генерации вдохновения
-        import openai
+        # Используем тот же openai_client что и в рабочей генерации техкарт
+        if not openai_client:
+            raise HTTPException(status_code=500, detail="OpenAI клиент не инициализирован")
         
-        openai_api_key = os.environ.get('OPENAI_API_KEY')
-        if not openai_api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
-        
-        client = openai.OpenAI(api_key=openai_api_key)
-        
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "Ты новаторский шеф-повар, который создает революционные интерпретации классических блюд. Твои идеи всегда практичны и вкусны."},
