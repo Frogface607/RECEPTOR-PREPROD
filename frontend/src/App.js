@@ -10377,7 +10377,7 @@ function App() {
                         <h4 className="text-purple-300 font-bold text-2xl">
                           {aiKitchenRecipe.name}
                         </h4>
-                        <div className="flex space-x-4">
+                        <div className="flex flex-wrap gap-4">
                           <button 
                             onClick={async () => {
                               try {
@@ -10403,6 +10403,52 @@ function App() {
                           >
                             Сохранить в историю
                           </button>
+                          
+                          <button 
+                            onClick={async () => {
+                              // V1→V2 Конвертация
+                              setIsGenerating(true);
+                              setLoadingType('conversion');
+                              setLoadingMessage('Структурируем рецепт в техкарту...');
+                              
+                              try {
+                                console.log('🔄 Converting V1 recipe to V2 techcard');
+                                
+                                const response = await axios.post(`${API}/v1/convert-recipe-to-techcard`, {
+                                  recipe_content: aiKitchenRecipe.content,
+                                  recipe_name: aiKitchenRecipe.name,
+                                  user_id: (currentUser || { id: 'demo_user' }).id
+                                });
+                                
+                                if (response.data.techcard) {
+                                  // Успешная конвертация - переключаемся на V2
+                                  setTcV2(response.data.techcard);
+                                  setTechCard(null); // Очищаем V1
+                                  setAiKitchenRecipe(null); // Очищаем AI Kitchen
+                                  setWizardData(prev => ({...prev, dishName: aiKitchenRecipe.name}));
+                                  setGenerationStatus('success');
+                                  setCurrentView('create');
+                                  
+                                  alert('Рецепт успешно преобразован в профессиональную техкарту V2!');
+                                } else {
+                                  throw new Error('Пустой ответ от сервера конвертации');
+                                }
+                                
+                              } catch (error) {
+                                console.error('Error converting V1 to V2:', error);
+                                alert('Ошибка конвертации: ' + (error.response?.data?.detail || error.message));
+                              } finally {
+                                setIsGenerating(false);
+                                setLoadingMessage('');
+                                setLoadingType('');
+                              }
+                            }}
+                            disabled={isGenerating}
+                            className={`${isGenerating ? 'bg-gray-600/50 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600/30 to-red-600/30 hover:from-orange-600/50 hover:to-red-600/50'} text-orange-300 border border-orange-500/50 px-6 py-3 rounded-xl hover:border-orange-400/70 transition-all duration-300 font-medium`}
+                          >
+                            {isGenerating && loadingType === 'conversion' ? 'Конвертируем...' : 'Превратить в техкарту'}
+                          </button>
+                          
                           <button 
                             onClick={() => {
                               setAiKitchenRecipe(null);
