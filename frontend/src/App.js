@@ -11067,7 +11067,7 @@ function App() {
                     type="submit"
                     disabled={!wizardData.dishName.trim() || isGenerating}
                     className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px] shadow-lg shadow-pink-500/25`}
-                    title="🍳 Создать красивый рецепт V1 для экспериментов и творчества"
+                    title="Создать профессиональную техническую карту с ингредиентами и процессом приготовления"
                   >
                     {isGenerating ? (
                       <>
