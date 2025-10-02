@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
 """
-AI ENDPOINTS 403 ERROR TESTING
-Testing all AI endpoints to identify which return 403 vs 404 errors
-and find why laboratory works while others don't.
+AI Endpoints Testing - Unified OpenAI Client Fix Verification
+Протестировать исправленные AI endpoints с unified OpenAI client
+
+Test Plan:
+1. Food Pairing Endpoint - POST /api/generate-food-pairing
+2. Inspiration Endpoint - POST /api/generate-inspiration  
+3. V1→V2 Converter Endpoint - POST /api/v1/convert-recipe-to-techcard
+
+Цель: Убедиться что использование общего openai_client исправило HTTP 500 ошибки
 """
 
-import asyncio
-import httpx
+import requests
 import json
+import time
 import os
+import sys
 from datetime import datetime
+from typing import Dict, Any, List, Optional
 
-# Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ai-menu-wizard.preview.emergentagent.com')
+# Backend URL from environment
+BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
+
+# Test user
+TEST_USER_ID = "demo_user"
 
 class AIEndpointTester:
     def __init__(self):
