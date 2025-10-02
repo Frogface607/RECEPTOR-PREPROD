@@ -7464,7 +7464,7 @@ async def convert_recipe_to_techcard(request: dict):
 Отвечай ТОЛЬКО JSON без дополнительного текста.
 """
 
-        parse_response = client.chat.completions.create(
+        parse_response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "Ты эксперт по анализу рецептов. Возвращай только корректный JSON."},
