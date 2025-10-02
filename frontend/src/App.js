@@ -10305,20 +10305,64 @@ function App() {
                 
                 {!aiKitchenRecipe ? (
                   /* Recipe Creation Form */
-                  <div className="max-w-2xl mx-auto space-y-4">
+                  <div className="max-w-3xl mx-auto space-y-6">
                     <div className="relative">
                       <input
                         type="text"
                         value={aiKitchenDishName}
                         onChange={(e) => setAiKitchenDishName(e.target.value)}
                         placeholder="Введите название блюда для создания рецепта..."
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-xl px-6 py-4 text-lg text-white placeholder-gray-400 focus:border-purple-400/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                        className="w-full bg-gray-800/30 border-2 border-gray-600/30 rounded-2xl px-8 py-6 pr-20 text-xl text-white placeholder-gray-400 focus:border-purple-400/60 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 backdrop-blur-sm"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && !isGenerating && aiKitchenDishName.trim()) {
                             generateAiKitchenRecipe();
                           }
                         }}
                       />
+                      {/* Voice Input Button for AI Kitchen */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Voice input for AI Kitchen
+                          if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                            const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+                            const recognition = new SpeechRecognition();
+                            
+                            recognition.continuous = false;
+                            recognition.interimResults = false;
+                            recognition.lang = 'ru-RU';
+                            
+                            setVoiceStatus('Слушаю...');
+                            setShowVoiceModal(true);
+                            
+                            recognition.onresult = (event) => {
+                              const transcript = event.results[0][0].transcript;
+                              setAiKitchenDishName(transcript);
+                              setVoiceStatus('Распознано: ' + transcript);
+                              setTimeout(() => {
+                                setShowVoiceModal(false);
+                              }, 1500);
+                            };
+                            
+                            recognition.onerror = () => {
+                              setVoiceStatus('Ошибка распознавания голоса');
+                              setTimeout(() => {
+                                setShowVoiceModal(false);
+                              }, 2000);
+                            };
+                            
+                            recognition.start();
+                          } else {
+                            alert('Ваш браузер не поддерживает голосовой ввод');
+                          }
+                        }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 hover:text-purple-200 transition-all duration-300 border border-purple-500/30 hover:border-purple-400/50"
+                        title="Голосовой ввод"
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 715 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                        </svg>
+                      </button>
                     </div>
                     <button 
                       onClick={generateAiKitchenRecipe}
