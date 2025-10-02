@@ -7440,13 +7440,9 @@ async def convert_recipe_to_techcard(request: dict):
         print(f"🔄 Converting V1 recipe to real V2 techcard: {recipe_name}")
         
         # ШАГ 1: Парсим V1 рецепт через LLM для извлечения данных
-        import openai
-        
-        openai_api_key = os.environ.get('OPENAI_API_KEY')
-        if not openai_api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API key не настроен")
-        
-        client = openai.OpenAI(api_key=openai_api_key)
+        # Используем тот же openai_client что и в рабочей генерации техкарт
+        if not openai_client:
+            raise HTTPException(status_code=500, detail="OpenAI клиент не инициализирован")
         
         parsing_prompt = f"""
 Проанализируй этот рецепт и извлеки ключевые данные для генерации профессиональной техкарты:
