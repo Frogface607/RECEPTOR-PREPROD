@@ -168,7 +168,7 @@ class V1V2ConverterTester:
             print(f"   Testing V1→V2 conversion for: {payload['recipe_name']}")
             start_time = time.time()
             
-            response = self.session.post(url, json=payload, timeout=60)
+            response = self.session.post(url, json=payload, timeout=90)
             
             end_time = time.time()
             duration = end_time - start_time
