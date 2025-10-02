@@ -242,6 +242,30 @@
           agent: "testing"
           comment: "✅ V1 Recipe Save endpoint /api/v1/user/save-recipe fully operational - successfully saves V1 recipes with test data (recipe_content: 'Тестовый рецепт V1 с эмодзи 🍳', recipe_name: 'Тестовое блюдо V1', recipe_type: 'v1', user_id: 'demo_user'), returns proper response structure (success: true, id, message), persists to MongoDB tech_cards collection with correct fields (type: 'v1', is_recipe: true), recipes retrievable through user-history endpoint. All 5 test cases passed (100% success rate): endpoint availability ✅, recipe saving ✅, response structure ✅, MongoDB persistence ✅, field validation ✅. Ready for production use."
 
+  - task: "V2 Tech Card Generation API Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ V2 Tech Card Generation endpoint /api/v1/techcards.v2/generate fully operational - successfully tested with dish name 'Стейк' and user_id 'demo_user', generation completed within 90-second timeout requirement (actual: 14.5s-42.1s), proper response structure with status='READY', card metadata with ID, ingredients array (3-4 ingredients), process steps array (3 steps), article allocation working (dish articles: 100033, 100038, 100039), MongoDB persistence confirmed. Backend logs show successful LLM calls (gpt-4o-mini for draft, gpt-4o for normalization), portion normalization working correctly, article allocator generating proper 5-digit codes. All timeout and structure requirements from Russian review request met successfully."
+
+  - task: "V1→V2 Recipe Converter API Endpoint - Fixed"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ V1→V2 Recipe Converter endpoint /api/v1/convert-recipe-to-techcard fully operational after fixes - successfully tested with recipe_content 'Простой тестовый рецепт для конвертации', recipe_name 'Тест V1→V2', user_id 'demo_user', conversion completed in 8.8s-9.3s, proper response structure validation passed: ingredients[] ✅, process[] ✅, yield{} ✅, nutrition{} ✅, cost{} ✅, success=true, techcard ID generated (5d4b197d-2793-4b1f-aa7d-79b0c4b2dd37), comprehensive content generated with structured format, MongoDB persistence confirmed. All structure requirements from Russian review request met successfully. Исправления решили проблемы структуры данных."
+
 ## metadata:
   created_by: "testing_agent"
   version: "1.1"
