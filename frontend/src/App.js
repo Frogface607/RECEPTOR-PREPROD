@@ -10072,7 +10072,7 @@ function App() {
                                     };
                                     
                                     setDishContext(fullDishContext);
-                                    setWizardData(prev => ({...prev, dishName: `${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}"`}));
+                                    setWizardData(prev => ({...prev, dishName: `${dish.name} (из меню "${generatedMenu.menu_name || 'Сгенерированное меню'}")}`}));
                                     
 Категория: ${category.category_name}
 Описание: ${dish.description}
