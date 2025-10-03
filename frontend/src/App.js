@@ -12819,6 +12819,27 @@ function App() {
               )}
             </div>
             
+            {/* Статистика точности расчета */}
+            {financesResult.price_accuracy && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl border border-blue-400/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-3xl">🎯</div>
+                    <div>
+                      <div className="text-blue-300 font-bold">Точность расчета: {financesResult.price_accuracy.accuracy_percent}%</div>
+                      <div className="text-gray-400 text-sm">
+                        {financesResult.price_accuracy.iiko_matched} из {financesResult.price_accuracy.total_ingredients} ингредиентов - цены из вашего IIKO каталога
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-green-400 font-bold text-lg">✓ {financesResult.price_accuracy.iiko_matched} точных</div>
+                    <div className="text-yellow-400 text-sm">≈ {financesResult.price_accuracy.market_estimated} оценочных</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Краткая сводка */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-xl p-6 text-center border border-green-500/30 shadow-lg">
