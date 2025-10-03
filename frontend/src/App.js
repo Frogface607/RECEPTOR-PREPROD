@@ -11032,6 +11032,7 @@ function App() {
                 </div>
 
                 {/* Price Management Section */}
+                {/* TEMPORARILY HIDDEN - Price Management
                 <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
                   <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-3">
                     💰 Управление прайсами
@@ -11068,6 +11069,7 @@ function App() {
                     </div>
                   )}
                 </div>
+                */}
               </div>
 
               {/* Right Column - IIKO & Integrations */}
