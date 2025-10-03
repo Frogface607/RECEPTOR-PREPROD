@@ -7833,13 +7833,13 @@ async def analyze_finances(request: dict):
                                 "confidence": "high"
                             }
                             iiko_matched_count += 1
-                            print(f"✅ Matched '{ingredient_name_clean}' with IIKO product '{product.get('name')}' = {price}₽")
+                            logger.info(f"✅ Matched '{ingredient_name_clean}' with IIKO product '{product.get('name')}' = {price}₽")
                             break
         
-        print(f"📊 IIKO matching result: {iiko_matched_count} ingredients matched out of {len(ingredient_lines)}")
+        logger.info(f"📊 IIKO matching result: {iiko_matched_count} ingredients matched out of {len(ingredient_lines)}")
     
     except Exception as e:
-        print(f"⚠️ Error fetching IIKO prices: {e}")
+        logger.error(f"⚠️ Error fetching IIKO prices: {e}")
         # Продолжаем без IIKO цен
     
     # Поиск актуальных цен в интернете
