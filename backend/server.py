@@ -7803,7 +7803,7 @@ async def analyze_finances(request: dict):
         }))
         
         if iiko_products:
-            print(f"🔍 Found {len(iiko_products)} products in IIKO catalog for user {user_id}")
+            logger.info(f"🔍 Found {len(iiko_products)} products in IIKO catalog for user {user_id}")
             
             # Парсим ингредиенты из техкарты
             ingredient_lines = [line.strip() for line in ingredients_text.split('\n') if line.strip() and not line.strip().startswith('**')]
