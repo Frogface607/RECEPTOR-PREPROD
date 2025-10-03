@@ -7900,8 +7900,8 @@ async def analyze_finances(request: dict):
 
 {{
     "dish_name": "{dish_name}",
-    "total_cost": [точная себестоимость на 1 порцию],
-    "recommended_price": [рекомендуемая цена для меню],
+    "total_cost": 350,
+    "recommended_price": 890,
     "price_reasoning": {{
         "cost_base": "себестоимость",
         "venue_markup": "типичная наценка для типа заведения (например 3.5x)",
