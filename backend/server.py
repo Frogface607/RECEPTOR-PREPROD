@@ -1882,6 +1882,7 @@ VENUE_TYPES = {
         "name": "Fine Dining",
         "description": "Высококлассный ресторан с изысканной кухней",
         "price_multiplier": 1.5,
+        "typical_markup": "4.0x",
         "complexity_level": "high",
         "techniques": ["су-вид", "молекулярная гастрономия", "профессиональная подача", "сложные соусы"],
         "service_style": "table_service",
