@@ -12977,8 +12977,22 @@ function App() {
               </div>
             )}
             
-            {/* Кнопка закрытия */}
-            <div className="flex justify-center mt-8">
+            {/* Кнопки */}
+            <div className="flex justify-center gap-4 mt-8">
+              <button
+                onClick={async () => {
+                  const dishName = `Финансовый анализ: ${financesResult.dish_name}`;
+                  const content = JSON.stringify(financesResult, null, 2);
+                  
+                  const saved = await saveAIResultAsV1(content, dishName, 'financial_analysis');
+                  if (saved) {
+                    setShowFinancesModal(false);
+                  }
+                }}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                💾 СОХРАНИТЬ КАК V1
+              </button>
               <button
                 onClick={() => setShowFinancesModal(false)}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-12 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
