@@ -7935,9 +7935,18 @@ async def improve_dish(request: dict):
     elif not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     
+    # Convert tech_card to string if it's a dict (V2 or aiKitchenRecipe format)
+    if isinstance(tech_card, dict):
+        if 'content' in tech_card:
+            tech_card_str = tech_card['content']
+        else:
+            tech_card_str = str(tech_card)
+    else:
+        tech_card_str = tech_card
+    
     # Извлекаем название блюда
     dish_name = "блюдо"
-    title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card)
+    title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card_str)
     if title_match:
         dish_name = title_match.group(1).strip()
     
