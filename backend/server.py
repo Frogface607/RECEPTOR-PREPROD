@@ -7746,14 +7746,23 @@ async def analyze_finances(request: dict):
     if user.get("subscription_plan") not in ["pro", "business"]:
         raise HTTPException(status_code=403, detail="Функция доступна только для PRO пользователей")
     
+    # Convert tech_card to string if it's a dict (V2 or aiKitchenRecipe format)
+    if isinstance(tech_card, dict):
+        if 'content' in tech_card:
+            tech_card_str = tech_card['content']
+        else:
+            tech_card_str = str(tech_card)
+    else:
+        tech_card_str = tech_card
+    
     # Извлекаем название блюда
     dish_name = "блюдо"
-    title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card)
+    title_match = re.search(r'\*\*Название:\*\*\s*(.*?)(?=\n|$)', tech_card_str)
     if title_match:
         dish_name = title_match.group(1).strip()
     
     # Извлекаем ингредиенты и цены
-    ingredients_match = re.search(r'\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)', tech_card, re.DOTALL)
+    ingredients_match = re.search(r'\*\*Ингредиенты:\*\*(.*?)(?=\*\*[^*]+:\*\*|$)', tech_card_str, re.DOTALL)
     ingredients_text = ingredients_match.group(1) if ingredients_match else ""
     
     # Получаем региональный коэффициент
