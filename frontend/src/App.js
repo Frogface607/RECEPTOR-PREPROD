@@ -12459,6 +12459,36 @@ function App() {
                   </div>
                 </div>
               )}
+
+              {/* Tips and Lifehacks for V1 to V2 Conversion */}
+              {loadingType === 'conversion' && (
+                <div className="mt-8 p-4 bg-gradient-to-br from-orange-900/20 to-purple-900/20 rounded-xl border border-orange-400/30">
+                  <div className="flex items-start space-x-3">
+                    <div className="text-3xl flex-shrink-0 animate-bounce">
+                      {conversionTips[currentConversionTipIndex]?.icon}
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-orange-300 font-bold text-sm mb-2">
+                        {conversionTips[currentConversionTipIndex]?.title}
+                      </h4>
+                      <p className="text-gray-300 text-xs leading-relaxed">
+                        {conversionTips[currentConversionTipIndex]?.text}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex justify-center space-x-1">
+                    {conversionTips.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${
+                          index === currentConversionTipIndex ? 'bg-orange-400' : 'bg-gray-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               
               {/* Tips for Other Types */}
               {loadingType === 'techcard' && (
