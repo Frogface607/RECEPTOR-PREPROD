@@ -10805,13 +10805,17 @@ function App() {
                         // Правильная загрузка V1 рецептов и V2 техкарт
                         
                         if (isV1Recipe) {
-                          // Загружаем V1 рецепт
-                          setTechCard(techcard.content);
+                          // Загружаем V1 рецепт в AI-Kitchen
+                          setAiKitchenRecipe({
+                            content: techcard.content,
+                            id: techcard.id,
+                            name: techcard.dish_name || techcard.name || 'Рецепт из истории',
+                            created_at: techcard.created_at || new Date().toISOString()
+                          });
+                          setTechCard(null);
                           setTcV2(null);
-                          setWizardData(prev => ({...prev, dishName: techcard.dish_name || techcard.name || 'Рецепт из истории'}));
-                          setGenerationStatus('success');
                           setCurrentTechCardId(techcard.id);
-                          setCurrentView('create');
+                          setCurrentView('aiKitchen');
                         } else if (isV2 && techcard.techcard_v2_data) {
                           // Загружаем V2 техкарту
                           setTcV2(techcard.techcard_v2_data);
