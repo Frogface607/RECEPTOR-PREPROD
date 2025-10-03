@@ -6672,6 +6672,7 @@ function App() {
         user_id: userToUse.id
       });
       
+      console.log('✅ [Food Pairing] Response received:', response.data.pairing?.length, 'chars');
       setFoodPairingResult(response.data.pairing);
       
       // Завершаем анимацию
@@ -6679,12 +6680,15 @@ function App() {
       setLoadingProgress(100);
       setLoadingMessage('✨ Фудпейринг готов!');
       
+      console.log('🍷 [Food Pairing] Setting modal to show in 2 seconds...');
       setTimeout(() => {
+        console.log('🍷 [Food Pairing] Now showing modal');
         setIsGenerating(false);
         setLoadingProgress(0);
         setLoadingMessage('');
         setLoadingType('');
         setShowFoodPairingModal(true);
+        console.log('🍷 [Food Pairing] Modal state set to true');
       }, 2000);
       
     } catch (error) {
