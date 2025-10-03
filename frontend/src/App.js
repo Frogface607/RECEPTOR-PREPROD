@@ -10680,9 +10680,9 @@ function App() {
                 </div>
                 <button
                   onClick={improveDish}
-                  disabled={isImprovingDish || !tcV2}
+                  disabled={isImprovingDish || !(techCard || tcV2 || aiKitchenRecipe)}
                   className={`w-full ${
-                    isImprovingDish || !tcV2 
+                    isImprovingDish || !(techCard || tcV2 || aiKitchenRecipe)
                       ? 'bg-gray-600 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
