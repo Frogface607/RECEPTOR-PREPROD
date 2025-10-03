@@ -7846,6 +7846,14 @@ async def analyze_finances(request: dict):
     except Exception:
         competitor_search_result = "Данные по конкурентам недоступны"
     
+    # Формируем информацию о IIKO ценах для промпта
+    iiko_prices_info = ""
+    if iiko_prices:
+        iiko_prices_info = "\n\n🎯 ТОЧНЫЕ ЦЕНЫ ИЗ IIKO КАТАЛОГА (приоритет!):\n"
+        for ingredient_name, price_data in iiko_prices.items():
+            iiko_prices_info += f"- {ingredient_name}: {price_data['price']}₽ за {price_data['unit']} (source: IIKO, точная цена)\n"
+        iiko_prices_info += f"\nИТОГО: {len(iiko_prices)} ингредиентов с точными ценами из IIKO."
+    
     # Создаем промпт для финансового анализа
     prompt = f"""Ты — практичный финансовый консультант ресторанов с 15-летним опытом. Твоя специализация — КОНКРЕТНЫЕ решения, а не общие фразы.
 
@@ -7855,8 +7863,15 @@ async def analyze_finances(request: dict):
 {tech_card}
 
 РЕГИОНАЛЬНЫЙ КОЭФФИЦИЕНТ: {regional_coefficient}x
-ЦЕНЫ НА ПРОДУКТЫ: {price_search_result}
+
+{iiko_prices_info}
+
+ДОПОЛНИТЕЛЬНЫЕ ЦЕНЫ НА ПРОДУКТЫ (если не найдены в IIKO): {price_search_result}
+
 КОНКУРЕНТЫ: {competitor_search_result}
+
+⚠️ ВАЖНО: Если ингредиент есть в IIKO каталоге выше - используй ТОЧНУЮ цену оттуда (это реальная цена поставщика).
+Для остальных ингредиентов используй рыночные цены с учетом регионального коэффициента.
 
 ПРИНЦИПЫ АНАЛИЗА:
 - Никаких банальностей типа "оптимизируйте поставщиков"
