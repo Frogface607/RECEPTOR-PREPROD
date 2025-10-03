@@ -7888,7 +7888,14 @@ async def analyze_finances(request: dict):
 {{
     "dish_name": "{dish_name}",
     "total_cost": [точная себестоимость на 1 порцию],
-    "recommended_price": [рекомендуемая цена],
+    "recommended_price": [рекомендуемая цена для меню],
+    "price_reasoning": {{
+        "cost_base": "себестоимость",
+        "venue_markup": "типичная наценка для типа заведения (например 3.5x)",
+        "suggested_by_markup": "цена на основе наценки",
+        "competitor_average": "средняя цена у конкурентов",
+        "final_recommendation": "итоговая рекомендация и почему"
+    }},
     "margin_percent": [маржинальность %],
     "profitability_rating": [1-5 звезд],
     
