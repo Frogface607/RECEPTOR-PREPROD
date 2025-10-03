@@ -11399,6 +11399,7 @@ function App() {
                       УПРАВЛЕНИЕ ПРАЙСАМИ
                     </button>
                     */}
+                    {/* TEMPORARILY HIDDEN - Price info
                     {userPrices.length > 0 && (
                       <div className="text-xs sm:text-sm text-green-400 text-center mb-3 sm:mb-4">
                         💰 Загружено {userPrices.length} позиций
@@ -11407,13 +11408,14 @@ function App() {
                     <div className="text-xs sm:text-sm text-green-400 text-center mb-3 sm:mb-4 p-2 bg-green-900/20 rounded">
                       ✅ Загрузка Excel/CSV прайс-листов полностью готова!
                     </div>
+                    */}
                     
                     {/* Personal Cabinet Button - Only for authenticated users */}
                     {currentUser && currentUser.id !== 'demo_user' && (
                       <button
                         onClick={() => setCurrentView('personal-cabinet')}
                         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-all transform hover:scale-105 mb-4 text-sm sm:text-base min-h-[48px] shadow-lg"
-                        title="👤 Личный кабинет: Настройки профиля, подключение IIKO, управление прайсами"
+                        title="👤 Личный кабинет: Настройки профиля и подключение IIKO"
                       >
                         👤 ЛИЧНЫЙ КАБИНЕТ
                       </button>
