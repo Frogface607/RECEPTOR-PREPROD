@@ -6687,16 +6687,24 @@ function App() {
   };
 
   const generatePhotoTips = async () => {
-    if (!techCard || !currentUser?.id) return;
+    // Support V1 recipes, V1 tech cards, V2 tech cards, and AI Kitchen recipes
+    const hasCard = techCard || tcV2 || aiKitchenRecipe;
+    const userToUse = currentUser || { id: 'demo_user' };
+    if (!hasCard || !userToUse?.id) return;
     
     setIsGenerating(true);
     setLoadingType('photo');
     const progressInterval = simulateProgress('photo', 10000);
     
     try {
+      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
+      const cardData = tcV2 || techCard || {
+        name: aiKitchenRecipe?.name || 'рецепт',
+        content: aiKitchenRecipe?.content || ''
+      };
       const response = await axios.post(`${API}/generate-photo-tips`, {
-        user_id: currentUser.id,
-        tech_card: techCard
+        user_id: userToUse.id,
+        tech_card: cardData
       });
       
       clearInterval(progressInterval);
