@@ -10741,13 +10741,13 @@ function App() {
 
             </div>
 
-            {/* Requirement: Need tech card */}
-            {!tcV2 && (
+            {/* Requirement: Need tech card or recipe */}
+            {!(techCard || tcV2 || aiKitchenRecipe) && (
               <div className="mt-8 bg-yellow-600/20 border border-yellow-400/30 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-4"></div>
-                <h3 className="text-lg font-bold text-yellow-300 mb-2">Сначала создайте техкарту</h3>
+                <div className="text-3xl mb-4">📝</div>
+                <h3 className="text-lg font-bold text-yellow-300 mb-2">Сначала создайте рецепт</h3>
                 <p className="text-gray-300 text-sm mb-4">
-                  Для использования AI-дополнений нужна готовая техкарта
+                  Для использования AI-функций создайте рецепт V1 выше или техкарту
                 </p>
                 <button
                   onClick={() => setCurrentView('create')}
