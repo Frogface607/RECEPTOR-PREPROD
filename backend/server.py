@@ -6989,9 +6989,18 @@ async def generate_sales_script(request: dict):
     average_check = user.get("average_check", 800)
     venue_name = user.get("venue_name", "заведение")
     
+    # Convert tech_card to string if it's a dict (V2 or aiKitchenRecipe format)
+    if isinstance(tech_card, dict):
+        if 'content' in tech_card:
+            tech_card_str = tech_card['content']
+        else:
+            tech_card_str = str(tech_card)
+    else:
+        tech_card_str = tech_card
+    
     # Extract dish name from tech card
     dish_name = "блюдо"
-    for line in tech_card.split('\n'):
+    for line in tech_card_str.split('\n'):
         if 'Название:' in line:
             dish_name = line.split('Название:')[1].strip().replace('**', '')
             break
