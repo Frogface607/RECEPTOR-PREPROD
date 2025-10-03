@@ -8000,8 +8000,50 @@ async def analyze_finances(request: dict):
             clean_text = clean_text.strip()
             
             analysis_data = json.loads(clean_text)
-        except json.JSONDecodeError:
+            
+            # Валидация и парсинг чисел
+            if 'total_cost' in analysis_data:
+                try:
+                    cost_val = analysis_data['total_cost']
+                    if isinstance(cost_val, str):
+                        # Убираем все нечисловые символы кроме точки
+                        cost_val = ''.join(c for c in cost_val if c.isdigit() or c == '.')
+                    analysis_data['total_cost'] = float(cost_val) if cost_val else 150
+                    
+                    # Проверка на адекватность (должна быть больше 20₽ и меньше 10000₽)
+                    if analysis_data['total_cost'] < 20:
+                        logger.warning(f"⚠️ Suspicious total_cost {analysis_data['total_cost']}₽ - too low. Setting to 150₽")
+                        analysis_data['total_cost'] = 150
+                    elif analysis_data['total_cost'] > 10000:
+                        logger.warning(f"⚠️ Suspicious total_cost {analysis_data['total_cost']}₽ - too high. Setting to 500₽")
+                        analysis_data['total_cost'] = 500
+                except (ValueError, TypeError) as e:
+                    logger.error(f"Error parsing total_cost: {e}")
+                    analysis_data['total_cost'] = 150
+            
+            if 'recommended_price' in analysis_data:
+                try:
+                    price_val = analysis_data['recommended_price']
+                    if isinstance(price_val, str):
+                        price_val = ''.join(c for c in price_val if c.isdigit() or c == '.')
+                    analysis_data['recommended_price'] = float(price_val) if price_val else 450
+                    
+                    # Проверка на адекватность
+                    if analysis_data['recommended_price'] < 50:
+                        logger.warning(f"⚠️ Suspicious recommended_price {analysis_data['recommended_price']}₽ - too low. Setting to 450₽")
+                        analysis_data['recommended_price'] = 450
+                    elif analysis_data['recommended_price'] > 50000:
+                        logger.warning(f"⚠️ Suspicious recommended_price {analysis_data['recommended_price']}₽ - too high. Setting to 1500₽")
+                        analysis_data['recommended_price'] = 1500
+                except (ValueError, TypeError) as e:
+                    logger.error(f"Error parsing recommended_price: {e}")
+                    analysis_data['recommended_price'] = 450
+            
+            logger.info(f"💰 Financial analysis result: cost={analysis_data.get('total_cost')}₽, price={analysis_data.get('recommended_price')}₽")
+            
+        except json.JSONDecodeError as e:
             # Если JSON некорректный, возвращаем базовый анализ
+            logger.error(f"JSON decode error: {e}")
             analysis_data = {
                 "dish_name": dish_name,
                 "total_cost": 150,
