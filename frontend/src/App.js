@@ -12874,6 +12874,38 @@ function App() {
               </div>
             </div>
             
+            {/* Детализация рекомендуемой цены */}
+            {financesResult.price_reasoning && (
+              <div className="mb-8 bg-gradient-to-r from-indigo-900/20 to-blue-900/20 rounded-xl p-6 border border-indigo-400/30">
+                <h3 className="text-xl font-bold text-indigo-300 mb-4 flex items-center">
+                  💡 Как мы рассчитали рекомендуемую цену
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
+                    <span className="text-gray-300">Себестоимость блюда:</span>
+                    <span className="text-white font-bold">{financesResult.price_reasoning.cost_base || financesResult.total_cost}₽</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
+                    <span className="text-gray-300">
+                      Типичная наценка для вашего типа заведения ({financesResult.price_reasoning.venue_markup || '3.0x'}):
+                    </span>
+                    <span className="text-blue-300 font-bold">{financesResult.price_reasoning.suggested_by_markup}₽</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg">
+                    <span className="text-gray-300">Средняя цена у конкурентов:</span>
+                    <span className="text-purple-300 font-bold">{financesResult.price_reasoning.competitor_average}₽</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-indigo-600/20 to-blue-600/20 rounded-lg border border-indigo-400/30">
+                    <span className="text-indigo-200 font-bold">✨ Итоговая рекомендация:</span>
+                    <span className="text-white font-bold text-xl">{financesResult.recommended_price}₽</span>
+                  </div>
+                  <div className="mt-3 p-3 bg-blue-900/20 rounded-lg border-l-4 border-blue-400">
+                    <p className="text-blue-200 text-sm">{financesResult.price_reasoning.final_recommendation}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Разбор ингредиентов с актуальными ценами */}
             {financesResult.ingredient_costs && (
               <div className="mb-8">
