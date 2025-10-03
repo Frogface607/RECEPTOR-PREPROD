@@ -10835,13 +10835,17 @@ function App() {
                             setCurrentTechCardId(techcard.id);
                             setCurrentView('create');
                           } catch (e) {
-                            // Если парсинг не удался, это V1
-                            setTechCard(techcard.content);
+                            // Если парсинг не удался, это V1 - открываем в AI-Kitchen
+                            setAiKitchenRecipe({
+                              content: techcard.content,
+                              id: techcard.id,
+                              name: techcard.dish_name || techcard.name || 'Рецепт из истории',
+                              created_at: techcard.created_at || new Date().toISOString()
+                            });
+                            setTechCard(null);
                             setTcV2(null);
-                            setWizardData(prev => ({...prev, dishName: techcard.dish_name || techcard.name || 'Рецепт из истории'}));
-                            setGenerationStatus('success');
                             setCurrentTechCardId(techcard.id);
-                            setCurrentView('create');
+                            setCurrentView('aiKitchen');
                           }
                         }
                       }}
