@@ -12256,21 +12256,6 @@ function App() {
                 КОПИРОВАТЬ
               </button>
               <button
-                onClick={async () => {
-                  // Получаем название блюда из текущего контекста
-                  const baseDishName = aiKitchenRecipe?.name || tcV2?.name || techCard?.name || 'Фудпейринг';
-                  const dishName = `Фудпейринг для ${baseDishName}`;
-                  
-                  const saved = await saveAIResultAsV1(foodPairingResult, dishName, 'food_pairing');
-                  if (saved) {
-                    setShowFoodPairingModal(false);
-                  }
-                }}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2 rounded-lg"
-              >
-                💾 СОХРАНИТЬ КАК V1
-              </button>
-              <button
                 onClick={() => setShowFoodPairingModal(false)}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
               >
