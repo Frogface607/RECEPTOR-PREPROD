@@ -10704,9 +10704,9 @@ function App() {
                 </div>
                 <button
                   onClick={generateSalesScript}
-                  disabled={isGenerating || !tcV2}
+                  disabled={isGenerating || !(techCard || tcV2 || aiKitchenRecipe)}
                   className={`w-full ${
-                    isGenerating || !tcV2 
+                    isGenerating || !(techCard || tcV2 || aiKitchenRecipe)
                       ? 'bg-gray-600 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
