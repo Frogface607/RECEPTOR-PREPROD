@@ -12392,6 +12392,7 @@ function App() {
                   {loadingType === 'pairing' && '🍷 Подбираю сочетания'}
                   {loadingType === 'photo' && '📸 Готовлю советы по фото'}
                   {loadingType === 'inspiration' && '🌟 Создаю вдохновение'}
+                  {loadingType === 'conversion' && '🔄 Конвертирую V1 → V2'}
                 </h3>
                 <p className="text-purple-300 text-base animate-pulse font-medium">
                   {loadingMessage}
