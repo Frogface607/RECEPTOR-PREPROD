@@ -12563,6 +12563,22 @@ function App() {
                 КОПИРОВАТЬ
               </button>
               <button
+                onClick={async () => {
+                  // Извлекаем название блюда из результата
+                  const lines = inspirationResult.split('\n');
+                  const nameMatch = lines.find(line => line.includes('Название:'));
+                  const dishName = nameMatch ? nameMatch.replace(/\*\*Название:\*\*|Название:/, '').trim() : 'Вдохновение';
+                  
+                  const saved = await saveAIResultAsV1(inspirationResult, dishName, 'inspiration');
+                  if (saved) {
+                    setShowInspirationModal(false);
+                  }
+                }}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2 rounded-lg"
+              >
+                💾 СОХРАНИТЬ КАК V1
+              </button>
+              <button
                 onClick={() => setShowInspirationModal(false)}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
               >
