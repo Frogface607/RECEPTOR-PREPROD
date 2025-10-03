@@ -10550,11 +10550,14 @@ function App() {
                               setLoadingType('conversion');
                               setLoadingMessage('Структурируем рецепт в техкарту...');
                               
+                              // Запускаем симуляцию прогресса
+                              const progressInterval = simulateProgress('conversion', 20000); // 20 секунд
+                              
                               // Запускаем автоматическую смену советов
                               setCurrentConversionTipIndex(0);
                               const tipInterval = setInterval(() => {
                                 setCurrentConversionTipIndex(prev => (prev + 1) % conversionTips.length);
-                              }, 3000); // Смена каждые 3 секунды
+                              }, 6000); // Смена каждые 6 секунд - чтобы успеть прочитать
                               
                               try {
                                 console.log('🔄 Converting V1 recipe to V2 techcard');
