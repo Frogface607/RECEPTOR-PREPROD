@@ -6936,6 +6936,33 @@ function App() {
     }
   };
 
+  // Универсальная функция для сохранения AI-результатов как V1 рецепты
+  const saveAIResultAsV1 = async (resultContent, resultName, sourceType) => {
+    try {
+      const response = await axios.post(`${API}/v1/user/save-recipe`, {
+        recipe_content: resultContent,
+        recipe_name: resultName,
+        recipe_type: 'v1',
+        source_type: sourceType, // 'inspiration', 'food_pairing', 'sales_script', etc.
+        user_id: (currentUser || { id: 'demo_user' }).id
+      });
+      
+      if (response.data.success) {
+        alert('Результат успешно сохранен как V1 рецепт в историю! 🎉');
+        loadUserTechCards(); // Обновляем историю
+        return true;
+      } else {
+        alert('Ошибка сохранения: ' + (response.data.message || 'Неизвестная ошибка'));
+        return false;
+      }
+    } catch (error) {
+      console.error('Error saving AI result as V1:', error);
+      alert('Ошибка сохранения: ' + (error.response?.data?.detail || error.message));
+      return false;
+    }
+  };
+
+
   // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
   const renderIngredientsTable = (content) => {
     console.log('=== INGREDIENTS TABLE DEBUG ===');
