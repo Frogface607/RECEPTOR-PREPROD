@@ -7396,6 +7396,7 @@ async def save_v1_recipe(request: dict):
     recipe_content = request.get("recipe_content")
     recipe_name = request.get("recipe_name", "Рецепт V1")
     recipe_type = request.get("recipe_type", "v1")
+    source_type = request.get("source_type", "manual")  # 'manual', 'inspiration', 'food_pairing', etc.
     
     if not user_id or not recipe_content:
         raise HTTPException(status_code=400, detail="Не предоставлены обязательные параметры")
@@ -7410,6 +7411,7 @@ async def save_v1_recipe(request: dict):
             "type": recipe_type,  # 'v1' for recipes, 'v2' for tech cards
             "version": "v1",
             "is_recipe": True,  # Flag to distinguish from tech cards
+            "source_type": source_type,  # Source: manual, inspiration, food_pairing, etc.
             "created_at": datetime.now(),
             "city": "moscow"  # Default city
         }
