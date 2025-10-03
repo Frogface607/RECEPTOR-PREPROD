@@ -6726,17 +6726,8 @@ function App() {
   const generateInspiration = async () => {
     // Support V1 recipes, V1 tech cards, V2 tech cards, and AI Kitchen recipes
     const hasCard = techCard || tcV2 || aiKitchenRecipe;
-    console.log('💡 [Inspiration] Starting generation...');
-    console.log('💡 [Inspiration] hasCard:', !!hasCard);
-    console.log('💡 [Inspiration] techCard:', !!techCard);
-    console.log('💡 [Inspiration] tcV2:', !!tcV2);
-    console.log('💡 [Inspiration] aiKitchenRecipe:', !!aiKitchenRecipe, aiKitchenRecipe?.name);
     const userToUse = currentUser || { id: 'demo_user' };
-    console.log('💡 [Inspiration] User:', userToUse?.id);
-    if (!hasCard || !userToUse?.id) {
-      console.log('❌ [Inspiration] No card or user, aborting');
-      return;
-    }
+    if (!hasCard || !userToUse?.id) return;
     
     setIsGenerating(true);
     setLoadingType('inspiration');
