@@ -11373,8 +11373,8 @@ function App() {
                         {/* V1 Recipe Creation moved to AI-Kitchen -> Laboratory */}
                         <button
                           onClick={() => generateSalesScript()}
-                          disabled={isGenerating}
-                          className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          disabled={isGenerating || !(techCard || tcV2 || aiKitchenRecipe)}
+                          className={`w-full ${isGenerating || !(techCard || tcV2 || aiKitchenRecipe) ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
                           title="💬 СКРИПТ ПРОДАЖ: Генерирует профессиональные тексты для официантов с аргументами и техниками продаж"
                         >
                           СКРИПТ ПРОДАЖ
