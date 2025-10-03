@@ -10728,9 +10728,9 @@ function App() {
                 </div>
                 <button
                   onClick={analyzeFinances}
-                  disabled={isAnalyzingFinances || !tcV2}
+                  disabled={isAnalyzingFinances || !(techCard || tcV2 || aiKitchenRecipe)}
                   className={`w-full ${
-                    isAnalyzingFinances || !tcV2 
+                    isAnalyzingFinances || !(techCard || tcV2 || aiKitchenRecipe)
                       ? 'bg-gray-600 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
                   } text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm`}
