@@ -12314,20 +12314,6 @@ function App() {
                 КОПИРОВАТЬ
               </button>
               <button
-                onClick={async () => {
-                  const baseDishName = aiKitchenRecipe?.name || tcV2?.name || techCard?.name || 'Фотопрезентация';
-                  const dishName = `Советы по фото: ${baseDishName}`;
-                  
-                  const saved = await saveAIResultAsV1(photoTipsResult, dishName, 'photo_tips');
-                  if (saved) {
-                    setShowPhotoTipsModal(false);
-                  }
-                }}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2 rounded-lg"
-              >
-                💾 СОХРАНИТЬ КАК V1
-              </button>
-              <button
                 onClick={() => setShowPhotoTipsModal(false)}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
               >
