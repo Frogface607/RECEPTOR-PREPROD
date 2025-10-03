@@ -6745,8 +6745,6 @@ function App() {
         inspiration_prompt: inspirationPrompt || 'Создай креативный и жизнеспособный твист на это блюдо'
       });
       
-      console.log('✅ [Inspiration] Response received:', response.data.inspiration?.length, 'chars');
-      
       clearInterval(progressInterval);
       setIsGenerating(false);
       setLoadingProgress(0);
@@ -6756,11 +6754,8 @@ function App() {
       setInspirationResult(response.data.inspiration);
       
       // Показываем модальное окно с небольшой задержкой
-      console.log('💡 [Inspiration] Setting modal to show in 2 seconds...');
       setTimeout(() => {
-        console.log('💡 [Inspiration] Now showing modal');
         setShowInspirationModal(true);
-        console.log('💡 [Inspiration] Modal state set to true');
       }, 2000);
       
     } catch (error) {
