@@ -13230,31 +13230,17 @@ function App() {
             <div className="flex justify-between space-x-4 mt-8">
               <button
                 onClick={async () => {
-                  // Сохраняем экспериментальное блюдо как новую техкарту
-                  try {
-                    const response = await axios.post(`${API}/save-laboratory-experiment`, {
-                      user_id: currentUser.id,
-                      experiment: laboratoryResult.experiment,
-                      experiment_type: laboratoryResult.experiment_type,
-                      image_url: laboratoryResult.image_url
-                    });
-                    
-                    // Устанавливаем новую техкарту
-                    setTechCard(laboratoryResult.experiment);
-                    setCurrentIngredients(parseIngredientsFromTechCard(laboratoryResult.experiment));
-                    setCurrentTechCardId(response.data.id);
+                  const dishName = `Эксперимент: ${laboratoryResult.experiment_type}`;
+                  
+                  const saved = await saveAIResultAsV1(laboratoryResult.experiment, dishName, 'laboratory_experiment');
+                  if (saved) {
                     setShowLaboratoryModal(false);
-                    
-                    alert('Экспериментальное блюдо сохранено в истории техкарт!');
-                  } catch (error) {
-                    console.error('Error saving experiment:', error);
-                    alert('Ошибка при сохранении эксперимента');
                   }
                 }}
-                className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-                title="💾 Сохранить экспериментальное блюдо как полноценную техкарту в историю"
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                title="💾 Сохранить эксперимент как V1 рецепт"
               >
-                💾 СОХРАНИТЬ В ИСТОРИЮ
+                💾 СОХРАНИТЬ КАК V1
               </button>
               
               <button
