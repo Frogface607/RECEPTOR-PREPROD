@@ -10586,6 +10586,7 @@ function App() {
                                 console.error('Error converting V1 to V2:', error);
                                 alert('Ошибка конвертации: ' + (error.response?.data?.detail || error.message));
                               } finally {
+                                clearInterval(progressInterval);
                                 clearInterval(tipInterval);
                                 setIsGenerating(false);
                                 setLoadingMessage('');
