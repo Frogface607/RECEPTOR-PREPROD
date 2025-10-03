@@ -7889,8 +7889,15 @@ async def analyze_finances(request: dict):
     "profitability_rating": [1-5 звезд],
     
     "ingredient_breakdown": [
-        {{"ingredient": "название", "cost": "стоимость₽", "percent_of_total": "% от общей стоимости", "optimization_tip": "конкретный совет по оптимизации"}}
+        {{"ingredient": "название", "cost": "стоимость₽", "percent_of_total": "% от общей стоимости", "price_source": "iiko|market_estimate", "confidence": "high|medium|low", "optimization_tip": "конкретный совет по оптимизации"}}
     ],
+    
+    "price_accuracy": {{
+        "total_ingredients": "общее количество ингредиентов",
+        "iiko_matched": "количество с ценами из IIKO",
+        "market_estimated": "количество с рыночной оценкой",
+        "accuracy_percent": "процент точности расчета (0-100)"
+    }},
     
     "smart_cost_cuts": [
         {{"change": "Конкретная замена ингредиента", "current_cost": "текущая стоимость₽", "new_cost": "новая стоимость₽", "savings": "экономия₽", "quality_impact": "влияние на вкус: минимальное/заметное/критичное"}},
