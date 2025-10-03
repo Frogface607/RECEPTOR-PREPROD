@@ -12848,9 +12848,17 @@ function App() {
                 <div className="text-green-400 text-xs mt-1">на 1 порцию</div>
               </div>
               <div className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-xl p-6 text-center border border-blue-500/30 shadow-lg">
-                <div className="text-blue-300 text-sm font-bold uppercase tracking-wider">Рекомендуемая цена</div>
+                <div className="text-blue-300 text-sm font-bold uppercase tracking-wider">💰 Поставьте в меню</div>
                 <div className="text-3xl font-bold text-white mt-2">{financesResult.recommended_price}₽</div>
-                <div className="text-blue-400 text-xs mt-1">× {((financesResult.recommended_price / financesResult.total_cost) || 3).toFixed(1)} коэффициент</div>
+                <div className="text-blue-400 text-xs mt-1">
+                  {financesResult.price_reasoning ? (
+                    <span title={`${financesResult.price_reasoning.final_recommendation}`}>
+                      × {((financesResult.recommended_price / financesResult.total_cost) || 3).toFixed(1)} коэффициент
+                    </span>
+                  ) : (
+                    `× ${((financesResult.recommended_price / financesResult.total_cost) || 3).toFixed(1)} коэффициент`
+                  )}
+                </div>
               </div>
               <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl p-6 text-center border border-purple-500/30 shadow-lg">
                 <div className="text-purple-300 text-sm font-bold uppercase tracking-wider">Маржа</div>
