@@ -7777,6 +7777,58 @@ async def analyze_finances(request: dict):
     # Получаем региональный коэффициент
     regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
     
+    # ✨ NEW: Поиск ингредиентов в IIKO каталоге пользователя для точных цен
+    iiko_prices = {}
+    iiko_matched_count = 0
+    
+    try:
+        # Получаем IIKO каталог пользователя (если подключен)
+        organization_id = user.get("organization_id", "default")
+        iiko_products = list(db.rms_products.find({
+            "organization_id": organization_id,
+            "active": True
+        }))
+        
+        if iiko_products:
+            print(f"🔍 Found {len(iiko_products)} products in IIKO catalog for user {user_id}")
+            
+            # Парсим ингредиенты из техкарты
+            ingredient_lines = [line.strip() for line in ingredients_text.split('\n') if line.strip() and not line.strip().startswith('**')]
+            
+            for ingredient_line in ingredient_lines:
+                # Извлекаем название ингредиента (до дефиса или двоеточия)
+                ingredient_name = ingredient_line.split('-')[0].split(':')[0].strip()
+                ingredient_name_clean = ingredient_name.replace('*', '').strip()
+                
+                if len(ingredient_name_clean) < 2:
+                    continue
+                
+                # Ищем совпадение в IIKO каталоге
+                for product in iiko_products:
+                    product_name = product.get("name", "").lower()
+                    ingredient_lower = ingredient_name_clean.lower()
+                    
+                    # Прямое совпадение или содержит
+                    if product_name == ingredient_lower or ingredient_lower in product_name or product_name in ingredient_lower:
+                        # Нашли совпадение!
+                        price = product.get("price", 0)
+                        if price > 0:
+                            iiko_prices[ingredient_name_clean] = {
+                                "price": price,
+                                "unit": product.get("unit", "кг"),
+                                "product_id": product.get("id"),
+                                "confidence": "high"
+                            }
+                            iiko_matched_count += 1
+                            print(f"✅ Matched '{ingredient_name_clean}' with IIKO product '{product.get('name')}' = {price}₽")
+                            break
+        
+        print(f"📊 IIKO matching result: {iiko_matched_count} ingredients matched out of {len(ingredient_lines)}")
+    
+    except Exception as e:
+        print(f"⚠️ Error fetching IIKO prices: {e}")
+        # Продолжаем без IIKO цен
+    
     # Поиск актуальных цен в интернете
     search_query = f"цены на продукты {user.get('city', 'москва')} 2025 мясо овощи крупы молочные продукты"
     
