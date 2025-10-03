@@ -12907,7 +12907,53 @@ function App() {
             )}
             
             {/* Разбор ингредиентов с актуальными ценами */}
-            {financesResult.ingredient_costs && (
+            {financesResult.ingredient_breakdown && financesResult.ingredient_breakdown.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
+                  🛒 ДЕТАЛИЗАЦИЯ СТОИМОСТИ ИНГРЕДИЕНТОВ
+                  <span className="ml-3 text-sm text-gray-400 font-normal">с указанием источников цен</span>
+                </h3>
+                <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-600/30">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-600">
+                          <th className="text-left py-3 px-4 text-green-300 font-bold">ИНГРЕДИЕНТ</th>
+                          <th className="text-center py-3 px-4 text-blue-300 font-bold">СТОИМОСТЬ</th>
+                          <th className="text-center py-3 px-4 text-purple-300 font-bold">% ОТ ОБЩЕЙ</th>
+                          <th className="text-center py-3 px-4 text-orange-300 font-bold">ИСТОЧНИК</th>
+                          <th className="text-left py-3 px-4 text-yellow-300 font-bold">ОПТИМИЗАЦИЯ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {financesResult.ingredient_breakdown.map((item, index) => (
+                          <tr key={index} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                            <td className="py-3 px-4 text-white font-medium">{item.ingredient}</td>
+                            <td className="py-3 px-4 text-center text-blue-200 font-bold">{item.cost}</td>
+                            <td className="py-3 px-4 text-center text-purple-200">{item.percent_of_total}</td>
+                            <td className="py-3 px-4 text-center">
+                              {item.price_source === 'iiko' ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-green-600/20 text-green-300 border border-green-400/30" title="Точная цена из вашего IIKO каталога">
+                                  ✓ IIKO
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-yellow-600/20 text-yellow-300 border border-yellow-400/30" title="Рыночная оценка на основе поиска">
+                                  ≈ Оценка
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-gray-300 text-xs">{item.optimization_tip || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Старая версия таблицы (fallback если нет ingredient_breakdown) */}
+            {!financesResult.ingredient_breakdown && financesResult.ingredient_costs && (
               <div className="mb-8">
                 <h3 className="text-2xl font-bold text-green-300 mb-6 flex items-center">
                   🛒 АКТУАЛЬНЫЕ ЦЕНЫ ИНГРЕДИЕНТОВ
