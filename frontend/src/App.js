@@ -11427,8 +11427,8 @@ function App() {
                         
                         <button
                           onClick={analyzeFinances}
-                          disabled={isAnalyzingFinances || !techCard}
-                          className={`w-full ${isAnalyzingFinances || !techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          disabled={isAnalyzingFinances || !(techCard || tcV2 || aiKitchenRecipe)}
+                          className={`w-full ${isAnalyzingFinances || !(techCard || tcV2 || aiKitchenRecipe) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
                           title="💼 ФИНАНСОВЫЙ АНАЛИЗ: Анализирует рентабельность блюда и дает конкретные советы по оптимизации затрат и увеличению прибыли"
                         >
                           {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ФИНАНСЫ'}
