@@ -11418,8 +11418,8 @@ function App() {
                         
                         <button
                           onClick={improveDish}
-                          disabled={isImprovingDish || !techCard}
-                          className={`w-full ${isImprovingDish || !techCard ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
+                          disabled={isImprovingDish || !(techCard || tcV2 || aiKitchenRecipe)}
+                          className={`w-full ${isImprovingDish || !(techCard || tcV2 || aiKitchenRecipe) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'} text-white font-bold py-3 px-4 rounded-lg transition-colors text-xs sm:text-sm min-h-[44px]`}
                           title="⚡ ПРОКАЧАТЬ БЛЮДО: Улучшает ваш рецепт профессиональными техниками и секретами шеф-поваров до версии 2.0"
                         >
                           {isImprovingDish ? 'УЛУЧШАЮ...' : '⚡ ПРОКАЧАТЬ БЛЮДО'}
