@@ -6640,10 +6640,22 @@ function App() {
   const generateFoodPairing = async () => {
     // Support V1 recipes, V1 tech cards, V2 tech cards, and AI Kitchen recipes
     const hasCard = techCard || tcV2 || aiKitchenRecipe;
-    if (!hasCard) return;
+    console.log('🍷 [Food Pairing] Starting generation...');
+    console.log('🍷 [Food Pairing] hasCard:', !!hasCard);
+    console.log('🍷 [Food Pairing] techCard:', !!techCard);
+    console.log('🍷 [Food Pairing] tcV2:', !!tcV2);
+    console.log('🍷 [Food Pairing] aiKitchenRecipe:', !!aiKitchenRecipe, aiKitchenRecipe?.name);
+    if (!hasCard) {
+      console.log('❌ [Food Pairing] No card available, aborting');
+      return;
+    }
     
     const userToUse = currentUser || { id: 'demo_user' };
-    if (!userToUse?.id) return;
+    console.log('🍷 [Food Pairing] User:', userToUse?.id);
+    if (!userToUse?.id) {
+      console.log('❌ [Food Pairing] No user ID, aborting');
+      return;
+    }
     
     setIsGenerating(true);
     setLoadingType('pairing');
