@@ -13073,6 +13073,20 @@ function App() {
               </button>
               
               <button
+                onClick={async () => {
+                  const dishName = improveDishResult.split('\n')[0]?.replace(/\*\*/g, '').replace('Название:', '').trim() || 'Прокачанное блюдо';
+                  
+                  const saved = await saveAIResultAsV1(improveDishResult, dishName, 'improved_dish');
+                  if (saved) {
+                    setShowImproveDishModal(false);
+                  }
+                }}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+              >
+                💾 СОХРАНИТЬ КАК V1
+              </button>
+              
+              <button
                 onClick={() => setShowImproveDishModal(false)}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
               >
