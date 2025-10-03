@@ -119,6 +119,18 @@ class CostCalculator:
         # Рассчитываем стоимость на порцию
         cost_per_portion = total_cost / tech_card.portions if tech_card.portions > 0 and total_cost > 0 else 0
         
+        # Логирование для отладки
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"💰 Cost calculation: total_cost={total_cost}₽, portions={tech_card.portions}, cost_per_portion={cost_per_portion}₽")
+        logger.info(f"📊 Coverage: {coverage_pct}%, found_ingredients={found_ingredients}/{len(tech_card.ingredients)}")
+        
+        # Проверка на реалистичность
+        if cost_per_portion > 0 and cost_per_portion < 10:
+            logger.warning(f"⚠️ Suspicious cost_per_portion={cost_per_portion}₽ - too low!")
+            logger.warning(f"   Ingredients: {[ing.name for ing in tech_card.ingredients[:5]]}")
+            logger.warning(f"   Ingredient costs: {ingredient_costs[:5]}")
+        
         # Создаем объект стоимости
         cost = CostV2(
             rawCost=round(total_cost, 2) if total_cost > 0 else None,
