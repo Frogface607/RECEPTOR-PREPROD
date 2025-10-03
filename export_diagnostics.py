@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ai-menu-wizard.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://menuwizard.preview.emergentagent.com')
 BASE_URL = f"{BACKEND_URL}/api"
 
 class ExportDiagnostics:

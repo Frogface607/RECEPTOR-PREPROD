@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime
 
-BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com"
+BACKEND_URL = "https://menuwizard.preview.emergentagent.com"
 
 def log_test(message):
     timestamp = datetime.now().strftime("%H:%M:%S")

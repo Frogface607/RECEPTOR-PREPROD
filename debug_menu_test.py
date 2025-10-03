@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://ai-menu-wizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://menuwizard.preview.emergentagent.com/api"
 
 def debug_menu_generation():
     """Debug what's actually returned by the menu generation API"""

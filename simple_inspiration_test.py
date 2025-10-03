@@ -18,7 +18,7 @@ def test_inspiration_simple():
     """Test with exact data from review request"""
     
     # Backend URL
-    base_url = "https://ai-menu-wizard.preview.emergentagent.com/api"
+    base_url = "https://menuwizard.preview.emergentagent.com/api"
     
     print("🎯 ПРОСТОЙ ТЕСТ ENDPOINT ВДОХНОВЕНИЯ")
     print("=" * 50)

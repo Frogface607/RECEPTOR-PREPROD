@@ -25,7 +25,7 @@ from datetime import datetime
 from pymongo import MongoClient
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://ai-menu-wizard.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menuwizard.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api/v1"
 
 def log_test(test_name, status, details=""):

@@ -12,7 +12,7 @@ from datetime import datetime
 class SaveTechCardTest:
     def __init__(self):
         # Use the public endpoint for testing
-        self.base_url = "https://ai-menu-wizard.preview.emergentagent.com/api"
+        self.base_url = "https://menuwizard.preview.emergentagent.com/api"
         self.test_user_id = "test_user_12345"
         
     def test_1_basic_endpoint_functionality(self):
