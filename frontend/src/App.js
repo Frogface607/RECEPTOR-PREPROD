@@ -6591,8 +6591,8 @@ function App() {
   };
 
   const generateSalesScript = async () => {
-    // Support both V1 and V2 tech cards
-    const hasCard = techCard || tcV2;
+    // Support V1 recipes, V1 tech cards, V2 tech cards, and AI Kitchen recipes
+    const hasCard = techCard || tcV2 || aiKitchenRecipe;
     const userToUse = currentUser || { id: 'demo_user' };
     if (!hasCard || !userToUse?.id) return;
     
