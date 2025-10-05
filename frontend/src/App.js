@@ -2766,39 +2766,62 @@ function App() {
         )}
 
         {/* СТОИМОСТЬ И МЕТАДАННЫЕ */}
-        {cost.rawCost && (
+        {tcV2 && (
           <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-6 border border-yellow-400/30">
             <h3 className="text-xl font-bold text-yellow-300 mb-4 uppercase tracking-wide flex items-center">
               💸 ФИНАНСОВЫЙ АНАЛИЗ
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Себестоимость 100г */}
-              <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-gray-600">
-                <div className="text-3xl font-bold text-orange-300 mb-2">
-                  {tcV2.yield?.perPortion_g ? Math.round((parseFloat(cost.costPerPortion) * 100) / tcV2.yield.perPortion_g * 10) / 10 : Math.round((parseFloat(cost.costPerPortion) * 100) / 200 * 10) / 10}₽
+            
+            {cost.rawCost ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Себестоимость 100г */}
+                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-gray-600">
+                  <div className="text-3xl font-bold text-orange-300 mb-2">
+                    {tcV2.yield?.perPortion_g ? Math.round((parseFloat(cost.costPerPortion) * 100) / tcV2.yield.perPortion_g * 10) / 10 : Math.round((parseFloat(cost.costPerPortion) * 100) / 200 * 10) / 10}₽
+                  </div>
+                  <div className="text-orange-200 font-medium text-sm mb-1">Себестоимость 100г</div>
+                  <div className="text-xs text-gray-400">базовый расчет для сравнения</div>
                 </div>
-                <div className="text-orange-200 font-medium text-sm mb-1">Себестоимость 100г</div>
-                <div className="text-xs text-gray-400">базовый расчет для сравнения</div>
-              </div>
-              
-              {/* Себестоимость порции */}
-              <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-yellow-500/50">
-                <div className="text-4xl font-bold text-yellow-300 mb-2">{cost.costPerPortion}₽</div>
-                <div className="text-yellow-200 font-medium text-sm mb-1">Себестоимость порции</div>
-                <div className="text-xs text-gray-400">~{Math.round((tcV2.yield?.perPortion_g || 200))}г готового блюда</div>
-              </div>
-              
-              {/* Рекомендуемая цена в меню */}
-              <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-green-500/50">
-                <div className="text-4xl font-bold text-green-300 mb-2">
-                  {Math.round(parseFloat(cost.costPerPortion) * 3.5)}₽
+                
+                {/* Себестоимость порции */}
+                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-yellow-500/50">
+                  <div className="text-4xl font-bold text-yellow-300 mb-2">{cost.costPerPortion}₽</div>
+                  <div className="text-yellow-200 font-medium text-sm mb-1">Себестоимость порции</div>
+                  <div className="text-xs text-gray-400">~{Math.round((tcV2.yield?.perPortion_g || 200))}г готового блюда</div>
                 </div>
-                <div className="text-green-200 font-medium text-sm mb-1">Рекомендуемая цена</div>
-                <div className="text-xs text-gray-400">наценка 250% • маржа {Math.round((1 - 1/3.5) * 100)}%</div>
+                
+                {/* Рекомендуемая цена в меню */}
+                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-green-500/50">
+                  <div className="text-4xl font-bold text-green-300 mb-2">
+                    {Math.round(parseFloat(cost.costPerPortion) * 3.5)}₽
+                  </div>
+                  <div className="text-green-200 font-medium text-sm mb-1">Рекомендуемая цена</div>
+                  <div className="text-xs text-gray-400">наценка 250% • маржа {Math.round((1 - 1/3.5) * 100)}%</div>
+                </div>
+                
               </div>
-              
-            </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-4">📊</div>
+                <h4 className="text-xl font-bold text-yellow-300 mb-3">Себестоимость не рассчитана</h4>
+                <p className="text-gray-300 text-sm mb-4">
+                  {costMeta.coveragePct === 0 ? 
+                    'Цены ингредиентов не найдены в IIKO каталоге. Подключите IIKO или используйте функцию "💼 ФИНАНСЫ" для оценки стоимости.' :
+                    'Недостаточно данных для расчета стоимости'
+                  }
+                </p>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={analyzeFinances}
+                    disabled={isAnalyzingFinances}
+                    className={`${isAnalyzingFinances ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-2 px-6 rounded-lg transition-colors text-sm`}
+                  >
+                    {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ОЦЕНИТЬ ФИНАНСЫ'}
+                  </button>
+                </div>
+              </div>
+            )}
             
             {/* Дополнительная информация */}
             <div className="mt-4 pt-4 border-t border-yellow-400/20">
