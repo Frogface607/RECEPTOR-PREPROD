@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://menuwizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com/api"
 
 def test_mass_tech_card_generation_fix():
     """

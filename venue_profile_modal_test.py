@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration - используем URL из frontend/.env
-BACKEND_URL = "https://menuwizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com/api"
 
 def test_venue_types_endpoint():
     """Тест 1: GET /api/venue-types - должен вернуть типы заведений"""

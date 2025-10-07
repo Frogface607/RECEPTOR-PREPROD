@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://menuwizard.preview.emergentagent.com"
+BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user

@@ -21,7 +21,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://menuwizard.preview.emergentagent.com/api"
+BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com/api"
 
 class IK03BackendTester:
     def __init__(self):

@@ -22,7 +22,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://menuwizard.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://chef-ai-6.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class IK04FinalValidationTester:

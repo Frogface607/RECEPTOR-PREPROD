@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://menuwizard.preview.emergentagent.com"
+BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com"
 
 def log_test(message):
     """Log test message with timestamp"""

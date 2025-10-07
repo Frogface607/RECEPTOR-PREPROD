@@ -1,7 +1,7 @@
 {
   "Generate Sales Script": {
     "endpoint": "/generate-sales-script",
-    "url": "https://menuwizard.preview.emergentagent.com/api/generate-sales-script",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/generate-sales-script",
     "status": 500,
     "response": "Internal Server Error",
     "payload_sent": {
@@ -26,7 +26,7 @@
   },
   "Generate Food Pairing": {
     "endpoint": "/generate-food-pairing",
-    "url": "https://menuwizard.preview.emergentagent.com/api/generate-food-pairing",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/generate-food-pairing",
     "status": 500,
     "response": "Internal Server Error",
     "payload_sent": {
@@ -51,7 +51,7 @@
   },
   "Generate Photo Tips": {
     "endpoint": "/generate-photo-tips",
-    "url": "https://menuwizard.preview.emergentagent.com/api/generate-photo-tips",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/generate-photo-tips",
     "status": 500,
     "response": "Internal Server Error",
     "payload_sent": {
@@ -76,7 +76,7 @@
   },
   "Generate Inspiration": {
     "endpoint": "/generate-inspiration",
-    "url": "https://menuwizard.preview.emergentagent.com/api/generate-inspiration",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/generate-inspiration",
     "status": 500,
     "response": "Internal Server Error",
     "payload_sent": {
@@ -101,7 +101,7 @@
   },
   "Analyze Finances": {
     "endpoint": "/analyze-finances",
-    "url": "https://menuwizard.preview.emergentagent.com/api/analyze-finances",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/analyze-finances",
     "status": 500,
     "response": "Internal Server Error",
     "payload_sent": {
@@ -126,7 +126,7 @@
   },
   "Improve Dish": {
     "endpoint": "/improve-dish",
-    "url": "https://menuwizard.preview.emergentagent.com/api/improve-dish",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/improve-dish",
     "status": 500,
     "response": "Internal Server Error",
     "payload_sent": {
@@ -151,7 +151,7 @@
   },
   "Laboratory Experiment (WORKING)": {
     "endpoint": "/laboratory-experiment",
-    "url": "https://menuwizard.preview.emergentagent.com/api/laboratory-experiment",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/laboratory-experiment",
     "status": "ERROR",
     "response": "",
     "payload_sent": {
@@ -162,7 +162,7 @@
   },
   "Save Laboratory Experiment": {
     "endpoint": "/save-laboratory-experiment",
-    "url": "https://menuwizard.preview.emergentagent.com/api/save-laboratory-experiment",
+    "url": "https://chef-ai-6.preview.emergentagent.com/api/save-laboratory-experiment",
     "status": 400,
     "response": {
       "detail": "Не предоставлены обязательные параметры"
