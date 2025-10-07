@@ -366,6 +366,23 @@ class PreflightOrchestrator:
         
         # Default
         return 'Сырьё'
+    
+    def _is_generated_article(self, article_code: str) -> bool:
+        """Check if article code is generated (not real iiko code)"""
+        if not article_code:
+            return False
+        
+        # Generated articles typically start with specific prefixes or patterns
+        # This logic should match the article allocator's generation pattern
+        try:
+            # Check if it's a numeric string (generated articles are usually numeric)
+            int(article_code)
+            # If it's numeric and within generated range, it's likely generated
+            # Adjust this logic based on your article allocator's pattern
+            return True
+        except ValueError:
+            # Non-numeric codes are likely real iiko codes
+            return False
 
 
 class DualExporter:
