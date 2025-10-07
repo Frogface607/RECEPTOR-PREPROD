@@ -10662,8 +10662,12 @@ function App() {
                           </button>
                         </div>
                       </div>
-                      <div className="max-h-80 overflow-y-auto text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
-                        {aiKitchenRecipe.content}
+                      <div className="max-h-80 overflow-y-auto text-gray-300 text-sm leading-relaxed">
+                        <div 
+                          dangerouslySetInnerHTML={{ 
+                            __html: formatMarkdownText(aiKitchenRecipe.content) 
+                          }} 
+                        />
                       </div>
                     </div>
                     
