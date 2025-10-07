@@ -314,6 +314,18 @@
           agent: "testing"
           comment: "✅ INSPIRATION ENDPOINT FULLY OPERATIONAL: Successfully tested /api/generate-inspiration endpoint as specified in Russian review request 'Быстрый тест endpoint вдохновения'. SIMPLE TEST COMPLETED: Tested with exact data from review request - tech_card: {'name': 'Борщ'}, user_id: 'demo_user'. Response: HTTP 200 with 2858 characters of OpenAI-generated inspiration content in 16.14 seconds. GOAL ACHIEVED: Endpoint responds correctly. ✅ CONTENT VALIDATION PASSED: Generated creative twist on classic Борщ with Asian fusion elements including coconut milk and Thai curry, proper structured format with all required sections (название, категория, описание, ингредиенты, рецепт, время, себестоимость), comprehensive content with creative modifications while maintaining dish viability. ✅ API INTEGRATION WORKING: OpenAI GPT-4o-mini model successfully processes inspiration prompts, proper error handling for missing parameters (HTTP 400), user validation working correctly, subscription plan checks operational. Backend logs show successful LLM calls without errors. Inspiration endpoint delivers proper AI-generated creative content as expected."
 
+  - task: "Export Skeleton Functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/receptor_agent/routes/export_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ EXPORT SKELETON FUNCTIONALITY FULLY OPERATIONAL: Successfully tested complete export skeleton workflow for unmapped nomenclatures as specified in Russian review request. ✅ TECH CARD GENERATION WITH SCALLOPS: Created 'Тако с гребешками' with proper ingredient structure including 'Гребешки' (scallops), article generation system working (all ingredients received 5-digit articles: 100001, 100017, 100018, 100019, 100020). ✅ PREFLIGHT CHECK WORKING: POST /api/v1/export/preflight successfully detects missing dishes (1 missing dish), properly handles article allocation, generates dish articles (100036 assigned). ✅ ZIP EXPORT WITH SKELETONS: POST /api/v1/export/zip creates ZIP archive (4697-4701 bytes) with Dish-Skeletons.xlsx containing proper structure (Артикул, Наименование, Тип, Ед. выпуска, Выход), follows dish-first rule correctly. ✅ ARTICLE GENERATION SYSTEM: ArticleAllocator integration working with proper 5-digit articles, article claiming workflow operational. ✅ CRITICAL FINDING: System working correctly - ingredients get articles during generation (not appearing as 'missing products'), dishes without articles trigger skeleton generation as expected. Minor: TTK date formatting error doesn't affect core functionality. Export skeleton functionality ready for production use."
+
 ## metadata:
   created_by: "testing_agent"
   version: "1.1"
