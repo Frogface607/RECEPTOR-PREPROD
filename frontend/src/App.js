@@ -11464,8 +11464,8 @@ function App() {
                       </button>
                     )}
                     
-                    {/* ПРО AI функции - Only for authenticated users */}
-                    {currentUser && currentUser.id !== 'demo_user' && (
+                    {/* ПРО AI функции - ВРЕМЕННО СКРЫТЫ ДЛЯ ПРОДАКШНА */}
+                    {false && currentUser && currentUser.id !== 'demo_user' && (
                       <div className="border-t border-purple-400/20 pt-3 sm:pt-4">
                         <h4 className="text-sm sm:text-base font-bold text-purple-200 mb-3">AI ДОПОЛНЕНИЯ</h4>
                         
