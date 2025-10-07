@@ -214,42 +214,72 @@ class PreflightOrchestrator:
         
         for techcard in techcards:
             for ingredient in techcard.ingredients:
-                # Skip if already processed or has article
-                if ingredient.name in product_names_processed or getattr(ingredient, 'product_code', None):
+                # Skip if already processed
+                if ingredient.name in product_names_processed:
                     continue
                     
                 product_names_processed.add(ingredient.name)
                 
-                # Try to find in iiko RMS first
-                found_article = await self._find_product_in_iiko(ingredient.name, organization_id)
+                existing_code = getattr(ingredient, 'product_code', None)
+                needs_mapping = True
                 
-                if found_article:
-                    # Update ingredient with found article
-                    ingredient.product_code = found_article
-                else:
-                    # Allocate new article
-                    entity_id = f"product_{ingredient.name.replace(' ', '_')}"
-                    allocated_articles = self.allocator.allocate_articles(
-                        article_type=ArticleType.PRODUCT,
-                        count=1,
-                        organization_id=organization_id,
-                        entity_ids=[entity_id],
-                        entity_names=[ingredient.name]
-                    )
+                # If has existing code, check if it's generated (not real iiko code)
+                if existing_code:
+                    if self._is_generated_article(existing_code):
+                        # Has generated code, try to find real iiko code
+                        logger.info(f"Ingredient '{ingredient.name}' has generated code '{existing_code}', trying to find real iiko code")
+                    else:
+                        # Has real iiko code, skip
+                        logger.info(f"Ingredient '{ingredient.name}' already has real iiko code '{existing_code}'")
+                        needs_mapping = False
+                
+                if needs_mapping:
+                    # Try to find in iiko RMS first
+                    found_article = await self._find_product_in_iiko(ingredient.name, organization_id)
                     
-                    if allocated_articles:
-                        new_article = allocated_articles[0]
-                        ingredient.product_code = new_article
-                        generated_articles.append(new_article)
-                        
-                        missing_products.append({
-                            "id": entity_id,
-                            "name": ingredient.name,
-                            "article": new_article,
-                            "type": "product",
-                            "unit": ingredient.unit,
-                            "group": self._categorize_ingredient(ingredient.name)
-                        })
+                    if found_article:
+                        # Update ingredient with found real article
+                        ingredient.product_code = found_article
+                        logger.info(f"Found real iiko article for '{ingredient.name}': {found_article}")
+                    else:
+                        # No real article found, generate new or keep existing generated
+                        if not existing_code or not self._is_generated_article(existing_code):
+                            # Allocate new generated article
+                            entity_id = f"product_{ingredient.name.replace(' ', '_')}"
+                            allocated_articles = self.allocator.allocate_articles(
+                                article_type=ArticleType.PRODUCT,
+                                count=1,
+                                organization_id=organization_id,
+                                entity_ids=[entity_id],
+                                entity_names=[ingredient.name]
+                            )
+                            
+                            if allocated_articles:
+                                new_article = allocated_articles[0]
+                                ingredient.product_code = new_article
+                                generated_articles.append(new_article)
+                                
+                                missing_products.append({
+                                    "id": entity_id,
+                                    "name": ingredient.name,
+                                    "article": new_article,
+                                    "type": "product",
+                                    "unit": ingredient.unit,
+                                    "group": self._categorize_ingredient(ingredient.name)
+                                })
+                        else:
+                            # Keep existing generated article and add to missing
+                            generated_articles.append(existing_code)
+                            entity_id = f"product_{ingredient.name.replace(' ', '_')}"
+                            missing_products.append({
+                                "id": entity_id,
+                                "name": ingredient.name,
+                                "article": existing_code,
+                                "type": "product",
+                                "unit": ingredient.unit,
+                                "group": self._categorize_ingredient(ingredient.name)
+                            })
+                            logger.info(f"Ingredient '{ingredient.name}' keeps generated article '{existing_code}' -> missing products")
         
         return missing_products, generated_articles
     
