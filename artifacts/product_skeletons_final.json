@@ -1,7 +1,7 @@
 {
-  "timestamp": "2025-10-07T11:59:24.998811",
+  "timestamp": "2025-10-07T12:14:11.024143",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
-  "total_products": 1,
+  "total_products": 2,
   "all_types_valid": true,
   "products": [
     {
@@ -10,6 +10,13 @@
       "type": "GOODS",
       "unit": "г",
       "group": "Сырьё"
+    },
+    {
+      "name": "сливочное масло",
+      "code": "100047",
+      "type": "GOODS",
+      "unit": "г",
+      "group": "Молочные продукты"
     }
   ],
   "instruction": "Все продукты готовы к импорту в iiko. Типы валидированы согласно требованиям iiko API."
