@@ -97,12 +97,12 @@ class ExportSkeletonTester:
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('success') and result.get('techcard'):
-                    self.created_techcard_id = result['techcard']['id']
+                if result.get('status') == 'READY' and result.get('card'):
+                    self.created_techcard_id = result['card']['meta']['id']
                     self.log_result(
                         "Create new tech card with scallops",
                         True,
-                        f"Created tech card: {result['techcard']['name']} (ID: {self.created_techcard_id})"
+                        f"Created tech card: {result['card']['meta']['title']} (ID: {self.created_techcard_id})"
                     )
                     return True
                 else:
