@@ -6,24 +6,7 @@ import { FEATURE_HACCP, FORCE_TECHCARD_V2 } from './config/featureFlags';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;  // Backend routes already include /api prefix
 
-// Utility function to format markdown text for display
-const formatMarkdownText = (text) => {
-  if (!text) return '';
-  
-  return text
-    // Bold text: **text** or __text__
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/__(.*?)__/g, '<strong>$1</strong>')
-    // Italic text: *text* or _text_
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/_(.*?)_/g, '<em>$1</em>')
-    // Headers: ### Header
-    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-purple-300 mt-4 mb-2">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-purple-300 mt-6 mb-3">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-purple-300 mt-6 mb-4">$1</h1>')
-    // Line breaks
-    .replace(/\n/g, '<br />');
-};
+// Note: formatProAIContent function is already defined below and handles markdown formatting
 
 function App() {
   // Check if debug mode is enabled
