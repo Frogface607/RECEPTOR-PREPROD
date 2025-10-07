@@ -10648,7 +10648,7 @@ function App() {
                       <div className="max-h-80 overflow-y-auto text-gray-300 text-sm leading-relaxed">
                         <div 
                           dangerouslySetInnerHTML={{ 
-                            __html: formatMarkdownText(aiKitchenRecipe.content) 
+                            __html: formatProAIContent(aiKitchenRecipe.content) 
                           }} 
                         />
                       </div>
