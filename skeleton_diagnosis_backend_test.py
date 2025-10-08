@@ -351,13 +351,37 @@ class SkeletonExportDiagnoser:
             return False
         
         try:
+            # First run preflight to get preflight_result
+            preflight_url = f"{API_BASE}/v1/export/preflight"
+            preflight_payload = {
+                "techcardIds": [self.generated_techcard_id],
+                "user_id": TEST_USER_ID,
+                "ttk_date": "2025-01-15"
+            }
+            
+            print(f"   Running preflight for ZIP export: {self.generated_techcard_id}")
+            preflight_response = self.session.post(preflight_url, json=preflight_payload, timeout=30)
+            
+            if preflight_response.status_code != 200:
+                self.log_test(
+                    "ZIP Export",
+                    False,
+                    f"Preflight for ZIP failed: HTTP {preflight_response.status_code}",
+                    preflight_response.text[:500]
+                )
+                return False
+            
+            preflight_data = preflight_response.json()
+            
+            # Now run ZIP export with preflight_result
             url = f"{API_BASE}/v1/export/zip"
             
             payload = {
                 "techcardIds": [self.generated_techcard_id],
                 "user_id": TEST_USER_ID,
                 "ttk_date": "2025-01-15",
-                "operational_rounding": True
+                "operational_rounding": True,
+                "preflight_result": preflight_data  # Include preflight result
             }
             
             print(f"   Exporting ZIP for techcard: {self.generated_techcard_id}")
