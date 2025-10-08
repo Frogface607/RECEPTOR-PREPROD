@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-10-07T12:14:11.016983",
+  "timestamp": "2025-10-08T11:22:27.165075",
   "operation": "DISH_SKELETONS_SUCCESS",
   "total_dishes": 1,
   "all_types_valid": true,
   "dishes": [
     {
-      "name": "Гребешки в винном соусе",
-      "code": "100049",
+      "name": "Тако с рыбой",
+      "code": "100060",
       "type": "DISH",
       "unit": "порц",
-      "yield_g": 40
+      "yield_g": 240
     }
   ],
   "instruction": "Все блюда готовы к импорту в iiko. Типы валидированы как DISH согласно требованиям iiko API."
