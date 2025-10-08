@@ -1,0 +1,110 @@
+{
+  "total_tests": 6,
+  "passed_tests": 3,
+  "success_rate": "50.0%",
+  "test_results": [
+    {
+      "test_name": "Backend Health Check",
+      "success": true,
+      "details": "Backend responding correctly (HTTP 200)",
+      "timestamp": "2025-10-08T11:23:59.317274",
+      "response_data": null
+    },
+    {
+      "test_name": "Create Exotic Techcard",
+      "success": true,
+      "details": "Techcard created successfully. ID: 80b31d69-90af-4a3f-948e-fae0cdd0ed13, Status: READY, Ingredients: 6, Generated articles: 6",
+      "timestamp": "2025-10-08T11:24:14.166470",
+      "response_data": {
+        "id": "80b31d69-90af-4a3f-948e-fae0cdd0ed13",
+        "status": "READY",
+        "ingredients_count": 6,
+        "generated_articles": [
+          {
+            "name": "Тортилья",
+            "article": "100001"
+          },
+          {
+            "name": "Креветки",
+            "article": "100062"
+          },
+          {
+            "name": "Кальмары",
+            "article": "100063"
+          },
+          {
+            "name": "Авокадо",
+            "article": "100019"
+          },
+          {
+            "name": "Лайм",
+            "article": "100020"
+          },
+          {
+            "name": "Сальса",
+            "article": "100064"
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Тортилья",
+            "article": "100001"
+          },
+          {
+            "name": "Креветки",
+            "article": "100062"
+          },
+          {
+            "name": "Кальмары",
+            "article": "100063"
+          },
+          {
+            "name": "Авокадо",
+            "article": "100019"
+          },
+          {
+            "name": "Лайм",
+            "article": "100020"
+          },
+          {
+            "name": "Сальса",
+            "article": "100064"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Verify Database Storage",
+      "success": false,
+      "details": "User history API returned HTTP 405",
+      "timestamp": "2025-10-08T11:24:14.179920",
+      "response_data": "{\"detail\":\"Method Not Allowed\"}"
+    },
+    {
+      "test_name": "Preflight Check",
+      "success": false,
+      "details": "Preflight API returned HTTP 400",
+      "timestamp": "2025-10-08T11:24:14.195503",
+      "response_data": "{\"detail\":\"techcardIds list is required\"}"
+    },
+    {
+      "test_name": "ZIP Export",
+      "success": false,
+      "details": "ZIP export API returned HTTP 400",
+      "timestamp": "2025-10-08T11:24:14.246908",
+      "response_data": "{\"detail\":\"techcardIds list is required\"}"
+    },
+    {
+      "test_name": "_is_generated_article() Function Test",
+      "success": true,
+      "details": "Function test completed. Passed: 13/13 test cases",
+      "timestamp": "2025-10-08T11:24:14.246982",
+      "response_data": {
+        "passed_tests": 13,
+        "total_tests": 13,
+        "accuracy": "100.0%"
+      }
+    }
+  ],
+  "generated_techcard_id": "80b31d69-90af-4a3f-948e-fae0cdd0ed13"
+}
