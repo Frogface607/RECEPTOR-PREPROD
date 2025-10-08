@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-10-08T11:26:14.510330",
+  "timestamp": "2025-10-08T11:42:47.727424",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
   "total_products": 1,
   "all_types_valid": true,
   "products": [
     {
-      "name": "Кальмары",
-      "code": "100063",
+      "name": "джем из каламанси",
+      "code": "100074",
       "type": "GOODS",
       "unit": "г",
       "group": "Сырьё"
