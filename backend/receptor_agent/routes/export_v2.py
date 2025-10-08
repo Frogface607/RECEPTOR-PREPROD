@@ -766,6 +766,13 @@ async def create_dual_export_zip(request: Request):
         preflight_result = body.get('preflight_result')
         organization_id = body.get('organization_id', 'default')
         
+        # DEBUG: Log received data
+        logger.info(f"🔍 ZIP Export - Received techcard_ids: {techcard_ids}")
+        logger.info(f"🔍 ZIP Export - Preflight result present: {bool(preflight_result)}")
+        if preflight_result:
+            logger.info(f"🔍 ZIP Export - Missing products count: {len(preflight_result.get('missing_products', []))}")
+            logger.info(f"🔍 ZIP Export - Missing dishes count: {len(preflight_result.get('missing_dishes', []))}")
+        
         # Guard — dish-first rule: Check if preflight was bypassed with missing dishes
         if not preflight_result:
             # No preflight provided - run our own check for guard validation
