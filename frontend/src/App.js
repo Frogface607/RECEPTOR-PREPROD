@@ -8026,17 +8026,26 @@ function App() {
       }
       
       const preflight = await preflightResponse.json();
+      
+      // DEBUG: Log preflight result
+      console.log('🔍 Preflight result for ZIP export:', preflight);
+      console.log('🔍 Missing products:', preflight?.missing_products?.length || 0);
+      console.log('🔍 Missing dishes:', preflight?.missing_dishes?.length || 0);
 
       setCurrentExportStep('Создание ZIP архива...');
       setExportProgress(60);
 
+      const zipPayload = {
+        techcardIds: [tcV2.meta.id],
+        preflight_result: preflight
+      };
+      
+      console.log('🔍 ZIP export payload:', zipPayload);
+
       const zipResponse = await fetch(`${API}/v1/export/zip`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          techcardIds: [tcV2.meta.id],
-          preflight_result: preflight
-        })
+        body: JSON.stringify(zipPayload)
       });
 
       if (!zipResponse.ok) {
