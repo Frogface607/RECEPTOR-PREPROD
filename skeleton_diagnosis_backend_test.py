@@ -202,10 +202,9 @@ class SkeletonExportDiagnoser:
         
         try:
             # Try to retrieve the techcard via user history API
-            url = f"{API_BASE}/v1/user/history"
-            params = {"user_id": TEST_USER_ID}
+            url = f"{API_BASE}/user-history/{TEST_USER_ID}"
             
-            response = self.session.get(url, params=params, timeout=15)
+            response = self.session.get(url, timeout=15)
             
             if response.status_code == 200:
                 data = response.json()
