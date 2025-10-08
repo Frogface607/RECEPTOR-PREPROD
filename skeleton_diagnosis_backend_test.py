@@ -280,7 +280,7 @@ class SkeletonExportDiagnoser:
             url = f"{API_BASE}/v1/export/preflight"
             
             payload = {
-                "techcard_ids": [self.generated_techcard_id],
+                "techcardIds": [self.generated_techcard_id],
                 "user_id": TEST_USER_ID,
                 "ttk_date": "2025-01-15"
             }
