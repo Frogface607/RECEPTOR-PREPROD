@@ -1,22 +1,22 @@
 {
   "total_tests": 6,
-  "passed_tests": 5,
-  "success_rate": "83.3%",
+  "passed_tests": 6,
+  "success_rate": "100.0%",
   "test_results": [
     {
       "test_name": "Backend Health Check",
       "success": true,
       "details": "Backend responding correctly (HTTP 200)",
-      "timestamp": "2025-10-08T11:25:14.214529",
+      "timestamp": "2025-10-08T11:25:58.279136",
       "response_data": null
     },
     {
       "test_name": "Create Exotic Techcard",
       "success": true,
-      "details": "Techcard created successfully. ID: 203703ce-1ea3-488b-b36d-6a06a7634dd2, Status: READY, Ingredients: 6, Generated articles: 6",
-      "timestamp": "2025-10-08T11:25:27.897819",
+      "details": "Techcard created successfully. ID: cfc40e66-8a39-443a-b25c-2914300cd33a, Status: READY, Ingredients: 6, Generated articles: 6",
+      "timestamp": "2025-10-08T11:26:14.328197",
       "response_data": {
-        "id": "203703ce-1ea3-488b-b36d-6a06a7634dd2",
+        "id": "cfc40e66-8a39-443a-b25c-2914300cd33a",
         "status": "READY",
         "ingredients_count": 6,
         "generated_articles": [
@@ -41,8 +41,8 @@
             "article": "100020"
           },
           {
-            "name": "Salsa",
-            "article": "100066"
+            "name": "Сальса",
+            "article": "100064"
           }
         ],
         "ingredients": [
@@ -67,8 +67,8 @@
             "article": "100020"
           },
           {
-            "name": "Salsa",
-            "article": "100066"
+            "name": "Сальса",
+            "article": "100064"
           }
         ]
       }
@@ -76,11 +76,11 @@
     {
       "test_name": "Verify Database Storage",
       "success": true,
-      "details": "Techcard found in database. ID: 203703ce-1ea3-488b-b36d-6a06a7634dd2, Name: Тако с экзотическими морепродуктами",
-      "timestamp": "2025-10-08T11:25:27.943888",
+      "details": "Techcard found in database. ID: cfc40e66-8a39-443a-b25c-2914300cd33a, Name: Тако с экзотическими морепродуктами",
+      "timestamp": "2025-10-08T11:26:14.364560",
       "response_data": {
         "found_in_history": true,
-        "techcard_id": "203703ce-1ea3-488b-b36d-6a06a7634dd2",
+        "techcard_id": "cfc40e66-8a39-443a-b25c-2914300cd33a",
         "dish_name": "Тако с экзотическими морепродуктами",
         "type": null
       }
@@ -88,29 +88,38 @@
     {
       "test_name": "Preflight Check",
       "success": true,
-      "details": "Preflight completed. Missing dishes: 0, Missing products: 0, Product skeletons: 2",
-      "timestamp": "2025-10-08T11:25:28.069186",
+      "details": "Preflight completed. Missing dishes: 0, Missing products: 0, Product skeletons: 1",
+      "timestamp": "2025-10-08T11:26:14.421448",
       "response_data": {
         "counts": {
           "dishSkeletons": 1,
-          "productSkeletons": 2
+          "productSkeletons": 1
         },
-        "techcard_id": "203703ce-1ea3-488b-b36d-6a06a7634dd2",
+        "techcard_id": "cfc40e66-8a39-443a-b25c-2914300cd33a",
         "expected_missing_items": true
       }
     },
     {
       "test_name": "ZIP Export",
-      "success": false,
-      "details": "ZIP export API returned HTTP 400",
-      "timestamp": "2025-10-08T11:25:28.165972",
-      "response_data": "{\"detail\":{\"error\":\"PRE_FLIGHT_REQUIRED\",\"message\":\"Нельзя экспортировать ТК без создания блюд в iiko. Сначала импортируйте скелеты блюд.\",\"missing_dishes\":[{\"id\":\"dish_Тако_с_экзотическими_морепродуктами\",\"name\":\"Тако с экзотическими морепродуктами\",\"article\":\"100067\",\"type\":\"dish\",\"unit\":\"порц\",\"yield\":200.0}],\"dish_count\":1,\"required_action\":\"import_dish_skeletons_first\",\"preflight_result\":{\"ttkDate\":\"2025-10-08\",\"missing\":{\"dishes\":[{\"id\":\"dish_Тако_с_экзотическими_морепродуктами\",\"name\":\"Та"
+      "success": true,
+      "details": "ZIP export completed. Size: 9466 bytes, Files: 2, Product skeletons: True, Dish skeletons: True",
+      "timestamp": "2025-10-08T11:26:14.518227",
+      "response_data": {
+        "zip_size": 9466,
+        "files_in_zip": [
+          "Dish-Skeletons.xlsx",
+          "Product-Skeletons.xlsx"
+        ],
+        "has_product_skeletons": true,
+        "has_dish_skeletons": true,
+        "techcard_id": "cfc40e66-8a39-443a-b25c-2914300cd33a"
+      }
     },
     {
       "test_name": "_is_generated_article() Function Test",
       "success": true,
       "details": "Function test completed. Passed: 13/13 test cases",
-      "timestamp": "2025-10-08T11:25:28.166057",
+      "timestamp": "2025-10-08T11:26:14.518360",
       "response_data": {
         "passed_tests": 13,
         "total_tests": 13,
@@ -118,5 +127,5 @@
       }
     }
   ],
-  "generated_techcard_id": "203703ce-1ea3-488b-b36d-6a06a7634dd2"
+  "generated_techcard_id": "cfc40e66-8a39-443a-b25c-2914300cd33a"
 }

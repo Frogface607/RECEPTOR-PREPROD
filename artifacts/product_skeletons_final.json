@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-10-08T11:22:38.915406",
+  "timestamp": "2025-10-08T11:26:14.510330",
   "operation": "PRODUCT_SKELETONS_SUCCESS",
   "total_products": 1,
   "all_types_valid": true,
   "products": [
     {
-      "name": "Рыба (филе)",
-      "code": "100058",
+      "name": "Кальмары",
+      "code": "100063",
       "type": "GOODS",
       "unit": "г",
-      "group": "Мясо и рыба"
+      "group": "Сырьё"
     }
   ],
   "instruction": "Все продукты готовы к импорту в iiko. Типы валидированы согласно требованиям iiko API."
