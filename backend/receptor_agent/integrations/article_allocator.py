@@ -110,8 +110,15 @@ class ArticleAllocator:
             mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/ai_menu_designer')
             mongo_client = MongoClient(mongo_url)
         
-        # Извлекаем имя базы из URL
-        db_name = mongo_url.split('/')[-1] if '/' in mongo_url else 'ai_menu_designer'
+        # BUGFIX: Use DB_NAME env var instead of parsing URL (MongoDB limit: 63 chars)
+        db_name = os.environ.get('DB_NAME', 'receptor_pro').strip('"')
+        
+        # Validate DB name length (MongoDB limit)
+        if len(db_name) > 63:
+            logger.error(f"❌ DB name too long ({len(db_name)} chars): {db_name}")
+            db_name = db_name[:63]  # Truncate to 63 chars
+            logger.warning(f"⚠️ Truncated to: {db_name}")
+        
         self.db = mongo_client[db_name]
         
         # Коллекции

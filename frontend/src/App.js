@@ -10617,6 +10617,7 @@ function App() {
                                   setTcV2(response.data.techcard);
                                   setTechCard(null); // Очищаем V1
                                   setAiKitchenRecipe(null); // Очищаем AI Kitchen
+                                  setCurrentTechCardId(response.data.techcard.id || response.data.techcard._id); // 🔥 FIX: Set ID для history navigation!
                                   setWizardData(prev => ({...prev, dishName: aiKitchenRecipe.name}));
                                   setGenerationStatus('success');
                                   setCurrentView('create');

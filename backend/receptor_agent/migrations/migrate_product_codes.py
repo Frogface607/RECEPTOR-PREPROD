@@ -53,8 +53,10 @@ class ProductCodeMigration:
             mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/ai_menu_designer')
             self.mongo_client = pymongo.MongoClient(mongo_url)
             
-            # Извлекаем имя базы из URL
-            db_name = mongo_url.split('/')[-1] if '/' in mongo_url else 'ai_menu_designer'
+            # BUGFIX: Use DB_NAME env var instead of parsing URL (MongoDB limit: 63 chars)
+            db_name = os.environ.get('DB_NAME', 'receptor_pro').strip('"')
+            if len(db_name) > 63:
+                db_name = db_name[:63]
             self.db = self.mongo_client[db_name]
             self.techcards_collection = self.db.techcards_v2
             
