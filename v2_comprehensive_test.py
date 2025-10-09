@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Backend URL
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class V2ComprehensiveTester:

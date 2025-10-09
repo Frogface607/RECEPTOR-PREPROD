@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com/api"
 
 def create_test_user():
     """Create a test user for testing"""

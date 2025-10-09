@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 
 # Backend URL
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 TEST_USER_ID = "demo_user"
 

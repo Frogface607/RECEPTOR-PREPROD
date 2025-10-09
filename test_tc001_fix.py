@@ -13,7 +13,7 @@ def test_tc001_api_response():
     
     try:
         response = requests.post(
-            "https://chef-ai-6.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://cursor-push.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={
                 "name": "TC-001 READY Status Test",
                 "user_id": "tc001_test_user"

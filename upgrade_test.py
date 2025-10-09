@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com/api"
 
 def log_test(message, status="INFO"):
     """Log test messages with timestamp"""

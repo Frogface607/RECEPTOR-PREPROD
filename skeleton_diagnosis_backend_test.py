@@ -28,7 +28,7 @@ import zipfile
 import io
 
 # Backend URL from environment
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user

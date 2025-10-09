@@ -9,7 +9,7 @@ import json
 import time
 
 # Backend URL
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def debug_v2_response():

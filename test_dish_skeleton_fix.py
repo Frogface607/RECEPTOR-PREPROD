@@ -12,7 +12,7 @@ def test_article_generation():
     
     try:
         response = requests.post(
-            "https://chef-ai-6.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://cursor-push.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={"name": "Dish Article Test", "user_id": "skeleton_fix_test"},
             timeout=60
         )
@@ -50,7 +50,7 @@ def test_preflight_skeleton(techcard_id):
     
     try:
         response = requests.post(
-            "https://chef-ai-6.preview.emergentagent.com/api/v1/export/preflight",
+            "https://cursor-push.preview.emergentagent.com/api/v1/export/preflight",
             json={"techcardIds": [techcard_id], "organization_id": "test"},
             timeout=30
         )
@@ -88,7 +88,7 @@ def test_techcard_loading():
     try:
         # Создаем техkарту
         response = requests.post(
-            "https://chef-ai-6.preview.emergentagent.com/api/v1/techcards.v2/generate",
+            "https://cursor-push.preview.emergentagent.com/api/v1/techcards.v2/generate",
             json={"name": "DB Load Test", "user_id": "db_test"},
             timeout=60
         )
@@ -100,7 +100,7 @@ def test_techcard_loading():
             if techcard_id:
                 # Сразу проверяем preflight для этой техkарты
                 preflight_response = requests.post(
-                    "https://chef-ai-6.preview.emergentagent.com/api/v1/export/preflight",
+                    "https://cursor-push.preview.emergentagent.com/api/v1/export/preflight",
                     json={"techcardIds": [techcard_id], "organization_id": "test"},
                     timeout=30
                 )
