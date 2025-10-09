@@ -14,7 +14,7 @@ def test_user_history_api():
     
     try:
         response = requests.get(
-            f"https://chef-ai-6.preview.emergentagent.com/api/user-history/{test_user_id}",
+            f"https://cursor-push.preview.emergentagent.com/api/user-history/{test_user_id}",
             timeout=30
         )
         
@@ -64,7 +64,7 @@ def test_menu_projects_api():
     
     try:
         response = requests.get(
-            f"https://chef-ai-6.preview.emergentagent.com/api/menu-projects/{test_user_id}",
+            f"https://cursor-push.preview.emergentagent.com/api/menu-projects/{test_user_id}",
             timeout=30
         )
         

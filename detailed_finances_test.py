@@ -8,7 +8,7 @@ import json
 import time
 
 # Configuration
-BACKEND_URL = "https://chef-ai-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://cursor-push.preview.emergentagent.com/api"
 
 def main():
     """Test the FINANCES feature with detailed output"""

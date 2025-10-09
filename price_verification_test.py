@@ -11,7 +11,7 @@ from datetime import datetime
 
 class PriceVerificationTest:
     def __init__(self):
-        self.base_url = "https://chef-ai-6.preview.emergentagent.com/api"
+        self.base_url = "https://cursor-push.preview.emergentagent.com/api"
         self.user_id = "price_test_user"
         self.city = "москва"
         

@@ -10,7 +10,7 @@ import string
 
 class TechCardIntegrationTest:
     def __init__(self):
-        self.base_url = "https://chef-ai-6.preview.emergentagent.com/api"
+        self.base_url = "https://cursor-push.preview.emergentagent.com/api"
         self.test_results = []
         
     def random_string(self, length=6):

@@ -12,7 +12,7 @@ import json
 import time
 
 def test_pro_ai_functions():
-    base_url = "https://chef-ai-6.preview.emergentagent.com/api"
+    base_url = "https://cursor-push.preview.emergentagent.com/api"
     
     # First, register a PRO user for testing
     print("🔧 Setting up PRO user for testing...")

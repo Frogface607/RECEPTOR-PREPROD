@@ -7,7 +7,7 @@ import os
 import requests
 import json
 
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://chef-ai-6.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://cursor-push.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def check_timing_response():
