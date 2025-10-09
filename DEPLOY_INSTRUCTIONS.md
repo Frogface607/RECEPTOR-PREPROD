@@ -23,20 +23,22 @@ bugfix/critical-fixes
 
 #### Backend Environment Variables:
 
+**КРИТИЧЕСКИ ВАЖНО! БЕЗ ЭТИХ ПЕРЕМЕННЫХ ГЕНЕРАЦИЯ НЕ БУДЕТ РАБОТАТЬ!**
+
 ```bash
-# MongoDB
+# ⚠️ ОБЯЗАТЕЛЬНЫЕ ПЕРЕМЕННЫЕ - БЕЗ НИХ БУДЕТ 403 ОШИБКА!
+FEATURE_TECHCARDS_V2=true
+TECHCARDS_V2_USE_LLM=true
+OPENAI_API_KEY=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
 MONGO_URL=mongodb://localhost:27017/receptor_pro
 DB_NAME=receptor_pro
 
-# OpenAI
-OPENAI_API_KEY=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
-
-# IIKO RMS Configuration
+# IIKO RMS Configuration (опционально)
 IIKO_RMS_HOST=edison-bar.iiko.it
 IIKO_RMS_LOGIN=Sergey
 IIKO_RMS_PASSWORD=metkamfetamin
 
-# IIKO API Configuration
+# IIKO API Configuration (опционально)
 IIKO_API_LOGIN=Sergey
 IIKO_API_PASSWORD=metkamfetamin
 IIKO_BASE_URL=https://iikoffice1.api.rms.ru
@@ -44,11 +46,9 @@ IIKO_BASE_URL=https://iikoffice1.api.rms.ru
 # Application Configuration
 APP_URL=https://receptorai.pro
 DEBUG=false
-
-# Feature Flags
-FEATURE_TECHCARDS_V2=true
-TECHCARDS_V2_USE_LLM=true
 ```
+
+**⚠️ ВАЖНО:** Если не добавить эти 5 обязательных переменных в Emergent Dashboard, получите ошибку **403 Forbidden** при попытке генерации техкарт!
 
 #### Frontend Environment Variables:
 
