@@ -1671,3 +1671,70 @@ async def generate_product_codes_api(request: dict):
     except Exception as e:
         logger.error(f"Generate product codes error: {e}")
         raise HTTPException(500, f"Generate product codes failed: {str(e)}")
+
+
+@router.put("/techcards.v2/{techcard_id}")
+async def update_techcard_v2(techcard_id: str, request: Request):
+    """
+    Update existing TechCard V2 in MongoDB
+    Used for persisting SKU mappings, edits, and other changes
+    
+    Body: TechCard V2 object (JSON)
+    Returns: Success status with update info
+    """
+    try:
+        body = await request.json()
+        
+        if not techcard_id:
+            raise HTTPException(400, "techcard_id required")
+        
+        # Get MongoDB connection
+        from motor.motor_asyncio import AsyncIOMotorClient
+        
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+        client = AsyncIOMotorClient(mongo_url)
+        db_name = os.environ.get('DB_NAME', 'receptor_pro').strip('"')
+        
+        # Validate DB name length (MongoDB fix)
+        if len(db_name) > 63:
+            logger.warning(f"DB name too long ({len(db_name)}), truncating to 63 chars")
+            db_name = db_name[:63]
+        
+        db = client[db_name]
+        
+        # Update техкарты в MongoDB
+        # Remove _id from body if present (can't update _id field)
+        if '_id' in body:
+            del body['_id']
+        if 'id' in body:
+            del body['id']
+        
+        # Add updated_at timestamp
+        from datetime import datetime
+        body['updated_at'] = datetime.now()
+        
+        result = await db.techcards_v2.update_one(
+            {"_id": techcard_id},
+            {"$set": body}
+        )
+        
+        client.close()
+        
+        if result.matched_count == 0:
+            raise HTTPException(404, f"Techcard {techcard_id} not found")
+        
+        logger.info(f"✅ Updated techcard {techcard_id} in MongoDB (modified: {result.modified_count})")
+        
+        return {
+            "status": "success",
+            "techcard_id": techcard_id,
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+            "message": "Techcard updated successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update techcard error: {e}")
+        raise HTTPException(500, f"Update failed: {str(e)}")

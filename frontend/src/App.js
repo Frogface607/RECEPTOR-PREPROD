@@ -5117,6 +5117,19 @@ function App() {
       // Use the existing recalculation function
       await performRecalculation(updatedTcV2);
       
+      // 🔥 FIX: Save to MongoDB via PUT API
+      try {
+        const saveResponse = await axios.put(`${API}/v1/techcards.v2/${currentTechCardId}`, updatedTcV2);
+        console.log('✅ Techcard saved to MongoDB:', saveResponse.data);
+      } catch (saveError) {
+        console.error('❌ Save to MongoDB failed:', saveError);
+        setAutoMappingMessage({ 
+          type: 'warning', 
+          text: `✅ Изменения применены локально, но не сохранены в базе данных. Перезагрузите страницу для сохранения.` 
+        });
+        return; // Don't show success message if save failed
+      }
+      
       setAutoMappingMessage({ 
         type: 'success', 
         text: `✅ Применено ${changesCount} изменений с артикулами. Покрытие цен обновлено!` 
