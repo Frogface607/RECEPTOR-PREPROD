@@ -2,6 +2,9 @@ from fastapi import FastAPI, APIRouter, HTTPException, File, Form, UploadFile, B
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+
+# Загружаем .env файл
+load_dotenv()
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -41,7 +44,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 
 from openai import OpenAI
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+# from emergentintegrations.llm.chat import LlmChat, UserMessage  # Removed for local development
 import uuid
 
 # LLM client setup - Emergent Universal Key + Fallback
@@ -3460,8 +3463,10 @@ async def generate_tech_card(request: DishRequest):
         search_query = f"цены на продукты {user.get('city', 'москва')} 2025 мясо овощи крупы молочные продукты"
         
         try:
-            from emergentintegrations.tools import web_search
-            price_search_result = web_search(search_query, search_context_size="medium")
+            # from emergentintegrations.tools import web_search  # Removed for local development
+            # web_search = None  # Placeholder
+            # price_search_result = web_search(search_query, search_context_size="medium")  # Disabled for local
+            price_search_result = "Данные по ценам недоступны (web_search disabled)"
         except Exception:
             price_search_result = "Данные по ценам недоступны"
         
@@ -6807,7 +6812,9 @@ app.include_router(api_router)
 
 # Подключаем v2-функционал только по флагу
 # КРИТИЧЕСКИ ВАЖНО для iiko интеграции: принудительно включаем V2
-techcards_v2_enabled = os.getenv("FEATURE_TECHCARDS_V2", "true").lower() in ("1","true","yes","on")
+# Принудительно включаем V2 для локальной разработки
+techcards_v2_enabled = True
+print(f"DEBUG: FEATURE_TECHCARDS_V2 = {os.getenv('FEATURE_TECHCARDS_V2')}, enabled = {techcards_v2_enabled}")
 if techcards_v2_enabled:
     from receptor_agent.routes.menus_v2 import router as menus_v2_router
     app.include_router(menus_v2_router, prefix="/api/v1", tags=["menus.v2"])
@@ -7846,8 +7853,10 @@ async def analyze_finances(request: dict):
     search_query = f"цены на продукты {user.get('city', 'москва')} 2025 мясо овощи крупы молочные продукты"
     
     try:
-        from emergentintegrations.tools import web_search
-        price_search_result = web_search(search_query, search_context_size="medium")
+        # from emergentintegrations.tools import web_search  # Removed for local development
+        # web_search = None  # Placeholder
+        # price_search_result = web_search(search_query, search_context_size="medium")  # Disabled for local
+        price_search_result = "Данные по ценам недоступны (web_search disabled)"
     except Exception:
         price_search_result = "Данные по ценам недоступны"
     

@@ -1,0 +1,461 @@
+[
+  {
+    "id": "TC001",
+    "title": "AI Recipe Generation Success",
+    "description": "Verify successful generation of creative V1 recipes with rich textual descriptions including emojis.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a valid user."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to AI Kitchen recipe generation section."
+      },
+      {
+        "type": "action",
+        "description": "Input valid parameters for recipe generation."
+      },
+      {
+        "type": "action",
+        "description": "Trigger AI recipe generation."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that recipe text is generated and contains rich descriptions and emojis."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no error messages are displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "AI Recipe Generation Failure Handling",
+    "description": "Verify system behaviour when AI recipe generation service fails or returns error.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate AI generation service failure or timeout."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to generate a new recipe in AI Kitchen."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user receives appropriate error notification."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no partial or corrupted recipe content is displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Successful Conversion from V1 Recipe to V2 Tech Card",
+    "description": "Verify accurate transformation of a V1 AI-generated recipe into structured V2 tech card with cost, nutrition, and product mapping.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create or select a valid AI-generated V1 recipe."
+      },
+      {
+        "type": "action",
+        "description": "Initiate conversion process to V2 tech card."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify tech card contains detailed ingredient list with cost calculation."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify nutrition values for calories, proteins, fats, and carbs are calculated per 100g and per serving."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ingredient SKUs are linked using product catalog integration."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Manual and Automated SKU Mapping Accuracy",
+    "description": "Validate automatic SKU mapping with fuzzy matching and fallback mechanisms and manual override capability.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a V2 tech card with unmapped or partially mapped ingredients."
+      },
+      {
+        "type": "action",
+        "description": "Run automated SKU mapping function."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify fuzzy matching correctly maps most ingredients."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify fallback article codes are generated for unmatched items."
+      },
+      {
+        "type": "action",
+        "description": "Manually override SKU mapping for at least one ingredient."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify manual mapping is persisted and overrides automated suggestions."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "IIKO RMS Product Catalog Synchronization",
+    "description": "Validate product catalog import, article allocation, and SKU sync with IIKO RMS integration.",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Initiate product catalog synchronization with IIKO RMS."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify product catalog data is imported correctly into the system."
+      },
+      {
+        "type": "action",
+        "description": "Verify article codes are allocated and linked with internal SKUs."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm SKU mappings in tech cards reflect the updated catalog."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Nutrition Calculation Accuracy",
+    "description": "Verify nutrition calculator computes KBJU values accurately per 100g and per portion based on ingredient and quantity data.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create or use a V2 tech card with multiple ingredients and defined serving sizes."
+      },
+      {
+        "type": "action",
+        "description": "Trigger nutrition calculation."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify calorie, protein, fat, and carbohydrate values match expected standard calculations."
+      },
+      {
+        "type": "assertion",
+        "description": "Check values are presented both per 100g and per serving."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Tech Card Export in Multiple Formats",
+    "description": "Verify tech cards export correctly into XLSX, CSV, PDF, and ZIP archive formats compatible with IIKO imports.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a finalized V2 tech card."
+      },
+      {
+        "type": "action",
+        "description": "Export tech card in XLSX format."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify XLSX file is generated and data integrity is maintained."
+      },
+      {
+        "type": "action",
+        "description": "Export tech card in CSV format."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify generated CSV file meets required specifications."
+      },
+      {
+        "type": "action",
+        "description": "Export tech card as PDF."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm PDF contains all key tech card information properly formatted."
+      },
+      {
+        "type": "action",
+        "description": "Export multiple tech cards as ZIP archive."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ZIP contains all selected export formats and files are accessible."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Preflight Export Compliance Checks",
+    "description": "Ensure preflight export checks detect unmapped ingredients and prevent export until issues are resolved.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a V2 tech card with unmapped or incorrectly mapped ingredients."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to export the tech card."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify export dialog blocks export and prompts user to resolve mapping issues."
+      },
+      {
+        "type": "action",
+        "description": "Correct mapping issues manually."
+      },
+      {
+        "type": "action",
+        "description": "Retry export."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify export completes successfully after all issues resolved."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "User Authentication and Session Isolation",
+    "description": "Validate SHA1 hash-based login system and session token management to enforce strict user data isolation.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt login with correct username and password."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify successful authentication and issuance of session token."
+      },
+      {
+        "type": "action",
+        "description": "Access user-specific dashboard and verify data isolation."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access another user's data using crafted API requests."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and security constraints enforced."
+      },
+      {
+        "type": "action",
+        "description": "Attempt login with invalid credentials."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login failure and no session token issued."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Subscription and PRO Feature Access Gating",
+    "description": "Verify that PRO features like advanced AI tools and food pairing are enabled only for subscribed users with valid pro status.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a free-tier user."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access PRO AI tools and features."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied or features are disabled."
+      },
+      {
+        "type": "action",
+        "description": "Login as a subscribed PRO user."
+      },
+      {
+        "type": "action",
+        "description": "Access PRO AI tools and features."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify full access to all PRO features is granted."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Feature Flags Toggle Functionality",
+    "description": "Validate dynamic enabling/disabling of experimental and PRO features via feature flags according to user role and subscription status.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as administrator."
+      },
+      {
+        "type": "action",
+        "description": "Enable or disable a feature flag e.g. new tech card version or HACCP compliance."
+      },
+      {
+        "type": "action",
+        "description": "Log in as a standard user."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify feature availability reflects updated feature flag state."
+      },
+      {
+        "type": "action",
+        "description": "Test toggling feature flags for PRO user vs. free user."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify feature access or restrictions applied per flag and subscription."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "User History and Navigation Persistence",
+    "description": "Verify that user history of recipes and tech cards is persisted accurately with working UI navigation controls.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create several AI recipes and convert them into tech cards."
+      },
+      {
+        "type": "action",
+        "description": "Navigate through recipe and tech card history using UI controls."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify history entries persist after logout and re-login."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure navigation returns correct historical data with proper state management."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Responsive UI Behavior on Mobile and Desktop",
+    "description": "Test frontend UI responsiveness, modals, forms, progress bars, and feedback messages across devices.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Access the application from a desktop browser."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify layout is proper, forms are usable, modals appear correctly, and feedback is visible."
+      },
+      {
+        "type": "action",
+        "description": "Access the application from a mobile device or emulated viewport."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI elements adapt properly for small screens and remain functional."
+      },
+      {
+        "type": "action",
+        "description": "Trigger various UI workflows including recipe generation, editing, export dialogs."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate UI responsiveness and no layout breaking occurs in any state."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Backend and Frontend Logging Verification",
+    "description": "Ensure critical events such as AI generation timing, export operations, and error messages are logged correctly for troubleshooting.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform AI recipe generation."
+      },
+      {
+        "type": "action",
+        "description": "Export tech cards."
+      },
+      {
+        "type": "action",
+        "description": "Trigger invalid operations to cause errors."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify logs contain entries for AI generation time, export status, and error details."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Export File Data Integrity Check",
+    "description": "Verify that all exported formats (XLSX, CSV, PDF, ZIP) maintain correct data integrity and are compatible for IIKO RMS import.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Export a tech card in each supported format."
+      },
+      {
+        "type": "action",
+        "description": "Inspect generated files for correct formatting and completeness."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no data truncation, formatting errors, or structural anomalies exist."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm files can be imported successfully into IIKO RMS test environment."
+      }
+    ]
+  }
+]

@@ -29,7 +29,8 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 def _flag() -> bool:
-    return os.getenv("FEATURE_TECHCARDS_V2", "false").lower() in ("1","true","yes","on")
+    # Принудительно включаем V2 для локальной разработки
+    return True
 
 def _llm_enabled() -> bool:
     return os.getenv("TECHCARDS_V2_USE_LLM","false").lower() in ("1","true","yes","on") and bool(os.getenv("OPENAI_API_KEY"))

@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 import { FEATURE_HACCP, FORCE_TECHCARD_V2 } from './config/featureFlags';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 const API = `${BACKEND_URL}/api`;  // Backend routes already include /api prefix
 
 // Note: formatProAIContent function is already defined below and handles markdown formatting

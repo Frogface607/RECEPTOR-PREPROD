@@ -1,0 +1,139 @@
+{
+  "tech_stack": [
+    "Python",
+    "FastAPI", 
+    "React",
+    "MongoDB",
+    "Node.js",
+    "Webpack",
+    "Axios",
+    "Motor (MongoDB async driver)",
+    "Pydantic",
+    "Uvicorn",
+    "OpenAI API",
+    "IIKO RMS Integration",
+    "YooKassa Billing"
+  ],
+  "features": [
+    {
+      "name": "AI Recipe Generation (V1)",
+      "description": "Creative recipe generation using OpenAI GPT models with rich descriptions and emojis for inspiration",
+      "files": [
+        "frontend/src/App.js",
+        "backend/receptor_agent/routes/ai_kitchen.py",
+        "backend/receptor_agent/llm/pipeline.py"
+      ]
+    },
+    {
+      "name": "Tech Card V2 Conversion",
+      "description": "Convert creative V1 recipes to structured V2 tech cards with cost calculation, nutrition (KBJU), and IIKO integration",
+      "files": [
+        "frontend/src/App.js",
+        "backend/receptor_agent/routes/techcards_v2.py",
+        "backend/receptor_agent/techcards_v2/schemas.py",
+        "backend/receptor_agent/techcards_v2/validators.py"
+      ]
+    },
+    {
+      "name": "IIKO RMS Integration",
+      "description": "Full integration with IIKO restaurant management system including product catalog sync, article allocation, and export",
+      "files": [
+        "backend/receptor_agent/integrations/iiko_rms_service.py",
+        "backend/receptor_agent/integrations/article_allocator.py",
+        "backend/receptor_agent/exports/iiko_xlsx.py",
+        "backend/receptor_agent/exports/iiko_csv.py"
+      ]
+    },
+    {
+      "name": "SKU Mapping & Auto-Mapping",
+      "description": "Automatic and manual mapping of ingredients to IIKO product codes with fuzzy matching and fallback generation",
+      "files": [
+        "frontend/src/App.js",
+        "backend/receptor_agent/routes/techcards_v2.py",
+        "backend/receptor_agent/integrations/article_allocator.py"
+      ]
+    },
+    {
+      "name": "Nutrition Calculator (KBJU)",
+      "description": "Calculate nutritional values (calories, proteins, fats, carbs) per 100g and per portion",
+      "files": [
+        "backend/receptor_agent/techcards_v2/nutrition_calculator.py",
+        "backend/receptor_agent/techcards_v2/schemas.py"
+      ]
+    },
+    {
+      "name": "Export System",
+      "description": "Export tech cards in multiple formats: XLSX, CSV, PDF, ZIP archives for IIKO import",
+      "files": [
+        "backend/receptor_agent/routes/export_v2.py",
+        "backend/receptor_agent/exports/xlsx.py",
+        "backend/receptor_agent/exports/pdf.py",
+        "backend/receptor_agent/exports/zipper.py"
+      ]
+    },
+    {
+      "name": "User Authentication & Session Management",
+      "description": "SHA1 hash-based authentication with session tokens and user isolation",
+      "files": [
+        "backend/server.py",
+        "frontend/src/App.js"
+      ]
+    },
+    {
+      "name": "Subscription & Billing",
+      "description": "YooKassa integration for subscription management with PRO features gating",
+      "files": [
+        "backend/receptor_agent/routes/billing.py",
+        "frontend/src/App.js"
+      ]
+    },
+    {
+      "name": "Feature Flags System",
+      "description": "Controlled rollout of features like HACCP, V2 tech cards, and PRO features",
+      "files": [
+        "frontend/src/featureFlags.js",
+        "backend/receptor_agent/routes/techcards_v2.py"
+      ]
+    },
+    {
+      "name": "History & Navigation",
+      "description": "Tech card history management with proper state persistence and navigation",
+      "files": [
+        "frontend/src/App.js"
+      ]
+    },
+    {
+      "name": "AI Tools (PRO Features)",
+      "description": "Advanced AI tools like food pairing, inspiration, and creative suggestions",
+      "files": [
+        "frontend/src/App.js",
+        "backend/receptor_agent/routes/ai_kitchen.py"
+      ]
+    },
+    {
+      "name": "Database Schema & Migrations",
+      "description": "MongoDB collections for users, tech cards, IIKO sync records with proper indexing",
+      "files": [
+        "backend/scripts/create_indexes.py",
+        "backend/receptor_agent/migrations/migrate_product_codes.py"
+      ]
+    },
+    {
+      "name": "Error Handling & Validation",
+      "description": "Comprehensive error handling, data validation, and user feedback systems",
+      "files": [
+        "backend/receptor_agent/techcards_v2/validators.py",
+        "backend/receptor_agent/techcards_v2/quality_validator.py",
+        "frontend/src/App.js"
+      ]
+    },
+    {
+      "name": "Responsive UI Components",
+      "description": "Modern React UI with modals, forms, tables, and interactive elements",
+      "files": [
+        "frontend/src/App.js",
+        "frontend/src/index.css"
+      ]
+    }
+  ]
+}
