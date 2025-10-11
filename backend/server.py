@@ -48,50 +48,23 @@ from openai import OpenAI
 # from emergentintegrations.llm.chat import LlmChat, UserMessage  # Removed for local development
 import uuid
 
-# LLM client setup - Emergent Universal Key + Fallback
-emergent_llm_key = os.environ.get('EMERGENT_LLM_KEY')
+# LLM client setup - Standard OpenAI only
 openai_api_key = os.environ.get('OPENAI_API_KEY')
 
-# Приоритет: Emergent ключ → OpenAI ключ → отключение
-if emergent_llm_key:
+# Initialize OpenAI client
+emergent_chat = None
+USE_EMERGENT = False
+
+if openai_api_key:
     try:
-        # Создаем Emergent LLM клиент для gpt-4o-mini (экономичный)
-        emergent_chat = LlmChat(
-            api_key=emergent_llm_key,
-            session_id=f"receptor_session_{uuid.uuid4()}",
-            system_message="You are a professional culinary AI assistant."
-        ).with_model("openai", "gpt-4o-mini")
-        
-        # Также создаем обычный OpenAI клиент для совместимости
-        openai_client = OpenAI(api_key=emergent_llm_key)
-        
-        logger.info("✅ Emergent LLM client initialized (gpt-4o-mini with universal key)")
-        USE_EMERGENT = True
+        openai_client = OpenAI(api_key=openai_api_key)
+        logger.info("✅ OpenAI client initialized successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize Emergent LLM client: {e}")
-        emergent_chat = None
-        USE_EMERGENT = False
-        # Fallback to standard OpenAI
-        if openai_api_key:
-            openai_client = OpenAI(api_key=openai_api_key)
-            logger.info("✅ Fallback to standard OpenAI client")
-        else:
-            openai_client = None
-            logger.error("No LLM client available - AI functions disabled")
-else:
-    # Только стандартный OpenAI
-    emergent_chat = None
-    USE_EMERGENT = False
-    if openai_api_key:
-        try:
-            openai_client = OpenAI(api_key=openai_api_key)
-            logger.info("✅ Standard OpenAI client initialized")
-        except Exception as e:
-            logger.error(f"Failed to initialize OpenAI client: {e}")
-            openai_client = None
-    else:
-        logger.error("No API keys found - AI functions disabled")
+        logger.error(f"Failed to initialize OpenAI client: {e}")
         openai_client = None
+else:
+    logger.warning("⚠️ No OPENAI_API_KEY found - AI functions will be limited")
+    openai_client = None
 
 # КРИТИЧЕСКИ ВАЖНО: Принудительно включаем LLM для V2
 os.environ['TECHCARDS_V2_USE_LLM'] = 'true'
