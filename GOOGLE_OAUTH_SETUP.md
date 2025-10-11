@@ -71,3 +71,4 @@ DB_NAME=receptor_pro
 ✅ **Mock авторизация** - работает  
 🔄 **Google OAuth** - требует настройки Google Client ID  
 ✅ **Backend API** - готов к приёму Google OAuth запросов
+
