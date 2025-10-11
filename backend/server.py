@@ -1780,6 +1780,12 @@ app.add_middleware(
     expose_headers=["*"]
 )
 
+# Root endpoint (no prefix)
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {"message": "Receptor AI Backend is running", "status": "ok"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
@@ -6842,8 +6848,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    logger.info("🚀 Receptor AI Backend starting up...")
+    logger.info(f"📦 MongoDB URI configured: {bool(os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL'))}")
+    logger.info(f"🤖 OpenAI API Key configured: {bool(os.environ.get('OPENAI_API_KEY'))}")
+    logger.info(f"🔧 Environment: {os.environ.get('ENVIRONMENT', 'production')}")
+    logger.info("✅ Server startup complete!")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    logger.info("🛑 Shutting down...")
     client.close()
 
 @app.post("/api/v1/generate-recipe")
