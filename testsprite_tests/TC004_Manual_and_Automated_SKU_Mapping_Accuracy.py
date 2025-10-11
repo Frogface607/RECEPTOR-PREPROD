@@ -45,37 +45,31 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Navigate to 'ТЕХКАРТЫ' (Tech cards) section to select a V2 tech card with unmapped or partially mapped ingredients.
+        # Navigate to 'ТЕХКАРТЫ' (Tech Cards) section to select a V2 tech card with unmapped or partially mapped ingredients.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/header/div/div/div[2]/nav/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Select the first V2 tech card with unmapped or partially mapped ingredients by clicking its view icon.
+        # Select a V2 tech card with unmapped or partially mapped ingredients by clicking the eye icon on one of the listed V2 tech cards.
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div[2]').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Run the automated SKU mapping function to map unmapped or partially mapped ingredients.
+        # Run the automated SKU mapping function by clicking the '🔗 IIKO' button for one of the unmapped or partially mapped ingredients.
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div/div[3]/button').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div[3]/div/div[4]/div[2]/table/tbody/tr/td[7]/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Manually override SKU mapping for at least one ingredient without SKU code by clicking the 'Связать с товаром из IIKO системы' button for that ingredient.
-        frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div[4]/div/div[4]/div[2]/table/tbody/tr[2]/td[7]/div/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # Click the 'Подключить IIKO RMS' button to connect to the iiko RMS server and enable product search for manual SKU assignment.
+        # Click the '🔗 Подключить IIKO RMS' button to connect to the IIKO RMS server and enable product search for automated SKU mapping.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div/div[5]/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Input the iiko RMS server host, login, and password, then click the 'Подключить' button to establish connection.
+        # Fill in the IIKO RMS connection form with host, login, and password, then click the 'Подключить' button to establish the connection.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div/div[2]/div[2]/div/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('your-restaurant.iiko.it')
@@ -96,9 +90,9 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Wait for connection to establish and then synchronize the catalog by clicking the 'Синхронизировать' button.
+        # Wait for connection to establish, then synchronize the product catalog by clicking the 'Синхронизировать' button.
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/div[2]/div[2]/div/div[4]/button[2]').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/div/div/div[2]/div[3]/div/div[4]/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 

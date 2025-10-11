@@ -45,7 +45,7 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Navigate to the user account or settings area to find IIKO RMS integration options to initiate product catalog synchronization.
+        # Navigate to the user account or settings area to find IIKO RMS integration or synchronization options.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/header/div/div/div[2]/div[2]/button[3]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
@@ -73,30 +73,15 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Check and correct IIKO server address, login, and password or network settings, then retry connection verification.
+        # Investigate and resolve connection issue or retry connection verification with correct credentials or network settings.
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/div[3]/div[2]/div/div/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ваше-заведение.iiko.it')
-        
-
-        frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/div[3]/div[2]/div/div/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('607orlov@gmail.com')
-        
-
-        frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/div[3]/div[2]/div/div/div[3]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('metkamfetamin')
-        
-
-        frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/div[3]/div[2]/div/div/button').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Close the IIKO connection modal and report the connection failure issue to the user for troubleshooting.
+        # Reopen IIKO connection modal to retry connection or check settings.
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/div/button').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/header/div/div/div[2]/div[2]/button[3]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 

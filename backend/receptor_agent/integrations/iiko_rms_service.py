@@ -914,10 +914,11 @@ class IikoRmsService:
         Used for sticky connection functionality
         """
         try:
-            logger.info(f"Attempting to restore RMS connection for user: {user_id}")
+            logger.info(f"🔍 DEBUG: Attempting to restore RMS connection for user: {user_id}")
             
             # КРИТИЧЕСКИ ВАЖНО: всегда требовать user_id для изоляции пользователей
             if not user_id:
+                logger.warning("⚠️ DEBUG: No user_id provided for restore")
                 return {"status": "no_stored_credentials"}
                 
             # Find most recent connection for user
@@ -927,7 +928,12 @@ class IikoRmsService:
                 sort=[("last_connection", DESCENDING)]
             )
             
+            logger.info(f"🔍 DEBUG: Credentials found: {bool(credentials_record)}")
+            if credentials_record:
+                logger.info(f"🔍 DEBUG: Host: {credentials_record.get('host')}, Status: {credentials_record.get('status')}")
+            
             if not credentials_record:
+                logger.warning("⚠️ DEBUG: No credentials found in MongoDB")
                 return {"status": "no_stored_credentials"}
             
             if credentials_record.get("status") == IikoRmsConnectionStatus.DISCONNECTED:
@@ -963,14 +969,27 @@ class IikoRmsService:
                 
                 logger.info("✅ RMS connection restored successfully")
                 
+                # CRITICAL FIX: Get sync status and products count
+                org_id = credentials_record.get("organization_id", "default")
+                sync_status_record = self.sync_status.find_one(
+                    {"organization_id": org_id},
+                    sort=[("started_at", DESCENDING)]
+                )
+                
+                products_count = self.products.count_documents({"organization_id": org_id})
+                
                 return {
                     "status": "restored",
                     "host": credentials_record["host"],
                     "login": credentials_record["login"][:3] + "***",
-                    "organization_id": credentials_record.get("organization_id"),
+                    "organization_id": org_id,
                     "organization_name": credentials_record.get("organization_name"),
                     "organizations": organizations,
-                    "session_expires_at": (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+                    "session_expires_at": (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat(),
+                    "products_count": products_count,
+                    "sync_status": sync_status_record["status"] if sync_status_record else "never_synced",
+                    "last_sync": sync_status_record["completed_at"].isoformat() if sync_status_record and sync_status_record.get("completed_at") else None,
+                    "last_connection": credentials_record.get("last_connection").isoformat() if credentials_record.get("last_connection") else None
                 }
                 
             except IikoRmsAPIError as api_error:

@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
+import OnboardingTour from './OnboardingTour';
+import TourSystem from './components/TourSystem';
+import tourConfigs from './tours/tourConfigs';
+import ModernAuthModal from './components/ModernAuthModal';
 import { FEATURE_HACCP, FORCE_TECHCARD_V2 } from './config/featureFlags';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
 const API = `${BACKEND_URL}/api`;  // Backend routes already include /api prefix
 
 // Note: formatProAIContent function is already defined below and handles markdown formatting
@@ -14,6 +18,42 @@ function App() {
   
   const [currentUser, setCurrentUser] = useState(null);
   const [showRegistration, setShowRegistration] = useState(false);
+  
+  // 🎯 Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [activeTour, setActiveTour] = useState(null); // 'welcome', 'createTechcard', 'aiKitchen', 'iiko', 'finance'
+  
+  // 🚀 Modern Auth state
+  const [showModernAuth, setShowModernAuth] = useState(false);
+  
+  // Check if user is new (first time) - show onboarding
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    const hasGeneratedTechcards = localStorage.getItem('userHistory');
+    
+    // Show onboarding if:
+    // 1. Never seen before
+    // 2. OR never generated any techcards
+    if (!hasSeenOnboarding && !hasGeneratedTechcards) {
+      // Delay to let UI load first
+      const timer = setTimeout(() => {
+        setActiveTour('welcome');
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
+    setActiveTour(null);
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('hasSeenOnboarding', 'skipped');
+    setShowOnboarding(false);
+    setActiveTour(null);
+  };
   
   // УПРОЩЕНИЕ: Убрали выбор города - он не влияет на функционал
   // const [cities, setCities] = useState([]);
@@ -53,6 +93,7 @@ function App() {
   const [autoMappingMessage, setAutoMappingMessage] = useState({ type: '', text: '' });
   const [preserveExistingProductCode, setPreserveExistingProductCode] = useState(true);
   const [tcV2Backup, setTcV2Backup] = useState(null); // For undo functionality
+  const [tcV2Ready, setTcV2Ready] = useState(false); // Track when tcV2 is fully loaded
   
   // Export wizard states (CREATE EXPORT WIZARD UI)
   const [showExportWizard, setShowExportWizard] = useState(false);
@@ -1625,29 +1666,52 @@ function App() {
   useEffect(() => {
     checkIikoRmsStatus();
     loadVenueProfile();
+  }, []);
+  
+  // 🚀 CRITICAL FIX: Auto-restore IIKO connection after currentUser is loaded
+  useEffect(() => {
+    if (!currentUser || !currentUser.id) {
+      console.log('⏳ Waiting for currentUser to load before auto-restore...');
+      return;
+    }
     
-    // 🚀 УЛУЧШЕНИЕ: Автоматическое восстановление подключения через бэкенд
     const tryAutoConnect = async () => {
       try {
-        console.log('🔄 Проверяем сохраненные учетные данные на бэкенде...');
+        console.log('🔄 Проверяем сохраненные учетные данные на бэкенде для пользователя:', currentUser.id);
         
-        // Используем бэкенд эндпоинт для восстановления подключения
+        // CRITICAL FIX: Use actual currentUser.id, not demo_user
         const response = await axios.post(`${API}/v1/iiko/rms/restore-connection`, null, {
-          params: { user_id: currentUserOrDemo.id }
+          params: { user_id: currentUser.id }
         });
         
-        if (response.data.status === 'connected') {
+        if (response.data.status === 'connected' || response.data.status === 'restored') {
           console.log('✅ Автоматическое подключение к iiko успешно через бэкенд');
-          setIikoRmsConnection(prev => ({
-            ...prev,
-            status: 'connected',
-            organization_id: response.data.organization_id,
-            organization_name: response.data.organization_name,
-            last_connection: new Date().toISOString()
-          }));
           
-          // Обновляем статус подключения
+          // CRITICAL FIX: Update full connection state
+          setIikoRmsConnection({
+            status: 'connected',
+            host: response.data.host || '',
+            login: response.data.login || '',
+            organization_id: response.data.organization_id || 'default',
+            organization_name: response.data.organization_name || '',
+            last_connection: response.data.last_connection || new Date().toISOString(),
+            sync_status: response.data.sync_status || 'never_synced',
+            products_count: response.data.products_count || 0,
+            last_sync: response.data.last_sync || null,
+            error_message: ''
+          });
+          
+          // Update credentials for UI
+          setIikoRmsCredentials({
+            host: response.data.host || '',
+            login: response.data.login || '',
+            password: '' // Don't store password in UI
+          });
+          
+          // Обновляем статус подключения и синхронизации
           await checkIikoRmsStatus();
+          
+          console.log('✅ IIKO RMS автоматически восстановлено. Синхронизировано товаров:', response.data.products_count || 0);
         } else if (response.data.status === 'no_stored_credentials') {
           console.log('ℹ️ Нет сохраненных учетных данных на бэкенде');
         } else if (response.data.status === 'manually_disconnected') {
@@ -1661,7 +1725,7 @@ function App() {
     };
     
     tryAutoConnect();
-  }, []);
+  }, [currentUser]); // CRITICAL FIX: Run when currentUser loads
 
   // Animated loading messages
   const getLoadingMessages = (type) => {
@@ -2770,9 +2834,24 @@ function App() {
         {/* СТОИМОСТЬ И МЕТАДАННЫЕ */}
         {tcV2 && (
           <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-6 border border-yellow-400/30">
-            <h3 className="text-xl font-bold text-yellow-300 mb-4 uppercase tracking-wide flex items-center">
-              💸 ФИНАНСОВЫЙ АНАЛИЗ
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-yellow-300 uppercase tracking-wide flex items-center">
+                💸 ФИНАНСОВЫЙ АНАЛИЗ
+              </h3>
+              <button
+                onClick={() => {
+                  // Пересчёт финансов через backend API
+                  if (confirm('Пересчитать финансы техкарты с актуальными ценами?')) {
+                    // TODO: Implement financial recalculation
+                    alert('Функция пересчёта финансов будет добавлена в следующей версии!');
+                  }
+                }}
+                className="bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-300 px-3 py-1 rounded-lg text-sm transition-all"
+                title="Пересчитать финансы с актуальными ценами"
+              >
+                🔄 Пересчитать
+              </button>
+            </div>
             
             {cost.rawCost ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -3071,6 +3150,17 @@ function App() {
 
     setTcV2(updatedTcV2);
     setMappingModalOpen(false);
+    
+    // CRITICAL FIX: Persist mapping to MongoDB
+    try {
+      if (updatedTcV2.meta && updatedTcV2.meta.id) {
+        console.log(`🔥 PERSIST: Saving manual SKU mapping to MongoDB for tech card ${updatedTcV2.meta.id}`);
+        await axios.put(`${API}/v1/techcards.v2/${updatedTcV2.meta.id}`, updatedTcV2);
+        console.log('✅ PERSIST: Manual mapping saved successfully');
+      }
+    } catch (error) {
+      console.error('❌ PERSIST: Failed to save manual mapping:', error);
+    }
     
     // Clear search states
     setUsdaSearchQuery('');
@@ -4874,17 +4964,47 @@ function App() {
   // ============== LEGACY AUTO-MAPPING FUNCTIONS (IK-02B-FE/02) ==============
   
   const startAutoMapping = async () => {
-    if (!tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
-      setAutoMappingMessage({ type: 'error', text: 'Нет ингредиентов для автомаппинга' });
+    // CRITICAL FIX: Check if tcV2 is ready
+    if (!tcV2Ready || !tcV2 || !tcV2.ingredients || tcV2.ingredients.length === 0) {
+      setAutoMappingMessage({ type: 'error', text: 'Нет ингредиентов для автомаппинга. Сначала сгенерируйте техкарту.' });
       return;
     }
 
+    // CRITICAL FIX: Wait for IIKO connection if needed
     if (iikoRmsConnection.status !== 'connected' || !iikoRmsConnection.products_count) {
       setAutoMappingMessage({ 
-        type: 'error', 
-        text: 'Подключитесь к iiko RMS и выполните синхронизацию номенклатуры' 
+        type: 'info', 
+        text: '🔄 Ожидание подключения к IIKO RMS...' 
       });
-      return;
+      
+      // Wait for IIKO connection with retry
+      let retryCount = 0;
+      const maxRetries = 10; // 5 seconds total
+      
+      while (retryCount < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // CRITICAL FIX: Check connection status via API
+        try {
+          const response = await axios.get(`${API}/v1/iiko/rms/connection/status?user_id=${currentUser?.id || 'demo_user'}`);
+          if (response.data.status === 'connected' && response.data.products_count > 0) {
+            break; // Connection is ready
+          }
+        } catch (error) {
+          console.warn('Failed to check IIKO status:', error);
+        }
+        
+        retryCount++;
+      }
+      
+      // Final check
+      if (iikoRmsConnection.status !== 'connected' || !iikoRmsConnection.products_count) {
+        setAutoMappingMessage({ 
+          type: 'error', 
+          text: 'Подключитесь к iiko RMS и выполните синхронизацию номенклатуры' 
+        });
+        return;
+      }
     }
 
     // Create backup for undo
@@ -4921,7 +5041,8 @@ function App() {
             params: {
               q: ingredient.name,
               source: 'rms',
-              limit: 5
+              limit: 5,
+              user_id: currentUser?.id || 'demo_user'
             }
           });
           
@@ -5304,12 +5425,17 @@ function App() {
   // Auto-validate quality when tcV2 changes
   React.useEffect(() => {
     if (tcV2 && tcV2.ingredients && tcV2.ingredients.length > 0) {
+      // Mark tcV2 as ready
+      setTcV2Ready(true);
+      
       // Debounced quality validation
       const timer = setTimeout(() => {
         validateTechCardQuality();
       }, 1000); // 1 second delay to avoid too frequent calls
       
       return () => clearTimeout(timer);
+    } else {
+      setTcV2Ready(false);
     }
   }, [tcV2]);
 
@@ -9296,13 +9422,17 @@ function App() {
       const response = await axios.get(`${API}/menu-projects/${currentUser.id}`);
       
       if (response.data.success) {
-        setMenuProjects(response.data.projects);
+        setMenuProjects(response.data.projects || []);
       } else {
-        throw new Error('Failed to fetch menu projects');
+        // Graceful fallback - just set empty array
+        console.warn('Menu projects response not successful, using empty array');
+        setMenuProjects([]);
       }
     } catch (error) {
       console.error('Error fetching menu projects:', error);
-      alert('Ошибка при загрузке проектов');
+      // Graceful fallback instead of alert
+      console.warn('Failed to load projects, using empty array');
+      setMenuProjects([]);
     } finally {
       setIsLoadingProjects(false);
     }
@@ -9954,19 +10084,20 @@ function App() {
                 {currentUserOrDemo.demo_mode ? (
                   // Демо режим - показываем Login/Signup
                   <>
+                    {/* 🎯 Кнопка помощи для demo пользователей */}
                     <button
-                      onClick={() => setShowLogin(true)}
-                      className="text-blue-300 hover:text-blue-200 font-semibold text-sm sm:text-base transition-colors"
-                      title="Войти в существующий аккаунт"
+                      onClick={() => setActiveTour('welcome')}
+                      className="text-blue-400 hover:text-blue-300 text-xl transition-all duration-200 hover:scale-110"
+                      title="❓ Помощь - Пройти тур по функциям"
                     >
-                      ВОЙТИ
+                      ❓
                     </button>
                     <button
-                      onClick={() => setShowRegistrationModal(true)}
-                      className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-all"
-                      title="Создать аккаунт для сохранения техкарт"
+                      onClick={() => setShowModernAuth(true)}
+                      className="bg-gray-800 hover:bg-gray-700 text-white font-medium px-6 py-2 rounded-lg text-sm transition-all border border-gray-600 hover:border-gray-500"
+                      title="Войти или зарегистрироваться"
                     >
-                      РЕГИСТРАЦИЯ
+                      Войти
                     </button>
                     <span className="text-gray-400 text-sm hidden sm:inline">|</span>
                     <button
@@ -9980,6 +10111,14 @@ function App() {
                 ) : (
                   // Зарегистрированный пользователь - личный кабинет + выход
                   <>
+                    {/* 🎯 Кнопка помощи - повторить онбординг */}
+                    <button
+                      onClick={() => setActiveTour('welcome')}
+                      className="text-blue-400 hover:text-blue-300 text-xl transition-all duration-200 hover:scale-110"
+                      title="❓ Помощь - Повторить тур по функциям"
+                    >
+                      ❓
+                    </button>
                     <button
                       onClick={() => setShowVenueProfileModal(true)}
                       className="text-purple-300 hover:text-purple-200 font-bold text-sm sm:text-base transition-colors flex items-center space-x-2"
@@ -10459,9 +10598,18 @@ function App() {
             <div className="text-center mb-8">
               <div className="bg-gradient-to-r from-pink-600/20 to-violet-600/20 border border-pink-400/30 rounded-2xl p-8 sm:p-12 mb-8">
                 <div className="text-6xl sm:text-8xl mb-6"></div>
-                <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent mb-6">
-                  AI-КУХНЯ
-                </h2>
+                <div className="flex items-center justify-center gap-4 mb-6">
+                  <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent">
+                    AI-КУХНЯ
+                  </h2>
+                  <button
+                    onClick={() => setActiveTour('aiKitchen')}
+                    className="bg-pink-600/30 hover:bg-pink-600/50 text-pink-300 font-bold py-2 px-4 rounded-lg transition-all hover:scale-110"
+                    title="Пройти обучающий тур по AI-Кухне"
+                  >
+                    ❓
+                  </button>
+                </div>
                 <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto">
                   Творческие <span className="text-pink-400 font-bold">AI-дополнения</span> для создания уникальных блюд
                 </p>
@@ -10543,7 +10691,7 @@ function App() {
                         title="Голосовой ввод"
                       >
                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 715 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 0 1 5 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
                         </svg>
                       </button>
                     </div>
@@ -11273,7 +11421,16 @@ function App() {
           <div className="lg:col-span-1">
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700 space-y-6 sm:space-y-8">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-purple-300 mb-4 sm:mb-6">СОЗДАТЬ ТЕХКАРТУ</h2>
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-purple-300">СОЗДАТЬ ТЕХКАРТУ</h2>
+                  <button
+                    onClick={() => window.startTour_createTechcard && window.startTour_createTechcard()}
+                    className="text-blue-400 hover:text-blue-300 transition-colors text-xl"
+                    title="❓ Показать тур: как создать техкарту"
+                  >
+                    ❓
+                  </button>
+                </div>
                 
                 {/* Beautiful Step-by-Step Instructions */}
                 <div className="mb-4 sm:mb-6">
@@ -11386,7 +11543,7 @@ function App() {
                         ) : (
                           // Microphone icon when not recording
                           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 715 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 0 1 5 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
                           </svg>
                         )}
                       </button>
@@ -15240,9 +15397,21 @@ function App() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 border border-purple-400/30 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-purple-200">
-                🏢 Интеграция с IIKo
-              </h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-bold text-purple-200">
+                  🏢 Интеграция с IIKo
+                </h3>
+                <button
+                  onClick={() => {
+                    setActiveTour('iiko');
+                    setShowIikoModal(false);
+                  }}
+                  className="bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 font-bold py-1 px-3 rounded-lg transition-all hover:scale-110"
+                  title="Пройти обучающий тур по IIKO интеграции"
+                >
+                  ❓
+                </button>
+              </div>
               <button
                 onClick={() => setShowIikoModal(false)}
                 className="text-gray-400 hover:text-white text-2xl"
@@ -19480,6 +19649,106 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* 🎯 ОНБОРДИНГ для новых пользователей */}
+      {(showOnboarding || activeTour === 'welcome') && (
+        <OnboardingTour
+          isActive={activeTour === 'welcome'}
+          onComplete={() => {
+            handleOnboardingComplete();
+            setActiveTour(null);
+          }}
+          onSkip={() => {
+            handleOnboardingSkip();
+            setActiveTour(null);
+          }}
+        />
+      )}
+
+      {/* 🎯 КОНТЕКСТНЫЕ ТУРЫ для каждого раздела */}
+      <TourSystem
+        tourId="createTechcard"
+        steps={tourConfigs.createTechcard}
+        isActive={activeTour === 'createTechcard'}
+        onComplete={() => {
+          console.log('✅ Create Techcard tour completed');
+          setActiveTour(null);
+        }}
+        onSkip={() => {
+          console.log('⏭️ Create Techcard tour skipped');
+          setActiveTour(null);
+        }}
+      />
+      
+      <TourSystem
+        tourId="aiKitchen"
+        steps={tourConfigs.aiKitchen}
+        isActive={activeTour === 'aiKitchen'}
+        onComplete={() => {
+          console.log('✅ AI Kitchen tour completed');
+          setActiveTour(null);
+        }}
+        onSkip={() => {
+          console.log('⏭️ AI Kitchen tour skipped');
+          setActiveTour(null);
+        }}
+      />
+      
+      <TourSystem
+        tourId="iiko"
+        steps={tourConfigs.iiko}
+        isActive={activeTour === 'iiko'}
+        onComplete={() => {
+          console.log('✅ IIKO tour completed');
+          setActiveTour(null);
+        }}
+        onSkip={() => {
+          console.log('⏭️ IIKO tour skipped');
+          setActiveTour(null);
+        }}
+      />
+
+      {/* 🚀 Modern Auth Modal */}
+      <ModernAuthModal
+        isOpen={showModernAuth}
+        onClose={() => setShowModernAuth(false)}
+        onLogin={async (email, password) => {
+          console.log('Login:', email, password);
+          
+          // Mock авторизация пока backend не работает
+          const mockUser = {
+            id: 'email_' + Date.now(),
+            email: email,
+            name: email.split('@')[0],
+            avatar: null,
+            provider: 'email'
+          };
+          
+          localStorage.setItem('receptor_user', JSON.stringify(mockUser));
+          localStorage.setItem('receptor_token', 'mock_token_' + Date.now());
+          
+          setShowModernAuth(false);
+          window.location.reload(); // Обновляем страницу для применения изменений
+        }}
+        onRegister={async (email, password) => {
+          console.log('Register:', email, password);
+          
+          // Mock регистрация
+          const mockUser = {
+            id: 'email_' + Date.now(),
+            email: email,
+            name: email.split('@')[0],
+            avatar: null,
+            provider: 'email'
+          };
+          
+          localStorage.setItem('receptor_user', JSON.stringify(mockUser));
+          localStorage.setItem('receptor_token', 'mock_token_' + Date.now());
+          
+          setShowModernAuth(false);
+          window.location.reload(); // Обновляем страницу для применения изменений
+        }}
+      />
 
     </div>
   );

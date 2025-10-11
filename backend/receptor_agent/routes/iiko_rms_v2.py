@@ -255,6 +255,36 @@ async def disconnect_rms(user_id: Optional[str] = Query(None, description="User 
         logger.error(f"Error disconnecting RMS: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")
 
+@router.get("/debug/credentials")
+async def debug_get_credentials(user_id: Optional[str] = Query(None, description="User ID")):
+    """DEBUG: Check if credentials exist in MongoDB"""
+    try:
+        service = get_iiko_rms_service()
+        query = {"user_id": user_id} if user_id else {}
+        credentials = list(service.credentials.find(query, {"password": 0}).limit(5))
+        
+        # Convert ObjectId to string for JSON serialization
+        for cred in credentials:
+            if "_id" in cred:
+                cred["_id"] = str(cred["_id"])
+            if "last_connection" in cred and cred["last_connection"]:
+                cred["last_connection"] = cred["last_connection"].isoformat()
+            if "session_expires_at" in cred and cred["session_expires_at"]:
+                cred["session_expires_at"] = cred["session_expires_at"].isoformat()
+            if "created_at" in cred and cred["created_at"]:
+                cred["created_at"] = cred["created_at"].isoformat()
+            if "updated_at" in cred and cred["updated_at"]:
+                cred["updated_at"] = cred["updated_at"].isoformat()
+        
+        return {
+            "count": len(credentials),
+            "credentials": credentials,
+            "user_id_searched": user_id
+        }
+    except Exception as e:
+        logger.error(f"Debug error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/restore-connection")
 async def restore_rms_connection(user_id: Optional[str] = Query(None, description="User ID")):
     """
@@ -262,15 +292,18 @@ async def restore_rms_connection(user_id: Optional[str] = Query(None, descriptio
     Used for sticky connection functionality on app startup
     """
     try:
-        logger.info(f"Attempting to restore RMS connection for user: {user_id}")
+        logger.info(f"🔍 DEBUG ENDPOINT: Attempting to restore RMS connection for user: {user_id}")
         
         service = get_iiko_rms_service()
         result = service.restore_rms_connection(user_id=user_id)
         
+        logger.info(f"🔍 DEBUG ENDPOINT: Restore result status: {result.get('status')}")
+        logger.info(f"🔍 DEBUG ENDPOINT: Full result: {result}")
+        
         return result
         
     except Exception as e:
-        logger.error(f"Error restoring RMS connection: {str(e)}")
+        logger.error(f"❌ Error restoring RMS connection: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to restore connection: {str(e)}")
 
 @router.get("/connection/status", response_model=RmsConnectionStatusResponse)

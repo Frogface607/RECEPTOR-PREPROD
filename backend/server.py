@@ -6810,6 +6810,10 @@ def _generate_diagnostic_recommendations(tests: List[Dict]) -> List[str]:
 # Include the router in the main app
 app.include_router(api_router)
 
+# Google OAuth router
+from google_auth import router as google_auth_router
+app.include_router(google_auth_router)
+
 # Подключаем v2-функционал только по флагу
 # КРИТИЧЕСКИ ВАЖНО для iiko интеграции: принудительно включаем V2
 # Принудительно включаем V2 для локальной разработки

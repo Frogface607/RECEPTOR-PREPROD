@@ -51,43 +51,43 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Input the email '607orlov@gmail.com' into the email field.
+        # Input email '607orlov@gmail.com' into the email field.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('607orlov@gmail.com')
         
 
-        # Click the 'Войти' button to submit login form.
+        # Click the 'Войти' button to attempt login without password input.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div/form/div[2]/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Click on the 'AI-КУХНЯ' tab to navigate to the AI Kitchen recipe generation section.
+        # Click the 'AI-КУХНЯ' button to navigate to AI Kitchen recipe generation section.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/header/div/div/div[2]/nav/button[3]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Input a valid dish name into the recipe name input field.
+        # Input a valid dish name into the dish name input field.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div[2]/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('Spicy Thai Basil Chicken')
+        await page.wait_for_timeout(3000); await elem.fill('Творческий салат')
         
 
-        # Click the 'СОЗДАТЬ РЕЦЕПТ' button to trigger AI recipe generation.
+        # Click the 'Создать рецепт' button to trigger AI recipe generation.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div[2]/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # Assertion: Verify that recipe text is generated and contains rich descriptions and emojis.
-        recipe_description = await frame.locator('xpath=//div[contains(text(),"Spicy Thai Basil Chicken")]/following-sibling::div').inner_text()
-        assert recipe_description, "Recipe description should be present."
-        assert any(emoji in recipe_description for emoji in ['🍽️', '🌶️', '🍗', '🥢', '🍜', '🔥', '✨', '😋', '🍴', '🍳', '🍲', '🍛', '🍤', '🍣', '🍱', '🍚', '🍙', '🍘', '🍥', '🥗', '🥘', '🥙', '🥪', '🥫', '🥓', '🥩', '🥚', '🥞', '🧀', '🍞', '🥖', '🥨', '🥯', '🥐', '🍔', '🍟', '🍕', '🌮', '🌯', '🥗', '🥙', '🥚', '🌶️']), "Recipe description should contain emojis."
+        recipe_description = await frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div[3]/div[1]/p').inner_text()
+        assert recipe_description, 'Recipe description should be present'
+        assert any(emoji in recipe_description for emoji in ['😀', '😋', '🍽️', '🥗', '🍅', '🍳', '🍴', '🍰', '🍕', '🍔', '🌶️', '🍤', '🍣', '🍜', '🍲', '🍝', '🍛', '🍚', '🍙', '🍘', '🍢', '🍡', '🍧', '🍨', '🍦', '🍩', '🍪', '🍫', '🍬', '🍭', '🍮', '🍯', '🥞', '🥓', '🥩', '🥗', '🥒', '🥕', '🥔', '🥐', '🥖', '🥨', '🥯', '🥗']), 'Recipe description should contain emojis'
         # Assertion: Verify no error messages are displayed.
-        error_elements = await frame.locator('xpath=//div[contains(@class, "error") or contains(text(), "error") or contains(text(), "ошибка")]').count()
-        assert error_elements == 0, "No error messages should be displayed on the page."]}  
+        error_messages = await frame.locator('xpath=//div[contains(@class, "error") or contains(text(), "error") or contains(text(), "ошибка")]').count()
+        assert error_messages == 0, 'No error messages should be displayed'
         await asyncio.sleep(5)
     
     finally:

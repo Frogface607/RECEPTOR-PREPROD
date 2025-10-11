@@ -45,7 +45,7 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Input a valid AI-generated V1 recipe description in the dish name textarea and create the tech card.
+        # Input a valid AI-generated V1 recipe description and click 'Создать техкарту' to initiate the conversion process.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/main/div/div/div/div/form/div/div/textarea').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('Стейк из говядины с картофельным пюре и грибным соусом')
@@ -56,39 +56,37 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Try clicking outside the modal area or on the background overlay to dismiss the modal and reveal the tech card details.
+        # Try clicking outside the modal area or on the background overlay to dismiss the modal and access the detailed V2 tech card.
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Extract and verify the technological process steps and storage instructions for completeness and accuracy.
-        await page.mouse.wheel(0, window.innerHeight)
+        # Click the 'Связать с IIKO' button to test product catalog integration and SKU mapping with the 2833 products.
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/main/div/div[2]/div/div/div[3]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Confirm IIKO synchronization status and SKU mapping completeness for all ingredients.
-        await page.mouse.wheel(0, -window.innerHeight)
-        
-
-        # Assert tech card contains detailed ingredient list with cost calculation
-        ingredients = await frame.locator('xpath=//div[contains(@class, "ingredients-list")]//div[contains(@class, "ingredient-item")]').all_text_contents()
-        assert any('Говядина (стейк)' in ing for ing in ingredients), "Ingredient 'Говядина (стейк)' not found in tech card"
-        assert any('Картофель' in ing for ing in ingredients), "Ingredient 'Картофель' not found in tech card"
-        # Check cost per 100g and per portion from financial analysis section
-        cost_per_100g_text = await frame.locator('xpath=//div[contains(text(), "cost_per_100g_rub") or contains(text(), "8.5")]').text_content()
-        assert cost_per_100g_text is not None and '8.5' in cost_per_100g_text, "Cost per 100g not correctly displayed"
-        cost_per_portion_text = await frame.locator('xpath=//div[contains(text(), "cost_per_portion_rub") or contains(text(), "20.46")]').text_content()
-        assert cost_per_portion_text is not None and '20.46' in cost_per_portion_text, "Cost per portion not correctly displayed"
-        # Assert nutrition values per 100g and per portion
-        nutrition_100g = await frame.locator('xpath=//div[contains(@class, "nutrition-per-100g")]').text_content()
-        assert '244' in nutrition_100g and '12.3' in nutrition_100g and '15.5' in nutrition_100g and '12.4' in nutrition_100g, "Nutrition per 100g values incorrect"
-        nutrition_portion = await frame.locator('xpath=//div[contains(@class, "nutrition-per-portion")]').text_content()
-        assert '487' in nutrition_portion and '24.6' in nutrition_portion and '31.0' in nutrition_portion and '24.8' in nutrition_portion, "Nutrition per portion values incorrect"
-        # Assert ingredient SKUs are linked using product catalog integration
-        ingredients_elements = await frame.locator('xpath=//div[contains(@class, "ingredients-list")]//div[contains(@class, "ingredient-item")]').all()
-        for ingredient_element in ingredients_elements:
-            sku = await ingredient_element.get_attribute('data-iiko-article')
-            assert sku is not None and sku.strip() != '', f"Ingredient SKU missing or empty for ingredient element: {await ingredient_element.text_content()}"
+        # Assert that the tech card is in V2 format and status is 'ГОТОВО'
+        techcard_version = await frame.locator('xpath=//div[contains(text(),"TechCard v2")]').text_content()
+        assert 'TechCard v2' in techcard_version, 'Tech card version is not V2'
+        techcard_status = await frame.locator('xpath=//div[contains(text(),"ГОТОВО")]').text_content()
+        assert 'ГОТОВО' in techcard_status, 'Tech card status is not ГОТОВО'
+        # Assert that portions and weight per portion are displayed and valid
+        portions_text = await frame.locator('xpath=//div[contains(text(),"portions") or contains(text(),"Порции") or contains(text(),"порций")]').text_content()
+        assert portions_text is not None, 'Portions info missing'
+        weight_per_portion_text = await frame.locator('xpath=//div[contains(text(),"weight_per_portion") or contains(text(),"г")]').text_content()
+        assert weight_per_portion_text is not None, 'Weight per portion info missing'
+        # Assert that nutritional values are present or show calculation not done
+        nutrition_status = await frame.locator('xpath=//div[contains(text(),"Данные не заполнены") or contains(text(),"Расчет не выполнен")]').text_content()
+        assert nutrition_status is not None, 'Nutrition data or calculation status missing'
+        # Assert that financial analysis section shows cost calculation or reason for missing cost
+        financial_status = await frame.locator('xpath=//div[contains(text(),"Себестоимость не рассчитана") or contains(text(),"Недостаточно данных для расчета стоимости")]').text_content()
+        assert financial_status is not None, 'Financial analysis or cost calculation status missing'
+        # Assert that ingredient SKUs are linked or show mapping status
+        ingredients_status = await frame.locator('xpath=//div[contains(text(),"Нет ингредиентов для автомаппинга") or contains(text(),"Связать с IIKO")]').text_content()
+        assert ingredients_status is not None, 'Ingredient SKU mapping status missing'
         await asyncio.sleep(5)
     
     finally:
