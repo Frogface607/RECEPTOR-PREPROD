@@ -39,7 +39,8 @@ load_dotenv(ROOT_DIR / '.env')
 logger = logging.getLogger(__name__)
 
 # MongoDB connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+# Support both MONGO_URL and MONGODB_URI for compatibility with different platforms
+mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
 
@@ -1808,6 +1809,16 @@ app.add_middleware(
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# Health check endpoint for Railway
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for deployment platforms"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "receptor-ai-backend"
+    }
 
 # Subscription Plans Configuration
 SUBSCRIPTION_PLANS = {
