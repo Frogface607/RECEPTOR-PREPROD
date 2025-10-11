@@ -1650,7 +1650,7 @@ function App() {
   const loadVenueProfile = async () => {
     try {
       const userId = currentUser?.id || 'demo_user';
-      const response = await axios.get(`${API}/v1/venue/profile?user_id=${userId}`);
+      const response = await axios.get(`${API}/venue-profile/${userId}`);
       if (response.data) {
         setVenueProfile(response.data);
         console.log('📍 Venue profile loaded:', response.data);
