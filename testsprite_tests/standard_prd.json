@@ -4,192 +4,173 @@
     "date": "2025-10-04",
     "prepared_by": "Software Development Manager"
   },
-  "product_overview": "RECEPTOR PRO is an AI-powered menu designer combining creative recipe generation and structured tech card management with full integration into IIKO restaurant management system. It enables users to generate, convert, manage, and export detailed recipes and tech cards enhanced by AI and robust product catalog mapping, serving professional restaurant and catering businesses.",
+  "product_overview": "RECEPTOR PRO is an AI-powered menu designer platform integrating a React frontend with a FastAPI backend and MongoDB database. It enables restaurant professionals to create structured technical cards (techcards) for dishes using AI, manage menus, calculate nutrition and costs, and synchronize data with IIKO restaurant management systems. The platform offers export functionalities, advanced AI-assisted recipe generation, and seamless integration with external services such as OpenAI and IIKO APIs, with robust user authentication and data isolation.",
   "core_goals": [
-    "Enable users to generate creative AI-powered recipes (V1) with rich descriptions and emojis for culinary inspiration.",
-    "Convert creative V1 recipes into structured V2 tech cards with detailed cost calculations, nutritional info, and product catalog integration suitable for IIKO RMS.",
-    "Provide comprehensive integration with IIKO RMS for product catalog synchronization, article allocation, and exporting tech cards in compatible formats.",
-    "Support automated and manual SKU mapping to IIKO product codes including fuzzy matching and fallback mechanisms to ensure accuracy of ingredient identification.",
-    "Offer advanced AI tools as PRO features including food pairing, sales scripts, and inspiration generation to enhance culinary creativity.",
-    "Implement secure user authentication, session management, and strict user data isolation ensuring multi-tenant security.",
-    "Allow exporting of tech cards in multiple formats (XLSX, CSV, PDF, ZIP) optimized for IIKO imports and operational use.",
-    "Maintain detailed user history and enable seamless navigation between recipe versions and tech card views.",
-    "Employ feature flags for controlled rollout of experimental features and PRO feature gating for subscription users."
+    "Provide AI-driven generation of structured technical cards (V2 techcards) for restaurant dishes to streamline menu design and management.",
+    "Enable conversion between creative AI-generated recipes (V1) and strict structured techcards (V2) compatible with IIKO RMS.",
+    "Ensure seamless integration and synchronization with external IIKO RMS via API for importing and exporting product and dish data.",
+    "Offer comprehensive export options including Excel, PDF, and ZIP archives tailored for IIKO RMS platform requirements.",
+    "Support detailed nutritional and cost calculations for dishes and ingredients to assist in menu pricing and compliance.",
+    "Maintain strict user data isolation and security with Google OAuth authentication and user-role based access controls.",
+    "Provide an intuitive, responsive React frontend with clear user flows, loading states, and modal dialogs for managing techcards, AI functions, menus, and exports.",
+    "Facilitate logging, debugging, and performance monitoring to optimize AI generation and mapping processes."
   ],
   "key_features": [
-    "AI Recipe Generation (V1): Creative recipe generation using OpenAI's GPT models with vivid descriptions and emojis to inspire users.",
-    "Tech Card V2 Conversion: Transform V1 AI-generated recipes into structured V2 tech cards including cost calculation, nutrition (KBJU), and integration with IIKO RMS product catalogs.",
-    "IIKO RMS Integration: End-to-end synchronization with IIKO including product catalog import, article allocation, SKU mapping, and data export in multiple formats.",
-    "Automated SKU Mapping & Enhanced Mapping Service: Automatic and manual ingredient mapping with fuzzy matching and fallback article code generation to maintain data consistency.",
-    "Nutrition Calculator (KBJU): Nutritional value computation for calories, proteins, fats, and carbohydrates per 100g and per serving.",
-    "Multi-format Export System: Export tech cards in XLSX, CSV, PDF, and ZIP formats tailored for IIKO system import and operational needs.",
-    "User Authentication & Session Management: SHA1 hash-based login system with session tokens ensuring data isolation per user.",
-    "Subscription and Billing Integration: YooKassa integration for subscription management enabling PRO feature access.",
-    "Feature Flags System: Dynamic enabling/disabling of features such as HACCP compliance, new tech card versions, and AI tools for controlled user exposure.",
-    "History & Navigation Management: Persistent user history for tech cards and recipes with UI navigation controls.",
-    "Responsive React Frontend: Mobile-friendly and performant SPA with modals, forms, progress bars, and user feedback."
+    "AI Tech Card Generation: Advanced AI (GPT-4o) powered generation of detailed V2 technical cards including ingredients, portions, article allocation, and auto-mapping ingredients to IIKO catalog items.",
+    "IIKO Integration: Deep integration with IIKO Cloud API for importing product catalogs, assigning real article codes, and exporting dish skeleton files compatible with IIKO RMS.",
+    "Export System: Multi-format export capabilities supporting Excel (XLSX), PDF, HTML, and ZIP archives containing all necessary export skeletons for IIKO deployment.",
+    "Menu Management: Menu creation and management with AI assistance and ability to convert free-form V1 recipes to structured V2 techcards.",
+    "Nutrition and Cost Calculators: Automated calculation modules providing nutritional information and dish costing, aiding compliance and pricing decisions.",
+    "HACCP System: Implementation of Hazard Analysis and Critical Control Points processes to ensure food safety management integrated into techcards.",
+    "User Authentication: Google OAuth integration providing secure login and user session management with role-based data access.",
+    "Frontend React SPA: Modern, responsive single-page React application styled with Tailwind CSS managing app state in a monolithic structure with well-defined views and modal dialogs.",
+    "Backend API Server: FastAPI backend offering RESTful endpoints for techcard operations, AI generation, export handling, user management, and integrations.",
+    "Quality Validation: In-depth validation and quality control of generated and user-submitted techcards to ensure data integrity and export readiness."
   ],
   "user_flow_summary": [
-    "User logs in securely and accesses main dashboard with AI Kitchen, recipe generation, and tech card management views.",
-    "User creates a V1 recipe using AI-powered generation with options for inspiration and food pairing in the AI Kitchen.",
-    "User converts a V1 recipe into a structured V2 tech card enriched with cost calculations, nutritional details, and automated SKU mapping.",
-    "User edits or manually maps ingredients for accuracy with the integration of IIKO RMS product catalog.",
-    "User initiates preflight checks for ingredient compliance before exporting tech cards.",
-    "User exports finalized tech cards in preferred formats (ZIP archive containing XLSX, CSV, PDF) for import into IIKO RMS.",
-    "User views historical data of created recipes and tech cards with persistent navigation and state management.",
-    "Subscription and billing integrations gate access to PRO AI features and advanced tools.",
-    "Administrators and advanced users toggle feature flags to enable or disable experimental or PRO features based on user roles and subscription status."
+    "User logs in via Google OAuth and accesses the main dashboard.",
+    "User creates or imports a dish description in V1 recipe form via AI-powered generation.",
+    "User optionally converts V1 recipe to structured V2 techcard with detailed ingredients and portions.",
+    "AI engine assigns unique article codes and performs enhanced auto-mapping to match ingredients with IIKO catalog entries.",
+    "User reviews and edits techcard, nutrition, and cost calculations with UI feedback and loading states.",
+    "User initiates export, triggering preflight checks for missing mappings or errors.",
+    "System generates skeleton export files (Excel XLSX for products/dishes, PDF, HTML) and bundles in ZIP archive for IIKO RMS upload.",
+    "User downloads export package and optionally views AI-generated inspirations, food pairings, and sales scripts via modal dialogs.",
+    "User views history of created techcards and recipes filtered strictly by user ID to ensure data isolation.",
+    "Throughout usage, system logs key events and errors to backend logs and shows relevant console messages in frontend for debugging."
   ],
   "validation_criteria": [
-    "Successful generation of creative V1 recipes with rich descriptions and presence of emojis.",
-    "Accurate conversion from V1 recipes to V2 tech cards with cost, nutrition, and product mapping correctly applied.",
-    "Full integration test with IIKO RMS ensuring product catalog sync, article allocation, and export formats work correctly.",
-    "Automated SKU/ingredient mapping accuracy validated through fuzzy matching and fallback strategies; manual overrides possible.",
-    "Nutrition calculations conform to standard KBJU metrics per portion and per 100 grams.",
-    "Exported files (XLSX, CSV, PDF, ZIP) meet IIKO RMS import requirements and maintain data integrity.",
-    "User authentication and session tokens enforce strict user data isolation and prevent unauthorized access.",
-    "Subscription and billing system gate PRO features reliably and accurately reflect subscription status.",
-    "Feature flags correctly toggle availability of experimental and PRO features without breaking existing functionality.",
-    "UI responsiveness tested across devices including mobile and desktop with appropriate states and feedback.",
-    "Historical user data is persisted correctly with accurate retrieval, navigation, and record filtering.",
-    "Backend and frontend logging capture critical events such as AI generation timings, export operations, and errors for troubleshooting.",
-    "Preflight export checks detect unmapped ingredients and block export until resolved, ensuring data quality."
+    "Generated V2 techcards must contain all required fields and pass strict validation rules before saving or export.",
+    "Automatic article assignment correctly differentiates between system-generated and real IIKO articles with no collisions.",
+    "Data queries from the database respect user isolation and do not expose other users' information under any condition.",
+    "Export files (ZIP, XLSX, PDF) are verified for completeness and format correctness to ensure seamless import into IIKO RMS.",
+    "AI generation endpoints maintain responsiveness with controlled concurrency to avoid multiple simultaneous requests by one user.",
+    "Frontend UI states (loading, errors) accurately reflect backend processing status to prevent user confusion or race conditions.",
+    "Security measures including OAuth authentication and environment variable management are correctly implemented and tested.",
+    "Integration with IIKO RMS gracefully handles API unavailability with fallback mechanisms and appropriate user alerts.",
+    "Performance benchmarks around AI generation times, export processing, and database queries meet defined thresholds for smooth user experience.",
+    "Comprehensive test coverage and logging exist for critical code paths including AI functions, export processing, and integrations."
   ],
   "code_summary": {
     "tech_stack": [
       "Python",
+      "JavaScript",
       "FastAPI",
       "React",
       "MongoDB",
-      "Node.js",
-      "Webpack",
-      "Axios",
-      "Motor (MongoDB async driver)",
-      "Pydantic",
-      "Uvicorn",
-      "OpenAI API",
-      "IIKO RMS Integration",
-      "YooKassa Billing"
+      "Railway",
+      "Vercel",
+      "OpenAI",
+      "IIKo Cloud API",
+      "Tailwind CSS"
     ],
     "features": [
       {
-        "name": "AI Recipe Generation (V1)",
-        "description": "Creative recipe generation using OpenAI GPT models with rich descriptions and emojis for inspiration",
+        "name": "AI Tech Card Generation",
+        "description": "AI-powered generation of technical cards for restaurant dishes with ingredients, portions, and calculations",
         "files": [
-          "frontend/src/App.js",
-          "backend/receptor_agent/routes/ai_kitchen.py",
-          "backend/receptor_agent/llm/pipeline.py"
-        ]
-      },
-      {
-        "name": "Tech Card V2 Conversion",
-        "description": "Convert creative V1 recipes to structured V2 tech cards with cost calculation, nutrition (KBJU), and IIKO integration",
-        "files": [
-          "frontend/src/App.js",
           "backend/receptor_agent/routes/techcards_v2.py",
-          "backend/receptor_agent/techcards_v2/schemas.py",
-          "backend/receptor_agent/techcards_v2/validators.py"
+          "backend/receptor_agent/techcards_v2/",
+          "frontend/src/App.js"
         ]
       },
       {
-        "name": "IIKO RMS Integration",
-        "description": "Full integration with IIKO restaurant management system including product catalog sync, article allocation, and export",
+        "name": "IIKo Integration",
+        "description": "Integration with IIKo Cloud API for restaurant management system synchronization",
         "files": [
-          "backend/receptor_agent/integrations/iiko_rms_service.py",
-          "backend/receptor_agent/integrations/article_allocator.py",
-          "backend/receptor_agent/exports/iiko_xlsx.py",
-          "backend/receptor_agent/exports/iiko_csv.py"
-        ]
-      },
-      {
-        "name": "SKU Mapping & Auto-Mapping",
-        "description": "Automatic and manual mapping of ingredients to IIKO product codes with fuzzy matching and fallback generation",
-        "files": [
-          "frontend/src/App.js",
-          "backend/receptor_agent/routes/techcards_v2.py",
-          "backend/receptor_agent/integrations/article_allocator.py"
-        ]
-      },
-      {
-        "name": "Nutrition Calculator (KBJU)",
-        "description": "Calculate nutritional values (calories, proteins, fats, carbs) per 100g and per portion",
-        "files": [
-          "backend/receptor_agent/techcards_v2/nutrition_calculator.py",
-          "backend/receptor_agent/techcards_v2/schemas.py"
+          "backend/receptor_agent/integrations/iiko_client.py",
+          "backend/receptor_agent/integrations/iiko_service.py",
+          "backend/receptor_agent/routes/iiko_v2.py",
+          "backend/receptor_agent/routes/iiko_rms_v2.py"
         ]
       },
       {
         "name": "Export System",
-        "description": "Export tech cards in multiple formats: XLSX, CSV, PDF, ZIP archives for IIKO import",
+        "description": "Export functionality for technical cards to Excel, PDF, and other formats",
         "files": [
-          "backend/receptor_agent/routes/export_v2.py",
           "backend/receptor_agent/exports/xlsx.py",
           "backend/receptor_agent/exports/pdf.py",
-          "backend/receptor_agent/exports/zipper.py"
+          "backend/receptor_agent/exports/html.py",
+          "backend/receptor_agent/routes/export_v2.py"
         ]
       },
       {
-        "name": "User Authentication & Session Management",
-        "description": "SHA1 hash-based authentication with session tokens and user isolation",
+        "name": "Menu Management",
+        "description": "Menu creation and management system with AI assistance",
+        "files": [
+          "backend/receptor_agent/routes/menus_v2.py",
+          "backend/receptor_agent/menu_v2/schemas.py"
+        ]
+      },
+      {
+        "name": "Nutrition Calculator",
+        "description": "Nutritional information calculation for dishes and ingredients",
+        "files": [
+          "backend/receptor_agent/techcards_v2/nutrition_calculator.py",
+          "backend/data/nutrition_catalog.dev.json"
+        ]
+      },
+      {
+        "name": "Cost Calculator",
+        "description": "Cost calculation system for dishes and ingredients",
+        "files": [
+          "backend/receptor_agent/techcards_v2/cost_calculator.py",
+          "backend/receptor_agent/techcards_v2/price_provider.py"
+        ]
+      },
+      {
+        "name": "HACCP System",
+        "description": "Hazard Analysis and Critical Control Points system for food safety",
+        "files": [
+          "backend/receptor_agent/llm/haccp.py",
+          "backend/receptor_agent/routes/haccp_v2.py",
+          "backend/receptor_agent/techcards_v2/haccp_templates.py"
+        ]
+      },
+      {
+        "name": "Google Authentication",
+        "description": "Google OAuth integration for user authentication",
+        "files": [
+          "backend/google_auth.py",
+          "frontend/src/components/GoogleAuth.js",
+          "frontend/src/config/googleAuth.js"
+        ]
+      },
+      {
+        "name": "LLM Pipeline",
+        "description": "Large Language Model integration for AI-powered content generation",
+        "files": [
+          "backend/receptor_agent/llm/pipeline.py",
+          "backend/receptor_agent/llm/clients/openai_client.py",
+          "backend/receptor_agent/llm/prompts/"
+        ]
+      },
+      {
+        "name": "Frontend React App",
+        "description": "Modern React frontend with Tailwind CSS styling",
+        "files": [
+          "frontend/src/App.js",
+          "frontend/src/components/",
+          "frontend/package.json",
+          "frontend/tailwind.config.js"
+        ]
+      },
+      {
+        "name": "Backend API Server",
+        "description": "FastAPI backend server with comprehensive endpoints",
         "files": [
           "backend/server.py",
-          "frontend/src/App.js"
+          "backend/requirements.txt",
+          "backend/railway.json"
         ]
       },
       {
-        "name": "Subscription & Billing",
-        "description": "YooKassa integration for subscription management with PRO features gating",
+        "name": "Quality Validation",
+        "description": "Content quality validation and validation systems",
         "files": [
-          "backend/receptor_agent/routes/billing.py",
-          "frontend/src/App.js"
-        ]
-      },
-      {
-        "name": "Feature Flags System",
-        "description": "Controlled rollout of features like HACCP, V2 tech cards, and PRO features",
-        "files": [
-          "frontend/src/featureFlags.js",
-          "backend/receptor_agent/routes/techcards_v2.py"
-        ]
-      },
-      {
-        "name": "History & Navigation",
-        "description": "Tech card history management with proper state persistence and navigation",
-        "files": [
-          "frontend/src/App.js"
-        ]
-      },
-      {
-        "name": "AI Tools (PRO Features)",
-        "description": "Advanced AI tools like food pairing, inspiration, and creative suggestions",
-        "files": [
-          "frontend/src/App.js",
-          "backend/receptor_agent/routes/ai_kitchen.py"
-        ]
-      },
-      {
-        "name": "Database Schema & Migrations",
-        "description": "MongoDB collections for users, tech cards, IIKO sync records with proper indexing",
-        "files": [
-          "backend/scripts/create_indexes.py",
-          "backend/receptor_agent/migrations/migrate_product_codes.py"
-        ]
-      },
-      {
-        "name": "Error Handling & Validation",
-        "description": "Comprehensive error handling, data validation, and user feedback systems",
-        "files": [
-          "backend/receptor_agent/techcards_v2/validators.py",
           "backend/receptor_agent/techcards_v2/quality_validator.py",
-          "frontend/src/App.js"
-        ]
-      },
-      {
-        "name": "Responsive UI Components",
-        "description": "Modern React UI with modals, forms, tables, and interactive elements",
-        "files": [
-          "frontend/src/App.js",
-          "frontend/src/index.css"
+          "backend/receptor_agent/techcards_v2/validators.py",
+          "backend/receptor_agent/techcards_v2/strict_validator.py"
         ]
       }
     ]

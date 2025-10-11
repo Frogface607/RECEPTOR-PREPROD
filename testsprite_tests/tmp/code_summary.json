@@ -1,138 +1,123 @@
 {
   "tech_stack": [
     "Python",
-    "FastAPI", 
+    "JavaScript",
+    "FastAPI",
     "React",
     "MongoDB",
-    "Node.js",
-    "Webpack",
-    "Axios",
-    "Motor (MongoDB async driver)",
-    "Pydantic",
-    "Uvicorn",
-    "OpenAI API",
-    "IIKO RMS Integration",
-    "YooKassa Billing"
+    "Railway",
+    "Vercel",
+    "OpenAI",
+    "IIKo Cloud API",
+    "Tailwind CSS"
   ],
   "features": [
     {
-      "name": "AI Recipe Generation (V1)",
-      "description": "Creative recipe generation using OpenAI GPT models with rich descriptions and emojis for inspiration",
+      "name": "AI Tech Card Generation",
+      "description": "AI-powered generation of technical cards for restaurant dishes with ingredients, portions, and calculations",
       "files": [
-        "frontend/src/App.js",
-        "backend/receptor_agent/routes/ai_kitchen.py",
-        "backend/receptor_agent/llm/pipeline.py"
-      ]
-    },
-    {
-      "name": "Tech Card V2 Conversion",
-      "description": "Convert creative V1 recipes to structured V2 tech cards with cost calculation, nutrition (KBJU), and IIKO integration",
-      "files": [
-        "frontend/src/App.js",
         "backend/receptor_agent/routes/techcards_v2.py",
-        "backend/receptor_agent/techcards_v2/schemas.py",
-        "backend/receptor_agent/techcards_v2/validators.py"
+        "backend/receptor_agent/techcards_v2/",
+        "frontend/src/App.js"
       ]
     },
     {
-      "name": "IIKO RMS Integration",
-      "description": "Full integration with IIKO restaurant management system including product catalog sync, article allocation, and export",
+      "name": "IIKo Integration",
+      "description": "Integration with IIKo Cloud API for restaurant management system synchronization",
       "files": [
-        "backend/receptor_agent/integrations/iiko_rms_service.py",
-        "backend/receptor_agent/integrations/article_allocator.py",
-        "backend/receptor_agent/exports/iiko_xlsx.py",
-        "backend/receptor_agent/exports/iiko_csv.py"
-      ]
-    },
-    {
-      "name": "SKU Mapping & Auto-Mapping",
-      "description": "Automatic and manual mapping of ingredients to IIKO product codes with fuzzy matching and fallback generation",
-      "files": [
-        "frontend/src/App.js",
-        "backend/receptor_agent/routes/techcards_v2.py",
-        "backend/receptor_agent/integrations/article_allocator.py"
-      ]
-    },
-    {
-      "name": "Nutrition Calculator (KBJU)",
-      "description": "Calculate nutritional values (calories, proteins, fats, carbs) per 100g and per portion",
-      "files": [
-        "backend/receptor_agent/techcards_v2/nutrition_calculator.py",
-        "backend/receptor_agent/techcards_v2/schemas.py"
+        "backend/receptor_agent/integrations/iiko_client.py",
+        "backend/receptor_agent/integrations/iiko_service.py",
+        "backend/receptor_agent/routes/iiko_v2.py",
+        "backend/receptor_agent/routes/iiko_rms_v2.py"
       ]
     },
     {
       "name": "Export System",
-      "description": "Export tech cards in multiple formats: XLSX, CSV, PDF, ZIP archives for IIKO import",
+      "description": "Export functionality for technical cards to Excel, PDF, and other formats",
       "files": [
-        "backend/receptor_agent/routes/export_v2.py",
         "backend/receptor_agent/exports/xlsx.py",
         "backend/receptor_agent/exports/pdf.py",
-        "backend/receptor_agent/exports/zipper.py"
+        "backend/receptor_agent/exports/html.py",
+        "backend/receptor_agent/routes/export_v2.py"
       ]
     },
     {
-      "name": "User Authentication & Session Management",
-      "description": "SHA1 hash-based authentication with session tokens and user isolation",
+      "name": "Menu Management",
+      "description": "Menu creation and management system with AI assistance",
+      "files": [
+        "backend/receptor_agent/routes/menus_v2.py",
+        "backend/receptor_agent/menu_v2/schemas.py"
+      ]
+    },
+    {
+      "name": "Nutrition Calculator",
+      "description": "Nutritional information calculation for dishes and ingredients",
+      "files": [
+        "backend/receptor_agent/techcards_v2/nutrition_calculator.py",
+        "backend/data/nutrition_catalog.dev.json"
+      ]
+    },
+    {
+      "name": "Cost Calculator",
+      "description": "Cost calculation system for dishes and ingredients",
+      "files": [
+        "backend/receptor_agent/techcards_v2/cost_calculator.py",
+        "backend/receptor_agent/techcards_v2/price_provider.py"
+      ]
+    },
+    {
+      "name": "HACCP System",
+      "description": "Hazard Analysis and Critical Control Points system for food safety",
+      "files": [
+        "backend/receptor_agent/llm/haccp.py",
+        "backend/receptor_agent/routes/haccp_v2.py",
+        "backend/receptor_agent/techcards_v2/haccp_templates.py"
+      ]
+    },
+    {
+      "name": "Google Authentication",
+      "description": "Google OAuth integration for user authentication",
+      "files": [
+        "backend/google_auth.py",
+        "frontend/src/components/GoogleAuth.js",
+        "frontend/src/config/googleAuth.js"
+      ]
+    },
+    {
+      "name": "LLM Pipeline",
+      "description": "Large Language Model integration for AI-powered content generation",
+      "files": [
+        "backend/receptor_agent/llm/pipeline.py",
+        "backend/receptor_agent/llm/clients/openai_client.py",
+        "backend/receptor_agent/llm/prompts/"
+      ]
+    },
+    {
+      "name": "Frontend React App",
+      "description": "Modern React frontend with Tailwind CSS styling",
+      "files": [
+        "frontend/src/App.js",
+        "frontend/src/components/",
+        "frontend/package.json",
+        "frontend/tailwind.config.js"
+      ]
+    },
+    {
+      "name": "Backend API Server",
+      "description": "FastAPI backend server with comprehensive endpoints",
       "files": [
         "backend/server.py",
-        "frontend/src/App.js"
+        "backend/requirements.txt",
+        "backend/railway.json"
       ]
     },
     {
-      "name": "Subscription & Billing",
-      "description": "YooKassa integration for subscription management with PRO features gating",
+      "name": "Quality Validation",
+      "description": "Content quality validation and validation systems",
       "files": [
-        "backend/receptor_agent/routes/billing.py",
-        "frontend/src/App.js"
-      ]
-    },
-    {
-      "name": "Feature Flags System",
-      "description": "Controlled rollout of features like HACCP, V2 tech cards, and PRO features",
-      "files": [
-        "frontend/src/featureFlags.js",
-        "backend/receptor_agent/routes/techcards_v2.py"
-      ]
-    },
-    {
-      "name": "History & Navigation",
-      "description": "Tech card history management with proper state persistence and navigation",
-      "files": [
-        "frontend/src/App.js"
-      ]
-    },
-    {
-      "name": "AI Tools (PRO Features)",
-      "description": "Advanced AI tools like food pairing, inspiration, and creative suggestions",
-      "files": [
-        "frontend/src/App.js",
-        "backend/receptor_agent/routes/ai_kitchen.py"
-      ]
-    },
-    {
-      "name": "Database Schema & Migrations",
-      "description": "MongoDB collections for users, tech cards, IIKO sync records with proper indexing",
-      "files": [
-        "backend/scripts/create_indexes.py",
-        "backend/receptor_agent/migrations/migrate_product_codes.py"
-      ]
-    },
-    {
-      "name": "Error Handling & Validation",
-      "description": "Comprehensive error handling, data validation, and user feedback systems",
-      "files": [
-        "backend/receptor_agent/techcards_v2/validators.py",
         "backend/receptor_agent/techcards_v2/quality_validator.py",
-        "frontend/src/App.js"
-      ]
-    },
-    {
-      "name": "Responsive UI Components",
-      "description": "Modern React UI with modals, forms, tables, and interactive elements",
-      "files": [
-        "frontend/src/App.js",
-        "frontend/src/index.css"
+        "backend/receptor_agent/techcards_v2/validators.py",
+        "backend/receptor_agent/techcards_v2/strict_validator.py"
       ]
     }
   ]

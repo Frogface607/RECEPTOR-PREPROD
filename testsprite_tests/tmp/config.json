@@ -1,29 +1,7 @@
 {
   "status": "commited",
-  "type": "frontend",
+  "type": "backend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3000",
-  "loginUser": "607orlov@gmail.com",
-  "loginPassword": "metkamfetamin",
-  "testUserId": "97d4cac9-7772-4da9-9fb6-794dc351ee50",
-  "iikoCredentials": {
-    "host": "edison-bar.iiko.it",
-    "login": "Sergey",
-    "password": "metkamfetamin"
-  },
-  "executionArgs": {
-    "projectName": "RECEPTOR-PREPROD",
-    "projectPath": "C:\\Users\\Sergey\\RECEPTOR TEST\\RECEPTOR-PREPROD",
-    "testIds": [
-      "TC001",
-      "TC003",
-      "TC004",
-      "TC005"
-    ],
-    "additionalInstruction": "Test critical functionality after IIKO sync: recipe generation, V1->V2 conversion, SKU mapping with 2833 products, and IIKO synchronization status.",
-    "envs": {
-      "API_KEY": "sk-user--DY31L38Xa1KWHzTTLCwyI31qHwFQVySvzfMkfNhRnOUT9MAGwuumsLDEazWR8V4-yOxh6nlhaahqwbQlgt3E2mCdNFsYrxl7Td4UdMgcrZ40FpF5vIIQ6dD-cElCwQB6Qc"
-    }
-  },
-  "proxy": "http://43cbd1ae-1bee-4ed7-9aaa-4fe278952e2b:goI9J5X3riqq9yJtyaiXJ1WOXSu6oltW@tun.testsprite.com:8080"
+  "localEndpoint": "http://localhost:8000",
+  "backendAuthType": "public"
 }

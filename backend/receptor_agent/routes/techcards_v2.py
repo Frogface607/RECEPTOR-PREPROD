@@ -87,7 +87,7 @@ def generate_tc_v2(profile: ProfileInput, use_llm: bool = Query(default=None, de
                 from pymongo import MongoClient
                 import uuid
                 
-                mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+                mongo_url = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
                 db_name = os.getenv('DB_NAME', 'receptor_pro')
                 
                 client = MongoClient(mongo_url)
@@ -1692,7 +1692,7 @@ async def update_techcard_v2(techcard_id: str, request: Request):
         # Get MongoDB connection
         from motor.motor_asyncio import AsyncIOMotorClient
         
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
         client = AsyncIOMotorClient(mongo_url)
         db_name = os.environ.get('DB_NAME', 'receptor_pro').strip('"')
         

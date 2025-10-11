@@ -29,7 +29,7 @@ class IikoService:
     
     def __init__(self):
         # Get MongoDB connection
-        mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+        mongo_url = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
         db_name = os.getenv('DB_NAME', 'receptor_pro')
         
         self.client = MongoClient(mongo_url)
