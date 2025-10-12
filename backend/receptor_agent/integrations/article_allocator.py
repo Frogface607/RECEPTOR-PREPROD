@@ -107,7 +107,7 @@ class ArticleAllocator:
     
     def __init__(self, mongo_client: MongoClient = None):
         if mongo_client is None:
-            mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/ai_menu_designer')
+            mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/ai_menu_designer')
             mongo_client = MongoClient(mongo_url)
         
         # BUGFIX: Use DB_NAME env var instead of parsing URL (MongoDB limit: 63 chars)
