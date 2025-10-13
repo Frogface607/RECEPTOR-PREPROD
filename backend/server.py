@@ -3796,8 +3796,9 @@ async def upload_prices(file: UploadFile = File(...), user_id: str = Form(...)):
     
     # Validate user subscription (PRO only)
     user = await db.users.find_one({"id": user_id})
-    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
-        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    # ВРЕМЕННО ОТКЛЮЧЕНО для тестирования - включим когда будет платежка
+    # if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+    #     raise HTTPException(status_code=403, detail="Требуется PRO подписка")
     
     try:
         # Read file
@@ -3918,8 +3919,9 @@ async def upload_nutrition(file: UploadFile = File(...), user_id: str = Form(...
     
     # Validate user subscription (PRO only)
     user = await db.users.find_one({"id": user_id})
-    if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
-        raise HTTPException(status_code=403, detail="Требуется PRO подписка")
+    # ВРЕМЕННО ОТКЛЮЧЕНО для тестирования - включим когда будет платежка
+    # if not user or user.get('subscription_plan', 'free') not in ['pro', 'business']:
+    #     raise HTTPException(status_code=403, detail="Требуется PRO подписка")
     
     try:
         # Read file
@@ -7331,8 +7333,9 @@ async def generate_inspiration(request: dict):
     elif not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     
-    if user.get("subscription_plan") not in ["pro", "business"]:
-        raise HTTPException(status_code=403, detail="Функция доступна только для PRO пользователей")
+    # ВРЕМЕННО ОТКЛЮЧЕНО для тестирования - включим когда будет платежка
+    # if user.get("subscription_plan") not in ["pro", "business"]:
+    #     raise HTTPException(status_code=403, detail="Функция доступна только для PRO пользователей")
     
     # Извлекаем название блюда из техкарты
     dish_name = "блюдо"
@@ -7796,8 +7799,9 @@ async def analyze_finances(request: dict):
     elif not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     
-    if user.get("subscription_plan") not in ["pro", "business"]:
-        raise HTTPException(status_code=403, detail="Функция доступна только для PRO пользователей")
+    # ВРЕМЕННО ОТКЛЮЧЕНО для тестирования - включим когда будет платежка
+    # if user.get("subscription_plan") not in ["pro", "business"]:
+    #     raise HTTPException(status_code=403, detail="Функция доступна только для PRO пользователей")
     
     # Convert tech_card to string if it's a dict (V2 or aiKitchenRecipe format)
     if isinstance(tech_card, dict):
