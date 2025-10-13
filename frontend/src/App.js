@@ -11769,8 +11769,8 @@ function App() {
                       ) : 'ИЗМЕНИТЬ ЧЕРЕЗ AI'}
                     </button>
                     
-                    {/* AI Suggestions Button - только для V2 техкарт */}
-                    {tcV2 && (
+                    {/* AI Suggestions Button - СКРЫТО: endpoint не реализован на backend */}
+                    {false && tcV2 && (
                       <button
                         onClick={getAISuggestions}
                         disabled={loadingMessage.includes('предложения')}
