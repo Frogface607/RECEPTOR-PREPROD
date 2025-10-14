@@ -11082,7 +11082,7 @@ function App() {
                           setTechCard(null);
                           setTcV2(null);
                           setCurrentTechCardId(techcard.id);
-                          setCurrentView('aiKitchen');
+                          setCurrentView('ai-kitchen');
                         } else if (isV2 && techcard.techcard_v2_data) {
                           // Загружаем V2 техкарту
                           setTcV2(techcard.techcard_v2_data);
