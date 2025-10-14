@@ -7104,15 +7104,15 @@ async def generate_food_pairing(request: dict):
     user_id = request.get("user_id")
     tech_card = request.get("tech_card")
     
-    # Auto-create test user with PRO subscription if needed
-    if user_id and user_id.startswith("test_user_"):
+    # Auto-create test/demo user with PRO subscription if needed
+    if user_id and (user_id.startswith("test_user_") or user_id == "demo_user"):
         user = await db.users.find_one({"id": user_id})
         if not user:
-            # Create test user with PRO subscription
+            # Create test/demo user with PRO subscription
             test_user = {
                 "id": user_id,
-                "email": f"{user_id}@example.com",
-                "name": "Test User",
+                "email": f"{user_id}@example.com" if user_id != "demo_user" else "demo@receptorai.pro",
+                "name": "Test User" if user_id != "demo_user" else "Demo User",
                 "city": "moskva",
                 "subscription_plan": "pro",
                 "monthly_tech_cards_used": 0,
@@ -7316,12 +7316,12 @@ async def generate_inspiration(request: dict):
     # Проверяем подписку пользователя
     user = await db.users.find_one({"id": user_id})
     
-    # Если пользователь не найден и это тестовый ID, создаем временного пользователя
-    if not user and user_id and user_id.startswith("test_user_"):
+    # Если пользователь не найден и это тестовый/демо ID, создаем временного пользователя
+    if not user and user_id and (user_id.startswith("test_user_") or user_id == "demo_user"):
         user = {
             "id": user_id,
-            "email": "test@example.com",
-            "name": "Test User",
+            "email": "test@example.com" if user_id != "demo_user" else "demo@receptorai.pro",
+            "name": "Test User" if user_id != "demo_user" else "Demo User",
             "city": "moscow",
             "subscription_plan": "pro",
             "subscription_status": "active",
@@ -7785,12 +7785,12 @@ async def analyze_finances(request: dict):
     # Проверяем подписку пользователя (PRO only)
     user = await db.users.find_one({"id": user_id})
     
-    # Автоматически создаем тестового пользователя
-    if not user and user_id and user_id.startswith("test_user_"):
+    # Автоматически создаем тестового/демо пользователя
+    if not user and user_id and (user_id.startswith("test_user_") or user_id == "demo_user"):
         user = {
             "id": user_id,
-            "email": "test@example.com",
-            "name": "Test User",
+            "email": "test@example.com" if user_id != "demo_user" else "demo@receptorai.pro",
+            "name": "Test User" if user_id != "demo_user" else "Demo User",
             "city": "moscow",
             "subscription_plan": "pro",
             "subscription_status": "active",
@@ -8110,12 +8110,12 @@ async def improve_dish(request: dict):
     # Проверяем подписку пользователя (пока бесплатно для всех)
     user = await db.users.find_one({"id": user_id})
     
-    # Автоматически создаем тестового пользователя
-    if not user and user_id and user_id.startswith("test_user_"):
+    # Автоматически создаем тестового/демо пользователя
+    if not user and user_id and (user_id.startswith("test_user_") or user_id == "demo_user"):
         user = {
             "id": user_id,
-            "email": "test@example.com",
-            "name": "Test User",
+            "email": "test@example.com" if user_id != "demo_user" else "demo@receptorai.pro",
+            "name": "Test User" if user_id != "demo_user" else "Demo User",
             "city": "moscow",
             "subscription_plan": "pro",
             "subscription_status": "active",
@@ -8268,12 +8268,12 @@ async def laboratory_experiment(request: dict):
     # Проверяем подписку пользователя (пока бесплатно для всех)
     user = await db.users.find_one({"id": user_id})
     
-    # Автоматически создаем тестового пользователя
-    if not user and user_id.startswith("test_user_"):
+    # Автоматически создаем тестового/демо пользователя
+    if not user and user_id and (user_id.startswith("test_user_") or user_id == "demo_user"):
         user = {
             "id": user_id,
-            "email": "test@example.com",
-            "name": "Test User",
+            "email": "test@example.com" if user_id != "demo_user" else "demo@receptorai.pro",
+            "name": "Test User" if user_id != "demo_user" else "Demo User",
             "city": "moscow",
             "subscription_plan": "pro",
             "subscription_status": "active",
