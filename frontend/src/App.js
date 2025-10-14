@@ -10814,6 +10814,40 @@ function App() {
                           >
                             Создать новый рецепт
                           </button>
+                          
+                          <button 
+                            onClick={() => {
+                              // Копируем рецепт в буфер обмена
+                              const recipeText = `📋 ${aiKitchenRecipe.name}\n\n${aiKitchenRecipe.content}\n\n✨ Создано с помощью Receptor AI | www.receptorai.pro`;
+                              
+                              navigator.clipboard.writeText(recipeText).then(() => {
+                                alert('✅ Рецепт скопирован в буфер обмена! Теперь можно поделиться им в мессенджере или соцсетях.');
+                              }).catch(err => {
+                                console.error('Error copying recipe:', err);
+                                // Fallback для старых браузеров
+                                const textArea = document.createElement('textarea');
+                                textArea.value = recipeText;
+                                textArea.style.position = 'fixed';
+                                textArea.style.left = '-999999px';
+                                document.body.appendChild(textArea);
+                                textArea.select();
+                                try {
+                                  document.execCommand('copy');
+                                  alert('✅ Рецепт скопирован в буфер обмена!');
+                                } catch (err) {
+                                  alert('❌ Не удалось скопировать рецепт. Попробуйте выделить текст вручную.');
+                                }
+                                document.body.removeChild(textArea);
+                              });
+                            }}
+                            className="bg-gradient-to-r from-blue-600/30 to-cyan-600/30 hover:from-blue-600/50 hover:to-cyan-600/50 text-blue-300 border border-blue-500/50 px-6 py-3 rounded-xl hover:border-blue-400/70 transition-all duration-300 font-medium flex items-center gap-2"
+                            title="Скопировать рецепт для отправки в мессенджер или соцсети"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Поделиться
+                          </button>
                         </div>
                       </div>
                       <div className="max-h-80 overflow-y-auto text-gray-300 text-sm leading-relaxed">
