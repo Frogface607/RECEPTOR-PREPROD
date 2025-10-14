@@ -6967,6 +6967,13 @@ function App() {
         name: aiKitchenRecipe?.name || 'рецепт',
         content: aiKitchenRecipe?.content || ''
       };
+      
+      console.log('🎯 [DEBUG] Generating inspiration with cardData:', {
+        name: cardData.name,
+        hasContent: !!cardData.content,
+        source: tcV2 ? 'V2' : (techCard ? 'V1 techCard' : 'AI Kitchen')
+      });
+      
       const response = await axios.post(`${API}/generate-inspiration`, {
         user_id: userToUse.id,
         tech_card: cardData,
