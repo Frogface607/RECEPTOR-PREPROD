@@ -10634,7 +10634,7 @@ function App() {
                   </p>
                 </div>
                 
-                {!aiKitchenRecipe ? (
+                {!aiKitchenRecipe && !techCard ? (
                   /* Recipe Creation Form */
                   <div className="max-w-3xl mx-auto space-y-6">
                     <div className="relative">
@@ -10719,15 +10719,16 @@ function App() {
                     <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-purple-400/40 rounded-2xl p-8 backdrop-blur-sm">
                       <div className="flex items-center justify-between mb-6">
                         <h4 className="text-purple-300 font-bold text-2xl">
-                          {aiKitchenRecipe.name}
+                          {aiKitchenRecipe?.name || techCard?.name || 'Рецепт'}
                         </h4>
                         <div className="flex flex-wrap gap-4">
                           <button 
                             onClick={async () => {
                               try {
+                                const recipeToSave = aiKitchenRecipe || techCard;
                                 const response = await axios.post(`${API}/v1/user/save-recipe`, {
-                                  recipe_content: aiKitchenRecipe.content,
-                                  recipe_name: aiKitchenRecipe.name,
+                                  recipe_content: recipeToSave.content,
+                                  recipe_name: recipeToSave.name,
                                   recipe_type: 'v1',
                                   user_id: (currentUser || { id: 'demo_user' }).id
                                 });
@@ -10767,9 +10768,10 @@ function App() {
                               try {
                                 console.log('🔄 Converting V1 recipe to V2 techcard');
                                 
+                                const recipeToConvert = aiKitchenRecipe || techCard;
                                 const response = await axios.post(`${API}/v1/convert-recipe-to-techcard`, {
-                                  recipe_content: aiKitchenRecipe.content,
-                                  recipe_name: aiKitchenRecipe.name,
+                                  recipe_content: recipeToConvert.content,
+                                  recipe_name: recipeToConvert.name,
                                   user_id: (currentUser || { id: 'demo_user' }).id
                                 });
                                 
@@ -10808,6 +10810,7 @@ function App() {
                           <button 
                             onClick={() => {
                               setAiKitchenRecipe(null);
+                              setTechCard(null);
                               setAiKitchenDishName('');
                             }}
                             className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 text-purple-300 border border-purple-500/50 px-6 py-3 rounded-xl hover:border-purple-400/70 transition-all duration-300 font-medium"
@@ -10818,7 +10821,8 @@ function App() {
                           <button 
                             onClick={() => {
                               // Копируем рецепт в буфер обмена
-                              const recipeText = `📋 ${aiKitchenRecipe.name}\n\n${aiKitchenRecipe.content}\n\n✨ Создано с помощью Receptor AI | www.receptorai.pro`;
+                              const recipeToShare = aiKitchenRecipe || techCard;
+                              const recipeText = `📋 ${recipeToShare.name}\n\n${recipeToShare.content}\n\n✨ Создано с помощью Receptor AI | www.receptorai.pro`;
                               
                               navigator.clipboard.writeText(recipeText).then(() => {
                                 alert('✅ Рецепт скопирован в буфер обмена! Теперь можно поделиться им в мессенджере или соцсетях.');
@@ -10853,7 +10857,7 @@ function App() {
                       <div className="max-h-80 overflow-y-auto text-gray-300 text-sm leading-relaxed">
                         <div 
                           dangerouslySetInnerHTML={{ 
-                            __html: formatProAIContent(aiKitchenRecipe.content) 
+                            __html: formatProAIContent((aiKitchenRecipe || techCard).content) 
                           }} 
                         />
                       </div>
