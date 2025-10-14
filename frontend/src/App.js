@@ -11122,6 +11122,11 @@ function App() {
                           setTcV2(null);
                           setCurrentTechCardId(techcard.id);
                           setCurrentView('ai-kitchen');
+                          
+                          // Скроллим вверх чтобы было видно AI Kitchen
+                          setTimeout(() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }, 100);
                         } else if (isV2 && techcard.techcard_v2_data) {
                           // Загружаем V2 техкарту
                           setTcV2(techcard.techcard_v2_data);
