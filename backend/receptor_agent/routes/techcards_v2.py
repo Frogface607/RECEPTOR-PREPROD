@@ -683,6 +683,17 @@ def recalc_tc_v2(techcard: TechCardV2):
         # Запускаем только калькуляторы (без LLM)
         updated_card = techcard
         
+        # ПЕРЕСЧИТЫВАЕМ ВЫХОД (YIELD) на основе суммы netto_g
+        if updated_card.ingredients:
+            total_net_weight = sum(float(ing.netto_g or 0) for ing in updated_card.ingredients)
+            portions = updated_card.portions or 1
+            
+            if portions > 0:
+                # Обновляем yield
+                if hasattr(updated_card, 'yield_') and updated_card.yield_:
+                    updated_card.yield_.perPortion_g = round(total_net_weight / portions, 1)
+                    updated_card.yield_.perBatch_g = round(total_net_weight, 1)
+        
         # Пересчитываем стоимость
         try:
             updated_card = calculate_cost_for_tech_card(updated_card)
@@ -732,6 +743,8 @@ async def save_techcard_v2_to_history(request: Request):
         techcard_data = body.get('techcard')
         techcard_id = body.get('techcard_id')
         
+        logger.info(f"💾 Saving techcard: id={techcard_id}")
+        
         if not techcard_data or not techcard_id:
             raise HTTPException(400, "Missing techcard or techcard_id")
         
@@ -746,9 +759,11 @@ async def save_techcard_v2_to_history(request: Request):
             {"id": techcard_id},
             {"$set": {
                 "techcard_v2_data": techcard_data,
-                "updated_at": datetime.now()
+                "updated_at": datetime.now().isoformat()
             }}
         )
+        
+        logger.info(f"✅ Save result: matched={result.matched_count}, modified={result.modified_count}")
         
         if result.matched_count == 0:
             raise HTTPException(404, f"Techcard with id {techcard_id} not found in history")
@@ -758,6 +773,7 @@ async def save_techcard_v2_to_history(request: Request):
     except HTTPException as he:
         raise he
     except Exception as e:
+        logger.error(f"❌ Error saving techcard: {str(e)}")
         raise HTTPException(500, f"Error saving techcard: {str(e)}")
 
 @router.post("/techcards.v2/print")
