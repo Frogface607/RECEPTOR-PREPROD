@@ -2661,13 +2661,16 @@ function App() {
                             >
                               🔗 IIKO
                             </button>
-                            <button
-                              className="text-gray-400 hover:text-blue-300 transition-colors p-1"
-                              onClick={() => openSubRecipeModal(index)}
-                              title="Назначить подрецепт"
-                            >
-                              ➕
-                            </button>
+                            {/* Кнопка "Добавить подрецепт" временно скрыта */}
+                            {false && (
+                              <button
+                                className="text-gray-400 hover:text-blue-300 transition-colors p-1"
+                                onClick={() => openSubRecipeModal(index)}
+                                title="Назначить подрецепт"
+                              >
+                                ➕
+                              </button>
+                            )}
                             {ing.subRecipe && (
                               <button
                                 className="text-red-400 hover:text-red-300 transition-colors p-1"
@@ -2677,6 +2680,14 @@ function App() {
                                 ❌
                               </button>
                             )}
+                            {/* Кнопка удаления ингредиента */}
+                            <button
+                              className="text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors p-1 rounded"
+                              onClick={() => removeV2Ingredient(index)}
+                              title="Удалить ингредиент"
+                            >
+                              🗑️
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -2684,6 +2695,16 @@ function App() {
                   })}
                 </tbody>
               </table>
+            </div>
+            
+            {/* Кнопка добавления ингредиента */}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={addV2Ingredient}
+                className="bg-green-600/20 border border-green-500/50 text-green-300 hover:bg-green-500 hover:text-white px-4 py-2 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2"
+              >
+                ➕ Добавить ингредиент
+              </button>
             </div>
           </div>
         )}
@@ -4057,6 +4078,54 @@ function App() {
       e.preventDefault();
       cancelIngredientEdit();
     }
+  };
+
+  // ============== ADD/REMOVE INGREDIENT FUNCTIONS ==============
+  
+  const addV2Ingredient = async () => {
+    if (!tcV2) return;
+    
+    const newIngredient = {
+      name: 'Новый ингредиент',
+      brutto_g: 100,
+      loss_pct: 0,
+      netto_g: 100,
+      unit: 'g',
+      skuId: null,
+      product_code: null,
+      canonical_id: null,
+      source: 'user'
+    };
+    
+    const updatedTcV2 = {
+      ...tcV2,
+      ingredients: [...tcV2.ingredients, newIngredient]
+    };
+    
+    setTcV2(updatedTcV2);
+    
+    // Trigger recalculation
+    await performRecalculation(updatedTcV2);
+  };
+  
+  const removeV2Ingredient = async (ingredientIndex) => {
+    if (!tcV2 || !tcV2.ingredients[ingredientIndex]) return;
+    
+    // Подтверждение удаления
+    const ingredientName = tcV2.ingredients[ingredientIndex].name;
+    if (!window.confirm(`Удалить ингредиент "${ingredientName}"?`)) {
+      return;
+    }
+    
+    const updatedTcV2 = {
+      ...tcV2,
+      ingredients: tcV2.ingredients.filter((_, index) => index !== ingredientIndex)
+    };
+    
+    setTcV2(updatedTcV2);
+    
+    // Trigger recalculation
+    await performRecalculation(updatedTcV2);
   };
 
   const openSubRecipeModal = (ingredientIndex) => {
@@ -11112,6 +11181,7 @@ function App() {
                         
                         if (isV1Recipe) {
                           // Загружаем V1 рецепт в AI-Kitchen
+                          console.log('📋 Opening V1 recipe in AI Kitchen:', techcard.dish_name || techcard.name);
                           setAiKitchenRecipe({
                             content: techcard.content,
                             id: techcard.id,
@@ -11121,10 +11191,13 @@ function App() {
                           setTechCard(null);
                           setTcV2(null);
                           setCurrentTechCardId(techcard.id);
+                          
+                          console.log('🔄 Switching to ai-kitchen view');
                           setCurrentView('ai-kitchen');
                           
                           // Скроллим вверх чтобы было видно AI Kitchen
                           setTimeout(() => {
+                            console.log('📜 Scrolling to top');
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }, 100);
                         } else if (isV2 && techcard.techcard_v2_data) {
