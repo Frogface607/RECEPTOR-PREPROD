@@ -2431,14 +2431,14 @@ function App() {
           <div className="bg-gray-800/30 rounded-lg p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-purple-400 uppercase tracking-wide">ИНГРЕДИЕНТЫ</h3>
-              {editingIngredientIndex !== null && (
+              {editingIngredientIndex !== null ? (
                 <div className="flex gap-2">
                   <button
                     onClick={saveIngredientEdit}
                     className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
                     disabled={Object.keys(editingErrors).length > 0}
                   >
-                    💾 Сохранить
+                    💾 Сохранить изменения
                   </button>
                   <button
                     onClick={cancelIngredientEdit}
@@ -2447,6 +2447,15 @@ function App() {
                     ✖️ Отмена
                   </button>
                 </div>
+              ) : (
+                <button
+                  onClick={saveTechCardToHistory}
+                  disabled={isRecalculating}
+                  className={`px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-bold transition-all shadow-lg ${isRecalculating ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                  title="Пересчитать и сохранить техкарту в базу данных"
+                >
+                  {isRecalculating ? '⏳ Сохранение...' : '💾 СОХРАНИТЬ ТЕХКАРТУ'}
+                </button>
               )}
             </div>
             <div className="overflow-x-auto">
@@ -2475,7 +2484,23 @@ function App() {
                           <div className="flex items-center gap-2">
                             <div>
                               <div className="flex items-center gap-1">
-                                {ing.name}
+                                {isEditing ? (
+                                  <input
+                                    type="text"
+                                    value={editingData.name || ''}
+                                    onChange={(e) => handleEditingChange('name', e.target.value)}
+                                    onKeyDown={handleEditKeyDown}
+                                    className="w-48 px-2 py-1 bg-gray-700 text-white rounded text-sm border-gray-600"
+                                    placeholder="Название ингредиента"
+                                  />
+                                ) : (
+                                  <span 
+                                    className="cursor-pointer hover:bg-gray-700 px-2 py-1 rounded"
+                                    onClick={() => startIngredientEdit(index)}
+                                  >
+                                    {ing.name}
+                                  </span>
+                                )}
                                 {/* Source badges для ингредиентов */}
                                 <div className="flex items-center gap-1 flex-wrap">
                                   {/* Nutrition source badges */}
@@ -3219,6 +3244,61 @@ function App() {
     } catch (error) {
       console.error('Recalculation error:', error);
       setRecalcError('Ошибка при пересчете техкарты');
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
+  const saveTechCardToHistory = async () => {
+    if (!tcV2) return;
+    
+    setIsRecalculating(true);
+    setRecalcError(null);
+    
+    try {
+      // Сначала пересчитываем
+      const recalcResponse = await fetch(`${API}/v1/techcards.v2/recalc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tcV2)
+      });
+      
+      const recalcData = await recalcResponse.json();
+      
+      if (recalcData.status !== 'success' || !recalcData.card) {
+        throw new Error(recalcData.message || 'Ошибка пересчёта');
+      }
+      
+      setTcV2(recalcData.card);
+      
+      // Затем сохраняем в историю
+      const techcardId = recalcData.card.meta?.id || recalcData.card._id || recalcData.card.id;
+      
+      if (techcardId) {
+        const saveResponse = await fetch(`${API}/v1/techcards.v2/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            techcard_id: techcardId, 
+            techcard: recalcData.card 
+          })
+        });
+        
+        const saveData = await saveResponse.json();
+        
+        if (saveData.status === 'success') {
+          console.log('✅ Techcard saved to history successfully');
+          alert('✅ Техкарта успешно сохранена!');
+          // Обновляем историю
+          loadUserTechCards();
+        } else {
+          throw new Error(saveData.message || 'Ошибка сохранения');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error saving techcard:', error);
+      setRecalcError(`Ошибка сохранения: ${error.message}`);
+      alert(`❌ Ошибка сохранения техкарты: ${error.message}`);
     } finally {
       setIsRecalculating(false);
     }
@@ -3994,6 +4074,7 @@ function App() {
     const ingredient = tcV2.ingredients[ingredientIndex];
     setEditingIngredientIndex(ingredientIndex);
     setEditingData({
+      name: ingredient.name,
       brutto_g: ingredient.brutto_g,
       loss_pct: ingredient.loss_pct,
       netto_g: ingredient.netto_g,
@@ -4020,10 +4101,11 @@ function App() {
   };
 
   const handleEditingChange = (field, value) => {
-    const numValue = parseFloat(value) || 0;
-    let newData = { ...editingData, [field]: numValue };
+    // Для текстовых полей (name, unit) используем значение как есть
+    const fieldValue = (field === 'name' || field === 'unit') ? value : (parseFloat(value) || 0);
+    let newData = { ...editingData, [field]: fieldValue };
     
-    // Auto-calculate related fields
+    // Auto-calculate related fields только для числовых полей
     if (field === 'brutto_g' || field === 'loss_pct') {
       newData.netto_g = newData.brutto_g * (1 - newData.loss_pct / 100);
     } else if (field === 'netto_g') {
@@ -4052,6 +4134,7 @@ function App() {
         if (index === editingIngredientIndex) {
           return {
             ...ing,
+            name: editingData.name,
             brutto_g: Math.round(editingData.brutto_g * 10) / 10,
             loss_pct: Math.round(editingData.loss_pct * 10) / 10,
             netto_g: Math.round(editingData.netto_g * 10) / 10,

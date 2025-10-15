@@ -712,6 +712,54 @@ def recalc_tc_v2(techcard: TechCardV2):
             "message": f"Recalculation failed: {error_message}"
         }
         return JSONResponse(content=response_data, headers={"Content-Type": "application/json; charset=utf-8"})
+
+@router.post("/techcards.v2/save")
+async def save_techcard_v2_to_history(request: Request):
+    """
+    Сохраняет TechCardV2 в user_history коллекцию MongoDB.
+    
+    Expects:
+        {
+            "techcard_id": str,
+            "techcard": TechCardV2
+        }
+    
+    Returns:
+        {"status": "success" | "error", "message": str}
+    """
+    try:
+        body = await request.json()
+        techcard_data = body.get('techcard')
+        techcard_id = body.get('techcard_id')
+        
+        if not techcard_data or not techcard_id:
+            raise HTTPException(400, "Missing techcard or techcard_id")
+        
+        # Получаем MongoDB коллекцию
+        from ..db.mongodb import get_mongo_client
+        client = get_mongo_client()
+        db = client.get_database("receptor")
+        user_history = db.get_collection("user_history")
+        
+        # Обновляем техкарту в истории
+        result = user_history.update_one(
+            {"id": techcard_id},
+            {"$set": {
+                "techcard_v2_data": techcard_data,
+                "updated_at": datetime.now()
+            }}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(404, f"Techcard with id {techcard_id} not found in history")
+        
+        return {"status": "success", "message": "Techcard saved successfully"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(500, f"Error saving techcard: {str(e)}")
+
 @router.post("/techcards.v2/print")
 def print_tc_v2(card: TechCardV2):
     """Генерация ГОСТ-печати A4 из TechCardV2"""
