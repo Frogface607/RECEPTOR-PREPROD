@@ -8477,13 +8477,13 @@ function App() {
         results.push(...exportResults.slice(results.length));
       }
 
-      // 3. PDF Export
-      setCurrentExportStep('Генерация PDF...');
-      setExportProgress(75);
-      await executePdfExport();
-      if (exportResults.length > results.length) {
-        results.push(...exportResults.slice(results.length));
-      }
+      // 3. PDF Export (temporarily disabled due to popup blocker issues)
+      // setCurrentExportStep('Генерация PDF...');
+      // setExportProgress(75);
+      // await executePdfExport();
+      // if (exportResults.length > results.length) {
+      //   results.push(...exportResults.slice(results.length));
+      // }
 
       setExportResults(results);
       setCurrentExportStep('Полный пакет готов');
