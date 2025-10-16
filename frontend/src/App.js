@@ -3250,12 +3250,18 @@ function App() {
   };
 
   const saveTechCardToHistory = async () => {
-    if (!tcV2) return;
+    if (!tcV2) {
+      console.error('❌ No tcV2 to save');
+      return;
+    }
     
     setIsRecalculating(true);
     setRecalcError(null);
     
     try {
+      console.log('🔄 Starting save process...');
+      console.log('📦 Current tcV2:', tcV2);
+      
       // Сначала пересчитываем
       const recalcResponse = await fetch(`${API}/v1/techcards.v2/recalc`, {
         method: 'POST',
@@ -3264,6 +3270,7 @@ function App() {
       });
       
       const recalcData = await recalcResponse.json();
+      console.log('✅ Recalculation response:', recalcData);
       
       if (recalcData.status !== 'success' || !recalcData.card) {
         throw new Error(recalcData.message || 'Ошибка пересчёта');
@@ -3273,27 +3280,36 @@ function App() {
       
       // Затем сохраняем в историю
       const techcardId = recalcData.card.meta?.id || recalcData.card._id || recalcData.card.id;
+      console.log('🔍 Searching for techcard_id...');
+      console.log('   meta.id:', recalcData.card.meta?.id);
+      console.log('   _id:', recalcData.card._id);
+      console.log('   id:', recalcData.card.id);
+      console.log('📌 Selected techcard_id:', techcardId);
       
-      if (techcardId) {
-        const saveResponse = await fetch(`${API}/v1/techcards.v2/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            techcard_id: techcardId, 
-            techcard: recalcData.card 
-          })
-        });
-        
-        const saveData = await saveResponse.json();
-        
-        if (saveData.status === 'success') {
-          console.log('✅ Techcard saved to history successfully');
-          alert('✅ Техкарта успешно сохранена!');
-          // Обновляем историю
-          loadUserTechCards();
-        } else {
-          throw new Error(saveData.message || 'Ошибка сохранения');
-        }
+      if (!techcardId) {
+        throw new Error('Не удалось найти ID техкарты для сохранения');
+      }
+      
+      console.log('💾 Sending save request...');
+      const saveResponse = await fetch(`${API}/v1/techcards.v2/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          techcard_id: techcardId, 
+          techcard: recalcData.card 
+        })
+      });
+      
+      const saveData = await saveResponse.json();
+      console.log('📥 Save response:', saveData);
+      
+      if (saveData.status === 'success') {
+        console.log('✅ Techcard saved to history successfully');
+        alert('✅ Техкарта успешно сохранена!');
+        // Обновляем историю
+        loadUserTechCards();
+      } else {
+        throw new Error(saveData.message || 'Ошибка сохранения');
       }
     } catch (error) {
       console.error('❌ Error saving techcard:', error);
