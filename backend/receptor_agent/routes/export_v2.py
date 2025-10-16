@@ -82,13 +82,13 @@ class PreflightOrchestrator:
         try:
             # Import here to avoid circular imports
             import os
-            from pymongo import MongoClient
+            from motor.motor_asyncio import AsyncIOMotorClient
             
-            # Get MongoDB connection (same pattern as iiko_rms_service)
-            mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
-            db_name = os.getenv('DB_NAME', 'receptor_pro')
+            # Get MongoDB connection (same pattern as server.py)
+            mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+            db_name = os.environ.get('DB_NAME', 'receptor_pro')
             
-            client = MongoClient(mongo_url)
+            client = AsyncIOMotorClient(mongo_url)
             db = client[db_name.strip('"')]
             techcards_collection = db.user_history  # Техkарты сохраняются в user_history
             
@@ -98,7 +98,7 @@ class PreflightOrchestrator:
             for techcard_id in techcard_ids:
                     try:
                         # Search in user_history format (id field)
-                        doc = techcards_collection.find_one({"id": techcard_id})
+                        doc = await techcards_collection.find_one({"id": techcard_id})
                         
                         if doc:
                             # Load from user_history format
@@ -473,7 +473,7 @@ class DualExporter:
             for techcard_id in techcard_ids:
                     try:
                         # Search in user_history format (id field)
-                        doc = techcards_collection.find_one({"id": techcard_id})
+                        doc = await techcards_collection.find_one({"id": techcard_id})
                         
                         if doc:
                             # Load from user_history format
