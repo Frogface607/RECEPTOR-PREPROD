@@ -540,20 +540,32 @@ class DualExporter:
                     dish_skeletons_xlsx = await self._create_dish_skeletons_xlsx(
                         preflight_result["missing"]["dishes"]
                     )
-                    zip_file.writestr("Dish-Skeletons.xlsx", dish_skeletons_xlsx.getvalue())
-                    logger.info(f"Added Dish-Skeletons.xlsx with {preflight_result['counts']['dishSkeletons']} dishes")
+                    
+                    # Create dynamic filename with dish names
+                    dish_names = [dish["name"] for dish in preflight_result["missing"]["dishes"]]
+                    safe_dish_names = [name.replace(" ", "_").replace("/", "_") for name in dish_names]
+                    dish_filename = f"Dish-Skeletons_{'_'.join(safe_dish_names[:2])}.xlsx"  # Max 2 names
+                    if len(safe_dish_names) > 2:
+                        dish_filename = f"Dish-Skeletons_{len(dish_names)}_dishes.xlsx"
+                    
+                    zip_file.writestr(dish_filename, dish_skeletons_xlsx.getvalue())
+                    logger.info(f"Added {dish_filename} with {preflight_result['counts']['dishSkeletons']} dishes")
                 
                 # 2. Create Product-Skeletons.xlsx ONLY if products missing
                 if preflight_result["counts"]["productSkeletons"] > 0:
                     product_skeletons_xlsx = await self._create_product_skeletons_xlsx(
                         preflight_result["missing"]["products"]
                     )
-                    zip_file.writestr("Product-Skeletons.xlsx", product_skeletons_xlsx.getvalue())
-                    logger.info(f"Added Product-Skeletons.xlsx with {preflight_result['counts']['productSkeletons']} products")
+                    
+                    # Create dynamic filename with product count
+                    product_filename = f"Product-Skeletons_{preflight_result['counts']['productSkeletons']}_products.xlsx"
+                    
+                    zip_file.writestr(product_filename, product_skeletons_xlsx.getvalue())
+                    logger.info(f"Added {product_filename} with {preflight_result['counts']['productSkeletons']} products")
                 
                 # 3. Verify ZIP contains only valid skeleton files
                 files_in_zip = list(zip_file.namelist())
-                valid_files = [f for f in files_in_zip if f in ["Dish-Skeletons.xlsx", "Product-Skeletons.xlsx"]]
+                valid_files = [f for f in files_in_zip if f.startswith("Dish-Skeletons_") or f.startswith("Product-Skeletons_")]
                 
                 logger.info(f"ZIP export complete: {len(valid_files)} valid skeleton files created")
                 logger.info(f"Files in ZIP: {files_in_zip}")
