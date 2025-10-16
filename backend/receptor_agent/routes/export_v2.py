@@ -150,7 +150,8 @@ class PreflightOrchestrator:
         generated_articles = []
         
         for techcard in techcards:
-            dish_article = getattr(techcard, 'article', None)
+            # V2 techcards store article in meta.article, not techcard.article
+            dish_article = getattr(techcard.meta, 'article', None)
             needs_skeleton = False
             
             if not dish_article:
@@ -170,7 +171,7 @@ class PreflightOrchestrator:
                 
                 if found_article:
                     # Update techcard with found article
-                    techcard.article = found_article
+                    techcard.meta.article = found_article
                     logger.info(f"Found existing dish '{techcard.meta.title}' in RMS with article '{found_article}'")
                 else:
                     # Allocate new article via AA-01
@@ -185,7 +186,7 @@ class PreflightOrchestrator:
                     
                     if allocated_articles:
                         new_article = allocated_articles[0]
-                        techcard.article = new_article
+                        techcard.meta.article = new_article
                         generated_articles.append(new_article)
                         
                         # Get yield safely
