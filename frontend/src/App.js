@@ -6989,11 +6989,11 @@ function App() {
     const progressInterval = simulateProgress('sales', 12000);
     
     try {
-      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
-      const cardData = tcV2 || techCard || {
-        name: aiKitchenRecipe?.name || 'рецепт',
-        content: aiKitchenRecipe?.content || ''
-      };
+      // Выбираем данные для анализа - приоритет: AI Kitchen -> V2 -> V1
+      const cardData = aiKitchenRecipe ? {
+        name: aiKitchenRecipe.name || 'рецепт',
+        content: aiKitchenRecipe.content || ''
+      } : (tcV2 || techCard);
       const response = await axios.post(`${API}/generate-sales-script`, {
         tech_card: cardData,
         user_id: userToUse.id
@@ -7038,11 +7038,11 @@ function App() {
     const progressInterval = simulateProgress('pairing', 12000);
     
     try {
-      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
-      const cardData = tcV2 || techCard || {
-        name: aiKitchenRecipe?.name || 'рецепт',
-        content: aiKitchenRecipe?.content || ''
-      };
+      // Выбираем данные для анализа - приоритет: AI Kitchen -> V2 -> V1
+      const cardData = aiKitchenRecipe ? {
+        name: aiKitchenRecipe.name || 'рецепт',
+        content: aiKitchenRecipe.content || ''
+      } : (tcV2 || techCard);
       const response = await axios.post(`${API}/generate-food-pairing`, {
         tech_card: cardData,
         user_id: userToUse.id
@@ -7085,11 +7085,11 @@ function App() {
     const progressInterval = simulateProgress('photo', 10000);
     
     try {
-      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
-      const cardData = tcV2 || techCard || {
-        name: aiKitchenRecipe?.name || 'рецепт',
-        content: aiKitchenRecipe?.content || ''
-      };
+      // Выбираем данные для анализа - приоритет: AI Kitchen -> V2 -> V1
+      const cardData = aiKitchenRecipe ? {
+        name: aiKitchenRecipe.name || 'рецепт',
+        content: aiKitchenRecipe.content || ''
+      } : (tcV2 || techCard);
       const response = await axios.post(`${API}/generate-photo-tips`, {
         user_id: userToUse.id,
         tech_card: cardData
@@ -7130,11 +7130,11 @@ function App() {
     const progressInterval = simulateProgress('inspiration', 15000);
     
     try {
-      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
-      const cardData = tcV2 || techCard || {
-        name: aiKitchenRecipe?.name || 'рецепт',
-        content: aiKitchenRecipe?.content || ''
-      };
+      // Выбираем данные для анализа - приоритет: AI Kitchen -> V2 -> V1
+      const cardData = aiKitchenRecipe ? {
+        name: aiKitchenRecipe.name || 'рецепт',
+        content: aiKitchenRecipe.content || ''
+      } : (tcV2 || techCard);
       
       const response = await axios.post(`${API}/generate-inspiration`, {
         user_id: userToUse.id,
@@ -7185,11 +7185,11 @@ function App() {
     }, 10000); // 10 секунд для детального анализа
     
     try {
-      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
-      const cardData = tcV2 || techCard || {
-        name: aiKitchenRecipe?.name || 'рецепт',
-        content: aiKitchenRecipe?.content || ''
-      };
+      // Выбираем данные для анализа - приоритет: AI Kitchen -> V2 -> V1
+      const cardData = aiKitchenRecipe ? {
+        name: aiKitchenRecipe.name || 'рецепт',
+        content: aiKitchenRecipe.content || ''
+      } : (tcV2 || techCard);
       const response = await axios.post(`${API}/analyze-finances`, {
         user_id: userToUse.id,
         tech_card: cardData
@@ -7235,11 +7235,11 @@ function App() {
     const progressInterval = simulateProgress('improve', 6000); // 6 секунд загрузки
     
     try {
-      // Выбираем данные для анализа - приоритет: V2 -> V1 -> AI Kitchen
-      const cardData = tcV2 || techCard || {
-        name: aiKitchenRecipe?.name || 'рецепт',
-        content: aiKitchenRecipe?.content || ''
-      };
+      // Выбираем данные для анализа - приоритет: AI Kitchen -> V2 -> V1
+      const cardData = aiKitchenRecipe ? {
+        name: aiKitchenRecipe.name || 'рецепт',
+        content: aiKitchenRecipe.content || ''
+      } : (tcV2 || techCard);
       const response = await axios.post(`${API}/improve-dish`, {
         user_id: userToUse.id,
         tech_card: cardData
