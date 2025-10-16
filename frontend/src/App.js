@@ -6994,6 +6994,7 @@ function App() {
         name: aiKitchenRecipe.name || 'рецепт',
         content: aiKitchenRecipe.content || ''
       } : (tcV2 || techCard);
+      console.log('🔍 Sales script request:', { user_id: userToUse.id, tech_card_name: cardData.name });
       const response = await axios.post(`${API}/generate-sales-script`, {
         tech_card: cardData,
         user_id: userToUse.id
@@ -7043,6 +7044,7 @@ function App() {
         name: aiKitchenRecipe.name || 'рецепт',
         content: aiKitchenRecipe.content || ''
       } : (tcV2 || techCard);
+      console.log('🔍 Food pairing request:', { user_id: userToUse.id, tech_card_name: cardData.name });
       const response = await axios.post(`${API}/generate-food-pairing`, {
         tech_card: cardData,
         user_id: userToUse.id
