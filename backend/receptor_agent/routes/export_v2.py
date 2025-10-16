@@ -154,16 +154,22 @@ class PreflightOrchestrator:
             dish_article = getattr(techcard.meta, 'article', None)
             needs_skeleton = False
             
+            logger.info(f"🔍 Processing dish: '{techcard.meta.title}', article: '{dish_article}'")
+            
             if not dish_article:
                 # Case 1: No article at all
                 needs_skeleton = True
-                logger.info(f"Dish '{techcard.meta.title}' has no article - needs skeleton")
+                logger.info(f"✅ Dish '{techcard.meta.title}' has no article - needs skeleton")
             else:
                 # Case 2: Has article but check if it exists in RMS
+                logger.info(f"🔍 Checking if article '{dish_article}' exists in RMS...")
                 article_exists = await self._check_dish_article_in_rms(dish_article, organization_id)
+                logger.info(f"🔍 Article '{dish_article}' exists in RMS: {article_exists}")
                 if not article_exists:
                     needs_skeleton = True
-                    logger.info(f"Dish '{techcard.meta.title}' article '{dish_article}' not found in RMS - needs skeleton")
+                    logger.info(f"✅ Dish '{techcard.meta.title}' article '{dish_article}' not found in RMS - needs skeleton")
+                else:
+                    logger.info(f"ℹ️ Dish '{techcard.meta.title}' article '{dish_article}' found in RMS - no skeleton needed")
             
             if needs_skeleton:
                 # Try to find by name in iiko RMS first
