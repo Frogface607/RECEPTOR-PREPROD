@@ -748,14 +748,16 @@ async def save_techcard_v2_to_history(request: Request):
         if not techcard_data or not techcard_id:
             raise HTTPException(400, "Missing techcard or techcard_id")
         
-        # Получаем MongoDB коллекцию
-        from ..db.mongodb import get_mongo_client
-        client = get_mongo_client()
-        db = client.get_database("receptor")
-        user_history = db.get_collection("user_history")
+        # Получаем MongoDB клиент из окружения (как в server.py)
+        from motor.motor_asyncio import AsyncIOMotorClient
+        import os
+        
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[os.environ.get('DB_NAME', 'receptor_pro')]
         
         # Обновляем техкарту в истории
-        result = user_history.update_one(
+        result = await db.user_history.update_one(
             {"id": techcard_id},
             {"$set": {
                 "techcard_v2_data": techcard_data,
