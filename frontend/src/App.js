@@ -13,7 +13,7 @@ const API = `${BACKEND_URL}/api`;  // Backend routes already include /api prefix
 // Note: formatProAIContent function is already defined below and handles markdown formatting
 
 function App() {
-  // Check if debug mode is enabled
+  // Check if debug mode is enabled (?debug=1 in URL)
   const isDebugMode = new URLSearchParams(window.location.search).get('debug') === '1';
   
   const [currentUser, setCurrentUser] = useState(null);
@@ -504,7 +504,9 @@ function App() {
       // Using wizard data directly
       
       try {
-        console.log('🚀 Generating tech card with wizard data:', wizardData);
+        if (isDebugMode) {
+          console.log('🚀 Generating tech card with wizard data:', wizardData);
+        }
         
         const response = await axios.post(`${API}/v1/techcards.v2/generate`, {
           name: wizardData.dishName,
@@ -871,7 +873,9 @@ function App() {
       }
       
       const requestDuration = Date.now() - requestStartTime;
-      console.log(`[V2] API request completed in ${requestDuration}ms`);
+      if (isDebugMode) {
+        console.log(`[V2] API request completed in ${requestDuration}ms`);
+      }
       
       // Complete the animation quickly
       clearInterval(progressInterval);
@@ -884,11 +888,13 @@ function App() {
         issues: responseData.issues || responseData.validation_issues || []
       };
       
-      console.log('[V2] Normalized data structure:', {
-        status: normalizedData.status,
-        hasCard: !!normalizedData.card,
-        issuesCount: normalizedData.issues?.length || 0
-      });
+      if (isDebugMode) {
+        console.log('[V2] Normalized data structure:', {
+          status: normalizedData.status,
+          hasCard: !!normalizedData.card,
+          issuesCount: normalizedData.issues?.length || 0
+        });
+      }
       
       if (normalizedData.status === 'success' && normalizedData.card) {
         const techCardV2 = normalizedData.card;
@@ -897,17 +903,21 @@ function App() {
         // Set the current tech card ID from the generated tech card
         if (techCardV2.meta && techCardV2.meta.id) {
           setCurrentTechCardId(techCardV2.meta.id);
-          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
+          if (isDebugMode) {
+            console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
+          }
         }
         
         setGenerationStatus('success');
         setGenerationIssues(normalizedData.issues || []);
         
         // Log success for debugging
-        console.log('[V2] Generated TechCard V2 successfully');
-        console.log('[V2] tcV2.version:', techCardV2.meta?.version);
-        console.log('[V2] tcV2.status:', normalizedData.status);
-        console.log('[V2] API endpoint used:', endpoint);
+        if (isDebugMode) {
+          console.log('[V2] Generated TechCard V2 successfully');
+          console.log('[V2] tcV2.version:', techCardV2.meta?.version);
+          console.log('[V2] tcV2.status:', normalizedData.status);
+          console.log('[V2] API endpoint used:', endpoint);
+        }
         
         // Clear any previous V1 tech card state to avoid conflicts
         setTechCard(null);
@@ -935,14 +945,18 @@ function App() {
         // Set the current tech card ID from the generated tech card
         if (techCardV2.meta && techCardV2.meta.id) {
           setCurrentTechCardId(techCardV2.meta.id);
-          console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
+          if (isDebugMode) {
+            console.log('[V2] Set currentTechCardId to:', techCardV2.meta.id);
+          }
         }
         
         setGenerationStatus('draft');
         setGenerationIssues(normalizedData.issues || []);
         
-        console.log('[V2] Generated draft tcV2 - validation issues found');
-        console.log('[V2] Issues:', normalizedData.issues);
+        if (isDebugMode) {
+          console.log('[V2] Generated draft tcV2 - validation issues found');
+          console.log('[V2] Issues:', normalizedData.issues);
+        }
         
         // Clear any previous V1 tech card state to avoid conflicts
         setTechCard(null);
@@ -2142,7 +2156,10 @@ function App() {
 
   // Render TechCardV2 directly from JSON data
   const renderTechCardV2 = (tcV2) => {
-    console.log('renderTechCardV2 called with:', tcV2 ? 'tcV2 data present' : 'tcV2 is null/undefined');
+    // DEBUG: Only log in debug mode
+    if (isDebugMode) {
+      console.log('renderTechCardV2 called with:', tcV2 ? 'tcV2 data present' : 'tcV2 is null/undefined');
+    }
     if (!tcV2) return null;
 
     // Специальная обработка для конвертированных V1→V2 техкарт
@@ -7356,13 +7373,17 @@ function App() {
 
   // РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: ИНТЕРАКТИВНАЯ ТАБЛИЦА ИНГРЕДИЕНТОВ
   const renderIngredientsTable = (content) => {
-    console.log('=== INGREDIENTS TABLE DEBUG ===');
-    console.log('tcV2 available:', !!tcV2);
-    console.log('tcV2.ingredients available:', tcV2?.ingredients?.length);
+    if (isDebugMode) {
+      console.log('=== INGREDIENTS TABLE DEBUG ===');
+      console.log('tcV2 available:', !!tcV2);
+      console.log('tcV2.ingredients available:', tcV2?.ingredients?.length);
+    }
     
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем tcV2.ingredients вместо парсинга старого текста
     if (tcV2 && tcV2.ingredients && tcV2.ingredients.length > 0) {
-      console.log('Using tcV2.ingredients:', tcV2.ingredients);
+      if (isDebugMode) {
+        console.log('Using tcV2.ingredients:', tcV2.ingredients);
+      }
       
       // Преобразуем tcV2.ingredients в формат для отображения
       const parsedIngredients = tcV2.ingredients.map((ingredient, index) => {
@@ -8171,14 +8192,20 @@ function App() {
   };
 
   const openExportWizard = () => {
-    console.log('🚀 DEBUG: openExportWizard called');
+    if (isDebugMode) {
+      console.log('🚀 DEBUG: openExportWizard called');
+    }
     resetExportWizard();
-    console.log('🚀 DEBUG: setting showUnifiedExportWizard to true');
+    if (isDebugMode) {
+      console.log('🚀 DEBUG: setting showUnifiedExportWizard to true');
+    }
     setShowUnifiedExportWizard(true);
     
     // FIX JS MODAL SCROLL & OPEN BUG: Prevent body scroll when modal opens
     document.body.style.overflow = 'hidden';
-    console.log('🚀 DEBUG: body overflow set to hidden');
+    if (isDebugMode) {
+      console.log('🚀 DEBUG: body overflow set to hidden');
+    }
   };
   
   const closeExportWizard = () => {
@@ -8595,7 +8622,9 @@ function App() {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
           filename = filenameMatch[1];
-          console.log('🎯 ZIP FILENAME DEBUG: Using server filename:', filename);
+          if (isDebugMode) {
+            console.log('🎯 ZIP FILENAME DEBUG: Using server filename:', filename);
+          }
         }
       }
       
@@ -8736,7 +8765,9 @@ function App() {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
           filename = filenameMatch[1];
-          console.log('🎯 TTK FILENAME DEBUG: Using server filename:', filename);
+          if (isDebugMode) {
+            console.log('🎯 TTK FILENAME DEBUG: Using server filename:', filename);
+          }
         }
       }
       
@@ -9284,7 +9315,9 @@ function App() {
 
   // централизованная функция закрытия модалок
   const closeAllModals = React.useCallback(() => {
-    console.log('closeAllModals called'); // DEBUG
+    if (isDebugMode) {
+      console.log('closeAllModals called');
+    }
     setShowRegistration(false);
     setShowPricingModal(false);
     setShowEquipmentModal(false);
@@ -9322,9 +9355,13 @@ function App() {
   // ESC listener который не черствеет
   useEffect(() => {
     const onKey = (e) => { 
-      console.log('Key pressed:', e.key); // DEBUG
+      if (isDebugMode) {
+        console.log('Key pressed:', e.key);
+      }
       if (e.key === 'Escape') {
-        console.log('ESC pressed, closing modals'); // DEBUG
+        if (isDebugMode) {
+          console.log('ESC pressed, closing modals');
+        }
         e.preventDefault();
         e.stopPropagation();
         closeAllModals(); 
@@ -18892,10 +18929,7 @@ function App() {
 
       {/* CREATE EXPORT WIZARD UI - Unified Export Wizard Modal */}
       {/* FIX JS MODAL SCROLL & OPEN BUG: Enhanced modal with proper scroll handling */}
-      {(() => {
-        console.log('🚀 DEBUG: Rendering modal check, showUnifiedExportWizard:', showUnifiedExportWizard);
-        return showUnifiedExportWizard;
-      })() && (
+      {showUnifiedExportWizard && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
           onClick={closeExportWizard}
