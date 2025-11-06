@@ -11695,7 +11695,7 @@ function App() {
                       </button>
                       
                       {/* Show "Set Password" button only for users without password */}
-                      {currentUser && !currentUser.password_hash && currentUser.provider === 'google' && (
+                      {currentUser && !currentUser.password_hash && (
                         <button
                           onClick={() => {
                             setSetPasswordData({ password: '', confirmPassword: '' });
