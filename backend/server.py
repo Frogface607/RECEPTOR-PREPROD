@@ -4643,16 +4643,32 @@ async def generate_mass_tech_cards(request: dict):
         raise HTTPException(status_code=500, detail=f"Error generating tech cards: {str(e)}")
 
 @api_router.get("/menu/{menu_id}/tech-cards")
-async def get_menu_tech_cards(menu_id: str):
+async def get_menu_tech_cards(menu_id: str, user_id: str = None):
     """
     Get all tech cards generated from a specific menu
+    SECURITY: Requires user_id to ensure user isolation
     """
     try:
+        # SECURITY FIX: Verify menu belongs to user if user_id provided
+        if user_id:
+            menu = await db.user_history.find_one({
+                "id": menu_id,
+                "is_menu": True,
+                "user_id": user_id
+            })
+            if not menu:
+                raise HTTPException(status_code=403, detail="Menu not found or access denied")
+        
         # Get all tech cards that were generated from this menu
-        tech_cards = await db.user_history.find({
+        # SECURITY FIX: Filter by user_id if provided
+        query = {
             "from_menu_id": menu_id,
             "is_menu": False
-        }).to_list(100)
+        }
+        if user_id:
+            query["user_id"] = user_id
+        
+        tech_cards = await db.user_history.find(query).to_list(100)
         
         # Group by category for better organization
         cards_by_category = {}
@@ -5237,28 +5253,46 @@ async def delete_menu_project(project_id: str):
         raise HTTPException(status_code=500, detail=f"Error deleting menu project: {str(e)}")
 
 @api_router.get("/menu-project/{project_id}/content")
-async def get_menu_project_content(project_id: str):
-    """Get all menus and tech cards for a specific project with analytics"""
+async def get_menu_project_content(project_id: str, user_id: str = None):
+    """
+    Get all menus and tech cards for a specific project with analytics
+    SECURITY: Requires user_id to ensure user isolation
+    """
     try:
         # Find project
         project = await db.menu_projects.find_one({"id": project_id})
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
         
+        # SECURITY FIX: Verify project belongs to user if user_id provided
+        if user_id and project.get("user_id") != user_id:
+            raise HTTPException(status_code=403, detail="Project not found or access denied")
+        
+        # Use project's user_id if not provided (backward compatibility)
+        effective_user_id = user_id or project.get("user_id")
+        
         # Get menus in project
-        menus_cursor = db.user_history.find({
+        # SECURITY FIX: Filter by user_id
+        menus_query = {
             "project_id": project_id,
             "is_menu": True
-        }).sort("created_at", -1)
+        }
+        if effective_user_id:
+            menus_query["user_id"] = effective_user_id
         
+        menus_cursor = db.user_history.find(menus_query).sort("created_at", -1)
         menus = await menus_cursor.to_list(length=100)
         
         # Get tech cards in project
-        tech_cards_cursor = db.user_history.find({
+        # SECURITY FIX: Filter by user_id
+        tech_cards_query = {
             "project_id": project_id,
             "is_menu": False
-        }).sort("created_at", -1)
+        }
+        if effective_user_id:
+            tech_cards_query["user_id"] = effective_user_id
         
+        tech_cards_cursor = db.user_history.find(tech_cards_query).sort("created_at", -1)
         tech_cards = await tech_cards_cursor.to_list(length=500)
         
         # Remove MongoDB _id fields to avoid serialization issues
@@ -5369,25 +5403,44 @@ def _get_project_categories(menus, tech_cards):
 # ============================================
 
 @api_router.get("/menu-project/{project_id}/analytics")
-async def get_project_analytics(project_id: str, organization_id: str = None):
-    """Get comprehensive analytics for a menu project including IIKo sales data"""
+async def get_project_analytics(project_id: str, organization_id: str = None, user_id: str = None):
+    """
+    Get comprehensive analytics for a menu project including IIKo sales data
+    SECURITY: Requires user_id to ensure user isolation
+    """
     try:
         # Find project
         project = await db.menu_projects.find_one({"id": project_id})
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
         
+        # SECURITY FIX: Verify project belongs to user if user_id provided
+        if user_id and project.get("user_id") != user_id:
+            raise HTTPException(status_code=403, detail="Project not found or access denied")
+        
+        # Use project's user_id if not provided (backward compatibility)
+        effective_user_id = user_id or project.get("user_id")
+        
         # Get project content
-        menus_cursor = db.user_history.find({
+        # SECURITY FIX: Filter by user_id
+        menus_query = {
             "project_id": project_id,
             "is_menu": True
-        })
+        }
+        if effective_user_id:
+            menus_query["user_id"] = effective_user_id
+        
+        menus_cursor = db.user_history.find(menus_query)
         menus = await menus_cursor.to_list(length=100)
         
-        tech_cards_cursor = db.user_history.find({
+        tech_cards_query = {
             "project_id": project_id,
             "is_menu": False
-        })
+        }
+        if effective_user_id:
+            tech_cards_query["user_id"] = effective_user_id
+        
+        tech_cards_cursor = db.user_history.find(tech_cards_query)
         tech_cards = await tech_cards_cursor.to_list(length=500)
         
         # Basic project analytics
