@@ -25,17 +25,13 @@ export const GOOGLE_AUTH_CONFIG = {
 };
 
 /**
- * Инициализация Google OAuth
+ * Инициализация Google OAuth (deprecated - теперь инициализация в компоненте)
+ * Оставлено для обратной совместимости
  */
 export const initGoogleAuth = () => {
   return new Promise((resolve, reject) => {
     if (window.google) {
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCallback,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
+      // Инициализация теперь в компоненте GoogleAuth
       resolve();
     } else {
       reject(new Error('Google API not loaded'));

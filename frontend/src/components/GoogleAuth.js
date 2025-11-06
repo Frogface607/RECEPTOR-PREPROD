@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { loadGoogleAPI, initGoogleAuth } from '../config/googleAuth';
+import { loadGoogleAPI, GOOGLE_CLIENT_ID } from '../config/googleAuth';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
 const API = `${BACKEND_URL}/api`;
@@ -17,8 +17,48 @@ const GoogleAuth = ({ onSuccess, onError, mode = 'login' }) => {
   useEffect(() => {
     // Загружаем Google API при монтировании компонента
     loadGoogleAPI()
-      .then(() => initGoogleAuth())
-      .then(() => setIsGoogleLoaded(true))
+      .then(() => {
+        // Проверяем что client_id установлен
+        if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'your-google-client-id.apps.googleusercontent.com') {
+          console.warn('⚠️ Google Client ID not configured. Google OAuth will not work.');
+          setIsGoogleLoaded(true);
+          return;
+        }
+        
+        // Инициализируем Google OAuth только один раз
+        if (window.google && window.google.accounts) {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: async (response) => {
+              try {
+                // Декодируем JWT токен от Google
+                const token = response.credential;
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Отправляем данные на backend
+                const authResponse = await axios.post(`${API}/v1/auth/google`, {
+                  email: payload.email,
+                  name: payload.name || payload.email.split('@')[0],
+                  google_id: payload.sub,
+                  avatar_url: payload.picture
+                });
+                
+                if (authResponse.data.success && onSuccess) {
+                  onSuccess(authResponse.data.user, authResponse.data.token);
+                }
+              } catch (error) {
+                console.error('Google auth callback error:', error);
+                if (onError) {
+                  onError(error);
+                }
+              }
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true
+          });
+        }
+        setIsGoogleLoaded(true);
+      })
       .catch(error => {
         console.error('Failed to load Google API:', error);
         setIsGoogleLoaded(true); // Показываем кнопку даже если API не загрузился
@@ -49,51 +89,47 @@ const GoogleAuth = ({ onSuccess, onError, mode = 'login' }) => {
   };
 
   const handleRealGoogleAuth = async () => {
-    return new Promise((resolve, reject) => {
-      // Используем Google One Tap или кнопку
-      window.google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        callback: async (response) => {
-          try {
-            // Декодируем JWT токен от Google
-            const token = response.credential;
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            
-            // Отправляем данные на backend
-            const authResponse = await axios.post(`${API}/v1/auth/google`, {
-              email: payload.email,
-              name: payload.name || payload.email.split('@')[0],
-              google_id: payload.sub,
-              avatar_url: payload.picture
+    // Проверяем что client_id установлен
+    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'your-google-client-id.apps.googleusercontent.com') {
+      if (onError) {
+        onError(new Error('Google Client ID not configured. Please set REACT_APP_GOOGLE_CLIENT_ID in environment variables.'));
+      }
+      return;
+    }
+    
+    if (!window.google || !window.google.accounts) {
+      if (onError) {
+        onError(new Error('Google API not loaded'));
+      }
+      return;
+    }
+    
+    try {
+      // Используем Google One Tap (показывается автоматически)
+      // Или используем renderButton для кнопки
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // One Tap не показан - используем кнопку
+          // Кнопка уже рендерится в компоненте, но нужно обработать клик
+          // Для этого используем renderButton
+          const buttonContainer = document.getElementById('google-signin-button');
+          if (buttonContainer) {
+            window.google.accounts.id.renderButton(buttonContainer, {
+              theme: 'outline',
+              size: 'large',
+              width: '100%',
+              text: mode === 'login' ? 'signin_with' : 'signup_with',
+              type: 'standard'
             });
-            
-            if (authResponse.data.success && onSuccess) {
-              onSuccess(authResponse.data.user, authResponse.data.token);
-              resolve();
-            } else {
-              reject(new Error('Backend auth failed'));
-            }
-          } catch (error) {
-            console.error('Google auth callback error:', error);
-            if (onError) {
-              onError(error);
-            }
-            reject(error);
           }
         }
       });
-      
-      // Показываем One Tap или кнопку
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Если One Tap не показан, используем кнопку
-          // Кнопка уже рендерится в компоненте
-          resolve();
-        } else {
-          resolve();
-        }
-      });
-    });
+    } catch (error) {
+      console.error('Google auth error:', error);
+      if (onError) {
+        onError(error);
+      }
+    }
   };
 
   const handleMockGoogleAuth = async () => {
