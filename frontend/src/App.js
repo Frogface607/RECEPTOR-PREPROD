@@ -20052,6 +20052,124 @@ function App() {
         }}
       />
 
+      {/* Set Password Modal (for users without password) */}
+      {showSetPasswordModal && currentUser && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-md">
+            <h2 className="text-2xl font-bold text-white mb-6">🔐 Установить пароль</h2>
+            <p className="text-gray-400 mb-6">
+              Установите пароль для входа через email. Это позволит вам входить в систему без Google OAuth.
+            </p>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!currentUser?.id) return;
+              
+              // Validation
+              if (setPasswordData.password.length < 6) {
+                alert('Пароль должен быть не менее 6 символов');
+                return;
+              }
+              
+              if (setPasswordData.password !== setPasswordData.confirmPassword) {
+                alert('Пароли не совпадают');
+                return;
+              }
+              
+              setIsSettingPassword(true);
+              try {
+                const response = await axios.post(`${API}/user/${currentUser.id}/set-password`, {
+                  password: setPasswordData.password
+                });
+                
+                if (response.data.success) {
+                  // Update current user
+                  const updatedUser = { ...currentUser, password_hash: 'set', provider: 'email' };
+                  setCurrentUser(updatedUser);
+                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
+                  
+                  // Close modal
+                  setShowSetPasswordModal(false);
+                  setSetPasswordData({ password: '', confirmPassword: '' });
+                  
+                  // Show success
+                  alert('✅ Пароль установлен успешно! Теперь вы можете входить через email/password.');
+                }
+              } catch (error) {
+                console.error('Set password error:', error);
+                const errorMessage = error.response?.data?.detail || 'Ошибка установки пароля. Попробуйте еще раз.';
+                alert(errorMessage);
+              } finally {
+                setIsSettingPassword(false);
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Новый пароль
+                </label>
+                <input
+                  type="password"
+                  value={setPasswordData.password}
+                  onChange={(e) => setSetPasswordData({...setPasswordData, password: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+                  placeholder="Минимум 6 символов"
+                  required
+                  minLength={6}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Подтвердите пароль
+                </label>
+                <input
+                  type="password"
+                  value={setPasswordData.confirmPassword}
+                  onChange={(e) => setSetPasswordData({...setPasswordData, confirmPassword: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+                  placeholder="Повторите пароль"
+                  required
+                  minLength={6}
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSetPasswordModal(false);
+                    setSetPasswordData({ password: '', confirmPassword: '' });
+                  }}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                  disabled={isSettingPassword}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSettingPassword}
+                  className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed"
+                >
+                  {isSettingPassword ? '⏳ Установка...' : '💾 Установить пароль'}
+                </button>
+              </div>
+            </form>
+            
+            <button
+              onClick={() => {
+                setShowSetPasswordModal(false);
+                setSetPasswordData({ password: '', confirmPassword: '' });
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Profile Edit Modal */}
       {showProfileEditModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
