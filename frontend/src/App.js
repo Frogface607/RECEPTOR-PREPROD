@@ -1168,6 +1168,14 @@ function App() {
     city: ''
   });
   const [isUpdatingUserProfile, setIsUpdatingUserProfile] = useState(false);
+  
+  // Set Password states (for users without password)
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [setPasswordData, setSetPasswordData] = useState({
+    password: '',
+    confirmPassword: ''
+  });
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [venueTypes, setVenueTypes] = useState({});
   const [cuisineTypes, setCuisineTypes] = useState({});
   const [averageCheckCategories, setAverageCheckCategories] = useState({});
@@ -11671,19 +11679,34 @@ function App() {
                       </div>
                     </div>
                     
-                    <button
-                      onClick={() => {
-                        setEditProfileData({
-                          name: currentUser?.name || '',
-                          email: currentUser?.email || '',
-                          city: currentUser?.city || ''
-                        });
-                        setShowProfileEditModal(true);
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                    >
-                      ✏️ Редактировать профиль
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setEditProfileData({
+                            name: currentUser?.name || '',
+                            email: currentUser?.email || '',
+                            city: currentUser?.city || ''
+                          });
+                          setShowProfileEditModal(true);
+                        }}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                      >
+                        ✏️ Редактировать профиль
+                      </button>
+                      
+                      {/* Show "Set Password" button only for users without password */}
+                      {currentUser && !currentUser.password_hash && currentUser.provider === 'google' && (
+                        <button
+                          onClick={() => {
+                            setSetPasswordData({ password: '', confirmPassword: '' });
+                            setShowSetPasswordModal(true);
+                          }}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                        >
+                          🔐 Установить пароль
+                        </button>
+                      )}
+                    </div>
                     
                     <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-400/30">
                       <div className="flex items-center justify-between">

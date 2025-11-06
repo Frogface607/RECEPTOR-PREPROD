@@ -3536,6 +3536,51 @@ async def update_user_profile(user_id: str, profile_data: UserProfileUpdate):
         logger.error(f"Error updating user profile: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating user profile: {str(e)}")
 
+# Set password for existing users (who don't have password)
+class SetPasswordRequest(BaseModel):
+    password: str
+
+@api_router.post("/user/{user_id}/set-password")
+async def set_user_password(user_id: str, password_data: SetPasswordRequest):
+    """Set password for existing user (who doesn't have password)"""
+    try:
+        if not AUTH_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Password hashing not available. Install: pip install passlib[bcrypt]")
+        
+        # Find user
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check if user already has password
+        if user.get("password_hash"):
+            raise HTTPException(status_code=400, detail="User already has a password. Use change-password endpoint instead.")
+        
+        # Validate password
+        if len(password_data.password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        # Hash password
+        password_hash = hash_password(password_data.password)
+        
+        # Update user
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {
+                "password_hash": password_hash,
+                "provider": "email"  # Change provider to email if it was google
+            }}
+        )
+        
+        logger.info(f"Password set for user: {user_id}")
+        return {"success": True, "message": "Password set successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error setting password: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error setting password: {str(e)}")
+
 # Login endpoint
 class LoginRequest(BaseModel):
     email: str
