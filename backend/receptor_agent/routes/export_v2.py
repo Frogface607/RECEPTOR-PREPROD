@@ -530,49 +530,75 @@ class DualExporter:
         try:
             zip_buffer = io.BytesIO()
             
+            # FIX: Safely extract preflight data with fallback
+            missing_dishes = preflight_result.get("missing", {}).get("dishes", []) or preflight_result.get("missing_dishes", [])
+            missing_products = preflight_result.get("missing", {}).get("products", []) or preflight_result.get("missing_products", [])
+            
+            dish_skeletons_count = preflight_result.get("counts", {}).get("dishSkeletons", 0) or len(missing_dishes)
+            product_skeletons_count = preflight_result.get("counts", {}).get("productSkeletons", 0) or len(missing_products)
+            
+            logger.info(f"🔍 Export ZIP - Dishes: {dish_skeletons_count}, Products: {product_skeletons_count}")
+            logger.info(f"🔍 Export ZIP - Missing dishes: {len(missing_dishes)}, Missing products: {len(missing_products)}")
+            
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 # REMOVED: iiko_TTK.xlsx (invalid/empty tech card)
                 # OLD: ttk_xlsx = await self._create_ttk_xlsx(techcard_ids, operational_rounding, preflight_result)
                 # OLD: zip_file.writestr("iiko_TTK.xlsx", ttk_xlsx.getvalue())
                 
                 # 1. Create Dish-Skeletons.xlsx ONLY if dishes missing
-                if preflight_result["counts"]["dishSkeletons"] > 0:
-                    dish_skeletons_xlsx = await self._create_dish_skeletons_xlsx(
-                        preflight_result["missing"]["dishes"]
-                    )
-                    
-                    # Create dynamic filename with dish names
-                    dish_names = [dish["name"] for dish in preflight_result["missing"]["dishes"]]
-                    safe_dish_names = [name.replace(" ", "_").replace("/", "_") for name in dish_names]
-                    dish_filename = f"Dish-Skeletons_{'_'.join(safe_dish_names[:2])}.xlsx"  # Max 2 names
-                    if len(safe_dish_names) > 2:
-                        dish_filename = f"Dish-Skeletons_{len(dish_names)}_dishes.xlsx"
-                    
-                    zip_file.writestr(dish_filename, dish_skeletons_xlsx.getvalue())
-                    logger.info(f"Added {dish_filename} with {preflight_result['counts']['dishSkeletons']} dishes")
+                if dish_skeletons_count > 0 and missing_dishes:
+                    try:
+                        dish_skeletons_xlsx = await self._create_dish_skeletons_xlsx(missing_dishes)
+                        
+                        # Create dynamic filename with dish names
+                        dish_names = [dish.get("name", dish.get("dish_name", "Unknown")) for dish in missing_dishes]
+                        safe_dish_names = [name.replace(" ", "_").replace("/", "_") for name in dish_names if name]
+                        dish_filename = f"Dish-Skeletons_{'_'.join(safe_dish_names[:2])}.xlsx"  # Max 2 names
+                        if len(safe_dish_names) > 2:
+                            dish_filename = f"Dish-Skeletons_{len(dish_names)}_dishes.xlsx"
+                        
+                        zip_file.writestr(dish_filename, dish_skeletons_xlsx.getvalue())
+                        logger.info(f"✅ Added {dish_filename} with {dish_skeletons_count} dishes")
+                    except Exception as e:
+                        logger.error(f"❌ Failed to create dish skeletons: {e}")
+                        import traceback
+                        logger.error(traceback.format_exc())
                 
                 # 2. Create Product-Skeletons.xlsx ONLY if products missing
-                if preflight_result["counts"]["productSkeletons"] > 0:
-                    product_skeletons_xlsx = await self._create_product_skeletons_xlsx(
-                        preflight_result["missing"]["products"]
-                    )
-                    
-                    # Create dynamic filename with product count
-                    product_filename = f"Product-Skeletons_{preflight_result['counts']['productSkeletons']}_products.xlsx"
-                    
-                    zip_file.writestr(product_filename, product_skeletons_xlsx.getvalue())
-                    logger.info(f"Added {product_filename} with {preflight_result['counts']['productSkeletons']} products")
+                if product_skeletons_count > 0 and missing_products:
+                    try:
+                        product_skeletons_xlsx = await self._create_product_skeletons_xlsx(missing_products)
+                        
+                        # Create dynamic filename with product count
+                        product_filename = f"Product-Skeletons_{product_skeletons_count}_products.xlsx"
+                        
+                        zip_file.writestr(product_filename, product_skeletons_xlsx.getvalue())
+                        logger.info(f"✅ Added {product_filename} with {product_skeletons_count} products")
+                    except Exception as e:
+                        logger.error(f"❌ Failed to create product skeletons: {e}")
+                        import traceback
+                        logger.error(traceback.format_exc())
                 
                 # 3. Verify ZIP contains only valid skeleton files
                 files_in_zip = list(zip_file.namelist())
                 valid_files = [f for f in files_in_zip if f.startswith("Dish-Skeletons_") or f.startswith("Product-Skeletons_")]
                 
-                logger.info(f"ZIP export complete: {len(valid_files)} valid skeleton files created")
-                logger.info(f"Files in ZIP: {files_in_zip}")
+                logger.info(f"📦 ZIP export complete: {len(valid_files)} valid skeleton files created")
+                logger.info(f"📦 Files in ZIP: {files_in_zip}")
                 
                 # 4. Ensure ZIP is not empty (at least one skeleton file should be present)
                 if not files_in_zip:
-                    logger.warning("ZIP export created empty archive - no skeleton files needed")
+                    logger.warning("⚠️ ZIP export created empty archive - no skeleton files needed")
+                    # FIX: If ZIP is empty but we have dishes, create at least dish skeletons
+                    if missing_dishes:
+                        logger.warning("⚠️ Creating dish skeletons even though preflight said none needed")
+                        try:
+                            dish_skeletons_xlsx = await self._create_dish_skeletons_xlsx(missing_dishes)
+                            dish_filename = f"Dish-Skeletons_{len(missing_dishes)}_dishes.xlsx"
+                            zip_file.writestr(dish_filename, dish_skeletons_xlsx.getvalue())
+                            logger.info(f"✅ Created fallback {dish_filename}")
+                        except Exception as e:
+                            logger.error(f"❌ Failed to create fallback dish skeletons: {e}")
             
             # 5. Claim articles after successful skeleton generation
             await self._claim_generated_articles(preflight_result, organization_id)
@@ -789,8 +815,14 @@ async def create_dual_export_zip(request: Request):
         logger.info(f"🔍 ZIP Export - Received techcard_ids: {techcard_ids}")
         logger.info(f"🔍 ZIP Export - Preflight result present: {bool(preflight_result)}")
         if preflight_result:
-            logger.info(f"🔍 ZIP Export - Missing products count: {len(preflight_result.get('missing_products', []))}")
-            logger.info(f"🔍 ZIP Export - Missing dishes count: {len(preflight_result.get('missing_dishes', []))}")
+            # FIX: Safely extract missing dishes/products with fallback
+            missing_dishes = preflight_result.get("missing", {}).get("dishes", []) or preflight_result.get("missing_dishes", [])
+            missing_products = preflight_result.get("missing", {}).get("products", []) or preflight_result.get("missing_products", [])
+            dish_count = preflight_result.get("counts", {}).get("dishSkeletons", 0) or len(missing_dishes)
+            product_count = preflight_result.get("counts", {}).get("productSkeletons", 0) or len(missing_products)
+            
+            logger.info(f"🔍 ZIP Export - Missing dishes: {len(missing_dishes)} (count: {dish_count})")
+            logger.info(f"🔍 ZIP Export - Missing products: {len(missing_products)} (count: {product_count})")
         
         # Guard — dish-first rule: Check if preflight was bypassed with missing dishes
         if not preflight_result:
