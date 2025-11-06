@@ -527,23 +527,70 @@ class NutritionCalculator:
         else:
             primary_source = "catalog"
         
+        # FIX: Safely calculate batch_grams with fallback to sum of netto_g
+        if tech_card.yield_ and tech_card.yield_.perBatch_g and tech_card.yield_.perBatch_g > 0:
+            batch_grams = tech_card.yield_.perBatch_g
+        else:
+            # Fallback: calculate from sum of netto_g (more accurate than 1.0)
+            total_netto = sum(float(ing.netto_g or 0) for ing in tech_card.ingredients)
+            if total_netto > 0:
+                batch_grams = total_netto
+            else:
+                # Last resort: use portions * default portion size
+                portions = max(tech_card.portions, 1)
+                batch_grams = portions * 200.0  # Default 200g per portion
+        
+        # FIX: Validate batch_grams is reasonable (not too small)
+        if batch_grams < 10.0:
+            # If batch_grams is too small, recalculate from ingredients
+            total_netto = sum(float(ing.netto_g or 0) for ing in tech_card.ingredients)
+            if total_netto > 0:
+                batch_grams = total_netto
+                print(f"⚠️ KBJU FIX: batch_grams was too small ({batch_grams}), recalculated from netto_g: {batch_grams}")
+            else:
+                # Use default
+                portions = max(tech_card.portions, 1)
+                batch_grams = portions * 200.0
+                print(f"⚠️ KBJU FIX: batch_grams was too small, using default: {batch_grams}")
+        
         # Создаем питательность на 100г
-        batch_grams = tech_card.yield_.perBatch_g if tech_card.yield_ else 1.0
         per100g = NutritionPer(
-            kcal=round(total_nutrition["kcal"] * 100 / batch_grams, 1),
-            proteins_g=round(total_nutrition["proteins_g"] * 100 / batch_grams, 1),
-            fats_g=round(total_nutrition["fats_g"] * 100 / batch_grams, 1),
-            carbs_g=round(total_nutrition["carbs_g"] * 100 / batch_grams, 1)
+            kcal=round(total_nutrition["kcal"] * 100 / batch_grams, 1) if batch_grams > 0 else 0.0,
+            proteins_g=round(total_nutrition["proteins_g"] * 100 / batch_grams, 1) if batch_grams > 0 else 0.0,
+            fats_g=round(total_nutrition["fats_g"] * 100 / batch_grams, 1) if batch_grams > 0 else 0.0,
+            carbs_g=round(total_nutrition["carbs_g"] * 100 / batch_grams, 1) if batch_grams > 0 else 0.0
         )
         
+        # FIX: Safely calculate portion_grams with validation
+        if tech_card.yield_ and tech_card.yield_.perPortion_g and tech_card.yield_.perPortion_g > 0:
+            portion_grams = tech_card.yield_.perPortion_g
+        else:
+            # Fallback: calculate from batch_grams and portions
+            portions = max(tech_card.portions, 1)
+            portion_grams = batch_grams / portions
+        
+        # FIX: Validate portion_grams is reasonable (not too small or too large)
+        if portion_grams < 10.0 or portion_grams > 2000.0:
+            # Recalculate from batch_grams and portions
+            portions = max(tech_card.portions, 1)
+            portion_grams = batch_grams / portions
+            if portion_grams < 10.0:
+                portion_grams = 200.0  # Default portion size
+                print(f"⚠️ KBJU FIX: portion_grams was invalid, using default: {portion_grams}")
+            elif portion_grams > 2000.0:
+                portion_grams = 200.0  # Default portion size
+                print(f"⚠️ KBJU FIX: portion_grams was too large, using default: {portion_grams}")
+        
         # Создаем питательность на порцию
-        portion_grams = tech_card.yield_.perPortion_g if tech_card.yield_ else batch_grams / max(tech_card.portions, 1)
         per_portion = NutritionPer(
             kcal=round(per100g.kcal * portion_grams / 100, 1),
             proteins_g=round(per100g.proteins_g * portion_grams / 100, 1),
             fats_g=round(per100g.fats_g * portion_grams / 100, 1),
             carbs_g=round(per100g.carbs_g * portion_grams / 100, 1)
         )
+        
+        # FIX: Log calculation details for debugging
+        print(f"🔍 KBJU Calculation: batch_grams={batch_grams}, portion_grams={portion_grams}, per100g.kcal={per100g.kcal}, per_portion.kcal={per_portion.kcal}")
         
         # Создаем метаданные
         nutrition_meta = NutritionMetaV2(
