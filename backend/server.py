@@ -3471,6 +3471,71 @@ async def get_user(email: str):
         raise HTTPException(status_code=404, detail="User not found")
     return User(**user)
 
+# User profile update
+class UserProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    city: Optional[str] = None
+
+@api_router.put("/user/{user_id}/update")
+async def update_user_profile(user_id: str, profile_data: UserProfileUpdate):
+    """Update user profile (name, email, city)"""
+    try:
+        # Find user
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        update_data = {}
+        
+        # Validate and update name
+        if profile_data.name is not None:
+            if len(profile_data.name.strip()) < 2:
+                raise HTTPException(status_code=400, detail="Name must be at least 2 characters")
+            update_data["name"] = profile_data.name.strip()
+        
+        # Validate and update email
+        if profile_data.email is not None:
+            # Basic email validation
+            if "@" not in profile_data.email or "." not in profile_data.email.split("@")[1]:
+                raise HTTPException(status_code=400, detail="Invalid email format")
+            
+            # Check if email is already taken by another user
+            existing_user = await db.users.find_one({"email": profile_data.email})
+            if existing_user and existing_user.get("id") != user_id:
+                raise HTTPException(status_code=400, detail="Email already registered")
+            
+            update_data["email"] = profile_data.email.strip().lower()
+        
+        # Validate and update city
+        if profile_data.city is not None:
+            if len(profile_data.city.strip()) < 2:
+                raise HTTPException(status_code=400, detail="City must be at least 2 characters")
+            update_data["city"] = profile_data.city.strip()
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No valid profile data provided")
+        
+        # Update user
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+        
+        # Get updated user
+        updated_user = await db.users.find_one({"id": user_id})
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="User not found after update")
+        
+        logger.info(f"User profile updated: {user_id}")
+        return User(**updated_user)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating user profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating user profile: {str(e)}")
+
 # Login endpoint
 class LoginRequest(BaseModel):
     email: str

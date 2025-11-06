@@ -1159,6 +1159,15 @@ function App() {
   // Venue Profile states
   const [showVenueProfileModal, setShowVenueProfileModal] = useState(false);
   const [venueProfile, setVenueProfile] = useState({});
+  
+  // User Profile Edit states
+  const [showProfileEditModal, setShowProfileEditModal] = useState(false);
+  const [editProfileData, setEditProfileData] = useState({
+    name: '',
+    email: '',
+    city: ''
+  });
+  const [isUpdatingUserProfile, setIsUpdatingUserProfile] = useState(false);
   const [venueTypes, setVenueTypes] = useState({});
   const [cuisineTypes, setCuisineTypes] = useState({});
   const [averageCheckCategories, setAverageCheckCategories] = useState({});
@@ -11644,6 +11653,38 @@ function App() {
                   </h3>
                   
                   <div className="space-y-4">
+                    {/* User Profile Info */}
+                    <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-400/30">
+                      <div className="space-y-3">
+                        <div>
+                          <div className="text-gray-400 text-sm">Имя</div>
+                          <div className="text-white font-medium">{currentUser?.name || 'Не указано'}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-400 text-sm">Email</div>
+                          <div className="text-white font-medium">{currentUser?.email || 'Не указано'}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-400 text-sm">Город</div>
+                          <div className="text-white font-medium">{currentUser?.city || 'Не указано'}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        setEditProfileData({
+                          name: currentUser?.name || '',
+                          email: currentUser?.email || '',
+                          city: currentUser?.city || ''
+                        });
+                        setShowProfileEditModal(true);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                    >
+                      ✏️ Редактировать профиль
+                    </button>
+                    
                     <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-400/30">
                       <div className="flex items-center justify-between">
                         <div>
@@ -19987,6 +20028,112 @@ function App() {
           setActiveTour(null);
         }}
       />
+
+      {/* Profile Edit Modal */}
+      {showProfileEditModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-md">
+            <h2 className="text-2xl font-bold text-white mb-6">✏️ Редактировать профиль</h2>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!currentUser?.id) return;
+              
+              setIsUpdatingUserProfile(true);
+              try {
+                const response = await axios.put(`${API}/user/${currentUser.id}/update`, editProfileData);
+                
+                // Update current user
+                setCurrentUser(response.data);
+                localStorage.setItem('receptor_user', JSON.stringify(response.data));
+                
+                // Close modal
+                setShowProfileEditModal(false);
+                
+                // Show success
+                alert('✅ Профиль обновлен успешно!');
+              } catch (error) {
+                console.error('Profile update error:', error);
+                const errorMessage = error.response?.data?.detail || 'Ошибка обновления профиля. Попробуйте еще раз.';
+                alert(errorMessage);
+              } finally {
+                setIsUpdatingUserProfile(false);
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Имя
+                </label>
+                <input
+                  type="text"
+                  value={editProfileData.name}
+                  onChange={(e) => setEditProfileData({...editProfileData, name: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="Ваше имя"
+                  required
+                  minLength={2}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editProfileData.email}
+                  onChange={(e) => setEditProfileData({...editProfileData, email: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Город
+                </label>
+                <input
+                  type="text"
+                  value={editProfileData.city}
+                  onChange={(e) => setEditProfileData({...editProfileData, city: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="Москва"
+                  required
+                  minLength={2}
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowProfileEditModal(false)}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                  disabled={isUpdatingUserProfile}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingUserProfile}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed"
+                >
+                  {isUpdatingUserProfile ? '⏳ Сохранение...' : '💾 Сохранить'}
+                </button>
+              </div>
+            </form>
+            
+            <button
+              onClick={() => setShowProfileEditModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 🚀 Modern Auth Modal */}
       <ModernAuthModal
