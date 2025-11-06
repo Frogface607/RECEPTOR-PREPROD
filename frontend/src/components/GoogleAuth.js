@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { loadGoogleAPI, initGoogleAuth } from '../config/googleAuth';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
+const API = `${BACKEND_URL}/api`;
 
 /**
  * 🔐 Google OAuth компонент для современной авторизации
@@ -46,67 +50,69 @@ const GoogleAuth = ({ onSuccess, onError, mode = 'login' }) => {
 
   const handleRealGoogleAuth = async () => {
     return new Promise((resolve, reject) => {
+      // Используем Google One Tap или кнопку
+      window.google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          try {
+            // Декодируем JWT токен от Google
+            const token = response.credential;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            
+            // Отправляем данные на backend
+            const authResponse = await axios.post(`${API}/v1/auth/google`, {
+              email: payload.email,
+              name: payload.name || payload.email.split('@')[0],
+              google_id: payload.sub,
+              avatar_url: payload.picture
+            });
+            
+            if (authResponse.data.success && onSuccess) {
+              onSuccess(authResponse.data.user, authResponse.data.token);
+              resolve();
+            } else {
+              reject(new Error('Backend auth failed'));
+            }
+          } catch (error) {
+            console.error('Google auth callback error:', error);
+            if (onError) {
+              onError(error);
+            }
+            reject(error);
+          }
+        }
+      });
+      
+      // Показываем One Tap или кнопку
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          reject(new Error('Google OAuth cancelled'));
-          return;
+          // Если One Tap не показан, используем кнопку
+          // Кнопка уже рендерится в компоненте
+          resolve();
+        } else {
+          resolve();
         }
-        
-        // Получаем токен
-        window.google.accounts.id.renderButton(
-          document.getElementById('google-signin-button'),
-          {
-            theme: 'outline',
-            size: 'large',
-            width: '100%'
-          }
-        );
-        
-        resolve();
       });
     });
   };
 
   const handleMockGoogleAuth = async () => {
-    // Fallback: если Google API недоступен, используем mock
-    console.log('Google API недоступен, используем mock авторизацию');
+    // Fallback: если Google API недоступен, используем реальный backend
+    console.log('Google API недоступен, используем backend авторизацию');
     
     try {
-      // Пробуем отправить на backend
-      const response = await fetch('http://localhost:8002/api/v1/auth/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'user@gmail.com',
-          name: 'Пользователь Google',
-          google_id: 'google_' + Date.now(),
-          avatar_url: 'https://via.placeholder.com/40'
-        })
-      });
+      // Получаем backend URL из env или используем дефолтный
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
       
-      if (response.ok) {
-        const data = await response.json();
-        if (onSuccess) {
-          onSuccess(data.user, data.token);
-        }
-      } else {
-        throw new Error('Backend auth failed');
+      // Пробуем отправить на backend - но нужны реальные данные от Google
+      // Пока показываем ошибку, что нужна реальная Google авторизация
+      if (onError) {
+        onError(new Error('Google OAuth недоступен. Пожалуйста, используйте email/password для входа или проверьте настройки Google OAuth.'));
       }
     } catch (error) {
-      // Если backend тоже недоступен, создаём mock пользователя
-      console.log('Backend недоступен, используем mock авторизацию');
-      const mockUser = {
-        id: 'google_' + Date.now(),
-        email: 'user@gmail.com',
-        name: 'Пользователь Google',
-        avatar: 'https://via.placeholder.com/40',
-        provider: 'google'
-      };
-      
-      if (onSuccess) {
-        onSuccess(mockUser, 'mock_token_' + Date.now());
+      console.error('Google auth error:', error);
+      if (onError) {
+        onError(error);
       }
     }
   };
