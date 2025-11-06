@@ -1641,7 +1641,8 @@ function App() {
   const [registrationData, setRegistrationData] = useState({
     email: '',
     name: '',
-    city: ''
+    city: '',
+    password: ''
   });
 
   // Typing animation states
@@ -7841,21 +7842,48 @@ function App() {
       return;
     }
     
+    // Check if password is provided (for email/password registration)
+    if (!registrationData.password) {
+      alert('Пожалуйста, введите пароль (минимум 6 символов)');
+      return;
+    }
+    
     try {
       console.log('Attempting registration with data:', registrationData);
-      const response = await axios.post(`${API}/register`, registrationData);
+      const response = await axios.post(`${API}/register`, {
+        email: registrationData.email,
+        name: registrationData.name,
+        city: registrationData.city,
+        password: registrationData.password
+      });
       console.log('Registration successful:', response.data);
       
-      // Update state immediately
-      setCurrentUser(response.data);
-      localStorage.setItem('receptor_user', JSON.stringify(response.data));
-      
-      // Reset form
-      setShowRegistration(false);
-      setRegistrationData({ email: '', name: '', city: '' });
-      
-      // Force re-render by setting a flag
-      console.log('User set to:', response.data);
+      // After registration, try to login automatically
+      try {
+        const loginResponse = await axios.post(`${API}/login`, {
+          email: registrationData.email,
+          password: registrationData.password
+        });
+        
+        if (loginResponse.data.success) {
+          // Save user and token
+          setCurrentUser(loginResponse.data.user);
+          localStorage.setItem('receptor_user', JSON.stringify(loginResponse.data.user));
+          localStorage.setItem('receptor_token', loginResponse.data.token);
+          
+          // Reset form
+          setShowRegistration(false);
+          setRegistrationData({ email: '', name: '', city: '', password: '' });
+          
+          alert('✅ Регистрация выполнена успешно! Добро пожаловать!');
+        }
+      } catch (loginError) {
+        console.error('Auto-login error:', loginError);
+        // Registration successful but auto-login failed
+        setShowRegistration(false);
+        setRegistrationData({ email: '', name: '', city: '', password: '' });
+        alert('✅ Регистрация выполнена успешно! Пожалуйста, войдите в систему.');
+      }
       
     } catch (error) {
       console.error('Registration error:', error);
@@ -19965,40 +19993,88 @@ function App() {
         isOpen={showModernAuth}
         onClose={() => setShowModernAuth(false)}
         onLogin={async (email, password) => {
-          console.log('Login:', email, password);
-          
-          // Mock авторизация пока backend не работает
-          const mockUser = {
-            id: 'email_' + Date.now(),
-            email: email,
-            name: email.split('@')[0],
-            avatar: null,
-            provider: 'email'
-          };
-          
-          localStorage.setItem('receptor_user', JSON.stringify(mockUser));
-          localStorage.setItem('receptor_token', 'mock_token_' + Date.now());
-          
-          setShowModernAuth(false);
-          window.location.reload(); // Обновляем страницу для применения изменений
+          try {
+            const response = await axios.post(`${API}/login`, {
+              email,
+              password
+            });
+            
+            if (response.data.success) {
+              // Save user and token
+              localStorage.setItem('receptor_user', JSON.stringify(response.data.user));
+              localStorage.setItem('receptor_token', response.data.token);
+              
+              // Update state
+              setCurrentUser(response.data.user);
+              
+              // Close modal
+              setShowModernAuth(false);
+              
+              // Show success message
+              alert('✅ Вход выполнен успешно!');
+              
+              // Reload to apply changes
+              window.location.reload();
+            } else {
+              alert('Ошибка авторизации. Попробуйте еще раз.');
+            }
+          } catch (error) {
+            console.error('Login error:', error);
+            const errorMessage = error.response?.data?.detail || 'Ошибка авторизации. Попробуйте еще раз.';
+            alert(errorMessage);
+          }
         }}
         onRegister={async (email, password) => {
-          console.log('Register:', email, password);
-          
-          // Mock регистрация
-          const mockUser = {
-            id: 'email_' + Date.now(),
-            email: email,
-            name: email.split('@')[0],
-            avatar: null,
-            provider: 'email'
-          };
-          
-          localStorage.setItem('receptor_user', JSON.stringify(mockUser));
-          localStorage.setItem('receptor_token', 'mock_token_' + Date.now());
-          
-          setShowModernAuth(false);
-          window.location.reload(); // Обновляем страницу для применения изменений
+          try {
+            // Extract name from email (before @)
+            const name = email.split('@')[0];
+            const city = 'Москва'; // Default city, can be updated later
+            
+            const response = await axios.post(`${API}/register`, {
+              email,
+              password,
+              name,
+              city
+            });
+            
+            if (response.data) {
+              // For registration, we need to login after registration
+              // Try to login with the same credentials
+              try {
+                const loginResponse = await axios.post(`${API}/login`, {
+                  email,
+                  password
+                });
+                
+                if (loginResponse.data.success) {
+                  // Save user and token
+                  localStorage.setItem('receptor_user', JSON.stringify(loginResponse.data.user));
+                  localStorage.setItem('receptor_token', loginResponse.data.token);
+                  
+                  // Update state
+                  setCurrentUser(loginResponse.data.user);
+                  
+                  // Close modal
+                  setShowModernAuth(false);
+                  
+                  // Show success message
+                  alert('✅ Регистрация выполнена успешно! Добро пожаловать!');
+                  
+                  // Reload to apply changes
+                  window.location.reload();
+                }
+              } catch (loginError) {
+                console.error('Auto-login error:', loginError);
+                alert('✅ Регистрация выполнена успешно! Пожалуйста, войдите в систему.');
+                // Switch to login mode
+                // This will be handled by the modal itself
+              }
+            }
+          } catch (error) {
+            console.error('Registration error:', error);
+            const errorMessage = error.response?.data?.detail || 'Ошибка регистрации. Попробуйте еще раз.';
+            alert(errorMessage);
+          }
         }}
       />
 

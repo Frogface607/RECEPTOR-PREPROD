@@ -22,6 +22,15 @@ import re
 import tempfile
 import pandas as pd
 
+# Password hashing and JWT
+try:
+    from passlib.context import CryptContext
+    from jose import jwt, JWTError
+    AUTH_AVAILABLE = True
+except ImportError:
+    AUTH_AVAILABLE = False
+    print("⚠️ Password hashing/JWT not available. Install: pip install passlib[bcrypt] python-jose[cryptography]")
+
 # IIKo Integration imports
 try:
     from pyiikocloudapi import IikoTransport
@@ -43,6 +52,44 @@ logger = logging.getLogger(__name__)
 mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'receptor_pro')]
+
+# Password hashing
+if AUTH_AVAILABLE:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    def hash_password(password: str) -> str:
+        """Hash a password using bcrypt"""
+        return pwd_context.hash(password)
+    
+    def verify_password(plain_password: str, hashed_password: str) -> bool:
+        """Verify a password against a hash"""
+        return pwd_context.verify(plain_password, hashed_password)
+
+# JWT Configuration
+JWT_SECRET = os.environ.get("JWT_SECRET", "your-secret-key-change-in-production")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create a JWT access token"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return encoded_jwt
+
+def verify_token(token: str) -> Optional[dict]:
+    """Verify and decode a JWT token"""
+    try:
+        if not AUTH_AVAILABLE:
+            return None
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except JWTError:
+        return None
 
 from openai import OpenAI
 # from emergentintegrations.llm.chat import LlmChat, UserMessage  # Removed for local development
@@ -2206,11 +2253,15 @@ class User(BaseModel):
     target_audience: Optional[str] = None  # families, young professionals, etc.
     special_features: List[str] = []  # live_music, outdoor_seating, etc.
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    # Auth fields
+    password_hash: Optional[str] = None  # For email/password users
+    provider: str = "email"  # "email" or "google"
 
 class UserCreate(BaseModel):
     email: str
     name: str
     city: str
+    password: Optional[str] = None  # Required for email/password registration
 
 class UserSubscription(BaseModel):
     subscription_plan: str
@@ -3419,6 +3470,65 @@ async def get_user(email: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return User(**user)
+
+# Login endpoint
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    token: str
+    user: User
+    message: str
+
+@api_router.post("/login", response_model=LoginResponse)
+async def login(login_data: LoginRequest):
+    """Login with email and password"""
+    try:
+        if not AUTH_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Authentication not available. Install: pip install passlib[bcrypt] python-jose[cryptography]")
+        
+        # Find user by email
+        user_doc = await db.users.find_one({"email": login_data.email})
+        if not user_doc:
+            logger.warning(f"Login attempt with non-existent email: {login_data.email}")
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        user = User(**user_doc)
+        
+        # Check if user has password (email/password user)
+        if not user.password_hash:
+            logger.warning(f"Login attempt for user without password: {login_data.email}")
+            raise HTTPException(status_code=401, detail="This account uses Google OAuth. Please login with Google.")
+        
+        # Verify password
+        if not verify_password(login_data.password, user.password_hash):
+            logger.warning(f"Invalid password for: {login_data.email}")
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Create JWT token
+        token_data = {
+            "sub": user.email,
+            "user_id": user.id,
+            "email": user.email
+        }
+        token = create_access_token(token_data)
+        
+        logger.info(f"User logged in successfully: {login_data.email}")
+        
+        return LoginResponse(
+            success=True,
+            token=token,
+            user=user,
+            message="Login successful"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Login error: {str(e)}")
 
 @api_router.post("/generate-tech-card")
 async def generate_tech_card(request: DishRequest):
