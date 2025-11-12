@@ -1795,34 +1795,44 @@ def get_cors_origins():
         "http://localhost:3000",  # Local development
         "https://www.receptorai.pro",  # Production
         "https://receptorai.pro",  # Production without www
-    ]
-    
-    # Add all possible preview and deployment domains
-    preview_patterns = [
-        "https://cursor-push.preview.emergentagent.com",  # All preview URLs
-        "https://*.vercel.app",  # All Vercel deployments
-        "https://*.netlify.app",  # All Netlify deployments
+        "https://receptor-ai.vercel.app",  # Vercel domain
         "https://receptor-ai-thte.vercel.app",  # Specific Vercel domain
     ]
     
-    # For development, allow all origins
-    if os.environ.get("ENVIRONMENT") == "development":
+    # Add Railway preview URLs if available
+    railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+    if railway_public_domain:
+        base_origins.append(f"https://{railway_public_domain}")
+    
+    # Add Render.com URLs if available
+    render_service_url = os.environ.get("RENDER_SERVICE_URL")
+    if render_service_url:
+        base_origins.append(render_service_url)
+    
+    # Add Fly.io URLs if available (format: https://app-name.fly.dev)
+    fly_app_name = os.environ.get("FLY_APP_NAME")
+    if fly_app_name:
+        base_origins.append(f"https://{fly_app_name}.fly.dev")
+    
+    # For development or if explicitly set, allow all origins
+    if os.environ.get("ENVIRONMENT") == "development" or os.environ.get("CORS_ALLOW_ALL") == "true":
+        logger.warning("⚠️ CORS: Allowing all origins (development mode)")
         return ["*"]
     
+    logger.info(f"🌐 CORS origins: {base_origins}")
     return base_origins
+
+# Use the function to get CORS origins
+cors_origins = get_cors_origins()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://www.receptorai.pro",        # Custom domain with www
-        "https://receptorai.pro",            # Custom domain without www
-        "https://receptor-ai.vercel.app",    # Vercel domain
-        "http://localhost:3000",             # Local development
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["*"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
 # Root endpoint (no prefix)
