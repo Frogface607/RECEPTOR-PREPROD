@@ -1780,15 +1780,44 @@ async def update_techcard_v2(techcard_id: str, request: Request):
         from datetime import datetime
         body['updated_at'] = datetime.now()
         
-        result = await db.techcards_v2.update_one(
+        # 🔥 FIX: Try multiple ID lookup strategies
+        # Techncards can be saved with _id (MongoDB ObjectId) or meta.id (UUID string)
+        # Try to find by different ID fields
+        query = {"$or": [
             {"_id": techcard_id},
+            {"meta.id": techcard_id},
+            {"id": techcard_id}
+        ]}
+        
+        result = await db.techcards_v2.update_one(
+            query,
             {"$set": body}
         )
+        
+        # If not found by $or, try individual lookups
+        if result.matched_count == 0:
+            # Try by meta.id first (most common case)
+            result = await db.techcards_v2.update_one(
+                {"meta.id": techcard_id},
+                {"$set": body}
+            )
+        
+        if result.matched_count == 0:
+            # Try by _id as ObjectId (if techcard_id is string representation)
+            try:
+                from bson import ObjectId
+                if ObjectId.is_valid(techcard_id):
+                    result = await db.techcards_v2.update_one(
+                        {"_id": ObjectId(techcard_id)},
+                        {"$set": body}
+                    )
+            except Exception:
+                pass
         
         client.close()
         
         if result.matched_count == 0:
-            raise HTTPException(404, f"Techcard {techcard_id} not found")
+            raise HTTPException(404, f"Techcard {techcard_id} not found (tried _id, meta.id, id)")
         
         logger.info(f"✅ Updated techcard {techcard_id} in MongoDB (modified: {result.modified_count})")
         
