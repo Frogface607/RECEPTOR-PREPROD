@@ -30,12 +30,15 @@ const GoogleAuth = ({ onSuccess, onError, mode = 'login' }) => {
           window.google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: async (response) => {
+              console.log('🔵 Google OAuth callback received');
               try {
                 // Декодируем JWT токен от Google
                 const token = response.credential;
                 const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('🔵 Google payload decoded:', payload.email);
                 
                 // Отправляем данные на backend
+                console.log('🔵 Sending to backend:', `${API}/v1/auth/google`);
                 const authResponse = await axios.post(`${API}/v1/auth/google`, {
                   email: payload.email,
                   name: payload.name || payload.email.split('@')[0],
@@ -43,11 +46,16 @@ const GoogleAuth = ({ onSuccess, onError, mode = 'login' }) => {
                   avatar_url: payload.picture
                 });
                 
+                console.log('🔵 Backend response:', authResponse.data);
+                
                 if (authResponse.data.success && onSuccess) {
+                  console.log('🔵 Calling onSuccess callback');
                   onSuccess(authResponse.data.user, authResponse.data.token);
+                } else {
+                  console.warn('⚠️ Backend response missing success or onSuccess handler');
                 }
               } catch (error) {
-                console.error('Google auth callback error:', error);
+                console.error('❌ Google auth callback error:', error);
                 if (onError) {
                   onError(error);
                 }
