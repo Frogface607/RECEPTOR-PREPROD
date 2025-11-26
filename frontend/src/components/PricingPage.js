@@ -35,19 +35,95 @@ const PricingPage = ({ currentUser, onClose, onSubscriptionUpdated }) => {
 
   const loadPlansAndMarketInfo = async () => {
     try {
+      console.log('🔵 Loading plans and market info...');
       const [plansData, marketData] = await Promise.all([
         billingApi.getPlans(),
         Promise.resolve(billingApi.getMarketInfo())
       ]);
       
-      setPlans(plansData.plans || []);
+      console.log('🔵 Plans data:', plansData);
+      console.log('🔵 Market data:', marketData);
+      
+      setPlans(plansData?.plans || []);
       setMarketInfo(marketData);
+      
+      if (!plansData?.plans || plansData.plans.length === 0) {
+        console.warn('⚠️ No plans loaded, using fallback');
+        // Fallback to mock plans if API fails
+        setPlans([
+          {
+            id: 'pro_monthly_ru',
+            name: 'PRO Ежемесячно',
+            amount: '1990.00',
+            currency: 'RUB',
+            billing_period: 'monthly',
+            features: [
+              'Export Master (PDF, Excel, iiko)',
+              'Генератор меню',
+              'Интеграция с iiko',
+              'AI-Лаборатория',
+              'Приоритетная поддержка',
+              'Расширенная аналитика'
+            ]
+          },
+          {
+            id: 'pro_annual_ru',
+            name: 'PRO Ежегодно',
+            amount: '19900.00',
+            currency: 'RUB',
+            billing_period: 'annual',
+            features: [
+              'Export Master (PDF, Excel, iiko)',
+              'Генератор меню',
+              'Интеграция с iiko',
+              'AI-Лаборатория',
+              'Приоритетная поддержка',
+              'Расширенная аналитика'
+            ]
+          }
+        ]);
+        setMarketInfo({ market: 'RU', currency: 'RUB', paymentProvider: 'YooKassa' });
+      }
     } catch (error) {
-      console.error('Failed to load plans:', error);
+      console.error('❌ Failed to load plans:', error);
       setToast({
-        message: 'Не удалось загрузить тарифы',
+        message: 'Не удалось загрузить тарифы. Используются базовые тарифы.',
         type: 'error'
       });
+      // Fallback to mock plans
+      setPlans([
+        {
+          id: 'pro_monthly_ru',
+          name: 'PRO Ежемесячно',
+          amount: '1990.00',
+          currency: 'RUB',
+          billing_period: 'monthly',
+          features: [
+            'Export Master (PDF, Excel, iiko)',
+            'Генератор меню',
+            'Интеграция с iiko',
+            'AI-Лаборатория',
+            'Приоритетная поддержка',
+            'Расширенная аналитика'
+          ]
+        },
+        {
+          id: 'pro_annual_ru',
+          name: 'PRO Ежегодно',
+          amount: '19900.00',
+          currency: 'RUB',
+          billing_period: 'annual',
+          features: [
+            'Export Master (PDF, Excel, iiko)',
+            'Генератор меню',
+            'Интеграция с iiko',
+            'AI-Лаборатория',
+            'Приоритетная поддержка',
+            'Расширенная аналитика'
+          ]
+        }
+      ]);
+      setMarketInfo({ market: 'RU', currency: 'RUB', paymentProvider: 'YooKassa' });
     }
   };
 
@@ -192,6 +268,20 @@ const PricingPage = ({ currentUser, onClose, onSubscriptionUpdated }) => {
 
   const proPlan = getProPlan();
   const userPlan = currentUser?.subscription_plan || 'free';
+
+  // Show loading state if plans are not loaded yet
+  if (plans.length === 0 && !marketInfo) {
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-md">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Загрузка тарифов...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
