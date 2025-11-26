@@ -72,20 +72,32 @@ export const billingApi = {
     
     try {
       if (market === 'RU') {
+        console.log('🔵 Fetching plans from:', `${API}/yookassa/plans`);
         const response = await axios.get(`${API}/yookassa/plans`);
+        console.log('🔵 Plans API response:', response.data);
         return response.data;
       }
     } catch (error) {
-      console.warn('API not available, using mock data:', error);
-      
-      if (market === 'RU') {
-        return {
-          plans: MOCK_RU_PLANS,
-          currency: 'RUB',
-          market: 'RU'
-        };
-      }
+      console.warn('⚠️ API not available, using mock data:', error);
+      console.warn('⚠️ Error details:', error.response?.data || error.message);
     }
+    
+    // Fallback to mock data
+    if (market === 'RU') {
+      console.log('🔵 Using fallback mock plans');
+      return {
+        plans: MOCK_RU_PLANS,
+        currency: 'RUB',
+        market: 'RU'
+      };
+    }
+    
+    // Default fallback
+    return {
+      plans: MOCK_RU_PLANS,
+      currency: 'RUB',
+      market: 'RU'
+    };
   },
 
   // Create payment session

@@ -11725,7 +11725,10 @@ function App() {
                     <div className="text-center py-4">
                       <div className="text-gray-400 mb-3">Управление подпиской</div>
                       <button
-                        onClick={() => setShowPricingPage(true)}
+                        onClick={() => {
+                          console.log('🔵 Opening pricing page, currentUser:', currentUser);
+                          setShowPricingPage(true);
+                        }}
                         className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
                       >
                         💎 {currentUser?.subscription_plan === 'pro' ? 'Управление подпиской' : 'Улучшить план'}
@@ -20282,7 +20285,9 @@ function App() {
 
       {/* 💎 Pricing Page Modal */}
       {showPricingPage && (
-        <PricingPage
+        <>
+          {console.log('🔵 Rendering PricingPage, showPricingPage:', showPricingPage, 'currentUser:', currentUser)}
+          <PricingPage
           currentUser={currentUser}
           onClose={() => setShowPricingPage(false)}
           onSubscriptionUpdated={async () => {
@@ -20301,6 +20306,7 @@ function App() {
             }
           }}
         />
+        </>
       )}
 
       {/* 🚀 Modern Auth Modal */}
