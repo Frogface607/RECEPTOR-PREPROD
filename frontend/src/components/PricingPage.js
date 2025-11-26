@@ -284,7 +284,7 @@ const PricingPage = ({ currentUser, onClose, onSubscriptionUpdated }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4 overflow-y-auto">
       <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-4xl my-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
