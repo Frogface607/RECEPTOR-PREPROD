@@ -7117,6 +7117,16 @@ app.include_router(api_router)
 from google_auth import router as google_auth_router
 app.include_router(google_auth_router)
 
+# YooKassa payment integration
+try:
+    from yookassa_integration import router as yookassa_router
+    app.include_router(yookassa_router)
+    logger.info("✅ YooKassa integration router loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ YooKassa integration not available: {e}")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to load YooKassa router: {e}")
+
 # Подключаем v2-функционал только по флагу
 # КРИТИЧЕСКИ ВАЖНО для iiko интеграции: принудительно включаем V2
 # Принудительно включаем V2 для локальной разработки

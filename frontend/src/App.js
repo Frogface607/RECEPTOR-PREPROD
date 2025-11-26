@@ -5,6 +5,7 @@ import OnboardingTour from './OnboardingTour';
 import TourSystem from './components/TourSystem';
 import tourConfigs from './tours/tourConfigs';
 import ModernAuthModal from './components/ModernAuthModal';
+import PricingPage from './components/PricingPage';
 import { FEATURE_HACCP, FORCE_TECHCARD_V2 } from './config/featureFlags';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
@@ -1176,6 +1177,9 @@ function App() {
     confirmPassword: ''
   });
   const [isSettingPassword, setIsSettingPassword] = useState(false);
+  
+  // Pricing Page state
+  const [showPricingPage, setShowPricingPage] = useState(false);
   const [venueTypes, setVenueTypes] = useState({});
   const [cuisineTypes, setCuisineTypes] = useState({});
   const [averageCheckCategories, setAverageCheckCategories] = useState({});
@@ -11721,10 +11725,10 @@ function App() {
                     <div className="text-center py-4">
                       <div className="text-gray-400 mb-3">Управление подпиской</div>
                       <button
-                        onClick={() => alert('Функция в разработке! 🚀')}
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+                        onClick={() => setShowPricingPage(true)}
+                        className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
                       >
-                        💎 Улучшить план
+                        💎 {currentUser?.subscription_plan === 'pro' ? 'Управление подпиской' : 'Улучшить план'}
                       </button>
                     </div>
                   </div>
@@ -20274,6 +20278,29 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* 💎 Pricing Page Modal */}
+      {showPricingPage && (
+        <PricingPage
+          currentUser={currentUser}
+          onClose={() => setShowPricingPage(false)}
+          onSubscriptionUpdated={async () => {
+            // Reload user data after subscription update
+            if (currentUser) {
+              try {
+                const response = await axios.get(`${API}/user-subscription/${currentUser.id}`);
+                if (response.data) {
+                  const updatedUser = { ...currentUser, ...response.data };
+                  setCurrentUser(updatedUser);
+                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
+                }
+              } catch (error) {
+                console.error('Failed to refresh user subscription:', error);
+              }
+            }
+          }}
+        />
       )}
 
       {/* 🚀 Modern Auth Modal */}
