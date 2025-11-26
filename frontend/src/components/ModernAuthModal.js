@@ -6,7 +6,7 @@ import GoogleAuth from './GoogleAuth';
  * Как в SaaS продуктах: красиво, просто, быстро
  */
 
-const ModernAuthModal = ({ isOpen, onClose, onLogin, onRegister }) => {
+const ModernAuthModal = ({ isOpen, onClose, onLogin, onRegister, onGoogleSuccess }) => {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,18 +32,24 @@ const ModernAuthModal = ({ isOpen, onClose, onLogin, onRegister }) => {
   };
 
   const handleGoogleSuccess = (user, token) => {
-    console.log('Google auth success:', user);
+    console.log('✅ Google auth success:', user);
     
-    // Сохраняем пользователя и токен
+    // Сохраняем пользователя и токен в localStorage
     localStorage.setItem('receptor_user', JSON.stringify(user));
     localStorage.setItem('receptor_token', token);
+    console.log('✅ User saved to localStorage');
     
-    // Обновляем состояние в родительском компоненте
-    if (onLogin) {
-      onLogin(user.email, token);
+    // Если есть кастомный обработчик - вызываем его (для обновления состояния)
+    if (onGoogleSuccess) {
+      onGoogleSuccess(user, token);
     }
     
+    // НЕ вызываем onLogin - это для email/password, не для Google!
+    // Google авторизация уже завершена, просто сохраняем данные
+    
+    // Закрываем модал
     onClose();
+    console.log('✅ Modal closed, user state updated');
   };
 
   const handleGoogleError = (error) => {

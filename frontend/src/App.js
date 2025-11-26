@@ -20280,6 +20280,19 @@ function App() {
       <ModernAuthModal
         isOpen={showModernAuth}
         onClose={() => setShowModernAuth(false)}
+        onGoogleSuccess={(user, token) => {
+          // Обновляем состояние пользователя сразу после Google авторизации
+          setCurrentUser(user);
+          
+          // Загружаем данные пользователя (subscription, history, prices)
+          // Это произойдет автоматически через useEffect при изменении currentUser
+          
+          // Закрываем модал
+          setShowModernAuth(false);
+          
+          // Показываем сообщение об успехе
+          alert('✅ Вход через Google выполнен успешно!');
+        }}
         onLogin={async (email, password) => {
           try {
             const response = await axios.post(`${API}/login`, {
@@ -20300,9 +20313,6 @@ function App() {
               
               // Show success message
               alert('✅ Вход выполнен успешно!');
-              
-              // Reload to apply changes
-              window.location.reload();
             } else {
               alert('Ошибка авторизации. Попробуйте еще раз.');
             }
@@ -20347,9 +20357,6 @@ function App() {
                   
                   // Show success message
                   alert('✅ Регистрация выполнена успешно! Добро пожаловать!');
-                  
-                  // Reload to apply changes
-                  window.location.reload();
                 }
               } catch (loginError) {
                 console.error('Auto-login error:', loginError);
