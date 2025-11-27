@@ -69,9 +69,12 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
             }
         }
         
-        # GX-01-FINAL: добавляем max_tokens если указано
+        # GPT-5-mini requires max_completion_tokens instead of max_tokens
         if max_tokens:
-            params["max_tokens"] = max_tokens
+            if mdl == "gpt-5-mini":
+                params["max_completion_tokens"] = max_tokens
+            else:
+                params["max_tokens"] = max_tokens
         
         # Добавляем дополнительные параметры если они указаны
         if temperature is not None:
@@ -103,12 +106,20 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         error_msg = str(e)
         print(f"❌ {stage}: Failed after {elapsed_ms}ms - {error_msg}")
         
-        # Если модель не найдена, пробуем fallback на gpt-4o-mini
-        if "model" in error_msg.lower() and ("not found" in error_msg.lower() or "invalid" in error_msg.lower() or "does not exist" in error_msg.lower()):
-            print(f"⚠️ Model {mdl} not available, trying fallback to gpt-4o-mini...")
+        # Если модель не найдена или неправильный параметр, пробуем fallback на gpt-4o-mini
+        if ("model" in error_msg.lower() and ("not found" in error_msg.lower() or "invalid" in error_msg.lower() or "does not exist" in error_msg.lower())) or \
+           ("unsupported parameter" in error_msg.lower() and "max_tokens" in error_msg.lower()):
+            print(f"⚠️ Model {mdl} issue detected, trying fallback to gpt-4o-mini...")
             try:
-                params["model"] = "gpt-4o-mini"
-                resp = cli.chat.completions.create(**params)
+                # Исправляем параметры для fallback модели
+                fallback_params = params.copy()
+                fallback_params["model"] = "gpt-4o-mini"
+                # Убираем max_completion_tokens и используем max_tokens для gpt-4o-mini
+                if "max_completion_tokens" in fallback_params:
+                    if "max_tokens" not in fallback_params and max_tokens:
+                        fallback_params["max_tokens"] = max_tokens
+                    del fallback_params["max_completion_tokens"]
+                resp = cli.chat.completions.create(**fallback_params)
                 elapsed_ms = int((time.time() - start_time) * 1000)
                 print(f"✅ {stage}: Completed with fallback model in {elapsed_ms}ms")
                 content = resp.choices[0].message.content
