@@ -101,31 +101,48 @@ async def get_plans():
 @router.post("/checkout")
 async def create_checkout(request: CheckoutRequest):
     """Create YooKassa payment session"""
-    if not YOOKASSA_AVAILABLE:
-        raise HTTPException(status_code=503, detail="YooKassa SDK not available")
-    
-    if not YOOKASSA_SHOP_ID or not YOOKASSA_SECRET_KEY:
-        raise HTTPException(status_code=503, detail="YooKassa not configured. Set YOOKASSA_SHOP_ID and YOOKASSA_SECRET_KEY")
-    
-    # Validate package
-    if request.package_id not in SUBSCRIPTION_PLANS:
-        raise HTTPException(status_code=400, detail=f"Invalid package_id: {request.package_id}")
-    
-    package = SUBSCRIPTION_PLANS[request.package_id]
-    
-    # Get user
-    user = await db.users.find_one({"id": request.user_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Get user email
-    user_email = request.user_email or user.get("email")
-    if not user_email:
-        raise HTTPException(status_code=400, detail="User email is required")
-    
     try:
+        logger.info(f"🔵 Creating checkout for user {request.user_id}, package {request.package_id}")
+        
+        if not YOOKASSA_AVAILABLE:
+            logger.error("❌ YooKassa SDK not available")
+            raise HTTPException(status_code=503, detail="YooKassa SDK not available")
+        
+        if not YOOKASSA_SHOP_ID or not YOOKASSA_SECRET_KEY:
+            logger.error(f"❌ YooKassa not configured. Shop ID: {bool(YOOKASSA_SHOP_ID)}, Secret Key: {bool(YOOKASSA_SECRET_KEY)}")
+            raise HTTPException(status_code=503, detail="YooKassa not configured. Set YOOKASSA_SHOP_ID and YOOKASSA_SECRET_KEY")
+        
+        logger.info(f"✅ YooKassa configured. Shop ID: {YOOKASSA_SHOP_ID[:4]}...")
+        
+        # Validate package
+        if request.package_id not in SUBSCRIPTION_PLANS:
+            logger.error(f"❌ Invalid package_id: {request.package_id}")
+            raise HTTPException(status_code=400, detail=f"Invalid package_id: {request.package_id}")
+        
+        package = SUBSCRIPTION_PLANS[request.package_id]
+        logger.info(f"✅ Package found: {package['name']}, amount: {package['amount']}")
+        
+        # Get user
+        user = await db.users.find_one({"id": request.user_id})
+        if not user:
+            logger.error(f"❌ User not found: {request.user_id}")
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        logger.info(f"✅ User found: {user.get('email', 'N/A')}")
+        
+        # Get user email
+        user_email = request.user_email or user.get("email")
+        if not user_email:
+            logger.error(f"❌ User email is required for user {request.user_id}")
+            raise HTTPException(status_code=400, detail="User email is required")
+        
+        logger.info(f"✅ Creating payment with email: {user_email}")
+        
         # Create payment in YooKassa
-        payment = Payment.create({
+        payment_idempotence_key = str(uuid.uuid4())
+        logger.info(f"🔵 Payment idempotence key: {payment_idempotence_key}")
+        
+        payment_data = {
             "amount": {
                 "value": f"{package['amount']:.2f}",
                 "currency": package["currency"]
@@ -158,7 +175,11 @@ async def create_checkout(request: CheckoutRequest):
                     }
                 ]
             }
-        }, str(uuid.uuid4()))
+        }
+        
+        logger.info(f"🔵 Payment data prepared, calling YooKassa API...")
+        payment = Payment.create(payment_data, payment_idempotence_key)
+        logger.info(f"✅ Payment created: {payment.id}, status: {payment.status}")
         
         # Save payment to database
         payment_record = {
@@ -190,9 +211,18 @@ async def create_checkout(request: CheckoutRequest):
                 "billing_period": package["billing_period"]
             }
         }
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        logger.error(f"Failed to create YooKassa payment: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to create payment: {str(e)}")
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"❌ Failed to create YooKassa payment: {e}")
+        logger.error(f"❌ Error traceback: {error_trace}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to create payment: {str(e)}. Check server logs for details."
+        )
 
 @router.post("/webhook")
 async def handle_webhook(request: Request):
