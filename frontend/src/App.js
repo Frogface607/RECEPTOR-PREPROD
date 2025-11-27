@@ -2191,7 +2191,7 @@ function App() {
         <div className="space-y-6">
           {/* Заголовок с метками */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-purple-300 mb-3">
+            <h1 className="text-3xl font-semibold text-gray-200 mb-3">
               {tcV2.meta?.title || 'Техкарта'}
             </h1>
             <div className="flex justify-center gap-2 mb-4">
