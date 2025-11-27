@@ -71,10 +71,12 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         
         # GPT-5-mini requires max_completion_tokens instead of max_tokens
         if max_tokens:
-            if mdl == "gpt-5-mini":
+            if mdl == "gpt-5-mini" or "gpt-5" in mdl:
                 params["max_completion_tokens"] = max_tokens
+                print(f"🔧 Using max_completion_tokens={max_tokens} for {mdl}")
             else:
                 params["max_tokens"] = max_tokens
+                print(f"🔧 Using max_tokens={max_tokens} for {mdl}")
         
         # Добавляем дополнительные параметры если они указаны
         if temperature is not None:
