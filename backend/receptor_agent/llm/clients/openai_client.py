@@ -100,5 +100,23 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
             
     except Exception as e:
         elapsed_ms = int((time.time() - start_time) * 1000)
-        print(f"❌ {stage}: Failed after {elapsed_ms}ms - {str(e)}")
+        error_msg = str(e)
+        print(f"❌ {stage}: Failed after {elapsed_ms}ms - {error_msg}")
+        
+        # Если модель не найдена, пробуем fallback на gpt-4o-mini
+        if "model" in error_msg.lower() and ("not found" in error_msg.lower() or "invalid" in error_msg.lower() or "does not exist" in error_msg.lower()):
+            print(f"⚠️ Model {mdl} not available, trying fallback to gpt-4o-mini...")
+            try:
+                params["model"] = "gpt-4o-mini"
+                resp = cli.chat.completions.create(**params)
+                elapsed_ms = int((time.time() - start_time) * 1000)
+                print(f"✅ {stage}: Completed with fallback model in {elapsed_ms}ms")
+                content = resp.choices[0].message.content
+                if not content:
+                    raise APIError("Empty response content")
+                return json.loads(content)
+            except Exception as fallback_error:
+                print(f"❌ Fallback also failed: {str(fallback_error)}")
+                raise e  # Raise original error
+        
         raise
