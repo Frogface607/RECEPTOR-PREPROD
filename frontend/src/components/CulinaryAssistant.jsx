@@ -1,0 +1,282 @@
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
+const API = `${BACKEND_URL}/api`;
+
+const CulinaryAssistant = ({ 
+  userId, 
+  mode = 'center', // 'center' | 'sidebar'
+  onTechCardRequest = null // Callback для создания техкарты из чата
+}) => {
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: 'Привет! Я RECEPTOR — твой AI-ассистент в ресторанном бизнесе. Я специально обучен делать твою жизнь проще, кухню эффективнее, а ресторан прибыльнее. Спроси меня, что я могу.',
+      timestamp: new Date()
+    }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Автоскролл к последнему сообщению
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Фокус на input при загрузке
+  useEffect(() => {
+    if (mode === 'center' && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [mode]);
+
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
+
+    const userMessage = {
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API}/assistant/chat`, {
+        user_id: userId || 'demo_user',
+        message: currentInput,
+        conversation_id: conversationId
+      });
+
+      const assistantMessage = {
+        role: 'assistant',
+        content: response.data.response,
+        suggestions: response.data.suggestions || [],
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      if (response.data.conversation_id) {
+        setConversationId(response.data.conversation_id);
+      }
+
+      // Если ассистент предлагает создать техкарту, вызываем callback
+      if (response.data.suggestions?.some(s => s.toLowerCase().includes('техкарт'))) {
+        // Можно автоматически предложить создать
+      }
+    } catch (error) {
+      console.error('Assistant error:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Извините, произошла ошибка. Попробуйте еще раз.',
+        timestamp: new Date()
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuggestion = (suggestion) => {
+    setInput(suggestion);
+    inputRef.current?.focus();
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  // Центральный режим (как ChatGPT)
+  if (mode === 'center') {
+    return (
+      <div className="flex flex-col h-[calc(100vh-200px)] max-w-4xl mx-auto bg-white rounded-lg shadow-xl">
+        {/* Заголовок */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">R</span>
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-900">RECEPTOR Assistant</h2>
+              <p className="text-xs text-gray-500">AI-ассистент для ресторанного бизнеса</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Сообщения */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`max-w-[85%] ${msg.role === 'user' ? 'order-2' : 'order-1'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-purple-600 font-bold text-sm">R</span>
+                  </div>
+                )}
+                <div
+                  className={`rounded-2xl px-4 py-3 ${
+                    msg.role === 'user'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                </div>
+                {msg.suggestions && msg.suggestions.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {msg.suggestions.map((suggestion, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSuggestion(suggestion)}
+                        className="text-xs bg-white border border-gray-300 rounded-full px-3 py-1.5 hover:bg-gray-50 hover:border-purple-300 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%]">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-purple-600 font-bold text-sm">R</span>
+                </div>
+                <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Ввод */}
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-end gap-3">
+            <div className="flex-1 relative">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Спросите что-нибудь..."
+                rows={1}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none max-h-32 overflow-y-auto"
+                disabled={loading}
+                onInput={(e) => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={loading || !input.trim()}
+                className="absolute right-2 bottom-2 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Каждое сообщение стоит 5 токенов
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Режим сайдбара (компактный)
+  return (
+    <div className="flex flex-col h-full bg-white rounded-lg border border-gray-200 shadow-sm">
+      {/* Заголовок */}
+      <div className="px-4 py-3 border-b border-gray-200 bg-purple-50">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-xs">R</span>
+          </div>
+          <h3 className="font-semibold text-sm text-gray-900">RECEPTOR Assistant</h3>
+        </div>
+      </div>
+
+      {/* Сообщения */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
+                msg.role === 'user'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-900'
+              }`}
+            >
+              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 rounded-lg px-3 py-2">
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Ввод */}
+      <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Спросите что-нибудь..."
+            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            disabled={loading}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={loading || !input.trim()}
+            className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+          >
+            Отправить
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CulinaryAssistant;
+

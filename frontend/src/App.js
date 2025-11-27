@@ -6,6 +6,7 @@ import TourSystem from './components/TourSystem';
 import tourConfigs from './tours/tourConfigs';
 import ModernAuthModal from './components/ModernAuthModal';
 import PricingPage from './components/PricingPage';
+import CulinaryAssistant from './components/CulinaryAssistant';
 import { FEATURE_HACCP, FORCE_TECHCARD_V2 } from './config/featureFlags';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
@@ -11915,9 +11916,24 @@ function App() {
         {/* Create Tech Card View (existing content) */}
         {currentView === 'create' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
-          {/* Left Panel */}
+          {/* Left Panel - Chat when techcard exists, Form when not */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700 space-y-6 sm:space-y-8">
+            {tcV2 || techCard ? (
+              /* Culinary Assistant - Sidebar Mode */
+              <div className="h-[calc(100vh-200px)]">
+                <CulinaryAssistant 
+                  userId={currentUserOrDemo?.id || 'demo_user'}
+                  mode="sidebar"
+                  onTechCardRequest={(dishName) => {
+                    // Если пользователь просит создать техкарту из чата
+                    setDishName(dishName);
+                    setTcV2(null);
+                    setTechCard(null);
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700 space-y-6 sm:space-y-8">
               <div>
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-semibold text-gray-200">СОЗДАТЬ ТЕХКАРТУ</h2>
@@ -12328,6 +12344,7 @@ function App() {
                 </div>
               )}
             </div>
+            )}
           </div>
 
           {/* Right Panel */}

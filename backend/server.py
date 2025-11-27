@@ -8880,3 +8880,108 @@ async def save_laboratory_experiment(request: dict):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка сохранения эксперимента: {str(e)}")
+
+# ===== CULINARY ASSISTANT CHAT =====
+@api_router.post("/assistant/chat")
+async def chat_with_assistant(request: dict):
+    """
+    Чат с кулинарным ассистентом RECEPTOR
+    
+    Request:
+    {
+        "user_id": "uuid",
+        "message": "Как рассчитать наценку?",
+        "conversation_id": "uuid"  # опционально, для продолжения диалога
+    }
+    
+    Response:
+    {
+        "response": "Наценка рассчитывается...",
+        "conversation_id": "uuid",
+        "suggestions": ["Создать техкарту", "Рассчитать себестоимость"],
+        "tokens_used": 150,
+        "credits_spent": 5
+    }
+    """
+    user_id = request.get("user_id", "demo_user")
+    message = request.get("message", "").strip()
+    conversation_id = request.get("conversation_id")
+    
+    if not message:
+        raise HTTPException(status_code=400, detail="Сообщение не может быть пустым")
+    
+    # Системный промпт для кулинарного ассистента
+    system_prompt = """Ты RECEPTOR — профессиональный AI-ассистент для ресторанного бизнеса. 
+Твоя специализация:
+- Рецепты и техники приготовления
+- Финансовые расчеты (себестоимость, наценка, маржа)
+- Оптимизация меню и анализ рентабельности
+- Управленческие вопросы ресторанного бизнеса
+- Кулинарные советы и рекомендации
+
+Всегда отвечай профессионально, но доступно. Давай конкретные советы с примерами и формулами.
+Если пользователь спрашивает о рецепте, предлагай создать техкарту в RECEPTOR.
+Если спрашивает о расчетах, давай конкретные формулы и примеры.
+Будь дружелюбным и полезным. Отвечай на русском языке."""
+
+    try:
+        # Получаем историю диалога, если есть conversation_id
+        conversation_history = []
+        if conversation_id:
+            # TODO: Реализовать сохранение истории в БД
+            # conversation_history = await get_conversation_history(conversation_id)
+            pass
+        
+        # Формируем сообщения для LLM
+        messages = [
+            {"role": "system", "content": system_prompt}
+        ]
+        
+        # Добавляем историю (последние 10 сообщений для контекста)
+        for hist_msg in conversation_history[-10:]:
+            messages.append(hist_msg)
+        
+        # Добавляем текущее сообщение пользователя
+        messages.append({"role": "user", "content": message})
+        
+        # Вызов LLM (используем gpt-4o-mini для чата)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500
+        )
+        
+        assistant_response = response.choices[0].message.content
+        
+        # Генерируем предложения на основе ответа
+        suggestions = []
+        if "техкарт" in message.lower() or "рецепт" in message.lower():
+            suggestions.append("Создать техкарту")
+        if "наценк" in message.lower() or "себестоимост" in message.lower() or "марж" in message.lower():
+            suggestions.append("Рассчитать себестоимость")
+        if "меню" in message.lower():
+            suggestions.append("Создать меню")
+        
+        # Создаем новый conversation_id, если его нет
+        if not conversation_id:
+            conversation_id = str(uuid.uuid4())
+        
+        # TODO: Сохранить историю в БД
+        # await save_conversation_message(conversation_id, user_id, "user", message)
+        # await save_conversation_message(conversation_id, user_id, "assistant", assistant_response)
+        
+        return {
+            "response": assistant_response,
+            "conversation_id": conversation_id,
+            "suggestions": suggestions[:3],  # Максимум 3 предложения
+            "tokens_used": response.usage.total_tokens,
+            "credits_spent": 5  # 5 токенов за сообщение (пока фиксированно)
+        }
+        
+    except Exception as e:
+        logger.error(f"Assistant chat error: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Ошибка при обработке запроса: {str(e)}"
+        )
