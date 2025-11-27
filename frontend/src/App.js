@@ -745,9 +745,9 @@ function App() {
           
           <button
             onClick={handleExportToIIKO}
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center"
+            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center"
           >
-            📤 Экспортировать в IIKO
+            Экспортировать в IIKO
           </button>
         </div>
 
@@ -2234,7 +2234,7 @@ function App() {
               <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                 TechCard v2
               </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-bold ${(tcV2.status === 'success' || tcV2.status === 'READY') ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${(tcV2.status === 'success' || tcV2.status === 'READY') ? 'bg-purple-500 text-white' : 'bg-gray-600 text-white'}`}>
                 {tcV2.status === 'READY' ? 'ГОТОВО' : (tcV2.status || 'draft')}
               </span>
             </div>
