@@ -10380,6 +10380,14 @@ function App() {
         {/* Dashboard View */}
         {currentView === 'dashboard' && (
           <div className="space-y-8">
+            {/* Culinary Assistant - Center Mode (Main Feature) */}
+            <div className="mb-8">
+              <CulinaryAssistant 
+                userId={currentUserOrDemo?.id || 'demo_user'}
+                mode="center"
+              />
+            </div>
+
             {/* Welcome Section */}
             <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 sm:p-8">
               <h2 className="text-2xl sm:text-3xl font-bold text-purple-300 mb-4">
