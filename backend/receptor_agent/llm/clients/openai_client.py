@@ -118,8 +118,14 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
             
     except Exception as e:
         elapsed_ms = int((time.time() - start_time) * 1000)
-        error_msg = str(e)
-        print(f"❌ {stage}: Failed after {elapsed_ms}ms - {error_msg}")
+        # Безопасное получение сообщения об ошибке
+        try:
+            error_msg = str(e)
+            error_type = type(e).__name__
+        except Exception:
+            error_msg = "Unknown error"
+            error_type = "Unknown"
+        print(f"❌ {stage}: Failed after {elapsed_ms}ms - {error_type}: {error_msg}")
         
         # Если модель не найдена или неправильный параметр, пробуем fallback на gpt-4o-mini
         if ("model" in error_msg.lower() and ("not found" in error_msg.lower() or "invalid" in error_msg.lower() or "does not exist" in error_msg.lower())) or \
