@@ -51,15 +51,23 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         
         print(f"🔄 {stage}: Starting LLM call (model={mdl}) with timeout {timeout_seconds}s")
 
-        # Chat Completions API + response_format json_schema (Structured Outputs)
+        # Chat Completions API + response_format
+        # GPT-5-mini may not support json_schema, use json format instead
         params = {
             "model": mdl,
             "timeout": timeout_seconds,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user}
-            ],
-            "response_format": {
+            ]
+        }
+        
+        # Use json_schema for older models, json for gpt-5-mini
+        if mdl == "gpt-5-mini" or "gpt-5" in mdl:
+            params["response_format"] = {"type": "json"}
+            print(f"🔧 {stage}: Using json format for {mdl} (json_schema may not be supported)")
+        else:
+            params["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
                     "name": "techcard_schema",
@@ -67,7 +75,6 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                     "strict": False
                 }
             }
-        }
         
         # GPT-5-mini requires max_completion_tokens instead of max_tokens
         if max_tokens:
