@@ -2,7 +2,7 @@
   {
     "id": "TC001",
     "title": "Google OAuth Login Success",
-    "description": "Verify that a user can successfully log in via Google OAuth and access the main dashboard.",
+    "description": "Verify that a user can successfully log in using Google OAuth authentication and is directed to the main dashboard.",
     "category": "functional",
     "priority": "High",
     "steps": [
@@ -12,22 +12,26 @@
       },
       {
         "type": "action",
-        "description": "Click on the Google OAuth login button."
+        "description": "Click on Google OAuth login button."
       },
       {
         "type": "action",
-        "description": "Complete Google authentication with valid user credentials."
+        "description": "Complete authentication with valid Google credentials."
       },
       {
         "type": "assertion",
-        "description": "Verify redirection to the main dashboard and user session is established."
+        "description": "Verify user is authenticated and redirected to the main dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user session is established and user-specific data is loaded."
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Google OAuth Login Failure with Invalid Credentials",
-    "description": "Check that login via Google OAuth fails gracefully when invalid credentials are provided.",
+    "title": "Google OAuth Login Failure Handling",
+    "description": "Verify that the system correctly handles Google OAuth login failure scenarios such as incorrect credentials or canceled authentication.",
     "category": "error handling",
     "priority": "High",
     "steps": [
@@ -37,150 +41,144 @@
       },
       {
         "type": "action",
-        "description": "Attempt Google OAuth login with invalid or revoked credentials."
+        "description": "Click on Google OAuth login button."
+      },
+      {
+        "type": "action",
+        "description": "Abort or enter invalid credentials during Google OAuth flow."
       },
       {
         "type": "assertion",
-        "description": "Verify that login is denied and an appropriate error message is displayed."
+        "description": "Verify login failure message is shown to the user."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is not redirected to dashboard and no session is created."
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "V1 Recipe AI Generation",
-    "description": "Validate that the system generates a V1 free-form recipe using AI when provided with dish description input.",
+    "title": "Create V1 Recipe and Generate V2 Techcard",
+    "description": "Ensure users can create a new V1 free-form recipe, submit it to AI generation, and receive a valid structured V2 technical card.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as a valid user."
+        "description": "Log in and navigate to techcard creation page."
       },
       {
         "type": "action",
-        "description": "Navigate to new dish creation."
+        "description": "Input a free-form recipe description (V1 format)."
       },
       {
         "type": "action",
-        "description": "Enter dish description and trigger AI generation for V1 recipe."
+        "description": "Trigger AI-powered generation to produce a structured V2 techcard."
       },
       {
         "type": "assertion",
-        "description": "Verify that AI returns a coherent V1 recipe output."
+        "description": "Verify the returned techcard contains all required fields including ingredients, portions, and article allocations."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no errors or missing fields are present and the techcard passes strict validation rules."
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Convert V1 Recipe to Structured V2 Techcard",
-    "description": "Ensure V1 AI-generated free-form recipes convert accurately into structured V2 techcards compliant with IIKO format.",
+    "title": "Techcard Ingredient to IIKO Article Auto-Mapping",
+    "description": "Verify that the AI engine automatically assigns real IIKO article codes to ingredient entries without collisions and differentiates system-generated placeholders.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Generate or import a V1 recipe for a dish."
+        "description": "Generate or import a techcard with multiple ingredients."
       },
       {
         "type": "action",
-        "description": "Initiate recipe conversion to V2 techcard."
+        "description": "Trigger auto-mapping of ingredients to IIKO catalog items."
       },
       {
         "type": "assertion",
-        "description": "Verify that the resulting V2 techcard includes detailed ingredients, portions, and conforms to schema."
+        "description": "Verify each ingredient is assigned either a unique real IIKO article code or a system-generated placeholder."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no article code collisions occur in the assignment."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the mapping is persisted in the techcard data."
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "AI Auto-Assignment of Ingredients to IIKO Catalog",
-    "description": "Test that AI correctly auto-maps ingredients in techcards to IIKO catalog items and assigns unique article codes without collisions.",
+    "title": "Convert V1 Recipes to Structured V2 Techcards",
+    "description": "Test the conversion process that transforms free-form V1 recipes into structured and compliant V2 techcards compatible with IIKO requirements.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Load techcard with ingredients missing IIKO article codes."
+        "description": "Import or create a V1 recipe in the system."
       },
       {
         "type": "action",
-        "description": "Trigger AI auto-mapping to assign IIKO catalog articles."
+        "description": "Initiate the conversion from V1 to V2 techcard."
       },
       {
         "type": "assertion",
-        "description": "Verify all ingredients have valid article codes and no duplicates or conflicting codes exist."
+        "description": "Verify the converted V2 techcard contains structured ingredient lists, portions, and mappings."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify converted techcard passes all quality validations."
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "IIKO Cloud API Import Product Catalog",
-    "description": "Verify seamless import of product catalogs from IIKO Cloud API into the platform.",
-    "category": "integration",
-    "priority": "High",
+    "title": "Menu Creation and Management with AI Assistance",
+    "description": "Verify users can create, edit, and manage menus including adding AI-generated dishes and perform all menu operations through the React frontend.",
+    "category": "functional",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Initiate import request to IIKO Cloud API."
+        "description": "Navigate to the menu management view."
+      },
+      {
+        "type": "action",
+        "description": "Create a new menu by specifying required fields."
+      },
+      {
+        "type": "action",
+        "description": "Add multiple dishes, including AI-generated techcards, to the menu."
+      },
+      {
+        "type": "action",
+        "description": "Edit dish details, update portions, and remove items from the menu."
       },
       {
         "type": "assertion",
-        "description": "Confirm product catalog data is successfully fetched and stored, matching IIKO source."
+        "description": "Verify menu updates are saved and reflected immediately in the UI."
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "IIKO Cloud API Export Dish Skeleton Files",
-    "description": "Ensure generated techcard dish skeleton export files are correctly formatted and upload-ready for IIKO RMS.",
+    "title": "Nutritional and Cost Calculations Accuracy",
+    "description": "Confirm that nutritional information and cost calculations for dishes and ingredients are accurately computed and displayed.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Create a complete V2 techcard with valid data."
-      },
-      {
-        "type": "action",
-        "description": "Trigger export in IIKO-compatible skeleton format."
-      },
-      {
-        "type": "assertion",
-        "description": "Validate that the exported files meet IIKO RMS file format specifications."
-      }
-    ]
-  },
-  {
-    "id": "TC008",
-    "title": "Export Multi-format Files: XLSX, PDF, HTML, ZIP",
-    "description": "Test the export functionality produces Excel, PDF, HTML files and bundles them into a ZIP archive accurately.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Prepare a finalized techcard with nutritional and cost data."
-      },
-      {
-        "type": "action",
-        "description": "Initiate export in all supported formats."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify all formats are generated, correct in content and format, and the ZIP archive contains all files."
-      }
-    ]
-  },
-  {
-    "id": "TC009",
-    "title": "Nutrition and Cost Calculation Accuracy",
-    "description": "Verify the platform calculates nutritional values and dish cost correctly for given ingredients and portions.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Input or import techcard with known ingredient quantities."
+        "description": "Create or import a techcard with detailed ingredient list and portions."
       },
       {
         "type": "action",
@@ -188,226 +186,214 @@
       },
       {
         "type": "assertion",
-        "description": "Validate that calculated nutrition and cost match expected values from catalogs."
+        "description": "Verify nutritional values match expected outputs from the nutrition catalog."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify cost calculations consider ingredient prices correctly."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify calculated information is properly shown in the UI."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Export Functionality: Generate and Download Multi-format Files",
+    "description": "Verify users can trigger export of techcards and menus into multiple formats (XLSX, PDF, HTML, ZIP) ready for IIKO RMS upload, and download the generated files without errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select one or multiple techcards and/or menus for export."
+      },
+      {
+        "type": "action",
+        "description": "Initiate the export process."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify preflight checks detect and alert if any mappings or data are missing."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify export completes generating XLSX, PDF, HTML files and ZIP archive."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all files conform to expected format and include required data for IIKO RMS compatibility."
+      },
+      {
+        "type": "assertion",
+        "description": "Download the export package and verify file integrity."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "User Data Isolation and Security",
+    "description": "Ensure that data queries, UI views, and backend API responses isolate data strictly per user, and no user can access another user's information.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as User A and create several techcards and menus."
+      },
+      {
+        "type": "action",
+        "description": "Log out and log in as User B."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access techcards, menus, or API endpoints belonging to User A."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify User B cannot access or view User A's data through UI or API."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error responses or empty results are returned when unauthorized access is attempted."
       }
     ]
   },
   {
     "id": "TC010",
-    "title": "HACCP Process Integration in Techcards",
-    "description": "Check that Hazard Analysis and Critical Control Points (HACCP) data is properly integrated and maintained within techcards.",
-    "category": "functional",
-    "priority": "Medium",
+    "title": "Integration with IIKO Cloud API: Catalog Import and Error Handling",
+    "description": "Test the integration with IIKO Cloud API, including importing product catalogs and handling scenarios where API is unavailable or returns errors.",
+    "category": "integration",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Create or import techcard and add HACCP data."
+        "description": "Trigger import of product catalog from IIKO RMS API."
       },
       {
         "type": "assertion",
-        "description": "Verify HACCP critical points are saved, displayed, and included in exports."
+        "description": "Verify catalog data is correctly imported and mapped internally."
+      },
+      {
+        "type": "action",
+        "description": "Simulate IIKO API downtime or error responses."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system shows appropriate fallback messages and user alerts."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system retries or handles the error gracefully without crashing."
       }
     ]
   },
   {
     "id": "TC011",
-    "title": "User Data Isolation and Access Control",
-    "description": "Ensure that users can only access their own techcards, menus, and data; no cross-user data leakage occurs.",
-    "category": "security",
-    "priority": "High",
+    "title": "Frontend UI Loading and Error States for AI Generation",
+    "description": "Verify that the React frontend correctly displays loading indicators, disables inputs during AI generation requests, and shows error messages on failure.",
+    "category": "ui",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Login as User A and create test techcards."
-      },
-      {
-        "type": "action",
-        "description": "Login as User B and attempt to access User A's techcards or menus."
+        "description": "Initiate AI generation for a new techcard."
       },
       {
         "type": "assertion",
-        "description": "Verify User B cannot view or access User A's data under any circumstances."
+        "description": "Verify a loading spinner or indicator is shown and user inputs are disabled."
+      },
+      {
+        "type": "action",
+        "description": "Simulate AI generation failure or timeout."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is shown a clear error message."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user can retry or cancel the operation."
       }
     ]
   },
   {
     "id": "TC012",
-    "title": "Frontend Loading States and Errors",
-    "description": "Check that the frontend React app shows appropriate loading indicators, error messages, and prevents user confusion during backend operations.",
-    "category": "ui",
-    "priority": "Medium",
+    "title": "Quality Validation of User-submitted and AI-generated Techcards",
+    "description": "Confirm that both AI-generated and manually edited techcards undergo strict quality validation before saving or export.",
+    "category": "functional",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Trigger AI generation or export process."
-      },
-      {
-        "type": "assertion",
-        "description": "Observe loading spinners or progress bars during processing."
+        "description": "Create or import a techcard with missing required fields or invalid data."
       },
       {
         "type": "action",
-        "description": "Simulate backend failure or timeout during the process."
+        "description": "Attempt to save or export the techcard."
       },
       {
         "type": "assertion",
-        "description": "Verify clear error message displays and UI recovers gracefully."
+        "description": "Verify validation errors are detected and prevent saving/export."
+      },
+      {
+        "type": "action",
+        "description": "Correct the errors and resubmit."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify techcard passes strict validation and save or export succeeds."
       }
     ]
   },
   {
     "id": "TC013",
-    "title": "Backend API Concurrency Control on AI Generation",
-    "description": "Ensure backend AI generation endpoints enforce controlled concurrency to prevent multiple simultaneous requests from the same user.",
-    "category": "error handling",
-    "priority": "High",
+    "title": "Logging and Debugging Event Tracking",
+    "description": "Verify that key user actions and errors during AI generation, export, and integrations are logged properly in backend logs and frontend console messages.",
+    "category": "functional",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "From the same user session, send multiple AI generation requests concurrently."
+        "description": "Perform AI generation, export, and integration operations."
       },
       {
         "type": "assertion",
-        "description": "Verify that only one request processes at a time and others are queued or rejected with appropriate responses."
+        "description": "Verify backend logs capture relevant events, warnings, and errors."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify frontend console/log displays appropriate informational and error messages."
       }
     ]
   },
   {
     "id": "TC014",
-    "title": "Data Validation of Techcards Before Save and Export",
-    "description": "Verify that techcards undergo strict validation rules to ensure data integrity and export readiness before saving or exporting.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Attempt to save or export techcard with missing or invalid required fields."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that validation errors are displayed and operation is blocked until issues fixed."
-      },
-      {
-        "type": "action",
-        "description": "Save or export techcard after correcting all errors."
-      },
-      {
-        "type": "assertion",
-        "description": "Confirm operation succeeds without errors."
-      }
-    ]
-  },
-  {
-    "id": "TC015",
-    "title": "Handling IIKO API Unavailability",
-    "description": "Ensure the system handles IIKO RMS API downtime gracefully with user alerts and fallback mechanisms.",
-    "category": "error handling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Simulate IIKO API being unavailable during import or export request."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the frontend displays an appropriate alert and backend logs the error."
-      },
-      {
-        "type": "assertion",
-        "description": "Confirm that no data corruption or incomplete operations occur."
-      }
-    ]
-  },
-  {
-    "id": "TC016",
-    "title": "User Role-Based Access Control",
-    "description": "Validate that user roles are enforced correctly to restrict or grant access to features according to permissions.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login with a user account having limited role access."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify UI elements and API endpoints are restricted according to role."
-      },
-      {
-        "type": "action",
-        "description": "Login with admin or elevated role."
-      },
-      {
-        "type": "assertion",
-        "description": "Confirm access to all features is granted."
-      }
-    ]
-  },
-  {
-    "id": "TC017",
-    "title": "Performance Benchmark: AI Generation Time",
-    "description": "Measure AI generation response times and verify they meet predefined thresholds ensuring smooth user experience.",
-    "category": "performance",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Request AI generation for various recipe sizes."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify response times are within acceptable limits and no timeouts occur."
-      }
-    ]
-  },
-  {
-    "id": "TC018",
-    "title": "Database Query Isolation and Performance",
-    "description": "Test that MongoDB queries correctly isolate user data and perform efficiently under load.",
-    "category": "performance",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Simulate multiple users querying techcards and menus simultaneously."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify no user data leakage and query response times remain within acceptable performance thresholds."
-      }
-    ]
-  },
-  {
-    "id": "TC019",
-    "title": "Frontend UI Responsiveness Across Viewports",
-    "description": "Ensure the React SPA UI is fully responsive and functions correctly on various device screen sizes.",
-    "category": "ui",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Access the app from desktop, tablet, and mobile viewport sizes."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify layout adapts correctly, modals and loading states display properly, and no overflow or truncation issues exist."
-      }
-    ]
-  },
-  {
-    "id": "TC020",
-    "title": "Logging and Debugging Information Availability",
-    "description": "Verify that important events, errors, and warnings during AI generation, export, and integration are logged and accessible for debugging.",
+    "title": "Performance of AI Generation and Export Operations",
+    "description": "Ensure that AI generation requests and export processing complete within acceptable time thresholds under normal load and that concurrency controls on AI endpoints prevent overload.",
     "category": "functional",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Perform various operations such as AI generation, export, and IIKO API calls."
+        "description": "Trigger multiple AI generation requests sequentially and concurrently."
       },
       {
         "type": "assertion",
-        "description": "Check backend logs contain detailed, timestamped entries and frontend console messages provide relevant information."
+        "description": "Verify response times meet defined performance benchmarks."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system prevents multiple concurrent AI requests from the same user."
+      },
+      {
+        "type": "action",
+        "description": "Initiate export of large sets of techcards and menus."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify export completes within acceptable time and CPU/memory usage is stable."
       }
     ]
   }

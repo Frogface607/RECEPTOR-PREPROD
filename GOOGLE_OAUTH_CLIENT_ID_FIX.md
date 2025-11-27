@@ -95,3 +95,5 @@ REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 **Дата**: 2025-01-XX  
 **Статус**: ✅ Готово к настройке
 
+
+

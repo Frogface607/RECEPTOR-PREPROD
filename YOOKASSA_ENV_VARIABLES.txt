@@ -1,0 +1,7 @@
+# YooKassa Environment Variables для Railway
+# Скопируйте эти переменные в Railway → Settings → Environment Variables
+
+YOOKASSA_SHOP_ID=1163540
+YOOKASSA_SECRET_KEY=test_HmKz8QaGiGvTChyLIX9S32SAahBKChcNt6qTHdqxbNM
+YOOKASSA_RETURN_URL=https://receptor-preprod-production.up.railway.app/pricing?status=success
+

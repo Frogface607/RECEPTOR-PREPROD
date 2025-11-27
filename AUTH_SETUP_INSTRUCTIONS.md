@@ -214,3 +214,5 @@ pip install passlib[bcrypt] python-jose[cryptography]
 **Дата**: 2025-01-XX  
 **Статус**: ✅ Готово к тестированию
 
+
+

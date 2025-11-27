@@ -95,3 +95,5 @@ db.users.findOne({email: "your-email@gmail.com"})
 **Дата**: 2025-01-XX  
 **Статус**: ✅ Google OAuth исправлен и работает с MongoDB
 
+
+
