@@ -70,6 +70,7 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [mappingActiveTab, setMappingActiveTab] = useState('iiko'); // P0: Default source is iiko
+  const [personalCabinetTab, setPersonalCabinetTab] = useState('profile'); // Personal cabinet tab: 'profile', 'subscription', 'venue', 'integrations', 'settings'
   const [usdaSearchQuery, setUsdaSearchQuery] = useState('');
   const [usdaSearchResults, setUsdaSearchResults] = useState([]);
   const [isSearchingUsda, setIsSearchingUsda] = useState(false);
@@ -10377,9 +10378,9 @@ function App() {
                       ❓
                     </button>
                     <button
-                      onClick={() => setShowVenueProfileModal(true)}
+                      onClick={() => setCurrentView('personal-cabinet')}
                       className="text-purple-300 hover:text-purple-200 font-bold text-sm sm:text-base transition-colors flex items-center space-x-2"
-                      title="Личный кабинет: настройки заведения, iiko, тарифы"
+                      title="Личный кабинет: настройки профиля, подписка, iiko, тарифы"
                     >
                       <span>{currentUserOrDemo.name}</span>
                     </button>
@@ -11469,274 +11470,452 @@ function App() {
         {currentView === 'personal-cabinet' && (
           <>
             {currentUser && currentUser.id !== 'demo_user' ? (
-              <div className="space-y-8">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/30 rounded-xl p-6 sm:p-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-blue-300 mb-2">
-                    👤 Личный кабинет
-                  </h2>
-                  <p className="text-gray-400">Управление профилем, подключениями и настройками</p>
-                </div>
-                <button
-                  onClick={() => setCurrentView('create')}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  ← Вернуться
-                </button>
-              </div>
-            </div>
-
-            {/* Personal Cabinet Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="min-h-screen">
+            {/* Modern SaaS-style Personal Cabinet with Sidebar */}
+            <div className="flex flex-col lg:flex-row gap-6">
               
-              {/* Left Column - Profile & Settings */}
-              <div className="space-y-6">
-                
-                {/* Venue Profile Section */}
-                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                  <h3 className="text-xl font-bold text-purple-300 mb-4 flex items-center gap-3">
-                    🏪 Профиль заведения
-                  </h3>
+              {/* Sidebar Navigation */}
+              <div className="lg:w-64 flex-shrink-0">
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700 sticky top-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-purple-300 mb-2">Личный кабинет</h2>
+                    <p className="text-gray-400 text-sm truncate">{currentUser?.email}</p>
+                  </div>
                   
-                  {venueProfile.venue_name ? (
-                    <div className="space-y-4">
-                      <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-400/30">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <div className="text-gray-400 text-sm">Название</div>
-                            <div className="text-white font-medium">{venueProfile.venue_name}</div>
-                          </div>
-                          {venueProfile.venue_type && (
-                            <div>
-                              <div className="text-gray-400 text-sm">Тип заведения</div>
-                              <div className="text-white font-medium">{venueTypes[venueProfile.venue_type]?.name}</div>
-                            </div>
-                          )}
-                          {venueProfile.cuisine_focus && (
-                            <div>
-                              <div className="text-gray-400 text-sm">Кухня</div>
-                              <div className="text-white font-medium">{venueProfile.cuisine_focus?.map(c => cuisineTypes[c]?.name).join(', ')}</div>
-                            </div>
-                          )}
-                          {venueProfile.average_check && (
-                            <div>
-                              <div className="text-gray-400 text-sm">Средний чек</div>
-                              <div className="text-white font-medium">{venueProfile.average_check}₽</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <button
-                        onClick={() => setShowVenueProfileModal(true)}
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                      >
-                        ⚙️ Редактировать профиль
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="text-gray-400 mb-4">Профиль заведения не настроен</div>
-                      <button
-                        onClick={() => setShowVenueProfileModal(true)}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
-                      >
-                        🚀 Настроить профиль
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Price Management Section */}
-                {/* TEMPORARILY HIDDEN - Price Management
-                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                  <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-3">
-                    💰 Управление прайсами
-                  </h3>
+                  <nav className="space-y-2">
+                    <button
+                      onClick={() => setPersonalCabinetTab('profile')}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                        personalCabinetTab === 'profile' 
+                          ? 'bg-purple-600 text-white shadow-lg' 
+                          : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <span>👤</span>
+                      <span>Профиль</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setPersonalCabinetTab('subscription')}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                        personalCabinetTab === 'subscription' 
+                          ? 'bg-purple-600 text-white shadow-lg' 
+                          : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <span>💎</span>
+                      <span>Подписка</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setPersonalCabinetTab('venue')}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                        personalCabinetTab === 'venue' 
+                          ? 'bg-purple-600 text-white shadow-lg' 
+                          : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <span>🏪</span>
+                      <span>Заведение</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setPersonalCabinetTab('integrations')}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                        personalCabinetTab === 'integrations' 
+                          ? 'bg-purple-600 text-white shadow-lg' 
+                          : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <span>🔗</span>
+                      <span>Интеграции</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setPersonalCabinetTab('settings')}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                        personalCabinetTab === 'settings' 
+                          ? 'bg-purple-600 text-white shadow-lg' 
+                          : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <span>⚙️</span>
+                      <span>Настройки</span>
+                    </button>
+                  </nav>
                   
-                  {userPrices.length > 0 ? (
-                    <div className="space-y-4">
-                      <div className="bg-green-900/20 rounded-lg p-4 border border-green-400/30">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-green-300 font-medium">✅ Прайс-лист загружен</div>
-                            <div className="text-gray-400 text-sm">{userPrices.length} позиций в базе данных</div>
-                          </div>
-                          <div className="text-green-300 text-2xl">📊</div>
-                        </div>
-                      </div>
-                      
-                      <button
-                        onClick={() => setShowPriceModal(true)}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                      >
-                        📝 Обновить прайсы
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="text-gray-400 mb-4">Прайс-листы не загружены</div>
-                      <button
-                        onClick={() => setShowPriceModal(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
-                      >
-                        📋 Загрузить прайсы
-                      </button>
-                    </div>
-                  )}
+                  <div className="mt-6 pt-6 border-t border-gray-700">
+                    <button
+                      onClick={() => setCurrentView('create')}
+                      className="w-full text-left px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700/50 transition-all flex items-center gap-3"
+                    >
+                      <span>←</span>
+                      <span>Вернуться</span>
+                    </button>
+                  </div>
                 </div>
-                */}
               </div>
 
-              {/* Right Column - IIKO & Integrations */}
-              <div className="space-y-6">
-                
-                {/* IIKO RMS Section */}
-                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                  <h3 className="text-xl font-bold text-orange-300 mb-4 flex items-center gap-3">
-                    🔗 IIKO RMS
-                  </h3>
-                  
-                  {iikoRmsConnection.status === 'connected' ? (
-                    <div className="space-y-4">
-                      <div className="bg-green-900/20 rounded-lg p-4 border border-green-400/30">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <div className="text-green-300 font-medium">✅ Подключено к IIKO</div>
-                            <div className="text-gray-400 text-sm">{iikoRmsConnection.organization_name}</div>
+              {/* Main Content Area */}
+              <div className="flex-1 min-w-0">
+                <div className="space-y-6">
+                  {/* Tab Content */}
+                  {personalCabinetTab === 'profile' && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                      <h3 className="text-2xl font-bold text-purple-300 mb-6">👤 Профиль</h3>
+                      
+                      <div className="space-y-6">
+                        {/* User Avatar & Info */}
+                        <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl p-6 border border-purple-400/30">
+                          <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center text-3xl font-bold text-white">
+                              {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-xl font-bold text-white mb-1">{currentUser?.name || 'Пользователь'}</h4>
+                              <p className="text-gray-400">{currentUser?.email || 'Email не указан'}</p>
+                              {currentUser?.city && (
+                                <p className="text-gray-400 text-sm mt-1">📍 {currentUser.city}</p>
+                              )}
+                            </div>
                           </div>
-                          <div className="text-green-300 text-2xl">🏢</div>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <div className="text-gray-400">Товаров синхронизировано</div>
-                            <div className="text-white font-medium">{iikoRmsConnection.products_count || 0}</div>
+                        {/* Profile Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+                            <div className="text-gray-400 text-sm mb-1">Имя</div>
+                            <div className="text-white font-medium">{currentUser?.name || 'Не указано'}</div>
                           </div>
-                          <div>
-                            <div className="text-gray-400">Последняя синхронизация</div>
+                          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+                            <div className="text-gray-400 text-sm mb-1">Email</div>
+                            <div className="text-white font-medium">{currentUser?.email || 'Не указано'}</div>
+                          </div>
+                          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+                            <div className="text-gray-400 text-sm mb-1">Город</div>
+                            <div className="text-white font-medium">{currentUser?.city || 'Не указано'}</div>
+                          </div>
+                          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+                            <div className="text-gray-400 text-sm mb-1">Дата регистрации</div>
                             <div className="text-white font-medium">
-                              {iikoRmsConnection.last_sync ? new Date(iikoRmsConnection.last_sync).toLocaleDateString('ru-RU') : 'Никогда'}
+                              {currentUser?.created_at ? new Date(currentUser.created_at).toLocaleDateString('ru-RU') : 'Не указано'}
                             </div>
                           </div>
                         </div>
+                        
+                        {/* Actions */}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => {
+                              setEditProfileData({
+                                name: currentUser?.name || '',
+                                email: currentUser?.email || '',
+                                city: currentUser?.city || ''
+                              });
+                              setShowProfileEditModal(true);
+                            }}
+                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                          >
+                            ✏️ Редактировать профиль
+                          </button>
+                          
+                          {currentUser && !currentUser.password_hash && (
+                            <button
+                              onClick={() => {
+                                setSetPasswordData({ password: '', confirmPassword: '' });
+                                setShowSetPasswordModal(true);
+                              }}
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                            >
+                              🔐 Установить пароль
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => setShowIikoRmsModal(true)}
-                          className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                        >
-                          ⚙️ Настройки
-                        </button>
-                        <button
-                          onClick={syncIikoRmsNomenclature}
-                          disabled={isSyncingIikoRms}
-                          className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                        >
-                          {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизация'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="text-gray-400 mb-4">
-                        {iikoRmsConnection.status === 'needs_reconnection' ? 
-                          '⚠️ Требуется переподключение к IIKO' : 
-                          'IIKO RMS не подключен'
-                        }
-                      </div>
-                      <button
-                        onClick={() => setShowIikoRmsModal(true)}
-                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
-                      >
-                        🔗 Подключить IIKO RMS
-                      </button>
                     </div>
                   )}
-                </div>
-
-                {/* Account & Subscription Section */}
-                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20">
-                  <h3 className="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-3">
-                    💳 Подписка и аккаунт
-                  </h3>
                   
-                  {console.log('🔵 Rendering Account & Subscription Section, currentUser:', currentUser)}
-                  
-                  <div className="space-y-4">
-                    {/* User Profile Info */}
-                    <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-400/30">
-                      <div className="space-y-3">
-                        <div>
-                          <div className="text-gray-400 text-sm">Имя</div>
-                          <div className="text-white font-medium">{currentUser?.name || 'Не указано'}</div>
+                  {personalCabinetTab === 'subscription' && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                      <h3 className="text-2xl font-bold text-yellow-300 mb-6">💎 Подписка</h3>
+                      
+                      <div className="space-y-6">
+                        {/* Current Plan */}
+                        <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-xl p-6 border-2 border-yellow-500/50">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h4 className="text-xl font-bold text-yellow-300 mb-2">
+                                {currentUser?.subscription_plan === 'pro' ? '⭐ PRO План' : '🎯 Базовый план'}
+                              </h4>
+                              <p className="text-gray-300">
+                                {currentUser?.subscription_plan === 'pro' 
+                                  ? 'Полный доступ ко всем функциям' 
+                                  : 'Создание техкарт, экспорт в IIKO'}
+                              </p>
+                            </div>
+                            <div className="text-4xl">
+                              {currentUser?.subscription_plan === 'pro' ? '⭐' : '🎯'}
+                            </div>
+                          </div>
+                          
+                          {currentUser?.subscription_plan === 'pro' && currentUser?.subscription_expires_at && (
+                            <div className="mt-4 pt-4 border-t border-yellow-400/30">
+                              <div className="text-gray-300 text-sm">
+                                Действует до: <span className="font-bold text-yellow-300">
+                                  {new Date(currentUser.subscription_expires_at).toLocaleDateString('ru-RU')}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <div className="text-gray-400 text-sm">Email</div>
-                          <div className="text-white font-medium">{currentUser?.email || 'Не указано'}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-400 text-sm">Город</div>
-                          <div className="text-white font-medium">{currentUser?.city || 'Не указано'}</div>
+                        
+                        {/* Upgrade Button */}
+                        {currentUser?.subscription_plan !== 'pro' && (
+                          <div className="text-center">
+                            <button
+                              onClick={() => {
+                                console.log('🔵 Opening pricing page, currentUser:', currentUser);
+                                setShowPricingPage(true);
+                              }}
+                              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+                            >
+                              💎 Улучшить до PRO
+                            </button>
+                          </div>
+                        )}
+                        
+                        {/* Features Comparison */}
+                        <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
+                          <h5 className="text-lg font-bold text-white mb-4">Что включено:</h5>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                              <span className="text-green-400">✅</span>
+                              <span className="text-gray-300">Создание неограниченного количества техкарт</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-green-400">✅</span>
+                              <span className="text-gray-300">Экспорт в IIKO RMS</span>
+                            </div>
+                            {currentUser?.subscription_plan === 'pro' ? (
+                              <>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-green-400">✅</span>
+                                  <span className="text-gray-300">AI-Кухня и Лаборатория</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-green-400">✅</span>
+                                  <span className="text-gray-300">Финансовый анализ</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-green-400">✅</span>
+                                  <span className="text-gray-300">Скрипты продаж и фудпейринг</span>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-gray-500">🔒</span>
+                                  <span className="text-gray-500">AI-Кухня и Лаборатория (PRO)</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-gray-500">🔒</span>
+                                  <span className="text-gray-500">Финансовый анализ (PRO)</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-gray-500">🔒</span>
+                                  <span className="text-gray-500">Скрипты продаж и фудпейринг (PRO)</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          setEditProfileData({
-                            name: currentUser?.name || '',
-                            email: currentUser?.email || '',
-                            city: currentUser?.city || ''
-                          });
-                          setShowProfileEditModal(true);
-                        }}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                      >
-                        ✏️ Редактировать профиль
-                      </button>
+                  )}
+                  
+                  {personalCabinetTab === 'venue' && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                      <h3 className="text-2xl font-bold text-purple-300 mb-6">🏪 Профиль заведения</h3>
                       
-                      {/* Show "Set Password" button only for users without password */}
-                      {currentUser && !currentUser.password_hash && (
-                        <button
-                          onClick={() => {
-                            setSetPasswordData({ password: '', confirmPassword: '' });
-                            setShowSetPasswordModal(true);
-                          }}
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                        >
-                          🔐 Установить пароль
-                        </button>
+                      {venueProfile.venue_name ? (
+                        <div className="space-y-6">
+                          <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-400/30">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div>
+                                <div className="text-gray-400 text-sm mb-1">Название</div>
+                                <div className="text-white font-bold text-lg">{venueProfile.venue_name}</div>
+                              </div>
+                              {venueProfile.venue_type && (
+                                <div>
+                                  <div className="text-gray-400 text-sm mb-1">Тип заведения</div>
+                                  <div className="text-white font-medium">{venueTypes[venueProfile.venue_type]?.name}</div>
+                                </div>
+                              )}
+                              {venueProfile.cuisine_focus && venueProfile.cuisine_focus.length > 0 && (
+                                <div>
+                                  <div className="text-gray-400 text-sm mb-1">Кухня</div>
+                                  <div className="text-white font-medium">
+                                    {venueProfile.cuisine_focus.map(c => cuisineTypes[c]?.name).join(', ')}
+                                  </div>
+                                </div>
+                              )}
+                              {venueProfile.average_check && (
+                                <div>
+                                  <div className="text-gray-400 text-sm mb-1">Средний чек</div>
+                                  <div className="text-white font-medium">{venueProfile.average_check}₽</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={() => setShowVenueProfileModal(true)}
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                          >
+                            ⚙️ Редактировать профиль
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <div className="text-6xl mb-4">🏪</div>
+                          <h4 className="text-xl font-bold text-gray-300 mb-2">Профиль заведения не настроен</h4>
+                          <p className="text-gray-400 mb-6">Настройте профиль для персонализации функций</p>
+                          <button
+                            onClick={() => setShowVenueProfileModal(true)}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                          >
+                            🚀 Настроить профиль
+                          </button>
+                        </div>
                       )}
                     </div>
-                    
-                    <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-400/30">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-yellow-300 font-medium">🎯 Базовый план</div>
-                          <div className="text-gray-400 text-sm">Создание техкарт, экспорт в IIKO</div>
+                  )}
+                  
+                  {personalCabinetTab === 'integrations' && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                      <h3 className="text-2xl font-bold text-orange-300 mb-6">🔗 Интеграции</h3>
+                      
+                      <div className="space-y-6">
+                        {/* IIKO RMS Integration */}
+                        <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-4">
+                              <div className="text-4xl">🏢</div>
+                              <div>
+                                <h4 className="text-lg font-bold text-white">IIKO RMS</h4>
+                                <p className="text-gray-400 text-sm">Синхронизация номенклатуры и экспорт техкарт</p>
+                              </div>
+                            </div>
+                            <div className={`px-4 py-2 rounded-full text-sm font-bold ${
+                              iikoRmsConnection.status === 'connected' 
+                                ? 'bg-green-600/20 text-green-300 border border-green-400/30' 
+                                : 'bg-gray-600/20 text-gray-300 border border-gray-400/30'
+                            }`}>
+                              {iikoRmsConnection.status === 'connected' ? '✅ Подключено' : '❌ Не подключено'}
+                            </div>
+                          </div>
+                          
+                          {iikoRmsConnection.status === 'connected' ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <div className="text-gray-400">Организация</div>
+                                  <div className="text-white font-medium">{iikoRmsConnection.organization_name || 'N/A'}</div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-400">Товаров синхронизировано</div>
+                                  <div className="text-white font-medium">{iikoRmsConnection.products_count || 0}</div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-400">Последняя синхронизация</div>
+                                  <div className="text-white font-medium">
+                                    {iikoRmsConnection.last_sync ? new Date(iikoRmsConnection.last_sync).toLocaleDateString('ru-RU') : 'Никогда'}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() => setShowIikoRmsModal(true)}
+                                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                                >
+                                  ⚙️ Настройки
+                                </button>
+                                <button
+                                  onClick={syncIikoRmsNomenclature}
+                                  disabled={isSyncingIikoRms}
+                                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                                >
+                                  {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизация'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-4">
+                              <button
+                                onClick={() => setShowIikoRmsModal(true)}
+                                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                              >
+                                🔗 Подключить IIKO RMS
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <div className="text-yellow-300 text-2xl">⭐</div>
                       </div>
                     </div>
-                    
-                    <div className="text-center py-4">
-                      <div className="text-gray-400 mb-3">Управление подпиской</div>
-                      <button
-                        onClick={() => {
-                          console.log('🔵 Opening pricing page, currentUser:', currentUser);
-                          setShowPricingPage(true);
-                        }}
-                        className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
-                      >
-                        💎 {currentUser?.subscription_plan === 'pro' ? 'Управление подпиской' : 'Улучшить план'}
-                      </button>
+                  )}
+                  
+                  {personalCabinetTab === 'settings' && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                      <h3 className="text-2xl font-bold text-gray-300 mb-6">⚙️ Настройки</h3>
+                      
+                      <div className="space-y-6">
+                        <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
+                          <h4 className="text-lg font-bold text-white mb-4">Безопасность</h4>
+                          <div className="space-y-4">
+                            {currentUser && !currentUser.password_hash && (
+                              <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="text-yellow-300 font-medium mb-1">Пароль не установлен</div>
+                                    <div className="text-gray-400 text-sm">Установите пароль для безопасности аккаунта</div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      setSetPasswordData({ password: '', confirmPassword: '' });
+                                      setShowSetPasswordModal(true);
+                                    }}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                  >
+                                    🔐 Установить
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                            
+                            <div className="bg-gray-600/20 rounded-lg p-4">
+                              <div className="text-gray-300 font-medium mb-1">Метод входа</div>
+                              <div className="text-gray-400 text-sm">
+                                {currentUser?.provider === 'google' ? '🔵 Google OAuth' : currentUser?.provider === 'email' ? '📧 Email/Пароль' : 'Не указано'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
+                          <h4 className="text-lg font-bold text-white mb-4">Аккаунт</h4>
+                          <div className="space-y-3">
+                            <button
+                              onClick={handleLogout}
+                              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-left"
+                            >
+                              🚪 Выйти из аккаунта
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
