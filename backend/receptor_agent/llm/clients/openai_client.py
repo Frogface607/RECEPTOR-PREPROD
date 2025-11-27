@@ -102,9 +102,26 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         try:
             if not resp.choices or len(resp.choices) == 0:
                 raise ValueError("No choices in response")
-            content = resp.choices[0].message.content
+            
+            message = resp.choices[0].message
+            print(f"🔍 {stage}: Response structure - has content: {hasattr(message, 'content')}, content type: {type(getattr(message, 'content', None))}")
+            
+            # GPT-5-mini может возвращать content как None при использовании json_schema
+            # В этом случае нужно проверить другие поля
+            content = getattr(message, 'content', None)
+            
+            # Если content пустой, но есть tool_calls или другие поля
             if not content:
-                raise ValueError("Empty response content")
+                print(f"⚠️ {stage}: Content is empty, checking alternative response formats...")
+                print(f"🔍 {stage}: Message attributes: {dir(message)}")
+                if hasattr(message, 'tool_calls') and message.tool_calls:
+                    print(f"🔍 {stage}: Found tool_calls: {message.tool_calls}")
+                if hasattr(resp, 'model'):
+                    print(f"🔍 {stage}: Model used: {resp.model}")
+                if hasattr(resp, 'usage'):
+                    print(f"🔍 {stage}: Usage: {resp.usage}")
+                raise ValueError("Empty response content - gpt-5-mini may not support json_schema format")
+            
             parsed = json.loads(content)
             print(f"✅ {stage}: Successfully parsed JSON response")
             return parsed
