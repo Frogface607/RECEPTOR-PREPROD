@@ -63,9 +63,18 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         }
         
         # Use json_schema for older models, json_object for gpt-5-mini
+        # Note: gpt-5-mini may have issues with reasoning tokens and empty content
         if mdl == "gpt-5-mini" or "gpt-5" in mdl:
-            params["response_format"] = {"type": "json_object"}
-            print(f"🔧 {stage}: Using json_object format for {mdl} (json_schema may not be supported)")
+            # Try json_schema first - it might work better than json_object
+            params["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "techcard_schema",
+                    "schema": json_schema,
+                    "strict": False
+                }
+            }
+            print(f"🔧 {stage}: Using json_schema format for {mdl}")
         else:
             params["response_format"] = {
                 "type": "json_schema",
