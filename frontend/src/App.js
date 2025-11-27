@@ -11485,72 +11485,66 @@ function App() {
                   <nav className="space-y-2">
                     <button
                       onClick={() => setPersonalCabinetTab('profile')}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                         personalCabinetTab === 'profile' 
                           ? 'bg-purple-600 text-white shadow-lg' 
                           : 'text-gray-300 hover:bg-gray-700/50'
                       }`}
                     >
-                      <span>👤</span>
-                      <span>Профиль</span>
+                      Профиль
                     </button>
                     
                     <button
                       onClick={() => setPersonalCabinetTab('subscription')}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                         personalCabinetTab === 'subscription' 
                           ? 'bg-purple-600 text-white shadow-lg' 
                           : 'text-gray-300 hover:bg-gray-700/50'
                       }`}
                     >
-                      <span>💎</span>
-                      <span>Подписка</span>
+                      Подписка
                     </button>
                     
                     <button
                       onClick={() => setPersonalCabinetTab('venue')}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                         personalCabinetTab === 'venue' 
                           ? 'bg-purple-600 text-white shadow-lg' 
                           : 'text-gray-300 hover:bg-gray-700/50'
                       }`}
                     >
-                      <span>🏪</span>
-                      <span>Заведение</span>
+                      Заведение
                     </button>
                     
                     <button
                       onClick={() => setPersonalCabinetTab('integrations')}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                         personalCabinetTab === 'integrations' 
                           ? 'bg-purple-600 text-white shadow-lg' 
                           : 'text-gray-300 hover:bg-gray-700/50'
                       }`}
                     >
-                      <span>🔗</span>
-                      <span>Интеграции</span>
+                      Интеграции
                     </button>
                     
                     <button
                       onClick={() => setPersonalCabinetTab('settings')}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3 ${
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                         personalCabinetTab === 'settings' 
                           ? 'bg-purple-600 text-white shadow-lg' 
                           : 'text-gray-300 hover:bg-gray-700/50'
                       }`}
                     >
-                      <span>⚙️</span>
-                      <span>Настройки</span>
+                      Настройки
                     </button>
                   </nav>
                   
                   <div className="mt-6 pt-6 border-t border-gray-700">
                     <button
                       onClick={() => setCurrentView('create')}
-                      className="w-full text-left px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700/50 transition-all flex items-center gap-3"
+                      className="w-full text-left px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700/50 transition-all"
                     >
-                      <span>←</span>
-                      <span>Вернуться</span>
+                      Вернуться
                     </button>
                   </div>
                 </div>
@@ -11562,20 +11556,20 @@ function App() {
                   {/* Tab Content */}
                   {personalCabinetTab === 'profile' && (
                     <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                      <h3 className="text-2xl font-bold text-purple-300 mb-6">👤 Профиль</h3>
+                      <h3 className="text-2xl font-bold text-gray-200 mb-6">Профиль</h3>
                       
                       <div className="space-y-6">
                         {/* User Avatar & Info */}
-                        <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl p-6 border border-purple-400/30">
+                        <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
                           <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center text-3xl font-bold text-white">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 flex items-center justify-center text-3xl font-bold text-white">
                               {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
                             <div className="flex-1">
                               <h4 className="text-xl font-bold text-white mb-1">{currentUser?.name || 'Пользователь'}</h4>
                               <p className="text-gray-400">{currentUser?.email || 'Email не указан'}</p>
                               {currentUser?.city && (
-                                <p className="text-gray-400 text-sm mt-1">📍 {currentUser.city}</p>
+                                <p className="text-gray-400 text-sm mt-1">{currentUser.city}</p>
                               )}
                             </div>
                           </div>
@@ -11614,9 +11608,9 @@ function App() {
                               });
                               setShowProfileEditModal(true);
                             }}
-                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                           >
-                            ✏️ Редактировать профиль
+                            Редактировать профиль
                           </button>
                           
                           {currentUser && !currentUser.password_hash && (
@@ -11625,9 +11619,9 @@ function App() {
                                 setSetPasswordData({ password: '', confirmPassword: '' });
                                 setShowSetPasswordModal(true);
                               }}
-                              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                              className="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                             >
-                              🔐 Установить пароль
+                              Установить пароль
                             </button>
                           )}
                         </div>
@@ -11637,31 +11631,28 @@ function App() {
                   
                   {personalCabinetTab === 'subscription' && (
                     <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                      <h3 className="text-2xl font-bold text-yellow-300 mb-6">💎 Подписка</h3>
+                      <h3 className="text-2xl font-bold text-gray-200 mb-6">Подписка</h3>
                       
                       <div className="space-y-6">
                         {/* Current Plan */}
-                        <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-xl p-6 border-2 border-yellow-500/50">
+                        <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h4 className="text-xl font-bold text-yellow-300 mb-2">
-                                {currentUser?.subscription_plan === 'pro' ? '⭐ PRO План' : '🎯 Базовый план'}
+                              <h4 className="text-xl font-bold text-white mb-2">
+                                {currentUser?.subscription_plan === 'pro' ? 'PRO План' : 'Базовый план'}
                               </h4>
-                              <p className="text-gray-300">
+                              <p className="text-gray-400">
                                 {currentUser?.subscription_plan === 'pro' 
                                   ? 'Полный доступ ко всем функциям' 
                                   : 'Создание техкарт, экспорт в IIKO'}
                               </p>
                             </div>
-                            <div className="text-4xl">
-                              {currentUser?.subscription_plan === 'pro' ? '⭐' : '🎯'}
-                            </div>
                           </div>
                           
                           {currentUser?.subscription_plan === 'pro' && currentUser?.subscription_expires_at && (
-                            <div className="mt-4 pt-4 border-t border-yellow-400/30">
-                              <div className="text-gray-300 text-sm">
-                                Действует до: <span className="font-bold text-yellow-300">
+                            <div className="mt-4 pt-4 border-t border-gray-600/30">
+                              <div className="text-gray-400 text-sm">
+                                Действует до: <span className="font-semibold text-white">
                                   {new Date(currentUser.subscription_expires_at).toLocaleDateString('ru-RU')}
                                 </span>
                               </div>
@@ -11677,52 +11668,52 @@ function App() {
                                 console.log('🔵 Opening pricing page, currentUser:', currentUser);
                                 setShowPricingPage(true);
                               }}
-                              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+                              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
                             >
-                              💎 Улучшить до PRO
+                              Улучшить до PRO
                             </button>
                           </div>
                         )}
                         
                         {/* Features Comparison */}
                         <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
-                          <h5 className="text-lg font-bold text-white mb-4">Что включено:</h5>
+                          <h5 className="text-lg font-semibold text-white mb-4">Что включено:</h5>
                           <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                              <span className="text-green-400">✅</span>
+                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                               <span className="text-gray-300">Создание неограниченного количества техкарт</span>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="text-green-400">✅</span>
+                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                               <span className="text-gray-300">Экспорт в IIKO RMS</span>
                             </div>
                             {currentUser?.subscription_plan === 'pro' ? (
                               <>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-green-400">✅</span>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                                   <span className="text-gray-300">AI-Кухня и Лаборатория</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-green-400">✅</span>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                                   <span className="text-gray-300">Финансовый анализ</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-green-400">✅</span>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                                   <span className="text-gray-300">Скрипты продаж и фудпейринг</span>
                                 </div>
                               </>
                             ) : (
                               <>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-gray-500">🔒</span>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
                                   <span className="text-gray-500">AI-Кухня и Лаборатория (PRO)</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-gray-500">🔒</span>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
                                   <span className="text-gray-500">Финансовый анализ (PRO)</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-gray-500">🔒</span>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
                                   <span className="text-gray-500">Скрипты продаж и фудпейринг (PRO)</span>
                                 </div>
                               </>
@@ -11735,15 +11726,15 @@ function App() {
                   
                   {personalCabinetTab === 'venue' && (
                     <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                      <h3 className="text-2xl font-bold text-purple-300 mb-6">🏪 Профиль заведения</h3>
+                      <h3 className="text-2xl font-bold text-gray-200 mb-6">Профиль заведения</h3>
                       
                       {venueProfile.venue_name ? (
                         <div className="space-y-6">
-                          <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-400/30">
+                          <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div>
                                 <div className="text-gray-400 text-sm mb-1">Название</div>
-                                <div className="text-white font-bold text-lg">{venueProfile.venue_name}</div>
+                                <div className="text-white font-semibold text-lg">{venueProfile.venue_name}</div>
                               </div>
                               {venueProfile.venue_type && (
                                 <div>
@@ -11770,21 +11761,20 @@ function App() {
                           
                           <button
                             onClick={() => setShowVenueProfileModal(true)}
-                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                           >
-                            ⚙️ Редактировать профиль
+                            Редактировать профиль
                           </button>
                         </div>
                       ) : (
                         <div className="text-center py-12">
-                          <div className="text-6xl mb-4">🏪</div>
-                          <h4 className="text-xl font-bold text-gray-300 mb-2">Профиль заведения не настроен</h4>
+                          <h4 className="text-xl font-semibold text-gray-300 mb-2">Профиль заведения не настроен</h4>
                           <p className="text-gray-400 mb-6">Настройте профиль для персонализации функций</p>
                           <button
                             onClick={() => setShowVenueProfileModal(true)}
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                           >
-                            🚀 Настроить профиль
+                            Настроить профиль
                           </button>
                         </div>
                       )}
@@ -11793,25 +11783,22 @@ function App() {
                   
                   {personalCabinetTab === 'integrations' && (
                     <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                      <h3 className="text-2xl font-bold text-orange-300 mb-6">🔗 Интеграции</h3>
+                      <h3 className="text-2xl font-bold text-gray-200 mb-6">Интеграции</h3>
                       
                       <div className="space-y-6">
                         {/* IIKO RMS Integration */}
                         <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
                           <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                              <div className="text-4xl">🏢</div>
-                              <div>
-                                <h4 className="text-lg font-bold text-white">IIKO RMS</h4>
-                                <p className="text-gray-400 text-sm">Синхронизация номенклатуры и экспорт техкарт</p>
-                              </div>
+                            <div>
+                              <h4 className="text-lg font-semibold text-white mb-1">IIKO RMS</h4>
+                              <p className="text-gray-400 text-sm">Синхронизация номенклатуры и экспорт техкарт</p>
                             </div>
-                            <div className={`px-4 py-2 rounded-full text-sm font-bold ${
+                            <div className={`px-4 py-2 rounded-full text-sm font-semibold ${
                               iikoRmsConnection.status === 'connected' 
-                                ? 'bg-green-600/20 text-green-300 border border-green-400/30' 
-                                : 'bg-gray-600/20 text-gray-300 border border-gray-400/30'
+                                ? 'bg-purple-600/20 text-purple-300 border border-purple-400/30' 
+                                : 'bg-gray-600/20 text-gray-400 border border-gray-500/30'
                             }`}>
-                              {iikoRmsConnection.status === 'connected' ? '✅ Подключено' : '❌ Не подключено'}
+                              {iikoRmsConnection.status === 'connected' ? 'Подключено' : 'Не подключено'}
                             </div>
                           </div>
                           
@@ -11837,16 +11824,16 @@ function App() {
                               <div className="flex gap-3">
                                 <button
                                   onClick={() => setShowIikoRmsModal(true)}
-                                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                                 >
-                                  ⚙️ Настройки
+                                  Настройки
                                 </button>
                                 <button
                                   onClick={syncIikoRmsNomenclature}
                                   disabled={isSyncingIikoRms}
-                                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                                  className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 disabled:text-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                                 >
-                                  {isSyncingIikoRms ? '⏳ Синхронизация...' : '🔄 Синхронизация'}
+                                  {isSyncingIikoRms ? 'Синхронизация...' : 'Синхронизация'}
                                 </button>
                               </div>
                             </div>
@@ -11854,9 +11841,9 @@ function App() {
                             <div className="text-center py-4">
                               <button
                                 onClick={() => setShowIikoRmsModal(true)}
-                                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                               >
-                                🔗 Подключить IIKO RMS
+                                Подключить IIKO RMS
                               </button>
                             </div>
                           )}
@@ -11867,17 +11854,17 @@ function App() {
                   
                   {personalCabinetTab === 'settings' && (
                     <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
-                      <h3 className="text-2xl font-bold text-gray-300 mb-6">⚙️ Настройки</h3>
+                      <h3 className="text-2xl font-bold text-gray-200 mb-6">Настройки</h3>
                       
                       <div className="space-y-6">
                         <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
-                          <h4 className="text-lg font-bold text-white mb-4">Безопасность</h4>
+                          <h4 className="text-lg font-semibold text-white mb-4">Безопасность</h4>
                           <div className="space-y-4">
                             {currentUser && !currentUser.password_hash && (
-                              <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-4">
+                              <div className="bg-gray-600/20 border border-gray-500/30 rounded-lg p-4">
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <div className="text-yellow-300 font-medium mb-1">Пароль не установлен</div>
+                                    <div className="text-white font-medium mb-1">Пароль не установлен</div>
                                     <div className="text-gray-400 text-sm">Установите пароль для безопасности аккаунта</div>
                                   </div>
                                   <button
@@ -11885,31 +11872,31 @@ function App() {
                                       setSetPasswordData({ password: '', confirmPassword: '' });
                                       setShowSetPasswordModal(true);
                                     }}
-                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                                   >
-                                    🔐 Установить
+                                    Установить
                                   </button>
                                 </div>
                               </div>
                             )}
                             
                             <div className="bg-gray-600/20 rounded-lg p-4">
-                              <div className="text-gray-300 font-medium mb-1">Метод входа</div>
+                              <div className="text-white font-medium mb-1">Метод входа</div>
                               <div className="text-gray-400 text-sm">
-                                {currentUser?.provider === 'google' ? '🔵 Google OAuth' : currentUser?.provider === 'email' ? '📧 Email/Пароль' : 'Не указано'}
+                                {currentUser?.provider === 'google' ? 'Google OAuth' : currentUser?.provider === 'email' ? 'Email/Пароль' : 'Не указано'}
                               </div>
                             </div>
                           </div>
                         </div>
                         
                         <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/30">
-                          <h4 className="text-lg font-bold text-white mb-4">Аккаунт</h4>
+                          <h4 className="text-lg font-semibold text-white mb-4">Аккаунт</h4>
                           <div className="space-y-3">
                             <button
                               onClick={handleLogout}
-                              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-left"
+                              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                             >
-                              🚪 Выйти из аккаунта
+                              Выйти из аккаунта
                             </button>
                           </div>
                         </div>
