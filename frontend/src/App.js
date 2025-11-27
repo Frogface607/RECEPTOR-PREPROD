@@ -2196,8 +2196,8 @@ function App() {
             </h1>
             <div className="flex justify-center gap-2 mb-4">
               <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">V2 Техкарта</span>
-              <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm">Из рецепта</span>
-              <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">ГОТОВО</span>
+              <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-sm">Из рецепта</span>
+              <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm">ГОТОВО</span>
             </div>
           </div>
 
@@ -2246,12 +2246,11 @@ function App() {
 
         {/* GX-01: LLM Unavailable Banner */}
         {issues.some(issue => issue?.type === 'llmUnavailable' || issue?.includes?.('llmUnavailable') || (typeof issue === 'string' && issue.includes('llmUnavailable'))) && (
-          <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-4 mb-6">
+          <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">⚠️</span>
               <div>
-                <div className="font-bold text-yellow-300">Генерация недоступна</div>
-                <div className="text-yellow-400 text-sm mt-1">
+                <div className="font-semibold text-gray-300">Генерация недоступна</div>
+                <div className="text-gray-400 text-sm mt-1">
                   Вы можете: (а) маппить артикулы из iiko, (б) отредактировать ингредиенты вручную, (в) экспортировать ТТК
                 </div>
               </div>
@@ -2346,17 +2345,17 @@ function App() {
 
         {/* ВЫХОД И ПОРЦИИ */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-900/20 rounded-lg p-4 text-center">
-            <h4 className="text-blue-300 font-bold mb-2">ПОРЦИЙ</h4>
-            <p className="text-gray-300">{tcV2.portions || 1}</p>
+          <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700">
+            <h4 className="text-gray-300 font-semibold mb-2">ПОРЦИЙ</h4>
+            <p className="text-gray-200 text-xl">{tcV2.portions || 1}</p>
           </div>
-          <div className="bg-green-900/20 rounded-lg p-4 text-center">
-            <h4 className="text-green-300 font-bold mb-2">НА ПОРЦИЮ</h4>
-            <p className="text-gray-300">{yield_data.perPortion_g || 0}г</p>
+          <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700">
+            <h4 className="text-gray-300 font-semibold mb-2">НА ПОРЦИЮ</h4>
+            <p className="text-gray-200 text-xl">{yield_data.perPortion_g || 0}г</p>
           </div>
-          <div className="bg-purple-900/20 rounded-lg p-4 text-center">
-            <h4 className="text-purple-300 font-bold mb-2">ОБЩИЙ ВЫХОД</h4>
-            <p className="text-gray-300">{yield_data.perBatch_g || 0}г</p>
+          <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700">
+            <h4 className="text-gray-300 font-semibold mb-2">ОБЩИЙ ВЫХОД</h4>
+            <p className="text-gray-200 text-xl">{yield_data.perBatch_g || 0}г</p>
           </div>
         </div>
 
@@ -2379,7 +2378,7 @@ function App() {
                                 costMeta.source}. Обновлено: ${costMeta.asOf || 'не указано'}`
               }
             >
-              💰 Цены {costMeta.coveragePct}% • {
+              Цены {costMeta.coveragePct}% • {
                 costMeta.source === 'user' ? 'User' :
                 costMeta.source === 'catalog' ? 'Catalog' :
                 costMeta.source === 'bootstrap' ? 'Bootstrap' :
@@ -2406,7 +2405,7 @@ function App() {
                                 nutritionMeta.source}. Обновлено: ${nutritionMeta.asOf || 'не указано'}`
               }
             >
-              📊 БЖУ {nutritionMeta.coveragePct}% • {
+              БЖУ {nutritionMeta.coveragePct}% • {
                 nutritionMeta.source === 'usda' ? 'USDA' :
                 nutritionMeta.source === 'catalog' ? 'CAT' :
                 nutritionMeta.source === 'bootstrap' ? 'BOOT' :
@@ -2416,17 +2415,17 @@ function App() {
             </div>
           )}
           {isRecalculating && (
-            <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-bold animate-pulse">
-              🔄 Пересчет...
+            <div className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-semibold animate-pulse">
+              Пересчет...
             </div>
           )}
         </div>
 
         {/* Stale price warning banner */}
         {tcV2 && tcV2.issues && tcV2.issues.some(issue => issue.type === 'stalePrice') && (
-          <div className="bg-yellow-900/50 border border-yellow-600/50 rounded-lg p-3 mb-4">
-            <div className="text-yellow-300 text-sm font-bold mb-1">⏰ Предупреждение о ценах:</div>
-            <div className="text-yellow-300 text-sm">
+          <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-3 mb-4">
+            <div className="text-gray-300 text-sm font-semibold mb-1">Предупреждение о ценах:</div>
+            <div className="text-gray-400 text-sm">
               Часть прайс-листа устарела (данные старше 30 дней). Рекомендуется обновить цены.
               {tcV2.costMeta && tcV2.costMeta.asOf && (
                 <span className="ml-1">Последнее обновление: {tcV2.costMeta.asOf}</span>
@@ -2437,9 +2436,9 @@ function App() {
 
         {/* Recalc error banner */}
         {recalcError && (
-          <div className="bg-red-900/50 border border-red-600/50 rounded-lg p-3 mb-4">
-            <div className="text-red-300 text-sm">
-              ❌ {recalcError}
+          <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-3 mb-4">
+            <div className="text-gray-300 text-sm">
+              {recalcError}
             </div>
           </div>
         )}
@@ -2448,18 +2447,18 @@ function App() {
         {issues && issues.length > 0 && (
           <div className="mb-4">
             {issues.some(issue => typeof issue === 'string' && (issue.includes('Отсутствуют обязательные') || issue.includes('Обнаружены запрещённые'))) && (
-              <div className="bg-red-900/50 border border-red-600/50 rounded-lg p-3 mb-2">
-                <div className="text-red-300 text-sm font-bold mb-1">🎯 Нарушения анкерной валидности:</div>
+              <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-3 mb-2">
+                <div className="text-gray-300 text-sm font-semibold mb-1">Нарушения анкерной валидности:</div>
                 {issues.filter(issue => typeof issue === 'string' && (issue.includes('Отсутствуют обязательные') || issue.includes('Обнаружены запрещённые'))).map((issue, idx) => (
-                  <div key={idx} className="text-red-300 text-sm">• {issue}</div>
+                  <div key={idx} className="text-gray-400 text-sm">• {issue}</div>
                 ))}
               </div>
             )}
             {issues.some(issue => typeof issue === 'string' && issue.includes('Несоответствие белка')) && (
-              <div className="bg-yellow-900/50 border border-yellow-600/50 rounded-lg p-3 mb-2">
-                <div className="text-yellow-300 text-sm font-bold mb-1">⚠️ Предупреждения:</div>
+              <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-3 mb-2">
+                <div className="text-gray-300 text-sm font-semibold mb-1">Предупреждения:</div>
                 {issues.filter(issue => typeof issue === 'string' && issue.includes('Несоответствие белка')).map((issue, idx) => (
-                  <div key={idx} className="text-yellow-300 text-sm">• {issue}</div>
+                  <div key={idx} className="text-gray-400 text-sm">• {issue}</div>
                 ))}
               </div>
             )}
@@ -2470,7 +2469,7 @@ function App() {
         {ingredients.length > 0 && (
           <div className="bg-gray-800/30 rounded-lg p-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-purple-400 uppercase tracking-wide">ИНГРЕДИЕНТЫ</h3>
+              <h3 className="text-lg font-semibold text-gray-200 uppercase tracking-wide">ИНГРЕДИЕНТЫ</h3>
               {editingIngredientIndex !== null ? (
                 <div className="flex gap-2">
                   <button
@@ -2484,7 +2483,7 @@ function App() {
                     onClick={cancelIngredientEdit}
                     className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
                   >
-                    ✖️ Отмена
+                    Отмена
                   </button>
                 </div>
               ) : (
@@ -2502,13 +2501,13 @@ function App() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-700">
-                    <th className="text-left py-2 text-purple-300">Ингредиент</th>
-                    <th className="text-center py-2 text-purple-300">Брутто</th>
-                    <th className="text-center py-2 text-purple-300">Потери %</th>
-                    <th className="text-center py-2 text-purple-300">Нетто</th>
-                    <th className="text-center py-2 text-purple-300">Ед.изм</th>
-                    <th className="text-center py-2 text-purple-300">Артикул (iiko)</th>
-                    <th className="text-center py-2 text-purple-300">Действия</th>
+                    <th className="text-left py-2 text-gray-300 font-semibold">Ингредиент</th>
+                    <th className="text-center py-2 text-gray-300 font-semibold">Брутто</th>
+                    <th className="text-center py-2 text-gray-300 font-semibold">Потери %</th>
+                    <th className="text-center py-2 text-gray-300 font-semibold">Нетто</th>
+                    <th className="text-center py-2 text-gray-300 font-semibold">Ед.изм</th>
+                    <th className="text-center py-2 text-gray-300 font-semibold">Артикул (iiko)</th>
+                    <th className="text-center py-2 text-gray-300 font-semibold">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
