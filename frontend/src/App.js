@@ -2547,15 +2547,15 @@ function App() {
                                     <>
                                       {/* USDA badge - показываем если источник общий USDA или mixed */}
                                       {(nutritionMeta.source === 'usda' || nutritionMeta.source === 'Mixed') && (
-                                        <span className="text-xs bg-green-600 text-white px-1 py-0.5 rounded" title="БЖУ: USDA FoodData Central">🥗 USDA</span>
+                                        <span className="text-xs bg-purple-600/20 text-purple-300 px-1 py-0.5 rounded border border-purple-500/30" title="БЖУ: USDA FoodData Central">USDA</span>
                                       )}
                                       {/* CAT badge - показываем если источник каталог или mixed */}
                                       {(nutritionMeta.source === 'catalog' || (nutritionMeta.source === 'Mixed' && !nutritionMeta.source.includes('usda'))) && (
-                                        <span className="text-xs bg-blue-600 text-white px-1 py-0.5 rounded" title="БЖУ: Каталог разработчика">🥗 CAT</span>
+                                        <span className="text-xs bg-purple-600/20 text-purple-300 px-1 py-0.5 rounded border border-purple-500/30" title="БЖУ: Каталог разработчика">CAT</span>
                                       )}
                                       {/* BOOT badge - показываем если источник bootstrap */}
                                       {nutritionMeta.source === 'bootstrap' && (
-                                        <span className="text-xs bg-orange-600 text-white px-1 py-0.5 rounded" title="БЖУ: Демо каталог">🥗 BOOT</span>
+                                        <span className="text-xs bg-gray-600/20 text-gray-300 px-1 py-0.5 rounded border border-gray-500/30" title="БЖУ: Демо каталог">BOOT</span>
                                       )}
                                     </>
                                   )}
@@ -2564,16 +2564,16 @@ function App() {
                                   {ing.skuId && (
                                     <>
                                       {costMeta.source === 'user' && (
-                                        <span className="text-xs bg-purple-600 text-white px-1 py-0.5 rounded" title="Цена: Загруженные пользователем">💰 USER</span>
+                                        <span className="text-xs bg-purple-600/20 text-purple-300 px-1 py-0.5 rounded border border-purple-500/30" title="Цена: Загруженные пользователем">USER</span>
                                       )}
                                       {costMeta.source === 'catalog' && (
-                                        <span className="text-xs bg-blue-600 text-white px-1 py-0.5 rounded" title="Цена: Каталог разработчика">💰 CAT</span>
+                                        <span className="text-xs bg-purple-600/20 text-purple-300 px-1 py-0.5 rounded border border-purple-500/30" title="Цена: Каталог разработчика">CAT</span>
                                       )}
                                       {costMeta.source === 'bootstrap' && (
-                                        <span className="text-xs bg-orange-600 text-white px-1 py-0.5 rounded" title="Цена: Демо каталог">💰 BOOT</span>
+                                        <span className="text-xs bg-gray-600/20 text-gray-300 px-1 py-0.5 rounded border border-gray-500/30" title="Цена: Демо каталог">BOOT</span>
                                       )}
                                       {costMeta.source === 'mixed' && (
-                                        <span className="text-xs bg-gray-600 text-white px-1 py-0.5 rounded" title="Цена: Смешанные источники">💰 Mixed</span>
+                                        <span className="text-xs bg-gray-600/20 text-gray-300 px-1 py-0.5 rounded border border-gray-500/30" title="Цена: Смешанные источники">Mixed</span>
                                       )}
                                     </>
                                   )}
@@ -2582,8 +2582,8 @@ function App() {
                                 </div>
                               </div>
                               {ing.subRecipe && (
-                                <div className="text-xs text-blue-300 mt-1">
-                                  📋 см. ТК "{ing.subRecipe.title}"
+                                <div className="text-xs text-gray-400 mt-1">
+                                  см. ТК "{ing.subRecipe.title}"
                                   <button
                                     onClick={() => window.open(`${API}/v1/techcards.v2/print?id=${ing.subRecipe.id}`, '_blank')}
                                     className="ml-2 text-purple-400 hover:text-purple-300 underline"
@@ -2593,7 +2593,7 @@ function App() {
                                 </div>
                               )}
                               {hasSubRecipeIssue && (
-                                <div className="bg-yellow-900/30 border-l-2 border-yellow-500 px-2 py-1 mt-1 text-xs text-yellow-300">
+                                <div className="bg-gray-800/30 border-l-2 border-gray-600 px-2 py-1 mt-1 text-xs text-gray-400">
                                   Подрецепт не готов (нет cost/БЖУ)
                                 </div>
                               )}
@@ -2706,11 +2706,11 @@ function App() {
                         <td className="text-center py-2 text-gray-400 text-xs">
                           {/* B. Terminology & UI: показываем Артикул (iiko) вместо GUID */}
                           {ing.product_code ? (
-                            <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded text-xs font-mono">
+                            <span className="bg-purple-600/20 text-purple-300 px-2 py-1 rounded text-xs font-mono border border-purple-500/30">
                               Артикул: {ing.product_code}
                             </span>
                           ) : ing.skuId ? (
-                            <span className="bg-gray-600/20 text-gray-400 px-2 py-1 rounded text-xs" title={`GUID: ${ing.skuId}`}>
+                            <span className="bg-gray-600/20 text-gray-400 px-2 py-1 rounded text-xs border border-gray-500/30" title={`GUID: ${ing.skuId}`}>
                               GUID
                             </span>
                           ) : '-'}
@@ -2719,11 +2719,11 @@ function App() {
                           <div className="flex justify-center gap-2">
                             {/* Улучшенная кнопка сопоставления с IIKO */}
                             <button
-                              className="bg-blue-600/20 border border-blue-500/50 text-blue-300 hover:bg-blue-500 hover:text-white px-3 py-1 rounded-lg text-sm font-medium transition-all hover:scale-105 flex items-center gap-1"
+                              className="bg-purple-600/20 border border-purple-500/50 text-purple-300 hover:bg-purple-600 hover:text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                               onClick={() => handleOpenIngredientMapping(index)}
                               title="Связать с товаром из IIKO системы"
                             >
-                              🔗 IIKO
+                              IIKO
                             </button>
                             {/* Кнопка "Добавить подрецепт" временно скрыта */}
                             {false && (
@@ -2737,20 +2737,20 @@ function App() {
                             )}
                             {ing.subRecipe && (
                               <button
-                                className="text-red-400 hover:text-red-300 transition-colors p-1"
+                                className="text-gray-400 hover:text-gray-300 hover:bg-gray-700/50 transition-colors p-1 rounded"
                                 onClick={() => removeSubRecipe(index)}
                                 title="Убрать подрецепт"
                               >
-                                ❌
+                                ×
                               </button>
                             )}
                             {/* Кнопка удаления ингредиента */}
                             <button
-                              className="text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors p-1 rounded"
+                              className="text-gray-400 hover:text-gray-300 hover:bg-gray-700/50 transition-colors p-1 rounded"
                               onClick={() => removeV2Ingredient(index)}
                               title="Удалить ингредиент"
                             >
-                              🗑️
+                              ×
                             </button>
                           </div>
                         </td>
@@ -2765,9 +2765,9 @@ function App() {
             <div className="mt-4 flex justify-center">
               <button
                 onClick={addV2Ingredient}
-                className="bg-green-600/20 border border-green-500/50 text-green-300 hover:bg-green-500 hover:text-white px-4 py-2 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2"
+                className="bg-purple-600/20 border border-purple-500/50 text-purple-300 hover:bg-purple-600 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                ➕ Добавить ингредиент
+                Добавить ингредиент
               </button>
             </div>
           </div>
@@ -2776,7 +2776,7 @@ function App() {
         {/* ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС */}
         {process.length > 0 && (
           <div className="bg-gray-800/30 rounded-lg p-4">
-            <h3 className="text-lg font-bold text-purple-400 mb-4 uppercase tracking-wide">ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС</h3>
+            <h3 className="text-lg font-semibold text-gray-200 mb-4 uppercase tracking-wide">ТЕХНОЛОГИЧЕСКИЙ ПРОЦЕСС</h3>
             <div className="space-y-3">
               {process.map((step, index) => (
                 <div key={index} className="bg-gray-700/20 rounded-lg p-3 border-l-4 border-purple-500">
@@ -2788,13 +2788,13 @@ function App() {
                       <p className="text-gray-300 mb-2">{step.action}</p>
                       <div className="flex flex-wrap gap-4 text-sm">
                         {step.time_min && (
-                          <span className="text-blue-300">⏱ {step.time_min} мин</span>
+                          <span className="text-gray-400">{step.time_min} мин</span>
                         )}
                         {step.temp_c && (
-                          <span className="text-red-300">🌡 {step.temp_c}°C</span>
+                          <span className="text-gray-400">{step.temp_c}°C</span>
                         )}
                         {step.equipment && step.equipment.length > 0 && (
-                          <span className="text-yellow-300">🔧 {step.equipment.join(', ')}</span>
+                          <span className="text-gray-400">{step.equipment.join(', ')}</span>
                         )}
                         {/* CLEANUP TECH CARD DATA & UI: Убираем CCP warning'и */}
                       </div>
@@ -2809,7 +2809,7 @@ function App() {
         {/* ХРАНЕНИЕ */}
         {storage.conditions && (
           <div className="bg-gray-800/30 rounded-lg p-4">
-            <h3 className="text-lg font-bold text-purple-400 mb-3 uppercase tracking-wide">ХРАНЕНИЕ И ПОДАЧА</h3>
+            <h3 className="text-lg font-semibold text-gray-200 mb-3 uppercase tracking-wide">ХРАНЕНИЕ И ПОДАЧА</h3>
             <div className="text-gray-300 space-y-2">
               <p><strong>Условия хранения:</strong> {storage.conditions}</p>
               {storage.shelfLife_hours && (
