@@ -2227,7 +2227,7 @@ function App() {
         {/* НАЗВАНИЕ И СТАТУС */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <h1 className="text-3xl font-bold text-purple-300">
+            <h1 className="text-3xl font-semibold text-gray-200">
               {meta.title || 'Техкарта'}
             </h1>
             <div className="flex gap-2">
@@ -12574,18 +12574,17 @@ function App() {
                     </div>
                   ) : (
                     <div className="text-center py-12 text-gray-400 space-y-4">
-                      <div className="text-6xl">📝</div>
                       <div>
-                        <p className="text-xl font-bold text-purple-300">ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ</p>
+                        <p className="text-xl font-semibold text-gray-300">ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ</p>
                         <p className="text-lg">После создания техкарты или рецепта</p>
                         <div className="flex gap-4 justify-center mt-6">
-                          <div className="bg-purple-900/20 rounded-lg p-3">
-                            <div className="text-purple-300 font-medium">🔧 Техкарты V2</div>
-                            <div className="text-purple-400/70 text-sm">Для бизнеса и IIKO</div>
+                          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
+                            <div className="text-gray-200 font-medium">Техкарты V2</div>
+                            <div className="text-gray-400 text-sm">Для бизнеса и IIKO</div>
                           </div>
-                          <div className="bg-pink-900/20 rounded-lg p-3">
-                            <div className="text-pink-300 font-medium">🍳 Рецепты V1</div>
-                            <div className="text-pink-400/70 text-sm">Для экспериментов</div>
+                          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
+                            <div className="text-gray-200 font-medium">Рецепты V1</div>
+                            <div className="text-gray-400 text-sm">Для экспериментов</div>
                           </div>
                         </div>
                       </div>
