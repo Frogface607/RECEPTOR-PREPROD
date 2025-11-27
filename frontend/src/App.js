@@ -11659,10 +11659,12 @@ function App() {
                 </div>
 
                 {/* Account & Subscription Section */}
-                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20">
                   <h3 className="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-3">
                     💳 Подписка и аккаунт
                   </h3>
+                  
+                  {console.log('🔵 Rendering Account & Subscription Section, currentUser:', currentUser)}
                   
                   <div className="space-y-4">
                     {/* User Profile Info */}
