@@ -111,16 +111,15 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                 raise ValueError("No choices in response")
             
             message = resp.choices[0].message
-            print(f"🔍 {stage}: Response structure - has content: {hasattr(message, 'content')}, content type: {type(getattr(message, 'content', None))}")
             
-            # Получаем content
-            content = getattr(message, 'content', None)
+            # Получаем content напрямую
+            content = message.content if hasattr(message, 'content') else None
+            print(f"🔍 {stage}: Content check - exists: {content is not None}, type: {type(content)}, length: {len(content) if content else 0}, value preview: {repr(content)[:100] if content else 'None'}")
             
             # Проверяем, что content не пустой
-            if content is None or (isinstance(content, str) and len(content.strip()) == 0):
-                print(f"⚠️ {stage}: Content is empty or None, checking alternative response formats...")
-                print(f"🔍 {stage}: Content value: {repr(content)}")
-                print(f"🔍 {stage}: Content length: {len(content) if content else 0}")
+            if not content or (isinstance(content, str) and len(content.strip()) == 0):
+                print(f"⚠️ {stage}: Content is empty, checking response details...")
+                print(f"🔍 {stage}: Full message dict keys: {list(message.model_dump().keys()) if hasattr(message, 'model_dump') else 'N/A'}")
                 
                 # Проверяем другие возможные места для ответа
                 if hasattr(message, 'tool_calls') and message.tool_calls:
@@ -130,15 +129,24 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                 if hasattr(resp, 'model'):
                     print(f"🔍 {stage}: Model used: {resp.model}")
                 if hasattr(resp, 'usage'):
-                    print(f"🔍 {stage}: Usage: {resp.usage}")
+                    usage = resp.usage
+                    print(f"🔍 {stage}: Usage - completion_tokens: {usage.completion_tokens if hasattr(usage, 'completion_tokens') else 'N/A'}")
+                    if hasattr(usage, 'completion_tokens_details') and hasattr(usage.completion_tokens_details, 'reasoning_tokens'):
+                        reasoning = usage.completion_tokens_details.reasoning_tokens
+                        print(f"🔍 {stage}: Reasoning tokens: {reasoning}")
+                        if reasoning > 0:
+                            print(f"⚠️ {stage}: Model used {reasoning} reasoning tokens - gpt-5-mini may require different approach for reasoning models")
                 
-                # Если есть reasoning tokens, возможно ответ в другом формате
-                if hasattr(resp, 'usage') and hasattr(resp.usage, 'completion_tokens_details'):
-                    reasoning = getattr(resp.usage.completion_tokens_details, 'reasoning_tokens', 0)
-                    if reasoning > 0:
-                        print(f"⚠️ {stage}: Model used {reasoning} reasoning tokens but content is empty - this may be a gpt-5-mini limitation")
+                # Попробуем получить content через model_dump если доступно
+                if hasattr(message, 'model_dump'):
+                    msg_dict = message.model_dump()
+                    print(f"🔍 {stage}: Message dict content field: {repr(msg_dict.get('content', 'NOT_FOUND'))[:200]}")
+                    if 'content' in msg_dict and msg_dict['content']:
+                        content = msg_dict['content']
+                        print(f"✅ {stage}: Found content in model_dump!")
                 
-                raise ValueError("Empty response content - gpt-5-mini may not support json_object format or requires different approach")
+                if not content:
+                    raise ValueError("Empty response content - gpt-5-mini may not support json_object format or requires different approach")
             
             parsed = json.loads(content)
             print(f"✅ {stage}: Successfully parsed JSON response")
