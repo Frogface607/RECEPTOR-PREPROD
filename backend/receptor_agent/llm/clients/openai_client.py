@@ -113,21 +113,32 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
             message = resp.choices[0].message
             print(f"🔍 {stage}: Response structure - has content: {hasattr(message, 'content')}, content type: {type(getattr(message, 'content', None))}")
             
-            # GPT-5-mini может возвращать content как None при использовании json_schema
-            # В этом случае нужно проверить другие поля
+            # Получаем content
             content = getattr(message, 'content', None)
             
-            # Если content пустой, но есть tool_calls или другие поля
-            if not content:
-                print(f"⚠️ {stage}: Content is empty, checking alternative response formats...")
-                print(f"🔍 {stage}: Message attributes: {dir(message)}")
+            # Проверяем, что content не пустой
+            if content is None or (isinstance(content, str) and len(content.strip()) == 0):
+                print(f"⚠️ {stage}: Content is empty or None, checking alternative response formats...")
+                print(f"🔍 {stage}: Content value: {repr(content)}")
+                print(f"🔍 {stage}: Content length: {len(content) if content else 0}")
+                
+                # Проверяем другие возможные места для ответа
                 if hasattr(message, 'tool_calls') and message.tool_calls:
                     print(f"🔍 {stage}: Found tool_calls: {message.tool_calls}")
+                if hasattr(message, 'refusal') and message.refusal:
+                    print(f"🔍 {stage}: Found refusal: {message.refusal}")
                 if hasattr(resp, 'model'):
                     print(f"🔍 {stage}: Model used: {resp.model}")
                 if hasattr(resp, 'usage'):
                     print(f"🔍 {stage}: Usage: {resp.usage}")
-                raise ValueError("Empty response content - gpt-5-mini may not support json_schema format")
+                
+                # Если есть reasoning tokens, возможно ответ в другом формате
+                if hasattr(resp, 'usage') and hasattr(resp.usage, 'completion_tokens_details'):
+                    reasoning = getattr(resp.usage.completion_tokens_details, 'reasoning_tokens', 0)
+                    if reasoning > 0:
+                        print(f"⚠️ {stage}: Model used {reasoning} reasoning tokens but content is empty - this may be a gpt-5-mini limitation")
+                
+                raise ValueError("Empty response content - gpt-5-mini may not support json_object format or requires different approach")
             
             parsed = json.loads(content)
             print(f"✅ {stage}: Successfully parsed JSON response")
