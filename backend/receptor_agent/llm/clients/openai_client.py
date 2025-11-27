@@ -45,7 +45,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
     start_time = time.time()
     
     try:
-        mdl = model or os.getenv("TECHCARDS_V2_MODEL", "gpt-4o-mini")
+        mdl = model or os.getenv("TECHCARDS_V2_MODEL", "gpt-5-mini")
         # GX-01-FINAL: timeout_ms=20000 по умолчанию
         timeout_seconds = (timeout_ms or 20000) / 1000.0
         

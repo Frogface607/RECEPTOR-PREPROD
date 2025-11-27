@@ -3783,8 +3783,8 @@ async def generate_tech_card(request: DishRequest):
             equipment_context=enhanced_equipment_context  # Контекст передается через equipment_context
         )
         
-        # Temporarily use GPT-4o-mini for all users to test
-        ai_model = "gpt-4o-mini"  # was: "gpt-4o" if user['subscription_plan'] in ['pro', 'business'] else "gpt-4o-mini"
+        # Using GPT-5-mini for all users
+        ai_model = "gpt-5-mini"
         max_tokens = 4000  # Increased for better tech cards, was: 3000
         
         print(f"Using AI model: {ai_model} for user subscription: {user['subscription_plan']}")
@@ -3894,8 +3894,8 @@ async def edit_tech_card(request: EditRequest):
             regional_coefficient=regional_coefficient
         )
         
-        # Temporarily use GPT-4o-mini for all users to test
-        ai_model = "gpt-4o-mini"  # was: "gpt-4o" if user['subscription_plan'] in ['pro', 'business'] else "gpt-4o-mini"
+        # Using GPT-5-mini for all users
+        ai_model = "gpt-5-mini"
         max_tokens = 4000  # Increased for better tech cards, was: 3000
         
         # Generate edited tech card using OpenAI
@@ -4447,7 +4447,7 @@ async def generate_menu(request: dict):
 Создай {dish_count} блюд, распределив их логично по 3-5 категориям
             """
 
-        # Create comprehensive enhanced prompt for GPT-4o
+        # Create comprehensive enhanced prompt for GPT-5-mini
         menu_prompt = f"""
 Ты - эксперт шеф-повар и ресторанный консультант с 20+ летним стажем. Создай УНИКАЛЬНОЕ и КРЕАТИВНОЕ меню по следующим критериям:
 
@@ -4541,7 +4541,7 @@ async def generate_menu(request: dict):
         client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         
         response = client.chat.completions.create(
-            model="gpt-4o",  # Premium model for high-quality menu generation
+            model="gpt-5-mini",  # Using GPT-5-mini for menu generation
             messages=[
                 {"role": "system", "content": "You are an expert chef and restaurant consultant with 20+ years of experience. Always respond in Russian with valid JSON format. Create detailed, professional menus that exactly match user requirements."},
                 {"role": "user", "content": menu_prompt}
@@ -4584,7 +4584,7 @@ async def generate_menu(request: dict):
                     
                     # Retry generation with enhanced prompt
                     retry_response = client.chat.completions.create(
-                        model="gpt-4o-mini",
+                        model="gpt-5-mini",
                         messages=[
                             {"role": "system", "content": "You are an expert chef and restaurant consultant with 20+ years of experience. Always respond in Russian with valid JSON format. Create detailed, professional menus that exactly match user requirements."},
                             {"role": "user", "content": enhanced_prompt}
@@ -4795,7 +4795,7 @@ async def generate_mass_tech_cards(request: dict):
                 client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
                 
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-5-mini",
                     messages=[
                         {"role": "system", "content": "You are RECEPTOR, a professional AI assistant for chefs. Always respond in Russian."},
                         {"role": "user", "content": prompt}
@@ -5023,7 +5023,7 @@ async def replace_dish(request: dict):
         client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "You are RECEPTOR, a professional AI assistant for chefs. Always respond in Russian."},
                 {"role": "user", "content": prompt}
@@ -5244,7 +5244,7 @@ async def generate_simple_menu(request: SimpleMenuRequest):
         client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         
         response = client.chat.completions.create(
-            model="gpt-4o",  # Using gpt-4o for better menu generation
+            model="gpt-5-mini",  # Using GPT-5-mini for menu generation
             messages=[
                 {"role": "system", "content": "You are RECEPTOR, a professional AI assistant for chefs and restaurateurs. Always respond in Russian with valid JSON."},
                 {"role": "user", "content": menu_prompt}
@@ -6545,7 +6545,7 @@ async def ai_analyze_menu(organization_id: str, request: dict = None):
         logger.info("🤖 Sending menu to GPT-4 for analysis...")
         
         ai_response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты эксперт по ресторанному бизнесу с 20-летним опытом оптимизации меню."},
                 {"role": "user", "content": ai_prompt}
@@ -6570,7 +6570,7 @@ async def ai_analyze_menu(organization_id: str, request: dict = None):
             "ai_analysis": {
                 "recommendations": ai_analysis,
                 "analysis_type": analysis_type,
-                "model_used": "gpt-4o",
+                "model_used": "gpt-5-mini",
                 "generated_at": datetime.now().isoformat()
             },
             "menu_insights": {
@@ -7259,7 +7259,7 @@ async def generate_recipe_v1(request: dict):
         client = OpenAI(api_key=openai_api_key)
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.8,
             max_tokens=3000
@@ -7381,7 +7381,7 @@ async def generate_sales_script(request: dict):
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1500,
             temperature=0.8
@@ -7474,7 +7474,7 @@ async def generate_food_pairing(request: dict):
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1500,
             temperature=0.7
@@ -7586,7 +7586,7 @@ async def generate_photo_tips(request: dict):
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1500,
             temperature=0.7
@@ -7687,7 +7687,7 @@ async def generate_inspiration(request: dict):
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=2000,
             temperature=0.8
@@ -7826,7 +7826,7 @@ async def convert_recipe_to_techcard(request: dict):
 """
 
         parse_response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты эксперт по анализу рецептов. Возвращай только корректный JSON."},
                 {"role": "user", "content": parsing_prompt}
@@ -7966,7 +7966,7 @@ async def generate_food_pairing(request: dict):
             raise HTTPException(status_code=500, detail="OpenAI клиент не инициализирован")
         
         response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты мастер фудпейринга с опытом работы в мишленовских ресторанах. Создавай точные и вкусные сочетания."},
                 {"role": "user", "content": pairing_prompt}
@@ -8044,7 +8044,7 @@ async def generate_inspiration(request: dict):
             raise HTTPException(status_code=500, detail="OpenAI клиент не инициализирован")
         
         response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты новаторский шеф-повар, который создает революционные интерпретации классических блюд. Твои идеи всегда практичны и вкусны."},
                 {"role": "user", "content": creativity_prompt}
@@ -8307,7 +8307,7 @@ async def analyze_finances(request: dict):
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты профессиональный финансовый аналитик ресторанного бизнеса с 10-летним опытом. Всегда возвращай корректный JSON."},
                 {"role": "user", "content": prompt}
@@ -8528,7 +8528,7 @@ async def improve_dish(request: dict):
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты мишленовский шеф-повар с 20-летним опытом. Твоя задача - улучшать блюда, делая их более профессиональными, но сохраняя суть. Давай конкретные техники и объяснения."},
                 {"role": "user", "content": prompt}
@@ -8755,7 +8755,7 @@ async def laboratory_experiment(request: dict):
     try:
         # Генерируем экспериментальное блюдо
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "Ты доктор Гастрономус - безумный ученый от кулинарии. Создаешь шокирующие, но вкусные блюда. Будь креативным, дерзким, но научным в подходе."},
                 {"role": "user", "content": prompt}
