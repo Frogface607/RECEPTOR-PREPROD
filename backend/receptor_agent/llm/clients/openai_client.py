@@ -78,15 +78,19 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                 params["max_tokens"] = max_tokens
                 print(f"🔧 Using max_tokens={max_tokens} for {mdl}")
         
-        # Добавляем дополнительные параметры если они указаны
-        if temperature is not None:
-            params["temperature"] = temperature
-        if top_p is not None:
-            params["top_p"] = top_p  
-        if presence_penalty is not None:
-            params["presence_penalty"] = presence_penalty
-        if frequency_penalty is not None:
-            params["frequency_penalty"] = frequency_penalty
+        # GPT-5-mini only supports default temperature (1), no custom parameters
+        # Добавляем дополнительные параметры только для старых моделей
+        if mdl != "gpt-5-mini" and "gpt-5" not in mdl:
+            if temperature is not None:
+                params["temperature"] = temperature
+            if top_p is not None:
+                params["top_p"] = top_p  
+            if presence_penalty is not None:
+                params["presence_penalty"] = presence_penalty
+            if frequency_penalty is not None:
+                params["frequency_penalty"] = frequency_penalty
+        else:
+            print(f"🔧 Skipping custom parameters (temperature, top_p, etc.) for {mdl} - using defaults")
             
         resp = cli.chat.completions.create(**params)
         
