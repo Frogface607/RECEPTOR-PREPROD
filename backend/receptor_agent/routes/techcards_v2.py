@@ -40,7 +40,7 @@ def status_tc_v2():
     return {
         "feature_enabled": _flag(),
         "llm_enabled": _llm_enabled(),
-        "model": os.getenv("TECHCARDS_V2_MODEL","gpt-5-mini") if _llm_enabled() else None
+        "model": os.getenv("TECHCARDS_V2_MODEL","gpt-4o-mini") if _llm_enabled() else None
     }
 
 @router.get("/techcards.v2/test")

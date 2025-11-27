@@ -45,7 +45,8 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
     start_time = time.time()
     
     try:
-        mdl = model or os.getenv("TECHCARDS_V2_MODEL", "gpt-5-mini")
+        # Use gpt-4o-mini for tech cards - gpt-5-mini has issues with reasoning and empty content
+        mdl = model or os.getenv("TECHCARDS_V2_MODEL", "gpt-4o-mini")
         # GX-01-FINAL: timeout_ms=20000 по умолчанию
         timeout_seconds = (timeout_ms or 20000) / 1000.0
         
@@ -62,11 +63,11 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
             ]
         }
         
-        # Use json_schema for older models, json_object for gpt-5-mini
-        # Note: gpt-5-mini with reasoning returns empty content - use minimal reasoning
+        # Use json_schema for all models
+        # Note: gpt-5-mini has issues with reasoning and empty content, so we use gpt-4o-mini by default
         if mdl == "gpt-5-mini" or "gpt-5" in mdl:
-            # Use minimal reasoning for gpt-5-mini to avoid empty content
-            params["reasoning_effort"] = "minimal"
+            # If user explicitly wants gpt-5-mini, try without reasoning_effort
+            # But it may still have issues with empty content
             params["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
@@ -75,7 +76,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                     "strict": False
                 }
             }
-            print(f"🔧 {stage}: Using json_schema format for {mdl} with minimal reasoning")
+            print(f"⚠️ {stage}: Using gpt-5-mini - may have issues with reasoning and empty content")
         else:
             params["response_format"] = {
                 "type": "json_schema",
