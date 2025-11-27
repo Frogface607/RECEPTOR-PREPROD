@@ -2475,10 +2475,10 @@ function App() {
                 <div className="flex gap-2">
                   <button
                     onClick={saveIngredientEdit}
-                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
+                    className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors"
                     disabled={Object.keys(editingErrors).length > 0}
                   >
-                    💾 Сохранить изменения
+                    Сохранить изменения
                   </button>
                   <button
                     onClick={cancelIngredientEdit}
@@ -12324,8 +12324,8 @@ function App() {
 
               {/* Manual Editing */}
               {isEditing && techCard && (
-                <div className="border-t border-purple-400/30 pt-6 sm:pt-8">
-                  <h3 className="text-lg sm:text-xl font-bold text-purple-300 mb-4 sm:mb-6">
+                <div className="border-t border-gray-700 pt-6 sm:pt-8">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-4 sm:mb-6">
                     РУЧНОЕ РЕДАКТИРОВАНИЕ
                   </h3>
                   <div className="space-y-4">
