@@ -2491,10 +2491,10 @@ function App() {
                 <button
                   onClick={saveTechCardToHistory}
                   disabled={isRecalculating}
-                  className={`px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-bold transition-all shadow-lg ${isRecalculating ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                  className={`px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors ${isRecalculating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title="Пересчитать и сохранить техкарту в базу данных"
                 >
-                  {isRecalculating ? '⏳ Сохранение...' : '💾 СОХРАНИТЬ ТЕХКАРТУ'}
+                  {isRecalculating ? 'Сохранение...' : 'СОХРАНИТЬ ТЕХКАРТУ'}
                 </button>
               )}
             </div>
@@ -11944,13 +11944,13 @@ function App() {
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-gray-700 space-y-6 sm:space-y-8">
               <div>
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <h2 className="text-xl sm:text-2xl font-bold text-purple-300">СОЗДАТЬ ТЕХКАРТУ</h2>
+                  <h2 className="text-xl sm:text-2xl font-semibold text-gray-200">СОЗДАТЬ ТЕХКАРТУ</h2>
                   <button
                     onClick={() => window.startTour_createTechcard && window.startTour_createTechcard()}
-                    className="text-blue-400 hover:text-blue-300 transition-colors text-xl"
-                    title="❓ Показать тур: как создать техкарту"
+                    className="text-gray-400 hover:text-gray-300 transition-colors text-sm font-medium"
+                    title="Показать тур: как создать техкарту"
                   >
-                    ❓
+                    Помощь
                   </button>
                 </div>
                 
@@ -12074,7 +12074,7 @@ function App() {
                   <button
                     type="submit"
                     disabled={!wizardData.dishName.trim() || isGenerating}
-                    className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'} text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px] shadow-lg shadow-pink-500/25`}
+                    className={`w-full ${isGenerating ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-semibold py-3 sm:py-4 px-6 rounded-lg transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px]`}
                     title="Создать профессиональную техническую карту с ингредиентами и процессом приготовления"
                   >
                     {isGenerating ? (
@@ -12262,8 +12262,8 @@ function App() {
 
               {/* AI Editing */}
               {(techCard || tcV2) && (
-                <div className="border-t border-purple-400/30 pt-6 sm:pt-8">
-                  <h3 className="text-lg sm:text-xl font-bold text-purple-300 mb-4 sm:mb-6">
+                <div className="border-t border-gray-700 pt-6 sm:pt-8">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-4 sm:mb-6">
                     РЕДАКТИРОВАТЬ ЧЕРЕЗ AI
                   </h3>
                   <div className="space-y-4">
@@ -12314,8 +12314,8 @@ function App() {
                   
                   <button
                     onClick={() => setIsEditing(!isEditing)}
-                    className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-colors text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
-                    title="✏️ Открыть режим ручного редактирования техкарты в текстовом поле"
+                    className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 sm:py-4 px-6 rounded-lg transition-colors text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
+                    title="Открыть режим ручного редактирования техкарты в текстовом поле"
                   >
                     {isEditing ? 'ЗАКРЫТЬ РЕДАКТОР' : 'РУЧНОЕ РЕДАКТИРОВАНИЕ'}
                   </button>
@@ -12623,7 +12623,7 @@ function App() {
               </div>
             ) : (
               <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-12 border border-gray-700 text-center">
-                <h3 className="text-2xl font-bold text-purple-300 mb-4">ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ</h3>
+                <h3 className="text-2xl font-semibold text-gray-300 mb-4">ТЕХКАРТА ПОЯВИТСЯ ЗДЕСЬ</h3>
                 <p className="text-gray-400">Введите название блюда слева и нажмите "СОЗДАТЬ ТЕХКАРТУ"</p>
               </div>
             )}
