@@ -102,10 +102,10 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         try:
             content = resp.choices[0].message.content
             if not content:
-                raise APIError("Empty response content")
+                raise ValueError("Empty response content")
             return json.loads(content)
         except (json.JSONDecodeError, IndexError) as e:
-            raise APIError(f"Failed to parse structured output: {e}")
+            raise ValueError(f"Failed to parse structured output: {e}")
             
     except Exception as e:
         elapsed_ms = int((time.time() - start_time) * 1000)
@@ -130,7 +130,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                 print(f"✅ {stage}: Completed with fallback model in {elapsed_ms}ms")
                 content = resp.choices[0].message.content
                 if not content:
-                    raise APIError("Empty response content")
+                    raise ValueError("Empty response content")
                 return json.loads(content)
             except Exception as fallback_error:
                 print(f"❌ Fallback also failed: {str(fallback_error)}")
