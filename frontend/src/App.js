@@ -2231,7 +2231,7 @@ function App() {
               {meta.title || 'Техкарта'}
             </h1>
             <div className="flex gap-2">
-              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                 TechCard v2
               </span>
               <span className={`px-3 py-1 rounded-full text-sm font-semibold ${(tcV2.status === 'success' || tcV2.status === 'READY') ? 'bg-purple-500 text-white' : 'bg-gray-600 text-white'}`}>
@@ -2262,36 +2262,17 @@ function App() {
         {qualityBanners && qualityBanners.length > 0 && (
           <div className="space-y-3 mb-6">
             {qualityBanners.map((banner, index) => (
-              <div key={index} className={`border rounded-lg p-4 ${
-                banner.type === 'error' 
-                  ? 'bg-red-900/30 border-red-400/30'
-                  : banner.type === 'warning'
-                  ? 'bg-yellow-900/30 border-yellow-400/30'
-                  : 'bg-blue-900/30 border-blue-400/30'
-              }`}>
+              <div key={index} className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl flex-shrink-0">{banner.icon}</span>
                   <div className="flex-1">
-                    <div className={`font-bold mb-2 ${
-                      banner.type === 'error' 
-                        ? 'text-red-300'
-                        : banner.type === 'warning'
-                        ? 'text-yellow-300'
-                        : 'text-blue-300'
-                    }`}>
+                    <div className="font-semibold mb-2 text-gray-200">
                       {banner.title}
                     </div>
                     
                     {banner.messages && banner.messages.length > 0 && (
                       <div className="space-y-1 mb-3">
                         {banner.messages.map((message, msgIndex) => (
-                          <div key={msgIndex} className={`text-sm ${
-                            banner.type === 'error' 
-                              ? 'text-red-400'
-                              : banner.type === 'warning'
-                              ? 'text-yellow-400'
-                              : 'text-blue-400'
-                          }`}>
+                          <div key={msgIndex} className="text-sm text-gray-400">
                             {message}
                           </div>
                         ))}
@@ -2309,26 +2290,24 @@ function App() {
                             }
                           }}
                           disabled={isValidatingQuality}
-                          className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
-                            banner.type === 'error'
-                              ? 'bg-red-600 hover:bg-red-700 text-white'
-                              : 'bg-yellow-600 hover:bg-yellow-700 text-black'
+                          className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                            'bg-purple-600 hover:bg-purple-700 text-white'
                           } ${isValidatingQuality ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          {isValidatingQuality ? '⏳' : banner.action}
+                          {isValidatingQuality ? 'Обработка...' : banner.action}
                         </button>
                         
                         {/* Quality Score Display */}
                         {qualityScore && (
                           <div className="ml-auto">
-                            <div className={`text-xs px-2 py-1 rounded-full font-bold ${
+                            <div className={`text-xs px-2 py-1 rounded-full font-semibold ${
                               qualityScore.level === 'excellent' 
-                                ? 'bg-green-600 text-white'
+                                ? 'bg-purple-600 text-white'
                                 : qualityScore.level === 'good'
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-purple-500 text-white'
                                 : qualityScore.level === 'needs_improvement'
-                                ? 'bg-yellow-600 text-black'
-                                : 'bg-red-600 text-white'
+                                ? 'bg-gray-600 text-white'
+                                : 'bg-gray-700 text-white'
                             }`}>
                               Качество: {qualityScore.score}%
                             </div>
@@ -2364,10 +2343,10 @@ function App() {
           {/* Price coverage chip - only show if costMeta exists and has coverage data */}
           {costMeta && typeof costMeta.coveragePct === 'number' && (
             <div 
-              className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
-                (costMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
-                (costMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
-                'bg-red-600 text-white'
+              className={`px-3 py-1 rounded-full text-sm font-semibold cursor-help ${
+                (costMeta.coveragePct >= 90) ? 'bg-purple-600 text-white' :
+                (costMeta.coveragePct >= 70) ? 'bg-purple-500 text-white' :
+                'bg-gray-600 text-white'
               }`}
               title={
                 costMeta.source === 'mixed' 
@@ -2391,10 +2370,10 @@ function App() {
           {/* Nutrition coverage chip - only show if nutritionMeta exists and has coverage data */}
           {nutritionMeta && typeof nutritionMeta.coveragePct === 'number' && (
             <div 
-              className={`px-3 py-1 rounded-full text-sm font-bold cursor-help ${
-                (nutritionMeta.coveragePct >= 90) ? 'bg-green-600 text-white' :
-                (nutritionMeta.coveragePct >= 70) ? 'bg-yellow-600 text-white' :
-                'bg-red-600 text-white'
+              className={`px-3 py-1 rounded-full text-sm font-semibold cursor-help ${
+                (nutritionMeta.coveragePct >= 90) ? 'bg-purple-600 text-white' :
+                (nutritionMeta.coveragePct >= 70) ? 'bg-purple-500 text-white' :
+                'bg-gray-600 text-white'
               }`}
               title={
                 nutritionMeta.source === 'Mixed' 
@@ -2827,29 +2806,29 @@ function App() {
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {nutrition.per100g && (
-                <div className="bg-green-900/20 rounded-lg p-4">
-                  <h4 className="text-green-300 font-bold mb-3 text-center">КБЖУ на 100г</h4>
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700">
+                  <h4 className="text-gray-300 font-semibold mb-3 text-center">КБЖУ на 100г</h4>
                   <div className="grid grid-cols-4 gap-2 text-center text-sm">
                     <div>
-                      <div className="text-yellow-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {Math.round(nutrition.per100g.kcal || 0)}
                       </div>
                       <div className="text-gray-400">ккал</div>
                     </div>
                     <div>
-                      <div className="text-blue-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {(nutrition.per100g.proteins_g || 0).toFixed(1)}
                       </div>
                       <div className="text-gray-400">белки</div>
                     </div>
                     <div>
-                      <div className="text-red-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {(nutrition.per100g.fats_g || 0).toFixed(1)}
                       </div>
                       <div className="text-gray-400">жиры</div>
                     </div>
                     <div>
-                      <div className="text-green-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {(nutrition.per100g.carbs_g || 0).toFixed(1)}
                       </div>
                       <div className="text-gray-400">углеводы</div>
@@ -2858,29 +2837,29 @@ function App() {
                 </div>
               )}
               {nutrition.perPortion && (
-                <div className="bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="text-blue-300 font-bold mb-3 text-center">КБЖУ на порцию</h4>
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700">
+                  <h4 className="text-gray-300 font-semibold mb-3 text-center">КБЖУ на порцию</h4>
                   <div className="grid grid-cols-4 gap-2 text-center text-sm">
                     <div>
-                      <div className="text-yellow-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {Math.round(nutrition.perPortion.kcal || 0)}
                       </div>
                       <div className="text-gray-400">ккал</div>
                     </div>
                     <div>
-                      <div className="text-blue-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {(nutrition.perPortion.proteins_g || 0).toFixed(1)}
                       </div>
                       <div className="text-gray-400">белки</div>
                     </div>
                     <div>
-                      <div className="text-red-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {(nutrition.perPortion.fats_g || 0).toFixed(1)}
                       </div>
                       <div className="text-gray-400">жиры</div>
                     </div>
                     <div>
-                      <div className="text-green-300 font-bold">
+                      <div className="text-gray-200 font-semibold">
                         {(nutrition.perPortion.carbs_g || 0).toFixed(1)}
                       </div>
                       <div className="text-gray-400">углеводы</div>
@@ -2892,8 +2871,8 @@ function App() {
             {/* МЕТАДАННЫЕ ПИТАНИЯ */}
             {/* CLEANUP TECH CARD DATA & UI: Убираем предупреждения о покрытии */}
             {nutritionMeta.coveragePct === 100 && (
-              <div className="mt-3 text-sm text-green-400 text-center">
-                ✅ Полные данные по всем ингредиентам
+              <div className="mt-3 text-sm text-gray-400 text-center">
+                Полные данные по всем ингредиентам
                 {nutritionMeta.source && (
                   <span className="ml-2">• Источник: {nutritionMeta.source}</span>
                 )}
@@ -2901,10 +2880,9 @@ function App() {
             )}
           </div>
         ) : (
-          <div className="bg-gray-800/30 rounded-lg p-6 text-center">
-            <h3 className="text-lg font-bold text-gray-400 mb-2">ПИЩЕВАЯ ЦЕННОСТЬ</h3>
-            <div className="text-gray-500">
-              <div className="text-4xl mb-2">📊</div>
+          <div className="bg-gray-800/30 rounded-lg p-6 text-center border border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">ПИЩЕВАЯ ЦЕННОСТЬ</h3>
+            <div className="text-gray-400">
               <p>Данные не заполнены</p>
               <p className="text-sm mt-1">
                 {nutritionMeta.coveragePct === 0 ? 
@@ -2918,10 +2896,10 @@ function App() {
 
         {/* СТОИМОСТЬ И МЕТАДАННЫЕ */}
         {tcV2 && (
-          <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-6 border border-yellow-400/30">
+          <div className="bg-gray-800/30 rounded-lg p-6 border border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-yellow-300 uppercase tracking-wide flex items-center">
-                💸 ФИНАНСОВЫЙ АНАЛИЗ
+              <h3 className="text-xl font-semibold text-gray-200 uppercase tracking-wide">
+                ФИНАНСОВЫЙ АНАЛИЗ
               </h3>
               <button
                 onClick={() => {
@@ -2931,10 +2909,10 @@ function App() {
                     alert('Функция пересчёта финансов будет добавлена в следующей версии!');
                   }
                 }}
-                className="bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-300 px-3 py-1 rounded-lg text-sm transition-all"
+                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 px-3 py-1 rounded-lg text-sm transition-colors border border-purple-500/30"
                 title="Пересчитать финансы с актуальными ценами"
               >
-                🔄 Пересчитать
+                Пересчитать
               </button>
             </div>
             
@@ -2942,38 +2920,37 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 {/* Себестоимость 100г */}
-                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-gray-600">
-                  <div className="text-3xl font-bold text-orange-300 mb-2">
+                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                  <div className="text-3xl font-semibold text-gray-200 mb-2">
                     {tcV2.yield?.perPortion_g ? Math.round((parseFloat(cost.costPerPortion) * 100) / tcV2.yield.perPortion_g * 10) / 10 : Math.round((parseFloat(cost.costPerPortion) * 100) / 200 * 10) / 10}₽
                   </div>
-                  <div className="text-orange-200 font-medium text-sm mb-1">Себестоимость 100г</div>
+                  <div className="text-gray-300 font-medium text-sm mb-1">Себестоимость 100г</div>
                   <div className="text-xs text-gray-400">базовый расчет для сравнения</div>
                 </div>
                 
                 {/* Себестоимость порции */}
-                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-yellow-500/50">
-                  <div className="text-4xl font-bold text-yellow-300 mb-2">{cost.costPerPortion}₽</div>
-                  <div className="text-yellow-200 font-medium text-sm mb-1">Себестоимость порции</div>
+                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                  <div className="text-4xl font-semibold text-gray-200 mb-2">{cost.costPerPortion}₽</div>
+                  <div className="text-gray-300 font-medium text-sm mb-1">Себестоимость порции</div>
                   <div className="text-xs text-gray-400">~{Math.round((tcV2.yield?.perPortion_g || 200))}г готового блюда</div>
                 </div>
                 
                 {/* Рекомендуемая цена в меню */}
-                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-green-500/50">
-                  <div className="text-4xl font-bold text-green-300 mb-2">
+                <div className="text-center bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                  <div className="text-4xl font-semibold text-gray-200 mb-2">
                     {Math.round(parseFloat(cost.costPerPortion) * 3.5)}₽
                   </div>
-                  <div className="text-green-200 font-medium text-sm mb-1">Рекомендуемая цена</div>
+                  <div className="text-gray-300 font-medium text-sm mb-1">Рекомендуемая цена</div>
                   <div className="text-xs text-gray-400">наценка 250% • маржа {Math.round((1 - 1/3.5) * 100)}%</div>
                 </div>
                 
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="text-4xl mb-4">📊</div>
-                <h4 className="text-xl font-bold text-yellow-300 mb-3">Себестоимость не рассчитана</h4>
-                <p className="text-gray-300 text-sm mb-4">
+                <h4 className="text-xl font-semibold text-gray-300 mb-3">Себестоимость не рассчитана</h4>
+                <p className="text-gray-400 text-sm mb-4">
                   {costMeta.coveragePct === 0 ? 
-                    'Цены ингредиентов не найдены в IIKO каталоге. Подключите IIKO или используйте функцию "💼 ФИНАНСЫ" для оценки стоимости.' :
+                    'Цены ингредиентов не найдены в IIKO каталоге. Подключите IIKO или используйте функцию "ФИНАНСЫ" для оценки стоимости.' :
                     'Недостаточно данных для расчета стоимости'
                   }
                 </p>
@@ -2981,23 +2958,23 @@ function App() {
                   <button
                     onClick={analyzeFinances}
                     disabled={isAnalyzingFinances}
-                    className={`${isAnalyzingFinances ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white font-bold py-2 px-6 rounded-lg transition-colors text-sm`}
+                    className={`${isAnalyzingFinances ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-semibold py-2 px-6 rounded-lg transition-colors text-sm`}
                   >
-                    {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : '💼 ОЦЕНИТЬ ФИНАНСЫ'}
+                    {isAnalyzingFinances ? 'АНАЛИЗИРУЮ...' : 'ОЦЕНИТЬ ФИНАНСЫ'}
                   </button>
                 </div>
               </div>
             )}
             
             {/* Дополнительная информация */}
-            <div className="mt-4 pt-4 border-t border-yellow-400/20">
+            <div className="mt-4 pt-4 border-t border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 
                 {/* Покрытие цен */}
                 {costMeta.coveragePct && (
                   <div className="flex justify-between">
                     <span className="text-gray-400">Покрытие цен:</span>
-                    <span className={`font-bold ${costMeta.coveragePct >= 80 ? 'text-green-300' : 'text-yellow-300'}`}>
+                    <span className={`font-semibold ${costMeta.coveragePct >= 80 ? 'text-gray-300' : 'text-gray-400'}`}>
                       {costMeta.coveragePct}%
                     </span>
                   </div>
@@ -3007,14 +2984,14 @@ function App() {
                 {costMeta.source && (
                   <div className="flex justify-between">
                     <span className="text-gray-400">Источник:</span>
-                    <span className="text-blue-300">{costMeta.source}</span>
+                    <span className="text-gray-300">{costMeta.source}</span>
                   </div>
                 )}
                 
                 {/* Маржинальность */}
                 <div className="flex justify-between">
                   <span className="text-gray-400">Маржа при рек. цене:</span>
-                  <span className="text-green-300 font-bold">~71%</span>
+                  <span className="text-gray-300 font-semibold">~71%</span>
                 </div>
                 
                 {/* Дата обновления */}
@@ -3030,7 +3007,7 @@ function App() {
             
             <div className="mt-3 text-center">
               <div className="text-xs text-gray-500">
-                💡 Рекомендуемая цена рассчитана с учетом стандартной ресторанной наценки
+                Рекомендуемая цена рассчитана с учетом стандартной ресторанной наценки
               </div>
             </div>
           </div>
