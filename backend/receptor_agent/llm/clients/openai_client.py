@@ -100,12 +100,21 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         
         # Извлекаем JSON из response
         try:
+            if not resp.choices or len(resp.choices) == 0:
+                raise ValueError("No choices in response")
             content = resp.choices[0].message.content
             if not content:
                 raise ValueError("Empty response content")
-            return json.loads(content)
-        except (json.JSONDecodeError, IndexError) as e:
-            raise ValueError(f"Failed to parse structured output: {e}")
+            parsed = json.loads(content)
+            print(f"✅ {stage}: Successfully parsed JSON response")
+            return parsed
+        except (json.JSONDecodeError, IndexError, AttributeError) as e:
+            error_detail = f"Failed to parse structured output: {e}"
+            print(f"❌ {stage}: {error_detail}")
+            if hasattr(resp, 'choices') and resp.choices and hasattr(resp.choices[0].message, 'content'):
+                content_preview = str(resp.choices[0].message.content)[:200] if resp.choices[0].message.content else "None"
+                print(f"🔍 Response content preview: {content_preview}")
+            raise ValueError(error_detail)
             
     except Exception as e:
         elapsed_ms = int((time.time() - start_time) * 1000)
