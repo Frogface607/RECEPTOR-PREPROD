@@ -299,7 +299,7 @@ def generate_draft_v2(profile: ProfileInput, constraints: Dict[str, Any] = None)
         
         user_prompt = _format_template(user_template, **template_params)
         
-        # GX-01-FINAL: draft с gpt-5-mini, max_tokens≈900, локальный SLA ≤ 12s
+        # GX-01-FINAL: draft с gpt-4o-mini, max_tokens≈900, локальный SLA ≤ 12s
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt,
@@ -338,7 +338,7 @@ def normalize_to_v2(draft_json: Dict[str, Any], constraints: Dict[str, Any] = No
         
         user_prompt = _format_template(user_template, **template_params)
         
-        # GX-01-FINAL: normalize с gpt-5-mini, max_tokens≈600, локальный SLA ≤ 10s
+        # GX-01-FINAL: normalize с gpt-4o-mini, max_tokens≈600, локальный SLA ≤ 10s
         return call_structured(
             system=_system_ru() + "\n\n" + system_prompt,
             user=user_prompt, 
