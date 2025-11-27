@@ -63,10 +63,10 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         }
         
         # Use json_schema for older models, json_object for gpt-5-mini
-        # Note: gpt-5-mini with reasoning returns empty content - need to disable reasoning
+        # Note: gpt-5-mini with reasoning returns empty content - use minimal reasoning
         if mdl == "gpt-5-mini" or "gpt-5" in mdl:
-            # Disable reasoning for gpt-5-mini - it causes empty content
-            params["reasoning_effort"] = "none"  # or "low" if "none" doesn't work
+            # Use minimal reasoning for gpt-5-mini to avoid empty content
+            params["reasoning_effort"] = "minimal"
             params["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
@@ -75,7 +75,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                     "strict": False
                 }
             }
-            print(f"🔧 {stage}: Using json_schema format for {mdl} with reasoning disabled")
+            print(f"🔧 {stage}: Using json_schema format for {mdl} with minimal reasoning")
         else:
             params["response_format"] = {
                 "type": "json_schema",
@@ -193,6 +193,9 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                     if "max_tokens" not in fallback_params and max_tokens:
                         fallback_params["max_tokens"] = max_tokens
                     del fallback_params["max_completion_tokens"]
+                # Убираем reasoning_effort - gpt-4o-mini не поддерживает
+                if "reasoning_effort" in fallback_params:
+                    del fallback_params["reasoning_effort"]
                 resp = cli.chat.completions.create(**fallback_params)
                 elapsed_ms = int((time.time() - start_time) * 1000)
                 print(f"✅ {stage}: Completed with fallback model in {elapsed_ms}ms")
