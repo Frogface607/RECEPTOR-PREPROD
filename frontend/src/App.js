@@ -12277,8 +12277,8 @@ function App() {
                     <button
                       onClick={tcV2 ? handleEditTechCardV2 : handleEditTechCard}
                       disabled={!editInstruction.trim() || isEditingAI}
-                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
-                      title="🤖 Изменить техкарту с помощью ИИ на основе ваших инструкций"
+                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-3 sm:py-4 px-6 rounded-lg transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
+                      title="Изменить техкарту с помощью ИИ на основе ваших инструкций"
                     >
                       {isEditingAI ? (
                         <>
@@ -12410,10 +12410,9 @@ function App() {
                     <button 
                       onClick={() => { openExportWizard(); }}
                       disabled={!tcV2}
-                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-bold transition-all text-lg min-h-[64px] flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-8 py-4 rounded-lg font-semibold transition-colors text-lg min-h-[64px] flex items-center justify-center"
                       title="Экспорт техкарты в разные форматы - PDF, XLSX, ZIP для IIKO"
                     >
-                      <span className="mr-3">📄</span>
                       ЭКСПОРТ
                     </button>
                     
