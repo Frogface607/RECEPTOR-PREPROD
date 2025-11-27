@@ -63,9 +63,10 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
         }
         
         # Use json_schema for older models, json_object for gpt-5-mini
-        # Note: gpt-5-mini may have issues with reasoning tokens and empty content
+        # Note: gpt-5-mini with reasoning returns empty content - need to disable reasoning
         if mdl == "gpt-5-mini" or "gpt-5" in mdl:
-            # Try json_schema first - it might work better than json_object
+            # Disable reasoning for gpt-5-mini - it causes empty content
+            params["reasoning_effort"] = "none"  # or "low" if "none" doesn't work
             params["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
@@ -74,7 +75,7 @@ def call_structured(system: str, user: str, json_schema: Dict[str, Any],
                     "strict": False
                 }
             }
-            print(f"🔧 {stage}: Using json_schema format for {mdl}")
+            print(f"🔧 {stage}: Using json_schema format for {mdl} with reasoning disabled")
         else:
             params["response_format"] = {
                 "type": "json_schema",
