@@ -7262,9 +7262,30 @@ async def chat_with_assistant(request: dict):
         # Получаем историю диалога, если есть conversation_id
         conversation_history = []
         if conversation_id:
-            # TODO: Реализовать сохранение истории в БД
-            # conversation_history = await get_conversation_history(conversation_id)
-            pass
+            try:
+                conv_doc = await db.assistant_conversations.find_one({"conversation_id": conversation_id})
+                if conv_doc and "messages" in conv_doc:
+                    # Преобразуем сохраненные сообщения в формат для LLM
+                    for msg in conv_doc["messages"][-10:]:  # Последние 10 сообщений
+                        conversation_history.append({
+                            "role": msg.get("role"),
+                            "content": msg.get("content")
+                        })
+            except Exception as e:
+                logger.warning(f"Failed to load conversation history: {str(e)}")
+                conversation_history = []
+            try:
+                conv_doc = await db.assistant_conversations.find_one({"conversation_id": conversation_id})
+                if conv_doc and "messages" in conv_doc:
+                    # Преобразуем сохраненные сообщения в формат для LLM
+                    for msg in conv_doc["messages"][-10:]:  # Последние 10 сообщений
+                        conversation_history.append({
+                            "role": msg.get("role"),
+                            "content": msg.get("content")
+                        })
+            except Exception as e:
+                logger.warning(f"Failed to load conversation history: {str(e)}")
+                conversation_history = []
         
         # Формируем сообщения для LLM
         messages = [
@@ -7405,9 +7426,53 @@ async def chat_with_assistant(request: dict):
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
         
-        # TODO: Сохранить историю в БД
-        # await save_conversation_message(conversation_id, user_id, "user", message)
-        # await save_conversation_message(conversation_id, user_id, "assistant", assistant_response)
+        # Сохраняем историю в БД
+        try:
+            # Сохраняем сообщение пользователя
+            await db.assistant_conversations.update_one(
+                {"conversation_id": conversation_id},
+                {
+                    "$push": {
+                        "messages": {
+                            "role": "user",
+                            "content": message,
+                            "timestamp": datetime.now().isoformat()
+                        }
+                    },
+                    "$setOnInsert": {
+                        "conversation_id": conversation_id,
+                        "user_id": user_id,
+                        "created_at": datetime.now().isoformat(),
+                        "title": message[:50] if len(message) > 50 else message  # Первые 50 символов как заголовок
+                    },
+                    "$set": {
+                        "updated_at": datetime.now().isoformat(),
+                        "last_message": message[:100] if len(message) > 100 else message
+                    }
+                },
+                upsert=True
+            )
+            
+            # Сохраняем ответ ассистента
+            await db.assistant_conversations.update_one(
+                {"conversation_id": conversation_id},
+                {
+                    "$push": {
+                        "messages": {
+                            "role": "assistant",
+                            "content": assistant_response,
+                            "timestamp": datetime.now().isoformat(),
+                            "tool_calls": tool_calls_result if tool_calls_result else None
+                        }
+                    },
+                    "$set": {
+                        "updated_at": datetime.now().isoformat()
+                    }
+                }
+            )
+        except Exception as e:
+            logger.warning(f"Failed to save conversation history: {str(e)}")
+            # Продолжаем без сохранения истории
         
         return {
             "response": assistant_response,
@@ -7425,6 +7490,66 @@ async def chat_with_assistant(request: dict):
             status_code=500, 
             detail=f"Ошибка при обработке запроса: {str(e)}"
         )
+
+
+@api_router.get("/assistant/conversations")
+async def get_conversations(user_id: str):
+    """
+    Получить список всех бесед пользователя с ассистентом
+    """
+    try:
+        conversations = await db.assistant_conversations.find(
+            {"user_id": user_id}
+        ).sort("updated_at", -1).to_list(50)
+        
+        result = []
+        for conv in conversations:
+            if "_id" in conv:
+                del conv["_id"]
+            result.append({
+                "conversation_id": conv.get("conversation_id"),
+                "title": conv.get("title", "Новая беседа"),
+                "last_message": conv.get("last_message", ""),
+                "created_at": conv.get("created_at"),
+                "updated_at": conv.get("updated_at"),
+                "message_count": len(conv.get("messages", []))
+            })
+        
+        return {"conversations": result}
+    except Exception as e:
+        logger.error(f"Error fetching conversations: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка получения бесед: {str(e)}")
+
+
+@api_router.get("/assistant/conversations/{conversation_id}")
+async def get_conversation(conversation_id: str, user_id: str):
+    """
+    Получить полную историю конкретной беседы
+    """
+    try:
+        conv = await db.assistant_conversations.find_one({
+            "conversation_id": conversation_id,
+            "user_id": user_id
+        })
+        
+        if not conv:
+            raise HTTPException(status_code=404, detail="Беседа не найдена")
+        
+        if "_id" in conv:
+            del conv["_id"]
+        
+        return {
+            "conversation_id": conv.get("conversation_id"),
+            "title": conv.get("title", "Беседа"),
+            "messages": conv.get("messages", []),
+            "created_at": conv.get("created_at"),
+            "updated_at": conv.get("updated_at")
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching conversation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка получения беседы: {str(e)}")
 
 # Include the router in the main app
 app.include_router(api_router)

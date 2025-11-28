@@ -1190,7 +1190,7 @@ function App() {
   const [profileStep, setProfileStep] = useState(0); // 0 = IIKO, 1-4 = Profile wizard
 
   // Dashboard states
-  const [currentView, setCurrentView] = useState('create'); // 'dashboard', 'create', 'menu-generator', 'my-venue'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'create', 'menu-generator', 'my-venue'
   const [dashboardStats, setDashboardStats] = useState({
     totalTechCards: 0,
     totalMenus: 0,
