@@ -3200,6 +3200,12 @@ async def get_venue_profile(user_id: str):
         "venue_description": user.get("venue_description"),
         "business_notes": user.get("business_notes"),
         
+        # Extended venue profile fields
+        "city": user.get("city"),
+        "staff_count": user.get("staff_count"),
+        "working_hours": user.get("working_hours"),
+        "seating_capacity": user.get("seating_capacity"),
+        
         # System info
         "has_pro_features": plan_info.get("kitchen_equipment", False)
     }
@@ -7402,8 +7408,10 @@ async def chat_with_assistant(request: dict):
         venue_context += "\nВАЖНО: Используй эту информацию для персонализированных рекомендаций!\n"
         
         logger.info(f"Venue context created: {len(venue_context)} chars")
+        logger.info(f"Venue context content: {venue_context[:500]}...")  # Log first 500 chars for debugging
     else:
         logger.warning(f"No venue profile data found for user {user_id}")
+        logger.warning(f"User object keys: {list(user.keys()) if user else 'No user found'}")
     
     # Добавляем данные глубокого исследования, если есть
     research_context = ""

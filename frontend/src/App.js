@@ -1187,7 +1187,11 @@ function App() {
   const [cuisineTypes, setCuisineTypes] = useState({});
   const [averageCheckCategories, setAverageCheckCategories] = useState({});
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  const [profileStep, setProfileStep] = useState(0); // 0 = IIKO, 1-4 = Profile wizard
+  const [profileStep, setProfileStep] = useState(0); // 0 = IIKO, 1-4 = Profile wizard, 5 = Deep Research
+  const [isResearching, setIsResearching] = useState(false);
+  const [researchProgress, setResearchProgress] = useState(0);
+  const [currentResearchMessage, setCurrentResearchMessage] = useState('');
+  const [deepResearchData, setDeepResearchData] = useState(null);
 
   // Dashboard states
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'create', 'menu-generator', 'my-venue'
@@ -1704,8 +1708,14 @@ function App() {
   // Load iiko RMS status on component mount (IK-02B-FE/01)
   useEffect(() => {
     checkIikoRmsStatus();
-    loadVenueProfile();
   }, []);
+  
+  // 🚀 CRITICAL FIX: Load venue profile when currentUser is available
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadVenueProfile();
+    }
+  }, [currentUser?.id]);
   
   // 🚀 CRITICAL FIX: Auto-restore IIKO connection after currentUser is loaded
   useEffect(() => {
