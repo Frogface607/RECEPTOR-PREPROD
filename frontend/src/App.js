@@ -10425,14 +10425,13 @@ function App() {
             {/* Welcome Section */}
             <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 sm:p-8">
               <h2 className="text-2xl sm:text-3xl font-bold text-purple-300 mb-4">
-                Добро пожаловать, {currentUserOrDemo.name}! 👋
+                Добро пожаловать, {currentUserOrDemo.name}!
               </h2>
               
               {/* Demo Mode Banner */}
               {currentUserOrDemo.demo_mode && (
                 <div className="bg-yellow-900/30 border border-yellow-400/50 rounded-lg p-4 mb-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">🧪</span>
                     <div>
                       <div className="font-bold text-yellow-300">Демо режим</div>
                       <div className="text-yellow-400 text-sm">
@@ -10480,30 +10479,19 @@ function App() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div 
                 className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform"
                 onClick={() => setCurrentView('create')}
               >
-                <div className="text-4xl mb-4">🍽️</div>
                 <h3 className="text-xl font-bold text-purple-300 mb-2">Создать техкарту</h3>
                 <p className="text-gray-400 text-sm">Сгенерируйте детальную техкарту для любого блюда</p>
-              </div>
-
-              <div 
-                className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => setCurrentView('menu-generator')}
-              >
-                <div className="text-4xl mb-4">🎯</div>
-                <h3 className="text-xl font-bold text-cyan-300 mb-2">Генератор меню</h3>
-                <p className="text-gray-400 text-sm">Создайте полное меню за 15 минут</p>
               </div>
 
               <div 
                 className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-xl p-6 cursor-pointer hover:scale-105 transition-transform"
                 onClick={() => setShowVenueProfileModal(true)}
               >
-                <div className="text-4xl mb-4">🏢</div>
                 <h3 className="text-xl font-bold text-orange-300 mb-2">Мое заведение</h3>
                 <p className="text-gray-400 text-sm">Настройте профиль для персонализации</p>
               </div>
@@ -10517,9 +10505,7 @@ function App() {
                   {userHistory.slice(0, 5).map((item, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <div className="text-2xl">
-                          {item.is_laboratory ? '🧪' : '🍽️'}
-                        </div>
+                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                         <div>
                           <div className="font-semibold text-gray-200">{item.dish_name}</div>
                           <div className="text-xs text-gray-400">
