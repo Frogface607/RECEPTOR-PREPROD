@@ -76,15 +76,27 @@ const CulinaryAssistant = ({
 
       // Обработка tool calls - если была создана техкарта
       if (response.data.tool_calls && response.data.tool_calls.length > 0) {
+        console.log('Tool calls received:', response.data.tool_calls);
         response.data.tool_calls.forEach(toolCall => {
-          if (toolCall.tool === 'generateTechcard' && toolCall.result?.success && onTechCardRequest) {
-            // Вызываем callback для создания техкарты
-            const dishName = toolCall.result.dish_name || toolCall.result.card?.name || '';
-            if (dishName) {
-              // Передаем данные техкарты через callback
-              onTechCardRequest({
-                dishName: dishName,
-                techCard: toolCall.result.card
+          console.log('Processing tool call:', toolCall);
+          if (toolCall.tool === 'generateTechcard') {
+            console.log('generateTechcard tool call:', toolCall);
+            if (toolCall.result?.success && onTechCardRequest) {
+              // Вызываем callback для создания техкарты
+              const dishName = toolCall.result.dish_name || toolCall.result.card?.name || '';
+              console.log('Calling onTechCardRequest with:', { dishName, hasCard: !!toolCall.result.card });
+              if (dishName || toolCall.result.card) {
+                // Передаем данные техкарты через callback
+                onTechCardRequest({
+                  dishName: dishName,
+                  techCard: toolCall.result.card
+                });
+              }
+            } else {
+              console.warn('generateTechcard failed or no callback:', {
+                success: toolCall.result?.success,
+                hasCallback: !!onTechCardRequest,
+                error: toolCall.result?.error
               });
             }
           }

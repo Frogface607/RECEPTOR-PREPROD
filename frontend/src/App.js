@@ -10386,6 +10386,39 @@ function App() {
               <CulinaryAssistant 
                 userId={currentUserOrDemo?.id || 'demo_user'}
                 mode="center"
+                onTechCardRequest={(data) => {
+                  console.log('TechCard request from chat:', data);
+                  // Если техкарта создана через чат, переключаемся на страницу создания и показываем её
+                  if (data && data.techCard) {
+                    // Переключаемся на страницу создания техкарт
+                    setCurrentView('create');
+                    // Устанавливаем техкарту
+                    setTcV2(data.techCard);
+                    setTechCard(null);
+                    if (data.techCard?.meta?.id) {
+                      setCurrentTechCardId(data.techCard.meta.id);
+                    }
+                    // Парсим ингредиенты из V2 формата
+                    const parsedIngredients = data.techCard.ingredients?.map((ing, index) => ({
+                      id: index + 1,
+                      name: ing.name,
+                      quantity: ing.netto_g?.toString() || '0',
+                      unit: ing.unit || 'г',
+                      unitPrice: '0',
+                      totalPrice: '0',
+                      originalQuantity: ing.netto_g?.toString() || '0',
+                      originalPrice: '0'
+                    })) || [];
+                    setCurrentIngredients(parsedIngredients);
+                  } else if (data && data.dishName) {
+                    // Если только название блюда, переключаемся и заполняем форму
+                    setCurrentView('create');
+                    setDishName(data.dishName);
+                    updateWizardData(1, { dishName: data.dishName });
+                    setTcV2(null);
+                    setTechCard(null);
+                  }
+                }}
               />
             </div>
 
