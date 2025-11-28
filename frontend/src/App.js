@@ -14787,6 +14787,124 @@ function App() {
                 </div>
               </div>
             )}
+
+            {/* Wizard Step 5: Deep Research */}
+            {profileStep === 5 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-purple-200 mb-2">Глубокое исследование заведения</h3>
+                  <p className="text-gray-300">AI проанализирует ваше заведение в интернете и предоставит рекомендации</p>
+                </div>
+
+                {!deepResearchData && !isResearching && (
+                  <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-400/30 rounded-xl p-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-purple-200 font-bold mb-2">Название заведения</label>
+                        <input
+                          type="text"
+                          value={venueProfile.venue_name || ''}
+                          onChange={(e) => setVenueProfile(prev => ({ ...prev, venue_name: e.target.value }))}
+                          placeholder="Например: Ресторан 'Уют'"
+                          className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-purple-200 font-bold mb-2">Город</label>
+                        <input
+                          type="text"
+                          value={venueProfile.city || ''}
+                          onChange={(e) => setVenueProfile(prev => ({ ...prev, city: e.target.value }))}
+                          placeholder="Например: Москва"
+                          className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-purple-200 font-bold mb-2">Дополнительная информация (необязательно)</label>
+                        <textarea
+                          value={venueProfile.venue_description || ''}
+                          onChange={(e) => setVenueProfile(prev => ({ ...prev, venue_description: e.target.value }))}
+                          placeholder="Расскажите о вашем заведении..."
+                          rows={4}
+                          className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white resize-none"
+                        />
+                      </div>
+                      <button
+                        onClick={startDeepResearch}
+                        disabled={!venueProfile.venue_name || isResearching}
+                        className={`w-full px-6 py-3 rounded-lg font-bold transition-colors ${
+                          !venueProfile.venue_name || isResearching
+                            ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+                        }`}
+                      >
+                        Начать исследование
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {isResearching && (
+                  <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-400/30 rounded-xl p-8">
+                    <div className="text-center">
+                      <div className="text-4xl mb-4">🔍</div>
+                      <h4 className="text-xl font-bold text-purple-300 mb-4">{currentResearchMessage}</h4>
+                      <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                        <div 
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300"
+                          style={{ width: `${researchProgress}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-purple-200 text-sm font-bold">{researchProgress}%</div>
+                    </div>
+                  </div>
+                )}
+
+                {deepResearchData && !isResearching && (
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-green-400/30 rounded-xl p-6">
+                      <h4 className="text-lg font-bold text-green-300 mb-4">Результаты исследования</h4>
+                      {deepResearchData.competitor_analysis && (
+                        <div className="mb-4">
+                          <h5 className="font-bold text-green-200 mb-2">Анализ конкурентов</h5>
+                          <p className="text-gray-300 text-sm">{deepResearchData.competitor_analysis}</p>
+                        </div>
+                      )}
+                      {deepResearchData.customer_reviews_summary && (
+                        <div className="mb-4">
+                          <h5 className="font-bold text-green-200 mb-2">Отзывы клиентов</h5>
+                          <p className="text-gray-300 text-sm">{deepResearchData.customer_reviews_summary}</p>
+                        </div>
+                      )}
+                      {deepResearchData.recommendations && (
+                        <div>
+                          <h5 className="font-bold text-green-200 mb-2">Рекомендации</h5>
+                          <p className="text-gray-300 text-sm">{deepResearchData.recommendations}</p>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setDeepResearchData(null);
+                        startDeepResearch();
+                      }}
+                      className="w-full px-6 py-3 rounded-lg font-bold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                    >
+                      Обновить исследование
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex justify-between pt-6 border-t border-purple-400/30">
+                  <button
+                    onClick={() => setProfileStep(4)}
+                    className="px-6 py-3 rounded-lg font-bold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                  >
+                    ← НАЗАД
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
