@@ -7629,21 +7629,86 @@ RECEPTOR — это комплексная AI-платформа для авто
         for hist_msg in conversation_history[-10:]:
             messages.append(hist_msg)
         
-        # ╨Ф╨╛╨▒╨░╨▓╨╗╤П╨╡╨╝ ╤В╨╡╨║╤Г╤Й╨╡╨╡ ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╨╡ ╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╤В╨╡╨╗╤П
+        # Добавляем текущее сообщение пользователя
         messages.append({"role": "user", "content": message})
         
-        # ╨Т╤Л╨╖╨╛╨▓ LLM ╤Б tool-calling
+        # Определяем сложность вопроса и выбираем модель
+        def is_complex_question(msg: str) -> bool:
+            """Определяет, является ли вопрос сложным и требует ли мощной модели"""
+            msg_lower = msg.lower()
+            
+            # Простые вопросы - генерация техкарт, расчеты, простые запросы
+            simple_keywords = [
+                "создай техкарту", "создать техкарту", "сделай техкарту", "сделать техкарту",
+                "создай рецепт", "создать рецепт", "сделай рецепт", "сделать рецепт",
+                "посчитай", "рассчитай", "сколько стоит", "какая цена",
+                "калькуляция", "себестоимость", "наценка", "маржа",
+                "экспорт в iiko", "импорт из iiko", "синхронизация",
+                "просто", "быстро", "кратко"
+            ]
+            
+            # Сложные вопросы - аналитика, стратегия, консультации
+            complex_keywords = [
+                "проанализируй", "анализ", "стратегия", "рекомендации",
+                "как улучшить", "как оптимизировать", "как увеличить",
+                "проблема", "решение", "совет", "консультация",
+                "сравни", "оцени", "предложи план", "разработай",
+                "глубокий", "детальный", "подробный", "комплексный",
+                "маркетинг", "управление", "бизнес-план", "развитие"
+            ]
+            
+            # Проверяем наличие ключевых слов
+            has_simple = any(keyword in msg_lower for keyword in simple_keywords)
+            has_complex = any(keyword in msg_lower for keyword in complex_keywords)
+            
+            # Если есть сложные ключевые слова - используем мощную модель
+            if has_complex:
+                return True
+            
+            # Если вопрос длинный (>200 символов) и нет простых ключевых слов - сложный
+            if len(msg) > 200 and not has_simple:
+                return True
+            
+            # По умолчанию - простой вопрос
+            return False
+        
+        # Выбираем модель в зависимости от сложности
+        is_complex = is_complex_question(message)
+        
+        # Для сложных вопросов используем более мощную модель (gpt-4o или gpt-5, если доступна)
+        # Для простых вопросов и генераций техкарт - мини версия
+        if is_complex:
+            # Пробуем использовать gpt-4o для сложных вопросов (более мощная модель)
+            # Если нужна gpt-5, можно использовать "gpt-5" когда она станет доступна
+            model_for_chat = "gpt-4o"  # Полная версия для сложных вопросов
+            max_tokens_for_chat = 3000  # Больше токенов для сложных ответов
+        else:
+            # Для простых вопросов, генераций техкарт, расчетов - мини версия
+            model_for_chat = "gpt-4o-mini"  # Мини версия для простых задач
+            max_tokens_for_chat = 1000
+        
+        logger.info(f"🤖 Question complexity: {'complex' if is_complex else 'simple'}, using model: {model_for_chat}")
+        
+        # Вызов LLM с tool-calling
         if not openai_client:
             raise HTTPException(status_code=500, detail="OpenAI client not initialized")
         
-        response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto",  # LLM ╤А╨╡╤И╨░╨╡╤В, ╨▓╤Л╨╖╤Л╨▓╨░╤В╤М ╨╗╨╕ tool
-            temperature=0.7,
-            max_tokens=1000
-        )
+        # Для gpt-5-mini используем max_completion_tokens, для других - max_tokens
+        chat_params = {
+            "model": model_for_chat,
+            "messages": messages,
+            "tools": tools,
+            "tool_choice": "auto",  # LLM решает, вызывать ли tool
+            "temperature": 0.7,
+        }
+        
+        # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
+        if "gpt-5" in model_for_chat.lower():
+            chat_params["max_completion_tokens"] = max_tokens_for_chat
+        else:
+            chat_params["max_tokens"] = max_tokens_for_chat
+        
+        response = openai_client.chat.completions.create(**chat_params)
         
         assistant_message = response.choices[0].message
         tool_calls_result = []
@@ -7655,7 +7720,9 @@ RECEPTOR — это комплексная AI-платформа для авто
                 function_args = json.loads(tool_call.function.arguments)
                 
                 if function_name == "generateTechcard":
-                    # ╨У╨╡╨╜╨╡╤А╨╕╤А╤Г╨╡╨╝ ╤В╨╡╤Е╨║╨░╤А╤В╤Г
+                    # Генерируем техкарту через pipeline
+                    # ВАЖНО: Pipeline использует мини версию модели (gpt-4o-mini) для генерации техкарт
+                    # Это настроено через TECHCARDS_V2_MODEL в openai_client.py
                     try:
                         from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
                         
@@ -7743,13 +7810,21 @@ RECEPTOR — это комплексная AI-платформа для авто
                             "content": json.dumps({"success": False, "error": str(e)})
                         })
             
-            # ╨Я╨╛╨╗╤Г╤З╨░╨╡╨╝ ╤Д╨╕╨╜╨░╨╗╤М╨╜╤Л╨╣ ╨╛╤В╨▓╨╡╤В ╨╛╤В LLM ╤Б ╤Г╤З╨╡╤В╨╛╨╝ ╤А╨╡╨╖╤Г╨╗╤М╤В╨░╤В╨╛╨▓ tool calls
-            final_response = openai_client.chat.completions.create(
-                model="gpt-5-mini",
-                messages=messages,
-                temperature=0.7,
-                max_completion_tokens=1000  # gpt-5-mini использует max_completion_tokens
-            )
+            # Получаем финальный ответ от LLM с учетом результатов tool calls
+            # Используем ту же модель, что и для первого вызова
+            final_params = {
+                "model": model_for_chat,
+                "messages": messages,
+                "temperature": 0.7,
+            }
+            
+            # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
+            if "gpt-5" in model_for_chat.lower():
+                final_params["max_completion_tokens"] = max_tokens_for_chat
+            else:
+                final_params["max_tokens"] = max_tokens_for_chat
+            
+            final_response = openai_client.chat.completions.create(**final_params)
             assistant_response = final_response.choices[0].message.content
         else:
             # ╨Ю╨▒╤Л╤З╨╜╤Л╨╣ ╨╛╤В╨▓╨╡╤В ╨▒╨╡╨╖ tool calls
