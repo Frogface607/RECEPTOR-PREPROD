@@ -357,16 +357,16 @@ const CulinaryAssistant = ({
             </div>
           ))}
           {loading && (
-            <div className="flex justify-start">
-              <div className="max-w-[85%]">
-                <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-purple-400 font-bold text-sm">R</span>
-                </div>
-                <div className="bg-gray-700 rounded-2xl px-4 py-3">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></span>
-                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+            <div className="flex items-start gap-4 justify-start">
+              <div className="w-9 h-9 bg-gradient-to-br from-purple-600/30 to-purple-700/30 rounded-xl flex items-center justify-center flex-shrink-0 border border-purple-500/20 shadow-lg">
+                <span className="text-purple-300 font-bold text-sm">R</span>
+              </div>
+              <div className="max-w-[80%]">
+                <div className="bg-gray-800/80 border border-gray-700/50 rounded-2xl px-5 py-4 backdrop-blur-sm">
+                  <div className="flex gap-2">
+                    <span className="w-2.5 h-2.5 bg-purple-400 rounded-full animate-bounce"></span>
+                    <span className="w-2.5 h-2.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></span>
+                    <span className="w-2.5 h-2.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></span>
                   </div>
                 </div>
               </div>
@@ -375,8 +375,8 @@ const CulinaryAssistant = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Ввод */}
-        <div className="px-6 py-4 border-t border-gray-700 bg-gray-800/70 rounded-b-2xl">
+        {/* Ввод - премиум стиль */}
+        <div className="px-8 py-5 border-t border-gray-700/50 bg-gradient-to-t from-gray-800/90 to-gray-800/70 backdrop-blur-sm">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
               <textarea
@@ -384,9 +384,9 @@ const CulinaryAssistant = ({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Спросите что-нибудь..."
+                placeholder="Напишите сообщение..."
                 rows={1}
-                className="w-full px-4 py-3 pr-12 bg-gray-700 text-white border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none max-h-32 overflow-y-auto placeholder-gray-400"
+                className="w-full px-5 py-4 pr-14 bg-gray-800/80 text-white border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none max-h-32 overflow-y-auto shadow-inner placeholder:text-gray-500 transition-all duration-200"
                 disabled={loading}
                 onInput={(e) => {
                   e.target.style.height = 'auto';
@@ -396,15 +396,19 @@ const CulinaryAssistant = ({
               <button
                 onClick={sendMessage}
                 disabled={loading || !input.trim()}
-                className="absolute right-2 bottom-2 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="absolute right-3 bottom-3 w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-xl flex items-center justify-center hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-110 disabled:hover:scale-100 shadow-lg shadow-purple-500/20"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mt-2 text-center">
+          <p className="text-xs text-gray-500 mt-3 text-center">
             Каждое сообщение стоит 5 токенов
           </p>
         </div>
