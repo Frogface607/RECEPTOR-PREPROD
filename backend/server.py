@@ -7693,14 +7693,32 @@ RECEPTOR — это комплексная AI-платформа для авто
         if not openai_client:
             raise HTTPException(status_code=500, detail="OpenAI client not initialized")
         
-        # Для gpt-5-mini используем max_completion_tokens, для других - max_tokens
+        # o1 модели не поддерживают tool-calling
+        # Если нужны tools (генерация техкарт), используем gpt-4o вместо o1
+        needs_tools = any(keyword in message.lower() for keyword in [
+            "создай техкарту", "создать техкарту", "сделай техкарту", "сделать техкарту",
+            "создай рецепт", "создать рецепт", "сделай рецепт", "сделать рецепт",
+            "сгенерируй", "генерируй"
+        ])
+        
+        # Если нужны tools и выбрали o1, переключаемся на gpt-4o
+        if needs_tools and "o1" in model_for_chat.lower():
+            model_for_chat = "gpt-4o"
+            max_tokens_for_chat = 3000
+            logger.info(f"🔄 Switching to gpt-4o for tool-calling support")
+        
+        use_tools = "o1" not in model_for_chat.lower()
+        
         chat_params = {
             "model": model_for_chat,
             "messages": messages,
-            "tools": tools,
-            "tool_choice": "auto",  # LLM решает, вызывать ли tool
-            "temperature": 0.7,
         }
+        
+        # o1 не поддерживает temperature и tools
+        if use_tools:
+            chat_params["temperature"] = 0.7
+            chat_params["tools"] = tools
+            chat_params["tool_choice"] = "auto"  # LLM решает, вызывать ли tool
         
         # Для o1 моделей не передаем max_tokens (они управляют этим сами)
         # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
@@ -7711,7 +7729,8 @@ RECEPTOR — это комплексная AI-платформа для авто
         elif "gpt-5" in model_for_chat.lower():
             chat_params["max_completion_tokens"] = max_tokens_for_chat
         else:
-            chat_params["max_tokens"] = max_tokens_for_chat
+            if use_tools:  # Добавляем max_tokens только если не o1
+                chat_params["max_tokens"] = max_tokens_for_chat
         
         response = openai_client.chat.completions.create(**chat_params)
         
