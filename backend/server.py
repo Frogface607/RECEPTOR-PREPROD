@@ -3089,6 +3089,93 @@ async def get_venue_types():
     """Get all available venue types and their characteristics"""
     return VENUE_TYPES
 
+@api_router.post("/knowledge-base/index")
+async def index_knowledge_base(force_reindex: bool = False):
+    """
+    Проиндексировать базу знаний для векторного поиска
+    Создает эмбеддинги для всех документов и сохраняет в MongoDB
+    
+    Args:
+        force_reindex: Принудительно переиндексировать даже если уже есть
+    
+    Returns:
+        Статистика индексации: {filename: chunk_count}
+    """
+    try:
+        from receptor_agent.rag.indexer import index_all_documents
+        
+        # Индексируем все документы (синхронно в executor, т.к. indexer использует синхронные операции)
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+        
+        # Создаем синхронную обертку для MongoDB (Motor поддерживает синхронные операции через .delegate)
+        # Для простоты используем ThreadPoolExecutor
+        def sync_index():
+            # Создаем синхронный клиент для индексации
+            from motor.motor_asyncio import AsyncIOMotorClient
+            import asyncio
+            
+            # Используем синхронную обертку
+            sync_db = db  # Используем существующую коллекцию
+            
+            # Вызываем синхронную версию индексации
+            return index_all_documents(sync_db.knowledge_base_chunks, force_reindex=force_reindex)
+        
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as executor:
+            results = await loop.run_in_executor(executor, sync_index)
+        
+        total_chunks = sum(results.values())
+        
+        return {
+            "success": True,
+            "message": f"Indexed {len(results)} documents, {total_chunks} total chunks",
+            "results": results,
+            "total_chunks": total_chunks
+        }
+    except Exception as e:
+        logger.error(f"Error indexing knowledge base: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка индексации базы знаний: {str(e)}")
+
+@api_router.get("/knowledge-base/stats")
+async def get_knowledge_base_stats():
+    """
+    Получить статистику по индексированной базе знаний
+    """
+    try:
+        # Подсчитываем чанки по категориям
+        pipeline = [
+            {
+                "$match": {"indexed": True, "type": {"$ne": "metadata"}}
+            },
+            {
+                "$group": {
+                    "_id": "$category",
+                    "count": {"$sum": 1}
+                }
+            }
+        ]
+        
+        category_stats = {}
+        async for doc in db.knowledge_base_chunks.aggregate(pipeline):
+            category_stats[doc["_id"]] = doc["count"]
+        
+        # Общее количество чанков
+        total_chunks = await db.knowledge_base_chunks.count_documents({"indexed": True, "type": {"$ne": "metadata"}})
+        
+        # Количество документов
+        total_docs = await db.knowledge_base_chunks.count_documents({"type": "metadata"})
+        
+        return {
+            "success": True,
+            "total_chunks": total_chunks,
+            "total_documents": total_docs,
+            "by_category": category_stats
+        }
+    except Exception as e:
+        logger.error(f"Error getting knowledge base stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка получения статистики: {str(e)}")
+
 @api_router.get("/cuisine-types")  
 async def get_cuisine_types():
     """Get all available cuisine types and their characteristics"""
@@ -7427,32 +7514,49 @@ async def chat_with_assistant(request: dict):
         research_context += f"Рекомендации: {deep_research_data.get('recommendations', 'Недоступно')}\n"
         research_context += "\nВАЖНО: Используй эти данные для персонализированных рекомендаций!\n"
     
-    # Поиск по базе знаний для контекста
+    # Поиск по базе знаний для контекста (продвинутый RAG с векторным поиском)
     knowledge_context = ""
     try:
         from receptor_agent.rag.search import search_knowledge_base
         
-        # ╨Ю╨┐╤А╨╡╨┤╨╡╨╗╤П╨╡╨╝ ╨║╨░╤В╨╡╨│╨╛╤А╨╕╨╕ ╨╜╨░ ╨╛╤Б╨╜╨╛╨▓╨╡ ╨╖╨░╨┐╤А╨╛╤Б╨░
+        # Определяем категории на основе запроса
         categories = []
         query_lower = message.lower()
-        if any(word in query_lower for word in ['haccp', '╤Б╨░╨╜╨┐╨╕╨╜', '╨╜╨╛╤А╨╝╨░╤В╨╕╨▓', '╤Б╤В╨░╨╜╨┤╨░╤А╤В', '╤В╤А╨╡╨▒╨╛╨▓╨░╨╜╨╕╨╡']):
+        if any(word in query_lower for word in ['haccp', 'санпин', 'норматив', 'стандарт', 'требование']):
             categories.append('haccp')
-        if any(word in query_lower for word in ['hr', '╨┐╨╡╤А╤Б╨╛╨╜╨░╨╗', '╤Б╨╛╤В╤А╤Г╨┤╨╜╨╕╨║', '╨╝╨╛╤В╨╕╨▓╨░╤Ж╨╕╤П', '╨╛╨▒╤Г╤З╨╡╨╜╨╕╨╡']):
+        if any(word in query_lower for word in ['hr', 'персонал', 'сотрудник', 'мотивация', 'обучение']):
             categories.append('hr')
-        if any(word in query_lower for word in ['╤Д╨╕╨╜╨░╨╜╤Б', 'roi', '╨┐╤А╨╕╨▒╤Л╨╗╤М', '╤Б╨╡╨▒╨╡╤Б╤В╨╛╨╕╨╝╨╛╤Б╤В╤М', '╨╜╨░╤Ж╨╡╨╜╨║╨░', '╨╝╨░╤А╨╢╨░']):
+        if any(word in query_lower for word in ['финанс', 'roi', 'прибыль', 'себестоимость', 'наценка', 'маржа']):
             categories.append('finance')
-        if any(word in query_lower for word in ['╨╝╨░╤А╨║╨╡╤В╨╕╨╜╨│', 'smm', '╤А╨╡╨║╨╗╨░╨╝╨░', '╨┐╤А╨╛╨┤╨▓╨╕╨╢╨╡╨╜╨╕╨╡', '╨║╨╛╨╜╤В╨╡╨╜╤В']):
+        if any(word in query_lower for word in ['маркетинг', 'smm', 'реклама', 'продвижение', 'контент']):
             categories.append('marketing')
-        if any(word in query_lower for word in ['iiko', 'api', '╨╕╨╜╤В╨╡╨│╤А╨░╤Ж╨╕╤П', '╤В╨╡╤Е╨╜╨╕╤З╨╡╤Б╨║╨╕╨╣']):
+        if any(word in query_lower for word in ['iiko', 'api', 'интеграция', 'технический']):
             categories.append('iiko')
         
-        # ╨Ш╤Й╨╡╨╝ ╤А╨╡╨╗╨╡╨▓╨░╨╜╤В╨╜╤Г╤О ╨╕╨╜╤Д╨╛╤А╨╝╨░╤Ж╨╕╤О
-        search_results = search_knowledge_base(message, top_k=3, categories=categories if categories else None)
+        # Используем продвинутый RAG поиск с MongoDB коллекцией
+        # Передаем db.knowledge_base_chunks для векторного поиска
+        search_results = search_knowledge_base(
+            message,
+            top_k=5,  # Увеличиваем для лучшего контекста
+            categories=categories if categories else None,
+            db_collection=db.knowledge_base_chunks,  # MongoDB коллекция для индекса
+            use_vector_search=True  # Включаем векторный поиск
+        )
         
         if search_results:
-            knowledge_context = "\n\n╨а╨╡╨╗╨╡╨▓╨░╨╜╤В╨╜╨░╤П ╨╕╨╜╤Д╨╛╤А╨╝╨░╤Ж╨╕╤П ╨╕╨╖ ╨▒╨░╨╖╤Л ╨╖╨╜╨░╨╜╨╕╨╣ RECEPTOR:\n"
+            knowledge_context = "\n\nРелевантная информация из базы знаний RECEPTOR:\n"
             for i, result in enumerate(search_results, 1):
-                knowledge_context += f"\n[{i}] {result['source']} ({result['category']}):\n{result['content'][:500]}...\n"
+                # Обрезаем контент до 600 символов для лучшего контекста
+                content_preview = result['content'][:600]
+                if len(result['content']) > 600:
+                    content_preview += "..."
+                
+                # Добавляем информацию о скорах для отладки (можно убрать в продакшене)
+                score_info = f" (релевантность: {result.get('score', 0):.2f})" if result.get('score') else ""
+                
+                knowledge_context += f"\n[{i}] {result['source']} ({result['category']}){score_info}:\n{content_preview}\n"
+            
+            logger.info(f"📚 Found {len(search_results)} relevant chunks from knowledge base")
     except Exception as e:
         logger.warning(f"Error searching knowledge base: {str(e)}")
         knowledge_context = ""
@@ -7565,7 +7669,7 @@ RECEPTOR — это комплексная AI-платформа для авто
             "type": "function",
             "function": {
                 "name": "searchKnowledgeBase",
-                "description": "Поиск по базе знаний RECEPTOR (~2000 документов). База содержит: актуальные цены на ингредиенты, КБЖУ, техкарты, HACCP и СанПиН нормативы, HR-документацию, финансовые расчеты, техники приготовления, документацию iiko, бизнес-кейсы. Используй для ответов на вопросы о нормах, стандартах, лучших практиках, актуальных ценах и расчетах.",
+                "description": "Продвинутый поиск по базе знаний RECEPTOR (~2000 документов) с векторным поиском. База содержит: актуальные цены на ингредиенты, КБЖУ, техкарты, HACCP и СанПиН нормативы, HR-документацию, финансовые расчеты, техники приготовления, документацию iiko, бизнес-кейсы. Используй для ответов на вопросы о нормах, стандартах, лучших практиках, актуальных ценах и расчетах. Поиск использует семантическое понимание, так что можно задавать вопросы разными формулировками.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -7718,7 +7822,88 @@ RECEPTOR — это комплексная AI-платформа для авто
                 function_name = tool_call.function.name
                 function_args = json.loads(tool_call.function.arguments)
                 
-                if function_name == "generateTechcard":
+                if function_name == "searchKnowledgeBase":
+                    # Поиск по базе знаний через продвинутый RAG
+                    try:
+                        from receptor_agent.rag.search import search_knowledge_base
+                        
+                        search_query = function_args.get("query", "")
+                        search_top_k = function_args.get("top_k", 5)
+                        search_categories = function_args.get("categories", [])
+                        
+                        # Выполняем поиск с векторным поиском
+                        search_results = search_knowledge_base(
+                            search_query,
+                            top_k=search_top_k,
+                            categories=search_categories if search_categories else None,
+                            db_collection=db.knowledge_base_chunks,
+                            use_vector_search=True
+                        )
+                        
+                        # Форматируем результаты для LLM
+                        formatted_results = []
+                        for result in search_results:
+                            formatted_results.append({
+                                "source": result.get("source", ""),
+                                "category": result.get("category", "general"),
+                                "content": result.get("content", "")[:800],  # Ограничиваем длину
+                                "relevance_score": round(result.get("score", 0), 3)
+                            })
+                        
+                        tool_calls_result.append({
+                            "tool": "searchKnowledgeBase",
+                            "tool_call_id": tool_call.id,
+                            "result": {
+                                "success": True,
+                                "query": search_query,
+                                "results_count": len(formatted_results),
+                                "results": formatted_results
+                            }
+                        })
+                        
+                        # Добавляем результаты в контекст для LLM
+                        messages.append({
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [{
+                                "id": tool_call.id,
+                                "type": "function",
+                                "function": {
+                                    "name": function_name,
+                                    "arguments": tool_call.function.arguments
+                                }
+                            }]
+                        })
+                        
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps({
+                                "success": True,
+                                "query": search_query,
+                                "results_count": len(formatted_results),
+                                "results": formatted_results
+                            }, ensure_ascii=False)
+                        })
+                        
+                    except Exception as e:
+                        logger.error(f"Error searching knowledge base in tool call: {str(e)}")
+                        tool_calls_result.append({
+                            "tool": "searchKnowledgeBase",
+                            "tool_call_id": tool_call.id,
+                            "result": {
+                                "success": False,
+                                "error": str(e)
+                            }
+                        })
+                        
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps({"success": False, "error": str(e)})
+                        })
+                
+                elif function_name == "generateTechcard":
                     # Генерируем техкарту через pipeline
                     # ВАЖНО: Pipeline использует мини версию модели (gpt-4o-mini) для генерации техкарт
                     # Это настроено через TECHCARDS_V2_MODEL в openai_client.py
