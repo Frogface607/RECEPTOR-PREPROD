@@ -8987,7 +8987,10 @@ async def chat_with_assistant(request: dict):
         messages.append({"role": "user", "content": message})
         
         # Вызов LLM с tool-calling
-        response = client.chat.completions.create(
+        if not openai_client:
+            raise HTTPException(status_code=500, detail="OpenAI client not initialized")
+        
+        response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
             tools=tools,
@@ -9077,7 +9080,7 @@ async def chat_with_assistant(request: dict):
                         })
             
             # Получаем финальный ответ от LLM с учетом результатов tool calls
-            final_response = client.chat.completions.create(
+            final_response = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
                 temperature=0.7,
