@@ -14537,6 +14537,52 @@ function App() {
                   />
                 </div>
 
+                {/* City */}
+                <div>
+                  <label className="block text-purple-200 font-bold mb-2">Город</label>
+                  <input
+                    type="text"
+                    value={venueProfile.city || ''}
+                    onChange={(e) => setVenueProfile(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="Например: Москва"
+                    className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                  />
+                </div>
+
+                {/* Staff Count, Working Hours, Seating Capacity */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-purple-200 font-bold mb-2">Количество сотрудников</label>
+                    <input
+                      type="number"
+                      value={venueProfile.staff_count || ''}
+                      onChange={(e) => setVenueProfile(prev => ({ ...prev, staff_count: parseInt(e.target.value) || 0 }))}
+                      placeholder="Например: 15"
+                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-purple-200 font-bold mb-2">Режим работы</label>
+                    <input
+                      type="text"
+                      value={venueProfile.working_hours || ''}
+                      onChange={(e) => setVenueProfile(prev => ({ ...prev, working_hours: e.target.value }))}
+                      placeholder="Например: 10:00-22:00"
+                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-purple-200 font-bold mb-2">Вместимость (мест)</label>
+                    <input
+                      type="number"
+                      value={venueProfile.seating_capacity || ''}
+                      onChange={(e) => setVenueProfile(prev => ({ ...prev, seating_capacity: parseInt(e.target.value) || 0 }))}
+                      placeholder="Например: 50"
+                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                    />
+                  </div>
+                </div>
+
                 {/* Venue Concept */}
                 <div>
                   <label className="block text-purple-200 font-bold mb-2">Концепция заведения</label>
