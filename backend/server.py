@@ -7675,13 +7675,12 @@ RECEPTOR — это комплексная AI-платформа для авто
         # Выбираем модель в зависимости от сложности
         is_complex = is_complex_question(message)
         
-        # Для сложных вопросов используем самые передовые модели (o1-preview для reasoning)
+        # Для сложных вопросов используем GPT-5 (самая передовая модель)
         # Для простых вопросов и генераций техкарт - мини версия
         if is_complex:
-            # Используем o1-preview для сложных reasoning задач (самая передовая модель)
-            # o1-preview отлично подходит для анализа, стратегии, консультаций
-            model_for_chat = "o1-preview"  # Reasoning модель для сложных вопросов
-            max_tokens_for_chat = 16000  # o1 поддерживает до 16k токенов
+            # Используем gpt-5 для сложных задач (самая передовая модель OpenAI)
+            model_for_chat = "gpt-5"  # GPT-5 для сложных вопросов
+            max_tokens_for_chat = 4000  # Больше токенов для развернутых ответов
         else:
             # Для простых вопросов, генераций техкарт, расчетов - мини версия
             model_for_chat = "gpt-4o-mini"  # Мини версия для простых задач
@@ -7693,44 +7692,20 @@ RECEPTOR — это комплексная AI-платформа для авто
         if not openai_client:
             raise HTTPException(status_code=500, detail="OpenAI client not initialized")
         
-        # o1 модели не поддерживают tool-calling
-        # Если нужны tools (генерация техкарт), используем gpt-4o вместо o1
-        needs_tools = any(keyword in message.lower() for keyword in [
-            "создай техкарту", "создать техкарту", "сделай техкарту", "сделать техкарту",
-            "создай рецепт", "создать рецепт", "сделай рецепт", "сделать рецепт",
-            "сгенерируй", "генерируй"
-        ])
-        
-        # Если нужны tools и выбрали o1, переключаемся на gpt-4o
-        if needs_tools and "o1" in model_for_chat.lower():
-            model_for_chat = "gpt-4o"
-            max_tokens_for_chat = 3000
-            logger.info(f"🔄 Switching to gpt-4o for tool-calling support")
-        
-        use_tools = "o1" not in model_for_chat.lower()
-        
+        # GPT-5 поддерживает tool-calling, так что можем использовать tools
         chat_params = {
             "model": model_for_chat,
             "messages": messages,
+            "temperature": 0.7,
+            "tools": tools,
+            "tool_choice": "auto",  # LLM решает, вызывать ли tool
         }
         
-        # o1 не поддерживает temperature и tools
-        if use_tools:
-            chat_params["temperature"] = 0.7
-            chat_params["tools"] = tools
-            chat_params["tool_choice"] = "auto"  # LLM решает, вызывать ли tool
-        
-        # Для o1 моделей не передаем max_tokens (они управляют этим сами)
         # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
-        if "o1" in model_for_chat.lower():
-            # o1 модели не поддерживают max_tokens в стандартном формате
-            # Они управляют длиной ответа автоматически
-            pass
-        elif "gpt-5" in model_for_chat.lower():
+        if "gpt-5" in model_for_chat.lower():
             chat_params["max_completion_tokens"] = max_tokens_for_chat
         else:
-            if use_tools:  # Добавляем max_tokens только если не o1
-                chat_params["max_tokens"] = max_tokens_for_chat
+            chat_params["max_tokens"] = max_tokens_for_chat
         
         response = openai_client.chat.completions.create(**chat_params)
         
@@ -7842,12 +7817,8 @@ RECEPTOR — это комплексная AI-платформа для авто
                 "temperature": 0.7,
             }
             
-            # Для o1 моделей не передаем max_tokens
             # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
-            if "o1" in model_for_chat.lower():
-                # o1 модели управляют длиной ответа автоматически
-                pass
-            elif "gpt-5" in model_for_chat.lower():
+            if "gpt-5" in model_for_chat.lower():
                 final_params["max_completion_tokens"] = max_tokens_for_chat
             else:
                 final_params["max_tokens"] = max_tokens_for_chat
