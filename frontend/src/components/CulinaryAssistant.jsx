@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
 const API = `${BACKEND_URL}/api`;
@@ -183,32 +185,32 @@ const CulinaryAssistant = ({
     }
   };
 
-  // Центральный режим (как ChatGPT, темная тема)
+  // Центральный режим (как ChatGPT, темная тема, премиум дизайн)
   if (mode === 'center') {
     return (
-      <div className="flex flex-col h-[calc(100vh-200px)] max-w-4xl mx-auto bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 shadow-xl">
-        {/* Заголовок */}
-        <div className="px-6 py-4 border-b border-gray-700 bg-gray-800/70 rounded-t-2xl">
+      <div className="flex flex-col h-[calc(100vh-200px)] max-w-5xl mx-auto bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-3xl border border-gray-700/50 shadow-2xl overflow-hidden">
+        {/* Заголовок - премиум стиль */}
+        <div className="px-6 py-5 border-b border-gray-700/50 bg-gradient-to-r from-gray-800/80 to-gray-800/60 backdrop-blur-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <span className="text-white font-bold text-base">R</span>
               </div>
               <div>
-                <h2 className="font-semibold text-gray-200">RECEPTOR Assistant</h2>
+                <h2 className="font-semibold text-gray-100 text-lg">RECEPTOR Assistant</h2>
                 <p className="text-xs text-gray-400">AI-ассистент для ресторанного бизнеса</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-600/50"
               >
                 {showHistory ? 'Скрыть' : 'История'}
               </button>
               <button
                 onClick={startNewConversation}
-                className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg shadow-purple-500/20"
               >
                 Новая беседа
               </button>
@@ -250,27 +252,68 @@ const CulinaryAssistant = ({
           </div>
         )}
 
-        {/* Сообщения */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        {/* Сообщения - премиум стиль */}
+        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scroll-smooth">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex items-start gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-300`}
+              style={{ animationDelay: `${idx * 50}ms` }}
             >
-              <div className={`max-w-[85%] ${msg.role === 'user' ? 'order-2' : 'order-1'}`}>
-                {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-purple-400 font-bold text-sm">R</span>
-                  </div>
-                )}
+              {msg.role === 'assistant' && (
+                <div className="w-9 h-9 bg-gradient-to-br from-purple-600/30 to-purple-700/30 rounded-xl flex items-center justify-center flex-shrink-0 border border-purple-500/20 shadow-lg">
+                  <span className="text-purple-300 font-bold text-sm">R</span>
+                </div>
+              )}
+              <div className={`max-w-[80%] ${msg.role === 'user' ? 'order-2' : 'order-1'}`}>
                 <div
-                  className={`rounded-2xl px-4 py-3 ${
+                  className={`rounded-2xl px-5 py-4 shadow-lg ${
                     msg.role === 'user'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-700 text-gray-200'
+                      ? 'bg-gradient-to-br from-purple-600 to-purple-700 text-white border border-purple-500/30'
+                      : 'bg-gray-800/80 text-gray-100 border border-gray-700/50 backdrop-blur-sm'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                  <div className="prose prose-invert prose-sm max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed text-gray-100">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                        em: ({ children }) => <em className="italic text-gray-200">{children}</em>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1 text-gray-200">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside mb-3 space-y-1 text-gray-200">{children}</ol>,
+                        li: ({ children }) => <li className="ml-2">{children}</li>,
+                        code: ({ children, className }) => {
+                          const isInline = !className;
+                          return isInline ? (
+                            <code className="bg-gray-900/50 text-purple-300 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-700/50">
+                              {children}
+                            </code>
+                          ) : (
+                            <code className="block bg-gray-900/70 text-gray-200 p-3 rounded-lg text-sm font-mono border border-gray-700/50 overflow-x-auto">
+                              {children}
+                            </code>
+                          );
+                        },
+                        pre: ({ children }) => <pre className="mb-3">{children}</pre>,
+                        h1: ({ children }) => <h1 className="text-xl font-bold mb-2 text-white">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-lg font-semibold mb-2 text-white">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-base font-semibold mb-2 text-gray-100">{children}</h3>,
+                        blockquote: ({ children }) => (
+                          <blockquote className="border-l-4 border-purple-500/50 pl-4 italic text-gray-300 my-3">
+                            {children}
+                          </blockquote>
+                        ),
+                        a: ({ children, href }) => (
+                          <a href={href} className="text-purple-400 hover:text-purple-300 underline" target="_blank" rel="noopener noreferrer">
+                            {children}
+                          </a>
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                   
                   {/* Отображение tool calls */}
                   {msg.tool_calls && msg.tool_calls.length > 0 && (
@@ -293,12 +336,12 @@ const CulinaryAssistant = ({
                   )}
                 </div>
                 {msg.suggestions && msg.suggestions.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {msg.suggestions.map((suggestion, i) => (
                       <button
                         key={i}
                         onClick={() => handleSuggestion(suggestion)}
-                        className="text-xs bg-gray-700 border border-gray-600 text-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-600 hover:border-purple-500 transition-colors"
+                        className="text-xs font-medium bg-gray-700/80 border border-gray-600/50 text-gray-200 rounded-full px-4 py-2 hover:bg-gray-600/80 hover:border-purple-500/50 hover:scale-105 transition-all duration-200"
                       >
                         {suggestion}
                       </button>
@@ -306,6 +349,11 @@ const CulinaryAssistant = ({
                   </div>
                 )}
               </div>
+              {msg.role === 'user' && (
+                <div className="w-9 h-9 bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-xl flex items-center justify-center flex-shrink-0 border border-purple-500/20 order-1">
+                  <span className="text-purple-300 font-bold text-sm">Вы</span>
+                </div>
+              )}
             </div>
           ))}
           {loading && (
