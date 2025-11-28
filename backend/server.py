@@ -8885,20 +8885,20 @@ async def save_laboratory_experiment(request: dict):
 @api_router.post("/assistant/chat")
 async def chat_with_assistant(request: dict):
     """
-    Чат с кулинарным ассистентом RECEPTOR
+    Чат с кулинарным ассистентом RECEPTOR с поддержкой tool-calling
     
     Request:
     {
         "user_id": "uuid",
-        "message": "Как рассчитать наценку?",
+        "message": "Создай техкарту для стейка из говядины",
         "conversation_id": "uuid"  # опционально, для продолжения диалога
     }
     
     Response:
     {
-        "response": "Наценка рассчитывается...",
+        "response": "Я создал техкарту для стейка...",
         "conversation_id": "uuid",
-        "suggestions": ["Создать техкарту", "Рассчитать себестоимость"],
+        "tool_calls": [{"tool": "generateTechcard", "result": {...}}],  # если были tool calls
         "tokens_used": 150,
         "credits_spent": 5
     }
@@ -8910,6 +8910,17 @@ async def chat_with_assistant(request: dict):
     if not message:
         raise HTTPException(status_code=400, detail="Сообщение не может быть пустым")
     
+    # Получаем профиль заведения для контекста
+    user = await db.users.find_one({"id": user_id})
+    venue_profile = {}
+    if user:
+        venue_profile = {
+            "venue_type": user.get("venue_type"),
+            "cuisine_focus": user.get("cuisine_focus", []),
+            "average_check": user.get("average_check"),
+            "kitchen_equipment": user.get("kitchen_equipment", [])
+        }
+    
     # Системный промпт для кулинарного ассистента
     system_prompt = """Ты RECEPTOR — профессиональный AI-ассистент для ресторанного бизнеса. 
 Твоя специализация:
@@ -8920,9 +8931,40 @@ async def chat_with_assistant(request: dict):
 - Кулинарные советы и рекомендации
 
 Всегда отвечай профессионально, но доступно. Давай конкретные советы с примерами и формулами.
-Если пользователь спрашивает о рецепте, предлагай создать техкарту в RECEPTOR.
+Если пользователь просит создать техкарту или рецепт, используй функцию generateTechcard.
 Если спрашивает о расчетах, давай конкретные формулы и примеры.
 Будь дружелюбным и полезным. Отвечай на русском языке."""
+
+    # Tool definitions для OpenAI Function Calling
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "generateTechcard",
+                "description": "Создать технологическую карту блюда. Используй когда пользователь просит создать техкарту, рецепт или блюдо.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "dish_name": {
+                            "type": "string",
+                            "description": "Название блюда с подробным описанием"
+                        },
+                        "cuisine": {
+                            "type": "string",
+                            "description": "Тип кухни (русская, итальянская, азиатская и т.д.)",
+                            "default": "европейская"
+                        },
+                        "equipment": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Список доступного оборудования"
+                        }
+                    },
+                    "required": ["dish_name"]
+                }
+            }
+        }
+    ]
 
     try:
         # Получаем историю диалога, если есть conversation_id
@@ -8944,24 +8986,107 @@ async def chat_with_assistant(request: dict):
         # Добавляем текущее сообщение пользователя
         messages.append({"role": "user", "content": message})
         
-        # Вызов LLM (используем gpt-4o-mini для чата)
+        # Вызов LLM с tool-calling
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
+            tools=tools,
+            tool_choice="auto",  # LLM решает, вызывать ли tool
             temperature=0.7,
-            max_tokens=500
+            max_tokens=1000
         )
         
-        assistant_response = response.choices[0].message.content
+        assistant_message = response.choices[0].message
+        tool_calls_result = []
         
-        # Генерируем предложения на основе ответа
-        suggestions = []
-        if "техкарт" in message.lower() or "рецепт" in message.lower():
-            suggestions.append("Создать техкарту")
-        if "наценк" in message.lower() or "себестоимост" in message.lower() or "марж" in message.lower():
-            suggestions.append("Рассчитать себестоимость")
-        if "меню" in message.lower():
-            suggestions.append("Создать меню")
+        # Если LLM вызвал tool
+        if assistant_message.tool_calls:
+            for tool_call in assistant_message.tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
+                
+                if function_name == "generateTechcard":
+                    # Генерируем техкарту
+                    try:
+                        from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
+                        
+                        # Подготовка данных для генерации
+                        profile = ProfileInput(
+                            name=function_args.get("dish_name", ""),
+                            cuisine=function_args.get("cuisine", venue_profile.get("cuisine_focus", ["европейская"])[0] if venue_profile.get("cuisine_focus") else "европейская"),
+                            equipment=function_args.get("equipment", venue_profile.get("kitchen_equipment", ["плита", "кастрюля"])),
+                            budget=float(venue_profile.get("average_check", 500)) if venue_profile.get("average_check") else 500.0,
+                            dietary=[],
+                            user_id=user_id
+                        )
+                        
+                        # Запускаем генерацию
+                        pipeline_result = run_pipeline(profile)
+                        
+                        tool_calls_result.append({
+                            "tool": "generateTechcard",
+                            "tool_call_id": tool_call.id,
+                            "result": {
+                                "success": pipeline_result.status in ["success", "draft", "READY"],
+                                "status": pipeline_result.status,
+                                "card": pipeline_result.card.model_dump() if pipeline_result.card else None,
+                                "dish_name": function_args.get("dish_name")
+                            }
+                        })
+                        
+                        # Добавляем результат в контекст для LLM
+                        messages.append({
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [{
+                                "id": tool_call.id,
+                                "type": "function",
+                                "function": {
+                                    "name": function_name,
+                                    "arguments": tool_call.function.arguments
+                                }
+                            }]
+                        })
+                        
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps({
+                                "success": pipeline_result.status in ["success", "draft", "READY"],
+                                "status": pipeline_result.status,
+                                "dish_name": function_args.get("dish_name"),
+                                "message": "Техкарта успешно создана" if pipeline_result.status in ["success", "draft", "READY"] else "Ошибка создания техкарты"
+                            })
+                        })
+                        
+                    except Exception as e:
+                        logger.error(f"Error generating techcard in tool call: {str(e)}")
+                        tool_calls_result.append({
+                            "tool": "generateTechcard",
+                            "tool_call_id": tool_call.id,
+                            "result": {
+                                "success": False,
+                                "error": str(e)
+                            }
+                        })
+                        
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps({"success": False, "error": str(e)})
+                        })
+            
+            # Получаем финальный ответ от LLM с учетом результатов tool calls
+            final_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1000
+            )
+            assistant_response = final_response.choices[0].message.content
+        else:
+            # Обычный ответ без tool calls
+            assistant_response = assistant_message.content
         
         # Создаем новый conversation_id, если его нет
         if not conversation_id:
@@ -8974,13 +9099,15 @@ async def chat_with_assistant(request: dict):
         return {
             "response": assistant_response,
             "conversation_id": conversation_id,
-            "suggestions": suggestions[:3],  # Максимум 3 предложения
+            "tool_calls": tool_calls_result if tool_calls_result else None,
             "tokens_used": response.usage.total_tokens,
-            "credits_spent": 5  # 5 токенов за сообщение (пока фиксированно)
+            "credits_spent": 5
         }
         
     except Exception as e:
         logger.error(f"Assistant chat error: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=500, 
             detail=f"Ошибка при обработке запроса: {str(e)}"

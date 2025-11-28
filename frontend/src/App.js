@@ -7,6 +7,7 @@ import tourConfigs from './tours/tourConfigs';
 import ModernAuthModal from './components/ModernAuthModal';
 import PricingPage from './components/PricingPage';
 import CulinaryAssistant from './components/CulinaryAssistant';
+import TechCardConstructor from './components/techcard-constructor';
 import { FEATURE_HACCP, FORCE_TECHCARD_V2 } from './config/featureFlags';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
@@ -11932,11 +11933,24 @@ function App() {
                 <CulinaryAssistant 
                   userId={currentUserOrDemo?.id || 'demo_user'}
                   mode="sidebar"
-                  onTechCardRequest={(dishName) => {
+                  onTechCardRequest={(data) => {
                     // Если пользователь просит создать техкарту из чата
-                    setDishName(dishName);
-                    setTcV2(null);
-                    setTechCard(null);
+                    if (typeof data === 'string') {
+                      // Старый формат - только название
+                      setDishName(data);
+                      setTcV2(null);
+                      setTechCard(null);
+                    } else if (data && data.techCard) {
+                      // Новый формат - техкарта уже создана через tool call
+                      setTcV2(data.techCard);
+                      setTechCard(null);
+                      setCurrentTechCardId(data.techCard?.meta?.id || null);
+                    } else if (data && data.dishName) {
+                      // Формат с названием блюда
+                      setDishName(data.dishName);
+                      setTcV2(null);
+                      setTechCard(null);
+                    }
                   }}
                 />
               </div>

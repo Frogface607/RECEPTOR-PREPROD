@@ -59,6 +59,7 @@ const CulinaryAssistant = ({
         role: 'assistant',
         content: response.data.response,
         suggestions: response.data.suggestions || [],
+        tool_calls: response.data.tool_calls || [],
         timestamp: new Date()
       };
 
@@ -68,9 +69,21 @@ const CulinaryAssistant = ({
         setConversationId(response.data.conversation_id);
       }
 
-      // Если ассистент предлагает создать техкарту, вызываем callback
-      if (response.data.suggestions?.some(s => s.toLowerCase().includes('техкарт'))) {
-        // Можно автоматически предложить создать
+      // Обработка tool calls - если была создана техкарта
+      if (response.data.tool_calls && response.data.tool_calls.length > 0) {
+        response.data.tool_calls.forEach(toolCall => {
+          if (toolCall.tool === 'generateTechcard' && toolCall.result?.success && onTechCardRequest) {
+            // Вызываем callback для создания техкарты
+            const dishName = toolCall.result.dish_name || toolCall.result.card?.name || '';
+            if (dishName) {
+              // Передаем данные техкарты через callback
+              onTechCardRequest({
+                dishName: dishName,
+                techCard: toolCall.result.card
+              });
+            }
+          }
+        });
       }
     } catch (error) {
       console.error('Assistant error:', error);
@@ -134,6 +147,26 @@ const CulinaryAssistant = ({
                   }`}
                 >
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                  
+                  {/* Отображение tool calls */}
+                  {msg.tool_calls && msg.tool_calls.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {msg.tool_calls.map((toolCall, i) => (
+                        <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                          {toolCall.tool === 'generateTechcard' && toolCall.result?.success && (
+                            <div className="flex items-center gap-2">
+                              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span className="text-sm text-gray-700">
+                                Техкарта "{toolCall.result.dish_name}" успешно создана!
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {msg.suggestions && msg.suggestions.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
