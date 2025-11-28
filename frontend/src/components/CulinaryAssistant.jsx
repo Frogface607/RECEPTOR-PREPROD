@@ -25,10 +25,25 @@ const CulinaryAssistant = ({
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
-  // Автоскролл к последнему сообщению
+  // Автоскролл к последнему сообщению (только внутри контейнера, не всей страницы)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current && messagesEndRef.current) {
+      // Используем scrollTo с блокировкой скролла страницы
+      const container = messagesContainerRef.current;
+      const scrollToBottom = () => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      };
+      
+      // Используем requestAnimationFrame для плавности
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
   }, [messages]);
 
   // Фокус на input при загрузке
@@ -181,7 +196,17 @@ const CulinaryAssistant = ({
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation(); // Предотвращаем всплытие события
       sendMessage();
+      return false;
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    // Дополнительная защита от скролла страницы
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   };
 
@@ -253,7 +278,7 @@ const CulinaryAssistant = ({
         )}
 
         {/* Сообщения - премиум стиль */}
-        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scroll-smooth">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scroll-smooth">
           {messages.map((msg, idx) => (
             <div
               key={idx}
@@ -384,6 +409,7 @@ const CulinaryAssistant = ({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Напишите сообщение..."
                 rows={1}
                 className="w-full px-5 py-4 pr-14 bg-gray-800/80 text-white border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none max-h-32 overflow-y-auto shadow-inner placeholder:text-gray-500 transition-all duration-200"
@@ -490,6 +516,7 @@ const CulinaryAssistant = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Спросите что-нибудь..."
             className="flex-1 px-3 py-2 text-sm bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400"
             disabled={loading}
