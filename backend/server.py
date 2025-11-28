@@ -7318,13 +7318,31 @@ async def chat_with_assistant(request: dict):
                         # Запускаем генерацию
                         pipeline_result = run_pipeline(profile)
                         
+                        # Логируем результат генерации
+                        logger.info(f"Techcard generation result: status={pipeline_result.status}, has_card={pipeline_result.card is not None}")
+                        
+                        card_data = None
+                        if pipeline_result.card:
+                            try:
+                                # Конвертируем Pydantic модель в dict
+                                if hasattr(pipeline_result.card, 'model_dump'):
+                                    card_data = pipeline_result.card.model_dump()
+                                elif hasattr(pipeline_result.card, 'dict'):
+                                    card_data = pipeline_result.card.dict()
+                                else:
+                                    card_data = dict(pipeline_result.card)
+                                logger.info(f"Techcard converted to dict, keys: {list(card_data.keys()) if card_data else 'None'}")
+                            except Exception as e:
+                                logger.error(f"Error converting techcard to dict: {str(e)}")
+                                card_data = None
+                        
                         tool_calls_result.append({
                             "tool": "generateTechcard",
                             "tool_call_id": tool_call.id,
                             "result": {
                                 "success": pipeline_result.status in ["success", "draft", "READY"],
                                 "status": pipeline_result.status,
-                                "card": pipeline_result.card.model_dump() if pipeline_result.card else None,
+                                "card": card_data,
                                 "dish_name": function_args.get("dish_name")
                             }
                         })
