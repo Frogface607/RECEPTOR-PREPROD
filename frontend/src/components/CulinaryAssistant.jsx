@@ -49,10 +49,15 @@ const CulinaryAssistant = ({
     setLoading(true);
 
     try {
+      console.log('Sending message to:', `${API}/assistant/chat`);
       const response = await axios.post(`${API}/assistant/chat`, {
         user_id: userId || 'demo_user',
         message: currentInput,
         conversation_id: conversationId
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       const assistantMessage = {
