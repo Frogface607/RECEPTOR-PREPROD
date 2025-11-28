@@ -7675,13 +7675,13 @@ RECEPTOR — это комплексная AI-платформа для авто
         # Выбираем модель в зависимости от сложности
         is_complex = is_complex_question(message)
         
-        # Для сложных вопросов используем более мощную модель (gpt-4o или gpt-5, если доступна)
+        # Для сложных вопросов используем самые передовые модели (o1-preview для reasoning)
         # Для простых вопросов и генераций техкарт - мини версия
         if is_complex:
-            # Пробуем использовать gpt-4o для сложных вопросов (более мощная модель)
-            # Если нужна gpt-5, можно использовать "gpt-5" когда она станет доступна
-            model_for_chat = "gpt-4o"  # Полная версия для сложных вопросов
-            max_tokens_for_chat = 3000  # Больше токенов для сложных ответов
+            # Используем o1-preview для сложных reasoning задач (самая передовая модель)
+            # o1-preview отлично подходит для анализа, стратегии, консультаций
+            model_for_chat = "o1-preview"  # Reasoning модель для сложных вопросов
+            max_tokens_for_chat = 16000  # o1 поддерживает до 16k токенов
         else:
             # Для простых вопросов, генераций техкарт, расчетов - мини версия
             model_for_chat = "gpt-4o-mini"  # Мини версия для простых задач
@@ -7702,8 +7702,13 @@ RECEPTOR — это комплексная AI-платформа для авто
             "temperature": 0.7,
         }
         
+        # Для o1 моделей не передаем max_tokens (они управляют этим сами)
         # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
-        if "gpt-5" in model_for_chat.lower():
+        if "o1" in model_for_chat.lower():
+            # o1 модели не поддерживают max_tokens в стандартном формате
+            # Они управляют длиной ответа автоматически
+            pass
+        elif "gpt-5" in model_for_chat.lower():
             chat_params["max_completion_tokens"] = max_tokens_for_chat
         else:
             chat_params["max_tokens"] = max_tokens_for_chat
@@ -7818,8 +7823,12 @@ RECEPTOR — это комплексная AI-платформа для авто
                 "temperature": 0.7,
             }
             
+            # Для o1 моделей не передаем max_tokens
             # Для gpt-5 моделей используем max_completion_tokens, для остальных - max_tokens
-            if "gpt-5" in model_for_chat.lower():
+            if "o1" in model_for_chat.lower():
+                # o1 модели управляют длиной ответа автоматически
+                pass
+            elif "gpt-5" in model_for_chat.lower():
                 final_params["max_completion_tokens"] = max_tokens_for_chat
             else:
                 final_params["max_tokens"] = max_tokens_for_chat
