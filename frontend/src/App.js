@@ -2218,11 +2218,6 @@ function App() {
             <h1 className="text-3xl font-semibold text-gray-200 mb-3">
               {tcV2.meta?.title || 'Техкарта'}
             </h1>
-            <div className="flex justify-center gap-2 mb-4">
-              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">V2 Техкарта</span>
-              <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-sm">Из рецепта</span>
-              <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm">ГОТОВО</span>
-            </div>
           </div>
 
           {/* Контент */}
@@ -2250,19 +2245,9 @@ function App() {
       <div className="space-y-6">
         {/* НАЗВАНИЕ И СТАТУС */}
         <div className="text-center">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <h1 className="text-3xl font-semibold text-gray-200">
-              {meta.title || 'Техкарта'}
-            </h1>
-            <div className="flex gap-2">
-              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                TechCard v2
-              </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${(tcV2.status === 'success' || tcV2.status === 'READY') ? 'bg-purple-500 text-white' : 'bg-gray-600 text-white'}`}>
-                {tcV2.status === 'READY' ? 'ГОТОВО' : (tcV2.status || 'draft')}
-              </span>
-            </div>
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-100 mb-3">
+            {meta.title || 'Техкарта'}
+          </h1>
           {meta.cuisine && (
             <p className="text-gray-400 text-lg">{meta.cuisine}</p>
           )}
@@ -11519,15 +11504,6 @@ function App() {
                             <span>
                               📅 {new Date(techcard.created_at).toLocaleDateString('ru-RU')}
                             </span>
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${
-                              (techcard.status === 'READY' || techcard.status === 'success') ? 'bg-green-600 text-white' : 
-                              'bg-yellow-600 text-black'
-                            }`}>
-                              {techcard.status === 'READY' ? 'ГОТОВО' : (techcard.status || 'draft')}
-                            </span>
-                            <span className={`text-xs ${isV2 ? 'text-purple-400' : isV1Recipe ? 'text-pink-400' : 'text-gray-500'}`}>
-                              {isV2 ? 'V2 Техкарта' : isV1Recipe ? 'V1 Рецепт' : 'V1'}
-                            </span>
                           </div>
                         </div>
                         <div className="text-purple-400">
@@ -12479,7 +12455,7 @@ function App() {
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-purple-300">ТЕХНОЛОГИЧЕСКАЯ КАРТА</h2>
                     <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                      💡 Кликните на любой текст для редактирования
+                      Кликните на любой текст для редактирования
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
