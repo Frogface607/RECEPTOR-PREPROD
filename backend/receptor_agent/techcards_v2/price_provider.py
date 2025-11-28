@@ -21,6 +21,7 @@ class PriceProvider:
         self.user_prices = {}  # MongoDB user prices (if available)
         self.catalog_prices = {}  # price_catalog.dev.json
         self.bootstrap_prices = {}  # prices_ru.demo.csv
+        self.knowledge_base_prices = {}  # Prices extracted from knowledge base
         self.loaded = False
         
     def _load_sources(self):
@@ -56,9 +57,12 @@ class PriceProvider:
                         self._process_bootstrap_row(row)
             except Exception as e:
                 logger.warning(f"Failed to load bootstrap prices: {e}")
+        
+        # 5. Load prices from knowledge base (lowest priority, but comprehensive)
+        self._load_knowledge_base_prices()
                 
         self.loaded = True
-        logger.info(f"Price provider loaded: iiko={len(self.iiko_prices)}, user={len(self.user_prices)}, catalog={len(self.catalog_prices)}, bootstrap={len(self.bootstrap_prices)}")
+        logger.info(f"Price provider loaded: iiko={len(self.iiko_prices)}, user={len(self.user_prices)}, catalog={len(self.catalog_prices)}, bootstrap={len(self.bootstrap_prices)}, knowledge_base={len(self.knowledge_base_prices)}")
     
     def _load_iiko_prices(self):
         """IK-03: Load prices from iiko RMS integration"""
@@ -99,6 +103,41 @@ class PriceProvider:
     def _normalize_name(self, name: str) -> str:
         """Normalize ingredient name for consistent matching"""
         return name.strip().lower()
+    
+    def _load_knowledge_base_prices(self):
+        """Load prices from knowledge base markdown files"""
+        try:
+            from ..rag.extract_catalog_data import extract_prices_from_knowledge_base
+            
+            # Extract prices from knowledge base
+            kb_prices = extract_prices_from_knowledge_base()
+            
+            for name_normalized, price_data in kb_prices.items():
+                price = price_data.get("price", 0)
+                unit = price_data.get("unit", "kg")
+                
+                if price > 0:
+                    # Convert to price per gram
+                    price_per_g = self._normalize_price_to_gram(price, unit)
+                    
+                    sku_id = f"KB_{name_normalized.replace(' ', '_').upper()}"
+                    
+                    self.knowledge_base_prices[name_normalized] = {
+                        "name": price_data.get("name", name_normalized),
+                        "price_per_g": price_per_g,
+                        "source": "knowledge_base",
+                        "asOf": price_data.get("extracted_date", datetime.now().isoformat()),
+                        "skuId": sku_id,
+                        "unit": unit,
+                        "original_price": price,
+                        "category": price_data.get("category", "general")
+                    }
+            
+            logger.info(f"Loaded {len(self.knowledge_base_prices)} prices from knowledge base")
+            
+        except Exception as e:
+            logger.warning(f"Failed to load knowledge base prices (graceful fallback): {e}")
+            self.knowledge_base_prices = {}
 
     def _load_user_prices(self):
         """Load user prices from MongoDB (graceful fallback if unavailable)"""
@@ -292,7 +331,8 @@ class PriceProvider:
             (self.iiko_prices, "iiko"),
             (self.user_prices, "user"),
             (self.catalog_prices, "catalog"), 
-            (self.bootstrap_prices, "bootstrap")
+            (self.bootstrap_prices, "bootstrap"),
+            (self.knowledge_base_prices, "knowledge_base")
         ]
         
         for source_dict, source_name in all_sources:
@@ -367,7 +407,8 @@ class PriceProvider:
             (self.iiko_prices, "iiko"),
             (self.user_prices, "user"),
             (self.catalog_prices, "catalog"),
-            (self.bootstrap_prices, "bootstrap")
+            (self.bootstrap_prices, "bootstrap"),
+            (self.knowledge_base_prices, "knowledge_base")
         ]
         
         for source_dict, source_name in all_sources:
@@ -400,9 +441,9 @@ class PriceProvider:
                         "canonical_id": price_data.get("canonical_id")
                     })
         
-        # Sort by priority: iiko > user > catalog > bootstrap, then by name similarity
+        # Sort by priority: iiko > user > catalog > bootstrap > knowledge_base, then by name similarity
         def sort_key(item):
-            source_priority = {"iiko": 0, "user": 1, "catalog": 2, "bootstrap": 3}.get(item["source"], 4)
+            source_priority = {"iiko": 0, "user": 1, "catalog": 2, "bootstrap": 3, "knowledge_base": 4}.get(item["source"], 5)
             name_similarity = 100 - fuzz.ratio(query_lower, item["name"].lower())
             return (source_priority, name_similarity)
         
