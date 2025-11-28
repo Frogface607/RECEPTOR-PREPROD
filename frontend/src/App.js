@@ -10264,7 +10264,19 @@ function App() {
       <header className="border-b border-purple-500/20 bg-gray-900/80 backdrop-blur-xl shadow-2xl">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
-            <div className="flex items-center space-x-4">
+            <button
+              onClick={() => {
+                setCurrentView('dashboard');
+                // Сбрасываем состояние при переходе на главную
+                setTechCard(null);
+                setSelectedTechCard(null);
+                // Обновляем данные
+                fetchUserHistory();
+                fetchVenueProfile();
+              }}
+              className="flex items-center space-x-4 hover:opacity-80 transition-opacity cursor-pointer"
+              title="На главную"
+            >
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-purple-400/20">
                 <span className="text-white font-bold text-xl">R</span>
               </div>
@@ -10279,7 +10291,7 @@ function App() {
 
                 </div>
               </div>
-            </div>
+            </button>
             
             {/* Subscription Info */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
