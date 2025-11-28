@@ -7150,6 +7150,36 @@ async def chat_with_assistant(request: dict):
             "kitchen_equipment": user.get("kitchen_equipment", [])
         }
     
+    # Поиск по базе знаний для контекста
+    knowledge_context = ""
+    try:
+        from receptor_agent.rag.search import search_knowledge_base
+        
+        # Определяем категории на основе запроса
+        categories = []
+        query_lower = message.lower()
+        if any(word in query_lower for word in ['haccp', 'санпин', 'норматив', 'стандарт', 'требование']):
+            categories.append('haccp')
+        if any(word in query_lower for word in ['hr', 'персонал', 'сотрудник', 'мотивация', 'обучение']):
+            categories.append('hr')
+        if any(word in query_lower for word in ['финанс', 'roi', 'прибыль', 'себестоимость', 'наценка', 'маржа']):
+            categories.append('finance')
+        if any(word in query_lower for word in ['маркетинг', 'smm', 'реклама', 'продвижение', 'контент']):
+            categories.append('marketing')
+        if any(word in query_lower for word in ['iiko', 'api', 'интеграция', 'технический']):
+            categories.append('iiko')
+        
+        # Ищем релевантную информацию
+        search_results = search_knowledge_base(message, top_k=3, categories=categories if categories else None)
+        
+        if search_results:
+            knowledge_context = "\n\nРелевантная информация из базы знаний RECEPTOR:\n"
+            for i, result in enumerate(search_results, 1):
+                knowledge_context += f"\n[{i}] {result['source']} ({result['category']}):\n{result['content'][:500]}...\n"
+    except Exception as e:
+        logger.warning(f"Error searching knowledge base: {str(e)}")
+        knowledge_context = ""
+    
     # Системный промпт для кулинарного ассистента
     system_prompt = """Ты RECEPTOR — профессиональный AI-ассистент для ресторанного бизнеса. 
 Твоя специализация:
@@ -7158,11 +7188,16 @@ async def chat_with_assistant(request: dict):
 - Оптимизация меню и анализ рентабельности
 - Управленческие вопросы ресторанного бизнеса
 - Кулинарные советы и рекомендации
+- HACCP и СанПиН нормативы
+- HR и управление персоналом
+- Маркетинг и SMM
+- Техническая документация iiko
 
 Всегда отвечай профессионально, но доступно. Давай конкретные советы с примерами и формулами.
 Если пользователь просит создать техкарту или рецепт, используй функцию generateTechcard.
 Если спрашивает о расчетах, давай конкретные формулы и примеры.
-Будь дружелюбным и полезным. Отвечай на русском языке."""
+Используй информацию из базы знаний RECEPTOR для более точных ответов.
+Будь дружелюбным и полезным. Отвечай на русском языке.""" + knowledge_context
 
     # Tool definitions для OpenAI Function Calling
     tools = [
@@ -7190,6 +7225,34 @@ async def chat_with_assistant(request: dict):
                         }
                     },
                     "required": ["dish_name"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "searchKnowledgeBase",
+                "description": "Поиск по базе знаний RECEPTOR (HACCP, СанПиН, HR, финансы, техники, iiko документация, бизнес-кейсы). Используй для ответов на вопросы о нормах, стандартах, лучших практиках.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Поисковый запрос на русском языке"
+                        },
+                        "top_k": {
+                            "type": "integer",
+                            "description": "Количество результатов (1-10)",
+                            "default": 5
+                        },
+                        "categories": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Фильтр по категориям: haccp, sanpin, hr, finance, marketing, iiko, techniques",
+                            "default": []
+                        }
+                    },
+                    "required": ["query"]
                 }
             }
         }
