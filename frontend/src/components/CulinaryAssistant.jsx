@@ -23,9 +23,12 @@ const CulinaryAssistant = ({
   const [conversationId, setConversationId] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [showHistorySidebar, setShowHistorySidebar] = useState(true); // Показывать сайдбар по умолчанию
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Автоскролл к последнему сообщению (только внутри контейнера, не всей страницы)
   useEffect(() => {
@@ -59,6 +62,70 @@ const CulinaryAssistant = ({
       loadConversations();
     }
   }, [userId, mode]);
+
+  // Инициализация Web Speech API для голосового ввода
+  useEffect(() => {
+    if (mode === 'center' && 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'ru-RU';
+      
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+      
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        setInput(prev => prev + (prev ? ' ' : '') + transcript);
+        setIsListening(false);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          alert('Разрешите доступ к микрофону для голосового ввода');
+        }
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognitionRef.current = recognition;
+      
+      return () => {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      };
+    }
+  }, [mode]);
+
+  // Функция для начала/остановки голосового ввода
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Голосовой ввод не поддерживается в вашем браузере');
+      return;
+    }
+    
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting recognition:', error);
+        setIsListening(false);
+      }
+    }
+  };
 
   const loadConversations = async () => {
     try {
@@ -213,7 +280,69 @@ const CulinaryAssistant = ({
   // Центральный режим (как ChatGPT, темная тема, премиум дизайн)
   if (mode === 'center') {
     return (
-      <div className="flex flex-col h-[calc(100vh-200px)] max-w-5xl mx-auto bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-3xl border border-gray-700/50 shadow-2xl overflow-hidden">
+      <div className="flex gap-4 h-[calc(100vh-200px)] max-w-7xl mx-auto">
+        {/* Сайдбар с историей бесед */}
+        {showHistorySidebar && (
+          <div className="w-80 flex-shrink-0 bg-gray-800/90 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-xl overflow-hidden flex flex-col">
+            <div className="px-4 py-4 border-b border-gray-700/50 bg-gray-800/80">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-gray-200 text-sm">История бесед</h3>
+                <button
+                  onClick={() => setShowHistorySidebar(false)}
+                  className="text-gray-400 hover:text-gray-200 transition-colors"
+                  title="Скрыть историю"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                onClick={startNewConversation}
+                className="w-full px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg shadow-purple-500/20"
+              >
+                + Новая беседа
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto px-4 py-2">
+              {conversations.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-gray-400">Нет сохраненных бесед</p>
+                  <p className="text-xs text-gray-500 mt-2">Начните новую беседу</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.conversation_id}
+                      onClick={() => loadConversation(conv.conversation_id)}
+                      className={`w-full text-left px-3 py-3 rounded-xl transition-all duration-200 ${
+                        conversationId === conv.conversation_id
+                          ? 'bg-purple-600/30 border-2 border-purple-500/50 shadow-lg shadow-purple-500/10'
+                          : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600/30'
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-200 truncate mb-1">
+                        {conv.title || 'Беседа без названия'}
+                      </div>
+                      <div className="text-xs text-gray-400 truncate mb-2">
+                        {conv.last_message || 'Нет сообщений'}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{conv.message_count || 0} сообщений</span>
+                        <span>{new Date(conv.updated_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Основной чат */}
+        <div className="flex-1 flex flex-col bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-3xl border border-gray-700/50 shadow-2xl overflow-hidden">
         {/* Заголовок - премиум стиль */}
         <div className="px-6 py-5 border-b border-gray-700/50 bg-gradient-to-r from-gray-800/80 to-gray-800/60 backdrop-blur-sm">
           <div className="flex items-center justify-between">
@@ -227,55 +356,20 @@ const CulinaryAssistant = ({
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="px-4 py-2 text-sm font-medium bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-600/50"
-              >
-                {showHistory ? 'Скрыть' : 'История'}
-              </button>
-              <button
-                onClick={startNewConversation}
-                className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg shadow-purple-500/20"
-              >
-                Новая беседа
-              </button>
+              {!showHistorySidebar && (
+                <button
+                  onClick={() => setShowHistorySidebar(true)}
+                  className="px-4 py-2 text-sm font-medium bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-600/50"
+                  title="Показать историю бесед"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>
-        
-        {/* История бесед */}
-        {showHistory && (
-          <div className="px-6 py-4 border-b border-gray-700 bg-gray-800/50 max-h-64 overflow-y-auto">
-            <h3 className="text-sm font-semibold text-gray-300 mb-3">Предыдущие беседы</h3>
-            {conversations.length === 0 ? (
-              <p className="text-sm text-gray-400">Нет сохраненных бесед</p>
-            ) : (
-              <div className="space-y-2">
-                {conversations.map((conv) => (
-                  <button
-                    key={conv.conversation_id}
-                    onClick={() => loadConversation(conv.conversation_id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      conversationId === conv.conversation_id
-                        ? 'bg-purple-600/30 border border-purple-500'
-                        : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
-                  >
-                    <div className="text-sm font-medium text-gray-200 truncate">
-                      {conv.title}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1 truncate">
-                      {conv.last_message}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {conv.message_count} сообщений • {new Date(conv.updated_at).toLocaleDateString('ru-RU')}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Сообщения - премиум стиль */}
         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scroll-smooth">
@@ -412,13 +506,36 @@ const CulinaryAssistant = ({
                 onKeyDown={handleKeyDown}
                 placeholder="Напишите сообщение..."
                 rows={1}
-                className="w-full px-5 py-4 pr-14 bg-gray-800/80 text-white border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none max-h-32 overflow-y-auto shadow-inner placeholder:text-gray-500 transition-all duration-200"
+                className="w-full px-5 py-4 pr-24 bg-gray-800/80 text-white border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none max-h-32 overflow-y-auto shadow-inner placeholder:text-gray-500 transition-all duration-200"
                 disabled={loading}
                 onInput={(e) => {
                   e.target.style.height = 'auto';
                   e.target.style.height = e.target.scrollHeight + 'px';
                 }}
               />
+              {/* Кнопка голосового ввода */}
+              <button
+                onClick={toggleVoiceInput}
+                disabled={loading || !recognitionRef.current}
+                className={`absolute right-14 bottom-3 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                  isListening
+                    ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
+                    : 'bg-gray-700/80 hover:bg-gray-600/80 text-gray-300'
+                } disabled:opacity-30 disabled:cursor-not-allowed`}
+                title={isListening ? 'Остановить запись' : 'Голосовой ввод'}
+              >
+                {isListening ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                )}
+              </button>
+              {/* Кнопка отправки */}
               <button
                 onClick={sendMessage}
                 disabled={loading || !input.trim()}
@@ -434,9 +551,17 @@ const CulinaryAssistant = ({
               </button>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-3 text-center">
-            Каждое сообщение стоит 5 токенов
-          </p>
+          <div className="flex items-center justify-between mt-3">
+            <p className="text-xs text-gray-500">
+              {isListening && (
+                <span className="text-red-400 animate-pulse">🎤 Запись...</span>
+              )}
+            </p>
+            <p className="text-xs text-gray-500">
+              Каждое сообщение стоит 5 токенов
+            </p>
+          </div>
+        </div>
         </div>
       </div>
     );

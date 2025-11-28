@@ -8085,14 +8085,15 @@ RECEPTOR — это комплексная AI-платформа для авто
 
 
 @api_router.get("/assistant/conversations")
-async def get_conversations(user_id: str):
+async def get_conversations(user_id: str, limit: int = 100):
     """
-    ╨Я╨╛╨╗╤Г╤З╨╕╤В╤М ╤Б╨┐╨╕╤Б╨╛╨║ ╨▓╤Б╨╡╤Е ╨▒╨╡╤Б╨╡╨┤ ╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╤В╨╡╨╗╤П ╤Б ╨░╤Б╤Б╨╕╤Б╤В╨╡╨╜╤В╨╛╨╝
+    Получить список всех бесед пользователя с ассистентом
+    По умолчанию возвращает до 100 бесед (можно увеличить)
     """
     try:
         conversations = await db.assistant_conversations.find(
             {"user_id": user_id}
-        ).sort("updated_at", -1).to_list(50)
+        ).sort("updated_at", -1).to_list(limit)  # Увеличили лимит до 100 по умолчанию
         
         result = []
         for conv in conversations:
