@@ -14199,7 +14199,7 @@ function App() {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-purple-300 flex items-center gap-3">
-                🏪 МОЕ ЗАВЕДЕНИЕ
+                Профиль заведения
                 {profileStep > 1 && (
                   <span className="text-sm bg-purple-600 text-white px-3 py-1 rounded-full">
                     Шаг {profileStep}/4
@@ -14221,23 +14221,33 @@ function App() {
             <div className="flex space-x-4 mb-6 border-b border-gray-600">
               <button
                 onClick={() => setProfileStep(0)}
-                className={`px-4 py-2 font-bold transition-colors ${
+                className={`px-4 py-2 font-medium transition-colors ${
                   profileStep === 0 
                     ? 'border-b-2 border-purple-400 text-purple-300' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                🔗 IIKO Подключение
+                IIKO Подключение
               </button>
               <button
                 onClick={() => setProfileStep(1)}
-                className={`px-4 py-2 font-bold transition-colors ${
+                className={`px-4 py-2 font-medium transition-colors ${
                   profileStep >= 1 
                     ? 'border-b-2 border-purple-400 text-purple-300' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                🏢 Профиль заведения
+                Профиль заведения
+              </button>
+              <button
+                onClick={() => setProfileStep(5)}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  profileStep >= 5 
+                    ? 'border-b-2 border-purple-400 text-purple-300' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Глубокое исследование
               </button>
             </div>
 
@@ -14252,7 +14262,7 @@ function App() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-400/30 rounded-xl p-6">
-                    <h4 className="text-lg font-bold text-blue-300 mb-4">📡 Данные для подключения</h4>
+                    <h4 className="text-lg font-bold text-blue-300 mb-4">Данные для подключения</h4>
                     
                     <div className="space-y-4">
                       <div>
@@ -14300,14 +14310,14 @@ function App() {
                           disabled={isConnectingIikoRms}
                           className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-3 rounded-lg font-bold transition-colors"
                         >
-                          {isConnectingIikoRms ? 'Подключаюсь...' : '🔗 Проверить подключение'}
+                          {isConnectingIikoRms ? 'Подключаюсь...' : 'Проверить подключение'}
                         </button>
                       )}
                     </div>
                   </div>
                   
                   <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-400/30 rounded-xl p-6">
-                    <h4 className="text-lg font-bold text-green-300 mb-4">ℹ️ Как получить данные?</h4>
+                    <h4 className="text-lg font-bold text-green-300 mb-4">Как получить данные?</h4>
                     
                     <div className="space-y-3 text-sm text-gray-300">
                       <div>
@@ -14322,14 +14332,14 @@ function App() {
                       
                       <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-3 mt-4">
                         <p className="text-yellow-200 text-xs">
-                          💡 Если не знаете данные, обратитесь к системному администратору IIKO в вашем заведении
+                          Если не знаете данные, обратитесь к системному администратору IIKO в вашем заведении
                         </p>
                       </div>
                     </div>
                     
                     {iikoRmsConnection.status === 'connected' && (
                       <div className="bg-green-900/20 border border-green-400/30 rounded-lg p-3 mt-4">
-                        <p className="text-green-200 text-sm font-bold">✅ Подключение активно</p>
+                        <p className="text-green-200 text-sm font-bold">Подключение активно</p>
                         <p className="text-green-300 text-xs">
                           {iikoRmsConnection.organization_name} • {iikoRmsConnection.products_count} товаров
                         </p>
@@ -14393,7 +14403,7 @@ function App() {
                         <h4 className="text-lg font-bold text-purple-200 mb-2">{venue.name}</h4>
                         <p className="text-sm text-gray-300 mb-3">{venue.description}</p>
                         <div className="text-xs text-gray-400">
-                          <div>Сложность: {venue.complexity_level === 'high' ? '🔴 Высокая' : venue.complexity_level === 'medium' ? '🟡 Средняя' : '🟢 Низкая'}</div>
+                          <div>Сложность: {venue.complexity_level === 'high' ? 'Высокая' : venue.complexity_level === 'medium' ? 'Средняя' : 'Низкая'}</div>
                           <div>Ценовой коэффициент: {venue.price_multiplier}x</div>
                         </div>
                       </div>
@@ -14672,7 +14682,7 @@ function App() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-gray-300 font-semibold">
-                            ⚪ iiko RMS не подключен
+                            iiko RMS не подключен
                           </div>
                           <div className="text-gray-400 text-sm mt-1">
                             Подключите для экспорта техкарт в iiko
@@ -14682,14 +14692,14 @@ function App() {
                           onClick={() => setShowIikoRmsModal(true)}
                           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                         >
-                          🔗 Подключить
+                          Подключить
                         </button>
                       </div>
                     </div>
                   )}
                   
                   <div className="text-gray-400 text-xs mt-2">
-                    💡 После подключения пароль будет сохранен для автоматического входа
+                    После подключения пароль будет сохранен для автоматического входа
                   </div>
                 </div>
                 
@@ -14717,7 +14727,7 @@ function App() {
                     }`}
                     title="💾 Сохранить профиль заведения для персонализации всех функций"
                   >
-                    {isUpdatingProfile ? 'СОХРАНЕНИЕ...' : '💾 СОХРАНИТЬ ПРОФИЛЬ'}
+                    {isUpdatingProfile ? 'СОХРАНЕНИЕ...' : 'СОХРАНИТЬ ПРОФИЛЬ'}
                   </button>
                 </div>
               </div>
