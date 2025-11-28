@@ -3361,8 +3361,8 @@ class DeepResearchRequest(BaseModel):
     city: Optional[str] = None
     additional_info: Optional[str] = None
 
-@api_router.post("/venue/deep-research")
-async def deep_research_venue(request: DeepResearchRequest, user_id: str = Query(..., description="User ID")):
+@api_router.post("/venue/deep-research/{user_id}")
+async def deep_research_venue(user_id: str, request: DeepResearchRequest):
     """
     Perform deep research on a venue using web search and AI analysis.
     Saves research results to MongoDB for use in assistant context.

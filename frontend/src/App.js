@@ -6675,7 +6675,7 @@ function App() {
       setCurrentResearchMessage('Поиск информации в интернете...');
 
       const response = await axios.post(
-        `${API}/venue/deep-research?user_id=${currentUser.id}`,
+        `${API}/venue/deep-research/${currentUser.id}`,
         {
           venue_name: venueProfile.venue_name,
           city: venueProfile.city || null,
