@@ -3450,9 +3450,9 @@ async def deep_research_venue(request: DeepResearchRequest, user_id: str = Query
         
         # Analyze and structure research data using LLM
         research_summary = ""
-        competitor_analysis = ""
-        customer_reviews_summary = ""
-        recommendations = ""
+        competitor_analysis = "Недоступно"
+        customer_reviews_summary = "Недоступно"
+        recommendations = "Недоступно"
         
         if search_results:
             # Combine search results
@@ -7407,11 +7407,16 @@ async def chat_with_assistant(request: dict):
             venue_context += f"Описание: {venue_profile['description']}\n"
         venue_context += "\nВАЖНО: Используй эту информацию для персонализированных рекомендаций!\n"
         
-        logger.info(f"Venue context created: {len(venue_context)} chars")
-        logger.info(f"Venue context content: {venue_context[:500]}...")  # Log first 500 chars for debugging
+        logger.info(f"✅ Venue context created: {len(venue_context)} chars")
+        logger.info(f"Venue context preview: {venue_context[:500]}...")
+        logger.info(f"Full venue profile data: {venue_profile}")
     else:
-        logger.warning(f"No venue profile data found for user {user_id}")
-        logger.warning(f"User object keys: {list(user.keys()) if user else 'No user found'}")
+        logger.warning(f"⚠️ No venue profile data found for user {user_id}")
+        if user:
+            logger.warning(f"User object exists. Keys: {list(user.keys())}")
+            logger.warning(f"User venue fields: venue_name={user.get('venue_name')}, venue_type={user.get('venue_type')}, city={user.get('city')}")
+        else:
+            logger.warning(f"User object not found for user_id: {user_id}")
     
     # Добавляем данные глубокого исследования, если есть
     research_context = ""
@@ -7471,6 +7476,10 @@ async def chat_with_assistant(request: dict):
 ╨Ш╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╣ ╨╕╨╜╤Д╨╛╤А╨╝╨░╤Ж╨╕╤О ╨╕╨╖ ╨▒╨░╨╖╤Л ╨╖╨╜╨░╨╜╨╕╨╣ RECEPTOR ╨┤╨╗╤П ╨▒╨╛╨╗╨╡╨╡ ╤В╨╛╤З╨╜╤Л╤Е ╨╛╤В╨▓╨╡╤В╨╛╨▓.
 ╨С╤Г╨┤╤М ╨┤╤А╤Г╨╢╨╡╨╗╤О╨▒╨╜╤Л╨╝ ╨╕ ╨┐╨╛╨╗╨╡╨╖╨╜╤Л╨╝. ╨Ю╤В╨▓╨╡╤З╨░╨╣ ╨╜╨░ ╤А╤Г╤Б╤Б╨║╨╛╨╝ ╤П╨╖╤Л╨║╨╡.
 КРИТИЧЕСКИ ВАЖНО: Всегда учитывай профиль заведения пользователя при даче рекомендаций!""" + venue_context + research_context + knowledge_context
+    
+    # Log final system prompt length for debugging
+    logger.info(f"📝 System prompt total length: {len(system_prompt)} chars")
+    logger.info(f"📊 Context breakdown: venue={len(venue_context)}, research={len(research_context)}, knowledge={len(knowledge_context)}")
 
     # Tool definitions ╨┤╨╗╤П OpenAI Function Calling
     tools = [

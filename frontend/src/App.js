@@ -1697,6 +1697,8 @@ function App() {
       if (response.data) {
         setVenueProfile(response.data);
         console.log('📍 Venue profile loaded:', response.data);
+      } else {
+        setVenueProfile({});
       }
     } catch (error) {
       console.log('ℹ️ No venue profile found, using defaults');
@@ -1714,8 +1716,18 @@ function App() {
   useEffect(() => {
     if (currentUser?.id) {
       loadVenueProfile();
+    } else {
+      // Reset profile when user logs out
+      setVenueProfile({});
     }
   }, [currentUser?.id]);
+
+  // Also load profile on page load/mount
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchVenueProfile();
+    }
+  }, []);
   
   // 🚀 CRITICAL FIX: Auto-restore IIKO connection after currentUser is loaded
   useEffect(() => {
@@ -6637,9 +6649,71 @@ function App() {
     if (!currentUser?.id) return;
     try {
       const response = await axios.get(`${API}/venue-profile/${currentUser.id}`);
-      setVenueProfile(response.data);
+      if (response.data) {
+        setVenueProfile(response.data);
+        console.log('📍 Venue profile fetched:', response.data);
+      }
     } catch (error) {
       console.error('Error fetching venue profile:', error);
+      setVenueProfile({});
+    }
+  };
+
+  // Deep Research function
+  const startDeepResearch = async () => {
+    if (!currentUser?.id || !venueProfile.venue_name) {
+      alert('Пожалуйста, заполните название заведения');
+      return;
+    }
+
+    setIsResearching(true);
+    setResearchProgress(0);
+    setCurrentResearchMessage('Инициализация исследования...');
+
+    try {
+      setResearchProgress(20);
+      setCurrentResearchMessage('Поиск информации в интернете...');
+
+      const response = await axios.post(
+        `${API}/venue/deep-research?user_id=${currentUser.id}`,
+        {
+          venue_name: venueProfile.venue_name,
+          city: venueProfile.city || null,
+          additional_info: venueProfile.venue_description || null
+        }
+      );
+
+      setResearchProgress(80);
+      setCurrentResearchMessage('Анализ данных...');
+
+      if (response.data.success) {
+        if (response.data.research) {
+          setDeepResearchData(response.data.research);
+        } else {
+          // If research data is empty, set default structure
+          setDeepResearchData({
+            competitor_analysis: 'Данные не найдены',
+            customer_reviews_summary: 'Данные не найдены',
+            recommendations: 'Попробуйте указать больше информации о заведении'
+          });
+        }
+        setResearchProgress(100);
+        setCurrentResearchMessage('Исследование завершено!');
+        
+        // Auto-close after 2 seconds
+        setTimeout(() => {
+          setIsResearching(false);
+          setCurrentResearchMessage('');
+        }, 2000);
+      } else {
+        throw new Error(response.data.message || 'Исследование не вернуло данных');
+      }
+    } catch (error) {
+      console.error('Error during deep research:', error);
+      alert('Ошибка при проведении исследования: ' + (error.response?.data?.detail || error.message));
+      setIsResearching(false);
+      setResearchProgress(0);
+      setCurrentResearchMessage('');
     }
   };
 
