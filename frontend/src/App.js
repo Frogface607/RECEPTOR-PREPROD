@@ -11760,7 +11760,7 @@ function App() {
                             <button
                               onClick={() => {
                                 console.log('🔵 Opening pricing page, currentUser:', currentUser);
-                                setShowPricingPage(true);
+                                setCurrentView('pricing');
                               }}
                               className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
                             >
