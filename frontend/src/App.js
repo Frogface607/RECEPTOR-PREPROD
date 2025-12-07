@@ -10450,7 +10450,6 @@ function App() {
               </div>
             </div>
           </div>
-        </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
