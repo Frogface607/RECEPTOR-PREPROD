@@ -9,7 +9,8 @@ const API = `${BACKEND_URL}/api`;
 const CulinaryAssistant = ({ 
   userId, 
   mode = 'center', // 'center' | 'sidebar'
-  onTechCardRequest = null // Callback для создания техкарты из чата
+  onTechCardRequest = null, // Callback для создания техкарты из чата
+  onTokenUpdate = null // Callback для обновления баланса токенов
 }) => {
   const [messages, setMessages] = useState([
     {
@@ -25,10 +26,17 @@ const CulinaryAssistant = ({
   const [showHistory, setShowHistory] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [showHistorySidebar, setShowHistorySidebar] = useState(true); // Показывать сайдбар по умолчанию
+  const [toast, setToast] = useState(null); // Toast notification state
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  // Show toast notification
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   // Автоскролл к последнему сообщению (только внутри контейнера, не всей страницы)
   useEffect(() => {
@@ -189,6 +197,21 @@ const CulinaryAssistant = ({
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
+    // Check token balance before sending (check for chat with tools - higher cost)
+    try {
+      const balanceCheck = await axios.get(`${API}/user/${userId || 'demo_user'}/tokens/check`, {
+        params: { operation_type: 'ai_chat_with_tools' }
+      });
+      
+      if (!balanceCheck.data.has_enough) {
+        showToast(`Недостаточно токенов. Требуется: ${balanceCheck.data.required_tokens} NC, доступно: ${balanceCheck.data.current_balance} NC`, 'error');
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking token balance:', error);
+      // Continue anyway if check fails (for demo users)
+    }
+
     const userMessage = {
       role: 'user',
       content: input.trim(),
@@ -221,6 +244,19 @@ const CulinaryAssistant = ({
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Show token deduction notification
+      if (response.data.tokens_deducted) {
+        const toolCallsText = response.data.tool_calls && response.data.tool_calls.length > 0 
+          ? ` (с использованием инструментов)` 
+          : '';
+        showToast(`Списано ${response.data.tokens_deducted} NC${toolCallsText}. Баланс: ${response.data.tokens_balance} NC`, 'success');
+        
+        // Update parent component's token balance
+        if (onTokenUpdate && response.data.tokens_balance !== undefined) {
+          onTokenUpdate(response.data.tokens_balance);
+        }
+      }
       
       if (response.data.conversation_id) {
         setConversationId(response.data.conversation_id);
@@ -259,11 +295,22 @@ const CulinaryAssistant = ({
     } catch (error) {
       console.error('Assistant error:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Неизвестная ошибка';
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `Извините, произошла ошибка: ${errorMessage}. Попробуйте еще раз.`,
-        timestamp: new Date()
-      }]);
+      
+      // Handle token balance errors
+      if (error.response?.status === 402) {
+        showToast(errorMessage, 'error');
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Недостаточно токенов для выполнения операции. Пожалуйста, пополните баланс.`,
+          timestamp: new Date()
+        }]);
+      } else {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Извините, произошла ошибка: ${errorMessage}. Попробуйте еще раз.`,
+          timestamp: new Date()
+        }]);
+      }
     } finally {
       setLoading(false);
     }
@@ -669,6 +716,27 @@ const CulinaryAssistant = ({
           </button>
         </div>
       </div>
+      
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 ${
+          toast.type === 'error' 
+            ? 'bg-red-600 text-white' 
+            : toast.type === 'success' 
+            ? 'bg-green-600 text-white' 
+            : 'bg-blue-600 text-white'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span>{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 text-white hover:text-gray-200"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1844,6 +1844,83 @@ async def root():
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# ==========================================
+# TOKEN SYSTEM & BILLING (2025)
+# ==========================================
+
+TOKEN_COSTS = {
+    "techcard_generate": 10,
+    "techcard_v2_convert": 5,
+    "ai_kitchen_recipe": 5,
+    "complex_search": 15,
+    "menu_audit": 50,
+    "ai_chat_message": 1,  # Simple chat messages
+    "ai_chat_with_tools": 5  # Chat with tool calls
+}
+
+async def check_token_balance(user_id: str, operation_type: str) -> tuple[bool, int, str]:
+    """
+    Check if user has enough tokens for an operation.
+    Returns: (has_enough, current_balance, error_message)
+    """
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        return False, 0, "User not found"
+    
+    current_balance = user.get("tokens_balance", 0)
+    required_tokens = TOKEN_COSTS.get(operation_type, 0)
+    
+    if current_balance < required_tokens:
+        return False, current_balance, f"Недостаточно токенов. Требуется: {required_tokens}, доступно: {current_balance}"
+    
+    return True, current_balance, ""
+
+async def deduct_tokens(user_id: str, operation_type: str, operation_details: dict = None) -> dict:
+    """
+    Deduct tokens from user balance and log the transaction.
+    Returns: {"success": bool, "new_balance": int, "tokens_deducted": int}
+    """
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        return {"success": False, "error": "User not found"}
+    
+    required_tokens = TOKEN_COSTS.get(operation_type, 0)
+    current_balance = user.get("tokens_balance", 0)
+    
+    if current_balance < required_tokens:
+        return {
+            "success": False,
+            "error": f"Недостаточно токенов. Требуется: {required_tokens}, доступно: {current_balance}",
+            "current_balance": current_balance
+        }
+    
+    new_balance = current_balance - required_tokens
+    
+    # Update user balance
+    await db.users.update_one(
+        {"id": user_id},
+        {
+            "$set": {"tokens_balance": new_balance},
+            "$push": {
+                "token_transactions": {
+                    "operation_type": operation_type,
+                    "tokens_deducted": required_tokens,
+                    "balance_before": current_balance,
+                    "balance_after": new_balance,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "details": operation_details or {}
+                }
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "new_balance": new_balance,
+        "tokens_deducted": required_tokens,
+        "balance_before": current_balance
+    }
+
 # Health check endpoint for Railway
 @api_router.get("/health")
 async def health_check():
@@ -3973,6 +4050,11 @@ async def generate_tech_card(request: DishRequest):
         if not can_create:
             raise HTTPException(status_code=403, detail=limit_message)
         
+        # Check token balance before generation
+        has_tokens, current_balance, token_error = await check_token_balance(request.user_id, "techcard_generate")
+        if not has_tokens:
+            raise HTTPException(status_code=402, detail=token_error)  # 402 Payment Required
+        
         # Get regional coefficient (safe access to city field)
         regional_coefficient = REGIONAL_COEFFICIENTS.get(user.get("city", "moscow").lower(), 1.0)
         
@@ -4097,6 +4179,17 @@ async def generate_tech_card(request: DishRequest):
         
         await db.tech_cards.insert_one(tech_card.dict())
         
+        # Deduct tokens for generation
+        token_result = await deduct_tokens(
+            request.user_id,
+            "techcard_generate",
+            {"dish_name": request.dish_name, "tech_card_id": tech_card.id}
+        )
+        
+        if not token_result["success"]:
+            # If token deduction fails, still return tech card but log error
+            logger.error(f"Token deduction failed for user {request.user_id}: {token_result.get('error')}")
+        
         # Update user's monthly usage
         await db.users.update_one(
             {"id": request.user_id},
@@ -4108,7 +4201,9 @@ async def generate_tech_card(request: DishRequest):
             "tech_card": tech_card_content,
             "id": tech_card.id,
             "monthly_used": user.get("monthly_tech_cards_used", 0) + 1,
-            "monthly_limit": plan_info["monthly_tech_cards"]
+            "monthly_limit": plan_info["monthly_tech_cards"],
+            "tokens_deducted": token_result.get("tokens_deducted", 0),
+            "tokens_balance": token_result.get("new_balance", current_balance)
         }
         
     except Exception as e:
@@ -7752,6 +7847,13 @@ async def chat_with_assistant(request: dict):
         
         logger.info(f"🤖 Question complexity: {'complex' if is_complex else 'simple'}, using model: {model_for_chat}")
         
+        # Check token balance before chat (will determine cost after tool calls)
+        # Start with simple message cost, will adjust if tool calls happen
+        operation_type = "ai_chat_with_tools"  # Default to higher cost, will adjust if no tools
+        has_tokens, current_balance, token_error = await check_token_balance(user_id, operation_type)
+        if not has_tokens:
+            raise HTTPException(status_code=402, detail=token_error)  # 402 Payment Required
+        
         # Вызов LLM с tool-calling
         if not openai_client:
             raise HTTPException(status_code=500, detail="OpenAI client not initialized")
@@ -8026,12 +8128,42 @@ async def chat_with_assistant(request: dict):
             logger.warning(f"Failed to save conversation history: {str(e)}")
             # ╨Я╤А╨╛╨┤╨╛╨╗╨╢╨░╨╡╨╝ ╨▒╨╡╨╖ ╤Б╨╛╤Е╤А╨░╨╜╨╡╨╜╨╕╤П ╨╕╤Б╤В╨╛╤А╨╕╨╕
         
+        # Determine actual operation type and deduct tokens
+        actual_operation_type = "ai_chat_with_tools" if tool_calls_result else "ai_chat_message"
+        
+        # Deduct tokens based on actual operation
+        token_result = await deduct_tokens(
+            user_id,
+            actual_operation_type,
+            {
+                "conversation_id": conversation_id,
+                "has_tool_calls": bool(tool_calls_result),
+                "tool_calls_count": len(tool_calls_result) if tool_calls_result else 0,
+                "model_used": model_for_chat
+            }
+        )
+        
+        if not token_result["success"]:
+            logger.error(f"Token deduction failed for user {user_id}: {token_result.get('error')}")
+            # Still return response, but log error
+        
+        # Get tokens used from response (if available)
+        tokens_used = 0
+        if assistant_message.tool_calls:
+            # If we had tool calls, we have two responses
+            if 'final_response' in locals():
+                tokens_used = final_response.usage.total_tokens if hasattr(final_response, 'usage') else 0
+        else:
+            tokens_used = response.usage.total_tokens if hasattr(response, 'usage') else 0
+        
         return {
             "response": assistant_response,
             "conversation_id": conversation_id,
             "tool_calls": tool_calls_result if tool_calls_result else None,
-            "tokens_used": response.usage.total_tokens,
-            "credits_spent": 5
+            "tokens_used": tokens_used,
+            "tokens_deducted": token_result.get("tokens_deducted", 0),
+            "tokens_balance": token_result.get("new_balance", current_balance),
+            "credits_spent": token_result.get("tokens_deducted", 0)
         }
         
     except Exception as e:
@@ -8043,6 +8175,47 @@ async def chat_with_assistant(request: dict):
             detail=f"╨Ю╤И╨╕╨▒╨║╨░ ╨┐╤А╨╕ ╨╛╨▒╤А╨░╨▒╨╛╤В╨║╨╡ ╨╖╨░╨┐╤А╨╛╤Б╨░: {str(e)}"
         )
 
+
+@api_router.get("/user/{user_id}/tokens/balance")
+async def get_token_balance(user_id: str):
+    """Get user's current token balance"""
+    try:
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            return {"tokens_balance": 0, "subscription_plan": "free"}
+        
+        return {
+            "tokens_balance": user.get("tokens_balance", 0),
+            "subscription_plan": user.get("subscription_plan", "free")
+        }
+    except Exception as e:
+        logger.error(f"Error getting token balance: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting token balance: {str(e)}")
+
+@api_router.get("/tokens/costs")
+async def get_token_costs():
+    """Get token costs for all operations"""
+    return {
+        "costs": TOKEN_COSTS,
+        "description": "Token costs for different operations in NeuroCoins (NC)"
+    }
+
+@api_router.post("/user/{user_id}/tokens/check")
+async def check_operation_tokens(user_id: str, operation_type: str):
+    """Check if user has enough tokens for an operation"""
+    try:
+        has_tokens, current_balance, error_message = await check_token_balance(user_id, operation_type)
+        required_tokens = TOKEN_COSTS.get(operation_type, 0)
+        
+        return {
+            "has_enough": has_tokens,
+            "current_balance": current_balance,
+            "required_tokens": required_tokens,
+            "error_message": error_message if not has_tokens else None
+        }
+    except Exception as e:
+        logger.error(f"Error checking tokens: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error checking tokens: {str(e)}")
 
 @api_router.get("/assistant/conversations")
 async def get_conversations(user_id: str, limit: int = 100):

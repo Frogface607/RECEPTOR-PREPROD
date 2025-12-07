@@ -10486,6 +10486,12 @@ function App() {
               <CulinaryAssistant 
                 userId={currentUserOrDemo?.id || 'demo_user'}
                 mode="center"
+                onTokenUpdate={(newBalance) => {
+                  // Update token balance in current user state
+                  if (currentUserOrDemo) {
+                    setCurrentUser({ ...currentUserOrDemo, tokens_balance: newBalance });
+                  }
+                }}
                 onTechCardRequest={(data) => {
                   console.log('TechCard request from chat:', data);
                   // Если техкарта создана через чат, переключаемся на страницу создания и показываем её
