@@ -10452,7 +10452,7 @@ function App() {
           </div>
       </header>
 
-      {/* Pricing View - Full Page (outside main) */}
+      {/* Pricing View - Full Page (outside main, but header stays visible) */}
       {currentView === 'pricing' && (
         <PricingPage 
           currentUser={currentUserOrDemo} 
