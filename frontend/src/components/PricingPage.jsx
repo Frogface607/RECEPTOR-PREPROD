@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 
 const PricingPage = ({ currentUser, onUpgrade }) => {
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
@@ -113,10 +112,9 @@ const PricingPage = ({ currentUser, onUpgrade }) => {
       {/* Pricing Cards */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
         {plans.map((plan) => (
-          <motion.div 
+          <div 
             key={plan.id}
-            whileHover={{ y: -10 }}
-            className={`relative rounded-2xl p-8 border ${plan.isPopular ? 'border-purple-500 bg-gray-800/80' : 'border-gray-700 bg-gray-800/40'} backdrop-blur-xl flex flex-col`}
+            className={`relative rounded-2xl p-8 border ${plan.isPopular ? 'border-purple-500 bg-gray-800/80' : 'border-gray-700 bg-gray-800/40'} backdrop-blur-xl flex flex-col transition-transform duration-300 hover:-translate-y-2`}
           >
             {plan.isPopular && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
