@@ -10299,24 +10299,18 @@ function App() {
                 <div className="text-sm text-purple-300 font-bold">
                   {currentUserOrDemo.subscription_plan?.toUpperCase() || 'FREE'}
                 </div>
-                {currentUserOrDemo.subscription_plan === 'free' && (
-                  <div className="text-xs text-gray-400">
-                    {currentUserOrDemo.monthly_tech_cards_used || 0}/3 техкарт
-                  </div>
-                )}
-                {currentUserOrDemo.subscription_plan === 'starter' && (
-                  <div className="text-xs text-gray-400">
-                    {currentUserOrDemo.monthly_tech_cards_used || 0}/25 техкарт
-                  </div>
-                )}
-                {(currentUserOrDemo.subscription_plan === 'pro' || currentUserOrDemo.subscription_plan === 'business') && (
-                  <div className="text-xs text-gray-400">
-                    {currentUserOrDemo.monthly_tech_cards_used || 0} техкарт
-                  </div>
-                )}
+                <div className="text-xs text-purple-400/60 font-mono">
+                   {(currentUserOrDemo.tokens_balance || 0).toLocaleString()} NC
+                </div>
               </div>
               
-              <nav className="flex items-center space-x-1">
+              <button
+                onClick={() => setCurrentView('pricing')}
+                className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/30 text-amber-300 rounded-lg text-sm font-semibold transition-all shadow-[0_0_15px_rgba(245,158,11,0.1)] hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] flex items-center justify-center space-x-2"
+              >
+                <span>⚡ ПОПОЛНИТЬ</span>
+              </button>
+            </div>
                 {/* УПРОЩЕННАЯ НАВИГАЦИЯ: только основные разделы */}
                 <button
                   onClick={() => setCurrentView('dashboard')}
@@ -10458,6 +10452,50 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        {/* Pricing View */}
+        {currentView === 'pricing' && (
+          <PricingPage 
+            currentUser={currentUserOrDemo} 
+            onUpgrade={async (planId, cycle) => {
+              // Mock payment flow
+              alert(`Переход к оплате тарифа ${planId} (${cycle})...\n\nВ реальной версии здесь откроется виджет ЮКассы.`);
+              
+              // Simulate success
+              const newBalance = (currentUserOrDemo.tokens_balance || 0) + (planId === 'pro' ? 1000 : planId === 'business' ? 3000 : 0);
+              const updatedUser = { ...currentUserOrDemo, subscription_plan: planId, tokens_balance: newBalance };
+              setCurrentUser(updatedUser);
+              if (currentUser) {
+                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
+                  // TODO: Call backend to update DB
+              }
+              alert('Успешно! Тариф обновлен, токены начислены.');
+              setCurrentView('dashboard');
+            }} 
+          />
+        )}
+
+        {/* Pricing View */}
+        {currentView === 'pricing' && (
+          <PricingPage 
+            currentUser={currentUserOrDemo} 
+            onUpgrade={async (planId, cycle) => {
+              // Mock payment flow
+              alert(`Переход к оплате тарифа ${planId} (${cycle})...\n\nВ реальной версии здесь откроется виджет ЮКассы.`);
+              
+              // Simulate success
+              const newBalance = (currentUserOrDemo.tokens_balance || 0) + (planId === 'pro' ? 1000 : planId === 'business' ? 3000 : 0);
+              const updatedUser = { ...currentUserOrDemo, subscription_plan: planId, tokens_balance: newBalance };
+              setCurrentUser(updatedUser);
+              if (currentUser) {
+                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
+                  // TODO: Call backend to update DB
+              }
+              alert('Успешно! Тариф обновлен, токены начислены.');
+              setCurrentView('dashboard');
+            }} 
+          />
+        )}
+
         {/* Dashboard View */}
         {currentView === 'dashboard' && (
           <div className="space-y-8">
