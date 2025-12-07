@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const PricingPage = ({ currentUser, onUpgrade }) => {
+const PricingPage = ({ currentUser, onUpgrade, onClose }) => {
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
 
   const plans = [
@@ -80,6 +80,21 @@ const PricingPage = ({ currentUser, onUpgrade }) => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white py-20 px-4 sm:px-6 lg:px-8">
+      {/* Back Button */}
+      {onClose && (
+        <div className="max-w-7xl mx-auto mb-8">
+          <button
+            onClick={onClose}
+            className="flex items-center space-x-2 text-purple-300 hover:text-purple-200 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Назад к главной</span>
+          </button>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h2 className="text-purple-400 font-semibold tracking-wide uppercase text-sm mb-2">Тарифные планы</h2>

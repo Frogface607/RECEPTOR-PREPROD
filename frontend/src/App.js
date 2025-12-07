@@ -10471,29 +10471,8 @@ function App() {
               }
               alert('Успешно! Тариф обновлен, токены начислены.');
               setCurrentView('dashboard');
-            }} 
-          />
-        )}
-
-        {/* Pricing View */}
-        {currentView === 'pricing' && (
-          <PricingPage 
-            currentUser={currentUserOrDemo} 
-            onUpgrade={async (planId, cycle) => {
-              // Mock payment flow
-              alert(`Переход к оплате тарифа ${planId} (${cycle})...\n\nВ реальной версии здесь откроется виджет ЮКассы.`);
-              
-              // Simulate success
-              const newBalance = (currentUserOrDemo.tokens_balance || 0) + (planId === 'pro' ? 1000 : planId === 'business' ? 3000 : 0);
-              const updatedUser = { ...currentUserOrDemo, subscription_plan: planId, tokens_balance: newBalance };
-              setCurrentUser(updatedUser);
-              if (currentUser) {
-                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
-                  // TODO: Call backend to update DB
-              }
-              alert('Успешно! Тариф обновлен, токены начислены.');
-              setCurrentView('dashboard');
-            }} 
+            }}
+            onClose={() => setCurrentView('dashboard')}
           />
         )}
 
@@ -20767,31 +20746,6 @@ function App() {
         </div>
       )}
 
-      {/* 💎 Pricing Page Modal */}
-      {showPricingPage && (
-        <>
-          {console.log('🔵 Rendering PricingPage, showPricingPage:', showPricingPage, 'currentUser:', currentUser)}
-          <PricingPage
-          currentUser={currentUser}
-          onClose={() => setShowPricingPage(false)}
-          onSubscriptionUpdated={async () => {
-            // Reload user data after subscription update
-            if (currentUser) {
-              try {
-                const response = await axios.get(`${API}/user-subscription/${currentUser.id}`);
-                if (response.data) {
-                  const updatedUser = { ...currentUser, ...response.data };
-                  setCurrentUser(updatedUser);
-                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
-                }
-              } catch (error) {
-                console.error('Failed to refresh user subscription:', error);
-              }
-            }
-          }}
-        />
-        </>
-      )}
 
       {/* 🚀 Modern Auth Modal */}
       <ModernAuthModal
