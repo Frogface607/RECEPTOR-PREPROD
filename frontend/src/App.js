@@ -10311,8 +10311,10 @@ function App() {
                 <span>⚡ ПОПОЛНИТЬ</span>
               </button>
             </div>
-                {/* УПРОЩЕННАЯ НАВИГАЦИЯ: только основные разделы */}
-                <button
+            
+            <nav className="flex items-center space-x-1">
+              {/* УПРОЩЕННАЯ НАВИГАЦИЯ: только основные разделы */}
+              <button
                   onClick={() => setCurrentView('dashboard')}
                   className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
                     currentView === 'dashboard' 
