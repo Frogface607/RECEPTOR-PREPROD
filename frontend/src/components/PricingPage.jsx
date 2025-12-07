@@ -79,7 +79,8 @@ const PricingPage = ({ currentUser, onUpgrade, onClose }) => {
   };
 
   return (
-    <div className="w-full bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8 relative">
+    <>
+      <div className="w-full bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8 relative">
       {/* Close Button (X) - Top Right - Removed fixed positioning to prevent modal-like appearance */}
       {onClose && (
         <div className="absolute top-4 right-4 z-10">
