@@ -10452,30 +10452,32 @@ function App() {
           </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
-        {/* Pricing View */}
-        {currentView === 'pricing' && (
-          <PricingPage 
-            currentUser={currentUserOrDemo} 
-            onUpgrade={async (planId, cycle) => {
-              // Mock payment flow
-              alert(`Переход к оплате тарифа ${planId} (${cycle})...\n\nВ реальной версии здесь откроется виджет ЮКассы.`);
-              
-              // Simulate success
-              const newBalance = (currentUserOrDemo.tokens_balance || 0) + (planId === 'pro' ? 1000 : planId === 'business' ? 3000 : 0);
-              const updatedUser = { ...currentUserOrDemo, subscription_plan: planId, tokens_balance: newBalance };
-              setCurrentUser(updatedUser);
-              if (currentUser) {
-                  localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
-                  // TODO: Call backend to update DB
-              }
-              alert('Успешно! Тариф обновлен, токены начислены.');
-              setCurrentView('dashboard');
-            }}
-            onClose={() => setCurrentView('dashboard')}
-          />
-        )}
+      {/* Pricing View - Full Page (outside main) */}
+      {currentView === 'pricing' && (
+        <PricingPage 
+          currentUser={currentUserOrDemo} 
+          onUpgrade={async (planId, cycle) => {
+            // Mock payment flow
+            alert(`Переход к оплате тарифа ${planId} (${cycle})...\n\nВ реальной версии здесь откроется виджет ЮКассы.`);
+            
+            // Simulate success
+            const newBalance = (currentUserOrDemo.tokens_balance || 0) + (planId === 'pro' ? 1000 : planId === 'business' ? 3000 : 0);
+            const updatedUser = { ...currentUserOrDemo, subscription_plan: planId, tokens_balance: newBalance };
+            setCurrentUser(updatedUser);
+            if (currentUser) {
+                localStorage.setItem('receptor_user', JSON.stringify(updatedUser));
+                // TODO: Call backend to update DB
+            }
+            alert('Успешно! Тариф обновлен, токены начислены.');
+            setCurrentView('dashboard');
+          }}
+          onClose={() => setCurrentView('dashboard')}
+        />
+      )}
 
+      {/* Main Content - Only show when NOT on pricing page */}
+      {currentView !== 'pricing' && (
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
         {/* Dashboard View */}
         {currentView === 'dashboard' && (
           <div className="space-y-8">
@@ -12752,6 +12754,7 @@ function App() {
         </div>
         )}
       </main>
+      )}
 
       {/* Voice Recognition Modal */}
       {showVoiceModal && (
