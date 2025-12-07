@@ -79,7 +79,22 @@ const PricingPage = ({ currentUser, onUpgrade, onClose }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-900 text-white py-20 px-4 sm:px-6 lg:px-8 relative">
+      {/* Close Button (X) - Top Right */}
+      {onClose && (
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={onClose}
+            className="w-10 h-10 bg-gray-800/80 hover:bg-gray-700 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-all shadow-lg border border-gray-700/50"
+            title="Закрыть"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+      
       {/* Back Button */}
       {onClose && (
         <div className="max-w-7xl mx-auto mb-8">
