@@ -11562,8 +11562,8 @@ function App() {
           </div>
         )}
 
-        {/* Personal Cabinet View - Only for authenticated users, hide when pricing is shown */}
-        {currentView === 'personal-cabinet' && currentView !== 'pricing' && (
+        {/* Personal Cabinet View - Only for authenticated users */}
+        {currentView === 'personal-cabinet' && (
           <>
             {currentUser && currentUser.id !== 'demo_user' ? (
               <div className="min-h-screen">

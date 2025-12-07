@@ -130,7 +130,10 @@ const CulinaryAssistant = ({
   const loadConversations = async () => {
     try {
       const response = await axios.get(`${API}/assistant/conversations`, {
-        params: { user_id: userId || 'demo_user' }
+        params: { 
+          user_id: userId || 'demo_user',
+          limit: 100 // Загружаем до 100 бесед
+        }
       });
       setConversations(response.data.conversations || []);
     } catch (error) {
@@ -145,18 +148,29 @@ const CulinaryAssistant = ({
       });
       
       // Преобразуем сообщения из формата БД в формат компонента
-      const loadedMessages = response.data.messages.map(msg => ({
+      // Загружаем ВСЕ сообщения без ограничений
+      const loadedMessages = (response.data.messages || []).map(msg => ({
         role: msg.role,
         content: msg.content,
-        timestamp: new Date(msg.timestamp),
-        tool_calls: msg.tool_calls
+        timestamp: new Date(msg.timestamp || new Date()),
+        tool_calls: msg.tool_calls || []
       }));
+      
+      // Если нет сообщений, добавляем приветственное
+      if (loadedMessages.length === 0) {
+        loadedMessages.push({
+          role: 'assistant',
+          content: 'Привет! Я RECEPTOR — твой AI-ассистент в ресторанном бизнесе. Я специально обучен делать твою жизнь проще, кухню эффективнее, а ресторан прибыльнее. Спроси меня, что я могу.',
+          timestamp: new Date()
+        });
+      }
       
       setMessages(loadedMessages);
       setConversationId(convId);
-      setShowHistory(false);
+      setShowHistorySidebar(false); // Закрываем сайдбар после загрузки
     } catch (error) {
       console.error('Error loading conversation:', error);
+      alert('Ошибка загрузки беседы. Попробуйте еще раз.');
     }
   };
 
