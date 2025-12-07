@@ -185,7 +185,7 @@ const PricingPage = ({ currentUser, onUpgrade, onClose }) => {
             >
               {plan.buttonText}
             </button>
-          </motion.div>
+          </div>
         ))}
       </div>
 
