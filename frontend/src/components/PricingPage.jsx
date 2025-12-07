@@ -254,6 +254,7 @@ const PricingPage = ({ currentUser, onUpgrade, onClose }) => {
         <p>© 2025 RECEPTOR PRO. All rights reserved.</p>
       </div>
     </div>
+    </>
   );
 };
 
