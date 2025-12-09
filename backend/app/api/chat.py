@@ -41,6 +41,19 @@ def get_venue_profile(user_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def get_venue_research(user_id: str) -> Optional[Dict[str, Any]]:
+    """Загрузить результаты deep research из MongoDB"""
+    try:
+        collection = db.get_collection("venue_research_context")
+        research = collection.find_one({"user_id": user_id})
+        if research:
+            research.pop("_id", None)
+            return research
+    except Exception as e:
+        print(f"⚠️ Error loading venue research: {e}")
+    return None
+
+
 def build_venue_context(profile: Dict[str, Any]) -> str:
     """
     Построить контекст заведения для промпта.
@@ -172,9 +185,18 @@ async def chat_message(request: ChatRequest):
     user_query = request.messages[-1].content
     user_id = request.user_id or "default_user"
     
-    # Загружаем профиль заведения
+    # Загружаем профиль заведения и deep research
     venue_profile = get_venue_profile(user_id)
+    venue_research = get_venue_research(user_id)
+    
     venue_context = build_venue_context(venue_profile)
+    
+    # Добавляем результаты deep research если есть
+    if venue_research:
+        from app.services.venue_research import format_dossier_for_context
+        research_context = format_dossier_for_context(venue_research)
+        venue_context += research_context
+        logger.info(f"📊 Added deep research context for venue: {venue_research.get('venue_name')}")
     
     # Simple Intent Detection
     intent = detect_intent(user_query)

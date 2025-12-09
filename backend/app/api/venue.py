@@ -1,9 +1,11 @@
 """
-API эндпоинты для профиля заведения
+API эндпоинты для профиля заведения + Deep Research
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
+from pydantic import BaseModel
 from typing import Dict, Any
 from datetime import datetime
+import logging
 
 from app.core.database import db
 from app.models.venue_profile import (
@@ -15,9 +17,17 @@ from app.models.venue_profile import (
     REGIONS,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 COLLECTION_NAME = "venue_profiles"
+RESEARCH_COLLECTION = "venue_research_context"
+
+
+class DeepResearchRequest(BaseModel):
+    venue_name: str
+    city: str
+    user_id: str
 
 
 @router.get("/{user_id}", response_model=Dict[str, Any])
@@ -108,4 +118,82 @@ async def get_dictionaries():
         "skill_levels": SKILL_LEVELS,
         "regions": REGIONS,
     }
+
+
+@router.post("/deep-research")
+async def start_deep_research(request: DeepResearchRequest, background_tasks: BackgroundTasks):
+    """
+    Запускает глубокое исследование заведения в фоне
+    """
+    logger.info(f"🔬 Deep research requested: {request.venue_name}, {request.city}")
+    
+    # Запускаем в фоне
+    background_tasks.add_task(
+        run_deep_research_task,
+        request.venue_name,
+        request.city,
+        request.user_id
+    )
+    
+    return {
+        "status": "started",
+        "message": f"Исследование заведения '{request.venue_name}' запущено. Это займёт 1-2 минуты.",
+        "venue_name": request.venue_name,
+        "city": request.city
+    }
+
+
+@router.get("/deep-research/{user_id}")
+async def get_deep_research(user_id: str):
+    """
+    Получить результаты deep research для пользователя
+    """
+    collection = db.get_collection(RESEARCH_COLLECTION)
+    research = collection.find_one({"user_id": user_id})
+    
+    if not research:
+        return {"status": "not_found", "message": "Исследование не найдено"}
+    
+    research.pop("_id", None)
+    return {"status": "completed", "data": research}
+
+
+async def run_deep_research_task(venue_name: str, city: str, user_id: str):
+    """
+    Фоновая задача для deep research
+    """
+    try:
+        from app.services.venue_research import conduct_deep_research
+        from app.services.web_search import web_search
+        from app.services.llm.client import OpenAIClient
+        from app.core.config import settings
+        
+        logger.info(f"🔬 Running deep research for {venue_name}...")
+        
+        # Создаём клиентов
+        llm_client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
+        
+        # Проводим исследование
+        dossier = await conduct_deep_research(
+            venue_name=venue_name,
+            city=city,
+            web_search_func=web_search,
+            llm_client=llm_client
+        )
+        
+        # Добавляем user_id
+        dossier["user_id"] = user_id
+        
+        # Сохраняем в MongoDB
+        collection = db.get_collection(RESEARCH_COLLECTION)
+        collection.update_one(
+            {"user_id": user_id},
+            {"$set": dossier},
+            upsert=True
+        )
+        
+        logger.info(f"✅ Deep research completed and saved for {user_id}")
+        
+    except Exception as e:
+        logger.error(f"❌ Deep research failed: {e}", exc_info=True)
 
