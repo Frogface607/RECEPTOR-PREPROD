@@ -90,11 +90,12 @@ def index_document(
             content = f.read()
         
         # Разбиваем на чанки
+        # Увеличенный размер для технической документации - чтобы секции не разрезались
         chunks = smart_chunk_text(
             content,
-            chunk_size=1000,  # Оптимальный размер для эмбеддингов
-            chunk_overlap=200,  # Перекрытие для контекста
-            min_chunk_size=100
+            chunk_size=1800,  # Увеличили для полных секций документации
+            chunk_overlap=350,  # Больше overlap для контекста
+            min_chunk_size=150
         )
         
         if not chunks:
