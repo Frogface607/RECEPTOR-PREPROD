@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     
     # Security
-    JWT_SECRET: str
+    JWT_SECRET: str = "dev_secret_key_change_me"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week
     
