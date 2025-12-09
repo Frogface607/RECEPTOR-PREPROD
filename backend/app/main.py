@@ -34,6 +34,30 @@ async def root():
     return {"message": "Welcome to RECEPTOR CO-PILOT API v2.0", "status": "online"}
 
 
+@app.get("/api/admin/model-stats")
+async def get_model_stats():
+    """Статистика использования моделей (для мониторинга)"""
+    from app.services.llm.client import MODEL_CONFIG
+    
+    return {
+        "available_models": {
+            complexity: {
+                "model": cfg["model"],
+                "description": cfg["description"],
+                "cost_input_per_1k": cfg["cost_per_1k_input"],
+                "cost_output_per_1k": cfg["cost_per_1k_output"]
+            }
+            for complexity, cfg in MODEL_CONFIG.items()
+        },
+        "routing": {
+            "simple": "Короткие запросы, поиск, приветствия",
+            "standard": "Рецепты, советы, общие вопросы", 
+            "advanced": "Техкарты, калькуляции, детальные инструкции",
+            "expert": "Бизнес-стратегия, глубокий анализ, финмодели"
+        }
+    }
+
+
 @app.post("/api/admin/reindex")
 async def reindex_knowledge_base(background_tasks: BackgroundTasks, secret: str = ""):
     """
