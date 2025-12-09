@@ -106,7 +106,7 @@ function VenueProfile({ userId, onBack }) {
     setResearchError('');
 
     try {
-      const response = await axios.post(`${API_URL}/venue/deep-research`, {
+      const response = await axios.post(`${API_URL}/venue/research/start`, {
         venue_name: profile.venue_name,
         city: profile.city,
         user_id: userId
@@ -114,18 +114,21 @@ function VenueProfile({ userId, onBack }) {
       
       console.log('Deep research started:', response.data);
       
-      // Ждём 90 секунд и проверяем результат
+      // Ждём 120 секунд и проверяем результат
       setTimeout(async () => {
         try {
-          const checkResponse = await axios.get(`${API_URL}/venue/deep-research/${userId}`);
+          const checkResponse = await axios.get(`${API_URL}/venue/research/status/${userId}`);
           if (checkResponse.data.status === 'completed') {
             setResearchDone(true);
+            console.log('Research completed:', checkResponse.data);
+          } else {
+            console.log('Research not ready yet:', checkResponse.data);
           }
         } catch (err) {
-          console.log('Research still in progress...');
+          console.error('Research check error:', err);
         }
         setResearching(false);
-      }, 90000); // 90 секунд
+      }, 120000); // 120 секунд (2 минуты)
       
     } catch (error) {
       console.error('Deep research error:', error);

@@ -48,35 +48,41 @@ async def gather_information(
     
     # 1. Общая информация + отзывы
     try:
+        logger.info(f"🔍 Searching reviews for {venue_name} {city}...")
         result = await web_search_func(
             f"{venue_name} {city} отзывы меню",
             max_results=5
         )
+        logger.info(f"✅ Reviews search: {len(result.get('results', []))} results")
         searches["reviews"] = result
     except Exception as e:
-        logger.error(f"Reviews search failed: {e}")
+        logger.error(f"❌ Reviews search failed: {e}", exc_info=True)
         searches["reviews"] = {"results": [], "error": str(e)}
     
     # 2. Соцсети
     try:
+        logger.info(f"🔍 Searching social media...")
         result = await web_search_func(
             f"{venue_name} {city} Instagram VK Telegram",
             max_results=3
         )
+        logger.info(f"✅ Social search: {len(result.get('results', []))} results")
         searches["social"] = result
     except Exception as e:
-        logger.error(f"Social search failed: {e}")
+        logger.error(f"❌ Social search failed: {e}", exc_info=True)
         searches["social"] = {"results": [], "error": str(e)}
     
     # 3. Конкуренты
     try:
+        logger.info(f"🔍 Searching competitors...")
         result = await web_search_func(
             f"рестораны бары {city} похожие на {venue_name}",
             max_results=5
         )
+        logger.info(f"✅ Competitors search: {len(result.get('results', []))} results")
         searches["competitors"] = result
     except Exception as e:
-        logger.error(f"Competitors search failed: {e}")
+        logger.error(f"❌ Competitors search failed: {e}", exc_info=True)
         searches["competitors"] = {"results": [], "error": str(e)}
     
     return searches
@@ -91,6 +97,8 @@ async def analyze_research(
     """
     Анализирует собранную информацию через reasoning model
     """
+    logger.info(f"🧠 Starting AI analysis with o3-mini...")
+    
     # Подготавливаем промпт для анализа
     prompt = f"""Проанализируй информацию о заведении "{venue_name}" в городе {city}.
 
@@ -129,6 +137,7 @@ async def analyze_research(
 
     try:
         # Используем reasoning model для глубокого анализа
+        logger.info(f"🧠 Calling o3-mini for reasoning analysis...")
         response, usage = await llm_client.chat_completion(
             messages=[
                 {"role": "system", "content": "Ты бизнес-аналитик ресторанного рынка. Анализируешь данные и создаёшь структурированные досье."},
@@ -138,6 +147,8 @@ async def analyze_research(
             auto_route=False
         )
         
+        logger.info(f"✅ AI analysis completed. Model: {usage.get('model')}, Cost: ${usage.get('cost_usd', 0):.4f}")
+        
         # Парсим JSON из ответа
         import json
         import re
@@ -146,8 +157,10 @@ async def analyze_research(
         json_match = re.search(r'\{.*\}', response, re.DOTALL)
         if json_match:
             analysis = json.loads(json_match.group())
+            logger.info(f"✅ Parsed analysis: {len(analysis.get('strengths', []))} strengths, {len(analysis.get('weaknesses', []))} weaknesses")
         else:
-            analysis = {"error": "Failed to parse JSON", "raw_response": response}
+            logger.error(f"❌ Failed to parse JSON from response")
+            analysis = {"error": "Failed to parse JSON", "raw_response": response[:500]}
         
         return analysis
         

@@ -120,7 +120,7 @@ async def get_dictionaries():
     }
 
 
-@router.post("/deep-research")
+@router.post("/research/start")
 async def start_deep_research(request: DeepResearchRequest, background_tasks: BackgroundTasks):
     """
     Запускает глубокое исследование заведения в фоне
@@ -139,11 +139,12 @@ async def start_deep_research(request: DeepResearchRequest, background_tasks: Ba
         "status": "started",
         "message": f"Исследование заведения '{request.venue_name}' запущено. Это займёт 1-2 минуты.",
         "venue_name": request.venue_name,
-        "city": request.city
+        "city": request.city,
+        "user_id": request.user_id
     }
 
 
-@router.get("/deep-research/{user_id}")
+@router.get("/research/status/{user_id}")
 async def get_deep_research(user_id: str):
     """
     Получить результаты deep research для пользователя
