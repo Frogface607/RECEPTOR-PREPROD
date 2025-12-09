@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Any
 from app.services.llm.client import OpenAIClient
 from app.services.rag.search import search_knowledge_base
 from app.services.iiko.iiko_rms_service import get_iiko_rms_service
+from app.services.web_search import web_search, format_search_results_for_context, should_use_web_search
 from app.core.config import settings
 from app.core.database import db
 import logging
@@ -183,6 +184,18 @@ async def chat_message(request: ChatRequest):
     # Добавляем контекст заведения
     if venue_context:
         context += f"\n\n{venue_context}\n"
+    
+    # 🌐 Web Search для актуальных запросов (тренды, новости, цены)
+    if should_use_web_search(user_query):
+        logger.info(f"🌐 Web search triggered for: {user_query}")
+        try:
+            search_result = await web_search(user_query, max_results=5)
+            web_context = format_search_results_for_context(search_result)
+            if web_context:
+                context += web_context
+                logger.info(f"🌐 Added {len(search_result.get('results', []))} web results to context")
+        except Exception as e:
+            logger.warning(f"⚠️ Web search failed: {e}")
     
     if intent == "knowledge_base":
         logger.info(f"🔍 Searching Knowledge Base for: {user_query}")
@@ -385,22 +398,20 @@ async def chat_message(request: ChatRequest):
     try:
         client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
         
-        system_prompt = """Ты — RECEPTOR, экспертный AI-копайлот для ресторанного бизнеса.
+        from datetime import datetime
+        current_date = datetime.now().strftime("%d %B %Y")
+        
+        system_prompt = f"""Ты — RECEPTOR, экспертный AI-копайлот для ресторанного бизнеса.
+
+СЕГОДНЯ: {current_date}
 
 ПРАВИЛА:
+1. Профиль заведения — внутренний контекст. Не упоминай его в каждом ответе.
+2. Используй предоставленный контекст, но не цитируй [Источник] если это не техническая документация.
+3. Нет информации — скажи прямо, предложи поискать в интернете.
+4. По делу, без воды.
 
-1. **ПРОФИЛЬ ЗАВЕДЕНИЯ — ВНУТРЕННИЙ КОНТЕКСТ**
-   Не упоминай название заведения, тип кухни, концепцию в каждом ответе.
-   Используй эту информацию для понимания контекста, но не озвучивай её.
-   Отвечай как эксперт, который уже знает клиента — без лишних реверансов.
-
-2. **БАЗА ЗНАНИЙ**: Используй предоставленный контекст. Указывай [Источник: файл].
-
-3. **ЧЕСТНОСТЬ**: Нет информации — скажи прямо.
-
-4. **КРАТКОСТЬ**: По делу, без воды.
-
-ЭКСПЕРТИЗА: HACCP, СанПиН, HR, финансы, маркетинг, iiko интеграция.
+ЭКСПЕРТИЗА: Ресторанный бизнес, HACCP, финансы, маркетинг, iiko.
 
 ФОРМАТ: Русский, структурно, лаконично."""
 
@@ -432,12 +443,17 @@ async def chat_message(request: ChatRequest):
             temperature=0.7
         )
         
-        logger.info(f"🤖 Model: {usage_info.get('model')} | Complexity: {usage_info.get('complexity')} | Cost: ${usage_info.get('cost_usd', 0):.4f}")
+        model_used = usage_info.get('model', 'unknown')
+        complexity = usage_info.get('complexity', 'standard')
+        cost = usage_info.get('cost_usd', 0)
+        
+        logger.info(f"🤖 Model: {model_used} | Complexity: {complexity} | Cost: ${cost:.4f}")
         
         return {
             "role": "assistant", 
             "content": response,
-            "usage": usage_info  # Для трекинга и биллинга
+            "model": model_used,  # Показываем какая модель ответила
+            "usage": usage_info
         }
         
     except Exception as e:
