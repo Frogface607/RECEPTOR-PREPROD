@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, BarChart3, Settings, Database, Loader2, Store } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, BarChart3, Settings, Database, Loader2, Store, Link2 } from 'lucide-react';
 import axios from 'axios';
 import VenueProfile from './components/VenueProfile';
+import Integrations from './components/Integrations';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
 
@@ -10,7 +11,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-produ
 const USER_ID = 'default_user';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('chat'); // 'chat' | 'profile'
+  const [currentPage, setCurrentPage] = useState('chat'); // 'chat' | 'profile' | 'integrations'
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Привет! Я RECEPTOR Copilot. Я знаю всё о ресторанном бизнесе, стандартах HACCP, СанПиН, и интегрирован с вашей системой iiko.\n\nЧем могу помочь сегодня?' }
   ]);
@@ -103,8 +104,15 @@ function App() {
             <Database size={16} />
             База знаний
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
-            <BarChart3 size={16} />
+          <button 
+            onClick={() => setCurrentPage('integrations')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === 'integrations'
+                ? 'bg-emerald-600/10 text-emerald-500'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            <Link2 size={16} />
             Интеграции (iiko)
           </button>
           <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
@@ -131,6 +139,8 @@ function App() {
         {/* Content based on current page */}
         {currentPage === 'profile' ? (
           <VenueProfile userId={USER_ID} onBack={() => setCurrentPage('chat')} />
+        ) : currentPage === 'integrations' ? (
+          <Integrations userId={USER_ID} apiUrl={API_URL} />
         ) : (
           <>
             {/* Chat Messages */}

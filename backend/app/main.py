@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import db
-from app.api import chat, venue
+from app.api import chat, venue, iiko
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -34,3 +34,4 @@ async def root():
 
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(venue.router, prefix="/api/venue", tags=["venue"])
+app.include_router(iiko.router, prefix="/api/iiko", tags=["iiko"])
