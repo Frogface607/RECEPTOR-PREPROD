@@ -70,6 +70,9 @@ function VenueProfile({ userId, onBack }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [researching, setResearching] = useState(false);
+  const [researchDone, setResearchDone] = useState(false);
+  const [researchError, setResearchError] = useState('');
 
   useEffect(() => {
     loadProfile();
@@ -89,6 +92,45 @@ function VenueProfile({ userId, onBack }) {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const startDeepResearch = async () => {
+    if (!profile.venue_name || !profile.city) {
+      setResearchError('Укажите название заведения и город');
+      return;
+    }
+
+    setResearching(true);
+    setResearchDone(false);
+    setResearchError('');
+
+    try {
+      const response = await axios.post(`${API_URL}/venue/deep-research`, {
+        venue_name: profile.venue_name,
+        city: profile.city,
+        user_id: userId
+      });
+      
+      console.log('Deep research started:', response.data);
+      
+      // Ждём 90 секунд и проверяем результат
+      setTimeout(async () => {
+        try {
+          const checkResponse = await axios.get(`${API_URL}/venue/deep-research/${userId}`);
+          if (checkResponse.data.status === 'completed') {
+            setResearchDone(true);
+          }
+        } catch (err) {
+          console.log('Research still in progress...');
+        }
+        setResearching(false);
+      }, 90000); // 90 секунд
+      
+    } catch (error) {
+      console.error('Deep research error:', error);
+      setResearchError('Ошибка при запуске исследования');
+      setResearching(false);
     }
   };
 
@@ -151,20 +193,67 @@ function VenueProfile({ userId, onBack }) {
               <p className="text-gray-400 text-sm">Эта информация поможет ассистенту давать более релевантные ответы</p>
             </div>
           </div>
-          <button
-            onClick={saveProfile}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 disabled:opacity-50 transition-colors"
-          >
-            {saving ? (
-              <Loader2 className="animate-spin" size={18} />
-            ) : saved ? (
-              <CheckCircle size={18} />
-            ) : (
-              <Save size={18} />
-            )}
-            {saved ? 'Сохранено!' : 'Сохранить'}
-          </button>
+          
+          <div className="flex gap-3">
+            {/* Deep Research Button */}
+            <button
+              onClick={startDeepResearch}
+              disabled={researching || !profile.venue_name || !profile.city}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:opacity-50 transition-colors"
+              title="AI исследует ваше заведение в интернете: отзывы, конкурентов, соцсети"
+            >
+              {researching ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  Исследую...
+                </>
+              ) : researchDone ? (
+                <>
+                  <CheckCircle size={18} />
+                  Готово!
+                </>
+              ) : (
+                <>
+                  🔬
+                  Исследовать
+                </>
+              )}
+            </button>
+
+            {/* Save Button */}
+            <button
+              onClick={saveProfile}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+            >
+              {saving ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : saved ? (
+                <CheckCircle size={18} />
+              ) : (
+                <Save size={18} />
+              )}
+              {saved ? 'Сохранено!' : 'Сохранить'}
+            </button>
+          </div>
+
+          {/* Research Status/Error */}
+          {researchError && (
+            <div className="text-red-400 text-sm">
+              {researchError}
+            </div>
+          )}
+          {researching && (
+            <div className="text-purple-400 text-sm">
+              🔬 Исследую заведение в интернете... Это займёт 1-2 минуты. 
+              AI ищет отзывы, конкурентов и соцсети.
+            </div>
+          )}
+          {researchDone && (
+            <div className="text-emerald-400 text-sm">
+              ✅ Исследование завершено! Теперь RECEPTOR знает всё о вашем заведении.
+            </div>
+          )}
         </div>
 
         {/* Form */}
