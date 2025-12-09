@@ -216,7 +216,7 @@ async def chat_message(request: ChatRequest):
             org_id = iiko_status.get("organization_id", "default")
             
             # Получаем сводку по номенклатуре
-            summary = get_iiko_products_summary(org_id)
+            summary = get_iiko_nomenclature_stats(org_id)
             context += f"\n\nСТАТУС IIKO:\n"
             context += f"- Подключено к: {iiko_status.get('organization_name', 'Организация')}\n"
             context += f"- Продуктов в базе: {summary['products_count']}\n"
