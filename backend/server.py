@@ -4161,7 +4161,7 @@ async def generate_tech_card(request: DishRequest):
         response = openai_client.chat.completions.create(
             model=ai_model,
             messages=[
-                {"role": "system", "content": "╨в╤Л ╨┐╤А╨╛╤Д╨╡╤Б╤Б╨╕╨╛╨╜╨░╨╗╤М╨╜╤Л╨╣ AI-╨┐╨╛╨╝╨╛╤Й╨╜╨╕╨║ ╨┤╨╗╤П ╤И╨╡╤Д-╨┐╨╛╨▓╨░╤А╨╛╨▓. ╨б╨╛╨╖╨┤╨░╨╡╤И╤М ╨┤╨╡╤В╨░╨╗╤М╨╜╤Л╨╡ ╤В╨╡╤Е╨╜╨╛╨╗╨╛╨│╨╕╤З╨╡╤Б╨║╨╕╨╡ ╨║╨░╤А╤В╤Л ╨▒╨╗╤О╨┤."},
+                {"role": "system", "content": "Ты профессиональный AI-помощник для шеф-поваров. Создаешь детальные технологические карты блюд."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=max_tokens,
@@ -7495,20 +7495,20 @@ def _generate_diagnostic_recommendations(tests: List[Dict]) -> List[str]:
 @api_router.post("/assistant/chat")
 async def chat_with_assistant(request: dict):
     """
-    ╨з╨░╤В ╤Б ╨║╤Г╨╗╨╕╨╜╨░╤А╨╜╤Л╨╝ ╨░╤Б╤Б╨╕╤Б╤В╨╡╨╜╤В╨╛╨╝ RECEPTOR ╤Б ╨┐╨╛╨┤╨┤╨╡╤А╨╢╨║╨╛╨╣ tool-calling
+    Чат с кулинарным ассистентом RECEPTOR с поддержкой tool-calling
     
     Request:
     {
         "user_id": "uuid",
-        "message": "╨б╨╛╨╖╨┤╨░╨╣ ╤В╨╡╤Е╨║╨░╤А╤В╤Г ╨┤╨╗╤П ╤Б╤В╨╡╨╣╨║╨░ ╨╕╨╖ ╨│╨╛╨▓╤П╨┤╨╕╨╜╤Л",
-        "conversation_id": "uuid"  # ╨╛╨┐╤Ж╨╕╨╛╨╜╨░╨╗╤М╨╜╨╛, ╨┤╨╗╤П ╨┐╤А╨╛╨┤╨╛╨╗╨╢╨╡╨╜╨╕╤П ╨┤╨╕╨░╨╗╨╛╨│╨░
+        "message": "Создай техкарту для стейка из говядины",
+        "conversation_id": "uuid"  # опционально, для продолжения диалога
     }
     
     Response:
     {
-        "response": "╨п ╤Б╨╛╨╖╨┤╨░╨╗ ╤В╨╡╤Е╨║╨░╤А╤В╤Г ╨┤╨╗╤П ╤Б╤В╨╡╨╣╨║╨░...",
+        "response": "Я создал техкарту для стейка...",
         "conversation_id": "uuid",
-        "tool_calls": [{"tool": "generateTechcard", "result": {...}}],  # ╨╡╤Б╨╗╨╕ ╨▒╤Л╨╗╨╕ tool calls
+        "tool_calls": [{"tool": "generateTechcard", "result": {...}}],  # если были tool calls
         "tokens_used": 150,
         "credits_spent": 5
     }
@@ -7518,9 +7518,9 @@ async def chat_with_assistant(request: dict):
     conversation_id = request.get("conversation_id")
     
     if not message:
-        raise HTTPException(status_code=400, detail="╨б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╨╡ ╨╜╨╡ ╨╝╨╛╨╢╨╡╤В ╨▒╤Л╤В╤М ╨┐╤Г╤Б╤В╤Л╨╝")
+        raise HTTPException(status_code=400, detail="Сообщение не может быть пустым")
     
-    # ╨Я╨╛╨╗╤Г╤З╨░╨╡╨╝ ╨┐╤А╨╛╤Д╨╕╨╗╤М ╨╖╨░╨▓╨╡╨┤╨╡╨╜╨╕╤П ╨┤╨╗╤П ╨║╨╛╨╜╤В╨╡╨║╤Б╤В╨░
+    # Получаем профиль заведения для контекста
     user = await db.users.find_one({"id": user_id})
     venue_profile = {}
     deep_research_data = None
@@ -7691,7 +7691,7 @@ async def chat_with_assistant(request: dict):
     logger.info(f"📝 System prompt total length: {len(system_prompt)} chars")
     logger.info(f"📊 Context breakdown: venue={len(venue_context)}, research={len(research_context)}, knowledge={len(knowledge_context)}")
 
-    # Tool definitions ╨┤╨╗╤П OpenAI Function Calling
+    # Tool definitions для OpenAI Function Calling
     tools = [
         {
             "type": "function",
@@ -7703,17 +7703,17 @@ async def chat_with_assistant(request: dict):
                     "properties": {
                         "dish_name": {
                             "type": "string",
-                            "description": "╨Э╨░╨╖╨▓╨░╨╜╨╕╨╡ ╨▒╨╗╤О╨┤╨░ ╤Б ╨┐╨╛╨┤╤А╨╛╨▒╨╜╤Л╨╝ ╨╛╨┐╨╕╤Б╨░╨╜╨╕╨╡╨╝"
+                            "description": "Название блюда с подробным описанием"
                         },
                         "cuisine": {
                             "type": "string",
-                            "description": "╨в╨╕╨┐ ╨║╤Г╤Е╨╜╨╕ (╤А╤Г╤Б╤Б╨║╨░╤П, ╨╕╤В╨░╨╗╤М╤П╨╜╤Б╨║╨░╤П, ╨░╨╖╨╕╨░╤В╤Б╨║╨░╤П ╨╕ ╤В.╨┤.)",
-                            "default": "╨╡╨▓╤А╨╛╨┐╨╡╨╣╤Б╨║╨░╤П"
+                            "description": "Тип кухни (русская, итальянская, азиатская и т.д.)",
+                            "default": "европейская"
                         },
                         "equipment": {
                             "type": "array",
                             "items": {"type": "string"},
-                            "description": "╨б╨┐╨╕╤Б╨╛╨║ ╨┤╨╛╤Б╤В╤Г╨┐╨╜╨╛╨│╨╛ ╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╤П"
+                            "description": "Список доступного оборудования"
                         }
                     },
                     "required": ["dish_name"]
@@ -7730,17 +7730,17 @@ async def chat_with_assistant(request: dict):
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "╨Я╨╛╨╕╤Б╨║╨╛╨▓╤Л╨╣ ╨╖╨░╨┐╤А╨╛╤Б ╨╜╨░ ╤А╤Г╤Б╤Б╨║╨╛╨╝ ╤П╨╖╤Л╨║╨╡"
+                            "description": "Поисковый запрос на русском языке"
                         },
                         "top_k": {
                             "type": "integer",
-                            "description": "╨Ъ╨╛╨╗╨╕╤З╨╡╤Б╤В╨▓╨╛ ╤А╨╡╨╖╤Г╨╗╤М╤В╨░╤В╨╛╨▓ (1-10)",
+                            "description": "Количество результатов (1-10)",
                             "default": 5
                         },
                         "categories": {
                             "type": "array",
                             "items": {"type": "string"},
-                            "description": "╨д╨╕╨╗╤М╤В╤А ╨┐╨╛ ╨║╨░╤В╨╡╨│╨╛╤А╨╕╤П╨╝: haccp, sanpin, hr, finance, marketing, iiko, techniques",
+                            "description": "Фильтр по категориям: haccp, sanpin, hr, finance, marketing, iiko, techniques",
                             "default": []
                         }
                     },
@@ -7751,26 +7751,14 @@ async def chat_with_assistant(request: dict):
     ]
 
     try:
-        # ╨Я╨╛╨╗╤Г╤З╨░╨╡╨╝ ╨╕╤Б╤В╨╛╤А╨╕╤О ╨┤╨╕╨░╨╗╨╛╨│╨░, ╨╡╤Б╨╗╨╕ ╨╡╤Б╤В╤М conversation_id
+        # Получаем историю диалога, если есть conversation_id
         conversation_history = []
         if conversation_id:
             try:
                 conv_doc = await db.assistant_conversations.find_one({"conversation_id": conversation_id})
                 if conv_doc and "messages" in conv_doc:
-                    # ╨Я╤А╨╡╨╛╨▒╤А╨░╨╖╤Г╨╡╨╝ ╤Б╨╛╤Е╤А╨░╨╜╨╡╨╜╨╜╤Л╨╡ ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╤П ╨▓ ╤Д╨╛╤А╨╝╨░╤В ╨┤╨╗╤П LLM
-                    for msg in conv_doc["messages"][-10:]:  # ╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ 10 ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╨╣
-                        conversation_history.append({
-                            "role": msg.get("role"),
-                            "content": msg.get("content")
-                        })
-            except Exception as e:
-                logger.warning(f"Failed to load conversation history: {str(e)}")
-                conversation_history = []
-            try:
-                conv_doc = await db.assistant_conversations.find_one({"conversation_id": conversation_id})
-                if conv_doc and "messages" in conv_doc:
-                    # ╨Я╤А╨╡╨╛╨▒╤А╨░╨╖╤Г╨╡╨╝ ╤Б╨╛╤Е╤А╨░╨╜╨╡╨╜╨╜╤Л╨╡ ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╤П ╨▓ ╤Д╨╛╤А╨╝╨░╤В ╨┤╨╗╤П LLM
-                    for msg in conv_doc["messages"][-10:]:  # ╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ 10 ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╨╣
+                    # Преобразуем сохраненные сообщения в формат для LLM
+                    for msg in conv_doc["messages"][-10:]:  # Последние 10 сообщений
                         conversation_history.append({
                             "role": msg.get("role"),
                             "content": msg.get("content")
@@ -7779,12 +7767,12 @@ async def chat_with_assistant(request: dict):
                 logger.warning(f"Failed to load conversation history: {str(e)}")
                 conversation_history = []
         
-        # ╨д╨╛╤А╨╝╨╕╤А╤Г╨╡╨╝ ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╤П ╨┤╨╗╤П LLM
+        # Формируем сообщения для LLM
         messages = [
             {"role": "system", "content": system_prompt}
         ]
         
-        # ╨Ф╨╛╨▒╨░╨▓╨╗╤П╨╡╨╝ ╨╕╤Б╤В╨╛╤А╨╕╤О (╨┐╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ 10 ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╨╣ ╨┤╨╗╤П ╨║╨╛╨╜╤В╨╡╨║╤Б╤В╨░)
+        # Добавляем историю (последние 10 сообщений для контекста)
         for hist_msg in conversation_history[-10:]:
             messages.append(hist_msg)
         
@@ -7850,15 +7838,27 @@ async def chat_with_assistant(request: dict):
         # Check token balance before chat (will determine cost after tool calls)
         # Start with simple message cost, will adjust if tool calls happen
         operation_type = "ai_chat_with_tools"  # Default to higher cost, will adjust if no tools
-        has_tokens, current_balance, token_error = await check_token_balance(user_id, operation_type)
-        if not has_tokens:
-            raise HTTPException(status_code=402, detail=token_error)  # 402 Payment Required
+        try:
+            logger.info(f"Checking token balance for user {user_id}, operation: {operation_type}")
+            has_tokens, current_balance, token_error = await check_token_balance(user_id, operation_type)
+            logger.info(f"Token check result: has_tokens={has_tokens}, balance={current_balance}")
+            if not has_tokens:
+                raise HTTPException(status_code=402, detail=token_error)  # 402 Payment Required
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error checking token balance: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            raise HTTPException(status_code=500, detail=f"Ошибка при проверке токенов: {str(e)}")
         
         # Вызов LLM с tool-calling
         if not openai_client:
+            logger.error("OpenAI client not initialized")
             raise HTTPException(status_code=500, detail="OpenAI client not initialized")
         
         # GPT-5 поддерживает tool-calling, так что можем использовать tools
+        logger.info(f"Preparing chat request: model={model_for_chat}, tools_count={len(tools)}, messages_count={len(messages)}")
         chat_params = {
             "model": model_for_chat,
             "messages": messages,
@@ -7873,12 +7873,20 @@ async def chat_with_assistant(request: dict):
         else:
             chat_params["max_tokens"] = max_tokens_for_chat
         
-        response = openai_client.chat.completions.create(**chat_params)
+        try:
+            logger.info(f"Calling OpenAI API with model {model_for_chat}")
+            response = openai_client.chat.completions.create(**chat_params)
+            logger.info(f"OpenAI API response received successfully")
+        except Exception as e:
+            logger.error(f"Error calling OpenAI API: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            raise HTTPException(status_code=500, detail=f"Ошибка при вызове OpenAI API: {str(e)}")
         
         assistant_message = response.choices[0].message
         tool_calls_result = []
         
-        # ╨Х╤Б╨╗╨╕ LLM ╨▓╤Л╨╖╨▓╨░╨╗ tool
+        # Если LLM вызвал tool
         if assistant_message.tool_calls:
             for tool_call in assistant_message.tool_calls:
                 function_name = tool_call.function.name
@@ -7972,26 +7980,26 @@ async def chat_with_assistant(request: dict):
                     try:
                         from receptor_agent.llm.pipeline import run_pipeline, ProfileInput
                         
-                        # ╨Я╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░ ╨┤╨░╨╜╨╜╤Л╤Е ╨┤╨╗╤П ╨│╨╡╨╜╨╡╤А╨░╤Ж╨╕╨╕
+                        # Подготовка данных для генерации
                         profile = ProfileInput(
                             name=function_args.get("dish_name", ""),
-                            cuisine=function_args.get("cuisine", venue_profile.get("cuisine_focus", ["╨╡╨▓╤А╨╛╨┐╨╡╨╣╤Б╨║╨░╤П"])[0] if venue_profile.get("cuisine_focus") else "╨╡╨▓╤А╨╛╨┐╨╡╨╣╤Б╨║╨░╤П"),
-                            equipment=function_args.get("equipment", venue_profile.get("kitchen_equipment", ["╨┐╨╗╨╕╤В╨░", "╨║╨░╤Б╤В╤А╤О╨╗╤П"])),
+                            cuisine=function_args.get("cuisine", venue_profile.get("cuisine_focus", ["европейская"])[0] if venue_profile.get("cuisine_focus") else "европейская"),
+                            equipment=function_args.get("equipment", venue_profile.get("kitchen_equipment", ["плита", "кастрюля"])),
                             budget=float(venue_profile.get("average_check", 500)) if venue_profile.get("average_check") else 500.0,
                             dietary=[],
                             user_id=user_id
                         )
                         
-                        # ╨Ч╨░╨┐╤Г╤Б╨║╨░╨╡╨╝ ╨│╨╡╨╜╨╡╤А╨░╤Ж╨╕╤О
+                        # Запускаем генерацию
                         pipeline_result = run_pipeline(profile)
                         
-                        # ╨Ы╨╛╨│╨╕╤А╤Г╨╡╨╝ ╤А╨╡╨╖╤Г╨╗╤М╤В╨░╤В ╨│╨╡╨╜╨╡╤А╨░╤Ж╨╕╨╕
+                        # Логируем результат генерации
                         logger.info(f"Techcard generation result: status={pipeline_result.status}, has_card={pipeline_result.card is not None}")
                         
                         card_data = None
                         if pipeline_result.card:
                             try:
-                                # ╨Ъ╨╛╨╜╨▓╨╡╤А╤В╨╕╤А╤Г╨╡╨╝ Pydantic ╨╝╨╛╨┤╨╡╨╗╤М ╨▓ dict
+                                # Конвертируем Pydantic модель в dict
                                 if hasattr(pipeline_result.card, 'model_dump'):
                                     card_data = pipeline_result.card.model_dump()
                                 elif hasattr(pipeline_result.card, 'dict'):
@@ -8014,7 +8022,7 @@ async def chat_with_assistant(request: dict):
                             }
                         })
                         
-                        # ╨Ф╨╛╨▒╨░╨▓╨╗╤П╨╡╨╝ ╤А╨╡╨╖╤Г╨╗╤М╤В╨░╤В ╨▓ ╨║╨╛╨╜╤В╨╡╨║╤Б╤В ╨┤╨╗╤П LLM
+                        # Добавляем результат в контекст для LLM
                         messages.append({
                             "role": "assistant",
                             "content": None,
@@ -8035,12 +8043,14 @@ async def chat_with_assistant(request: dict):
                                 "success": pipeline_result.status in ["success", "draft", "READY"],
                                 "status": pipeline_result.status,
                                 "dish_name": function_args.get("dish_name"),
-                                "message": "╨в╨╡╤Е╨║╨░╤А╤В╨░ ╤Г╤Б╨┐╨╡╤И╨╜╨╛ ╤Б╨╛╨╖╨┤╨░╨╜╨░" if pipeline_result.status in ["success", "draft", "READY"] else "╨Ю╤И╨╕╨▒╨║╨░ ╤Б╨╛╨╖╨┤╨░╨╜╨╕╤П ╤В╨╡╤Е╨║╨░╤А╤В╤Л"
+                                "message": "Техкарта успешно создана" if pipeline_result.status in ["success", "draft", "READY"] else "Ошибка создания техкарты"
                             })
                         })
                         
                     except Exception as e:
-                        logger.error(f"Error generating techcard in tool call: {str(e)}")
+                        import traceback
+                        error_trace = traceback.format_exc()
+                        logger.error(f"Error generating techcard in tool call: {str(e)}\n{error_trace}")
                         tool_calls_result.append({
                             "tool": "generateTechcard",
                             "tool_call_id": tool_call.id,
@@ -8053,7 +8063,7 @@ async def chat_with_assistant(request: dict):
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tool_call.id,
-                            "content": json.dumps({"success": False, "error": str(e)})
+                            "content": json.dumps({"success": False, "error": str(e)}, ensure_ascii=False)
                         })
             
             # Получаем финальный ответ от LLM с учетом результатов tool calls
@@ -8073,16 +8083,16 @@ async def chat_with_assistant(request: dict):
             final_response = openai_client.chat.completions.create(**final_params)
             assistant_response = final_response.choices[0].message.content
         else:
-            # ╨Ю╨▒╤Л╤З╨╜╤Л╨╣ ╨╛╤В╨▓╨╡╤В ╨▒╨╡╨╖ tool calls
+            # Обычный ответ без tool calls
             assistant_response = assistant_message.content
         
-        # ╨б╨╛╨╖╨┤╨░╨╡╨╝ ╨╜╨╛╨▓╤Л╨╣ conversation_id, ╨╡╤Б╨╗╨╕ ╨╡╨│╨╛ ╨╜╨╡╤В
+        # Создаем новый conversation_id, если его нет
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
         
-        # ╨б╨╛╤Е╤А╨░╨╜╤П╨╡╨╝ ╨╕╤Б╤В╨╛╤А╨╕╤О ╨▓ ╨С╨Ф
+        # Сохраняем историю в БД
         try:
-            # ╨б╨╛╤Е╤А╨░╨╜╤П╨╡╨╝ ╤Б╨╛╨╛╨▒╤Й╨╡╨╜╨╕╨╡ ╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╤В╨╡╨╗╤П
+            # Сохраняем сообщение пользователя
             await db.assistant_conversations.update_one(
                 {"conversation_id": conversation_id},
                 {
@@ -8097,7 +8107,7 @@ async def chat_with_assistant(request: dict):
                         "conversation_id": conversation_id,
                         "user_id": user_id,
                         "created_at": datetime.now().isoformat(),
-                        "title": message[:50] if len(message) > 50 else message  # ╨Я╨╡╤А╨▓╤Л╨╡ 50 ╤Б╨╕╨╝╨▓╨╛╨╗╨╛╨▓ ╨║╨░╨║ ╨╖╨░╨│╨╛╨╗╨╛╨▓╨╛╨║
+                        "title": message[:50] if len(message) > 50 else message  # Первые 50 символов как заголовок
                     },
                     "$set": {
                         "updated_at": datetime.now().isoformat(),
@@ -8107,7 +8117,7 @@ async def chat_with_assistant(request: dict):
                 upsert=True
             )
             
-            # ╨б╨╛╤Е╤А╨░╨╜╤П╨╡╨╝ ╨╛╤В╨▓╨╡╤В ╨░╤Б╤Б╨╕╤Б╤В╨╡╨╜╤В╨░
+            # Сохраняем ответ ассистента
             await db.assistant_conversations.update_one(
                 {"conversation_id": conversation_id},
                 {
@@ -8126,7 +8136,7 @@ async def chat_with_assistant(request: dict):
             )
         except Exception as e:
             logger.warning(f"Failed to save conversation history: {str(e)}")
-            # ╨Я╤А╨╛╨┤╨╛╨╗╨╢╨░╨╡╨╝ ╨▒╨╡╨╖ ╤Б╨╛╤Е╤А╨░╨╜╨╡╨╜╨╕╤П ╨╕╤Б╤В╨╛╤А╨╕╨╕
+            # Продолжаем без сохранения истории
         
         # Determine actual operation type and deduct tokens
         actual_operation_type = "ai_chat_with_tools" if tool_calls_result else "ai_chat_message"
@@ -8172,7 +8182,7 @@ async def chat_with_assistant(request: dict):
         logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=500, 
-            detail=f"╨Ю╤И╨╕╨▒╨║╨░ ╨┐╤А╨╕ ╨╛╨▒╤А╨░╨▒╨╛╤В╨║╨╡ ╨╖╨░╨┐╤А╨╛╤Б╨░: {str(e)}"
+            detail=f"Ошибка при обработке запроса: {str(e)}"
         )
 
 
@@ -8216,6 +8226,124 @@ async def check_operation_tokens(user_id: str, operation_type: str):
     except Exception as e:
         logger.error(f"Error checking tokens: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error checking tokens: {str(e)}")
+
+@api_router.post("/knowledge-base/process-research")
+async def process_research_results(request: dict):
+    """
+    Обработать результаты Deep Research от Perplexity и сохранить в базу знаний
+    
+    Request:
+    {
+        "category": "haccp",  # haccp, ingredients_prices, techcards, hr, finance, marketing, iiko, regional, trends
+        "content": "текст результатов от Perplexity...",
+        "metadata": {
+            "region": "Москва",  # опционально
+            "sources": ["url1", "url2"],  # опционально
+            "date": "2025-12-XX"  # опционально
+        }
+    }
+    """
+    try:
+        category = request.get("category")
+        content = request.get("content", "").strip()
+        metadata = request.get("metadata", {})
+        
+        if not category:
+            raise HTTPException(status_code=400, detail="Категория обязательна")
+        
+        if not content:
+            raise HTTPException(status_code=400, detail="Контент не может быть пустым")
+        
+        # Валидация категории
+        valid_categories = ["haccp", "ingredients_prices", "techcards", "hr", "finance", "marketing", "iiko", "regional", "trends"]
+        if category not in valid_categories:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Неизвестная категория. Доступные: {', '.join(valid_categories)}"
+            )
+        
+        # Маппинг категорий к именам файлов
+        filename_map = {
+            "haccp": "receptor_haccp_sanpin.md",
+            "ingredients_prices": "receptor_ingredients_prices.md",
+            "techcards": "receptor_techcards.md",
+            "hr": "receptor_hr_management.md",
+            "finance": "receptor_financial_roi.md",
+            "marketing": "receptor_smm_marketing.md",
+            "iiko": "receptor_iiko_technical.md",
+            "regional": "receptor_regional_specs.md",
+            "trends": "receptor_trends_2025.md"
+        }
+        
+        category_names = {
+            "haccp": "HACCP и СанПиН нормативы",
+            "ingredients_prices": "Цены на ингредиенты",
+            "techcards": "Техкарты и рецепты",
+            "hr": "HR и управление персоналом",
+            "finance": "Финансы и ценообразование",
+            "marketing": "Маркетинг и продвижение",
+            "iiko": "iiko и автоматизация",
+            "regional": "Региональные особенности",
+            "trends": "Тренды и инновации"
+        }
+        
+        # Формируем Markdown документ
+        from pathlib import Path
+        knowledge_base_path = Path(__file__).parent / "data" / "knowledge_base"
+        knowledge_base_path.mkdir(parents=True, exist_ok=True)
+        
+        filename = filename_map[category]
+        filepath = knowledge_base_path / filename
+        
+        # Форматируем контент
+        markdown_content = f"""# {category_names[category]}
+
+**Категория:** {category}
+**Дата сбора:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Источник:** Deep Research (GPT-5 / Perplexity)
+
+"""
+        
+        # Добавляем метаданные
+        if metadata:
+            markdown_content += "## Метаданные\n\n"
+            if metadata.get("region"):
+                markdown_content += f"- **Регион:** {metadata['region']}\n"
+            if metadata.get("date"):
+                markdown_content += f"- **Дата исследования:** {metadata['date']}\n"
+            if metadata.get("sources"):
+                markdown_content += f"- **Источники:** {', '.join(metadata['sources'])}\n"
+            markdown_content += "\n"
+        
+        markdown_content += "---\n\n"
+        markdown_content += content
+        markdown_content += "\n\n---\n\n"
+        markdown_content += f"*Документ собран через Deep Research для RECEPTOR Knowledge Base*\n"
+        
+        # Сохраняем файл (добавляем к существующему, если есть)
+        if filepath.exists():
+            # Добавляем новый контент с разделителем
+            existing_content = filepath.read_text(encoding='utf-8')
+            markdown_content = existing_content + "\n\n" + "="*80 + "\n\n" + markdown_content
+        
+        filepath.write_text(markdown_content, encoding='utf-8')
+        
+        # Запускаем индексацию в фоне (если нужно)
+        # Можно добавить автоматическую индексацию через indexer.py
+        
+        return {
+            "success": True,
+            "message": f"Результаты сохранены в {filename}",
+            "filepath": str(filepath),
+            "size": len(markdown_content),
+            "category": category
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing research results: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка обработки результатов: {str(e)}")
 
 @api_router.get("/assistant/conversations")
 async def get_conversations(user_id: str, limit: int = 100):
