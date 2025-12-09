@@ -78,11 +78,15 @@ class HybridSearch:
             # 3. BM25 скор
             bm25_score = self._calculate_bm25_score(query_words, chunk_content, chunks)
             
+            # 4. Boost для специфичных терминов (Server API vs Cloud API)
+            term_boost = self._calculate_term_boost(query_lower, chunk_lower)
+            
             # Комбинированный скор
             combined_score = (
                 self.vector_weight * vector_score +
                 self.keyword_weight * keyword_score +
-                self.bm25_weight * bm25_score
+                self.bm25_weight * bm25_score +
+                term_boost  # Дополнительный буст
             )
             
             results.append({
@@ -99,6 +103,37 @@ class HybridSearch:
         # Сортируем и возвращаем top_k
         results.sort(key=lambda x: x['score'], reverse=True)
         return results[:top_k]
+    
+    def _calculate_term_boost(self, query: str, text: str) -> float:
+        """
+        Вычислить буст для специфичных терминов.
+        Если запрос содержит специфичный термин и документ тоже - даём буст.
+        """
+        boost = 0.0
+        
+        # Server API специфичные термины
+        server_api_terms = [
+            ("server api", 0.15),
+            ("iikoserver", 0.15),
+            ("sha1", 0.2),
+            ("/resto/api", 0.2),
+            ("resto/api/auth", 0.25),
+            ("sha1passwordhash", 0.25),
+            ("техкарт", 0.1),
+            ("olap-отчёт", 0.1),
+            ("olap отчёт", 0.1),
+            ("номенклатурн", 0.1),
+        ]
+        
+        for term, term_boost in server_api_terms:
+            # Если термин есть и в запросе и в документе - даём буст
+            if term in query and term in text:
+                boost += term_boost
+            # Если термин есть только в документе, но запрос про Server API - маленький буст
+            elif ("server" in query or "сервер" in query) and term in text:
+                boost += term_boost * 0.3
+        
+        return min(0.5, boost)  # Максимум +0.5 к скору
     
     def _calculate_keyword_score(self, query_words: set, text: str) -> float:
         """Вычислить скор по ключевым словам"""
