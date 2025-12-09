@@ -111,7 +111,7 @@ class OpenAIClient:
         Args:
             messages: История сообщений
             model: Конкретная модель (если None — автороутинг)
-            temperature: Температура генерации
+            temperature: Температура генерации (игнорируется для reasoning моделей)
             auto_route: Автоматически выбирать модель по сложности
         
         Returns:
@@ -129,22 +129,30 @@ class OpenAIClient:
             elif model is None:
                 model = MODEL_CONFIG["standard"]["model"]
             
+            # Определяем параметры запроса (reasoning модели не поддерживают temperature)
+            reasoning_models = ["o3-mini", "o1-mini", "o1-pro", "o1", "o3"]
+            request_params = {
+                "model": model,
+                "messages": messages
+            }
+            
+            # Добавляем temperature только для не-reasoning моделей
+            if model not in reasoning_models:
+                request_params["temperature"] = temperature
+            
             # Пробуем выбранную модель, с fallback на gpt-4o
             try:
-                response = await self.client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature
-                )
+                response = await self.client.chat.completions.create(**request_params)
             except Exception as model_error:
                 # Fallback если модель недоступна
                 print(f"⚠️ Model {model} unavailable, falling back to gpt-4o: {model_error}")
                 model = "gpt-4o"
-                response = await self.client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature
-                )
+                fallback_params = {
+                    "model": model,
+                    "messages": messages,
+                    "temperature": temperature
+                }
+                response = await self.client.chat.completions.create(**fallback_params)
             
             # Собираем статистику
             usage = response.usage
