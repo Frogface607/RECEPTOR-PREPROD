@@ -84,9 +84,9 @@ Always answer in Russian."""
 
 def detect_intent(query: str) -> str:
     query = query.lower()
-    if any(w in query for in ["haccp", "санпин", "норм", "правил", "закон", "hr", "найм", "зарплат", "маркетинг", "smm"]):
+    if any(w in query for w in ["haccp", "санпин", "норм", "правил", "закон", "hr", "найм", "зарплат", "маркетинг", "smm"]):
         return "knowledge_base"
-    if any(w in query for in ["выручк", "продаж", "фудкост", "iiko", "айко", "отчет"]):
+    if any(w in query for w in ["выручк", "продаж", "фудкост", "iiko", "айко", "отчет"]):
         return "iiko_analytics"
     return "general"
 
