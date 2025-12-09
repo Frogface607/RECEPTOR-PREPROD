@@ -89,16 +89,21 @@ def get_iiko_connection_status(user_id: str) -> Dict[str, Any]:
     """Проверить статус подключения iiko для пользователя"""
     try:
         rms_service = get_iiko_rms_service()
+        if rms_service is None:
+            return {"status": "not_initialized"}
         return rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
     except Exception as e:
         logger.error(f"Error checking iiko status: {e}")
-        return {"status": "error"}
+        return {"status": "error", "error": str(e)}
 
 
 def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10) -> List[Dict[str, Any]]:
     """Поиск продуктов в номенклатуре iiko с улучшенной точностью"""
     try:
         rms_service = get_iiko_rms_service()
+        if rms_service is None:
+            logger.warning("iiko RMS service not initialized")
+            return []
         results = rms_service.search_rms_products_enhanced(
             organization_id=organization_id,
             query=query,
@@ -107,7 +112,7 @@ def search_iiko_products(query: str, organization_id: str = "default", limit: in
         )
         return results
     except Exception as e:
-        logger.error(f"Error searching iiko products: {e}")
+        logger.error(f"Error searching iiko products: {e}", exc_info=True)
         return []
 
 
@@ -115,19 +120,23 @@ def get_iiko_nomenclature_stats(organization_id: str = "default") -> Dict[str, A
     """Получить полную статистику по номенклатуре iiko"""
     try:
         rms_service = get_iiko_rms_service()
+        if rms_service is None:
+            return {"total_products": 0, "total_groups": 0, "error": "service_not_initialized"}
         return rms_service.get_nomenclature_stats(organization_id=organization_id)
     except Exception as e:
-        logger.error(f"Error getting iiko stats: {e}")
-        return {"total_products": 0, "total_groups": 0}
+        logger.error(f"Error getting iiko stats: {e}", exc_info=True)
+        return {"total_products": 0, "total_groups": 0, "error": str(e)}
 
 
 def get_iiko_groups(organization_id: str = "default") -> List[Dict[str, Any]]:
     """Получить список групп/категорий"""
     try:
         rms_service = get_iiko_rms_service()
+        if rms_service is None:
+            return []
         return rms_service.get_all_groups(organization_id=organization_id)
     except Exception as e:
-        logger.error(f"Error getting iiko groups: {e}")
+        logger.error(f"Error getting iiko groups: {e}", exc_info=True)
         return []
 
 
@@ -135,14 +144,16 @@ def get_products_by_group(group_name: str, organization_id: str = "default", lim
     """Получить продукты из определенной группы/категории"""
     try:
         rms_service = get_iiko_rms_service()
+        if rms_service is None:
+            return {"products": [], "count": 0, "error": "service_not_initialized"}
         return rms_service.get_products_by_group(
             organization_id=organization_id,
             group_name=group_name,
             limit=limit
         )
     except Exception as e:
-        logger.error(f"Error getting products by group: {e}")
-        return {"products": [], "count": 0}
+        logger.error(f"Error getting products by group: {e}", exc_info=True)
+        return {"products": [], "count": 0, "error": str(e)}
 
 
 def extract_search_terms(query: str) -> List[str]:

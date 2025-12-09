@@ -1511,12 +1511,19 @@ class IikoRmsService:
 
 # Global RMS service instance
 _iiko_rms_service: Optional[IikoRmsService] = None
+_iiko_rms_service_init_error: Optional[str] = None
 
-def get_iiko_rms_service() -> IikoRmsService:
-    """Get or create global IikoRmsService instance"""
-    global _iiko_rms_service
+def get_iiko_rms_service() -> Optional[IikoRmsService]:
+    """Get or create global IikoRmsService instance. Returns None on initialization error."""
+    global _iiko_rms_service, _iiko_rms_service_init_error
     
-    if _iiko_rms_service is None:
-        _iiko_rms_service = IikoRmsService()
+    if _iiko_rms_service is None and _iiko_rms_service_init_error is None:
+        try:
+            _iiko_rms_service = IikoRmsService()
+            logger.info("✅ IikoRmsService initialized successfully")
+        except Exception as e:
+            _iiko_rms_service_init_error = str(e)
+            logger.error(f"❌ Failed to initialize IikoRmsService: {e}")
+            return None
     
     return _iiko_rms_service

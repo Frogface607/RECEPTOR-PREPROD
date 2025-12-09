@@ -73,9 +73,9 @@ async def connect_iiko_cloud(credentials: IikoCloudCredentials):
         # Get organizations
         organizations = client.list_organizations()
         
-        # Store credentials in MongoDB
+        # Store credentials in MongoDB (sync PyMongo)
         collection = db.get_collection("iiko_cloud_credentials")
-        await collection.update_one(
+        collection.update_one(
             {"user_id": credentials.user_id},
             {
                 "$set": {
@@ -122,7 +122,10 @@ async def get_iiko_cloud_status(user_id: str):
     """Get iikoCloud connection status for user"""
     try:
         collection = db.get_collection("iiko_cloud_credentials")
-        credentials = await collection.find_one({"user_id": user_id})
+        if collection is None:
+            return {"status": "not_connected", "message": "Database not initialized"}
+        
+        credentials = collection.find_one({"user_id": user_id})  # Sync call for PyMongo
         
         if not credentials:
             return {"status": "not_connected", "message": "iikoCloud не подключен"}
@@ -139,11 +142,8 @@ async def get_iiko_cloud_status(user_id: str):
         }
         
     except Exception as e:
-        logger.error(f"Error getting iikoCloud status: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        logger.error(f"Error getting iikoCloud status: {str(e)}", exc_info=True)
+        return {"status": "error", "message": str(e)}
 
 
 @router.delete("/cloud/disconnect/{user_id}")
@@ -151,7 +151,10 @@ async def disconnect_iiko_cloud(user_id: str):
     """Disconnect iikoCloud and remove stored credentials"""
     try:
         collection = db.get_collection("iiko_cloud_credentials")
-        result = await collection.delete_one({"user_id": user_id})
+        if collection is None:
+            return {"status": "error", "message": "Database not initialized"}
+        
+        result = collection.delete_one({"user_id": user_id})  # Sync PyMongo
         
         if result.deleted_count > 0:
             logger.info(f"iikoCloud disconnected for user: {user_id}")
@@ -160,11 +163,8 @@ async def disconnect_iiko_cloud(user_id: str):
             return {"status": "not_found", "message": "Подключение не найдено"}
             
     except Exception as e:
-        logger.error(f"Error disconnecting iikoCloud: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        logger.error(f"Error disconnecting iikoCloud: {str(e)}", exc_info=True)
+        return {"status": "error", "message": str(e)}
 
 
 # ============ iiko RMS (SERVER) ENDPOINTS ============
@@ -215,16 +215,15 @@ async def get_iiko_rms_status(user_id: str):
     """Get iiko RMS connection status for user"""
     try:
         rms_service = get_iiko_rms_service()
-        result = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=True)
+        if rms_service is None:
+            return {"status": "not_initialized", "message": "iiko RMS сервис не инициализирован"}
         
+        result = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=True)
         return result
         
     except Exception as e:
-        logger.error(f"Error getting iiko RMS status: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        logger.error(f"Error getting iiko RMS status: {str(e)}", exc_info=True)
+        return {"status": "error", "message": str(e)}
 
 
 @router.post("/rms/select-organization")
@@ -358,7 +357,7 @@ async def get_all_iiko_status(user_id: str):
     try:
         # Get Cloud status
         collection = db.get_collection("iiko_cloud_credentials")
-        cloud_credentials = await collection.find_one({"user_id": user_id})
+        cloud_credentials = collection.find_one({"user_id": user_id}) if collection else None  # Sync PyMongo
         
         cloud_status = {
             "connected": cloud_credentials is not None and cloud_credentials.get("status") == "connected",
@@ -368,14 +367,16 @@ async def get_all_iiko_status(user_id: str):
         
         # Get RMS status
         rms_service = get_iiko_rms_service()
-        rms_result = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+        rms_status = {"connected": False, "host": None, "organization_name": None, "last_connection": None}
         
-        rms_status = {
-            "connected": rms_result.get("status") in ["connected", "restored"],
-            "host": rms_result.get("host"),
-            "organization_name": rms_result.get("organization_name"),
-            "last_connection": rms_result.get("last_connection")
-        }
+        if rms_service:
+            rms_result = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+            rms_status = {
+                "connected": rms_result.get("status") in ["connected", "restored"],
+                "host": rms_result.get("host"),
+                "organization_name": rms_result.get("organization_name"),
+                "last_connection": rms_result.get("last_connection")
+            }
         
         return {
             "user_id": user_id,
@@ -385,9 +386,12 @@ async def get_all_iiko_status(user_id: str):
         }
         
     except Exception as e:
-        logger.error(f"Error getting combined iiko status: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        logger.error(f"Error getting combined iiko status: {str(e)}", exc_info=True)
+        return {
+            "user_id": user_id,
+            "cloud": {"connected": False},
+            "rms": {"connected": False},
+            "any_connected": False,
+            "error": str(e)
+        }
 
