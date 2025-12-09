@@ -72,6 +72,45 @@ async def reindex_knowledge_base(background_tasks: BackgroundTasks, secret: str 
     }
 
 
+@app.get("/api/admin/test-search")
+async def test_search(query: str = "авторизация iiko API"):
+    """Тестовый поиск для диагностики"""
+    try:
+        from app.services.rag.search import search_knowledge_base
+        from app.services.rag.indexer import get_indexed_chunks
+        
+        client = MongoClient(settings.mongo_connection_string)
+        db_mongo = client[settings.DB_NAME]
+        collection = db_mongo["knowledge_base_chunks"]
+        
+        # Получаем чанки
+        chunks = get_indexed_chunks(collection)
+        chunks_with_emb = [c for c in chunks if c.get('embedding')]
+        
+        # Пробуем поиск
+        results = search_knowledge_base(query, top_k=5, db_collection=collection)
+        
+        client.close()
+        
+        return {
+            "query": query,
+            "total_chunks_loaded": len(chunks),
+            "chunks_with_embeddings": len(chunks_with_emb),
+            "results_count": len(results),
+            "results": [
+                {
+                    "source": r.get("source"),
+                    "score": r.get("score"),
+                    "content_preview": r.get("content", "")[:200]
+                }
+                for r in results[:5]
+            ]
+        }
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
+
+
 @app.get("/api/admin/index-status")
 async def get_index_status():
     """Получить статус индекса базы знаний"""
