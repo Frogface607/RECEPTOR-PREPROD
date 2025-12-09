@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import db
-from app.api import chat
+from app.api import chat, venue
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -33,3 +33,4 @@ async def root():
     return {"message": "Welcome to RECEPTOR CO-PILOT API v2.0", "status": "online"}
 
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(venue.router, prefix="/api/venue", tags=["venue"])

@@ -1,13 +1,13 @@
-
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 from app.core.config import settings
 
+
 class Database:
-    client: AsyncIOMotorClient = None
+    client: MongoClient = None
     db = None
 
     def connect(self):
-        self.client = AsyncIOMotorClient(settings.MONGODB_URI)
+        self.client = MongoClient(settings.MONGODB_URI)
         self.db = self.client[settings.DB_NAME]
         print(f"✅ Connected to MongoDB: {settings.DB_NAME}")
 
@@ -15,9 +15,17 @@ class Database:
         if self.client:
             self.client.close()
             print("❌ Disconnected from MongoDB")
+    
+    def get_collection(self, name: str):
+        """Получить коллекцию MongoDB"""
+        if self.db is None:
+            self.connect()
+        return self.db[name]
+
 
 db = Database()
 
-async def get_database():
+
+def get_database():
     return db.db
 
