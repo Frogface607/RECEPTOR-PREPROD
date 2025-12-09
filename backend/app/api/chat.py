@@ -202,6 +202,22 @@ async def chat_message(request: ChatRequest):
         logger.info(f"🔍 Searching Knowledge Base for: {user_query}")
         results = []
         
+        # Определяем категорию на основе запроса для фильтрации
+        query_lower = user_query.lower()
+        search_categories = None
+        if any(kw in query_lower for kw in ["iiko", "server api", "olap", "техкарт", "номенклатур", "endpoint", "api", "авторизац"]):
+            search_categories = ["iiko"]
+            logger.info(f"📂 Filtering by category: iiko")
+        elif any(kw in query_lower for kw in ["haccp", "санпин", "гигиен", "безопасность пищ"]):
+            search_categories = ["haccp"]
+            logger.info(f"📂 Filtering by category: haccp")
+        elif any(kw in query_lower for kw in ["маркетинг", "smm", "продвижение", "реклам"]):
+            search_categories = ["marketing"]
+            logger.info(f"📂 Filtering by category: marketing")
+        elif any(kw in query_lower for kw in ["персонал", "hr", "сотрудник", "найм", "обучение"]):
+            search_categories = ["hr"]
+            logger.info(f"📂 Filtering by category: hr")
+        
         # Подключаем коллекцию с проиндексированными чанками
         try:
             from pymongo import MongoClient
@@ -212,9 +228,21 @@ async def chat_message(request: ChatRequest):
             total_chunks = kb_collection.count_documents({"indexed": True, "type": {"$ne": "metadata"}})
             logger.info(f"📊 Total indexed chunks in DB: {total_chunks}")
             
-            # Пробуем векторный поиск
-            results = search_knowledge_base(user_query, top_k=7, db_collection=kb_collection)
+            # Пробуем векторный поиск с категорией
+            results = search_knowledge_base(user_query, top_k=10, categories=search_categories, db_collection=kb_collection)
             logger.info(f"📊 Vector search returned {len(results)} results")
+            
+            # Если категория слишком узкая и результатов мало - расширяем поиск
+            if len(results) < 3 and search_categories:
+                logger.info("📊 Expanding search without category filter")
+                more_results = search_knowledge_base(user_query, top_k=10, db_collection=kb_collection)
+                # Добавляем уникальные результаты
+                seen_sources = {r.get('content', '')[:100] for r in results}
+                for r in more_results:
+                    if r.get('content', '')[:100] not in seen_sources:
+                        results.append(r)
+                        if len(results) >= 10:
+                            break
             
             mongo_client.close()
         except Exception as e:
@@ -223,7 +251,7 @@ async def chat_message(request: ChatRequest):
         # Если векторный поиск не дал результатов - используем текстовый fallback
         if not results:
             logger.warning("⚠️ No results from vector search, trying text fallback")
-            results = search_knowledge_base(user_query, top_k=7, db_collection=None)
+            results = search_knowledge_base(user_query, top_k=10, db_collection=None)
             logger.info(f"📊 Text fallback returned {len(results)} results")
         
         if results:

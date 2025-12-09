@@ -13,8 +13,8 @@ from .indexer import get_indexed_chunks, index_all_documents, CATEGORY_MAP
 # Путь к базе знаний
 KNOWLEDGE_BASE_PATH = Path(__file__).parent.parent.parent.parent / "data" / "knowledge_base"
 
-# Глобальный экземпляр поиска
-_hybrid_search = HybridSearch(vector_weight=0.7, keyword_weight=0.2, bm25_weight=0.1)
+# Глобальный экземпляр поиска - увеличили keyword_weight для лучшего matching по терминам API
+_hybrid_search = HybridSearch(vector_weight=0.5, keyword_weight=0.35, bm25_weight=0.15)
 
 
 def search_knowledge_base(
