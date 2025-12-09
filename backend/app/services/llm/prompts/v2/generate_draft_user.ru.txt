@@ -1,0 +1,16 @@
+Входные данные:
+- Бриф блюда: {{brief}}
+- Число порций: {{portions}}
+- Целевой выход на порцию, g: {{yield_per_portion_g}}
+
+{{#constraints}}
+Constraints (СТРОГО СОБЛЮДАЙ):
+- ОБЯЗАТЕЛЬНО включи: {{mustHave}}
+- СТРОГО ЗАПРЕТИ: {{forbid}}
+- Подсказки: {{hints}}
+- Подрецепты допускаются как subRecipeRef для сложных соусов/полуфабрикатов
+{{/constraints}}
+
+Сгенерируй JSON TechCardV2 с полями:
+title, category, portions, yield:{perPortion_g, perBatch_g}, ingredients:[{name, brutto_g, loss_pct, netto_g, unit}], process:[{action, time_min, temp_c, equipment, ccp}], storage:{conditions, shelfLife_hours, servingTemp_c}, allergens[], notes[], nutrition:null, cost:null.
+Требования: числа — целые или с одним знаком; loss_pct 0–40; итог нетто ≈ yield.perBatch_g (±10%). Без эпитетов. Без диапазонов.

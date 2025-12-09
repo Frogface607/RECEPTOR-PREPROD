@@ -199,7 +199,7 @@ const CulinaryAssistant = ({
 
     // Check token balance before sending (check for chat with tools - higher cost)
     try {
-      const balanceCheck = await axios.get(`${API}/user/${userId || 'demo_user'}/tokens/check`, {
+      const balanceCheck = await axios.post(`${API}/user/${userId || 'demo_user'}/tokens/check`, null, {
         params: { operation_type: 'ai_chat_with_tools' }
       });
       
