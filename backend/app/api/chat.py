@@ -219,8 +219,8 @@ async def chat_message(request: ChatRequest):
             summary = get_iiko_nomenclature_stats(org_id)
             context += f"\n\nСТАТУС IIKO:\n"
             context += f"- Подключено к: {iiko_status.get('organization_name', 'Организация')}\n"
-            context += f"- Продуктов в базе: {summary['products_count']}\n"
-            context += f"- Групп: {summary['groups_count']}\n"
+            context += f"- Продуктов в базе: {summary.get('total_products', 0)}\n"
+            context += f"- Групп: {summary.get('total_groups', 0)}\n"
             
             # Если есть поисковый запрос - ищем продукты
             search_terms = extract_search_terms(user_query)
