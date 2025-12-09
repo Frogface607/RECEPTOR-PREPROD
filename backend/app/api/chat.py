@@ -186,16 +186,25 @@ async def chat_message(request: ChatRequest):
         context += f"\n\n{venue_context}\n"
     
     # 🌐 Web Search для актуальных запросов (тренды, новости, цены)
-    if should_use_web_search(user_query):
-        logger.info(f"🌐 Web search triggered for: {user_query}")
+    should_search = should_use_web_search(user_query)
+    logger.info(f"🌐 Web search check: {should_search} for query: {user_query[:100]}")
+    
+    if should_search:
+        logger.info(f"🌐 Web search triggered!")
         try:
             search_result = await web_search(user_query, max_results=5)
-            web_context = format_search_results_for_context(search_result)
-            if web_context:
-                context += web_context
-                logger.info(f"🌐 Added {len(search_result.get('results', []))} web results to context")
+            
+            if search_result.get("error"):
+                logger.error(f"⚠️ Web search error: {search_result['error']}")
+            else:
+                web_context = format_search_results_for_context(search_result)
+                if web_context:
+                    context += web_context
+                    logger.info(f"🌐 Added {len(search_result.get('results', []))} web results to context")
+                else:
+                    logger.warning("⚠️ Web search returned empty context")
         except Exception as e:
-            logger.warning(f"⚠️ Web search failed: {e}")
+            logger.error(f"⚠️ Web search failed: {e}", exc_info=True)
     
     if intent == "knowledge_base":
         logger.info(f"🔍 Searching Knowledge Base for: {user_query}")
