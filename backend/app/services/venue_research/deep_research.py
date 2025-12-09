@@ -138,14 +138,27 @@ async def analyze_research(
     try:
         # Используем reasoning model для глубокого анализа
         logger.info(f"🧠 Calling o3-mini for reasoning analysis...")
-        response, usage = await llm_client.chat_completion(
-            messages=[
-                {"role": "system", "content": "Ты бизнес-аналитик ресторанного рынка. Анализируешь данные и создаёшь структурированные досье."},
-                {"role": "user", "content": prompt}
-            ],
-            model="o3-mini",  # Reasoning для глубокого анализа
-            auto_route=False
-        )
+        
+        # Пробуем o3-mini, если не получается - fallback на gpt-4o
+        try:
+            response, usage = await llm_client.chat_completion(
+                messages=[
+                    {"role": "system", "content": "Ты бизнес-аналитик ресторанного рынка. Анализируешь данные и создаёшь структурированные досье."},
+                    {"role": "user", "content": prompt}
+                ],
+                model="o3-mini",  # Reasoning для глубокого анализа
+                auto_route=False
+            )
+        except Exception as model_error:
+            logger.warning(f"⚠️ o3-mini unavailable, using gpt-4o: {model_error}")
+            response, usage = await llm_client.chat_completion(
+                messages=[
+                    {"role": "system", "content": "Ты бизнес-аналитик ресторанного рынка. Анализируешь данные и создаёшь структурированные досье."},
+                    {"role": "user", "content": prompt}
+                ],
+                model="gpt-4o",
+                auto_route=False
+            )
         
         logger.info(f"✅ AI analysis completed. Model: {usage.get('model')}, Cost: ${usage.get('cost_usd', 0):.4f}")
         

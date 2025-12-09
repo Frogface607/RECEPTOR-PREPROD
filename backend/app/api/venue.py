@@ -169,7 +169,7 @@ async def run_deep_research_task(venue_name: str, city: str, user_id: str):
         from app.services.llm.client import OpenAIClient
         from app.core.config import settings
         
-        logger.info(f"🔬 Running deep research for {venue_name}...")
+        logger.info(f"🔬 Running deep research for {venue_name} (user: {user_id})...")
         
         # Создаём клиентов
         llm_client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
@@ -182,19 +182,41 @@ async def run_deep_research_task(venue_name: str, city: str, user_id: str):
             llm_client=llm_client
         )
         
-        # Добавляем user_id
+        logger.info(f"✅ Research data collected, saving to DB...")
+        
+        # Добавляем user_id и статус
         dossier["user_id"] = user_id
+        dossier["status"] = "completed"
         
         # Сохраняем в MongoDB
         collection = db.get_collection(RESEARCH_COLLECTION)
-        collection.update_one(
+        result = collection.update_one(
             {"user_id": user_id},
             {"$set": dossier},
             upsert=True
         )
         
-        logger.info(f"✅ Deep research completed and saved for {user_id}")
+        logger.info(f"✅ Deep research saved: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")
+        logger.info(f"📊 Dossier summary: {dossier.get('summary', 'N/A')[:100]}")
         
     except Exception as e:
-        logger.error(f"❌ Deep research failed: {e}", exc_info=True)
+        logger.error(f"❌ Deep research failed for {user_id}: {e}", exc_info=True)
+        
+        # Сохраняем хотя бы ошибку
+        try:
+            collection = db.get_collection(RESEARCH_COLLECTION)
+            collection.update_one(
+                {"user_id": user_id},
+                {"$set": {
+                    "user_id": user_id,
+                    "venue_name": venue_name,
+                    "city": city,
+                    "status": "failed",
+                    "error": str(e),
+                    "research_date": datetime.utcnow().isoformat()
+                }},
+                upsert=True
+            )
+        except Exception as save_err:
+            logger.error(f"❌ Failed to save error state: {save_err}")
 
