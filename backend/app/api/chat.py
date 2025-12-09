@@ -95,14 +95,15 @@ def get_iiko_connection_status(user_id: str) -> Dict[str, Any]:
         return {"status": "error"}
 
 
-def search_iiko_products(query: str, organization_id: str = "default", limit: int = 5) -> List[Dict[str, Any]]:
-    """Поиск продуктов в номенклатуре iiko"""
+def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10) -> List[Dict[str, Any]]:
+    """Поиск продуктов в номенклатуре iiko с улучшенной точностью"""
     try:
         rms_service = get_iiko_rms_service()
         results = rms_service.search_rms_products_enhanced(
             organization_id=organization_id,
             query=query,
-            limit=limit
+            limit=limit,
+            min_score=0.75  # Повышенный порог для точности
         )
         return results
     except Exception as e:
@@ -110,27 +111,38 @@ def search_iiko_products(query: str, organization_id: str = "default", limit: in
         return []
 
 
-def get_iiko_products_summary(organization_id: str = "default") -> Dict[str, Any]:
-    """Получить сводку по номенклатуре iiko"""
+def get_iiko_nomenclature_stats(organization_id: str = "default") -> Dict[str, Any]:
+    """Получить полную статистику по номенклатуре iiko"""
     try:
         rms_service = get_iiko_rms_service()
-        
-        # Подсчитать продукты
-        products_count = rms_service.products.count_documents({"organization_id": organization_id})
-        groups_count = rms_service.groups.count_documents({"organization_id": organization_id})
-        
-        # Получить последний статус синхронизации
-        sync_status = rms_service.get_rms_sync_status(organization_id=organization_id)
-        
-        return {
-            "products_count": products_count,
-            "groups_count": groups_count,
-            "last_sync": sync_status.get("completed_at"),
-            "sync_status": sync_status.get("status", "never_synced")
-        }
+        return rms_service.get_nomenclature_stats(organization_id=organization_id)
     except Exception as e:
-        logger.error(f"Error getting iiko summary: {e}")
-        return {"products_count": 0, "groups_count": 0}
+        logger.error(f"Error getting iiko stats: {e}")
+        return {"total_products": 0, "total_groups": 0}
+
+
+def get_iiko_groups(organization_id: str = "default") -> List[Dict[str, Any]]:
+    """Получить список групп/категорий"""
+    try:
+        rms_service = get_iiko_rms_service()
+        return rms_service.get_all_groups(organization_id=organization_id)
+    except Exception as e:
+        logger.error(f"Error getting iiko groups: {e}")
+        return []
+
+
+def get_products_by_group(group_name: str, organization_id: str = "default", limit: int = 20) -> Dict[str, Any]:
+    """Получить продукты из определенной группы/категории"""
+    try:
+        rms_service = get_iiko_rms_service()
+        return rms_service.get_products_by_group(
+            organization_id=organization_id,
+            group_name=group_name,
+            limit=limit
+        )
+    except Exception as e:
+        logger.error(f"Error getting products by group: {e}")
+        return {"products": [], "count": 0}
 
 
 def extract_search_terms(query: str) -> List[str]:
@@ -233,13 +245,78 @@ async def chat_message(request: ChatRequest):
                 if products:
                     context += f"\n\nРЕЗУЛЬТАТЫ ПОИСКА В IIKO ПО '{term}':\n"
                     for p in products:
-                        price = p.get('price_per_unit', 0)
-                        price_str = f"{price:.2f} руб/{p.get('unit', 'ед')}" if price else "цена не указана"
-                        context += f"- {p['name']} | {price_str} | группа: {p.get('group_name', 'н/д')}\n"
+                        price = p.get('price_per_unit', 0) or p.get('price', 0)
+                        price_str = f"{price:.2f} руб/{p.get('unit', 'шт')}" if price else "цена не указана"
+                        group = p.get('group_name') or 'Без группы'
+                        match_info = f" (точность: {p.get('match_score', 0)*100:.0f}%)" if p.get('match_score') else ""
+                        context += f"- {p['name']} | {price_str} | {group}{match_info}\n"
                 else:
                     context += f"\n\nПо запросу '{term}' ничего не найдено в номенклатуре.\n"
         else:
             context += "\n\nДля поиска продуктов нужно подключить iiko в разделе 'Интеграции'.\n"
+    
+    elif intent == "iiko_categories":
+        logger.info(f"📂 Getting iiko categories for: {user_query}")
+        
+        iiko_status = get_iiko_connection_status(user_id)
+        
+        if iiko_status.get("status") in ["connected", "restored"]:
+            org_id = iiko_status.get("organization_id", "default")
+            
+            # Проверяем, запрашивает ли конкретную категорию
+            category_name = extract_category_name(user_query)
+            
+            if category_name:
+                # Показываем продукты из конкретной категории
+                result = get_products_by_group(category_name, org_id, limit=20)
+                if result.get("products"):
+                    context += f"\n\nПРОДУКТЫ В КАТЕГОРИИ '{result.get('group_name', category_name)}':\n"
+                    context += f"Всего: {result.get('total_count', 0)} позиций\n\n"
+                    for p in result["products"]:
+                        price = p.get('price_per_unit', 0) or p.get('price', 0)
+                        price_str = f"{price:.2f} руб" if price else ""
+                        context += f"- {p['name']} {price_str}\n"
+                else:
+                    context += f"\n\nКатегория '{category_name}' не найдена или пуста.\n"
+            else:
+                # Показываем список всех категорий
+                groups = get_iiko_groups(org_id)
+                if groups:
+                    context += f"\n\nКАТЕГОРИИ/ГРУППЫ В НОМЕНКЛАТУРЕ ({len(groups)} шт.):\n"
+                    for g in groups[:15]:  # Ограничим до 15
+                        context += f"- {g['name']} ({g['products_count']} позиций)\n"
+                    if len(groups) > 15:
+                        context += f"... и ещё {len(groups) - 15} категорий\n"
+                else:
+                    context += "\n\nКатегории не найдены в номенклатуре.\n"
+        else:
+            context += "\n\nДля просмотра категорий нужно подключить iiko в разделе 'Интеграции'.\n"
+    
+    elif intent == "iiko_stats":
+        logger.info(f"📊 Getting iiko stats for: {user_query}")
+        
+        iiko_status = get_iiko_connection_status(user_id)
+        
+        if iiko_status.get("status") in ["connected", "restored"]:
+            org_id = iiko_status.get("organization_id", "default")
+            stats = get_iiko_nomenclature_stats(org_id)
+            
+            context += f"\n\nСТАТИСТИКА НОМЕНКЛАТУРЫ IIKO:\n"
+            context += f"- Всего позиций: {stats.get('total_products', 0)}\n"
+            context += f"- Активных: {stats.get('active_products', 0)}\n"
+            context += f"- Групп/категорий: {stats.get('total_groups', 0)}\n"
+            context += f"- С указанной ценой: {stats.get('products_with_price', 0)}\n"
+            context += f"- Без цены: {stats.get('products_without_price', 0)}\n"
+            
+            if stats.get('top_groups'):
+                context += f"\nТОП-5 КАТЕГОРИЙ ПО КОЛИЧЕСТВУ ПОЗИЦИЙ:\n"
+                for i, g in enumerate(stats['top_groups'][:5], 1):
+                    context += f"{i}. {g['name']} — {g['count']} позиций\n"
+            
+            if stats.get('last_sync'):
+                context += f"\nПоследняя синхронизация: {stats['last_sync']}\n"
+        else:
+            context += "\n\nДля просмотра статистики нужно подключить iiko в разделе 'Интеграции'.\n"
 
     # Call LLM
     try:
@@ -302,18 +379,60 @@ async def chat_message(request: ChatRequest):
 
 def detect_intent(query: str) -> str:
     """Определение намерения пользователя"""
-    query = query.lower()
+    query_lower = query.lower()
     
     # База знаний (HACCP, СанПиН, HR и т.д.)
-    if any(w in query for w in ["haccp", "санпин", "норм", "правил", "закон", "hr", "найм", "зарплат", "маркетинг", "smm", "гигиен", "требован"]):
+    kb_keywords = ["haccp", "санпин", "норм", "правил", "закон", "hr", "найм", "зарплат", 
+                   "маркетинг", "smm", "гигиен", "требован", "сертифик", "лицен"]
+    if any(w in query_lower for w in kb_keywords):
         return "knowledge_base"
     
+    # Категории/группы в iiko
+    category_keywords = ["категори", "группы", "группа", "раздел", "все пив", "все бургер", 
+                        "все напитк", "меню", "ассортимент", "покажи все"]
+    if any(w in query_lower for w in category_keywords):
+        return "iiko_categories"
+    
+    # Статистика номенклатуры
+    stats_keywords = ["сколько позиций", "сколько товар", "статистик", "сколько продукт",
+                     "сколько в номенклатуре", "топ групп", "топ категор"]
+    if any(w in query_lower for w in stats_keywords):
+        return "iiko_stats"
+    
     # Поиск продуктов в iiko
-    if any(w in query for w in ["найди", "поищи", "есть ли", "ингредиент", "продукт", "номенклатур", "сколько стоит", "какая цена", "артикул"]):
+    search_keywords = ["найди", "поищи", "есть ли", "ингредиент", "продукт", 
+                      "сколько стоит", "какая цена", "артикул", "покажи"]
+    if any(w in query_lower for w in search_keywords):
         return "iiko_products"
     
-    # iiko аналитика и статус
-    if any(w in query for w in ["выручк", "продаж", "фудкост", "iiko", "айко", "отчет", "аналитик", "статистик", "синхрониз"]):
+    # iiko общая аналитика
+    iiko_keywords = ["выручк", "продаж", "фудкост", "iiko", "айко", "отчет", "аналитик", "синхрониз"]
+    if any(w in query_lower for w in iiko_keywords):
         return "iiko_analytics"
     
     return "general"
+
+
+def extract_category_name(query: str) -> Optional[str]:
+    """Извлечь название категории из запроса"""
+    query_lower = query.lower()
+    
+    # Паттерны для извлечения категории
+    patterns = [
+        ("покажи все ", ""),
+        ("покажи категорию ", ""),
+        ("покажи группу ", ""),
+        ("все ", ""),
+        ("категория ", ""),
+        ("группа ", ""),
+    ]
+    
+    for prefix, suffix in patterns:
+        if prefix in query_lower:
+            idx = query_lower.find(prefix)
+            extracted = query[idx + len(prefix):].strip()
+            extracted = extracted.strip('?.,!')
+            if extracted:
+                return extracted
+    
+    return None

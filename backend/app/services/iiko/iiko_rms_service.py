@@ -406,102 +406,121 @@ class IikoRmsService:
         
         return product
     
-    def search_rms_products_enhanced(self, organization_id: str, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    def search_rms_products_enhanced(self, organization_id: str, query: str, limit: int = 10, 
+                                       min_score: float = 0.75) -> List[Dict[str, Any]]:
         """
-        Enhanced search for RMS products with RU-normalization and improved scoring
-        P0: SKU Search (iiko) — 0-hit bugfix implementation
+        Enhanced search for RMS products with RU-normalization and improved scoring.
+        
+        IMPROVED VERSION:
+        - Minimum score threshold to filter out irrelevant results
+        - Prioritizes exact and substring matches
+        - Better scoring for partial word matches
         """
         try:
             if not query.strip():
                 return []
             
-            # Normalize query for better matching
-            normalized_query = self._normalize_ru_text(query.strip())
+            query_original = query.strip()
+            normalized_query = self._normalize_ru_text(query_original)
+            query_lower = normalized_query.lower()
             
-            # Get all active products for organization (remove hidden filters)
-            products_cursor = self.products.find({
-                "organization_id": organization_id,
-                # Remove hidden filters - don't filter by price or active status
-                # "active": True,  # Allow inactive products
-                # "price_per_unit": {"$gt": 0}  # Allow products without price
-            })
-            
+            # Get all products for organization
+            products_cursor = self.products.find({"organization_id": organization_id})
             products = list(products_cursor)
-            logger.info(f"Found {len(products)} total products for enhanced search")
+            
+            logger.info(f"🔍 Searching '{query_original}' in {len(products)} products (min_score={min_score})")
             
             if not products:
                 return []
             
             matches = []
             
-            # Enhanced matching with multiple strategies
             for product in products:
                 product_name = product.get("name", "")
                 if not product_name:
                     continue
                 
-                # Strategy 1: Normalized RU text matching
-                normalized_product_name = self._normalize_ru_text(product_name)
+                normalized_name = self._normalize_ru_text(product_name)
+                name_lower = normalized_name.lower()
                 
-                # Strategy 2: Multi-level scoring
-                scores = []
+                # Calculate score with priority levels
+                score = 0.0
+                match_type = "none"
                 
-                # Exact match
-                if normalized_query.lower() == normalized_product_name.lower():
-                    scores.append(1.0)
+                # LEVEL 1: Exact match (score = 1.0)
+                if query_lower == name_lower:
+                    score = 1.0
+                    match_type = "exact"
                 
-                # Substring match
-                elif normalized_query.lower() in normalized_product_name.lower():
-                    scores.append(0.95)
-                elif normalized_product_name.lower() in normalized_query.lower():
-                    scores.append(0.90)
+                # LEVEL 2: Query is substring of product name (score = 0.95)
+                elif query_lower in name_lower:
+                    # Boost if it's at the start
+                    if name_lower.startswith(query_lower):
+                        score = 0.97
+                        match_type = "starts_with"
+                    else:
+                        score = 0.92
+                        match_type = "contains"
                 
-                # Word-level matching
-                query_words = normalized_query.lower().split()
-                product_words = normalized_product_name.lower().split()
+                # LEVEL 3: Product name is substring of query (score = 0.85)
+                elif name_lower in query_lower:
+                    score = 0.85
+                    match_type = "reverse_contains"
                 
-                word_matches = sum(1 for qw in query_words 
-                                 if any(qw in pw or pw in qw for pw in product_words))
-                
-                if word_matches > 0:
-                    word_score = min(0.85, 0.60 + (word_matches / len(query_words)) * 0.25)
-                    scores.append(word_score)
-                
-                # Lemmatization-based matching for common ingredients
-                lemmatized_score = self._lemmatized_match_score(normalized_query, normalized_product_name)
-                if lemmatized_score > 0.60:
-                    scores.append(lemmatized_score)
-                
-                # Use best score
-                if scores:
-                    best_score = max(scores)
+                # LEVEL 4: Word-level matching
+                else:
+                    query_words = query_lower.split()
+                    product_words = name_lower.split()
                     
-                    # Create result item
+                    # Count how many query words appear in product name
+                    matched_words = 0
+                    for qw in query_words:
+                        if len(qw) >= 3:  # Only consider words with 3+ chars
+                            for pw in product_words:
+                                if qw in pw or pw in qw:
+                                    matched_words += 1
+                                    break
+                    
+                    if matched_words > 0:
+                        # Score based on percentage of matched words
+                        word_match_ratio = matched_words / len(query_words)
+                        score = 0.70 + (word_match_ratio * 0.15)  # 0.70-0.85 range
+                        match_type = f"word_match_{matched_words}/{len(query_words)}"
+                
+                # LEVEL 5: Lemmatization fallback (for Russian morphology)
+                if score < min_score:
+                    lemma_score = self._lemmatized_match_score(query_lower, name_lower)
+                    if lemma_score > score:
+                        score = lemma_score
+                        match_type = "lemma"
+                
+                # Only include if score meets threshold
+                if score >= min_score:
                     match_item = {
                         "_id": str(product["_id"]),
                         "sku_id": str(product["_id"]),
                         "name": product_name,
                         "article": product.get("article", ""),
-                        "unit": product.get("unit", "г"),
-                        "group_name": product.get("group_name", ""),
+                        "unit": product.get("unit", "шт"),
+                        "group_id": product.get("group_id", ""),
+                        "group_name": product.get("group_name", "Без группы"),
                         "price_per_unit": product.get("price_per_unit", 0.0),
+                        "price": product.get("price", 0.0),
                         "currency": "RUB",
-                        "vat_pct": product.get("vat_pct", 0.0),
-                        "asOf": product.get("updated_at", datetime.now(timezone.utc)).isoformat(),
-                        "match_score": best_score,
+                        "match_score": round(score, 3),
+                        "match_type": match_type,
                         "product_type": product.get("product_type", "product"),
                         "active": product.get("active", True)
                     }
-                    
                     matches.append(match_item)
             
-            # Sort by match score (descending) and return top results
-            matches.sort(key=lambda x: x["match_score"], reverse=True)
+            # Sort by score (descending), then by name
+            matches.sort(key=lambda x: (-x["match_score"], x["name"]))
             
-            # Return top-5 candidates even with low scores (as per requirement)
-            result = matches[:max(5, limit)]
+            # Return top results
+            result = matches[:limit]
             
-            logger.info(f"Enhanced search for '{query}' returned {len(result)} matches")
+            logger.info(f"✅ Search '{query_original}': found {len(result)} matches (of {len(matches)} above threshold)")
             return result
             
         except Exception as e:
@@ -771,6 +790,160 @@ class IikoRmsService:
         except Exception as e:
             logger.error(f"Error searching RMS product by ID: {str(e)}")
             return []
+    
+    # ============ GROUP/CATEGORY METHODS ============
+    
+    def get_all_groups(self, organization_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all product groups/categories for organization.
+        Returns hierarchical group structure.
+        """
+        try:
+            groups_cursor = self.groups.find({
+                "organization_id": organization_id,
+                "active": {"$ne": False}
+            }).sort("name", ASCENDING)
+            
+            groups = []
+            for group in groups_cursor:
+                # Count products in this group
+                products_count = self.products.count_documents({
+                    "organization_id": organization_id,
+                    "group_id": group["_id"]
+                })
+                
+                groups.append({
+                    "id": str(group["_id"]),
+                    "name": group.get("name", "Без названия"),
+                    "parent_id": group.get("parent_id"),
+                    "products_count": products_count,
+                    "active": group.get("active", True)
+                })
+            
+            logger.info(f"📂 Found {len(groups)} groups for organization {organization_id}")
+            return groups
+            
+        except Exception as e:
+            logger.error(f"Error getting groups: {str(e)}")
+            return []
+    
+    def get_products_by_group(self, organization_id: str, group_id: str = None, 
+                              group_name: str = None, limit: int = 50) -> Dict[str, Any]:
+        """
+        Get products from a specific group/category.
+        Can search by group_id or group_name.
+        """
+        try:
+            # Build query
+            query = {"organization_id": organization_id}
+            
+            if group_id:
+                query["group_id"] = group_id
+            elif group_name:
+                # Find group by name (fuzzy)
+                group_name_lower = group_name.lower()
+                group_record = self.groups.find_one({
+                    "organization_id": organization_id,
+                    "name": {"$regex": group_name, "$options": "i"}
+                })
+                if group_record:
+                    query["group_id"] = group_record["_id"]
+                    group_name = group_record.get("name", group_name)
+                else:
+                    # Try to find products with matching group_name field
+                    query["group_name"] = {"$regex": group_name, "$options": "i"}
+            
+            products_cursor = self.products.find(query).sort("name", ASCENDING).limit(limit)
+            
+            products = []
+            for product in products_cursor:
+                products.append({
+                    "sku_id": str(product["_id"]),
+                    "name": product.get("name", ""),
+                    "article": product.get("article", ""),
+                    "unit": product.get("unit", "шт"),
+                    "price_per_unit": product.get("price_per_unit", 0.0),
+                    "price": product.get("price", 0.0),
+                    "group_name": product.get("group_name", "Без группы"),
+                    "active": product.get("active", True)
+                })
+            
+            # Get total count
+            total_count = self.products.count_documents(query)
+            
+            logger.info(f"📦 Found {len(products)} products in group '{group_name or group_id}'")
+            
+            return {
+                "group_id": group_id,
+                "group_name": group_name,
+                "products": products,
+                "count": len(products),
+                "total_count": total_count
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting products by group: {str(e)}")
+            return {"products": [], "count": 0, "total_count": 0}
+    
+    def get_nomenclature_stats(self, organization_id: str) -> Dict[str, Any]:
+        """
+        Get comprehensive statistics about the nomenclature.
+        """
+        try:
+            # Total products
+            total_products = self.products.count_documents({"organization_id": organization_id})
+            active_products = self.products.count_documents({
+                "organization_id": organization_id,
+                "active": True
+            })
+            
+            # Total groups
+            total_groups = self.groups.count_documents({"organization_id": organization_id})
+            
+            # Products with prices
+            products_with_price = self.products.count_documents({
+                "organization_id": organization_id,
+                "price_per_unit": {"$gt": 0}
+            })
+            
+            # Top groups by product count
+            pipeline = [
+                {"$match": {"organization_id": organization_id}},
+                {"$group": {"_id": "$group_name", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 10}
+            ]
+            top_groups = list(self.products.aggregate(pipeline))
+            
+            # Last sync info
+            sync_record = self.sync_status.find_one(
+                {"organization_id": organization_id, "sync_type": "nomenclature"},
+                sort=[("started_at", DESCENDING)]
+            )
+            
+            return {
+                "total_products": total_products,
+                "active_products": active_products,
+                "inactive_products": total_products - active_products,
+                "total_groups": total_groups,
+                "products_with_price": products_with_price,
+                "products_without_price": total_products - products_with_price,
+                "top_groups": [
+                    {"name": g["_id"] or "Без группы", "count": g["count"]} 
+                    for g in top_groups
+                ],
+                "last_sync": sync_record.get("completed_at").isoformat() if sync_record and sync_record.get("completed_at") else None,
+                "sync_status": sync_record.get("status") if sync_record else "never_synced"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting nomenclature stats: {str(e)}")
+            return {
+                "total_products": 0,
+                "active_products": 0,
+                "total_groups": 0,
+                "error": str(e)
+            }
     
     def _get_rms_client_for_org(self, organization_id: str) -> IikoRmsClient:
         """Get RMS client for specific organization"""
