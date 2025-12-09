@@ -3,7 +3,7 @@
 Разбивает документы на смысловые блоки с перекрытиями и метаданными
 """
 import re
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from pathlib import Path
 
 
@@ -12,7 +12,7 @@ def smart_chunk_text(
     chunk_size: int = 1000,
     chunk_overlap: int = 200,
     min_chunk_size: int = 100
-) -> List[Dict[str, any]]]:
+) -> List[Dict[str, Any]]:
     """
     Умное разбиение текста на чанки с учетом структуры
     
