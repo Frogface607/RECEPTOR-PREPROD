@@ -175,9 +175,24 @@ def index_all_documents(db_collection, force_reindex: bool = False) -> Dict[str,
     
     results = {}
     
-    # Находим все .md файлы
+    # Находим все .md файлы на диске
     md_files = list(KNOWLEDGE_BASE_PATH.glob("*.md"))
+    current_files = {f.name for f in md_files if f.name not in ["README.md", "receptor_master_index.md"]}
     
+    # Очищаем файлы которых больше нет на диске
+    try:
+        indexed_metadata = list(db_collection.find({"type": "metadata"}))
+        indexed_sources = {doc.get("source") for doc in indexed_metadata}
+        
+        # Удаляем из базы файлы которые удалены с диска
+        deleted_files = indexed_sources - current_files
+        for deleted_file in deleted_files:
+            db_collection.delete_many({"source": deleted_file})
+            print(f"🗑️ Removed deleted file from index: {deleted_file}")
+    except Exception as e:
+        print(f"⚠️ Error cleaning old files: {e}")
+    
+    # Индексируем текущие файлы
     for filepath in md_files:
         if filepath.name == "README.md" or filepath.name == "receptor_master_index.md":
             continue  # Пропускаем служебные файлы
