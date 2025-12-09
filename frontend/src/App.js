@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Send, Menu, Plus, ChefHat, FileText, BarChart3, Settings, Database, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
 
 function App() {
   const [messages, setMessages] = useState([
