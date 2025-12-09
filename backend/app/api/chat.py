@@ -207,7 +207,7 @@ async def chat_message(request: ChatRequest):
             mongo_client = MongoClient(settings.mongo_connection_string)
             kb_collection = mongo_client[settings.DB_NAME]["knowledge_base_chunks"]
             
-            results = search_knowledge_base(user_query, top_k=5, db_collection=kb_collection)
+            results = search_knowledge_base(user_query, top_k=7, db_collection=kb_collection)  # Увеличили для лучшего покрытия
             
             mongo_client.close()
         except Exception as e:
