@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, BarChart3, Settings, Database, Loader2, Store, Link2 } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import VenueProfile from './components/VenueProfile';
 import Integrations from './components/Integrations';
@@ -10,15 +10,35 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-produ
 // Временный user_id (потом заменим на авторизацию)
 const USER_ID = 'default_user';
 
+const WELCOME_MESSAGE = {
+  role: 'assistant',
+  content: 'Привет! Я RECEPTOR Copilot. Я знаю всё о ресторанном бизнесе, стандартах HACCP, СанПиН, и интегрирован с вашей системой iiko.\n\nЧем могу помочь сегодня?'
+};
+
 function App() {
-  const [currentPage, setCurrentPage] = useState('chat'); // 'chat' | 'profile' | 'integrations'
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Привет! Я RECEPTOR Copilot. Я знаю всё о ресторанном бизнесе, стандартах HACCP, СанПиН, и интегрирован с вашей системой iiko.\n\nЧем могу помочь сегодня?' }
-  ]);
+  const [currentPage, setCurrentPage] = useState('chat');
+  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Chat history state
+  const [chatHistory, setChatHistory] = useState([]);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Load chat history on mount
+  useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  // Auto-save chat after each message
+  useEffect(() => {
+    if (messages.length > 1 && currentPage === 'chat') {
+      saveCurrentChat();
+    }
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,6 +47,81 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // ============ CHAT HISTORY FUNCTIONS ============
+
+  const loadChatHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/history/chats/${USER_ID}`);
+      setChatHistory(response.data || []);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const saveCurrentChat = async () => {
+    // Don't save if only welcome message
+    if (messages.length <= 1) return;
+    
+    try {
+      if (currentChatId) {
+        // Update existing chat
+        await axios.put(`${API_URL}/history/chat/${currentChatId}`, {
+          messages: messages
+        });
+      } else {
+        // Create new chat
+        const response = await axios.post(`${API_URL}/history/chats`, {
+          user_id: USER_ID,
+          messages: messages
+        });
+        setCurrentChatId(response.data.id);
+        // Refresh history
+        loadChatHistory();
+      }
+    } catch (error) {
+      console.error('Error saving chat:', error);
+    }
+  };
+
+  const loadChat = async (chatId) => {
+    try {
+      const response = await axios.get(`${API_URL}/history/chat/${chatId}`);
+      setMessages(response.data.messages || [WELCOME_MESSAGE]);
+      setCurrentChatId(chatId);
+      setCurrentPage('chat');
+    } catch (error) {
+      console.error('Error loading chat:', error);
+    }
+  };
+
+  const startNewChat = () => {
+    setMessages([WELCOME_MESSAGE]);
+    setCurrentChatId(null);
+    setCurrentPage('chat');
+  };
+
+  const deleteChat = async (chatId, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Удалить этот чат?')) return;
+    
+    try {
+      await axios.delete(`${API_URL}/history/chat/${chatId}`);
+      setChatHistory(prev => prev.filter(c => c.id !== chatId));
+      
+      // If deleted current chat, start new
+      if (chatId === currentChatId) {
+        startNewChat();
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+    }
+  };
+
+  // ============ CHAT FUNCTIONS ============
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,36 +153,58 @@ function App() {
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100 overflow-hidden font-sans">
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-gray-950 border-r border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0`}>
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-gray-950 border-r border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 overflow-hidden`}>
         <div className="p-4 flex items-center gap-2 border-b border-gray-800">
           <ChefHat className="text-emerald-500 w-8 h-8" />
           <span className="font-bold text-xl tracking-tight">RECEPTOR</span>
         </div>
         
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {/* New Chat Button */}
           <button 
-            onClick={() => setCurrentPage('chat')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
-              currentPage === 'chat' 
-                ? 'bg-emerald-600/10 text-emerald-500 border-emerald-600/20' 
-                : 'text-gray-400 border-transparent hover:bg-gray-800 hover:text-white'
-            }`}
+            onClick={startNewChat}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium border bg-emerald-600/10 text-emerald-500 border-emerald-600/20 hover:bg-emerald-600/20"
           >
             <Plus size={16} />
             Новый чат
           </button>
           
-          <div className="mt-6 text-xs font-semibold text-gray-500 uppercase tracking-wider px-2">История</div>
-          {/* Mock History */}
+          {/* Chat History */}
+          <div className="mt-6 text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 flex items-center justify-between">
+            <span>История</span>
+            {historyLoading && <Loader2 size={12} className="animate-spin" />}
+          </div>
+          
           <div className="space-y-1 mt-2">
-            {['Техкарта Борщ', 'Анализ выручки', 'HACCP нормы'].map((item, i) => (
-              <button key={i} className="w-full text-left px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors truncate">
-                {item}
+            {chatHistory.length === 0 && !historyLoading && (
+              <p className="text-gray-600 text-xs px-3 py-2">Нет сохранённых чатов</p>
+            )}
+            {chatHistory.map((chat) => (
+              <button 
+                key={chat.id}
+                onClick={() => loadChat(chat.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors truncate flex items-center justify-between group ${
+                  chat.id === currentChatId 
+                    ? 'bg-gray-800 text-white' 
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate flex-1">
+                  <MessageSquare size={14} className="flex-shrink-0" />
+                  <span className="truncate">{chat.title}</span>
+                </div>
+                <button
+                  onClick={(e) => deleteChat(chat.id, e)}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition-all"
+                >
+                  <Trash2 size={12} className="text-gray-500 hover:text-red-400" />
+                </button>
               </button>
             ))}
           </div>
         </div>
 
+        {/* Bottom Navigation */}
         <div className="p-4 border-t border-gray-800 space-y-1">
           <button 
             onClick={() => setCurrentPage('profile')}
