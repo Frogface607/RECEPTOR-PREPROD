@@ -199,12 +199,31 @@ async def chat_message(request: ChatRequest):
         context += f"\n\n{venue_context}\n"
     
     if intent == "knowledge_base":
-        print(f"🔍 Searching Knowledge Base for: {user_query}")
-        results = search_knowledge_base(user_query, top_k=3)
+        logger.info(f"🔍 Searching Knowledge Base for: {user_query}")
+        
+        # Подключаем коллекцию с проиндексированными чанками
+        try:
+            from pymongo import MongoClient
+            mongo_client = MongoClient(settings.mongo_connection_string)
+            kb_collection = mongo_client[settings.DB_NAME]["knowledge_base_chunks"]
+            
+            results = search_knowledge_base(user_query, top_k=5, db_collection=kb_collection)
+            
+            mongo_client.close()
+        except Exception as e:
+            logger.error(f"MongoDB error, using fallback search: {e}")
+            results = search_knowledge_base(user_query, top_k=5)  # Fallback без эмбеддингов
+        
         if results:
             context += "\n\nРЕЛЕВАНТНАЯ ИНФОРМАЦИЯ ИЗ БАЗЫ ЗНАНИЙ:\n"
             for res in results:
-                context += f"- {res['content'][:500]}...\n"
+                source = res.get('source', 'unknown')
+                score = res.get('score', 0)
+                content = res.get('content', '')[:1000]  # Увеличили до 1000 символов
+                context += f"\n[Источник: {source}, релевантность: {score:.2f}]\n{content}\n---\n"
+            logger.info(f"✅ Found {len(results)} relevant chunks from knowledge base")
+        else:
+            logger.warning(f"⚠️ No results from knowledge base for: {user_query}")
                 
     elif intent == "iiko_analytics":
         logger.info(f"📊 Querying iiko for: {user_query}")
@@ -392,36 +411,47 @@ def detect_intent(query: str) -> str:
     """Определение намерения пользователя"""
     query_lower = query.lower()
     
+    # СНАЧАЛА проверяем технические вопросы про API/документацию
+    # Это приоритетнее чем живые данные iiko
+    api_doc_keywords = ["api", "endpoint", "olap", "техкарт", "технологическ", 
+                        "rest api", "метод", "запрос", "авторизац", "токен",
+                        "номенклатур", "справочник", "документац", "интеграц",
+                        "как получить", "как использ", "можешь делать"]
+    if any(w in query_lower for w in api_doc_keywords):
+        return "knowledge_base"
+    
     # База знаний (HACCP, СанПиН, HR и т.д.)
     kb_keywords = ["haccp", "санпин", "норм", "правил", "закон", "hr", "найм", "зарплат", 
-                   "маркетинг", "smm", "гигиен", "требован", "сертифик", "лицен"]
+                   "маркетинг", "smm", "гигиен", "требован", "сертифик", "лицен",
+                   "фудкост расчет", "рентабельн", "roi", "кбжу", "калор"]
     if any(w in query_lower for w in kb_keywords):
         return "knowledge_base"
     
-    # Категории/группы в iiko
+    # Категории/группы в iiko (живые данные)
     category_keywords = ["категори", "группы", "группа", "раздел", "все пив", "все бургер", 
                         "все напитк", "меню", "ассортимент", "покажи все"]
     if any(w in query_lower for w in category_keywords):
         return "iiko_categories"
     
-    # Статистика номенклатуры
+    # Статистика номенклатуры (живые данные)
     stats_keywords = ["сколько позиций", "сколько товар", "статистик", "сколько продукт",
                      "сколько в номенклатуре", "топ групп", "топ категор"]
     if any(w in query_lower for w in stats_keywords):
         return "iiko_stats"
     
-    # Поиск продуктов в iiko
+    # Поиск продуктов в iiko (живые данные)
     search_keywords = ["найди", "поищи", "есть ли", "ингредиент", "продукт", 
                       "сколько стоит", "какая цена", "артикул", "покажи"]
     if any(w in query_lower for w in search_keywords):
         return "iiko_products"
     
-    # iiko общая аналитика
-    iiko_keywords = ["выручк", "продаж", "фудкост", "iiko", "айко", "отчет", "аналитик", "синхрониз"]
+    # iiko общая аналитика (живые данные)
+    iiko_keywords = ["выручк", "продаж", "iiko", "айко", "отчет", "аналитик", "синхрониз"]
     if any(w in query_lower for w in iiko_keywords):
         return "iiko_analytics"
     
-    return "general"
+    # По умолчанию — ищем в базе знаний
+    return "knowledge_base"
 
 
 def extract_category_name(query: str) -> Optional[str]:
