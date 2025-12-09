@@ -211,7 +211,7 @@ class IikoRmsClient:
             logger.info("No organizations found, creating default organization")
             return [{
                 'id': 'default',
-                'name': 'Edison Craft Bar',
+                'name': 'Моё заведение',
                 'address': 'Default Location',
                 'active': True
             }]
