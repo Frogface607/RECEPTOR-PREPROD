@@ -200,6 +200,7 @@ async def chat_message(request: ChatRequest):
     
     if intent == "knowledge_base":
         logger.info(f"🔍 Searching Knowledge Base for: {user_query}")
+        results = []
         
         # Подключаем коллекцию с проиндексированными чанками
         try:
@@ -207,12 +208,23 @@ async def chat_message(request: ChatRequest):
             mongo_client = MongoClient(settings.mongo_connection_string)
             kb_collection = mongo_client[settings.DB_NAME]["knowledge_base_chunks"]
             
-            results = search_knowledge_base(user_query, top_k=7, db_collection=kb_collection)  # Увеличили для лучшего покрытия
+            # Диагностика
+            total_chunks = kb_collection.count_documents({"indexed": True, "type": {"$ne": "metadata"}})
+            logger.info(f"📊 Total indexed chunks in DB: {total_chunks}")
+            
+            # Пробуем векторный поиск
+            results = search_knowledge_base(user_query, top_k=7, db_collection=kb_collection)
+            logger.info(f"📊 Vector search returned {len(results)} results")
             
             mongo_client.close()
         except Exception as e:
-            logger.error(f"MongoDB error, using fallback search: {e}")
-            results = search_knowledge_base(user_query, top_k=5)  # Fallback без эмбеддингов
+            logger.error(f"MongoDB error: {e}", exc_info=True)
+        
+        # Если векторный поиск не дал результатов - используем текстовый fallback
+        if not results:
+            logger.warning("⚠️ No results from vector search, trying text fallback")
+            results = search_knowledge_base(user_query, top_k=7, db_collection=None)
+            logger.info(f"📊 Text fallback returned {len(results)} results")
         
         if results:
             context += "\n\n### РЕЛЕВАНТНАЯ ИНФОРМАЦИЯ ИЗ БАЗЫ ЗНАНИЙ ###\n"
