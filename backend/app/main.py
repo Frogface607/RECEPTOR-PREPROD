@@ -83,6 +83,13 @@ async def get_index_status():
         # Считаем чанки
         total_chunks = collection.count_documents({"indexed": True, "type": {"$ne": "metadata"}})
         
+        # Считаем чанки с эмбеддингами
+        chunks_with_embeddings = collection.count_documents({
+            "indexed": True, 
+            "type": {"$ne": "metadata"},
+            "embedding": {"$ne": None, "$exists": True, "$not": {"$size": 0}}
+        })
+        
         # Получаем метаданные по файлам
         metadata_docs = list(collection.find({"type": "metadata"}))
         
@@ -95,11 +102,20 @@ async def get_index_status():
                 "indexed_at": doc.get("indexed_at")
             })
         
+        # Пример чанка для диагностики
+        sample_chunk = collection.find_one({"indexed": True, "type": {"$ne": "metadata"}})
+        has_embedding_sample = sample_chunk and sample_chunk.get("embedding") is not None if sample_chunk else False
+        embedding_length = len(sample_chunk.get("embedding", [])) if sample_chunk and sample_chunk.get("embedding") else 0
+        
         client.close()
         
         return {
             "status": "ok",
             "total_chunks": total_chunks,
+            "chunks_with_embeddings": chunks_with_embeddings,
+            "embedding_coverage": f"{chunks_with_embeddings}/{total_chunks}",
+            "sample_has_embedding": has_embedding_sample,
+            "sample_embedding_length": embedding_length,
             "files_count": len(files_info),
             "files": files_info
         }
