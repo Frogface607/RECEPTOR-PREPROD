@@ -41,7 +41,7 @@ def search_knowledge_base(
         return []
     
     # Если есть MongoDB коллекция и векторный поиск включен, используем его
-    if db_collection and use_vector_search:
+    if db_collection is not None and use_vector_search:
         try:
             # Получаем проиндексированные чанки
             indexed_chunks = get_indexed_chunks(db_collection, categories=categories)

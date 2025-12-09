@@ -357,7 +357,7 @@ async def get_all_iiko_status(user_id: str):
     try:
         # Get Cloud status
         collection = db.get_collection("iiko_cloud_credentials")
-        cloud_credentials = collection.find_one({"user_id": user_id}) if collection else None  # Sync PyMongo
+        cloud_credentials = collection.find_one({"user_id": user_id}) if collection is not None else None  # Sync PyMongo
         
         cloud_status = {
             "connected": cloud_credentials is not None and cloud_credentials.get("status") == "connected",
