@@ -21,10 +21,10 @@ MODEL_CONFIG = {
         "cost_per_1k_output": 0.01,
     },
     "advanced": {
-        "model": "gpt-5.1-mini",
+        "model": "gpt-4o",  # gpt-5.1-mini не существует, используем gpt-4o
         "description": "Техкарты, анализ, генерация контента",
-        "cost_per_1k_input": 0.003,
-        "cost_per_1k_output": 0.012,
+        "cost_per_1k_input": 0.0025,
+        "cost_per_1k_output": 0.01,
     },
     "reasoning": {
         "model": "o3-mini",
@@ -33,10 +33,10 @@ MODEL_CONFIG = {
         "cost_per_1k_output": 0.04,
     },
     "expert": {
-        "model": "gpt-5.1",
+        "model": "gpt-4o",  # gpt-5.1 может быть недоступен, используем gpt-4o
         "description": "Максимум интеллекта, сложные цепочки",
-        "cost_per_1k_input": 0.015,
-        "cost_per_1k_output": 0.06,
+        "cost_per_1k_input": 0.0025,
+        "cost_per_1k_output": 0.01,
     }
 }
 
