@@ -14,8 +14,11 @@ class Settings(BaseSettings):
     MONGO_URL: Optional[str] = None
     DB_NAME: str = "receptor_copilot"
     
-    # OpenAI
+    # OpenAI (fallback)
     OPENAI_API_KEY: Optional[str] = None
+    
+    # OpenRouter (primary) - агрегатор лучших моделей
+    OPENROUTER_API_KEY: Optional[str] = None
     
     # Security
     JWT_SECRET_KEY: str = "dev_secret_key_change_me"

@@ -139,24 +139,24 @@ async def analyze_research(
         # Используем reasoning model для глубокого анализа
         logger.info(f"🧠 Calling o3-mini for reasoning analysis...")
         
-        # Пробуем o3-mini, если не получается - fallback на gpt-4o
+        # Используем reasoning для глубокого анализа
         try:
             response, usage = await llm_client.chat_completion(
                 messages=[
                     {"role": "system", "content": "Ты бизнес-аналитик ресторанного рынка. Анализируешь данные и создаёшь структурированные досье."},
                     {"role": "user", "content": prompt}
                 ],
-                model="o3-mini",  # Reasoning для глубокого анализа
+                complexity="reasoning",  # Используем reasoning модели (o3-mini через OpenRouter)
                 auto_route=False
             )
         except Exception as model_error:
-            logger.warning(f"⚠️ o3-mini unavailable, using gpt-4o: {model_error}")
+            logger.warning(f"⚠️ Reasoning model unavailable, using advanced: {model_error}")
             response, usage = await llm_client.chat_completion(
                 messages=[
                     {"role": "system", "content": "Ты бизнес-аналитик ресторанного рынка. Анализируешь данные и создаёшь структурированные досье."},
                     {"role": "user", "content": prompt}
                 ],
-                model="gpt-4o",
+                complexity="advanced",  # Fallback на Claude 3.5 Sonnet
                 auto_route=False
             )
         

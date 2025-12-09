@@ -4,7 +4,7 @@ Chat API для RECEPTOR CO-PILOT
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
-from app.services.llm.client import OpenAIClient
+from app.services.llm.unified_client import UnifiedLLMClient
 from app.services.rag.search import search_knowledge_base
 from app.services.iiko.iiko_rms_service import get_iiko_rms_service
 from app.services.web_search import web_search, format_search_results_for_context, should_use_web_search
@@ -432,7 +432,10 @@ async def chat_message(request: ChatRequest):
 
     # Call LLM
     try:
-        client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
+        client = UnifiedLLMClient(
+            openrouter_key=settings.OPENROUTER_API_KEY,
+            openai_key=settings.OPENAI_API_KEY
+        )
         
         from datetime import datetime
         current_date = datetime.now().strftime("%d %B %Y")

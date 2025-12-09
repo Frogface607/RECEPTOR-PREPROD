@@ -166,13 +166,16 @@ async def run_deep_research_task(venue_name: str, city: str, user_id: str):
     try:
         from app.services.venue_research import conduct_deep_research
         from app.services.web_search import web_search
-        from app.services.llm.client import OpenAIClient
+        from app.services.llm.unified_client import UnifiedLLMClient
         from app.core.config import settings
         
         logger.info(f"🔬 Running deep research for {venue_name} (user: {user_id})...")
         
-        # Создаём клиентов
-        llm_client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
+        # Создаём клиентов (OpenRouter приоритет, OpenAI fallback)
+        llm_client = UnifiedLLMClient(
+            openrouter_key=settings.OPENROUTER_API_KEY,
+            openai_key=settings.OPENAI_API_KEY
+        )
         
         # Проводим исследование
         dossier = await conduct_deep_research(
