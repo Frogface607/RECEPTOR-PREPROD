@@ -189,14 +189,19 @@ async def chat_message(request: ChatRequest):
     venue_profile = get_venue_profile(user_id)
     venue_research = get_venue_research(user_id)
     
+    logger.info(f"👤 User: {user_id}, Profile: {venue_profile is not None}, Research: {venue_research is not None}")
+    
     venue_context = build_venue_context(venue_profile)
     
     # Добавляем результаты deep research если есть
     if venue_research:
+        logger.info(f"📊 Found research data for {venue_research.get('venue_name')}: {len(venue_research.get('strengths', []))} strengths, {len(venue_research.get('weaknesses', []))} weaknesses")
         from app.services.venue_research import format_dossier_for_context
         research_context = format_dossier_for_context(venue_research)
         venue_context += research_context
-        logger.info(f"📊 Added deep research context for venue: {venue_research.get('venue_name')}")
+        logger.info(f"✅ Added {len(research_context)} chars of research context")
+    else:
+        logger.warning(f"⚠️ No research data found for user {user_id}")
     
     # Simple Intent Detection
     intent = detect_intent(user_query)
