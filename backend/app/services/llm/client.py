@@ -23,13 +23,19 @@ MODEL_CONFIG = {
     "advanced": {
         "model": "gpt-5.1-mini",
         "description": "Техкарты, анализ, генерация контента",
-        "cost_per_1k_input": 0.003,  # Предполагаемая цена
+        "cost_per_1k_input": 0.003,
         "cost_per_1k_output": 0.012,
+    },
+    "reasoning": {
+        "model": "o3-mini",
+        "description": "Глубокий анализ, стратегия, бизнес-модели",
+        "cost_per_1k_input": 0.01,
+        "cost_per_1k_output": 0.04,
     },
     "expert": {
         "model": "gpt-5.1",
-        "description": "Стратегия, deep analysis, сложные цепочки",
-        "cost_per_1k_input": 0.015,  # Предполагаемая цена
+        "description": "Максимум интеллекта, сложные цепочки",
+        "cost_per_1k_input": 0.015,
         "cost_per_1k_output": 0.06,
     }
 }
@@ -39,20 +45,24 @@ def classify_query_complexity(query: str, context_length: int = 0) -> str:
     """
     Классифицирует сложность запроса для выбора модели.
     
-    Returns: 'simple', 'standard', 'advanced', 'expert'
+    Returns: 'simple', 'standard', 'advanced', 'reasoning', 'expert'
     """
     query_lower = query.lower()
     
-    # EXPERT: стратегические/аналитические запросы
-    expert_patterns = [
-        r'стратеги[яю]', r'бизнес.?план', r'анализ.*рынк', r'конкурент.*анализ',
-        r'оптимизац.*бизнес', r'финансов.*модел', r'roi', r'unit.?экономик',
-        r'масштабирован', r'инвестиц', r'due.?diligence', r'глубок.*анализ'
+    # REASONING: глубокий анализ, требует рассуждений
+    reasoning_patterns = [
+        r'стратеги[яю]', r'бизнес.?план', r'финансов.*модел', 
+        r'анализ.*рынк', r'конкурент.*анализ', r'глубок.*анализ',
+        r'проанализируй', r'разбери.*детально', r'найди.*слаб.*мест',
+        r'оптимизац.*бизнес', r'точка.*безубыточ', r'roi.*расчет',
+        r'проблем.*реш', r'причин.*анализ', r'что.*не.*так',
+        r'открыт.*заведен', r'запуск.*бизнес', r'концепц.*разработ',
+        r'масштабирован', r'инвестиц.*обоснован', r'unit.?экономик'
     ]
-    if any(re.search(p, query_lower) for p in expert_patterns):
-        return "expert"
+    if any(re.search(p, query_lower) for p in reasoning_patterns):
+        return "reasoning"
     
-    # ADVANCED: техкарты, детальная генерация
+    # ADVANCED: техкарты, детальная генерация (без глубокого анализа)
     advanced_patterns = [
         r'техкарт[ау|у]', r'технологическ.*карт', r'калькуляц', r'себестоимость',
         r'рецепт.*подробн', r'пошагов.*инструкц', r'меню.*разработ',
