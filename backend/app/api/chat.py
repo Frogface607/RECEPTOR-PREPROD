@@ -528,25 +528,45 @@ def extract_suggestions(content: str) -> List[str]:
     import re
     suggestions = []
     
-    # Ищем блок [SUGGESTIONS]...[/SUGGESTIONS]
-    pattern = r'\[SUGGESTIONS\](.*?)\[/SUGGESTIONS\]'
-    match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
+    # Вариант 1: Ищем блок [SUGGESTIONS]...[/SUGGESTIONS]
+    pattern1 = r'\[SUGGESTIONS\](.*?)\[/SUGGESTIONS\]'
+    match = re.search(pattern1, content, re.DOTALL | re.IGNORECASE)
     
     if match:
         suggestions_text = match.group(1).strip()
-        # Разбиваем на строки и извлекаем предложения
-        lines = suggestions_text.split('\n')
-        for line in lines:
-            line = line.strip()
-            # Пропускаем пустые строки и нумерацию
-            if not line:
-                continue
-            # Убираем нумерацию (1., 2., и т.д.)
-            line = re.sub(r'^\d+[\.\)]\s*', '', line)
-            # Убираем дефисы и маркеры списка
-            line = re.sub(r'^[-•*]\s*', '', line)
-            if line and len(line) > 3:  # Минимум 3 символа
-                suggestions.append(line)
+    else:
+        # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами
+        pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я]|$)'
+        match = re.search(pattern2, content, re.DOTALL | re.IGNORECASE | re.MULTILINE)
+        if match:
+            suggestions_text = match.group(1).strip()
+        else:
+            # Вариант 3: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк
+            pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:.*\n){0,5})'
+            match = re.search(pattern3, content, re.IGNORECASE | re.MULTILINE)
+            if match:
+                suggestions_text = match.group(1).strip()
+            else:
+                return []
+    
+    # Разбиваем на строки и извлекаем предложения
+    lines = suggestions_text.split('\n')
+    for line in lines:
+        line = line.strip()
+        # Пропускаем пустые строки
+        if not line:
+            continue
+        # Пропускаем заголовки типа "SUGGESTIONS"
+        if line.upper() in ['SUGGESTIONS', 'СЛЕДУЮЩИЕ ШАГИ', 'РЕКОМЕНДАЦИИ']:
+            continue
+        # Убираем нумерацию (1., 2., и т.д.)
+        line = re.sub(r'^\d+[\.\)]\s*', '', line)
+        # Убираем дефисы и маркеры списка
+        line = re.sub(r'^[-•*]\s*', '', line)
+        # Убираем знаки вопроса в конце (они будут добавлены при необходимости)
+        line = re.sub(r'\?+\s*$', '', line)
+        if line and len(line) > 3:  # Минимум 3 символа
+            suggestions.append(line)
     
     # Ограничиваем до 3 предложений
     return suggestions[:3]
@@ -555,10 +575,23 @@ def extract_suggestions(content: str) -> List[str]:
 def remove_suggestions_from_content(content: str) -> str:
     """Удаляет блок предложений из контента ответа"""
     import re
-    # Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS]
-    pattern = r'\[SUGGESTIONS\].*?\[/SUGGESTIONS\]'
-    clean_content = re.sub(pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
-    return clean_content.strip()
+    
+    # Вариант 1: Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS]
+    pattern1 = r'\[SUGGESTIONS\].*?\[/SUGGESTIONS\]'
+    content = re.sub(pattern1, '', content, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Вариант 2: Удаляем блок SUGGESTIONS с последующими пунктами (до следующего параграфа или конца)
+    pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n.*?(?=\n\n|\n[A-ZА-Я]|$)'
+    content = re.sub(pattern2, '', content, flags=re.DOTALL | re.IGNORECASE | re.MULTILINE)
+    
+    # Вариант 3: Удаляем просто "SUGGESTIONS" и следующие 3-5 строк с нумерацией
+    pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(?:\s*\d+[\.\)]\s*.*\n){0,5}'
+    content = re.sub(pattern3, '', content, flags=re.IGNORECASE | re.MULTILINE)
+    
+    # Убираем лишние пустые строки в конце
+    content = re.sub(r'\n{3,}', '\n\n', content)
+    
+    return content.strip()
 
 
 def detect_intent(query: str) -> str:
