@@ -97,20 +97,32 @@ def get_iiko_connection_status(user_id: str) -> Dict[str, Any]:
         return {"status": "error", "error": str(e)}
 
 
-def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10) -> List[Dict[str, Any]]:
-    """Поиск продуктов в номенклатуре iiko с улучшенной точностью"""
+def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10, iiko_type: str = "rms") -> List[Dict[str, Any]]:
+    """Поиск продуктов в номенклатуре iiko (RMS или Cloud) с улучшенной точностью"""
     try:
-        rms_service = get_iiko_rms_service()
-        if rms_service is None:
-            logger.warning("iiko RMS service not initialized")
+        if iiko_type == "cloud":
+            # Используем Cloud API
+            from app.services.iiko.iiko_client import IikoClient
+            from app.core.database import db
+            
+            # Получаем API ключ из контекста (должен быть передан)
+            # Для Cloud API нужно получать номенклатуру и искать в ней
+            logger.info(f"Searching in iikoCloud for: {query}")
+            # TODO: Реализовать поиск через Cloud API
             return []
-        results = rms_service.search_rms_products_enhanced(
-            organization_id=organization_id,
-            query=query,
-            limit=limit,
-            min_score=0.75  # Повышенный порог для точности
-        )
-        return results
+        else:
+            # Используем RMS
+            rms_service = get_iiko_rms_service()
+            if rms_service is None:
+                logger.warning("iiko RMS service not initialized")
+                return []
+            results = rms_service.search_rms_products_enhanced(
+                organization_id=organization_id,
+                query=query,
+                limit=limit,
+                min_score=0.75  # Повышенный порог для точности
+            )
+            return results
     except Exception as e:
         logger.error(f"Error searching iiko products: {e}", exc_info=True)
         return []
@@ -310,31 +322,66 @@ async def chat_message(request: ChatRequest):
     elif intent == "iiko_analytics":
         logger.info(f"📊 Querying iiko for: {user_query}")
         
-        # Проверяем подключение iiko
+        # Проверяем подключение iiko (Cloud или RMS)
         iiko_status = get_iiko_connection_status(user_id)
+        iiko_type = iiko_status.get("type", "rms")
         
         if iiko_status.get("status") in ["connected", "restored"]:
             org_id = iiko_status.get("organization_id", "default")
+            org_name = iiko_status.get("organization_name", "Организация")
             
-            # Получаем сводку по номенклатуре
-            summary = get_iiko_nomenclature_stats(org_id)
-            context += f"\n\nСТАТУС IIKO:\n"
-            context += f"- Подключено к: {iiko_status.get('organization_name', 'Организация')}\n"
-            context += f"- Продуктов в базе: {summary.get('total_products', 0)}\n"
-            context += f"- Групп: {summary.get('total_groups', 0)}\n"
+            context += f"\n\nСТАТУС IIKO ({iiko_type.upper()}):\n"
+            context += f"- Подключено к: {org_name}\n"
+            context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server'}\n"
             
-            # Если есть поисковый запрос - ищем продукты
-            search_terms = extract_search_terms(user_query)
-            if search_terms:
-                for term in search_terms:
-                    products = search_iiko_products(term, org_id, limit=5)
-                    if products:
-                        context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
-                        for p in products:
-                            price_info = f", цена: {p.get('price_per_unit', 0):.2f} руб/{p.get('unit', 'ед')}" if p.get('price_per_unit') else ""
-                            context += f"- {p['name']} (артикул: {p.get('article', 'н/д')}{price_info})\n"
-                    else:
-                        context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
+            if iiko_type == "cloud":
+                # Для Cloud API получаем номенклатуру через API
+                try:
+                    from app.services.iiko.iiko_client import IikoClient
+                    api_key = iiko_status.get("api_key")
+                    if api_key:
+                        client = IikoClient(api_login=api_key)
+                        nomenclature = client.fetch_nomenclature(org_id)
+                        products_count = len(nomenclature.get("products", []))
+                        groups_count = len(nomenclature.get("groups", []))
+                        context += f"- Продуктов в базе: {products_count}\n"
+                        context += f"- Групп: {groups_count}\n"
+                        
+                        # Поиск продуктов
+                        search_terms = extract_search_terms(user_query)
+                        if search_terms:
+                            all_products = nomenclature.get("products", [])
+                            for term in search_terms:
+                                found = [p for p in all_products if term.lower() in p.get("name", "").lower()][:5]
+                                if found:
+                                    context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
+                                    for p in found:
+                                        price = p.get("size_prices", [{}])[0].get("price", 0) if p.get("size_prices") else 0
+                                        price_info = f", цена: {price:.2f} руб" if price else ""
+                                        context += f"- {p.get('name', 'н/д')}{price_info}\n"
+                                else:
+                                    context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
+                except Exception as e:
+                    logger.error(f"Error fetching Cloud nomenclature: {e}", exc_info=True)
+                    context += f"\n\nОшибка получения данных из iikoCloud: {str(e)}\n"
+            else:
+                # Для RMS используем существующую логику
+                summary = get_iiko_nomenclature_stats(org_id)
+                context += f"- Продуктов в базе: {summary.get('total_products', 0)}\n"
+                context += f"- Групп: {summary.get('total_groups', 0)}\n"
+                
+                # Если есть поисковый запрос - ищем продукты
+                search_terms = extract_search_terms(user_query)
+                if search_terms:
+                    for term in search_terms:
+                        products = search_iiko_products(term, org_id, limit=5, iiko_type="rms")
+                        if products:
+                            context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
+                            for p in products:
+                                price_info = f", цена: {p.get('price_per_unit', 0):.2f} руб/{p.get('unit', 'ед')}" if p.get('price_per_unit') else ""
+                                context += f"- {p['name']} (артикул: {p.get('article', 'н/д')}{price_info})\n"
+                        else:
+                            context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
         else:
             context += "\n\nIIKO: Не подключено. Попросите пользователя подключить iiko в разделе 'Интеграции'.\n"
     
@@ -693,10 +740,15 @@ def remove_suggestions_from_content(content: str) -> str:
     original_content = content
     
     # Вариант 1: Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS] (самый надежный)
+    # Используем более жадный паттерн, который захватывает всё до закрывающего тега
     pattern1 = r'\[SUGGESTIONS\].*?\[/SUGGESTIONS\]'
     content = re.sub(pattern1, '', content, flags=re.DOTALL | re.IGNORECASE)
     
-    # Вариант 2: Удаляем блок SUGGESTIONS с последующими пунктами
+    # Вариант 1.5: Удаляем экранированные скобки \[SUGGESTIONS\]...\[/SUGGESTIONS\]
+    pattern1_escaped = r'\\?\[SUGGESTIONS\\?\].*?\\?\[/SUGGESTIONS\\?\]'
+    content = re.sub(pattern1_escaped, '', content, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Вариант 2: Удаляем блок SUGGESTIONS с последующими пунктами (до конца или до следующего заголовка)
     pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n.*?(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
     content = re.sub(pattern2, '', content, flags=re.DOTALL | re.IGNORECASE | re.MULTILINE)
     
@@ -708,18 +760,31 @@ def remove_suggestions_from_content(content: str) -> str:
     pattern4 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(?:\s*\d+[\.\)]\s*.*\n?){1,5}'
     content = re.sub(pattern4, '', content, flags=re.IGNORECASE | re.MULTILINE)
     
+    # Вариант 5: Удаляем если остались строки с нумерацией после ключевых слов
+    # Это для случаев, когда LLM забыл закрывающий тег
+    if '[SUGGESTIONS]' in content.upper() or 'SUGGESTIONS' in content.upper():
+        # Ищем от [SUGGESTIONS] до конца или до следующего параграфа
+        pattern5 = r'(?:^|\n)\s*\\?\[?SUGGESTIONS\\?\]?\s*\n.*'
+        content = re.sub(pattern5, '', content, flags=re.DOTALL | re.IGNORECASE | re.MULTILINE)
+    
     # Убираем лишние пустые строки в конце
     content = re.sub(r'\n{3,}', '\n\n', content)
     # Убираем пустые строки в самом конце
-    content = re.sub(r'\n+$', '\n', content)
+    content = re.sub(r'\n+$', '', content)
+    # Убираем пробелы в конце
+    content = content.rstrip()
     
     removed_chars = original_length - len(content)
     if removed_chars > 0:
-        logger.debug(f"✅ Removed {removed_chars} chars of suggestions from content")
+        logger.info(f"✅ Removed {removed_chars} chars of suggestions from content")
     elif '[SUGGESTIONS]' in original_content.upper() or 'SUGGESTIONS' in original_content.upper():
-        logger.warning(f"⚠️ SUGGESTIONS found but not removed. Content length: {len(content)}")
+        logger.warning(f"⚠️ SUGGESTIONS found but not removed. Trying fallback...")
+        # Финальная попытка - просто удаляем всё после [SUGGESTIONS]
+        content = re.sub(r'\[SUGGESTIONS\].*$', '', content, flags=re.DOTALL | re.IGNORECASE)
+        content = content.rstrip()
+        logger.info(f"✅ Fallback removal applied. New length: {len(content)}")
     
-    return content.strip()
+    return content
 
 
 def detect_intent(query: str) -> str:
