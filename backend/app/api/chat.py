@@ -338,8 +338,24 @@ async def chat_message(request: ChatRequest):
         else:
             logger.warning(f"⚠️ No results from knowledge base for: {user_query}")
                 
-    elif intent == "iiko_analytics":
+    elif intent == "iiko_analytics" or intent == "iiko_products":
         logger.info(f"📊 Querying iiko for: {user_query}")
+        
+        # Добавляем инструкции по работе с iiko из документации
+        context += """
+═══════════════════════════════════════════════════════════════
+📚 ИНСТРУКЦИИ ПО РАБОТЕ С IIKO:
+═══════════════════════════════════════════════════════════════
+1. iikoCloud API предоставляет доступ к номенклатуре через метод fetch_nomenclature(organization_id)
+2. Номенклатура содержит:
+   - products: список продуктов с полями id, name, description, size_prices, group_id, tags
+   - groups: список групп/категорий с полями id, name, parent_group
+3. Для поиска продуктов используй поиск по полю "name" (регистронезависимо)
+4. Цены находятся в size_prices[0].price
+5. Если продуктов нет в базе - это нормально, возможно они еще не добавлены
+6. Всегда проверяй реальные данные из номенклатуры, не выдумывай!
+═══════════════════════════════════════════════════════════════
+"""
         
         # Проверяем подключение iiko (Cloud или RMS)
         iiko_status = get_iiko_connection_status(user_id)
@@ -352,6 +368,7 @@ async def chat_message(request: ChatRequest):
             context += f"\n\nСТАТУС IIKO ({iiko_type.upper()}):\n"
             context += f"- Подключено к: {org_name}\n"
             context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server'}\n"
+            context += f"- Organization ID: {org_id}\n"
             
             if iiko_type == "cloud":
                 # Для Cloud API сначала пытаемся использовать синхронизированные данные
@@ -704,10 +721,32 @@ async def chat_message(request: ChatRequest):
         if suggestions:
             logger.info(f"💡 Extracted {len(suggestions)} suggestions: {suggestions}")
         else:
-            logger.debug(f"⚠️ No suggestions found in response. Response length: {len(response)}")
             # Проверяем, есть ли вообще блок SUGGESTIONS в ответе
             if '[SUGGESTIONS]' in response.upper() or 'SUGGESTIONS' in response.upper():
-                logger.warning(f"⚠️ SUGGESTIONS keyword found but not parsed. Response snippet: {response[-500:]}")
+                logger.warning(f"⚠️ SUGGESTIONS keyword found but not parsed. Trying fallback extraction...")
+                # Попытка извлечь вручную из конца ответа
+                lines = response.split('\n')
+                suggestions_start = -1
+                for i, line in enumerate(lines):
+                    if '[SUGGESTIONS]' in line.upper() or (i > 0 and 'SUGGESTIONS' in line.upper() and lines[i-1].strip() == ''):
+                        suggestions_start = i + 1
+                        break
+                
+                if suggestions_start > 0:
+                    # Извлекаем следующие строки с нумерацией
+                    fallback_suggestions = []
+                    for line in lines[suggestions_start:suggestions_start+5]:
+                        line = line.strip()
+                        if line and (line[0].isdigit() or line.startswith('-') or line.startswith('•')):
+                            # Убираем нумерацию
+                            line = re.sub(r'^\d+[\.\)]\s*', '', line)
+                            line = re.sub(r'^[-•*]\s*', '', line)
+                            if line and len(line) > 3:
+                                fallback_suggestions.append(line)
+                    
+                    if fallback_suggestions:
+                        suggestions = fallback_suggestions[:3]
+                        logger.info(f"✅ Fallback extraction successful: {suggestions}")
         
         return {
             "role": "assistant", 
@@ -734,29 +773,35 @@ def extract_suggestions(content: str) -> List[str]:
     
     if match:
         suggestions_text = match.group(1).strip()
-        logger.debug("✅ Found suggestions with [SUGGESTIONS] tags")
+        logger.info("✅ Found suggestions with [SUGGESTIONS]...[/SUGGESTIONS] tags")
     else:
-        # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами
-        # Более гибкий паттерн - ищем до конца строки или до следующего заголовка
-        pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
-        match = re.search(pattern2, content, re.DOTALL | re.IGNORECASE | re.MULTILINE)
+        # Вариант 1.5: Ищем [SUGGESTIONS] без закрывающего тега (LLM забыл закрыть)
+        pattern1_5 = r'\[SUGGESTIONS\](.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
+        match = re.search(pattern1_5, content, re.DOTALL | re.IGNORECASE | re.MULTILINE)
         if match:
             suggestions_text = match.group(1).strip()
-            logger.debug("✅ Found suggestions without brackets")
+            logger.info("✅ Found suggestions with [SUGGESTIONS] (no closing tag)")
         else:
-            # Вариант 3: Ищем "Следующие шаги" на русском
-            pattern3 = r'(?:^|\n)\s*[Сс]ледующие\s+шаги[:\s]*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
-            match = re.search(pattern3, content, re.DOTALL | re.MULTILINE)
+            # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами
+            pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
+            match = re.search(pattern2, content, re.DOTALL | re.IGNORECASE | re.MULTILINE)
             if match:
                 suggestions_text = match.group(1).strip()
-                logger.debug("✅ Found suggestions with 'Следующие шаги'")
+                logger.info("✅ Found suggestions without brackets")
             else:
-                # Вариант 4: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк с нумерацией
-                pattern4 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:\s*\d+[\.\)]\s*.*\n?){1,5})'
-                match = re.search(pattern4, content, re.IGNORECASE | re.MULTILINE)
+                # Вариант 3: Ищем "Следующие шаги" на русском
+                pattern3 = r'(?:^|\n)\s*[Сс]ледующие\s+шаги[:\s]*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
+                match = re.search(pattern3, content, re.DOTALL | re.MULTILINE)
                 if match:
                     suggestions_text = match.group(1).strip()
-                    logger.debug("✅ Found suggestions with numbered list")
+                    logger.info("✅ Found suggestions with 'Следующие шаги'")
+                else:
+                    # Вариант 4: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк с нумерацией
+                    pattern4 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:\s*\d+[\.\)]\s*.*\n?){1,5})'
+                    match = re.search(pattern4, content, re.IGNORECASE | re.MULTILINE)
+                    if match:
+                        suggestions_text = match.group(1).strip()
+                        logger.info("✅ Found suggestions with numbered list")
     
     if not suggestions_text:
         logger.debug("❌ No suggestions block found in content")
