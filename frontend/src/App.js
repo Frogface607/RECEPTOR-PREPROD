@@ -12,7 +12,7 @@ const USER_ID = 'default_user';
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
-  content: 'Привет! Я RECEPTOR Copilot. Я знаю всё о ресторанном бизнесе, стандартах HACCP, СанПиН, и интегрирован с вашей системой iiko.\n\nЧем могу помочь сегодня?'
+  content: 'Привет! 👋\n\nЯ **RECEPTOR** — твой AI-помощник для ресторанного бизнеса.\n\nПомогаю с техкартами, меню, аналитикой, оптимизацией процессов и всем, что нужно для успешной работы заведения. Интегрирован с iiko и всегда готов помочь.\n\nЧем могу помочь?'
 };
 
 function App() {
@@ -669,7 +669,7 @@ function App() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Спроси о HACCP, выручке или попроси создать техкарту..."
+                    placeholder="Спроси что угодно о ресторанном бизнесе..."
                     className="w-full bg-gray-800 text-white placeholder-gray-500 border border-gray-700 rounded-xl py-4 pl-5 pr-24 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-lg"
                     disabled={loading || isListening}
                   />
