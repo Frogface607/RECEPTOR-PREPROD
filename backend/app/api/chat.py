@@ -86,14 +86,33 @@ def build_venue_context(profile: Dict[str, Any]) -> str:
 
 
 def get_iiko_connection_status(user_id: str) -> Dict[str, Any]:
-    """Проверить статус подключения iiko для пользователя"""
+    """Проверить статус подключения iiko для пользователя (Cloud или RMS)"""
     try:
+        # Сначала проверяем Cloud API
+        from app.core.database import db
+        cloud_collection = db.get_collection("iiko_cloud_credentials")
+        if cloud_collection is not None:
+            cloud_creds = cloud_collection.find_one({"user_id": user_id})
+            if cloud_creds and cloud_creds.get("status") == "connected":
+                return {
+                    "status": "connected",
+                    "type": "cloud",
+                    "organization_id": cloud_creds.get("selected_organization_id"),
+                    "organization_name": cloud_creds.get("selected_organization_name"),
+                    "api_key": cloud_creds.get("api_key"),  # Для использования в клиенте
+                    "organizations": cloud_creds.get("organizations", [])
+                }
+        
+        # Если Cloud не подключен, проверяем RMS
         rms_service = get_iiko_rms_service()
         if rms_service is None:
-            return {"status": "not_initialized"}
-        return rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+            return {"status": "not_connected"}
+        rms_status = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+        if rms_status.get("status") in ["connected", "restored"]:
+            rms_status["type"] = "rms"
+        return rms_status
     except Exception as e:
-        logger.error(f"Error checking iiko status: {e}")
+        logger.error(f"Error checking iiko status: {e}", exc_info=True)
         return {"status": "error", "error": str(e)}
 
 
