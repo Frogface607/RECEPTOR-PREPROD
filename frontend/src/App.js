@@ -317,106 +317,128 @@ function App() {
                     : 'hover:bg-gray-800/50'
                 }`}
               >
-                <button 
-                  onClick={() => loadChat(chat.id)}
-                  className="w-full text-left px-3 py-2 text-sm transition-colors flex items-start gap-2"
-                >
-                  {editingChatId === chat.id ? (
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="text"
-                        value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveTitle(chat.id);
-                          if (e.key === 'Escape') cancelEdit();
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex-1 px-2 py-0.5 bg-gray-900 border border-emerald-600/50 rounded text-sm text-white focus:outline-none"
-                        autoFocus
-                      />
-                      <button
-                        onClick={(e) => { e.stopPropagation(); saveTitle(chat.id); }}
-                        className="p-1 hover:bg-gray-700 rounded text-emerald-400"
-                      >
-                        <Check size={12} />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); cancelEdit(); }}
-                        className="p-1 hover:bg-gray-700 rounded text-gray-500"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-start gap-2 flex-1 min-w-0">
-                        <div className="flex-shrink-0 mt-0.5">
-                          {chat.is_favorite && (
-                            <Star size={12} className="fill-yellow-400 text-yellow-400 mb-1" />
+                {editingChatId === chat.id ? (
+                  <div className="px-3 py-2 flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveTitle(chat.id);
+                        if (e.key === 'Escape') cancelEdit();
+                      }}
+                      className="flex-1 px-2 py-1 bg-gray-900 border border-emerald-600/50 rounded text-sm text-white focus:outline-none"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => saveTitle(chat.id)}
+                      className="p-1.5 hover:bg-gray-700 rounded text-emerald-400"
+                      title="Сохранить"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="p-1.5 hover:bg-gray-700 rounded text-gray-500"
+                      title="Отмена"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => loadChat(chat.id)}
+                      className="w-full text-left px-3 py-2.5 text-sm transition-colors"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div className="flex-shrink-0 mt-0.5 flex flex-col items-center gap-1">
+                          {chat.is_favorite ? (
+                            <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                          ) : (
+                            <MessageSquare size={14} className="text-gray-500" />
                           )}
-                          <MessageSquare size={14} className="text-gray-500" />
                         </div>
-                        <span 
-                          className="text-gray-300 break-words line-clamp-2 text-left"
-                          title={chat.title}
-                        >
-                          {chat.title}
-                        </span>
-                      </div>
-                      
-                      {/* Action buttons - visible on hover */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
-                        <button
-                          onClick={(e) => toggleFavorite(chat.id, e)}
-                          className="p-1 hover:bg-gray-700 rounded transition-colors"
-                          title={chat.is_favorite ? "Убрать из избранного" : "Добавить в избранное"}
-                        >
-                          <Star 
-                            size={12} 
-                            className={chat.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-gray-500 hover:text-yellow-400"} 
-                          />
-                        </button>
-                        <button
-                          onClick={(e) => startEditTitle(chat.id, chat.title, e)}
-                          className="p-1 hover:bg-gray-700 rounded transition-colors"
-                          title="Переименовать"
-                        >
-                          <Edit2 size={12} className="text-gray-500 hover:text-emerald-400" />
-                        </button>
-                        <div className="relative group/export">
-                          <button
-                            className="p-1 hover:bg-gray-700 rounded transition-colors"
-                            title="Экспорт"
+                        <div className="flex-1 min-w-0">
+                          <div 
+                            className="text-gray-300 break-words text-left leading-snug"
+                            style={{
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              maxHeight: '2.5em'
+                            }}
+                            title={chat.title}
                           >
-                            <Download size={12} className="text-gray-500 hover:text-emerald-400" />
-                          </button>
-                          <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover/export:opacity-100 group-hover/export:visible transition-all z-10">
-                            <button
-                              onClick={(e) => exportChat(chat.id, 'markdown', e)}
-                              className="block w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-t-lg"
-                            >
-                              📄 Markdown
-                            </button>
-                            <button
-                              onClick={(e) => exportChat(chat.id, 'json', e)}
-                              className="block w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-b-lg"
-                            >
-                              📦 JSON
-                            </button>
+                            {chat.title}
                           </div>
+                          {chat.message_count > 0 && (
+                            <div className="text-xs text-gray-500 mt-0.5">
+                              {chat.message_count} сообщ.
+                            </div>
+                          )}
                         </div>
-                        <button
-                          onClick={(e) => deleteChat(chat.id, e)}
-                          className="p-1 hover:bg-gray-700 rounded transition-colors"
-                          title="Удалить"
-                        >
-                          <Trash2 size={12} className="text-gray-500 hover:text-red-400" />
-                        </button>
                       </div>
-                    </>
-                  )}
-                </button>
+                    </button>
+                    
+                    {/* Action buttons - compact, always visible for active chat, on hover for others */}
+                    <div className={`absolute right-2 top-2 flex items-center gap-0.5 ${
+                      chat.id === currentChatId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    } transition-opacity`}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(chat.id, e); }}
+                        className="p-1.5 hover:bg-gray-700/80 rounded transition-colors"
+                        title={chat.is_favorite ? "Убрать из избранного" : "В избранное"}
+                      >
+                        <Star 
+                          size={13} 
+                          className={chat.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-gray-400 hover:text-yellow-400"} 
+                        />
+                      </button>
+                      <div className="relative group/actions">
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 hover:bg-gray-700/80 rounded transition-colors"
+                          title="Действия"
+                        >
+                          <Settings size={13} className="text-gray-400 hover:text-gray-300" />
+                        </button>
+                        <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover/actions:opacity-100 group-hover/actions:visible transition-all z-20 min-w-[140px]">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); startEditTitle(chat.id, chat.title, e); }}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 flex items-center gap-2 rounded-t-lg"
+                          >
+                            <Edit2 size={12} />
+                            Переименовать
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); exportChat(chat.id, 'markdown', e); }}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Download size={12} />
+                            Экспорт MD
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); exportChat(chat.id, 'json', e); }}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Download size={12} />
+                            Экспорт JSON
+                          </button>
+                          <div className="border-t border-gray-700 my-1"></div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteChat(chat.id, e); }}
+                            className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-gray-700 flex items-center gap-2 rounded-b-lg"
+                          >
+                            <Trash2 size={12} />
+                            Удалить
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
