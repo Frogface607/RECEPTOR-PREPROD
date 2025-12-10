@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff } from 'lucide-react';
 import axios from 'axios';
 import VenueProfile from './components/VenueProfile';
 import Integrations from './components/Integrations';
@@ -31,10 +31,60 @@ function App() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
+  
+  // Voice input state
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState(null);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
 
   // Load chat history on mount
   useEffect(() => {
     loadChatHistory();
+  }, []);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
+        recognitionInstance.lang = 'ru-RU';
+
+        recognitionInstance.onstart = () => {
+          setIsListening(true);
+        };
+
+        recognitionInstance.onresult = (event) => {
+          const transcript = Array.from(event.results)
+            .map(result => result[0].transcript)
+            .join('');
+          setInput(prev => prev + (prev ? ' ' : '') + transcript);
+          setIsListening(false);
+        };
+
+        recognitionInstance.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+          if (event.error === 'no-speech') {
+            // Не показываем alert для no-speech, это нормально
+          } else if (event.error === 'not-allowed') {
+            alert('Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+          } else if (event.error === 'network') {
+            alert('Ошибка сети. Проверьте подключение к интернету.');
+          }
+        };
+
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
+
+        setRecognition(recognitionInstance);
+      } catch (error) {
+        console.error('Failed to initialize speech recognition:', error);
+      }
+    }
   }, []);
 
   // Auto-save chat after each message
@@ -212,6 +262,47 @@ function App() {
   const cancelEdit = () => {
     setEditingChatId(null);
     setEditingTitle('');
+  };
+
+  // ============ COPY & VOICE FUNCTIONS ============
+
+  const copyMessage = async (content, messageIndex) => {
+    try {
+      // Извлекаем чистый текст из markdown
+      const textContent = content.replace(/[#*`_~\[\]()]/g, '').replace(/\n{3,}/g, '\n\n');
+      await navigator.clipboard.writeText(textContent);
+      setCopiedMessageId(messageIndex);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      // Fallback для старых браузеров
+      const textArea = document.createElement('textarea');
+      textArea.value = content.replace(/[#*`_~\[\]()]/g, '').replace(/\n{3,}/g, '\n\n');
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedMessageId(messageIndex);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    }
+  };
+
+  const startVoiceInput = () => {
+    if (recognition && !isListening) {
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Failed to start recognition:', error);
+        setIsListening(false);
+      }
+    }
+  };
+
+  const stopVoiceInput = () => {
+    if (recognition && isListening) {
+      recognition.stop();
+      setIsListening(false);
+    }
   };
 
   // ============ CHAT FUNCTIONS ============
@@ -504,11 +595,11 @@ function App() {
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
               <div className="max-w-3xl mx-auto space-y-6 pb-4">
                 {messages.map((msg, index) => (
-                  <div key={index} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div key={index} className={`group/message flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'assistant' ? 'bg-emerald-600' : 'bg-gray-700'}`}>
                       {msg.role === 'assistant' ? <ChefHat size={16} className="text-white" /> : <div className="text-xs font-bold">U</div>}
                     </div>
-                    <div className={`rounded-2xl px-5 py-3.5 max-w-[85%] shadow-sm ${
+                    <div className={`relative rounded-2xl px-5 py-3.5 max-w-[85%] shadow-sm ${
                       msg.role === 'user' 
                         ? 'bg-gray-800 text-gray-100 rounded-tr-none' 
                         : 'bg-gray-900 border border-gray-800 text-gray-100 rounded-tl-none'
@@ -537,6 +628,21 @@ function App() {
                       >
                         {msg.content}
                       </ReactMarkdown>
+                      
+                      {/* Copy button - visible on hover */}
+                      <button
+                        onClick={() => copyMessage(msg.content, index)}
+                        className={`absolute top-2 ${msg.role === 'user' ? 'left-2' : 'right-2'} p-1.5 rounded-lg bg-gray-800/80 backdrop-blur-sm opacity-0 group-hover/message:opacity-100 transition-opacity hover:bg-gray-700 ${
+                          copiedMessageId === index ? 'opacity-100 bg-emerald-600/20' : ''
+                        }`}
+                        title="Копировать сообщение"
+                      >
+                        {copiedMessageId === index ? (
+                          <Check size={14} className="text-emerald-400" />
+                        ) : (
+                          <Copy size={14} className="text-gray-400 hover:text-white" />
+                        )}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -564,16 +670,43 @@ function App() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Спроси о HACCP, выручке или попроси создать техкарту..."
-                    className="w-full bg-gray-800 text-white placeholder-gray-500 border border-gray-700 rounded-xl py-4 pl-5 pr-12 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-lg"
-                    disabled={loading}
+                    className="w-full bg-gray-800 text-white placeholder-gray-500 border border-gray-700 rounded-xl py-4 pl-5 pr-24 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-lg"
+                    disabled={loading || isListening}
                   />
+                  
+                  {/* Voice input button */}
+                  {recognition && (
+                    <button
+                      type="button"
+                      onClick={isListening ? stopVoiceInput : startVoiceInput}
+                      className={`absolute right-12 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors ${
+                        isListening
+                          ? 'bg-red-600 text-white animate-pulse hover:bg-red-500'
+                          : 'text-gray-400 hover:text-emerald-400 hover:bg-gray-700/50'
+                      }`}
+                      title={isListening ? 'Остановить запись' : 'Голосовой ввод'}
+                      disabled={loading}
+                    >
+                      {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                    </button>
+                  )}
+                  
+                  {/* Send button */}
                   <button 
                     type="submit" 
-                    disabled={!input.trim() || loading}
+                    disabled={!input.trim() || loading || isListening}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 disabled:opacity-50 disabled:hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-900/20"
                   >
                     <Send size={18} />
                   </button>
+                  
+                  {/* Voice input indicator */}
+                  {isListening && (
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2 text-red-400 text-sm">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span>Слушаю...</span>
+                    </div>
+                  )}
                 </form>
                 <div className="mt-2 text-center text-xs text-gray-500">
                   RECEPTOR Copilot может допускать ошибки. Проверяйте важную информацию.
