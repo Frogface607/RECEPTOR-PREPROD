@@ -452,7 +452,25 @@ async def chat_message(request: ChatRequest):
 
 ЭКСПЕРТИЗА: Ресторанный бизнес, HACCP, финансы, маркетинг, iiko.
 
-ФОРМАТ: Русский, структурно, лаконично."""
+ФОРМАТ: Русский, структурно, лаконично.
+
+ПРЕДЛОЖЕНИЯ СЛЕДУЮЩИХ ШАГОВ:
+В конце ответа добавь 2-3 связанных вопроса/действия, которые могут быть полезны пользователю. 
+Формат:
+[SUGGESTIONS]
+1. Краткий вопрос или действие (максимум 6-8 слов)
+2. Ещё один связанный вопрос
+3. Третий вопрос (опционально)
+[/SUGGESTIONS]
+
+Примеры хороших предложений:
+- "Создать техкарту для этого блюда"
+- "Показать статистику продаж за месяц"
+- "Как оптимизировать себестоимость?"
+- "Найти похожие рецепты в базе"
+- "Рассчитать точку безубыточности"
+
+Предложения должны быть конкретными, связанными с текущим контекстом и полезными для ресторанного бизнеса."""
 
         messages = [{"role": "system", "content": system_prompt}]
         
@@ -488,16 +506,59 @@ async def chat_message(request: ChatRequest):
         
         logger.info(f"🤖 Model: {model_used} | Complexity: {complexity} | Cost: ${cost:.4f}")
         
+        # Извлекаем предложения следующих шагов из ответа
+        suggestions = extract_suggestions(response)
+        clean_response = remove_suggestions_from_content(response)
+        
         return {
             "role": "assistant", 
-            "content": response,
+            "content": clean_response,
             "model": model_used,  # Показываем какая модель ответила
-            "usage": usage_info
+            "usage": usage_info,
+            "suggestions": suggestions  # Предложения следующих шагов
         }
         
     except Exception as e:
         print(f"❌ Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def extract_suggestions(content: str) -> List[str]:
+    """Извлекает предложения следующих шагов из ответа LLM"""
+    import re
+    suggestions = []
+    
+    # Ищем блок [SUGGESTIONS]...[/SUGGESTIONS]
+    pattern = r'\[SUGGESTIONS\](.*?)\[/SUGGESTIONS\]'
+    match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
+    
+    if match:
+        suggestions_text = match.group(1).strip()
+        # Разбиваем на строки и извлекаем предложения
+        lines = suggestions_text.split('\n')
+        for line in lines:
+            line = line.strip()
+            # Пропускаем пустые строки и нумерацию
+            if not line:
+                continue
+            # Убираем нумерацию (1., 2., и т.д.)
+            line = re.sub(r'^\d+[\.\)]\s*', '', line)
+            # Убираем дефисы и маркеры списка
+            line = re.sub(r'^[-•*]\s*', '', line)
+            if line and len(line) > 3:  # Минимум 3 символа
+                suggestions.append(line)
+    
+    # Ограничиваем до 3 предложений
+    return suggestions[:3]
+
+
+def remove_suggestions_from_content(content: str) -> str:
+    """Удаляет блок предложений из контента ответа"""
+    import re
+    # Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS]
+    pattern = r'\[SUGGESTIONS\].*?\[/SUGGESTIONS\]'
+    clean_content = re.sub(pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
+    return clean_content.strip()
 
 
 def detect_intent(query: str) -> str:

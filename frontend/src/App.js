@@ -322,7 +322,13 @@ function App() {
         user_id: USER_ID
       });
       
-      setMessages(prev => [...prev, response.data]);
+      // Добавляем сообщение с предложениями если есть
+      const assistantMessage = {
+        ...response.data,
+        suggestions: response.data.suggestions || []
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
@@ -595,55 +601,78 @@ function App() {
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
               <div className="max-w-3xl mx-auto space-y-6 pb-4">
                 {messages.map((msg, index) => (
-                  <div key={index} className={`group/message flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'assistant' ? 'bg-emerald-600' : 'bg-gray-700'}`}>
-                      {msg.role === 'assistant' ? <ChefHat size={16} className="text-white" /> : <div className="text-xs font-bold">U</div>}
+                  <div key={index} className={`group/message flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} max-w-[85%]`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'assistant' ? 'bg-emerald-600' : 'bg-gray-700'}`}>
+                        {msg.role === 'assistant' ? <ChefHat size={16} className="text-white" /> : <div className="text-xs font-bold">U</div>}
+                      </div>
+                      <div className={`relative rounded-2xl px-5 py-3.5 shadow-sm ${
+                        msg.role === 'user' 
+                          ? 'bg-gray-800 text-gray-100 rounded-tr-none' 
+                          : 'bg-gray-900 border border-gray-800 text-gray-100 rounded-tl-none'
+                      }`}>
+                        <ReactMarkdown 
+                          className="prose prose-invert prose-sm max-w-none leading-relaxed"
+                          components={{
+                            h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-2 text-white" {...props} />,
+                            h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 text-white mt-4" {...props} />,
+                            h3: ({node, ...props}) => <h3 className="text-base font-bold mb-1 text-white mt-3" {...props} />,
+                            ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
+                            ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
+                            li: ({node, ...props}) => <li className="text-gray-300" {...props} />,
+                            p: ({node, ...props}) => <p className="mb-2 last:mb-0 text-gray-300" {...props} />,
+                            strong: ({node, ...props}) => <strong className="font-semibold text-white" {...props} />,
+                            a: ({node, ...props}) => <a className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                            blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-700 pl-4 py-1 my-2 bg-gray-800/50 rounded-r text-gray-400 italic" {...props} />,
+                            code: ({node, inline, className, children, ...props}) => {
+                              return inline ? (
+                                <code className="bg-gray-800 px-1 py-0.5 rounded text-sm text-emerald-300 font-mono" {...props}>{children}</code>
+                              ) : (
+                                <code className="block bg-gray-950 p-3 rounded-lg text-sm font-mono overflow-x-auto my-2 border border-gray-800" {...props}>{children}</code>
+                              )
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                        
+                        {/* Copy button - visible on hover */}
+                        <button
+                          onClick={() => copyMessage(msg.content, index)}
+                          className={`absolute top-2 ${msg.role === 'user' ? 'left-2' : 'right-2'} p-1.5 rounded-lg bg-gray-800/80 backdrop-blur-sm opacity-0 group-hover/message:opacity-100 transition-opacity hover:bg-gray-700 ${
+                            copiedMessageId === index ? 'opacity-100 bg-emerald-600/20' : ''
+                          }`}
+                          title="Копировать сообщение"
+                        >
+                          {copiedMessageId === index ? (
+                            <Check size={14} className="text-emerald-400" />
+                          ) : (
+                            <Copy size={14} className="text-gray-400 hover:text-white" />
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <div className={`relative rounded-2xl px-5 py-3.5 max-w-[85%] shadow-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-gray-800 text-gray-100 rounded-tr-none' 
-                        : 'bg-gray-900 border border-gray-800 text-gray-100 rounded-tl-none'
-                    }`}>
-                      <ReactMarkdown 
-                        className="prose prose-invert prose-sm max-w-none leading-relaxed"
-                        components={{
-                          h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-2 text-white" {...props} />,
-                          h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 text-white mt-4" {...props} />,
-                          h3: ({node, ...props}) => <h3 className="text-base font-bold mb-1 text-white mt-3" {...props} />,
-                          ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
-                          ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
-                          li: ({node, ...props}) => <li className="text-gray-300" {...props} />,
-                          p: ({node, ...props}) => <p className="mb-2 last:mb-0 text-gray-300" {...props} />,
-                          strong: ({node, ...props}) => <strong className="font-semibold text-white" {...props} />,
-                          a: ({node, ...props}) => <a className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
-                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-700 pl-4 py-1 my-2 bg-gray-800/50 rounded-r text-gray-400 italic" {...props} />,
-                          code: ({node, inline, className, children, ...props}) => {
-                            return inline ? (
-                              <code className="bg-gray-800 px-1 py-0.5 rounded text-sm text-emerald-300 font-mono" {...props}>{children}</code>
-                            ) : (
-                              <code className="block bg-gray-950 p-3 rounded-lg text-sm font-mono overflow-x-auto my-2 border border-gray-800" {...props}>{children}</code>
-                            )
-                          }
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
-                      
-                      {/* Copy button - visible on hover */}
-                      <button
-                        onClick={() => copyMessage(msg.content, index)}
-                        className={`absolute top-2 ${msg.role === 'user' ? 'left-2' : 'right-2'} p-1.5 rounded-lg bg-gray-800/80 backdrop-blur-sm opacity-0 group-hover/message:opacity-100 transition-opacity hover:bg-gray-700 ${
-                          copiedMessageId === index ? 'opacity-100 bg-emerald-600/20' : ''
-                        }`}
-                        title="Копировать сообщение"
-                      >
-                        {copiedMessageId === index ? (
-                          <Check size={14} className="text-emerald-400" />
-                        ) : (
-                          <Copy size={14} className="text-gray-400 hover:text-white" />
-                        )}
-                      </button>
-                    </div>
+                    
+                    {/* Suggested next steps - только для сообщений ассистента */}
+                    {msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0 && (
+                      <div className={`flex flex-wrap gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} max-w-[85%] ml-12`}>
+                        {msg.suggestions.map((suggestion, sugIndex) => (
+                          <button
+                            key={sugIndex}
+                            onClick={() => {
+                              setInput(suggestion);
+                              // Фокусируемся на поле ввода
+                              setTimeout(() => {
+                                document.querySelector('input[type="text"]')?.focus();
+                              }, 100);
+                            }}
+                            className="px-3 py-1.5 text-xs bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 rounded-lg transition-colors hover:border-emerald-600/50 hover:scale-105"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {loading && (
