@@ -215,31 +215,56 @@ async def select_cloud_organization(request: OrganizationSelect):
 async def sync_cloud_nomenclature(request: OrganizationSelect):
     """Sync nomenclature from iikoCloud API"""
     try:
+        logger.info(f"🔄 Starting Cloud sync for user: {request.user_id}, org: {request.organization_id}")
+        
         collection = db.get_collection("iiko_cloud_credentials")
         if collection is None:
             raise HTTPException(status_code=500, detail="Database not initialized")
         
         credentials = collection.find_one({"user_id": request.user_id})
-        if not credentials or credentials.get("status") != "connected":
+        if not credentials:
             raise HTTPException(status_code=400, detail="iikoCloud не подключен")
         
-        # Создаём клиент и получаем номенклатуру
-        client = IikoClient(api_login=credentials["api_key"])
-        nomenclature = client.fetch_nomenclature(request.organization_id)
+        if credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
         
-        # Сохраняем в MongoDB (можно расширить для синхронизации с локальной БД)
+        # Проверяем organization_id
+        org_id = request.organization_id
+        if not org_id or org_id == "default":
+            # Пытаемся взять из credentials
+            org_id = credentials.get("selected_organization_id")
+            if not org_id:
+                raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        logger.info(f"📡 Fetching nomenclature from iikoCloud for org: {org_id}")
+        
+        # Создаём клиент и получаем номенклатуру
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        nomenclature = client.fetch_nomenclature(org_id)
+        
+        products = nomenclature.get("products", [])
+        groups = nomenclature.get("groups", [])
+        
+        logger.info(f"✅ Received {len(products)} products, {len(groups)} groups from iikoCloud")
+        
+        # Сохраняем в MongoDB
         sync_collection = db.get_collection("iiko_cloud_nomenclature")
-        sync_collection.update_one(
+        result = sync_collection.update_one(
             {
                 "user_id": request.user_id,
-                "organization_id": request.organization_id
+                "organization_id": org_id
             },
             {
                 "$set": {
                     "nomenclature": nomenclature,
                     "synced_at": datetime.utcnow(),
-                    "products_count": len(nomenclature.get("products", [])),
-                    "groups_count": len(nomenclature.get("groups", []))
+                    "products_count": len(products),
+                    "groups_count": len(groups),
+                    "organization_name": credentials.get("selected_organization_name")
                 },
                 "$setOnInsert": {
                     "created_at": datetime.utcnow()
@@ -248,15 +273,15 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
             upsert=True
         )
         
-        logger.info(f"Synced Cloud nomenclature: {len(nomenclature.get('products', []))} products")
+        logger.info(f"💾 Saved to MongoDB. Products: {len(products)}, Groups: {len(groups)}")
         
         return {
             "status": "completed",
             "stats": {
-                "products_processed": len(nomenclature.get("products", [])),
-                "products_created": len(nomenclature.get("products", [])),
+                "products_processed": len(products),
+                "products_created": len(products),
                 "products_updated": 0,
-                "groups_count": len(nomenclature.get("groups", []))
+                "groups_count": len(groups)
             },
             "message": "Синхронизация завершена"
         }
@@ -264,8 +289,8 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error syncing Cloud nomenclature: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"❌ Error syncing Cloud nomenclature: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Ошибка синхронизации: {str(e)}")
 
 
 @router.get("/cloud/menu/{user_id}")

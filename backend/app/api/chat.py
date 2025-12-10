@@ -354,35 +354,77 @@ async def chat_message(request: ChatRequest):
             context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server'}\n"
             
             if iiko_type == "cloud":
-                # Для Cloud API получаем номенклатуру через API
+                # Для Cloud API сначала пытаемся использовать синхронизированные данные
                 try:
-                    from app.services.iiko.iiko_client import IikoClient
-                    api_key = iiko_status.get("api_key")
-                    if api_key:
-                        client = IikoClient(api_login=api_key)
-                        nomenclature = client.fetch_nomenclature(org_id)
-                        products_count = len(nomenclature.get("products", []))
-                        groups_count = len(nomenclature.get("groups", []))
+                    from app.core.database import db
+                    sync_collection = db.get_collection("iiko_cloud_nomenclature")
+                    nomenclature_data = None
+                    
+                    if sync_collection is not None:
+                        # Пытаемся получить синхронизированные данные
+                        sync_data = sync_collection.find_one({
+                            "user_id": user_id,
+                            "organization_id": org_id
+                        })
+                        
+                        if sync_data and sync_data.get("nomenclature"):
+                            nomenclature_data = sync_data.get("nomenclature")
+                            logger.info(f"✅ Using synced Cloud nomenclature: {len(nomenclature_data.get('products', []))} products")
+                    
+                    # Если синхронизированных данных нет - получаем через API
+                    if not nomenclature_data:
+                        logger.info(f"📡 Synced data not found, fetching from API...")
+                        from app.services.iiko.iiko_client import IikoClient
+                        api_key = iiko_status.get("api_key")
+                        if api_key:
+                            client = IikoClient(api_login=api_key)
+                            nomenclature_data = client.fetch_nomenclature(org_id)
+                            logger.info(f"✅ Fetched from API: {len(nomenclature_data.get('products', []))} products")
+                    
+                    if nomenclature_data:
+                        products = nomenclature_data.get("products", [])
+                        groups = nomenclature_data.get("groups", [])
+                        products_count = len(products)
+                        groups_count = len(groups)
+                        
                         context += f"- Продуктов в базе: {products_count}\n"
                         context += f"- Групп: {groups_count}\n"
                         
                         # Поиск продуктов
                         search_terms = extract_search_terms(user_query)
                         if search_terms:
-                            all_products = nomenclature.get("products", [])
                             for term in search_terms:
-                                found = [p for p in all_products if term.lower() in p.get("name", "").lower()][:5]
+                                # Более гибкий поиск
+                                found = []
+                                term_lower = term.lower()
+                                for p in products:
+                                    name = p.get("name", "").lower()
+                                    if term_lower in name:
+                                        found.append(p)
+                                
                                 if found:
                                     context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
-                                    for p in found:
-                                        price = p.get("size_prices", [{}])[0].get("price", 0) if p.get("size_prices") else 0
+                                    for p in found[:10]:  # Показываем до 10
+                                        price = 0
+                                        if p.get("size_prices"):
+                                            price = p.get("size_prices", [{}])[0].get("price", 0)
                                         price_info = f", цена: {price:.2f} руб" if price else ""
                                         context += f"- {p.get('name', 'н/д')}{price_info}\n"
                                 else:
                                     context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
+                        else:
+                            # Если нет поисковых терминов, показываем общую статистику
+                            if products_count > 0:
+                                context += f"\n\nПримеры продуктов в базе:\n"
+                                for p in products[:5]:
+                                    context += f"- {p.get('name', 'н/д')}\n"
+                    else:
+                        context += "\n\nДанные номенклатуры не найдены. Выполните синхронизацию в разделе 'Интеграции'.\n"
+                        
                 except Exception as e:
                     logger.error(f"Error fetching Cloud nomenclature: {e}", exc_info=True)
                     context += f"\n\nОшибка получения данных из iikoCloud: {str(e)}\n"
+                    context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
             else:
                 # Для RMS используем существующую логику
                 summary = get_iiko_nomenclature_stats(org_id)
