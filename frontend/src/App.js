@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2 } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter } from 'lucide-react';
 import axios from 'axios';
 import VenueProfile from './components/VenueProfile';
 import Integrations from './components/Integrations';
@@ -27,6 +27,10 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [editingChatId, setEditingChatId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   // Load chat history on mount
   useEffect(() => {
@@ -53,7 +57,12 @@ function App() {
   const loadChatHistory = async () => {
     setHistoryLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/history/chats/${USER_ID}`);
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (showFavoritesOnly) params.append('favorite_only', 'true');
+      
+      const url = `${API_URL}/history/chats/${USER_ID}${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await axios.get(url);
       setChatHistory(response.data || []);
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -61,6 +70,15 @@ function App() {
       setHistoryLoading(false);
     }
   };
+
+  // Перезагружаем историю при изменении поиска или фильтров
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadChatHistory();
+    }, 300); // Debounce поиска
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery, showFavoritesOnly]);
 
   const saveCurrentChat = async () => {
     // Don't save if only welcome message
@@ -121,6 +139,64 @@ function App() {
     }
   };
 
+  const toggleFavorite = async (chatId, e) => {
+    e.stopPropagation();
+    try {
+      const response = await axios.post(`${API_URL}/history/chat/${chatId}/favorite`);
+      setChatHistory(prev => prev.map(c => 
+        c.id === chatId ? { ...c, is_favorite: response.data.is_favorite } : c
+      ));
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const exportChat = async (chatId, format, e) => {
+    e.stopPropagation();
+    try {
+      const response = await axios.get(`${API_URL}/history/chat/${chatId}/export?format=${format}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `chat_${chatId}.${format === 'markdown' ? 'md' : 'json'}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error exporting chat:', error);
+      alert('Ошибка при экспорте чата');
+    }
+  };
+
+  const startEditTitle = (chatId, currentTitle, e) => {
+    e.stopPropagation();
+    setEditingChatId(chatId);
+    setEditingTitle(currentTitle);
+  };
+
+  const saveTitle = async (chatId) => {
+    try {
+      await axios.put(`${API_URL}/history/chat/${chatId}`, {
+        title: editingTitle
+      });
+      setChatHistory(prev => prev.map(c => 
+        c.id === chatId ? { ...c, title: editingTitle } : c
+      ));
+      setEditingChatId(null);
+      setEditingTitle('');
+    } catch (error) {
+      console.error('Error saving title:', error);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingChatId(null);
+    setEditingTitle('');
+  };
+
   // ============ CHAT FUNCTIONS ============
 
   const handleSubmit = async (e) => {
@@ -169,37 +245,155 @@ function App() {
             Новый чат
           </button>
           
-          {/* Chat History */}
-          <div className="mt-6 text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 flex items-center justify-between">
-            <span>История</span>
-            {historyLoading && <Loader2 size={12} className="animate-spin" />}
+          {/* Search & Filters */}
+          <div className="mt-6 space-y-2 px-2">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+              <span>История</span>
+              {historyLoading && <Loader2 size={12} className="animate-spin" />}
+            </div>
+            
+            {/* Search Input */}
+            <div className="relative">
+              <Search size={14} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Поиск..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-2 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-emerald-600/50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            
+            {/* Filters */}
+            <button
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                showFavoritesOnly
+                  ? 'bg-emerald-600/20 text-emerald-400'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
+              }`}
+            >
+              <Star size={12} className={showFavoritesOnly ? 'fill-current' : ''} />
+              Только избранное
+            </button>
           </div>
           
-          <div className="space-y-1 mt-2">
+          {/* Chat History List */}
+          <div className="space-y-1 mt-2 px-2">
             {chatHistory.length === 0 && !historyLoading && (
               <p className="text-gray-600 text-xs px-3 py-2">Нет сохранённых чатов</p>
             )}
             {chatHistory.map((chat) => (
-              <button 
+              <div
                 key={chat.id}
-                onClick={() => loadChat(chat.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors truncate flex items-center justify-between group ${
+                className={`group relative rounded-lg transition-colors ${
                   chat.id === currentChatId 
-                    ? 'bg-gray-800 text-white' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    ? 'bg-gray-800' 
+                    : 'hover:bg-gray-800/50'
                 }`}
               >
-                <div className="flex items-center gap-2 truncate flex-1">
-                  <MessageSquare size={14} className="flex-shrink-0" />
-                  <span className="truncate">{chat.title}</span>
-                </div>
-                <button
-                  onClick={(e) => deleteChat(chat.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition-all"
+                <button 
+                  onClick={() => loadChat(chat.id)}
+                  className="w-full text-left px-3 py-2 text-sm transition-colors truncate flex items-center gap-2"
                 >
-                  <Trash2 size={12} className="text-gray-500 hover:text-red-400" />
+                  {editingChatId === chat.id ? (
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveTitle(chat.id);
+                          if (e.key === 'Escape') cancelEdit();
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 px-2 py-0.5 bg-gray-900 border border-emerald-600/50 rounded text-sm text-white focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); saveTitle(chat.id); }}
+                        className="p-1 hover:bg-gray-700 rounded text-emerald-400"
+                      >
+                        <Check size={12} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); cancelEdit(); }}
+                        className="p-1 hover:bg-gray-700 rounded text-gray-500"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                        {chat.is_favorite && (
+                          <Star size={12} className="flex-shrink-0 fill-yellow-400 text-yellow-400" />
+                        )}
+                        <MessageSquare size={14} className="flex-shrink-0 text-gray-500" />
+                        <span className="truncate text-gray-300">{chat.title}</span>
+                      </div>
+                      
+                      {/* Action buttons - visible on hover */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => toggleFavorite(chat.id, e)}
+                          className="p-1 hover:bg-gray-700 rounded transition-colors"
+                          title={chat.is_favorite ? "Убрать из избранного" : "Добавить в избранное"}
+                        >
+                          <Star 
+                            size={12} 
+                            className={chat.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-gray-500 hover:text-yellow-400"} 
+                          />
+                        </button>
+                        <button
+                          onClick={(e) => startEditTitle(chat.id, chat.title, e)}
+                          className="p-1 hover:bg-gray-700 rounded transition-colors"
+                          title="Переименовать"
+                        >
+                          <Edit2 size={12} className="text-gray-500 hover:text-emerald-400" />
+                        </button>
+                        <div className="relative group/export">
+                          <button
+                            className="p-1 hover:bg-gray-700 rounded transition-colors"
+                            title="Экспорт"
+                          >
+                            <Download size={12} className="text-gray-500 hover:text-emerald-400" />
+                          </button>
+                          <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover/export:opacity-100 group-hover/export:visible transition-all z-10">
+                            <button
+                              onClick={(e) => exportChat(chat.id, 'markdown', e)}
+                              className="block w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-t-lg"
+                            >
+                              📄 Markdown
+                            </button>
+                            <button
+                              onClick={(e) => exportChat(chat.id, 'json', e)}
+                              className="block w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-b-lg"
+                            >
+                              📦 JSON
+                            </button>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => deleteChat(chat.id, e)}
+                          className="p-1 hover:bg-gray-700 rounded transition-colors"
+                          title="Удалить"
+                        >
+                          <Trash2 size={12} className="text-gray-500 hover:text-red-400" />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </button>
-              </button>
+              </div>
             ))}
           </div>
         </div>
