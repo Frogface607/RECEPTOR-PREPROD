@@ -325,10 +325,11 @@ async def export_chat(chat_id: str, format: str = Query("markdown", regex="^(mar
                 md_content += "---\n\n"
             
             return Response(
-                content=md_content,
-                media_type="text/markdown",
+                content=md_content.encode('utf-8'),
+                media_type="text/markdown; charset=utf-8",
                 headers={
-                    "Content-Disposition": f'attachment; filename="chat_{chat_id}.md"'
+                    "Content-Disposition": f'attachment; filename="chat_{chat_id}.md"',
+                    "Access-Control-Expose-Headers": "Content-Disposition"
                 }
             )
         
@@ -350,10 +351,11 @@ async def export_chat(chat_id: str, format: str = Query("markdown", regex="^(mar
             }
             
             return Response(
-                content=json.dumps(export_data, ensure_ascii=False, indent=2),
-                media_type="application/json",
+                content=json.dumps(export_data, ensure_ascii=False, indent=2).encode('utf-8'),
+                media_type="application/json; charset=utf-8",
                 headers={
-                    "Content-Disposition": f'attachment; filename="chat_{chat_id}.json"'
+                    "Content-Disposition": f'attachment; filename="chat_{chat_id}.json"',
+                    "Access-Control-Expose-Headers": "Content-Disposition"
                 }
             )
         

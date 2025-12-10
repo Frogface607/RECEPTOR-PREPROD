@@ -155,19 +155,36 @@ function App() {
     e.stopPropagation();
     try {
       const response = await axios.get(`${API_URL}/history/chat/${chatId}/export?format=${format}`, {
-        responseType: 'blob'
+        responseType: 'blob',
+        headers: {
+          'Accept': format === 'markdown' ? 'text/markdown' : 'application/json'
+        }
       });
       
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Получаем имя файла из заголовка или используем дефолтное
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `chat_${chatId}.${format === 'markdown' ? 'md' : 'json'}`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: format === 'markdown' ? 'text/markdown;charset=utf-8' : 'application/json;charset=utf-8'
+      }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `chat_${chatId}.${format === 'markdown' ? 'md' : 'json'}`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting chat:', error);
-      alert('Ошибка при экспорте чата');
+      alert('Ошибка при экспорте чата: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -302,7 +319,7 @@ function App() {
               >
                 <button 
                   onClick={() => loadChat(chat.id)}
-                  className="w-full text-left px-3 py-2 text-sm transition-colors truncate flex items-center gap-2"
+                  className="w-full text-left px-3 py-2 text-sm transition-colors flex items-start gap-2"
                 >
                   {editingChatId === chat.id ? (
                     <div className="flex items-center gap-1 flex-1">
@@ -333,16 +350,23 @@ function App() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                        {chat.is_favorite && (
-                          <Star size={12} className="flex-shrink-0 fill-yellow-400 text-yellow-400" />
-                        )}
-                        <MessageSquare size={14} className="flex-shrink-0 text-gray-500" />
-                        <span className="truncate text-gray-300">{chat.title}</span>
+                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                        <div className="flex-shrink-0 mt-0.5">
+                          {chat.is_favorite && (
+                            <Star size={12} className="fill-yellow-400 text-yellow-400 mb-1" />
+                          )}
+                          <MessageSquare size={14} className="text-gray-500" />
+                        </div>
+                        <span 
+                          className="text-gray-300 break-words line-clamp-2 text-left"
+                          title={chat.title}
+                        >
+                          {chat.title}
+                        </span>
                       </div>
                       
                       {/* Action buttons - visible on hover */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
                         <button
                           onClick={(e) => toggleFavorite(chat.id, e)}
                           className="p-1 hover:bg-gray-700 rounded transition-colors"
