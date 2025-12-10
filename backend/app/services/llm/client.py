@@ -44,47 +44,63 @@ MODEL_CONFIG = {
 def classify_query_complexity(query: str, context_length: int = 0) -> str:
     """
     Классифицирует сложность запроса для выбора модели.
+    АГРЕССИВНО классифицирует простые запросы для экономии.
     
     Returns: 'simple', 'standard', 'advanced', 'reasoning', 'expert'
     """
-    query_lower = query.lower()
+    # Очищаем запрос от лишнего (контекст, маркеры)
+    clean_query = query.split("═══════════════════════════════════════════════════════════════")[0].strip()
+    clean_query = clean_query.split("📚 КОНТЕКСТ")[0].strip()
+    clean_query = clean_query.split("⚠️ ВАЖНО")[0].strip()
     
-    # REASONING: глубокий анализ, требует рассуждений
+    query_lower = clean_query.lower()
+    query_length = len(clean_query)
+    
+    # ПРИОРИТЕТ 1: Очень короткие запросы (< 30 символов) = ВСЕГДА simple
+    if query_length < 30:
+        return "simple"
+    
+    # ПРИОРИТЕТ 2: Простые паттерны (приветствия, проверки, короткие вопросы)
+    simple_patterns = [
+        r'^привет', r'^здравствуй', r'^спасибо', r'^пока', r'^ок', r'^да', r'^нет',
+        r'проверк[аи]', r'тест', r'работаешь', r'жив', r'онлайн',
+        r'^что\s+такое', r'^кто\s+такой', r'^где\s+', r'^сколько\s+стоит',
+        r'^есть\s+ли', r'^можно\s+ли', r'^как\s+дела', r'^как\s+поживаешь',
+        r'^помоги', r'^подскажи', r'^расскажи', r'^объясни',
+        r'^найди', r'^поиск', r'^покажи', r'^выведи', r'^покажи\s+мне'
+    ]
+    if any(re.search(p, query_lower) for p in simple_patterns):
+        return "simple"
+    
+    # ПРИОРИТЕТ 3: REASONING - глубокий анализ (только если явно запрошено)
     reasoning_patterns = [
         r'стратеги[яю]', r'бизнес.?план', r'финансов.*модел', 
         r'анализ.*рынк', r'конкурент.*анализ', r'глубок.*анализ',
-        r'проанализируй', r'разбери.*детально', r'найди.*слаб.*мест',
+        r'проанализируй.*детально', r'разбери.*детально', r'найди.*слаб.*мест',
         r'оптимизац.*бизнес', r'точка.*безубыточ', r'roi.*расчет',
         r'проблем.*реш', r'причин.*анализ', r'что.*не.*так',
         r'открыт.*заведен', r'запуск.*бизнес', r'концепц.*разработ',
         r'масштабирован', r'инвестиц.*обоснован', r'unit.?экономик'
     ]
-    if any(re.search(p, query_lower) for p in reasoning_patterns):
+    if any(re.search(p, query_lower) for p in reasoning_patterns) and query_length > 50:
         return "reasoning"
     
-    # ADVANCED: техкарты, детальная генерация (без глубокого анализа)
+    # ПРИОРИТЕТ 4: ADVANCED - техкарты, детальная генерация
     advanced_patterns = [
-        r'техкарт[ау|у]', r'технологическ.*карт', r'калькуляц', r'себестоимость',
+        r'техкарт[ауы]', r'технологическ.*карт', r'калькуляц', r'себестоимость',
         r'рецепт.*подробн', r'пошагов.*инструкц', r'меню.*разработ',
         r'haccp.*план', r'санпин.*требован', r'аудит', r'чек.?лист'
     ]
     if any(re.search(p, query_lower) for p in advanced_patterns):
         return "advanced"
     
-    # SIMPLE: короткие/простые запросы
-    simple_patterns = [
-        r'^привет', r'^здравствуй', r'^спасибо', r'^пока',
-        r'найди', r'поиск', r'покажи', r'где\s', r'что такое',
-        r'сколько стоит', r'цена', r'есть ли'
-    ]
-    if any(re.search(p, query_lower) for p in simple_patterns):
+    # ПРИОРИТЕТ 5: Средние запросы (< 100 символов без сложных слов) = simple
+    if query_length < 100 and not any(re.search(p, query_lower) for p in [
+        r'анализ', r'разработ', r'оптимизац', r'стратеги', r'бизнес.?план'
+    ]):
         return "simple"
     
-    # Короткие запросы (< 50 символов) = simple
-    if len(query) < 50:
-        return "simple"
-    
-    # По умолчанию — standard
+    # По умолчанию — standard (для средних запросов)
     return "standard"
 
 

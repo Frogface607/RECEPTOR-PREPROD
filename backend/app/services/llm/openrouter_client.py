@@ -89,16 +89,23 @@ class OpenRouterClient:
             if model is None:
                 if complexity:
                     model = OPENROUTER_MODELS[complexity]["model"]
+                    logger.info(f"🎯 Using explicit complexity: {complexity} → {model}")
                 elif auto_route:
                     from .client import classify_query_complexity
                     last_user_msg = next(
                         (m["content"] for m in reversed(messages) if m["role"] == "user"),
                         ""
                     )
-                    complexity = classify_query_complexity(last_user_msg)
+                    # Очищаем от контекста для классификации
+                    clean_msg = last_user_msg.split("═══════════════════════════════════════════════════════════════")[0].strip()
+                    clean_msg = clean_msg.split("📚 КОНТЕКСТ")[0].strip()
+                    
+                    complexity = classify_query_complexity(clean_msg)
                     model = OPENROUTER_MODELS[complexity]["model"]
+                    logger.info(f"🎯 Auto-routed: query='{clean_msg[:50]}...' → complexity={complexity} → model={model}")
                 else:
                     model = OPENROUTER_MODELS["standard"]["model"]
+                    logger.info(f"🎯 Using default: {model}")
             
             # Определяем параметры запроса
             reasoning_models = ["o3-mini", "o1-mini", "o1-pro", "o1", "o3"]
