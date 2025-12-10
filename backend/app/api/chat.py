@@ -440,7 +440,88 @@ async def chat_message(request: ChatRequest):
         from datetime import datetime
         current_date = datetime.now().strftime("%d %B %Y")
         
-        system_prompt = f"""Ты — RECEPTOR, экспертный AI-копайлот для ресторанного бизнеса.
+        # Определяем, нужен ли специальный промпт для рецептов
+        is_recipe_request = any(keyword in user_query.lower() for keyword in [
+            'рецепт', 'создай блюдо', 'техкарт', 'технологическ', 'ингредиент', 
+            'приготов', 'блюдо', 'recipe', 'dish'
+        ])
+        
+        if is_recipe_request:
+            # Золотой промпт для рецептов V1
+            system_prompt = f"""Ты — шеф-повар мирового уровня и кулинарный писатель. 
+
+СЕГОДНЯ: {current_date}
+
+Создай КРАСИВЫЙ и ПОДРОБНЫЙ рецепт для ресторанного бизнеса.
+
+ФОРМАТ РЕЦЕПТА V1 (для творчества и экспериментов):
+
+**Название блюда**
+
+📝 **ОПИСАНИЕ**
+Вдохновляющее описание блюда с историей, традициями и особенностями
+
+⏱️ **ВРЕМЕННЫЕ РАМКИ**
+Подготовка: X минут
+Приготовление: X минут
+Общее время: X минут
+
+🍽️ **ПОРЦИИ**
+На X порций
+
+🛒 **ИНГРЕДИЕНТЫ**
+Основные ингредиенты:
+• Ингредиент 1 — количество (подробное описание, зачем нужен)
+• Ингредиент 2 — количество (подробное описание, зачем нужен)
+...
+
+Специи и приправы:
+• Специя 1 — количество (влияние на вкус)
+• Специя 2 — количество (влияние на вкус)
+...
+
+👨‍🍳 **ПОШАГОВОЕ ПРИГОТОВЛЕНИЕ**
+
+**Шаг 1: Подготовка ингредиентов**
+Детальное описание подготовительного этапа с советами
+
+**Шаг 2: [Название этапа]**  
+Подробные инструкции с температурами, временем, техниками
+
+**Шаг 3: [Название этапа]**
+Ещё более детальные инструкции...
+
+[Продолжить до завершения - обычно 5-8 шагов]
+
+💡👨‍🍳 **СЕКРЕТЫ ШЕФА**
+• Профессиональный совет 1
+• Профессиональный совет 2
+• Секретная техника 3
+
+🍽️ **ПОДАЧА И ПРЕЗЕНТАЦИЯ**
+Как красиво подать блюдо, украшения, посуда
+
+🔄 **ВАРИАЦИИ И ЭКСПЕРИМЕНТЫ**
+• Интересная вариация 1
+• Креативная замена ингредиентов 2
+• Сезонная адаптация 3
+
+💾 **ПОЛЕЗНЫЕ СОВЕТЫ**
+• Как сохранить
+• Что делать если что-то пошло не так
+• Как заранее подготовить
+
+Сделай рецепт МАКСИМАЛЬНО ПОДРОБНЫМ, ВДОХНОВЛЯЮЩИМ и КРАСИВЫМ для чтения!
+
+ПРЕДЛОЖЕНИЯ СЛЕДУЮЩИХ ШАГОВ:
+В самом конце ответа добавь:
+[SUGGESTIONS]
+1. Создать техкарту для этого блюда
+2. Рассчитать себестоимость
+3. Найти похожие рецепты
+[/SUGGESTIONS]"""
+        else:
+            system_prompt = f"""Ты — RECEPTOR, экспертный AI-копайлот для ресторанного бизнеса.
 
 СЕГОДНЯ: {current_date}
 
@@ -510,6 +591,8 @@ async def chat_message(request: ChatRequest):
         suggestions = extract_suggestions(response)
         clean_response = remove_suggestions_from_content(response)
         
+        logger.info(f"💡 Extracted {len(suggestions)} suggestions: {suggestions}")
+        
         return {
             "role": "assistant", 
             "content": clean_response,
@@ -527,6 +610,7 @@ def extract_suggestions(content: str) -> List[str]:
     """Извлекает предложения следующих шагов из ответа LLM"""
     import re
     suggestions = []
+    suggestions_text = None
     
     # Вариант 1: Ищем блок [SUGGESTIONS]...[/SUGGESTIONS]
     pattern1 = r'\[SUGGESTIONS\](.*?)\[/SUGGESTIONS\]'
@@ -534,20 +618,25 @@ def extract_suggestions(content: str) -> List[str]:
     
     if match:
         suggestions_text = match.group(1).strip()
+        logger.debug("Found suggestions with brackets")
     else:
-        # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами
-        pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я]|$)'
+        # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами до конца или до следующего заголовка
+        pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{3,}:|$)'
         match = re.search(pattern2, content, re.DOTALL | re.IGNORECASE | re.MULTILINE)
         if match:
             suggestions_text = match.group(1).strip()
+            logger.debug("Found suggestions without brackets")
         else:
-            # Вариант 3: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк
-            pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:.*\n){0,5})'
+            # Вариант 3: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк с нумерацией
+            pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:\s*\d+[\.\)]\s*.*\n?){1,5})'
             match = re.search(pattern3, content, re.IGNORECASE | re.MULTILINE)
             if match:
                 suggestions_text = match.group(1).strip()
-            else:
-                return []
+                logger.debug("Found suggestions with numbered list")
+    
+    if not suggestions_text:
+        logger.debug("No suggestions block found in content")
+        return []
     
     # Разбиваем на строки и извлекаем предложения
     lines = suggestions_text.split('\n')
@@ -576,20 +665,25 @@ def remove_suggestions_from_content(content: str) -> str:
     """Удаляет блок предложений из контента ответа"""
     import re
     
+    original_length = len(content)
+    
     # Вариант 1: Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS]
     pattern1 = r'\[SUGGESTIONS\].*?\[/SUGGESTIONS\]'
     content = re.sub(pattern1, '', content, flags=re.DOTALL | re.IGNORECASE)
     
     # Вариант 2: Удаляем блок SUGGESTIONS с последующими пунктами (до следующего параграфа или конца)
-    pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n.*?(?=\n\n|\n[A-ZА-Я]|$)'
+    pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n.*?(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{3,}:|$)'
     content = re.sub(pattern2, '', content, flags=re.DOTALL | re.IGNORECASE | re.MULTILINE)
     
     # Вариант 3: Удаляем просто "SUGGESTIONS" и следующие 3-5 строк с нумерацией
-    pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(?:\s*\d+[\.\)]\s*.*\n){0,5}'
+    pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(?:\s*\d+[\.\)]\s*.*\n?){1,5}'
     content = re.sub(pattern3, '', content, flags=re.IGNORECASE | re.MULTILINE)
     
     # Убираем лишние пустые строки в конце
     content = re.sub(r'\n{3,}', '\n\n', content)
+    
+    if len(content) < original_length:
+        logger.debug(f"Removed {original_length - len(content)} chars of suggestions from content")
     
     return content.strip()
 

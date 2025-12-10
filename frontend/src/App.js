@@ -624,13 +624,23 @@ function App() {
                             strong: ({node, ...props}) => <strong className="font-semibold text-white" {...props} />,
                             a: ({node, ...props}) => <a className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
                             blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-700 pl-4 py-1 my-2 bg-gray-800/50 rounded-r text-gray-400 italic" {...props} />,
-                            code: ({node, inline, className, children, ...props}) => {
-                              return inline ? (
-                                <code className="bg-gray-800 px-1 py-0.5 rounded text-sm text-emerald-300 font-mono" {...props}>{children}</code>
-                              ) : (
-                                <code className="block bg-gray-950 p-3 rounded-lg text-sm font-mono overflow-x-auto my-2 border border-gray-800" {...props}>{children}</code>
-                              )
-                            }
+                          code: ({node, inline, className, children, ...props}) => {
+                            return inline ? (
+                              <code className="bg-gray-800 px-1 py-0.5 rounded text-sm text-emerald-300 font-mono" {...props}>{children}</code>
+                            ) : (
+                              <code className="block bg-gray-950 p-3 rounded-lg text-sm font-mono overflow-x-auto my-2 border border-gray-800" {...props}>{children}</code>
+                            )
+                          },
+                          table: ({node, ...props}) => (
+                            <div className="overflow-x-auto my-4">
+                              <table className="min-w-full border-collapse border border-gray-700 rounded-lg" {...props} />
+                            </div>
+                          ),
+                          thead: ({node, ...props}) => <thead className="bg-gray-800" {...props} />,
+                          tbody: ({node, ...props}) => <tbody className="bg-gray-900" {...props} />,
+                          tr: ({node, ...props}) => <tr className="border-b border-gray-700 hover:bg-gray-800/50" {...props} />,
+                          th: ({node, ...props}) => <th className="px-4 py-2 text-left text-sm font-semibold text-white border border-gray-700" {...props} />,
+                          td: ({node, ...props}) => <td className="px-4 py-2 text-sm text-gray-300 border border-gray-700" {...props} />
                           }}
                         >
                           {msg.content}
