@@ -75,6 +75,14 @@ async def connect_iiko_cloud(credentials: IikoCloudCredentials):
         
         # Store credentials in MongoDB (sync PyMongo)
         collection = db.get_collection("iiko_cloud_credentials")
+        
+        # Если есть только одна организация - автоматически выбираем её
+        selected_org_id = None
+        selected_org_name = None
+        if len(organizations) == 1:
+            selected_org_id = organizations[0]["id"]
+            selected_org_name = organizations[0]["name"]
+        
         collection.update_one(
             {"user_id": credentials.user_id},
             {
@@ -84,6 +92,9 @@ async def connect_iiko_cloud(credentials: IikoCloudCredentials):
                     "status": "connected",
                     "last_connection": datetime.utcnow(),
                     "organizations_count": len(organizations),
+                    "organizations": organizations,  # Сохраняем список организаций
+                    "selected_organization_id": selected_org_id,  # Выбранная организация
+                    "selected_organization_name": selected_org_name,
                     "updated_at": datetime.utcnow()
                 },
                 "$setOnInsert": {
@@ -133,10 +144,18 @@ async def get_iiko_cloud_status(user_id: str):
         # Mask API key for security
         masked_key = credentials["api_key"][:8] + "..." if credentials.get("api_key") else None
         
+        # Получаем список организаций и выбранную
+        organizations = credentials.get("organizations", [])
+        selected_org_id = credentials.get("selected_organization_id")
+        selected_org_name = credentials.get("selected_organization_name")
+        
         return {
             "status": credentials.get("status", "unknown"),
             "api_key_masked": masked_key,
             "organizations_count": credentials.get("organizations_count", 0),
+            "organizations": organizations,  # Возвращаем список организаций
+            "selected_organization_id": selected_org_id,
+            "selected_organization_name": selected_org_name,
             "last_connection": credentials.get("last_connection"),
             "message": "iikoCloud подключен" if credentials.get("status") == "connected" else "Требуется переподключение"
         }
@@ -144,6 +163,145 @@ async def get_iiko_cloud_status(user_id: str):
     except Exception as e:
         logger.error(f"Error getting iikoCloud status: {str(e)}", exc_info=True)
         return {"status": "error", "message": str(e)}
+
+
+@router.post("/cloud/select-organization")
+async def select_cloud_organization(request: OrganizationSelect):
+    """Select an organization for iikoCloud API operations"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": request.user_id})
+        if not credentials:
+            raise HTTPException(status_code=404, detail="iikoCloud не подключен")
+        
+        # Находим организацию в списке
+        organizations = credentials.get("organizations", [])
+        selected_org = next((org for org in organizations if org["id"] == request.organization_id), None)
+        
+        if not selected_org:
+            raise HTTPException(status_code=404, detail="Организация не найдена")
+        
+        # Обновляем выбранную организацию
+        collection.update_one(
+            {"user_id": request.user_id},
+            {
+                "$set": {
+                    "selected_organization_id": request.organization_id,
+                    "selected_organization_name": selected_org["name"],
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        logger.info(f"Selected Cloud organization: {selected_org['name']} ({request.organization_id})")
+        
+        return {
+            "status": "success",
+            "organization": selected_org,
+            "message": f"Выбрана организация: {selected_org['name']}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error selecting Cloud organization: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/cloud/sync")
+async def sync_cloud_nomenclature(request: OrganizationSelect):
+    """Sync nomenclature from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": request.user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        # Создаём клиент и получаем номенклатуру
+        client = IikoClient(api_login=credentials["api_key"])
+        nomenclature = client.fetch_nomenclature(request.organization_id)
+        
+        # Сохраняем в MongoDB (можно расширить для синхронизации с локальной БД)
+        sync_collection = db.get_collection("iiko_cloud_nomenclature")
+        sync_collection.update_one(
+            {
+                "user_id": request.user_id,
+                "organization_id": request.organization_id
+            },
+            {
+                "$set": {
+                    "nomenclature": nomenclature,
+                    "synced_at": datetime.utcnow(),
+                    "products_count": len(nomenclature.get("products", [])),
+                    "groups_count": len(nomenclature.get("groups", []))
+                },
+                "$setOnInsert": {
+                    "created_at": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        
+        logger.info(f"Synced Cloud nomenclature: {len(nomenclature.get('products', []))} products")
+        
+        return {
+            "status": "completed",
+            "stats": {
+                "products_processed": len(nomenclature.get("products", [])),
+                "products_created": len(nomenclature.get("products", [])),
+                "products_updated": 0,
+                "groups_count": len(nomenclature.get("groups", []))
+            },
+            "message": "Синхронизация завершена"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing Cloud nomenclature: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/menu/{user_id}")
+async def get_cloud_menu(user_id: str, organization_id: Optional[str] = None):
+    """Get menu/nomenclature from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        # Используем выбранную организацию или переданную
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        client = IikoClient(api_login=credentials["api_key"])
+        nomenclature = client.fetch_nomenclature(org_id)
+        
+        return {
+            "organization_id": org_id,
+            "organization_name": credentials.get("selected_organization_name"),
+            "products": nomenclature.get("products", []),
+            "groups": nomenclature.get("groups", []),
+            "products_count": len(nomenclature.get("products", [])),
+            "groups_count": len(nomenclature.get("groups", []))
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud menu: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/cloud/disconnect/{user_id}")

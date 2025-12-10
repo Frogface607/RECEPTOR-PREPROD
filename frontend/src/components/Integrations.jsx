@@ -31,6 +31,10 @@ function Integrations({ userId, apiUrl }) {
     const [selectedOrg, setSelectedOrg] = useState(null);
     const [syncStatus, setSyncStatus] = useState(null);
     const [syncing, setSyncing] = useState(false);
+    
+    // Cloud organizations state
+    const [cloudOrganizations, setCloudOrganizations] = useState([]);
+    const [selectedCloudOrg, setSelectedCloudOrg] = useState(null);
 
     // ============ EFFECTS ============
     useEffect(() => {
@@ -49,6 +53,17 @@ function Integrations({ userId, apiUrl }) {
         try {
             const response = await axios.get(`${apiUrl}/iiko/cloud/status/${userId}`);
             setCloudStatus(response.data);
+            
+            // Загружаем организации и выбранную
+            if (response.data.organizations) {
+                setCloudOrganizations(response.data.organizations);
+            }
+            if (response.data.selected_organization_id) {
+                setSelectedCloudOrg({
+                    id: response.data.selected_organization_id,
+                    name: response.data.selected_organization_name
+                });
+            }
         } catch (error) {
             console.error('Error fetching Cloud status:', error);
             setCloudStatus({ status: 'not_connected' });
@@ -69,7 +84,21 @@ function Integrations({ userId, apiUrl }) {
             });
             
             setCloudStatus({ status: 'connected', ...response.data });
-            setOrganizations(response.data.organizations || []);
+            setCloudOrganizations(response.data.organizations || []);
+            
+            // Если одна организация - автоматически выбираем
+            if (response.data.organizations && response.data.organizations.length === 1) {
+                const org = response.data.organizations[0];
+                setSelectedCloudOrg(org);
+                // Автоматически выбираем организацию на бэкенде
+                await selectCloudOrganization(org);
+            } else if (response.data.organizations && response.data.organizations.length > 0) {
+                // Если несколько - выбираем первую по умолчанию (или можно оставить выбор пользователю)
+                const org = response.data.organizations[0];
+                setSelectedCloudOrg(org);
+                await selectCloudOrganization(org);
+            }
+            
             setCloudApiKey(''); // Clear for security
             
         } catch (error) {
@@ -80,6 +109,38 @@ function Integrations({ userId, apiUrl }) {
         }
     };
 
+    const selectCloudOrganization = async (org) => {
+        try {
+            await axios.post(`${apiUrl}/iiko/cloud/select-organization`, {
+                organization_id: org.id,
+                user_id: userId
+            });
+            setSelectedCloudOrg(org);
+            // Обновляем статус чтобы получить актуальную информацию
+            await fetchCloudStatus();
+        } catch (error) {
+            console.error('Error selecting Cloud organization:', error);
+        }
+    };
+
+    const syncCloudNomenclature = async () => {
+        if (!selectedCloudOrg) return;
+        
+        setSyncing(true);
+        try {
+            const response = await axios.post(`${apiUrl}/iiko/cloud/sync`, {
+                organization_id: selectedCloudOrg.id,
+                user_id: userId
+            });
+            setSyncStatus(response.data);
+        } catch (error) {
+            console.error('Cloud sync error:', error);
+            setSyncStatus({ status: 'error', error: error.response?.data?.detail });
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     const disconnectCloud = async () => {
         if (!window.confirm('Отключить iikoCloud API?')) return;
         
@@ -87,7 +148,8 @@ function Integrations({ userId, apiUrl }) {
         try {
             await axios.delete(`${apiUrl}/iiko/cloud/disconnect/${userId}`);
             setCloudStatus({ status: 'not_connected' });
-            setOrganizations([]);
+            setCloudOrganizations([]);
+            setSelectedCloudOrg(null);
         } catch (error) {
             console.error('Error disconnecting Cloud:', error);
         } finally {
@@ -264,12 +326,13 @@ function Integrations({ userId, apiUrl }) {
                         {/* Content */}
                         <div className="p-6">
                             {cloudStatus?.status === 'connected' ? (
-                                <div className="space-y-4">
+                                <div className="space-y-6">
+                                    {/* Connection Info */}
                                     <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-between mb-4">
                                             <div>
                                                 <p className="text-sm text-gray-400">API Ключ</p>
-                                                <p className="text-white font-mono">{cloudStatus.api_key_masked || '********'}</p>
+                                                <p className="text-white font-mono text-sm">{cloudStatus.api_key_masked || '********'}</p>
                                             </div>
                                             <div>
                                                 <p className="text-sm text-gray-400">Организаций</p>
@@ -277,6 +340,97 @@ function Integrations({ userId, apiUrl }) {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Organization Selection */}
+                                    {cloudOrganizations.length > 0 && (
+                                        <div>
+                                            <label className="block text-gray-300 text-sm font-medium mb-2">
+                                                Выберите организацию
+                                            </label>
+                                            <div className="space-y-2">
+                                                {cloudOrganizations.map((org) => (
+                                                    <button
+                                                        key={org.id}
+                                                        onClick={() => selectCloudOrganization(org)}
+                                                        className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                                                            selectedCloudOrg?.id === org.id
+                                                                ? 'bg-emerald-600/20 border-emerald-500/50 text-white'
+                                                                : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600'
+                                                        }`}
+                                                    >
+                                                        <Building2 size={18} />
+                                                        <span className="flex-1 text-left">{org.name}</span>
+                                                        {selectedCloudOrg?.id === org.id && (
+                                                            <CheckCircle2 size={18} className="text-emerald-400" />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Selected Organization Info */}
+                                    {selectedCloudOrg && (
+                                        <div className="bg-emerald-600/10 rounded-lg p-4 border border-emerald-500/30">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <Building2 className="text-emerald-400" size={20} />
+                                                    <div>
+                                                        <p className="text-white font-medium">{selectedCloudOrg.name}</p>
+                                                        <p className="text-emerald-400/80 text-sm">Активная организация</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={syncCloudNomenclature}
+                                                    disabled={syncing}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+                                                >
+                                                    {syncing ? (
+                                                        <Loader2 size={16} className="animate-spin" />
+                                                    ) : (
+                                                        <Database size={16} />
+                                                    )}
+                                                    {syncing ? 'Синхронизация...' : 'Синхронизировать'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Sync Status */}
+                                    {syncStatus && (
+                                        <div className={`rounded-lg p-4 border ${
+                                            syncStatus.status === 'completed' 
+                                                ? 'bg-emerald-600/10 border-emerald-500/30' 
+                                                : syncStatus.status === 'error'
+                                                    ? 'bg-red-600/10 border-red-500/30'
+                                                    : 'bg-gray-800/50 border-gray-700'
+                                        }`}>
+                                            <p className="font-medium text-white mb-2">
+                                                {syncStatus.status === 'completed' ? '✅ Синхронизация завершена' : 
+                                                 syncStatus.status === 'error' ? '❌ Ошибка синхронизации' :
+                                                 '⏳ Синхронизация...'}
+                                            </p>
+                                            {syncStatus.stats && (
+                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                    <div>
+                                                        <p className="text-gray-400">Обработано</p>
+                                                        <p className="text-white font-bold">{syncStatus.stats.products_processed || 0}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-400">Создано</p>
+                                                        <p className="text-emerald-400 font-bold">{syncStatus.stats.products_created || 0}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-400">Групп</p>
+                                                        <p className="text-blue-400 font-bold">{syncStatus.stats.groups_count || 0}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {syncStatus.error && (
+                                                <p className="text-red-400 text-sm mt-2">{syncStatus.error}</p>
+                                            )}
+                                        </div>
+                                    )}
                                     
                                     <button
                                         onClick={disconnectCloud}

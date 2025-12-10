@@ -588,10 +588,18 @@ async def chat_message(request: ChatRequest):
         logger.info(f"🤖 Model: {model_used} | Complexity: {complexity} | Cost: ${cost:.4f}")
         
         # Извлекаем предложения следующих шагов из ответа
+        # Сначала удаляем, потом извлекаем, чтобы не было конфликтов
         suggestions = extract_suggestions(response)
         clean_response = remove_suggestions_from_content(response)
         
-        logger.info(f"💡 Extracted {len(suggestions)} suggestions: {suggestions}")
+        # Логируем для отладки
+        if suggestions:
+            logger.info(f"💡 Extracted {len(suggestions)} suggestions: {suggestions}")
+        else:
+            logger.debug(f"⚠️ No suggestions found in response. Response length: {len(response)}")
+            # Проверяем, есть ли вообще блок SUGGESTIONS в ответе
+            if '[SUGGESTIONS]' in response.upper() or 'SUGGESTIONS' in response.upper():
+                logger.warning(f"⚠️ SUGGESTIONS keyword found but not parsed. Response snippet: {response[-500:]}")
         
         return {
             "role": "assistant", 
@@ -612,30 +620,38 @@ def extract_suggestions(content: str) -> List[str]:
     suggestions = []
     suggestions_text = None
     
-    # Вариант 1: Ищем блок [SUGGESTIONS]...[/SUGGESTIONS]
+    # Вариант 1: Ищем блок [SUGGESTIONS]...[/SUGGESTIONS] (самый надежный)
     pattern1 = r'\[SUGGESTIONS\](.*?)\[/SUGGESTIONS\]'
     match = re.search(pattern1, content, re.DOTALL | re.IGNORECASE)
     
     if match:
         suggestions_text = match.group(1).strip()
-        logger.debug("Found suggestions with brackets")
+        logger.debug("✅ Found suggestions with [SUGGESTIONS] tags")
     else:
-        # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами до конца или до следующего заголовка
-        pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{3,}:|$)'
+        # Вариант 2: Ищем блок SUGGESTIONS (без скобок) с последующими пунктами
+        # Более гибкий паттерн - ищем до конца строки или до следующего заголовка
+        pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
         match = re.search(pattern2, content, re.DOTALL | re.IGNORECASE | re.MULTILINE)
         if match:
             suggestions_text = match.group(1).strip()
-            logger.debug("Found suggestions without brackets")
+            logger.debug("✅ Found suggestions without brackets")
         else:
-            # Вариант 3: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк с нумерацией
-            pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:\s*\d+[\.\)]\s*.*\n?){1,5})'
-            match = re.search(pattern3, content, re.IGNORECASE | re.MULTILINE)
+            # Вариант 3: Ищем "Следующие шаги" на русском
+            pattern3 = r'(?:^|\n)\s*[Сс]ледующие\s+шаги[:\s]*\n(.*?)(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
+            match = re.search(pattern3, content, re.DOTALL | re.MULTILINE)
             if match:
                 suggestions_text = match.group(1).strip()
-                logger.debug("Found suggestions with numbered list")
+                logger.debug("✅ Found suggestions with 'Следующие шаги'")
+            else:
+                # Вариант 4: Ищем просто "SUGGESTIONS" и берём следующие 3-5 строк с нумерацией
+                pattern4 = r'(?:^|\n)\s*SUGGESTIONS\s*\n((?:\s*\d+[\.\)]\s*.*\n?){1,5})'
+                match = re.search(pattern4, content, re.IGNORECASE | re.MULTILINE)
+                if match:
+                    suggestions_text = match.group(1).strip()
+                    logger.debug("✅ Found suggestions with numbered list")
     
     if not suggestions_text:
-        logger.debug("No suggestions block found in content")
+        logger.debug("❌ No suggestions block found in content")
         return []
     
     # Разбиваем на строки и извлекаем предложения
@@ -645,8 +661,11 @@ def extract_suggestions(content: str) -> List[str]:
         # Пропускаем пустые строки
         if not line:
             continue
-        # Пропускаем заголовки типа "SUGGESTIONS"
-        if line.upper() in ['SUGGESTIONS', 'СЛЕДУЮЩИЕ ШАГИ', 'РЕКОМЕНДАЦИИ']:
+        # Пропускаем заголовки типа "SUGGESTIONS", "Следующие шаги"
+        if line.upper() in ['SUGGESTIONS', 'СЛЕДУЮЩИЕ ШАГИ', 'РЕКОМЕНДАЦИИ', 'СЛЕДУЮЩИЕ ШАГИ:']:
+            continue
+        # Пропускаем разделители
+        if line.startswith('---') or line.startswith('===') or line.startswith('___'):
             continue
         # Убираем нумерацию (1., 2., и т.д.)
         line = re.sub(r'^\d+[\.\)]\s*', '', line)
@@ -654,11 +673,16 @@ def extract_suggestions(content: str) -> List[str]:
         line = re.sub(r'^[-•*]\s*', '', line)
         # Убираем знаки вопроса в конце (они будут добавлены при необходимости)
         line = re.sub(r'\?+\s*$', '', line)
+        # Убираем лишние пробелы
+        line = line.strip()
         if line and len(line) > 3:  # Минимум 3 символа
             suggestions.append(line)
     
     # Ограничиваем до 3 предложений
-    return suggestions[:3]
+    result = suggestions[:3]
+    if result:
+        logger.debug(f"✅ Parsed {len(result)} suggestions: {result}")
+    return result
 
 
 def remove_suggestions_from_content(content: str) -> str:
@@ -666,24 +690,34 @@ def remove_suggestions_from_content(content: str) -> str:
     import re
     
     original_length = len(content)
+    original_content = content
     
-    # Вариант 1: Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS]
+    # Вариант 1: Удаляем блок [SUGGESTIONS]...[/SUGGESTIONS] (самый надежный)
     pattern1 = r'\[SUGGESTIONS\].*?\[/SUGGESTIONS\]'
     content = re.sub(pattern1, '', content, flags=re.DOTALL | re.IGNORECASE)
     
-    # Вариант 2: Удаляем блок SUGGESTIONS с последующими пунктами (до следующего параграфа или конца)
-    pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n.*?(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{3,}:|$)'
+    # Вариант 2: Удаляем блок SUGGESTIONS с последующими пунктами
+    pattern2 = r'(?:^|\n)\s*SUGGESTIONS\s*\n.*?(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
     content = re.sub(pattern2, '', content, flags=re.DOTALL | re.IGNORECASE | re.MULTILINE)
     
-    # Вариант 3: Удаляем просто "SUGGESTIONS" и следующие 3-5 строк с нумерацией
-    pattern3 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(?:\s*\d+[\.\)]\s*.*\n?){1,5}'
-    content = re.sub(pattern3, '', content, flags=re.IGNORECASE | re.MULTILINE)
+    # Вариант 3: Удаляем "Следующие шаги" на русском
+    pattern3 = r'(?:^|\n)\s*[Сс]ледующие\s+шаги[:\s]*\n.*?(?=\n\n|\n[A-ZА-Я][A-ZА-Я\s]{2,}:|$)'
+    content = re.sub(pattern3, '', content, flags=re.DOTALL | re.MULTILINE)
+    
+    # Вариант 4: Удаляем просто "SUGGESTIONS" и следующие 3-5 строк с нумерацией
+    pattern4 = r'(?:^|\n)\s*SUGGESTIONS\s*\n(?:\s*\d+[\.\)]\s*.*\n?){1,5}'
+    content = re.sub(pattern4, '', content, flags=re.IGNORECASE | re.MULTILINE)
     
     # Убираем лишние пустые строки в конце
     content = re.sub(r'\n{3,}', '\n\n', content)
+    # Убираем пустые строки в самом конце
+    content = re.sub(r'\n+$', '\n', content)
     
-    if len(content) < original_length:
-        logger.debug(f"Removed {original_length - len(content)} chars of suggestions from content")
+    removed_chars = original_length - len(content)
+    if removed_chars > 0:
+        logger.debug(f"✅ Removed {removed_chars} chars of suggestions from content")
+    elif '[SUGGESTIONS]' in original_content.upper() or 'SUGGESTIONS' in original_content.upper():
+        logger.warning(f"⚠️ SUGGESTIONS found but not removed. Content length: {len(content)}")
     
     return content.strip()
 
