@@ -16,6 +16,7 @@ from pyiikocloudapi import IikoTransport
 from pyiikocloudapi.models import BaseOrganizationsModel, BaseNomenclatureModel
 from requests.exceptions import RequestException, Timeout, ConnectionError
 import traceback
+import requests
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -257,10 +258,39 @@ class IikoClient:
             else:
                 raise IikoAPIError(f"Failed to fetch nomenclature: {str(e)}")
     
+    def _get_access_token_direct(self) -> str:
+        """
+        Get access token via direct HTTP request to Cloud API.
+        Returns token string for use in Authorization header.
+        """
+        try:
+            # Cloud API v1 endpoint for access token
+            token_url = f"{self.base_url}/api/1/access_token"
+            
+            response = requests.post(
+                token_url,
+                json={"apiLogin": self.api_login},
+                timeout=self.timeout
+            )
+            
+            response.raise_for_status()
+            token_data = response.json()
+            
+            token = token_data.get("token")
+            if not token:
+                raise IikoAPIError("Token not found in response")
+            
+            logger.info("✅ Access token obtained via direct HTTP request")
+            return token
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to get access token via HTTP: {e}")
+            raise IikoAPIError(f"Failed to get access token: {str(e)}")
+    
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def get_sales_report(self, organization_id: str, date_from: str, date_to: str, group_by: str = "DAY") -> Dict[str, Any]:
         """
-        Get sales report from iikoCloud API.
+        Get sales report from iikoCloud API via direct HTTP request.
         
         Args:
             organization_id: Organization ID
@@ -272,57 +302,106 @@ class IikoClient:
             Dictionary with sales report data
         """
         try:
-            if not self._client:
-                self._initialize_client()
-            
             if not organization_id:
                 raise IikoAPIError("Organization ID cannot be empty")
             
-            logger.info(f"Fetching sales report for org: {organization_id} from {date_from} to {date_to}, group_by: {group_by}")
+            logger.info(f"📊 Fetching sales report via direct HTTP: org={organization_id}, from={date_from}, to={date_to}, groupBy={group_by}")
             
-            # Try to use reports method if available
-            # Note: pyiikocloudapi might not have direct reports method, so we might need to use direct HTTP calls
-            # For now, let's check if the client has a reports attribute
-            if hasattr(self._client, 'reports') and hasattr(self._client.reports, 'sales'):
-                try:
-                    from datetime import datetime
-                    from uuid import UUID
-                    
-                    response = self._client.reports.sales(
-                        organizationIds=[UUID(organization_id)],
-                        dateFrom=datetime.strptime(date_from, '%Y-%m-%d'),
-                        dateTo=datetime.strptime(date_to, '%Y-%m-%d'),
-                        groupBy=group_by
-                    )
-                    logger.info(f"✅ Sales report received via reports.sales()")
-                    
-                    # Parse response
-                    sales_data = {
-                        "totalRevenue": getattr(response, 'totalRevenue', 0.0),
-                        "totalChecks": getattr(response, 'totalChecks', 0),
-                        "averageCheck": getattr(response, 'averageCheck', 0.0),
-                        "data": []
-                    }
-                    
-                    if hasattr(response, 'data') and response.data:
-                        for item in response.data:
-                            sales_data["data"].append({
-                                "period": getattr(item, 'period', None),
-                                "revenue": getattr(item, 'revenue', 0.0),
-                                "checks": getattr(item, 'checks', 0)
-                            })
-                    
-                    return sales_data
-                except Exception as e:
-                    logger.warning(f"reports.sales() method failed: {e}, trying alternative approach...")
-            
-            # Fallback: return message that reports are not directly supported yet
-            logger.warning("Sales report API not directly supported by current iikoCloud client library")
-            return {
-                "error": "Sales report API not directly supported by current pyiikocloudapi library",
-                "message": "Для получения отчётов о продажах может потребоваться прямой HTTP-запрос к Cloud API",
-                "suggestion": "Проверьте документацию iikoCloud API для прямых запросов к /api/v1/reports/sales"
+            # Get access token
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
             }
+            
+            # Try different possible endpoints for sales reports
+            possible_endpoints = [
+                f"{self.base_url}/api/v1/reports/sales",
+                f"{self.base_url}/api/1/reports/sales",
+                f"{self.base_url}/cloud/api/v1/reports/sales"
+            ]
+            
+            params = {
+                "organizationId": organization_id,
+                "dateFrom": date_from,
+                "dateTo": date_to,
+                "groupBy": group_by
+            }
+            
+            last_error = None
+            for endpoint in possible_endpoints:
+                try:
+                    logger.info(f"Trying endpoint: {endpoint}")
+                    response = requests.get(
+                        endpoint,
+                        headers=headers,
+                        params=params,
+                        timeout=self.timeout
+                    )
+                    
+                    if response.status_code == 200:
+                        report_data = response.json()
+                        logger.info(f"✅ Sales report received from {endpoint}")
+                        return report_data
+                    elif response.status_code == 404:
+                        logger.warning(f"Endpoint {endpoint} not found (404), trying next...")
+                        continue
+                    else:
+                        logger.warning(f"Endpoint {endpoint} returned {response.status_code}: {response.text[:200]}")
+                        last_error = f"HTTP {response.status_code}: {response.text[:200]}"
+                        continue
+                        
+                except requests.exceptions.RequestException as e:
+                    logger.warning(f"Request to {endpoint} failed: {e}")
+                    last_error = str(e)
+                    continue
+            
+            # If all endpoints failed, try using orders endpoint as alternative
+            logger.info("All reports endpoints failed, trying orders endpoint as alternative...")
+            try:
+                orders_endpoint = f"{self.base_url}/api/1/orders"
+                orders_params = {
+                    "organizationId": organization_id,
+                    "dateFrom": date_from,
+                    "dateTo": date_to
+                }
+                
+                response = requests.get(
+                    orders_endpoint,
+                    headers=headers,
+                    params=orders_params,
+                    timeout=self.timeout
+                )
+                
+                if response.status_code == 200:
+                    orders_data = response.json()
+                    logger.info(f"✅ Orders data received, calculating sales from orders...")
+                    
+                    # Calculate sales from orders
+                    total_revenue = 0.0
+                    total_checks = 0
+                    orders = orders_data.get("orders", []) if isinstance(orders_data, dict) else orders_data if isinstance(orders_data, list) else []
+                    
+                    for order in orders:
+                        if isinstance(order, dict):
+                            total_revenue += float(order.get("sum", 0) or 0)
+                            total_checks += 1
+                    
+                    avg_check = total_revenue / total_checks if total_checks > 0 else 0.0
+                    
+                    return {
+                        "totalRevenue": total_revenue,
+                        "totalChecks": total_checks,
+                        "averageCheck": avg_check,
+                        "data": [],
+                        "source": "orders_endpoint",
+                        "message": "Данные рассчитаны на основе заказов"
+                    }
+            except Exception as e:
+                logger.warning(f"Orders endpoint also failed: {e}")
+            
+            # Final fallback
+            raise IikoAPIError(f"Failed to get sales report from all endpoints. Last error: {last_error}")
             
         except Exception as e:
             logger.error(f"Error in get_sales_report: {str(e)}", exc_info=True)
