@@ -245,22 +245,30 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
         
         try:
             client = IikoClient(api_login=api_key)
-            logger.info(f"✅ IikoClient created successfully")
+            logger.info(f"✅ IikoClient created successfully for org: {org_id}")
         except Exception as e:
             logger.error(f"❌ Failed to create IikoClient: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Ошибка создания клиента iikoCloud: {str(e)}")
         
         try:
+            logger.info(f"📡 Calling fetch_nomenclature for org_id: {org_id}")
             nomenclature = client.fetch_nomenclature(org_id)
-            logger.info(f"✅ fetch_nomenclature returned: type={type(nomenclature)}, keys={list(nomenclature.keys()) if isinstance(nomenclature, dict) else 'not a dict'}")
+            logger.info(f"✅ fetch_nomenclature returned: type={type(nomenclature)}")
+            
+            if isinstance(nomenclature, dict):
+                logger.info(f"✅ Nomenclature keys: {list(nomenclature.keys())}")
+            else:
+                logger.error(f"❌ Nomenclature is not a dict: {type(nomenclature)}, value: {str(nomenclature)[:200]}")
         except Exception as e:
             logger.error(f"❌ Failed to fetch nomenclature: {e}", exc_info=True)
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise HTTPException(status_code=500, detail=f"Ошибка получения номенклатуры: {str(e)}")
         
         # Проверяем структуру ответа
         if not isinstance(nomenclature, dict):
             logger.error(f"❌ Nomenclature is not a dict: {type(nomenclature)}")
-            raise HTTPException(status_code=500, detail="Некорректный формат данных номенклатуры")
+            raise HTTPException(status_code=500, detail=f"Некорректный формат данных номенклатуры: получен {type(nomenclature)}")
         
         products = nomenclature.get("products", [])
         groups = nomenclature.get("groups", [])
@@ -273,7 +281,14 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
             logger.warning(f"⚠️ Groups is not a list: {type(groups)}, converting...")
             groups = []
         
-        logger.info(f"✅ Received {len(products)} products, {len(groups)} groups from iikoCloud")
+        logger.info(f"✅ Parsed: {len(products)} products, {len(groups)} groups from iikoCloud")
+        
+        # Дополнительная проверка - если продуктов 0, логируем предупреждение
+        if len(products) == 0:
+            logger.warning(f"⚠️ WARNING: Received 0 products from iikoCloud for org {org_id}")
+            logger.warning(f"⚠️ Nomenclature structure: {list(nomenclature.keys())}")
+            if "products" in nomenclature:
+                logger.warning(f"⚠️ Products value type: {type(nomenclature['products'])}, value: {str(nomenclature['products'])[:200]}")
         
         # Сохраняем в MongoDB
         sync_collection = db.get_collection("iiko_cloud_nomenclature")
