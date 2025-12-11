@@ -164,20 +164,35 @@ class IikoClient:
                 raise IikoAPIError(f"Failed to fetch organizations: {str(e)}")
     
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
-    def fetch_nomenclature(self, organization_id: str) -> Dict[str, Any]:
+    def fetch_nomenclature(self, organization_id: str, use_direct_http: bool = True) -> Dict[str, Any]:
         """
         Retrieve nomenclature with comprehensive error handling for restaurant data.
         Implements retry logic for handling temporary service interruptions.
-        Tries menu() first, then nomenclature().
+        
+        Args:
+            organization_id: Organization ID
+            use_direct_http: If True, use direct HTTP request to /api/v1/menu (recommended)
+        
+        Returns:
+            Dictionary with products and groups
         """
         try:
-            if not self._client:
-                self._initialize_client()
-            
             if not organization_id:
                 raise IikoAPIError("Organization ID cannot be empty")
             
-            logger.info(f"Fetching nomenclature for organization: {organization_id}")
+            logger.info(f"Fetching nomenclature for organization: {organization_id}, use_direct_http={use_direct_http}")
+            
+            # Try direct HTTP first (more reliable)
+            if use_direct_http:
+                try:
+                    return self.fetch_nomenclature_direct_http(organization_id)
+                except Exception as http_error:
+                    logger.warning(f"Direct HTTP request failed: {http_error}, falling back to pyiikocloudapi...")
+                    # Fall through to pyiikocloudapi method
+            
+            # Fallback to pyiikocloudapi library
+            if not self._client:
+                self._initialize_client()
             
             # Try menu() method first (as per documentation: GET /api/v1/menu)
             response = None
@@ -245,7 +260,8 @@ class IikoClient:
                 "products": products,
                 "groups": groups,
                 "correlation_id": str(getattr(response, 'correlation_id', None)) if getattr(response, 'correlation_id', None) else None,
-                "organization_id": organization_id
+                "organization_id": organization_id,
+                "source": "pyiikocloudapi"
             }
             
             logger.info(f"Successfully retrieved nomenclature: {len(products)} products, {len(groups)} groups")
@@ -411,32 +427,357 @@ class IikoClient:
                 raise IikoAPIError(f"Failed to fetch sales report: {str(e)}")
     
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
-    def get_sales_report(self, organization_id: str, date_from: str, date_to: str) -> Dict[str, Any]:
+    def fetch_nomenclature_direct_http(self, organization_id: str, include_archived: bool = False) -> Dict[str, Any]:
         """
-        Get sales/revenue report from iikoCloud API.
-        Note: This is a placeholder - iikoCloud API may not have direct sales reports endpoint.
-        For sales data, you typically need to use orders endpoint or RMS Server API.
+        Fetch nomenclature via direct HTTP request to /api/v1/menu endpoint.
+        This is more reliable than using pyiikocloudapi library.
+        
+        Args:
+            organization_id: Organization ID
+            include_archived: Include archived items
+        
+        Returns:
+            Dictionary with products and groups
         """
         try:
-            if not self._client:
-                self._initialize_client()
-            
             if not organization_id:
                 raise IikoAPIError("Organization ID cannot be empty")
             
-            logger.info(f"Fetching sales report for organization: {organization_id}, from {date_from} to {date_to}")
+            logger.info(f"📋 Fetching menu/nomenclature via direct HTTP: org={organization_id}, includeArchived={include_archived}")
             
-            # iikoCloud API typically doesn't have direct sales reports
-            # We would need to use orders endpoint or RMS Server API
-            # This is a placeholder for future implementation
-            raise IikoAPIError("Sales reports are not available via iikoCloud API. Use RMS Server API or orders endpoint instead.")
+            # Get access token
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Try different possible endpoints for menu
+            possible_endpoints = [
+                f"{self.base_url}/api/v1/menu",
+                f"{self.base_url}/api/1/menu",
+                f"{self.base_url}/cloud/api/v1/menu"
+            ]
+            
+            params = {
+                "organizationId": organization_id,
+                "includeArchived": str(include_archived).lower()
+            }
+            
+            last_error = None
+            for endpoint in possible_endpoints:
+                try:
+                    logger.info(f"Trying menu endpoint: {endpoint}")
+                    response = requests.get(
+                        endpoint,
+                        headers=headers,
+                        params=params,
+                        timeout=self.timeout
+                    )
+                    
+                    if response.status_code == 200:
+                        menu_data = response.json()
+                        logger.info(f"✅ Menu/nomenclature received from {endpoint}")
+                        
+                        # Parse response structure
+                        products = menu_data.get("products", []) if isinstance(menu_data, dict) else []
+                        groups = menu_data.get("groups", []) if isinstance(menu_data, dict) else []
+                        
+                        # If response is a list, it might be products directly
+                        if isinstance(menu_data, list):
+                            products = menu_data
+                            groups = []
+                        
+                        logger.info(f"📊 Parsed: {len(products)} products, {len(groups)} groups")
+                        
+                        return {
+                            "products": products,
+                            "groups": groups,
+                            "organization_id": organization_id,
+                            "source": "direct_http"
+                        }
+                    elif response.status_code == 404:
+                        logger.warning(f"Endpoint {endpoint} not found (404), trying next...")
+                        continue
+                    else:
+                        logger.warning(f"Endpoint {endpoint} returned {response.status_code}: {response.text[:200]}")
+                        last_error = f"HTTP {response.status_code}: {response.text[:200]}"
+                        continue
+                        
+                except requests.exceptions.RequestException as e:
+                    logger.warning(f"Request to {endpoint} failed: {e}")
+                    last_error = str(e)
+                    continue
+            
+            raise IikoAPIError(f"Failed to get menu from all endpoints. Last error: {last_error}")
             
         except Exception as e:
-            logger.error(f"Error in get_sales_report: {str(e)}")
+            logger.error(f"Error in fetch_nomenclature_direct_http: {str(e)}", exc_info=True)
             if isinstance(e, IikoAPIError):
                 raise
             else:
-                raise IikoAPIError(f"Failed to fetch sales report: {str(e)}")
+                raise IikoAPIError(f"Failed to fetch menu via direct HTTP: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_orders(self, organization_id: str, date_from: str, date_to: str, statuses: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Get orders from iikoCloud API.
+        
+        Args:
+            organization_id: Organization ID
+            date_from: Start date (YYYY-MM-DD)
+            date_to: End date (YYYY-MM-DD)
+            statuses: Optional list of order statuses to filter
+        
+        Returns:
+            Dictionary with orders data
+        """
+        try:
+            if not organization_id:
+                raise IikoAPIError("Organization ID cannot be empty")
+            
+            logger.info(f"📦 Fetching orders: org={organization_id}, from={date_from}, to={date_to}")
+            
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            endpoint = f"{self.base_url}/api/v1/orders"
+            params = {
+                "organizationId": organization_id,
+                "dateFrom": date_from,
+                "dateTo": date_to
+            }
+            
+            if statuses:
+                params["statuses"] = ",".join(statuses)
+            
+            response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            orders_data = response.json()
+            orders = orders_data.get("orders", []) if isinstance(orders_data, dict) else orders_data if isinstance(orders_data, list) else []
+            
+            logger.info(f"✅ Received {len(orders)} orders")
+            
+            return {
+                "orders": orders,
+                "count": len(orders),
+                "organization_id": organization_id,
+                "date_from": date_from,
+                "date_to": date_to
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_orders: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch orders: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_stock_report(self, organization_id: str, date: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get stock report from iikoCloud API.
+        
+        Args:
+            organization_id: Organization ID
+            date: Report date (YYYY-MM-DD), defaults to today
+        
+        Returns:
+            Dictionary with stock report data
+        """
+        try:
+            if not organization_id:
+                raise IikoAPIError("Organization ID cannot be empty")
+            
+            if not date:
+                date = datetime.now().strftime("%Y-%m-%d")
+            
+            logger.info(f"📦 Fetching stock report: org={organization_id}, date={date}")
+            
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            endpoint = f"{self.base_url}/api/v1/stock/report"
+            params = {
+                "organizationId": organization_id,
+                "date": date
+            }
+            
+            response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            stock_data = response.json()
+            logger.info(f"✅ Stock report received")
+            
+            return stock_data
+            
+        except Exception as e:
+            logger.error(f"Error in get_stock_report: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch stock report: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_purchases_report(self, organization_id: str, date_from: str, date_to: str, supplier_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get purchases report from iikoCloud API.
+        
+        Args:
+            organization_id: Organization ID
+            date_from: Start date (YYYY-MM-DD)
+            date_to: End date (YYYY-MM-DD)
+            supplier_id: Optional supplier ID to filter
+        
+        Returns:
+            Dictionary with purchases report data
+        """
+        try:
+            if not organization_id:
+                raise IikoAPIError("Organization ID cannot be empty")
+            
+            logger.info(f"🛒 Fetching purchases report: org={organization_id}, from={date_from}, to={date_to}")
+            
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            endpoint = f"{self.base_url}/api/v1/reports/purchases"
+            params = {
+                "organizationId": organization_id,
+                "dateFrom": date_from,
+                "dateTo": date_to
+            }
+            
+            if supplier_id:
+                params["supplierId"] = supplier_id
+            
+            response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            purchases_data = response.json()
+            logger.info(f"✅ Purchases report received")
+            
+            return purchases_data
+            
+        except Exception as e:
+            logger.error(f"Error in get_purchases_report: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch purchases report: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_employees(self, organization_id: str) -> Dict[str, Any]:
+        """
+        Get employees list from iikoCloud API.
+        
+        Args:
+            organization_id: Organization ID
+        
+        Returns:
+            Dictionary with employees data
+        """
+        try:
+            if not organization_id:
+                raise IikoAPIError("Organization ID cannot be empty")
+            
+            logger.info(f"👥 Fetching employees: org={organization_id}")
+            
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            endpoint = f"{self.base_url}/api/v1/employees"
+            params = {
+                "organizationId": organization_id
+            }
+            
+            response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            employees_data = response.json()
+            employees = employees_data.get("employees", []) if isinstance(employees_data, dict) else employees_data if isinstance(employees_data, list) else []
+            
+            logger.info(f"✅ Received {len(employees)} employees")
+            
+            return {
+                "employees": employees,
+                "count": len(employees),
+                "organization_id": organization_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_employees: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch employees: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_employee_attendances(self, employee_id: str, date_from: str, date_to: str) -> Dict[str, Any]:
+        """
+        Get employee attendances from iikoCloud API.
+        
+        Args:
+            employee_id: Employee ID
+            date_from: Start date (YYYY-MM-DD)
+            date_to: End date (YYYY-MM-DD)
+        
+        Returns:
+            Dictionary with attendances data
+        """
+        try:
+            if not employee_id:
+                raise IikoAPIError("Employee ID cannot be empty")
+            
+            logger.info(f"⏰ Fetching attendances: employee={employee_id}, from={date_from}, to={date_to}")
+            
+            token = self._get_access_token_direct()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            endpoint = f"{self.base_url}/api/v1/employees/{employee_id}/attendances"
+            params = {
+                "dateFrom": date_from,
+                "dateTo": date_to
+            }
+            
+            response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            attendances_data = response.json()
+            attendances = attendances_data.get("attendances", []) if isinstance(attendances_data, dict) else attendances_data if isinstance(attendances_data, list) else []
+            
+            logger.info(f"✅ Received {len(attendances)} attendances")
+            
+            return {
+                "attendances": attendances,
+                "count": len(attendances),
+                "employee_id": employee_id,
+                "date_from": date_from,
+                "date_to": date_to
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_employee_attendances: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch attendances: {str(e)}")
     
     def health_check(self) -> Dict[str, Any]:
         """

@@ -259,10 +259,10 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
             logger.error(f"❌ Failed to create/test IikoClient: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Ошибка подключения к iikoCloud: {str(e)}")
         
-        # Пытаемся получить номенклатуру (может вернуть 0, это нормально для Cloud API)
+        # Пытаемся получить номенклатуру через прямой HTTP запрос (более надёжно)
         try:
-            logger.info(f"📡 Attempting to fetch menu/nomenclature from Cloud API (may return empty)")
-            nomenclature = client.fetch_nomenclature(org_id)
+            logger.info(f"📡 Attempting to fetch menu/nomenclature from Cloud API via direct HTTP (may return empty)")
+            nomenclature = client.fetch_nomenclature(org_id, use_direct_http=True)
             
             products = nomenclature.get("products", []) if isinstance(nomenclature, dict) else []
             groups = nomenclature.get("groups", []) if isinstance(nomenclature, dict) else []
@@ -358,7 +358,7 @@ async def get_cloud_menu(user_id: str, organization_id: Optional[str] = None):
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
         client = IikoClient(api_login=credentials["api_key"])
-        nomenclature = client.fetch_nomenclature(org_id)
+        nomenclature = client.fetch_nomenclature(org_id, use_direct_http=True)
         
         return {
             "organization_id": org_id,
@@ -381,6 +381,7 @@ async def get_cloud_sales_report(
     user_id: str,
     date_from: str,
     date_to: str,
+    group_by: str = "DAY",
     organization_id: Optional[str] = None
 ):
     """Get sales report from iikoCloud API"""
@@ -403,13 +404,14 @@ async def get_cloud_sales_report(
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
         client = IikoClient(api_login=api_key)
-        report = client.get_sales_report(org_id, date_from, date_to)
+        report = client.get_sales_report(org_id, date_from, date_to, group_by)
         
         return {
             "organization_id": org_id,
             "organization_name": credentials.get("selected_organization_name"),
             "date_from": date_from,
             "date_to": date_to,
+            "group_by": group_by,
             "report": report
         }
         
@@ -417,6 +419,215 @@ async def get_cloud_sales_report(
         raise
     except Exception as e:
         logger.error(f"Error getting Cloud sales report: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/reports/stock/{user_id}")
+async def get_cloud_stock_report(
+    user_id: str,
+    date: Optional[str] = None,
+    organization_id: Optional[str] = None
+):
+    """Get stock report from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        report = client.get_stock_report(org_id, date)
+        
+        return {
+            "organization_id": org_id,
+            "organization_name": credentials.get("selected_organization_name"),
+            "date": date,
+            "report": report
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud stock report: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/reports/purchases/{user_id}")
+async def get_cloud_purchases_report(
+    user_id: str,
+    date_from: str,
+    date_to: str,
+    supplier_id: Optional[str] = None,
+    organization_id: Optional[str] = None
+):
+    """Get purchases report from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        report = client.get_purchases_report(org_id, date_from, date_to, supplier_id)
+        
+        return {
+            "organization_id": org_id,
+            "organization_name": credentials.get("selected_organization_name"),
+            "date_from": date_from,
+            "date_to": date_to,
+            "supplier_id": supplier_id,
+            "report": report
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud purchases report: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/orders/{user_id}")
+async def get_cloud_orders(
+    user_id: str,
+    date_from: str,
+    date_to: str,
+    statuses: Optional[str] = None,
+    organization_id: Optional[str] = None
+):
+    """Get orders from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        status_list = statuses.split(",") if statuses else None
+        
+        client = IikoClient(api_login=api_key)
+        orders_data = client.get_orders(org_id, date_from, date_to, status_list)
+        
+        return {
+            "organization_id": org_id,
+            "organization_name": credentials.get("selected_organization_name"),
+            "date_from": date_from,
+            "date_to": date_to,
+            "orders": orders_data
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud orders: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/employees/{user_id}")
+async def get_cloud_employees(
+    user_id: str,
+    organization_id: Optional[str] = None
+):
+    """Get employees from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        employees_data = client.get_employees(org_id)
+        
+        return {
+            "organization_id": org_id,
+            "organization_name": credentials.get("selected_organization_name"),
+            "employees": employees_data
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud employees: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/employees/{user_id}/attendances/{employee_id}")
+async def get_cloud_employee_attendances(
+    user_id: str,
+    employee_id: str,
+    date_from: str,
+    date_to: str
+):
+    """Get employee attendances from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        attendances_data = client.get_employee_attendances(employee_id, date_from, date_to)
+        
+        return {
+            "employee_id": employee_id,
+            "date_from": date_from,
+            "date_to": date_to,
+            "attendances": attendances_data
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud attendances: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

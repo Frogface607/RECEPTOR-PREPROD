@@ -101,6 +101,48 @@ IClient - Данные клиентов
 2. Перейдите в раздел **Настройки Cloud API**
 3. Скопируйте API ключ
 
+#### Настройка вебхуков (Webhooks) в iikoWeb:
+1. Зайдите на iikoweb.ru
+2. Перейдите в раздел **Интеграции → Вебхуки**
+3. Нажмите **Добавить вебхук**
+4. Укажите URL вашего сервера для приёма уведомлений
+5. Выберите события, на которые нужно подписаться:
+   - Новый заказ
+   - Изменение статуса заказа
+   - Оплата заказа
+   - Изменение меню
+   - Изменение остатков
+6. Сохраните настройки
+
+**Формат вебхука:**
+- Метод: POST
+- Content-Type: application/json
+- Тело запроса содержит данные о событии в формате JSON
+
+**Пример обработки вебхука:**
+```python
+from fastapi import FastAPI, Request
+import json
+
+app = FastAPI()
+
+@app.post("/webhook/iiko")
+async def handle_iiko_webhook(request: Request):
+    data = await request.json()
+    event_type = data.get("eventType")
+    
+    if event_type == "ORDER_CREATED":
+        order = data.get("order")
+        # Обработка нового заказа
+    elif event_type == "ORDER_STATUS_CHANGED":
+        order_id = data.get("orderId")
+        new_status = data.get("status")
+        # Обработка изменения статуса
+    # ... другие события
+    
+    return {"status": "ok"}
+```
+
 ### Основные методы получения данных
 
 #### 1. **Получение списка организаций и ресторанов**
