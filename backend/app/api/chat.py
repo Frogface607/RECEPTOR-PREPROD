@@ -834,17 +834,21 @@ async def chat_message(request: ChatRequest):
         messages.append({"role": "user", "content": final_user_message})
         
         # Автоматический роутинг модели по сложности запроса
-        response, usage_info = await client.chat_completion(
-            messages=messages,
-            auto_route=True,  # Умный выбор модели
-            temperature=0.7
-        )
-        
-        model_used = usage_info.get('model', 'unknown')
-        complexity = usage_info.get('complexity', 'standard')
-        cost = usage_info.get('cost_usd', 0)
-        
-        logger.info(f"🤖 Model: {model_used} | Complexity: {complexity} | Cost: ${cost:.4f}")
+        try:
+            response, usage_info = await client.chat_completion(
+                messages=messages,
+                auto_route=True,  # Умный выбор модели
+                temperature=0.7
+            )
+            
+            model_used = usage_info.get('model', 'unknown')
+            complexity = usage_info.get('complexity', 'standard')
+            cost = usage_info.get('cost_usd', 0)
+            
+            logger.info(f"🤖 Model: {model_used} | Complexity: {complexity} | Cost: ${cost:.4f}")
+        except Exception as e:
+            logger.error(f"❌ Error calling LLM: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Ошибка генерации ответа: {str(e)}")
         
         # Извлекаем предложения следующих шагов из ответа
         # Сначала удаляем, потом извлекаем, чтобы не было конфликтов
