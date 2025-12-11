@@ -243,11 +243,35 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
-        client = IikoClient(api_login=api_key)
-        nomenclature = client.fetch_nomenclature(org_id)
+        try:
+            client = IikoClient(api_login=api_key)
+            logger.info(f"✅ IikoClient created successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to create IikoClient: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Ошибка создания клиента iikoCloud: {str(e)}")
+        
+        try:
+            nomenclature = client.fetch_nomenclature(org_id)
+            logger.info(f"✅ fetch_nomenclature returned: type={type(nomenclature)}, keys={list(nomenclature.keys()) if isinstance(nomenclature, dict) else 'not a dict'}")
+        except Exception as e:
+            logger.error(f"❌ Failed to fetch nomenclature: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Ошибка получения номенклатуры: {str(e)}")
+        
+        # Проверяем структуру ответа
+        if not isinstance(nomenclature, dict):
+            logger.error(f"❌ Nomenclature is not a dict: {type(nomenclature)}")
+            raise HTTPException(status_code=500, detail="Некорректный формат данных номенклатуры")
         
         products = nomenclature.get("products", [])
         groups = nomenclature.get("groups", [])
+        
+        # Проверяем что products и groups - списки
+        if not isinstance(products, list):
+            logger.warning(f"⚠️ Products is not a list: {type(products)}, converting...")
+            products = []
+        if not isinstance(groups, list):
+            logger.warning(f"⚠️ Groups is not a list: {type(groups)}, converting...")
+            groups = []
         
         logger.info(f"✅ Received {len(products)} products, {len(groups)} groups from iikoCloud")
         

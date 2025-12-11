@@ -92,28 +92,44 @@ def get_iiko_connection_status(user_id: str) -> Dict[str, Any]:
         from app.core.database import db
         cloud_collection = db.get_collection("iiko_cloud_credentials")
         if cloud_collection is not None:
-            cloud_creds = cloud_collection.find_one({"user_id": user_id})
-            if cloud_creds and cloud_creds.get("status") == "connected":
-                return {
-                    "status": "connected",
-                    "type": "cloud",
-                    "organization_id": cloud_creds.get("selected_organization_id"),
-                    "organization_name": cloud_creds.get("selected_organization_name"),
-                    "api_key": cloud_creds.get("api_key"),  # Для использования в клиенте
-                    "organizations": cloud_creds.get("organizations", [])
-                }
+            try:
+                cloud_creds = cloud_collection.find_one({"user_id": user_id})
+                if cloud_creds and cloud_creds.get("status") == "connected":
+                    org_id = cloud_creds.get("selected_organization_id")
+                    if org_id:  # Проверяем что организация выбрана
+                        logger.info(f"✅ Cloud API connected for user {user_id}, org: {org_id}")
+                        return {
+                            "status": "connected",
+                            "type": "cloud",
+                            "organization_id": org_id,
+                            "organization_name": cloud_creds.get("selected_organization_name", "Организация"),
+                            "api_key": cloud_creds.get("api_key"),  # Для использования в клиенте
+                            "organizations": cloud_creds.get("organizations", [])
+                        }
+                    else:
+                        logger.warning(f"⚠️ Cloud API connected but no organization selected for user {user_id}")
+            except Exception as e:
+                logger.error(f"Error checking Cloud credentials: {e}", exc_info=True)
         
         # Если Cloud не подключен, проверяем RMS
-        rms_service = get_iiko_rms_service()
-        if rms_service is None:
-            return {"status": "not_connected"}
-        rms_status = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
-        if rms_status.get("status") in ["connected", "restored"]:
-            rms_status["type"] = "rms"
-        return rms_status
+        try:
+            rms_service = get_iiko_rms_service()
+            if rms_service is None:
+                logger.warning("iiko RMS service not initialized")
+                return {"status": "not_connected", "type": None}
+            
+            rms_status = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+            if rms_status.get("status") in ["connected", "restored"]:
+                rms_status["type"] = "rms"
+                logger.info(f"✅ RMS connected for user {user_id}")
+            return rms_status
+        except Exception as e:
+            logger.error(f"Error checking RMS status: {e}", exc_info=True)
+            return {"status": "error", "type": None, "error": str(e)}
+            
     except Exception as e:
-        logger.error(f"Error checking iiko status: {e}", exc_info=True)
-        return {"status": "error", "error": str(e)}
+        logger.error(f"❌ Critical error checking iiko status: {e}", exc_info=True)
+        return {"status": "error", "type": None, "error": str(e)}
 
 
 def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10, iiko_type: str = "rms") -> List[Dict[str, Any]]:
@@ -341,8 +357,28 @@ async def chat_message(request: ChatRequest):
     elif intent == "iiko_analytics" or intent == "iiko_products":
         logger.info(f"📊 Querying iiko for: {user_query}")
         
-        # Добавляем инструкции по работе с iiko из документации
-        context += """
+        try:
+            # Проверяем подключение iiko (Cloud или RMS)
+            iiko_status = get_iiko_connection_status(user_id)
+            iiko_type = iiko_status.get("type")
+            status = iiko_status.get("status")
+            
+            if status not in ["connected", "restored"]:
+                error_msg = iiko_status.get("error", "Неизвестная ошибка")
+                context += f"\n\n⚠️ IIKO: Не подключено (статус: {status})\n"
+                context += f"Ошибка: {error_msg}\n"
+                context += "Попросите пользователя подключить iiko в разделе 'Интеграции'.\n"
+                logger.warning(f"⚠️ iiko not connected for user {user_id}: {status}")
+            else:
+                org_id = iiko_status.get("organization_id")
+                org_name = iiko_status.get("organization_name", "Организация")
+                
+                if not org_id:
+                    context += "\n\n⚠️ IIKO: Организация не выбрана. Выберите организацию в разделе 'Интеграции'.\n"
+                    logger.warning(f"⚠️ No organization selected for user {user_id}")
+                else:
+                    # Добавляем инструкции по работе с iiko из документации
+                    context += """
 ═══════════════════════════════════════════════════════════════
 📚 ИНСТРУКЦИИ ПО РАБОТЕ С IIKO:
 ═══════════════════════════════════════════════════════════════
@@ -356,92 +392,95 @@ async def chat_message(request: ChatRequest):
 6. Всегда проверяй реальные данные из номенклатуры, не выдумывай!
 ═══════════════════════════════════════════════════════════════
 """
-        
-        # Проверяем подключение iiko (Cloud или RMS)
-        iiko_status = get_iiko_connection_status(user_id)
-        iiko_type = iiko_status.get("type", "rms")
-        
-        if iiko_status.get("status") in ["connected", "restored"]:
-            org_id = iiko_status.get("organization_id", "default")
-            org_name = iiko_status.get("organization_name", "Организация")
-            
-            context += f"\n\nСТАТУС IIKO ({iiko_type.upper()}):\n"
-            context += f"- Подключено к: {org_name}\n"
-            context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server'}\n"
-            context += f"- Organization ID: {org_id}\n"
-            
-            if iiko_type == "cloud":
-                # Для Cloud API сначала пытаемся использовать синхронизированные данные
-                try:
-                    from app.core.database import db
-                    sync_collection = db.get_collection("iiko_cloud_nomenclature")
-                    nomenclature_data = None
                     
-                    if sync_collection is not None:
-                        # Пытаемся получить синхронизированные данные
-                        sync_data = sync_collection.find_one({
-                            "user_id": user_id,
-                            "organization_id": org_id
-                        })
-                        
-                        if sync_data and sync_data.get("nomenclature"):
-                            nomenclature_data = sync_data.get("nomenclature")
-                            logger.info(f"✅ Using synced Cloud nomenclature: {len(nomenclature_data.get('products', []))} products")
+                    context += f"\n\nСТАТУС IIKO ({iiko_type.upper() if iiko_type else 'UNKNOWN'}):\n"
+                    context += f"- Подключено к: {org_name}\n"
+                    context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server' if iiko_type == 'rms' else 'Unknown'}\n"
+                    context += f"- Organization ID: {org_id}\n"
                     
-                    # Если синхронизированных данных нет - получаем через API
-                    if not nomenclature_data:
-                        logger.info(f"📡 Synced data not found, fetching from API...")
-                        from app.services.iiko.iiko_client import IikoClient
-                        api_key = iiko_status.get("api_key")
-                        if api_key:
-                            client = IikoClient(api_login=api_key)
-                            nomenclature_data = client.fetch_nomenclature(org_id)
-                            logger.info(f"✅ Fetched from API: {len(nomenclature_data.get('products', []))} products")
-                    
-                    if nomenclature_data:
-                        products = nomenclature_data.get("products", [])
-                        groups = nomenclature_data.get("groups", [])
-                        products_count = len(products)
-                        groups_count = len(groups)
-                        
-                        context += f"- Продуктов в базе: {products_count}\n"
-                        context += f"- Групп: {groups_count}\n"
-                        
-                        # Поиск продуктов
-                        search_terms = extract_search_terms(user_query)
-                        if search_terms:
-                            for term in search_terms:
-                                # Более гибкий поиск
-                                found = []
-                                term_lower = term.lower()
-                                for p in products:
-                                    name = p.get("name", "").lower()
-                                    if term_lower in name:
-                                        found.append(p)
+                    if iiko_type == "cloud":
+                        # Для Cloud API сначала пытаемся использовать синхронизированные данные
+                        try:
+                            from app.core.database import db
+                            sync_collection = db.get_collection("iiko_cloud_nomenclature")
+                            nomenclature_data = None
+                            
+                            if sync_collection is not None:
+                                try:
+                                    # Пытаемся получить синхронизированные данные
+                                    sync_data = sync_collection.find_one({
+                                        "user_id": user_id,
+                                        "organization_id": org_id
+                                    })
+                                    
+                                    if sync_data and sync_data.get("nomenclature"):
+                                        nomenclature_data = sync_data.get("nomenclature")
+                                        logger.info(f"✅ Using synced Cloud nomenclature: {len(nomenclature_data.get('products', []))} products")
+                                except Exception as e:
+                                    logger.error(f"Error reading synced data: {e}", exc_info=True)
+                            
+                            # Если синхронизированных данных нет - получаем через API
+                            if not nomenclature_data:
+                                logger.info(f"📡 Synced data not found, fetching from API...")
+                                try:
+                                    from app.services.iiko.iiko_client import IikoClient
+                                    api_key = iiko_status.get("api_key")
+                                    if api_key:
+                                        client = IikoClient(api_login=api_key)
+                                        nomenclature_data = client.fetch_nomenclature(org_id)
+                                        logger.info(f"✅ Fetched from API: {len(nomenclature_data.get('products', []))} products")
+                                    else:
+                                        logger.error("API key not found in iiko_status")
+                                        context += "\n\n⚠️ API ключ не найден. Проверьте подключение в разделе 'Интеграции'.\n"
+                                except Exception as e:
+                                    logger.error(f"Error fetching from Cloud API: {e}", exc_info=True)
+                                    context += f"\n\n⚠️ Ошибка получения данных из iikoCloud API: {str(e)}\n"
+                                    context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
+                            
+                            if nomenclature_data:
+                                products = nomenclature_data.get("products", [])
+                                groups = nomenclature_data.get("groups", [])
+                                products_count = len(products) if products else 0
+                                groups_count = len(groups) if groups else 0
                                 
-                                if found:
-                                    context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
-                                    for p in found[:10]:  # Показываем до 10
-                                        price = 0
-                                        if p.get("size_prices"):
-                                            price = p.get("size_prices", [{}])[0].get("price", 0)
-                                        price_info = f", цена: {price:.2f} руб" if price else ""
-                                        context += f"- {p.get('name', 'н/д')}{price_info}\n"
+                                context += f"- Продуктов в базе: {products_count}\n"
+                                context += f"- Групп: {groups_count}\n"
+                                
+                                # Поиск продуктов
+                                search_terms = extract_search_terms(user_query)
+                                if search_terms:
+                                    for term in search_terms:
+                                        # Более гибкий поиск
+                                        found = []
+                                        term_lower = term.lower()
+                                        for p in products:
+                                            name = p.get("name", "").lower() if p.get("name") else ""
+                                            if term_lower in name:
+                                                found.append(p)
+                                        
+                                        if found:
+                                            context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
+                                            for p in found[:10]:  # Показываем до 10
+                                                price = 0
+                                                if p.get("size_prices") and len(p.get("size_prices", [])) > 0:
+                                                    price = p.get("size_prices", [{}])[0].get("price", 0)
+                                                price_info = f", цена: {price:.2f} руб" if price else ""
+                                                context += f"- {p.get('name', 'н/д')}{price_info}\n"
+                                        else:
+                                            context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
                                 else:
-                                    context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
-                        else:
-                            # Если нет поисковых терминов, показываем общую статистику
-                            if products_count > 0:
-                                context += f"\n\nПримеры продуктов в базе:\n"
-                                for p in products[:5]:
-                                    context += f"- {p.get('name', 'н/д')}\n"
-                    else:
-                        context += "\n\nДанные номенклатуры не найдены. Выполните синхронизацию в разделе 'Интеграции'.\n"
-                        
-                except Exception as e:
-                    logger.error(f"Error fetching Cloud nomenclature: {e}", exc_info=True)
-                    context += f"\n\nОшибка получения данных из iikoCloud: {str(e)}\n"
-                    context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
+                                    # Если нет поисковых терминов, показываем общую статистику
+                                    if products_count > 0:
+                                        context += f"\n\nПримеры продуктов в базе:\n"
+                                        for p in products[:5]:
+                                            context += f"- {p.get('name', 'н/д')}\n"
+                            else:
+                                context += "\n\n⚠️ Данные номенклатуры не найдены. Выполните синхронизацию в разделе 'Интеграции'.\n"
+                                
+                        except Exception as e:
+                            logger.error(f"❌ Critical error in Cloud API processing: {e}", exc_info=True)
+                            context += f"\n\n❌ Критическая ошибка при работе с iikoCloud: {str(e)}\n"
+                            context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
             else:
                 # Для RMS используем существующую логику
                 summary = get_iiko_nomenclature_stats(org_id)
