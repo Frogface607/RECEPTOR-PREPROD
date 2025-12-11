@@ -873,7 +873,6 @@ async def chat_message(request: ChatRequest):
             openai_key=settings.OPENAI_API_KEY
         )
         
-        from datetime import datetime
         current_date = datetime.now().strftime("%d %B %Y")
         
         # Определяем, нужен ли специальный промпт для рецептов
