@@ -733,10 +733,29 @@ class IikoClient:
             }
             
             response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
+            
+            # Логируем статус ответа
+            logger.info(f"📡 Employees API response status: {response.status_code}")
+            
+            if response.status_code == 404:
+                logger.warning(f"⚠️ Employees endpoint not found (404). Trying alternative endpoint...")
+                # Пробуем альтернативный endpoint
+                endpoint_alt = f"{self.base_url}/api/1/employees"
+                response = requests.get(endpoint_alt, headers=headers, params=params, timeout=self.timeout)
+                logger.info(f"📡 Alternative endpoint response status: {response.status_code}")
+            
             response.raise_for_status()
             
             employees_data = response.json()
-            employees = employees_data.get("employees", []) if isinstance(employees_data, dict) else employees_data if isinstance(employees_data, list) else []
+            logger.debug(f"📦 Raw employees response: {type(employees_data)}, keys: {employees_data.keys() if isinstance(employees_data, dict) else 'N/A (list)'}")
+            
+            # Обрабатываем разные форматы ответа
+            if isinstance(employees_data, dict):
+                employees = employees_data.get("employees", employees_data.get("items", employees_data.get("data", [])))
+            elif isinstance(employees_data, list):
+                employees = employees_data
+            else:
+                employees = []
             
             logger.info(f"✅ Received {len(employees)} employees")
             

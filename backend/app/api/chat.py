@@ -310,6 +310,7 @@ async def chat_message(request: ChatRequest):
     
     # Simple Intent Detection
     intent = detect_intent(user_query)
+    logger.info(f"🎯 Detected intent: {intent} for query: '{user_query}'")
     
     context = ""
     
@@ -895,12 +896,14 @@ async def chat_message(request: ChatRequest):
     
     elif intent == "iiko_employees":
         logger.info(f"👥 Querying iiko employees for: {user_query}")
+        logger.info(f"🔍 Detected intent: iiko_employees")
         
         try:
             # Проверяем подключение Cloud API (сотрудники доступны только через Cloud)
             iiko_status = get_iiko_connection_status(user_id)
             iiko_type = iiko_status.get("type")
             status = iiko_status.get("status")
+            logger.info(f"📊 iiko_status: type={iiko_type}, status={status}")
             
             if status not in ["connected", "restored"] or iiko_type != "cloud":
                 error_msg = iiko_status.get("error", "Неизвестная ошибка")
@@ -935,11 +938,15 @@ async def chat_message(request: ChatRequest):
                             raise Exception("API ключ не найден")
                         
                         api_key = credentials.get("api_key")
+                        logger.info(f"🔑 Using API key: {api_key[:10]}... (truncated)")
                         client = IikoClient(api_login=api_key)
+                        logger.info(f"📞 Calling get_employees for org_id: {org_id}")
                         employees_data = client.get_employees(org_id)
+                        logger.info(f"📦 Received employees_data: {type(employees_data)}, keys: {employees_data.keys() if isinstance(employees_data, dict) else 'N/A'}")
                         
                         employees = employees_data.get("employees", [])
                         employees_count = employees_data.get("count", 0)
+                        logger.info(f"👥 Parsed: {employees_count} employees, list length: {len(employees)}")
                         
                         context += f"\n\n👥 СОТРУДНИКИ ({org_name}):\n"
                         context += f"Всего сотрудников: {employees_count}\n\n"
@@ -1493,6 +1500,7 @@ def remove_suggestions_from_content(content: str) -> str:
 def detect_intent(query: str) -> str:
     """Определение намерения пользователя"""
     query_lower = query.lower()
+    logger.debug(f"🔍 Detecting intent for query: '{query}'")
     
     # Проверка статуса подключения iiko (приоритетно)
     connection_keywords = ["видишь ли", "подключен", "интеграц", "статус", "работает ли", 
@@ -1528,17 +1536,19 @@ def detect_intent(query: str) -> str:
     if any(w in query_lower for w in stats_keywords):
         return "iiko_stats"
     
+    # Запросы о сотрудниках (живые данные) - проверяем ПЕРЕД продуктами!
+    employees_keywords = ["сотрудник", "персонал", "работник", "staff", "employee", "employees", 
+                         "покажи сотрудников", "список сотрудников", "кто работает", "явки"]
+    if any(w in query_lower for w in employees_keywords):
+        matched_keyword = next((w for w in employees_keywords if w in query_lower), None)
+        logger.info(f"✅ Detected iiko_employees intent (matched: '{matched_keyword}')")
+        return "iiko_employees"
+    
     # Поиск продуктов в iiko (живые данные)
     search_keywords = ["найди", "поищи", "есть ли", "ингредиент", "продукт", 
                       "сколько стоит", "какая цена", "артикул", "покажи"]
     if any(w in query_lower for w in search_keywords):
         return "iiko_products"
-    
-    # Запросы о сотрудниках (живые данные)
-    employees_keywords = ["сотрудник", "персонал", "работник", "staff", "employee", "employees", 
-                         "покажи сотрудников", "список сотрудников", "кто работает", "явки"]
-    if any(w in query_lower for w in employees_keywords):
-        return "iiko_employees"
     
     # Запросы о выручке/продажах/отчетах (живые данные)
     revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales"]
