@@ -547,6 +547,12 @@ async def chat_message(request: ChatRequest):
                                         org_id = rms_status.get("organization_id", "default")
                                         org_name = rms_status.get("organization_name", "Организация")
                                         context += f"\n⚠️ В iikoCloud нет данных. Используем данные из RMS.\n"
+                                        
+                                        # Обновляем контекст статуса
+                                        context += f"\n\nСТАТУС IIKO (RMS):\n"
+                                        context += f"- Подключено к: {org_name}\n"
+                                        context += f"- Тип подключения: iiko RMS Server\n"
+                                        context += f"- Organization ID: {org_id}\n"
                                 
                         except Exception as e:
                             logger.error(f"❌ Critical error in Cloud API processing: {e}", exc_info=True)
