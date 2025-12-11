@@ -163,34 +163,6 @@ class IikoClient:
                 raise IikoAPIError(f"Failed to fetch organizations: {str(e)}")
     
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
-    def fetch_menu(self, organization_id: str) -> Dict[str, Any]:
-        """
-        Retrieve menu using menu() method (alternative to nomenclature).
-        Tries menu() first, falls back to nomenclature() if needed.
-        """
-        try:
-            if not self._client:
-                self._initialize_client()
-            
-            if not organization_id:
-                raise IikoAPIError("Organization ID cannot be empty")
-            
-            logger.info(f"Fetching menu for organization: {organization_id}")
-            
-            # Try menu() method first (as per documentation: GET /api/v1/menu)
-            try:
-                if hasattr(self._client, 'menu'):
-                    logger.info("Trying menu() method...")
-                    response = self._client.menu([organization_id])
-                    logger.info(f"✅ menu() method succeeded")
-                else:
-                    logger.warning("menu() method not available, trying nomenclature()...")
-                    response = self._client.nomenclature([organization_id])
-            except Exception as menu_error:
-                logger.warning(f"menu() method failed: {menu_error}, trying nomenclature()...")
-                response = self._client.nomenclature([organization_id])
-    
-    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def fetch_nomenclature(self, organization_id: str) -> Dict[str, Any]:
         """
         Retrieve nomenclature with comprehensive error handling for restaurant data.
