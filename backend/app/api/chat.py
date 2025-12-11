@@ -11,6 +11,7 @@ from app.services.web_search import web_search, format_search_results_for_contex
 from app.core.config import settings
 from app.core.database import db
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -901,7 +902,6 @@ async def chat_message(request: ChatRequest):
 
 def extract_suggestions(content: str) -> List[str]:
     """Извлекает предложения следующих шагов из ответа LLM"""
-    import re
     suggestions = []
     suggestions_text = None
     
@@ -978,8 +978,6 @@ def extract_suggestions(content: str) -> List[str]:
 
 def remove_suggestions_from_content(content: str) -> str:
     """Удаляет блок предложений из контента ответа"""
-    import re
-    
     original_length = len(content)
     original_content = content
     
