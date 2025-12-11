@@ -190,26 +190,26 @@ class IikoClient:
                 if response.products:
                     logger.info(f"Response.products is iterable, length: {len(response.products) if hasattr(response.products, '__len__') else 'unknown'}")
                     for product in response.products:
-                    # Parse size prices
-                    size_prices = []
-                    if hasattr(product, 'size_prices') and product.size_prices:
-                        for size_price in product.size_prices:
-                            price_info = {
-                                "size_id": str(getattr(size_price, 'size_id', None)) if getattr(size_price, 'size_id', None) else None,
-                                "price": float(size_price.price.current_price) if hasattr(size_price, 'price') and hasattr(size_price.price, 'current_price') else 0.0
-                            }
-                            size_prices.append(price_info)
-                    
-                    product_data = {
-                        "id": str(product.id),
-                        "name": product.name,
-                        "description": getattr(product, 'description', None),
-                        "group_id": str(getattr(product, 'group_id', None)) if getattr(product, 'group_id', None) else None,
-                        "size_prices": size_prices,
-                        "tags": getattr(product, 'tags', []),
-                        "is_deleted": getattr(product, 'is_deleted', False)
-                    }
-                    products.append(product_data)
+                        # Parse size prices
+                        size_prices = []
+                        if hasattr(product, 'size_prices') and product.size_prices:
+                            for size_price in product.size_prices:
+                                price_info = {
+                                    "size_id": str(getattr(size_price, 'size_id', None)) if getattr(size_price, 'size_id', None) else None,
+                                    "price": float(size_price.price.current_price) if hasattr(size_price, 'price') and hasattr(size_price.price, 'current_price') else 0.0
+                                }
+                                size_prices.append(price_info)
+                        
+                        product_data = {
+                            "id": str(product.id),
+                            "name": product.name,
+                            "description": getattr(product, 'description', None),
+                            "group_id": str(getattr(product, 'group_id', None)) if getattr(product, 'group_id', None) else None,
+                            "size_prices": size_prices,
+                            "tags": getattr(product, 'tags', []),
+                            "is_deleted": getattr(product, 'is_deleted', False)
+                        }
+                        products.append(product_data)
             
             # Parse groups
             groups = []
