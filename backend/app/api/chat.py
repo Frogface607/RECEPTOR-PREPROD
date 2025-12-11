@@ -757,7 +757,6 @@ async def chat_message(request: ChatRequest):
         try:
             # Извлекаем дату из запроса
             from datetime import datetime, timedelta
-            import re
             
             date_str = None
             date_match = re.search(r'(\d{1,2})\s*(?:декабр|январ|феврал|март|апрел|май|июн|июл|август|сентябр|октябр|ноябр)', user_query.lower())
