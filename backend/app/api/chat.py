@@ -1138,11 +1138,17 @@ def detect_intent(query: str) -> str:
     """Определение намерения пользователя"""
     query_lower = query.lower()
     
+    # Проверка статуса подключения iiko (приоритетно)
+    connection_keywords = ["видишь ли", "подключен", "интеграц", "статус", "работает ли", 
+                          "есть ли подключение", "cloud api", "rms server"]
+    if any(w in query_lower for w in connection_keywords):
+        return "iiko_connection_check"
+    
     # СНАЧАЛА проверяем технические вопросы про API/документацию
     # Это приоритетнее чем живые данные iiko
     api_doc_keywords = ["api", "endpoint", "olap", "техкарт", "технологическ", 
                         "rest api", "метод", "запрос", "авторизац", "токен",
-                        "номенклатур", "справочник", "документац", "интеграц",
+                        "номенклатур", "справочник", "документац",
                         "как получить", "как использ", "можешь делать"]
     if any(w in query_lower for w in api_doc_keywords):
         return "knowledge_base"
