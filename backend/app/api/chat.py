@@ -498,6 +498,19 @@ async def chat_message(request: ChatRequest):
                     context += "\n\n⚠️ IIKO: Организация не выбрана. Выберите организацию в разделе 'Интеграции'.\n"
                     logger.warning(f"⚠️ No organization selected for user {user_id}")
                 else:
+                    # Если Cloud API подключен, но для номенклатуры лучше использовать RMS
+                    # Проверяем, есть ли RMS как fallback
+                    if iiko_type == "cloud":
+                        rms_service = get_iiko_rms_service()
+                        if rms_service is not None:
+                            rms_status = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+                            if rms_status.get("status") in ["connected", "restored"]:
+                                logger.info(f"✅ Cloud API connected, but using RMS for nomenclature (Cloud returned 0 products)")
+                                iiko_type = "rms"  # Переключаемся на RMS для номенклатуры
+                                org_id = rms_status.get("organization_id", org_id)
+                                org_name = rms_status.get("organization_name", org_name)
+                                context += f"\n⚠️ Cloud API подключен, но для номенклатуры используется RMS Server (Cloud API не возвращает продукты).\n"
+                    
                     # Добавляем инструкции по работе с iiko из документации
                     if iiko_type == "cloud":
                         context += """
