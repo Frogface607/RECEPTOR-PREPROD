@@ -1032,13 +1032,15 @@ async def chat_message(request: ChatRequest):
                 
                 if suggestions_start > 0:
                     # Извлекаем следующие строки с нумерацией
+                    # Используем глобальный re модуль
+                    import re as re_module
                     fallback_suggestions = []
                     for line in lines[suggestions_start:suggestions_start+5]:
                         line = line.strip()
                         if line and (line[0].isdigit() or line.startswith('-') or line.startswith('•')):
                             # Убираем нумерацию
-                            line = re.sub(r'^\d+[\.\)]\s*', '', line)
-                            line = re.sub(r'^[-•*]\s*', '', line)
+                            line = re_module.sub(r'^\d+[\.\)]\s*', '', line)
+                            line = re_module.sub(r'^[-•*]\s*', '', line)
                             if line and len(line) > 3:
                                 fallback_suggestions.append(line)
                     
