@@ -481,55 +481,94 @@ async def chat_message(request: ChatRequest):
                             logger.error(f"❌ Critical error in Cloud API processing: {e}", exc_info=True)
                             context += f"\n\n❌ Критическая ошибка при работе с iikoCloud: {str(e)}\n"
                             context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
-            else:
-                # Для RMS используем существующую логику
-                summary = get_iiko_nomenclature_stats(org_id)
-                context += f"- Продуктов в базе: {summary.get('total_products', 0)}\n"
-                context += f"- Групп: {summary.get('total_groups', 0)}\n"
-                
-                # Если есть поисковый запрос - ищем продукты
-                search_terms = extract_search_terms(user_query)
-                if search_terms:
-                    for term in search_terms:
-                        products = search_iiko_products(term, org_id, limit=5, iiko_type="rms")
-                        if products:
-                            context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
-                            for p in products:
-                                price_info = f", цена: {p.get('price_per_unit', 0):.2f} руб/{p.get('unit', 'ед')}" if p.get('price_per_unit') else ""
-                                context += f"- {p['name']} (артикул: {p.get('article', 'н/д')}{price_info})\n"
-                        else:
-                            context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
-        else:
-            context += "\n\nIIKO: Не подключено. Попросите пользователя подключить iiko в разделе 'Интеграции'.\n"
+                    elif iiko_type == "rms":
+                        # Для RMS используем существующую логику
+                        try:
+                            summary = get_iiko_nomenclature_stats(org_id)
+                            if summary and not summary.get("error"):
+                                context += f"- Продуктов в базе: {summary.get('total_products', 0)}\n"
+                                context += f"- Групп: {summary.get('total_groups', 0)}\n"
+                                
+                                # Если есть поисковый запрос - ищем продукты
+                                search_terms = extract_search_terms(user_query)
+                                if search_terms:
+                                    for term in search_terms:
+                                        try:
+                                            products = search_iiko_products(term, org_id, limit=5, iiko_type="rms", user_id=user_id)
+                                            if products:
+                                                context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
+                                                for p in products:
+                                                    price_info = f", цена: {p.get('price_per_unit', 0):.2f} руб/{p.get('unit', 'ед')}" if p.get('price_per_unit') else ""
+                                                    context += f"- {p.get('name', 'н/д')} (артикул: {p.get('article', 'н/д')}{price_info})\n"
+                                            else:
+                                                context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
+                                        except Exception as e:
+                                            logger.error(f"Error searching RMS products: {e}", exc_info=True)
+                                            context += f"\n\n⚠️ Ошибка поиска продуктов: {str(e)}\n"
+                            else:
+                                error_msg = summary.get("error", "Неизвестная ошибка") if summary else "Сервис не инициализирован"
+                                context += f"\n\n⚠️ Ошибка получения статистики RMS: {error_msg}\n"
+                        except Exception as e:
+                            logger.error(f"Error getting RMS stats: {e}", exc_info=True)
+                            context += f"\n\n⚠️ Ошибка работы с RMS: {str(e)}\n"
+        except Exception as e:
+            logger.error(f"❌ Critical error in iiko processing: {e}", exc_info=True)
+            context += f"\n\n❌ Критическая ошибка при работе с iiko: {str(e)}\n"
+            context += "Попробуйте переподключить iiko в разделе 'Интеграции'.\n"
     
     elif intent == "iiko_products":
         logger.info(f"🔍 Searching iiko products for: {user_query}")
         
-        iiko_status = get_iiko_connection_status(user_id)
-        
-        if iiko_status.get("status") in ["connected", "restored"]:
-            org_id = iiko_status.get("organization_id", "default")
+        try:
+            iiko_status = get_iiko_connection_status(user_id)
+            iiko_type = iiko_status.get("type")
+            status = iiko_status.get("status")
             
-            # Извлекаем что искать
-            search_terms = extract_search_terms(user_query)
-            if not search_terms:
-                # Пробуем искать по всему запросу
-                search_terms = [user_query]
-            
-            for term in search_terms:
-                products = search_iiko_products(term, org_id, limit=10)
-                if products:
-                    context += f"\n\nРЕЗУЛЬТАТЫ ПОИСКА В IIKO ПО '{term}':\n"
-                    for p in products:
-                        price = p.get('price_per_unit', 0) or p.get('price', 0)
-                        price_str = f"{price:.2f} руб/{p.get('unit', 'шт')}" if price else "цена не указана"
-                        group = p.get('group_name') or 'Без группы'
-                        match_info = f" (точность: {p.get('match_score', 0)*100:.0f}%)" if p.get('match_score') else ""
-                        context += f"- {p['name']} | {price_str} | {group}{match_info}\n"
+            if status not in ["connected", "restored"]:
+                error_msg = iiko_status.get("error", "Неизвестная ошибка")
+                context += f"\n\n⚠️ IIKO: Не подключено (статус: {status})\n"
+                context += f"Ошибка: {error_msg}\n"
+                context += "Попросите пользователя подключить iiko в разделе 'Интеграции'.\n"
+                logger.warning(f"⚠️ iiko not connected for user {user_id}: {status}")
+            else:
+                org_id = iiko_status.get("organization_id")
+                if not org_id:
+                    context += "\n\n⚠️ IIKO: Организация не выбрана. Выберите организацию в разделе 'Интеграции'.\n"
+                    logger.warning(f"⚠️ No organization selected for user {user_id}")
                 else:
-                    context += f"\n\nПо запросу '{term}' ничего не найдено в номенклатуре.\n"
-        else:
-            context += "\n\nДля поиска продуктов нужно подключить iiko в разделе 'Интеграции'.\n"
+                    # Извлекаем что искать
+                    search_terms = extract_search_terms(user_query)
+                    if not search_terms:
+                        # Пробуем искать по всему запросу
+                        search_terms = [user_query]
+                    
+                    for term in search_terms:
+                        try:
+                            products = search_iiko_products(
+                                term, 
+                                org_id, 
+                                limit=10, 
+                                iiko_type=iiko_type or "rms",
+                                user_id=user_id,
+                                api_key=iiko_status.get("api_key") if iiko_type == "cloud" else None
+                            )
+                            if products:
+                                context += f"\n\nРЕЗУЛЬТАТЫ ПОИСКА В IIKO ПО '{term}':\n"
+                                for p in products:
+                                    price = p.get('price_per_unit', 0) or p.get('price', 0)
+                                    price_str = f"{price:.2f} руб/{p.get('unit', 'шт')}" if price else "цена не указана"
+                                    group = p.get('group_name') or 'Без группы'
+                                    match_info = f" (точность: {p.get('match_score', 0)*100:.0f}%)" if p.get('match_score') else ""
+                                    context += f"- {p.get('name', 'н/д')} | {price_str} | {group}{match_info}\n"
+                            else:
+                                context += f"\n\nПо запросу '{term}' ничего не найдено в номенклатуре.\n"
+                        except Exception as e:
+                            logger.error(f"Error searching products: {e}", exc_info=True)
+                            context += f"\n\n⚠️ Ошибка поиска продуктов: {str(e)}\n"
+        except Exception as e:
+            logger.error(f"❌ Critical error in iiko_products: {e}", exc_info=True)
+            context += f"\n\n❌ Критическая ошибка при поиске продуктов: {str(e)}\n"
+            context += "Попробуйте переподключить iiko в разделе 'Интеграции'.\n"
     
     elif intent == "iiko_categories":
         logger.info(f"📂 Getting iiko categories for: {user_query}")
