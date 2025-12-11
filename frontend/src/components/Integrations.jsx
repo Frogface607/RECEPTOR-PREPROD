@@ -372,7 +372,7 @@ function Integrations({ userId, apiUrl }) {
                                     {/* Selected Organization Info */}
                                     {selectedCloudOrg && (
                                         <div className="bg-emerald-600/10 rounded-lg p-4 border border-emerald-500/30">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-between mb-3">
                                                 <div className="flex items-center gap-3">
                                                     <Building2 className="text-emerald-400" size={20} />
                                                     <div>
@@ -383,15 +383,21 @@ function Integrations({ userId, apiUrl }) {
                                                 <button
                                                     onClick={syncCloudNomenclature}
                                                     disabled={syncing}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+                                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
                                                 >
                                                     {syncing ? (
                                                         <Loader2 size={16} className="animate-spin" />
                                                     ) : (
-                                                        <Database size={16} />
+                                                        <Wifi size={16} />
                                                     )}
-                                                    {syncing ? 'Синхронизация...' : 'Синхронизировать'}
+                                                    {syncing ? 'Проверка...' : 'Проверить подключение'}
                                                 </button>
+                                            </div>
+                                            <div className="bg-blue-600/10 rounded-lg p-3 border border-blue-500/20">
+                                                <p className="text-blue-300 text-sm">
+                                                    <strong>ℹ️ Cloud API</strong> используется для получения <strong>отчетов, выручки, сотрудников и заказов</strong>.
+                                                    Для синхронизации <strong>номенклатуры (продуктов)</strong> используйте <strong>RMS Server</strong>.
+                                                </p>
                                             </div>
                                         </div>
                                     )}
