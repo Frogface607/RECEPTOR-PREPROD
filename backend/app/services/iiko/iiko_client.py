@@ -258,6 +258,80 @@ class IikoClient:
                 raise IikoAPIError(f"Failed to fetch nomenclature: {str(e)}")
     
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_sales_report(self, organization_id: str, date_from: str, date_to: str, group_by: str = "DAY") -> Dict[str, Any]:
+        """
+        Get sales report from iikoCloud API.
+        
+        Args:
+            organization_id: Organization ID
+            date_from: Start date (YYYY-MM-DD)
+            date_to: End date (YYYY-MM-DD)
+            group_by: Grouping period (HOUR, DAY, WEEK, MONTH)
+        
+        Returns:
+            Dictionary with sales report data
+        """
+        try:
+            if not self._client:
+                self._initialize_client()
+            
+            if not organization_id:
+                raise IikoAPIError("Organization ID cannot be empty")
+            
+            logger.info(f"Fetching sales report for org: {organization_id} from {date_from} to {date_to}, group_by: {group_by}")
+            
+            # Try to use reports method if available
+            # Note: pyiikocloudapi might not have direct reports method, so we might need to use direct HTTP calls
+            # For now, let's check if the client has a reports attribute
+            if hasattr(self._client, 'reports') and hasattr(self._client.reports, 'sales'):
+                try:
+                    from datetime import datetime
+                    from uuid import UUID
+                    
+                    response = self._client.reports.sales(
+                        organizationIds=[UUID(organization_id)],
+                        dateFrom=datetime.strptime(date_from, '%Y-%m-%d'),
+                        dateTo=datetime.strptime(date_to, '%Y-%m-%d'),
+                        groupBy=group_by
+                    )
+                    logger.info(f"✅ Sales report received via reports.sales()")
+                    
+                    # Parse response
+                    sales_data = {
+                        "totalRevenue": getattr(response, 'totalRevenue', 0.0),
+                        "totalChecks": getattr(response, 'totalChecks', 0),
+                        "averageCheck": getattr(response, 'averageCheck', 0.0),
+                        "data": []
+                    }
+                    
+                    if hasattr(response, 'data') and response.data:
+                        for item in response.data:
+                            sales_data["data"].append({
+                                "period": getattr(item, 'period', None),
+                                "revenue": getattr(item, 'revenue', 0.0),
+                                "checks": getattr(item, 'checks', 0)
+                            })
+                    
+                    return sales_data
+                except Exception as e:
+                    logger.warning(f"reports.sales() method failed: {e}, trying alternative approach...")
+            
+            # Fallback: return message that reports are not directly supported yet
+            logger.warning("Sales report API not directly supported by current iikoCloud client library")
+            return {
+                "error": "Sales report API not directly supported by current pyiikocloudapi library",
+                "message": "Для получения отчётов о продажах может потребоваться прямой HTTP-запрос к Cloud API",
+                "suggestion": "Проверьте документацию iikoCloud API для прямых запросов к /api/v1/reports/sales"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_sales_report: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch sales report: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def get_sales_report(self, organization_id: str, date_from: str, date_to: str) -> Dict[str, Any]:
         """
         Get sales/revenue report from iikoCloud API.
