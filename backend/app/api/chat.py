@@ -410,6 +410,61 @@ async def chat_message(request: ChatRequest):
             logger.info(f"✅ Found {len(results)} relevant chunks from knowledge base")
         else:
             logger.warning(f"⚠️ No results from knowledge base for: {user_query}")
+    
+    elif intent == "iiko_connection_check":
+        logger.info(f"🔌 Checking iiko connection status for: {user_query}")
+        
+        try:
+            iiko_status = get_iiko_connection_status(user_id)
+            iiko_type = iiko_status.get("type")
+            status = iiko_status.get("status")
+            
+            context += "\n\n📡 СТАТУС ПОДКЛЮЧЕНИЯ IIKO:\n"
+            
+            if status in ["connected", "restored"]:
+                org_id = iiko_status.get("organization_id")
+                org_name = iiko_status.get("organization_name", "Организация")
+                
+                context += f"✅ Подключено\n"
+                context += f"- Тип: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server' if iiko_type == 'rms' else 'Unknown'}\n"
+                context += f"- Организация: {org_name}\n"
+                context += f"- Organization ID: {org_id}\n"
+                
+                if iiko_type == "cloud":
+                    # Проверяем синхронизированные данные
+                    from app.core.database import db
+                    sync_collection = db.get_collection("iiko_cloud_nomenclature")
+                    if sync_collection is not None:
+                        sync_data = sync_collection.find_one({
+                            "user_id": user_id,
+                            "organization_id": org_id
+                        })
+                        if sync_data:
+                            products_count = sync_data.get("products_count", 0)
+                            groups_count = sync_data.get("groups_count", 0)
+                            synced_at = sync_data.get("synced_at")
+                            context += f"- Синхронизировано продуктов: {products_count}\n"
+                            context += f"- Синхронизировано групп: {groups_count}\n"
+                            if synced_at:
+                                context += f"- Последняя синхронизация: {synced_at}\n"
+                        else:
+                            context += f"- ⚠️ Данные не синхронизированы. Выполните синхронизацию в разделе 'Интеграции'.\n"
+                elif iiko_type == "rms":
+                    # Проверяем статистику RMS
+                    summary = get_iiko_nomenclature_stats(org_id)
+                    if summary and not summary.get("error"):
+                        context += f"- Продуктов в базе: {summary.get('total_products', 0)}\n"
+                        context += f"- Групп: {summary.get('total_groups', 0)}\n"
+            else:
+                error_msg = iiko_status.get("error", "Неизвестная ошибка")
+                context += f"❌ Не подключено\n"
+                context += f"- Статус: {status}\n"
+                context += f"- Ошибка: {error_msg}\n"
+                context += f"\nПодключите iiko в разделе 'Интеграции'.\n"
+        
+        except Exception as e:
+            logger.error(f"Error checking connection status: {e}", exc_info=True)
+            context += f"\n\n❌ Ошибка проверки статуса: {str(e)}\n"
                 
     elif intent == "iiko_analytics" or intent == "iiko_products":
         logger.info(f"📊 Querying iiko for: {user_query}")
