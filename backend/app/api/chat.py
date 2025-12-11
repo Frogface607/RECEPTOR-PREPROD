@@ -446,7 +446,25 @@ async def chat_message(request: ChatRequest):
                             context += f"- Синхронизировано продуктов: {products_count}\n"
                             context += f"- Синхронизировано групп: {groups_count}\n"
                             if synced_at:
-                                context += f"- Последняя синхронизация: {synced_at}\n"
+                                # Форматируем дату для читаемости
+                                if isinstance(synced_at, datetime):
+                                    synced_str = synced_at.strftime("%d.%m.%Y %H:%M")
+                                else:
+                                    synced_str = str(synced_at)
+                                context += f"- Последняя синхронизация: {synced_str}\n"
+                            
+                            # Если продуктов 0, объясняем возможные причины
+                            if products_count == 0:
+                                context += f"\n⚠️ ВНИМАНИЕ: В организации нет синхронизированных продуктов.\n"
+                                context += f"Возможные причины:\n"
+                                context += f"1. В организации действительно нет продуктов в iikoCloud\n"
+                                context += f"2. Продукты не опубликованы в меню\n"
+                                context += f"3. Проблема с правами доступа API ключа\n"
+                                context += f"4. Организация не настроена в iikoCloud\n"
+                                context += f"\nПопробуйте:\n"
+                                context += f"- Проверить наличие продуктов в iikoOffice/iikoWeb\n"
+                                context += f"- Выполнить повторную синхронизацию\n"
+                                context += f"- Проверить настройки API ключа в iikoCloud\n"
                         else:
                             context += f"- ⚠️ Данные не синхронизированы. Выполните синхронизацию в разделе 'Интеграции'.\n"
                 elif iiko_type == "rms":
