@@ -1306,6 +1306,10 @@ def detect_intent(query: str) -> str:
     # Запросы о выручке/продажах/отчетах (живые данные)
     revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales"]
     if any(w in query_lower for w in revenue_keywords):
+        # Проверяем, запрашивается ли OLAP отчёт
+        olap_keywords = ["olap", "олап", "отчет за месяц", "отчет за период", "отчет по продажам"]
+        if any(w in query_lower for w in olap_keywords):
+            return "iiko_olap"
         return "iiko_revenue"
     
     # iiko общая аналитика (живые данные)

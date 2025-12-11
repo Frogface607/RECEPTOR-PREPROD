@@ -552,6 +552,124 @@ class IikoRmsClient:
             logger.warning(f"Failed to normalize product {raw_product.get('name', 'unknown')}: {str(e)}")
             return None
     
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_olap_report(
+        self,
+        report_type: str = "SALES",
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        organization_id: Optional[str] = None,
+        group_by_row_fields: Optional[List[str]] = None,
+        aggregate_fields: Optional[List[str]] = None,
+        build_summary: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Get OLAP report from iiko RMS Server.
+        
+        Args:
+            report_type: Type of report (SALES, TRANSACTIONS, DELIVERIES)
+            date_from: Start date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.000)
+            date_to: End date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.000)
+            organization_id: Organization ID (optional)
+            group_by_row_fields: Fields to group by rows (e.g., ["DishName", "DishGroup"])
+            aggregate_fields: Fields to aggregate (e.g., ["DishAmountInt", "DishSumInt"])
+            build_summary: Whether to build summary
+        
+        Returns:
+            Dictionary with report data and summary
+        """
+        try:
+            session_key = self._get_session_key()
+            
+            # Default fields for sales report
+            if not group_by_row_fields:
+                group_by_row_fields = ["DishName", "DishGroup"]
+            if not aggregate_fields:
+                aggregate_fields = ["DishAmountInt", "DishSumInt"]
+            
+            # Default date range: current month if not specified
+            if not date_from or not date_to:
+                now = datetime.now()
+                if not date_from:
+                    date_from = now.replace(day=1).strftime('%Y-%m-%dT00:00:00.000')
+                if not date_to:
+                    # Last day of current month
+                    if now.month == 12:
+                        last_day = now.replace(year=now.year + 1, month=1, day=1) - timedelta(days=1)
+                    else:
+                        last_day = now.replace(month=now.month + 1, day=1) - timedelta(days=1)
+                    date_to = last_day.strftime('%Y-%m-%dT23:59:59.000')
+            
+            # Ensure date format includes time
+            if 'T' not in date_from:
+                date_from = f"{date_from}T00:00:00.000"
+            if 'T' not in date_to:
+                date_to = f"{date_to}T23:59:59.000"
+            
+            logger.info(f"Fetching OLAP report: type={report_type}, from={date_from}, to={date_to}")
+            
+            # Build request body
+            request_body = {
+                "reportType": report_type,
+                "buildSummary": build_summary,
+                "groupByRowFields": group_by_row_fields,
+                "groupByColFields": [],
+                "aggregateFields": aggregate_fields,
+                "filters": {}
+            }
+            
+            # Add date filter (required for SALES reports)
+            if report_type == "SALES":
+                request_body["filters"]["OpenDate.Typed"] = {
+                    "filterType": "DateRange",
+                    "periodType": "CUSTOM",
+                    "from": date_from,
+                    "to": date_to,
+                    "includeLow": True,
+                    "includeHigh": True
+                }
+            elif report_type == "TRANSACTIONS":
+                request_body["filters"]["DateTime.Typed"] = {
+                    "filterType": "DateRange",
+                    "periodType": "CUSTOM",
+                    "from": date_from,
+                    "to": date_to,
+                    "includeLow": True,
+                    "includeHigh": True
+                }
+            
+            # Add organization filter if specified
+            if organization_id:
+                request_body["filters"]["RestaurantId"] = {
+                    "filterType": "IncludeValues",
+                    "values": [organization_id]
+                }
+            
+            # Make request
+            url = self._make_url("/resto/api/reports/olap")
+            params = {"key": session_key}
+            
+            response = self.session.post(
+                url,
+                params=params,
+                json=request_body,
+                timeout=self.timeout
+            )
+            
+            response.raise_for_status()
+            
+            report_data = response.json()
+            logger.info(f"✅ OLAP report received: {len(report_data.get('data', []))} rows")
+            
+            return report_data
+            
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP error getting OLAP report: {e}, response: {e.response.text if e.response else 'no response'}")
+            raise IikoRmsAPIError(f"Failed to get OLAP report: {str(e)}", status_code=e.response.status_code if e.response else None)
+        except Exception as e:
+            logger.error(f"Error getting OLAP report: {str(e)}", exc_info=True)
+            raise IikoRmsAPIError(f"Failed to get OLAP report: {str(e)}")
+    
     def health_check(self) -> Dict[str, Any]:
         """Perform health check for iiko RMS connectivity"""
         try:
