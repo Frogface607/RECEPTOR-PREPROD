@@ -181,10 +181,15 @@ class IikoClient:
             if not response:
                 raise IikoAPIError("Empty response from nomenclature endpoint")
             
+            logger.info(f"Response received: type={type(response)}, hasattr products={hasattr(response, 'products')}, hasattr groups={hasattr(response, 'groups')}")
+            
             # Parse products
             products = []
-            if hasattr(response, 'products') and response.products:
-                for product in response.products:
+            if hasattr(response, 'products'):
+                logger.info(f"Response.products exists: {response.products is not None}, type={type(response.products)}")
+                if response.products:
+                    logger.info(f"Response.products is iterable, length: {len(response.products) if hasattr(response.products, '__len__') else 'unknown'}")
+                    for product in response.products:
                     # Parse size prices
                     size_prices = []
                     if hasattr(product, 'size_prices') and product.size_prices:
@@ -208,8 +213,11 @@ class IikoClient:
             
             # Parse groups
             groups = []
-            if hasattr(response, 'groups') and response.groups:
-                for group in response.groups:
+            if hasattr(response, 'groups'):
+                logger.info(f"Response.groups exists: {response.groups is not None}, type={type(response.groups)}")
+                if response.groups:
+                    logger.info(f"Response.groups is iterable, length: {len(response.groups) if hasattr(response.groups, '__len__') else 'unknown'}")
+                    for group in response.groups:
                     group_data = {
                         "id": str(group.id),
                         "name": group.name,
