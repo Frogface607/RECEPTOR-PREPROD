@@ -696,6 +696,79 @@ async def chat_message(request: ChatRequest):
         else:
             context += "\n\nДля просмотра категорий нужно подключить iiko в разделе 'Интеграции'.\n"
     
+    elif intent == "iiko_revenue":
+        logger.info(f"💰 Querying iiko revenue/sales for: {user_query}")
+        
+        try:
+            # Извлекаем дату из запроса
+            from datetime import datetime, timedelta
+            import re
+            
+            date_str = None
+            date_match = re.search(r'(\d{1,2})\s*(?:декабр|январ|феврал|март|апрел|май|июн|июл|август|сентябр|октябр|ноябр)', user_query.lower())
+            if date_match:
+                day = int(date_match.group(1))
+                # Предполагаем текущий год и месяц
+                now = datetime.now()
+                try:
+                    date_str = datetime(now.year, 12, day).strftime('%Y-%m-%d')  # Пока только декабрь
+                except:
+                    pass
+            
+            # Если дата не найдена, пробуем другие форматы
+            if not date_str:
+                date_match = re.search(r'(\d{1,2})[\.\/](\d{1,2})', user_query)
+                if date_match:
+                    day, month = int(date_match.group(1)), int(date_match.group(2))
+                    now = datetime.now()
+                    try:
+                        date_str = datetime(now.year, month, day).strftime('%Y-%m-%d')
+                    except:
+                        pass
+            
+            # Если дата не указана, используем вчерашний день
+            if not date_str:
+                yesterday = datetime.now() - timedelta(days=1)
+                date_str = yesterday.strftime('%Y-%m-%d')
+            
+            iiko_status = get_iiko_connection_status(user_id)
+            iiko_type = iiko_status.get("type")
+            status = iiko_status.get("status")
+            
+            if status not in ["connected", "restored"]:
+                error_msg = iiko_status.get("error", "Неизвестная ошибка")
+                context += f"\n\n⚠️ IIKO: Не подключено (статус: {status})\n"
+                context += f"Ошибка: {error_msg}\n"
+                context += "Попросите пользователя подключить iiko в разделе 'Интеграции'.\n"
+                logger.warning(f"⚠️ iiko not connected for user {user_id}: {status}")
+            else:
+                org_id = iiko_status.get("organization_id")
+                org_name = iiko_status.get("organization_name", "Организация")
+                
+                if not org_id:
+                    context += "\n\n⚠️ IIKO: Организация не выбрана. Выберите организацию в разделе 'Интеграции'.\n"
+                    logger.warning(f"⚠️ No organization selected for user {user_id}")
+                else:
+                    context += f"\n\n📊 ЗАПРОС ОТЧЕТА О ВЫРУЧКЕ:\n"
+                    context += f"- Организация: {org_name}\n"
+                    context += f"- Дата: {date_str}\n"
+                    context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server'}\n\n"
+                    
+                    # Для получения отчетов о выручке нужен RMS Server API
+                    # Cloud API не предоставляет отчеты о продажах напрямую
+                    if iiko_type == "rms":
+                        context += "⚠️ Получение отчетов о выручке через RMS Server API пока не реализовано.\n"
+                        context += "Для получения отчетов используйте iikoOffice или запросите отчет через администратора.\n"
+                        context += f"Запрошенная дата: {date_str}\n"
+                    else:
+                        context += "⚠️ Для получения отчетов о выручке необходимо подключение через iiko RMS Server.\n"
+                        context += "iikoCloud API не предоставляет отчеты о продажах напрямую.\n"
+                        context += "Подключите RMS Server в разделе 'Интеграции' для доступа к отчетам.\n"
+        
+        except Exception as e:
+            logger.error(f"❌ Error getting revenue report: {e}", exc_info=True)
+            context += f"\n\n❌ Ошибка получения отчета: {str(e)}\n"
+    
     elif intent == "iiko_stats":
         logger.info(f"📊 Getting iiko stats for: {user_query}")
         
@@ -1099,8 +1172,13 @@ def detect_intent(query: str) -> str:
     if any(w in query_lower for w in search_keywords):
         return "iiko_products"
     
+    # Запросы о выручке/продажах/отчетах (живые данные)
+    revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales"]
+    if any(w in query_lower for w in revenue_keywords):
+        return "iiko_revenue"
+    
     # iiko общая аналитика (живые данные)
-    iiko_keywords = ["выручк", "продаж", "iiko", "айко", "отчет", "аналитик", "синхрониз"]
+    iiko_keywords = ["iiko", "айко", "синхрониз"]
     if any(w in query_lower for w in iiko_keywords):
         return "iiko_analytics"
     

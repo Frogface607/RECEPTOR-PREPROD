@@ -243,6 +243,34 @@ class IikoClient:
             else:
                 raise IikoAPIError(f"Failed to fetch nomenclature: {str(e)}")
     
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_sales_report(self, organization_id: str, date_from: str, date_to: str) -> Dict[str, Any]:
+        """
+        Get sales/revenue report from iikoCloud API.
+        Note: This is a placeholder - iikoCloud API may not have direct sales reports endpoint.
+        For sales data, you typically need to use orders endpoint or RMS Server API.
+        """
+        try:
+            if not self._client:
+                self._initialize_client()
+            
+            if not organization_id:
+                raise IikoAPIError("Organization ID cannot be empty")
+            
+            logger.info(f"Fetching sales report for organization: {organization_id}, from {date_from} to {date_to}")
+            
+            # iikoCloud API typically doesn't have direct sales reports
+            # We would need to use orders endpoint or RMS Server API
+            # This is a placeholder for future implementation
+            raise IikoAPIError("Sales reports are not available via iikoCloud API. Use RMS Server API or orders endpoint instead.")
+            
+        except Exception as e:
+            logger.error(f"Error in get_sales_report: {str(e)}")
+            if isinstance(e, IikoAPIError):
+                raise
+            else:
+                raise IikoAPIError(f"Failed to fetch sales report: {str(e)}")
+    
     def health_check(self) -> Dict[str, Any]:
         """
         Perform health check to verify API connectivity and authentication.
