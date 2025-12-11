@@ -218,13 +218,13 @@ class IikoClient:
                 if response.groups:
                     logger.info(f"Response.groups is iterable, length: {len(response.groups) if hasattr(response.groups, '__len__') else 'unknown'}")
                     for group in response.groups:
-                    group_data = {
-                        "id": str(group.id),
-                        "name": group.name,
-                        "parent_group": str(getattr(group, 'parent_group', None)) if getattr(group, 'parent_group', None) else None,
-                        "is_deleted": getattr(group, 'is_deleted', False)
-                    }
-                    groups.append(group_data)
+                        group_data = {
+                            "id": str(group.id),
+                            "name": group.name,
+                            "parent_group": str(getattr(group, 'parent_group', None)) if getattr(group, 'parent_group', None) else None,
+                            "is_deleted": getattr(group, 'is_deleted', False)
+                        }
+                        groups.append(group_data)
             
             nomenclature_data = {
                 "products": products,
