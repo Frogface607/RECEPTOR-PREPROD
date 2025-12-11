@@ -893,6 +893,94 @@ async def chat_message(request: ChatRequest):
             logger.error(f"❌ Error getting revenue report: {e}", exc_info=True)
             context += f"\n\n❌ Ошибка получения отчета: {str(e)}\n"
     
+    elif intent == "iiko_employees":
+        logger.info(f"👥 Querying iiko employees for: {user_query}")
+        
+        try:
+            # Проверяем подключение Cloud API (сотрудники доступны только через Cloud)
+            iiko_status = get_iiko_connection_status(user_id)
+            iiko_type = iiko_status.get("type")
+            status = iiko_status.get("status")
+            
+            if status not in ["connected", "restored"] or iiko_type != "cloud":
+                error_msg = iiko_status.get("error", "Неизвестная ошибка")
+                context += f"\n\n⚠️ IIKO: Для получения данных о сотрудниках необходимо подключить iikoCloud API.\n"
+                if status != "connected":
+                    context += f"Статус: {status}\n"
+                    context += f"Ошибка: {error_msg}\n"
+                else:
+                    context += f"Текущее подключение: {iiko_type.upper() if iiko_type else 'Unknown'}\n"
+                    context += "Сотрудники доступны только через iikoCloud API.\n"
+                context += "Подключите iikoCloud API в разделе 'Интеграции'.\n"
+                logger.warning(f"⚠️ Cloud API not connected for employees: {status}, type: {iiko_type}")
+            else:
+                org_id = iiko_status.get("organization_id")
+                org_name = iiko_status.get("organization_name", "Организация")
+                
+                if not org_id:
+                    context += "\n\n⚠️ IIKO: Организация не выбрана. Выберите организацию в разделе 'Интеграции'.\n"
+                    logger.warning(f"⚠️ No organization selected for user {user_id}")
+                else:
+                    # Получаем сотрудников через Cloud API
+                    try:
+                        from app.services.iiko.iiko_client import IikoClient
+                        from app.core.database import db
+                        
+                        cloud_collection = db.get_collection("iiko_cloud_credentials")
+                        if cloud_collection is None:
+                            raise Exception("Database not initialized")
+                        
+                        credentials = cloud_collection.find_one({"user_id": user_id})
+                        if not credentials or not credentials.get("api_key"):
+                            raise Exception("API ключ не найден")
+                        
+                        api_key = credentials.get("api_key")
+                        client = IikoClient(api_login=api_key)
+                        employees_data = client.get_employees(org_id)
+                        
+                        employees = employees_data.get("employees", [])
+                        employees_count = employees_data.get("count", 0)
+                        
+                        context += f"\n\n👥 СОТРУДНИКИ ({org_name}):\n"
+                        context += f"Всего сотрудников: {employees_count}\n\n"
+                        
+                        if employees_count > 0:
+                            # Показываем список сотрудников
+                            for i, emp in enumerate(employees[:20], 1):  # Ограничиваем 20 сотрудниками
+                                emp_name = emp.get("name", "Без имени") if isinstance(emp, dict) else str(emp)
+                                emp_id = emp.get("id", "") if isinstance(emp, dict) else ""
+                                position = emp.get("position", "") if isinstance(emp, dict) else ""
+                                is_active = emp.get("is_active", True) if isinstance(emp, dict) else True
+                                
+                                status_icon = "✅" if is_active else "❌"
+                                context += f"{i}. {status_icon} {emp_name}"
+                                if position:
+                                    context += f" - {position}"
+                                if emp_id:
+                                    context += f" (ID: {emp_id})"
+                                context += "\n"
+                            
+                            if employees_count > 20:
+                                context += f"\n... и еще {employees_count - 20} сотрудников\n"
+                            
+                            context += "\n💡 Для получения явок конкретного сотрудника используйте запрос:\n"
+                            context += '"Покажи явки [имя сотрудника] за [период]"\n"
+                        else:
+                            context += "Сотрудники не найдены в базе данных iiko.\n"
+                            context += "Возможно, они еще не добавлены в систему.\n"
+                        
+                    except Exception as e:
+                        error_msg = str(e)
+                        logger.error(f"Error getting employees: {e}", exc_info=True)
+                        context += f"\n\n❌ Ошибка получения сотрудников: {error_msg}\n"
+                        if "401" in error_msg or "403" in error_msg or "not allowed" in error_msg.lower():
+                            context += "\n⚠️ API ключ не имеет прав на получение данных о сотрудниках.\n"
+                            context += "Проверьте настройки прав доступа в iikoWeb.\n"
+        
+        except Exception as e:
+            logger.error(f"Error in iiko_employees intent: {e}", exc_info=True)
+            context += f"\n\n❌ Ошибка: {str(e)}\n"
+    
     elif intent == "iiko_olap":
         logger.info(f"📊 Querying OLAP report for: {user_query}")
         
