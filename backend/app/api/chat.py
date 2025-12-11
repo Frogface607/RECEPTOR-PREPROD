@@ -1446,6 +1446,12 @@ def detect_intent(query: str) -> str:
     if any(w in query_lower for w in search_keywords):
         return "iiko_products"
     
+    # Запросы о сотрудниках (живые данные)
+    employees_keywords = ["сотрудник", "персонал", "работник", "staff", "employee", "employees", 
+                         "покажи сотрудников", "список сотрудников", "кто работает", "явки"]
+    if any(w in query_lower for w in employees_keywords):
+        return "iiko_employees"
+    
     # Запросы о выручке/продажах/отчетах (живые данные)
     revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales"]
     if any(w in query_lower for w in revenue_keywords):

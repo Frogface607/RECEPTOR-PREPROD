@@ -496,6 +496,22 @@ class IikoClient:
                             "organization_id": organization_id,
                             "source": "direct_http"
                         }
+                    elif response.status_code == 401 or response.status_code == 403:
+                        # Проверяем, есть ли сообщение о правах доступа
+                        try:
+                            error_data = response.json()
+                            error_desc = error_data.get("errorDescription", "")
+                            if "not allowed" in error_desc.lower() or "right" in error_desc.lower():
+                                logger.warning(f"⚠️ API key does not have permission for {endpoint}: {error_desc}")
+                                # Это нормально - не все API ключи имеют права на меню
+                                # Продолжаем пробовать другие endpoints, но не считаем это критической ошибкой
+                                last_error = f"HTTP {response.status_code}: Permission denied - {error_desc}"
+                                continue
+                        except:
+                            pass
+                        logger.warning(f"Endpoint {endpoint} returned {response.status_code}: {response.text[:200]}")
+                        last_error = f"HTTP {response.status_code}: {response.text[:200]}"
+                        continue
                     elif response.status_code == 404:
                         logger.warning(f"Endpoint {endpoint} not found (404), trying next...")
                         continue
@@ -508,6 +524,18 @@ class IikoClient:
                     logger.warning(f"Request to {endpoint} failed: {e}")
                     last_error = str(e)
                     continue
+            
+            # Если все endpoints вернули 401/403 с "not allowed" - это нормально, просто нет прав
+            if "Permission denied" in last_error or "not allowed" in last_error.lower():
+                logger.info(f"ℹ️ API key does not have permission for menu endpoint. This is normal - not all API keys have menu access.")
+                # Возвращаем пустую номенклатуру вместо ошибки
+                return {
+                    "products": [],
+                    "groups": [],
+                    "organization_id": organization_id,
+                    "source": "direct_http",
+                    "message": "API key does not have permission for menu endpoint. Use RMS Server for nomenclature."
+                }
             
             raise IikoAPIError(f"Failed to get menu from all endpoints. Last error: {last_error}")
             
