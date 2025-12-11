@@ -893,6 +893,149 @@ async def chat_message(request: ChatRequest):
             logger.error(f"❌ Error getting revenue report: {e}", exc_info=True)
             context += f"\n\n❌ Ошибка получения отчета: {str(e)}\n"
     
+    elif intent == "iiko_olap":
+        logger.info(f"📊 Querying OLAP report for: {user_query}")
+        
+        try:
+            # Извлекаем период из запроса
+            date_from = None
+            date_to = None
+            
+            # Парсим запрос на предмет периода
+            query_lower = user_query.lower()
+            now = datetime.now()
+            
+            # "за месяц" = текущий месяц
+            if "за месяц" in query_lower or "за текущий месяц" in query_lower:
+                date_from = now.replace(day=1).strftime('%Y-%m-%d')
+                if now.month == 12:
+                    last_day = now.replace(year=now.year + 1, month=1, day=1) - timedelta(days=1)
+                else:
+                    last_day = now.replace(month=now.month + 1, day=1) - timedelta(days=1)
+                date_to = last_day.strftime('%Y-%m-%d')
+            # "за прошлый месяц"
+            elif "за прошлый месяц" in query_lower:
+                if now.month == 1:
+                    prev_month = now.replace(year=now.year - 1, month=12, day=1)
+                else:
+                    prev_month = now.replace(month=now.month - 1, day=1)
+                date_from = prev_month.strftime('%Y-%m-%d')
+                if prev_month.month == 12:
+                    last_day = prev_month.replace(year=prev_month.year + 1, month=1, day=1) - timedelta(days=1)
+                else:
+                    last_day = prev_month.replace(month=prev_month.month + 1, day=1) - timedelta(days=1)
+                date_to = last_day.strftime('%Y-%m-%d')
+            # Конкретный месяц
+            elif "ноябр" in query_lower or "ноябрь" in query_lower:
+                month = 11
+                year = now.year if now.month >= 11 else now.year - 1
+                date_from = datetime(year, month, 1).strftime('%Y-%m-%d')
+                if month == 12:
+                    last_day = datetime(year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    last_day = datetime(year, month + 1, 1) - timedelta(days=1)
+                date_to = last_day.strftime('%Y-%m-%d')
+            elif "декабр" in query_lower or "декабрь" in query_lower:
+                month = 12
+                year = now.year
+                date_from = datetime(year, month, 1).strftime('%Y-%m-%d')
+                last_day = datetime(year + 1, 1, 1) - timedelta(days=1)
+                date_to = last_day.strftime('%Y-%m-%d')
+            else:
+                # По умолчанию - текущий месяц
+                date_from = now.replace(day=1).strftime('%Y-%m-%d')
+                if now.month == 12:
+                    last_day = now.replace(year=now.year + 1, month=1, day=1) - timedelta(days=1)
+                else:
+                    last_day = now.replace(month=now.month + 1, day=1) - timedelta(days=1)
+                date_to = last_day.strftime('%Y-%m-%d')
+            
+            # Проверяем подключение RMS
+            iiko_status = get_iiko_connection_status(user_id)
+            iiko_type = iiko_status.get("type")
+            status = iiko_status.get("status")
+            
+            if status not in ["connected", "restored"] or iiko_type != "rms":
+                context += f"\n\n⚠️ Для получения OLAP отчётов необходимо подключение через iiko RMS Server.\n"
+                context += f"Текущий статус: {status}, тип: {iiko_type}\n"
+                context += "Подключите RMS Server в разделе 'Интеграции'.\n"
+                logger.warning(f"⚠️ RMS not connected for OLAP report: {status}, type: {iiko_type}")
+            else:
+                org_id = iiko_status.get("organization_id")
+                org_name = iiko_status.get("organization_name", "Организация")
+                
+                if not org_id:
+                    context += "\n\n⚠️ Организация не выбрана. Выберите организацию в разделе 'Интеграции'.\n"
+                else:
+                    context += f"\n\n📊 ЗАПРОС OLAP ОТЧЕТА:\n"
+                    context += f"- Организация: {org_name}\n"
+                    context += f"- Период: {date_from} - {date_to}\n"
+                    context += f"- Тип отчёта: SALES (продажи)\n\n"
+                    
+                    try:
+                        # Получаем RMS клиент через сервис
+                        rms_service = get_iiko_rms_service()
+                        if rms_service is None:
+                            raise Exception("RMS service not initialized")
+                        
+                        # Получаем клиент для организации
+                        rms_client = rms_service._get_rms_client_for_org(org_id)
+                        if rms_client is None:
+                            raise Exception("RMS client not available")
+                        
+                        logger.info(f"📊 Fetching OLAP report via RMS for org: {org_id}, period: {date_from} - {date_to}")
+                        
+                        # Получаем OLAP отчёт
+                        report = rms_client.get_olap_report(
+                            report_type="SALES",
+                            date_from=date_from,
+                            date_to=date_to,
+                            organization_id=org_id,
+                            group_by_row_fields=["DishName", "DishGroup"],
+                            aggregate_fields=["DishAmountInt", "DishSumInt"],
+                            build_summary=True
+                        )
+                        
+                        # Форматируем результат
+                        data = report.get("data", [])
+                        summary = report.get("summary", [])
+                        
+                        if data:
+                            context += f"✅ ОТЧЕТ ПО ПРОДАЖАМ ({len(data)} позиций):\n\n"
+                            
+                            # Показываем топ-20 позиций
+                            for i, item in enumerate(data[:20], 1):
+                                dish_name = item.get("DishName", "н/д")
+                                dish_group = item.get("DishGroup", "")
+                                amount = item.get("DishAmountInt", 0)
+                                total_sum = item.get("DishSumInt", 0)
+                                
+                                group_info = f" ({dish_group})" if dish_group else ""
+                                context += f"{i}. {dish_name}{group_info}\n"
+                                context += f"   Количество: {amount} шт., Сумма: {total_sum:,.2f} руб\n"
+                            
+                            if len(data) > 20:
+                                context += f"\n... и ещё {len(data) - 20} позиций\n"
+                            
+                            # Показываем итоги
+                            if summary:
+                                context += f"\n📈 ИТОГИ:\n"
+                                for sum_item in summary:
+                                    for key, value in sum_item.items():
+                                        if "Sum" in key or "Amount" in key:
+                                            context += f"- {key}: {value}\n"
+                        else:
+                            context += "⚠️ За указанный период данных не найдено.\n"
+                        
+                    except Exception as e:
+                        logger.error(f"❌ Error getting OLAP report: {e}", exc_info=True)
+                        context += f"\n❌ Ошибка получения OLAP отчёта: {str(e)}\n"
+                        context += "Убедитесь, что RMS Server подключен и доступен.\n"
+        
+        except Exception as e:
+            logger.error(f"❌ Error in OLAP report handler: {e}", exc_info=True)
+            context += f"\n\n❌ Ошибка обработки запроса: {str(e)}\n"
+    
     elif intent == "iiko_stats":
         logger.info(f"📊 Getting iiko stats for: {user_query}")
         
