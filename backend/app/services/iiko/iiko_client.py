@@ -721,7 +721,9 @@ class IikoClient:
             
             logger.info(f"👥 Fetching employees: org={organization_id}")
             
+            # Пробуем сначала с токеном
             token = self._get_access_token_direct()
+            logger.debug(f"🔑 Token obtained: {token[:20]}... (truncated)")
             headers = {
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json"
@@ -732,10 +734,36 @@ class IikoClient:
                 "organizationId": organization_id
             }
             
+            logger.info(f"📡 Requesting employees from: {endpoint} with org_id: {organization_id}")
             response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
             
             # Логируем статус ответа
             logger.info(f"📡 Employees API response status: {response.status_code}")
+            
+            # Обрабатываем ошибки авторизации
+            if response.status_code == 401:
+                error_detail = response.text
+                logger.error(f"❌ 401 Unauthorized with token. Response: {error_detail}")
+                
+                # Пробуем использовать сам API ключ вместо токена (как в документации)
+                logger.info(f"🔄 Trying with API key directly instead of token...")
+                headers_api_key = {
+                    "Authorization": f"Bearer {self.api_login}",
+                    "Content-Type": "application/json"
+                }
+                response = requests.get(endpoint, headers=headers_api_key, params=params, timeout=self.timeout)
+                logger.info(f"📡 Employees API response status with API key: {response.status_code}")
+                
+                if response.status_code == 401:
+                    # Если и с API ключом не работает, значит нет прав
+                    error_detail = response.text
+                    logger.error(f"❌ 401 Unauthorized even with API key. Response: {error_detail}")
+                    raise IikoAPIError(
+                        "API ключ не имеет прав на получение данных о сотрудниках. "
+                        "Проверьте настройки прав доступа в iikoWeb для endpoint 'api/v1/employees'. "
+                        "Убедитесь, что в настройках API ключа включено право 'Employees' или 'Сотрудники'.",
+                        status_code=401
+                    )
             
             if response.status_code == 404:
                 logger.warning(f"⚠️ Employees endpoint not found (404). Trying alternative endpoint...")
@@ -743,6 +771,15 @@ class IikoClient:
                 endpoint_alt = f"{self.base_url}/api/1/employees"
                 response = requests.get(endpoint_alt, headers=headers, params=params, timeout=self.timeout)
                 logger.info(f"📡 Alternative endpoint response status: {response.status_code}")
+                
+                if response.status_code == 401:
+                    error_detail = response.text
+                    logger.error(f"❌ 401 Unauthorized on alternative endpoint. Response: {error_detail}")
+                    raise IikoAPIError(
+                        "API ключ не имеет прав на получение данных о сотрудниках. "
+                        "Проверьте настройки прав доступа в iikoWeb.",
+                        status_code=401
+                    )
             
             response.raise_for_status()
             

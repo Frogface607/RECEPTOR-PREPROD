@@ -979,10 +979,19 @@ async def chat_message(request: ChatRequest):
                     except Exception as e:
                         error_msg = str(e)
                         logger.error(f"Error getting employees: {e}", exc_info=True)
-                        context += f"\n\n❌ Ошибка получения сотрудников: {error_msg}\n"
-                        if "401" in error_msg or "403" in error_msg or "not allowed" in error_msg.lower():
-                            context += "\n⚠️ API ключ не имеет прав на получение данных о сотрудниках.\n"
-                            context += "Проверьте настройки прав доступа в iikoWeb.\n"
+                        context += f"\n\n❌ Ошибка получения сотрудников:\n"
+                        
+                        # Более понятное сообщение об ошибке
+                        if "401" in error_msg or "403" in error_msg or "not allowed" in error_msg.lower() or "не имеет прав" in error_msg.lower():
+                            context += "⚠️ API ключ не имеет прав на получение данных о сотрудниках.\n\n"
+                            context += "📋 Что нужно сделать:\n"
+                            context += "1. Откройте iikoWeb → Настройки → API интеграции\n"
+                            context += "2. Найдите ваш API ключ и откройте его настройки\n"
+                            context += "3. Убедитесь, что включено право 'Employees' или 'Сотрудники'\n"
+                            context += "4. Сохраните изменения и попробуйте снова\n\n"
+                            context += f"Техническая информация: {error_msg}\n"
+                        else:
+                            context += f"{error_msg}\n"
         
         except Exception as e:
             logger.error(f"Error in iiko_employees intent: {e}", exc_info=True)
