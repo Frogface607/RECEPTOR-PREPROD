@@ -132,34 +132,90 @@ def get_iiko_connection_status(user_id: str) -> Dict[str, Any]:
         return {"status": "error", "type": None, "error": str(e)}
 
 
-def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10, iiko_type: str = "rms") -> List[Dict[str, Any]]:
+def search_iiko_products(query: str, organization_id: str = "default", limit: int = 10, iiko_type: str = "rms", user_id: Optional[str] = None, api_key: Optional[str] = None) -> List[Dict[str, Any]]:
     """Поиск продуктов в номенклатуре iiko (RMS или Cloud) с улучшенной точностью"""
     try:
         if iiko_type == "cloud":
             # Используем Cloud API
-            from app.services.iiko.iiko_client import IikoClient
             from app.core.database import db
             
-            # Получаем API ключ из контекста (должен быть передан)
-            # Для Cloud API нужно получать номенклатуру и искать в ней
-            logger.info(f"Searching in iikoCloud for: {query}")
-            # TODO: Реализовать поиск через Cloud API
-            return []
+            logger.info(f"🔍 Searching in iikoCloud for: {query}")
+            
+            # Сначала пытаемся использовать синхронизированные данные
+            sync_collection = db.get_collection("iiko_cloud_nomenclature")
+            nomenclature_data = None
+            
+            if sync_collection is not None and user_id and organization_id:
+                try:
+                    sync_data = sync_collection.find_one({
+                        "user_id": user_id,
+                        "organization_id": organization_id
+                    })
+                    if sync_data and sync_data.get("nomenclature"):
+                        nomenclature_data = sync_data.get("nomenclature")
+                        logger.info(f"✅ Using synced data for search")
+                except Exception as e:
+                    logger.warning(f"Error reading synced data: {e}")
+            
+            # Если синхронизированных данных нет - получаем через API
+            if not nomenclature_data and api_key:
+                try:
+                    from app.services.iiko.iiko_client import IikoClient
+                    client = IikoClient(api_login=api_key)
+                    nomenclature_data = client.fetch_nomenclature(organization_id)
+                    logger.info(f"✅ Fetched from API for search")
+                except Exception as e:
+                    logger.error(f"Error fetching from API: {e}", exc_info=True)
+                    return []
+            
+            if nomenclature_data:
+                products = nomenclature_data.get("products", [])
+                if not isinstance(products, list):
+                    products = []
+                
+                # Поиск по названию
+                found = []
+                query_lower = query.lower()
+                for p in products:
+                    name = p.get("name", "").lower() if p.get("name") else ""
+                    if query_lower in name:
+                        # Форматируем результат в том же формате что и RMS
+                        price = 0
+                        if p.get("size_prices") and len(p.get("size_prices", [])) > 0:
+                            price = p.get("size_prices", [{}])[0].get("price", 0)
+                        
+                        found.append({
+                            "name": p.get("name", ""),
+                            "price": price,
+                            "price_per_unit": price,
+                            "unit": "шт",
+                            "group_name": "Cloud API",
+                            "match_score": 1.0 if query_lower == name else 0.8
+                        })
+                
+                return found[:limit]
+            else:
+                logger.warning("No nomenclature data available for Cloud search")
+                return []
         else:
             # Используем RMS
             rms_service = get_iiko_rms_service()
             if rms_service is None:
                 logger.warning("iiko RMS service not initialized")
                 return []
-            results = rms_service.search_rms_products_enhanced(
-                organization_id=organization_id,
-                query=query,
-                limit=limit,
-                min_score=0.75  # Повышенный порог для точности
-            )
-            return results
+            try:
+                results = rms_service.search_rms_products_enhanced(
+                    organization_id=organization_id,
+                    query=query,
+                    limit=limit,
+                    min_score=0.75  # Повышенный порог для точности
+                )
+                return results if results else []
+            except Exception as e:
+                logger.error(f"Error in RMS search: {e}", exc_info=True)
+                return []
     except Exception as e:
-        logger.error(f"Error searching iiko products: {e}", exc_info=True)
+        logger.error(f"❌ Error searching iiko products: {e}", exc_info=True)
         return []
 
 
