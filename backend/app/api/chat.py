@@ -472,29 +472,24 @@ async def chat_message(request: ChatRequest):
                                     
                                     if sync_data and sync_data.get("nomenclature"):
                                         nomenclature_data = sync_data.get("nomenclature")
-                                        logger.info(f"✅ Using synced Cloud nomenclature: {len(nomenclature_data.get('products', []))} products")
+                                        products_count = len(nomenclature_data.get('products', []))
+                                        logger.info(f"✅ Using synced Cloud nomenclature: {products_count} products")
+                                        
+                                        # Если Cloud API пустой - пробуем RMS как fallback
+                                        if products_count == 0:
+                                            logger.warning(f"⚠️ Cloud API has 0 products, trying RMS fallback...")
+                                            rms_service = get_iiko_rms_service()
+                                            if rms_service is not None:
+                                                rms_status = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+                                                if rms_status.get("status") in ["connected", "restored"]:
+                                                    logger.info(f"✅ RMS is connected, using RMS data instead")
+                                                    iiko_type = "rms"  # Переключаемся на RMS
+                                                    org_id = rms_status.get("organization_id", "default")
                                 except Exception as e:
                                     logger.error(f"Error reading synced data: {e}", exc_info=True)
                             
-                            # Если синхронизированных данных нет - получаем через API
-                            if not nomenclature_data:
-                                logger.info(f"📡 Synced data not found, fetching from API...")
-                                try:
-                                    from app.services.iiko.iiko_client import IikoClient
-                                    api_key = iiko_status.get("api_key")
-                                    if api_key:
-                                        client = IikoClient(api_login=api_key)
-                                        nomenclature_data = client.fetch_nomenclature(org_id)
-                                        logger.info(f"✅ Fetched from API: {len(nomenclature_data.get('products', []))} products")
-                                    else:
-                                        logger.error("API key not found in iiko_status")
-                                        context += "\n\n⚠️ API ключ не найден. Проверьте подключение в разделе 'Интеграции'.\n"
-                                except Exception as e:
-                                    logger.error(f"Error fetching from Cloud API: {e}", exc_info=True)
-                                    context += f"\n\n⚠️ Ошибка получения данных из iikoCloud API: {str(e)}\n"
-                                    context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
-                            
-                            if nomenclature_data:
+                            # Если Cloud API подключен и есть данные - используем его
+                            if iiko_type == "cloud" and nomenclature_data:
                                 products = nomenclature_data.get("products", [])
                                 groups = nomenclature_data.get("groups", [])
                                 products_count = len(products) if products else 0
@@ -524,21 +519,41 @@ async def chat_message(request: ChatRequest):
                                                 price_info = f", цена: {price:.2f} руб" if price else ""
                                                 context += f"- {p.get('name', 'н/д')}{price_info}\n"
                                         else:
-                                            context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
+                                            # Если не нашли в Cloud - пробуем RMS
+                                            logger.info(f"⚠️ Product '{term}' not found in Cloud, trying RMS...")
+                                            rms_results = search_iiko_products(term, org_id, limit=10, iiko_type="rms", user_id=user_id)
+                                            if rms_results:
+                                                context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ В RMS ПО ЗАПРОСУ '{term}':\n"
+                                                for p in rms_results[:10]:
+                                                    price_info = f", цена: {p.get('price_per_unit', 0):.2f} руб/{p.get('unit', 'шт')}" if p.get('price_per_unit') else ""
+                                                    context += f"- {p.get('name', 'н/д')}{price_info}\n"
+                                            else:
+                                                context += f"\n\nПо запросу '{term}' продукты не найдены в номенклатуре iiko.\n"
                                 else:
                                     # Если нет поисковых терминов, показываем общую статистику
                                     if products_count > 0:
                                         context += f"\n\nПримеры продуктов в базе:\n"
                                         for p in products[:5]:
                                             context += f"- {p.get('name', 'н/д')}\n"
-                            else:
-                                context += "\n\n⚠️ Данные номенклатуры не найдены. Выполните синхронизацию в разделе 'Интеграции'.\n"
+                            elif iiko_type == "cloud":
+                                # Cloud подключен, но данных нет - пробуем RMS
+                                logger.warning(f"⚠️ Cloud API connected but no data, trying RMS fallback...")
+                                rms_service = get_iiko_rms_service()
+                                if rms_service is not None:
+                                    rms_status = rms_service.get_rms_connection_status(user_id=user_id, auto_restore=False)
+                                    if rms_status.get("status") in ["connected", "restored"]:
+                                        logger.info(f"✅ RMS is connected, using RMS data instead")
+                                        iiko_type = "rms"
+                                        org_id = rms_status.get("organization_id", "default")
+                                        org_name = rms_status.get("organization_name", "Организация")
+                                        context += f"\n⚠️ В iikoCloud нет данных. Используем данные из RMS.\n"
                                 
                         except Exception as e:
                             logger.error(f"❌ Critical error in Cloud API processing: {e}", exc_info=True)
                             context += f"\n\n❌ Критическая ошибка при работе с iikoCloud: {str(e)}\n"
                             context += "Попробуйте выполнить синхронизацию в разделе 'Интеграции'.\n"
-                    elif iiko_type == "rms":
+                    # Обработка RMS (либо напрямую, либо как fallback от Cloud)
+                    if iiko_type == "rms":
                         # Для RMS используем существующую логику
                         try:
                             summary = get_iiko_nomenclature_stats(org_id)
@@ -551,7 +566,7 @@ async def chat_message(request: ChatRequest):
                                 if search_terms:
                                     for term in search_terms:
                                         try:
-                                            products = search_iiko_products(term, org_id, limit=5, iiko_type="rms", user_id=user_id)
+                                            products = search_iiko_products(term, org_id, limit=10, iiko_type="rms", user_id=user_id)
                                             if products:
                                                 context += f"\n\nНАЙДЕНЫ ПРОДУКТЫ ПО ЗАПРОСУ '{term}':\n"
                                                 for p in products:
@@ -562,6 +577,17 @@ async def chat_message(request: ChatRequest):
                                         except Exception as e:
                                             logger.error(f"Error searching RMS products: {e}", exc_info=True)
                                             context += f"\n\n⚠️ Ошибка поиска продуктов: {str(e)}\n"
+                                else:
+                                    # Если нет поисковых терминов, показываем примеры
+                                    if summary.get('total_products', 0) > 0:
+                                        context += f"\n\nПримеры продуктов в базе:\n"
+                                        # Пробуем получить несколько продуктов
+                                        try:
+                                            sample_products = search_iiko_products("", org_id, limit=5, iiko_type="rms", user_id=user_id)
+                                            for p in sample_products[:5]:
+                                                context += f"- {p.get('name', 'н/д')}\n"
+                                        except:
+                                            pass
                             else:
                                 error_msg = summary.get("error", "Неизвестная ошибка") if summary else "Сервис не инициализирован"
                                 context += f"\n\n⚠️ Ошибка получения статистики RMS: {error_msg}\n"
