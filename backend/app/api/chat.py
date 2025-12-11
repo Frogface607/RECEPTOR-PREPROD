@@ -845,16 +845,49 @@ async def chat_message(request: ChatRequest):
                     context += f"- Дата: {date_str}\n"
                     context += f"- Тип подключения: {'iikoCloud API' if iiko_type == 'cloud' else 'iiko RMS Server'}\n\n"
                     
-                    # Для получения отчетов о выручке нужен RMS Server API
-                    # Cloud API не предоставляет отчеты о продажах напрямую
-                    if iiko_type == "rms":
+                    # Пытаемся получить отчёт через Cloud API
+                    if iiko_type == "cloud":
+                        try:
+                            from app.services.iiko.iiko_client import IikoClient
+                            
+                            api_key = iiko_status.get("api_key")
+                            if api_key:
+                                logger.info(f"📊 Attempting to get sales report via Cloud API for {date_str}")
+                                client = IikoClient(api_login=api_key)
+                                report = client.get_sales_report(org_id, date_str, date_str, "DAY")
+                                
+                                if report.get("error"):
+                                    context += f"⚠️ {report.get('message', 'Не удалось получить отчёт через Cloud API')}\n"
+                                    context += f"Подсказка: {report.get('suggestion', '')}\n"
+                                else:
+                                    total_revenue = report.get("totalRevenue", 0)
+                                    total_checks = report.get("totalChecks", 0)
+                                    avg_check = report.get("averageCheck", 0)
+                                    
+                                    context += f"✅ ОТЧЕТ О ВЫРУЧКЕ ЗА {date_str}:\n"
+                                    context += f"- Общая выручка: {total_revenue:,.2f} руб\n"
+                                    context += f"- Количество чеков: {total_checks}\n"
+                                    context += f"- Средний чек: {avg_check:,.2f} руб\n"
+                                    
+                                    if report.get("data"):
+                                        context += f"\nДетализация по периодам:\n"
+                                        for item in report["data"][:10]:  # Показываем до 10 периодов
+                                            period = item.get("period", "н/д")
+                                            revenue = item.get("revenue", 0)
+                                            checks = item.get("checks", 0)
+                                            context += f"- {period}: {revenue:,.2f} руб ({checks} чеков)\n"
+                            else:
+                                context += "⚠️ API ключ не найден. Проверьте подключение Cloud API.\n"
+                        except Exception as e:
+                            logger.error(f"❌ Error getting Cloud API report: {e}", exc_info=True)
+                            context += f"⚠️ Ошибка получения отчёта через Cloud API: {str(e)}\n"
+                            context += "Попробуйте использовать RMS Server для получения отчётов.\n"
+                    
+                    # Для RMS Server API отчёты пока не реализованы
+                    elif iiko_type == "rms":
                         context += "⚠️ Получение отчетов о выручке через RMS Server API пока не реализовано.\n"
                         context += "Для получения отчетов используйте iikoOffice или запросите отчет через администратора.\n"
                         context += f"Запрошенная дата: {date_str}\n"
-                    else:
-                        context += "⚠️ Для получения отчетов о выручке необходимо подключение через iiko RMS Server.\n"
-                        context += "iikoCloud API не предоставляет отчеты о продажах напрямую.\n"
-                        context += "Подключите RMS Server в разделе 'Интеграции' для доступа к отчетам.\n"
         
         except Exception as e:
             logger.error(f"❌ Error getting revenue report: {e}", exc_info=True)
