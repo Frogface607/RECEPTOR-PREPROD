@@ -376,6 +376,50 @@ async def get_cloud_menu(user_id: str, organization_id: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/cloud/reports/sales/{user_id}")
+async def get_cloud_sales_report(
+    user_id: str,
+    date_from: str,
+    date_to: str,
+    organization_id: Optional[str] = None
+):
+    """Get sales report from iikoCloud API"""
+    try:
+        collection = db.get_collection("iiko_cloud_credentials")
+        if collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(status_code=400, detail="iikoCloud не подключен")
+        
+        # Используем выбранную организацию или переданную
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="Организация не выбрана")
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        report = client.get_sales_report(org_id, date_from, date_to)
+        
+        return {
+            "organization_id": org_id,
+            "organization_name": credentials.get("selected_organization_name"),
+            "date_from": date_from,
+            "date_to": date_to,
+            "report": report
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud sales report: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.delete("/cloud/disconnect/{user_id}")
 async def disconnect_iiko_cloud(user_id: str):
     """Disconnect iikoCloud and remove stored credentials"""
