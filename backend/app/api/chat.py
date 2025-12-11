@@ -432,7 +432,14 @@ async def chat_message(request: ChatRequest):
                 context += f"- Organization ID: {org_id}\n"
                 
                 if iiko_type == "cloud":
-                    # Проверяем синхронизированные данные
+                    # Cloud API используется для отчетов, выручки, сотрудников
+                    context += f"\n📊 Cloud API предназначен для:\n"
+                    context += f"- Отчеты о продажах и выручке\n"
+                    context += f"- Данные о сотрудниках и явках\n"
+                    context += f"- Заказы и смены\n"
+                    context += f"\n⚠️ ВАЖНО: Для работы с номенклатурой (продуктами) используйте RMS Server API.\n"
+                    
+                    # Проверяем статус подключения
                     from app.core.database import db
                     sync_collection = db.get_collection("iiko_cloud_nomenclature")
                     if sync_collection is not None:
@@ -441,33 +448,16 @@ async def chat_message(request: ChatRequest):
                             "organization_id": org_id
                         })
                         if sync_data:
-                            products_count = sync_data.get("products_count", 0)
-                            groups_count = sync_data.get("groups_count", 0)
+                            connection_status = sync_data.get("connection_status", "unknown")
                             synced_at = sync_data.get("synced_at")
-                            context += f"- Синхронизировано продуктов: {products_count}\n"
-                            context += f"- Синхронизировано групп: {groups_count}\n"
                             if synced_at:
                                 # Форматируем дату для читаемости
                                 if isinstance(synced_at, datetime):
                                     synced_str = synced_at.strftime("%d.%m.%Y %H:%M")
                                 else:
                                     synced_str = str(synced_at)
-                                context += f"- Последняя синхронизация: {synced_str}\n"
-                            
-                            # Если продуктов 0, объясняем возможные причины
-                            if products_count == 0:
-                                context += f"\n⚠️ ВНИМАНИЕ: В организации нет синхронизированных продуктов.\n"
-                                context += f"Возможные причины:\n"
-                                context += f"1. В организации действительно нет продуктов в iikoCloud\n"
-                                context += f"2. Продукты не опубликованы в меню\n"
-                                context += f"3. Проблема с правами доступа API ключа\n"
-                                context += f"4. Организация не настроена в iikoCloud\n"
-                                context += f"\nПопробуйте:\n"
-                                context += f"- Проверить наличие продуктов в iikoOffice/iikoWeb\n"
-                                context += f"- Выполнить повторную синхронизацию\n"
-                                context += f"- Проверить настройки API ключа в iikoCloud\n"
-                        else:
-                            context += f"- ⚠️ Данные не синхронизированы. Выполните синхронизацию в разделе 'Интеграции'.\n"
+                                context += f"- Последняя проверка подключения: {synced_str}\n"
+                                context += f"- Статус: {'✅ Подключение проверено' if connection_status == 'verified' else '⚠️ Требуется проверка'}\n"
                 elif iiko_type == "rms":
                     # Проверяем статистику RMS
                     summary = get_iiko_nomenclature_stats(org_id)
