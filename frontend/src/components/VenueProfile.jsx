@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, CheckCircle, FileText } from 'lucide-react';
 import axios from 'axios';
+import ResearchResults from './ResearchResults';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
 
@@ -73,9 +74,12 @@ function VenueProfile({ userId, onBack }) {
   const [researching, setResearching] = useState(false);
   const [researchDone, setResearchDone] = useState(false);
   const [researchError, setResearchError] = useState('');
+  const [researchData, setResearchData] = useState(null);
+  const [showResearchResults, setShowResearchResults] = useState(false);
 
   useEffect(() => {
     loadProfile();
+    checkResearchStatus();
   }, [userId]);
 
   const loadProfile = async () => {
@@ -92,6 +96,18 @@ function VenueProfile({ userId, onBack }) {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkResearchStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/venue/research/status/${userId}`);
+      if (response.data.status === 'completed') {
+        setResearchData(response.data);
+        setResearchDone(true);
+      }
+    } catch (error) {
+      console.log('No research data yet');
     }
   };
 
@@ -120,6 +136,7 @@ function VenueProfile({ userId, onBack }) {
           const checkResponse = await axios.get(`${API_URL}/venue/research/status/${userId}`);
           if (checkResponse.data.status === 'completed') {
             setResearchDone(true);
+            setResearchData(checkResponse.data);
             console.log('Research completed:', checkResponse.data);
           } else {
             console.log('Research not ready yet:', checkResponse.data);
@@ -222,6 +239,18 @@ function VenueProfile({ userId, onBack }) {
                 </>
               )}
             </button>
+
+            {/* View Results Button */}
+            {researchDone && researchData && (
+              <button
+                onClick={() => setShowResearchResults(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors"
+                title="Посмотреть результаты исследования"
+              >
+                <FileText size={18} />
+                Результаты
+              </button>
+            )}
 
             {/* Save Button */}
             <button
@@ -424,6 +453,15 @@ function VenueProfile({ userId, onBack }) {
           </section>
         </div>
       </div>
+
+      {/* Research Results Modal */}
+      {showResearchResults && researchData && (
+        <ResearchResults
+          research={researchData}
+          venueName={profile.venue_name}
+          onClose={() => setShowResearchResults(false)}
+        />
+      )}
     </div>
   );
 }

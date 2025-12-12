@@ -156,7 +156,53 @@ async def get_deep_research(user_id: str):
         return {"status": "not_found", "message": "Исследование не найдено"}
     
     research.pop("_id", None)
-    return {"status": "completed", "data": research}
+    
+    # Форматируем данные для удобного отображения
+    formatted_research = format_research_for_display(research)
+    
+    return {"status": "completed", "data": formatted_research}
+
+
+def format_research_for_display(research: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Форматирует данные исследования для красивого отображения
+    """
+    # Убедимся, что все списки существуют
+    formatted = {
+        "venue_name": research.get("venue_name", ""),
+        "city": research.get("city", ""),
+        "research_date": research.get("research_date", datetime.utcnow().isoformat()),
+        "status": research.get("status", "completed"),
+        
+        # Основная информация
+        "summary": research.get("summary", "Информация о заведении собирается..."),
+        "positioning": research.get("positioning", ""),
+        
+        # Метрики
+        "price_segment": research.get("price_segment", "unknown"),
+        "avg_check_estimate": research.get("avg_check_estimate", "unknown"),
+        "rating_estimate": research.get("rating_estimate", "unknown"),
+        
+        # SWOT анализ - убеждаемся, что это списки
+        "strengths": research.get("strengths") or [],
+        "weaknesses": research.get("weaknesses") or [],
+        "opportunities": research.get("opportunities") or [],
+        "threats": research.get("threats") or [],
+        
+        # Дополнительная информация
+        "popular_items": research.get("popular_items") or [],
+        "competitors": research.get("competitors") or [],
+        
+        # Статистика источников
+        "raw_sources": research.get("raw_sources", {})
+    }
+    
+    # Убедимся, что все списки действительно списки
+    for key in ["strengths", "weaknesses", "opportunities", "threats", "popular_items", "competitors"]:
+        if not isinstance(formatted[key], list):
+            formatted[key] = []
+    
+    return formatted
 
 
 async def run_deep_research_task(venue_name: str, city: str, user_id: str):
