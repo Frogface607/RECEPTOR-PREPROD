@@ -1242,7 +1242,36 @@ async def get_olap_columns(user_id: str, report_type: str = "SALES"):
             password=user_credentials.get("password")
         )
         
-        rms_client.authenticate()
+        try:
+            rms_client.authenticate()
+        except Exception as auth_error:
+            error_msg = str(auth_error)
+            logger.error(f"RMS Authentication failed: {error_msg}")
+            
+            if "403" in error_msg or "Access denied" in error_msg:
+                raise HTTPException(
+                    status_code=403,
+                    detail=(
+                        f"Доступ запрещен (403). Возможные причины:\n"
+                        f"- Учетная запись заблокирована\n"
+                        f"- Недостаточно прав доступа\n"
+                        f"- Ограничения на аккаунт\n\n"
+                        f"Проверьте статус учетной записи в iiko RMS и попробуйте переподключиться."
+                    )
+                )
+            elif "401" in error_msg or "Invalid credentials" in error_msg:
+                raise HTTPException(
+                    status_code=401,
+                    detail=(
+                        f"Неверные учетные данные (401). "
+                        f"Проверьте логин и пароль в настройках подключения."
+                    )
+                )
+            else:
+                raise HTTPException(
+                    status_code=401,
+                    detail=f"Ошибка аутентификации с RMS сервером: {error_msg}"
+                )
         
         columns = rms_client.get_olap_columns(report_type=report_type)
         
