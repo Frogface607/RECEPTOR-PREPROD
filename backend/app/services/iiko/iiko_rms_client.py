@@ -846,14 +846,23 @@ class IikoRmsClient:
             
             # Построение фильтров
             filters = {}
-            if date_from and date_to:
+            # Для предопределенных периодов (не CUSTOM) не передаем даты, только period_type
+            # Для CUSTOM - обязательно передаем даты
+            if period_type == "CUSTOM":
+                if date_from and date_to:
+                    filters["OpenDate.Typed"] = {
+                        "filterType": "DateRange",
+                        "periodType": period_type,
+                        "from": date_from,
+                        "to": date_to,
+                        "includeLow": True,
+                        "includeHigh": True
+                    }
+            else:
+                # Для предопределенных периодов используем только periodType, без дат
                 filters["OpenDate.Typed"] = {
                     "filterType": "DateRange",
-                    "periodType": period_type,
-                    "from": date_from,
-                    "to": date_to,
-                    "includeLow": True,
-                    "includeHigh": True
+                    "periodType": period_type
                 }
             
             # Добавляем фильтр по организации если указана
