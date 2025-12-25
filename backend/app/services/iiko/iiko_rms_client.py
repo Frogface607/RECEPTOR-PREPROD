@@ -846,24 +846,38 @@ class IikoRmsClient:
             
             # Построение фильтров
             filters = {}
-            # Для предопределенных периодов (не CUSTOM) не передаем даты, только period_type
-            # Для CUSTOM - обязательно передаем даты
+            # Обязательный фильтр по дате (требуется с версии iiko 5.5)
             if period_type == "CUSTOM":
+                # Для CUSTOM - передаем даты с временем
                 if date_from and date_to:
                     filters["OpenDate.Typed"] = {
                         "filterType": "DateRange",
-                        "periodType": period_type,
+                        "periodType": "CUSTOM",
                         "from": date_from,
                         "to": date_to,
                         "includeLow": True,
                         "includeHigh": True
                     }
             else:
-                # Для предопределенных периодов используем только periodType, без дат
-                filters["OpenDate.Typed"] = {
+                # Для предопределенных периодов передаем periodType и дату БЕЗ времени
+                # Согласно документации (пример для CURRENT_MONTH), нужна дата в формате yyyy-MM-dd
+                date_only = None
+                if date_from:
+                    # Берем только дату без времени (формат yyyy-MM-dd)
+                    date_only = date_from.split('T')[0] if 'T' in date_from else date_from
+                    # Убираем время если есть
+                    if len(date_only) > 10:
+                        date_only = date_only[:10]
+                
+                filter_obj = {
                     "filterType": "DateRange",
                     "periodType": period_type
                 }
+                # Добавляем from только если есть дата (дата без времени)
+                if date_only:
+                    filter_obj["from"] = date_only
+                
+                filters["OpenDate.Typed"] = filter_obj
             
             # Добавляем фильтр по организации если указана
             if organization_id and organization_id != "default":
