@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { 
     BarChart3, TrendingUp, DollarSign, Package, 
     Loader2, RefreshCw, Calendar, Filter,
     AlertCircle, CheckCircle2, XCircle
 } from 'lucide-react';
+import {
+    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
 
@@ -302,39 +306,137 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 </div>
             )}
             
-            {/* Revenue Chart Placeholder */}
-            {revenue && revenue.revenue && revenue.revenue.data && revenue.revenue.data.length > 0 ? (
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* График выручки по дням */}
+                {revenueChartData.length > 0 && (
+                    <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                            <TrendingUp className="w-6 h-6" />
+                            Динамика выручки по дням
+                        </h2>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={revenueChartData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                <XAxis 
+                                    dataKey="date" 
+                                    stroke="#9ca3af"
+                                    style={{ fontSize: '12px' }}
+                                />
+                                <YAxis 
+                                    stroke="#9ca3af"
+                                    style={{ fontSize: '12px' }}
+                                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}к`}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: '#1f2937', 
+                                        border: '1px solid #374151',
+                                        borderRadius: '8px',
+                                        color: '#fff'
+                                    }}
+                                    formatter={(value) => formatCurrency(value)}
+                                />
+                                <Legend wrapperStyle={{ color: '#9ca3af' }} />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="revenue" 
+                                    stroke="#10b981" 
+                                    strokeWidth={2}
+                                    dot={{ fill: '#10b981', r: 4 }}
+                                    activeDot={{ r: 6 }}
+                                    name="Выручка"
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+                
+                {/* График по категориям */}
+                {categoriesChartData.length > 0 && (
+                    <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                            <Package className="w-6 h-6" />
+                            Продажи по категориям
+                        </h2>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={categoriesChartData}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                    outerRadius={100}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {categoriesChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: '#1f2937', 
+                                        border: '1px solid #374151',
+                                        borderRadius: '8px',
+                                        color: '#fff'
+                                    }}
+                                    formatter={(value) => formatCurrency(value)}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+            </div>
+            
+            {/* График топ блюд (горизонтальный) */}
+            {topDishesChartData.length > 0 && (
                 <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
-                        <TrendingUp className="w-6 h-6" />
-                        Динамика выручки
+                        <BarChart3 className="w-6 h-6" />
+                        Топ-10 блюд по выручке
                     </h2>
-                    
-                    <div className="space-y-3">
-                        {revenue.revenue.data.slice(0, 10).map((item, index) => {
-                            const date = item['OpenDate.Typed'] || item.date || 'Неизвестно';
-                            const sum = parseFloat(item.DishSumInt || item.dishSumInt || 0);
-                            
-                            return (
-                                <div key={index} className="flex items-center justify-between p-3 bg-gray-900 rounded border border-gray-700">
-                                    <span className="text-gray-300">{date}</span>
-                                    <span className="text-green-400 font-semibold">{formatCurrency(sum)}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    <ResponsiveContainer width="100%" height={400}>
+                        <BarChart 
+                            data={topDishesChartData}
+                            layout="vertical"
+                            margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                            <XAxis 
+                                type="number" 
+                                stroke="#9ca3af"
+                                style={{ fontSize: '12px' }}
+                                tickFormatter={(value) => `${(value / 1000).toFixed(0)}к ₽`}
+                            />
+                            <YAxis 
+                                type="category" 
+                                dataKey="name" 
+                                stroke="#9ca3af"
+                                style={{ fontSize: '12px' }}
+                                width={140}
+                            />
+                            <Tooltip 
+                                contentStyle={{ 
+                                    backgroundColor: '#1f2937', 
+                                    border: '1px solid #374151',
+                                    borderRadius: '8px',
+                                    color: '#fff'
+                                }}
+                                formatter={(value) => formatCurrency(value)}
+                            />
+                            <Legend wrapperStyle={{ color: '#9ca3af' }} />
+                            <Bar 
+                                dataKey="revenue" 
+                                fill="#3b82f6"
+                                name="Выручка"
+                                radius={[0, 8, 8, 0]}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
-            ) : revenue && revenue.revenue && revenue.revenue.data && revenue.revenue.data.length === 0 ? (
-                <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
-                        <TrendingUp className="w-6 h-6" />
-                        Динамика выручки
-                    </h2>
-                    <div className="text-center py-8 text-gray-400">
-                        Нет данных за выбранный период
-                    </div>
-                </div>
-            ) : null}
+            )}
             
             {/* Connection Status */}
             {rmsStatus && (
