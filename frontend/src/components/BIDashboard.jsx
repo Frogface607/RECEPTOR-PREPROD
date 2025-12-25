@@ -193,7 +193,7 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
             )}
             
             {/* Stats Cards */}
-            {revenue && revenue.revenue && (
+            {(dishStatistics || revenue) && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                         <div className="flex items-center justify-between">
@@ -201,8 +201,8 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                                 <p className="text-gray-400 text-sm mb-1">Общая выручка</p>
                                 <p className="text-2xl font-bold text-white">
                                     {formatCurrency(
-                                        revenue.revenue.summary?.reduce((sum, item) => 
-                                            sum + (parseFloat(item.DishSumInt || 0)), 0
+                                        dishStatistics?.statistics?.data?.reduce((sum, item) => 
+                                            sum + (parseFloat(item.DishSumInt || item.dishSumInt || 0)), 0
                                         ) || 0
                                     )}
                                 </p>
@@ -303,7 +303,7 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
             )}
             
             {/* Revenue Chart Placeholder */}
-            {revenue && revenue.revenue && revenue.revenue.data && revenue.revenue.data.length > 0 && (
+            {revenue && revenue.revenue && revenue.revenue.data && revenue.revenue.data.length > 0 ? (
                 <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
                         <TrendingUp className="w-6 h-6" />
@@ -324,7 +324,17 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                         })}
                     </div>
                 </div>
-            )}
+            ) : revenue && revenue.revenue && revenue.revenue.data && revenue.revenue.data.length === 0 ? (
+                <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                        <TrendingUp className="w-6 h-6" />
+                        Динамика выручки
+                    </h2>
+                    <div className="text-center py-8 text-gray-400">
+                        Нет данных за выбранный период
+                    </div>
+                </div>
+            ) : null}
             
             {/* Connection Status */}
             {rmsStatus && (
