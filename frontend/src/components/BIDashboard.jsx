@@ -311,13 +311,13 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 </div>
                 
                 {/* Табы для переключения между обзором и сменами */}
-                <div className="flex gap-2 bg-gray-800 rounded-lg p-1">
+                <div className="flex gap-2 bg-gray-800/50 backdrop-blur-sm rounded-xl p-1.5 border border-gray-700/50">
                     <button
                         onClick={() => setActiveTab('overview')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                             activeTab === 'overview'
-                                ? 'bg-blue-600 text-white'
-                                : 'text-gray-400 hover:text-white'
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                         }`}
                     >
                         Обзор
@@ -333,10 +333,10 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                                 }
                             }
                         }}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                             activeTab === 'shifts'
-                                ? 'bg-blue-600 text-white'
-                                : 'text-gray-400 hover:text-white'
+                                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/30'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                         }`}
                     >
                         По сменам
@@ -350,7 +350,7 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                         <select
                             value={periodType}
                             onChange={(e) => setPeriodType(e.target.value)}
-                            className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-600 transition-all duration-200 font-medium shadow-sm"
                         >
                             <option value="TODAY">Сегодня</option>
                             <option value="YESTERDAY">Вчера</option>
@@ -365,7 +365,7 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                     <button
                         onClick={loadAllData}
                         disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 font-medium"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                         Обновить
@@ -381,22 +381,38 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 </div>
             )}
             
-            {/* Loading state */}
+            {/* Loading state with skeleton */}
             {loading && !dishStatistics && (
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                    <span className="ml-3 text-gray-400">Загрузка данных...</span>
+                <div className="space-y-6">
+                    {/* Skeleton cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 animate-pulse">
+                                <div className="h-4 bg-gray-700/50 rounded w-24 mb-4"></div>
+                                <div className="h-8 bg-gray-700/50 rounded w-32 mb-2"></div>
+                                <div className="h-3 bg-gray-700/30 rounded w-20"></div>
+                            </div>
+                        ))}
+                    </div>
+                    {/* Skeleton chart */}
+                    <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 animate-pulse">
+                        <div className="h-6 bg-gray-700/50 rounded w-48 mb-6"></div>
+                        <div className="h-64 bg-gray-700/30 rounded"></div>
+                    </div>
                 </div>
             )}
             
             {/* Stats Cards */}
             {(dishStatistics || revenue) && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700/50 shadow-lg hover:shadow-xl hover:border-emerald-500/50 transition-all duration-300 group">
                         <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-gray-400 text-sm mb-1">Общая выручка</p>
-                                <p className="text-2xl font-bold text-white">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <DollarSign className="w-5 h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                                    <p className="text-gray-400 text-sm font-medium">Общая выручка</p>
+                                </div>
+                                <p className="text-3xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
                                     {formatCurrency(
                                         dishStatistics?.statistics?.data?.reduce((sum, item) => 
                                             sum + (parseFloat(item.DishSumInt || item.dishSumInt || 0)), 0
@@ -572,26 +588,26 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                                     return (
                                         <div
                                             key={index}
-                                            className="flex items-center justify-between p-4 bg-gray-900 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
+                                            className="group flex items-center justify-between p-5 bg-gray-900/50 hover:bg-gray-900 rounded-xl border border-gray-700/50 hover:border-purple-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/5"
                                         >
-                                            <div className="flex items-center gap-4 flex-1">
-                                                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
+                                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg shadow-purple-500/20 group-hover:from-purple-500 group-hover:to-purple-600 transition-all">
                                                     {index + 1}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-white font-semibold truncate">
+                                                    <p className="text-white font-semibold truncate group-hover:text-purple-400 transition-colors mb-1">
                                                         Смена {index + 1}
                                                     </p>
-                                                    <p className="text-gray-400 text-sm">
+                                                    <p className="text-gray-400 text-sm mb-1">
                                                         {formattedDate}
                                                     </p>
-                                                    <p className="text-gray-400 text-sm mt-1">
-                                                        Позиций продано: {formatNumber(amount)}
+                                                    <p className="text-gray-500 text-sm">
+                                                        Позиций продано: <span className="text-gray-300 font-medium">{formatNumber(amount)}</span>
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="text-right flex-shrink-0 ml-4">
-                                                <p className="text-green-400 font-bold text-xl">
+                                                <p className="text-emerald-400 font-bold text-xl group-hover:text-emerald-300 transition-colors">
                                                     {formatCurrency(revenue)}
                                                 </p>
                                             </div>
@@ -601,10 +617,13 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                                 
                                 {/* Итого по всем сменам */}
                                 {shiftsReport.shifts.summary && shiftsReport.shifts.summary.length > 0 && (
-                                    <div className="mt-6 pt-6 border-t border-gray-700">
-                                        <div className="flex items-center justify-between p-4 bg-blue-900/20 rounded-lg border border-blue-700/50">
-                                            <span className="text-white font-bold text-lg">Итого за период:</span>
-                                            <span className="text-blue-400 font-bold text-xl">
+                                    <div className="mt-6 pt-6 border-t border-gray-700/50">
+                                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl border border-blue-700/30 shadow-lg">
+                                            <span className="text-white font-bold text-lg flex items-center gap-2">
+                                                <TrendingUp className="w-5 h-5 text-blue-400" />
+                                                Итого за период:
+                                            </span>
+                                            <span className="text-blue-400 font-bold text-2xl">
                                                 {formatCurrency(
                                                     shiftsReport.shifts.summary.reduce((sum, item) => 
                                                         sum + (parseFloat(item.DishSumInt || 0)), 0
