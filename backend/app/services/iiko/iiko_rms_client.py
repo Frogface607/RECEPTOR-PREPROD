@@ -122,12 +122,26 @@ class IikoRmsClient:
                 else:
                     raise IikoRmsAPIError(f"Invalid session key received")
             elif response.status_code == 401:
-                raise IikoRmsAPIError("Authentication failed: Invalid credentials (401)")
-            elif response.status_code == 403:
-                raise IikoRmsAPIError("Authentication failed: Access denied (403)")
-            else:
+                error_msg = response.text.strip() if response.text else "Invalid credentials"
+                logger.error(f"Authentication failed (401): {error_msg}")
                 raise IikoRmsAPIError(
-                    f"Authentication failed: HTTP {response.status_code}"
+                    f"Authentication failed: Invalid credentials (401). "
+                    f"Please check your login and password in settings."
+                )
+            elif response.status_code == 403:
+                error_msg = response.text.strip() if response.text else "Access denied"
+                logger.error(f"Authentication failed (403): {error_msg}")
+                logger.error(f"Response body: {response.text[:200] if response.text else 'Empty'}")
+                raise IikoRmsAPIError(
+                    f"Authentication failed: Access denied (403). "
+                    f"Possible reasons: user blocked, insufficient permissions, or account restrictions. "
+                    f"Please check your account status in iiko RMS."
+                )
+            else:
+                error_msg = response.text.strip() if response.text else f"HTTP {response.status_code}"
+                logger.error(f"Authentication failed ({response.status_code}): {error_msg}")
+                raise IikoRmsAPIError(
+                    f"Authentication failed: HTTP {response.status_code} - {error_msg}"
                 )
                 
         except requests.exceptions.RequestException as e:
@@ -137,11 +151,23 @@ class IikoRmsClient:
             logger.error(f"Authentication error: {str(e)}")
             raise IikoRmsAPIError(f"Failed to authenticate: {str(e)}")
     
-    def _get_session_key(self) -> str:
-        """Get valid session key, authenticate if needed"""
-        if (not self.session_key or 
+    def _get_session_key(self, force_refresh: bool = False) -> str:
+        """
+        Get valid session key, authenticate if needed
+        
+        Args:
+            force_refresh: If True, force re-authentication even if session is valid
+        """
+        if (force_refresh or
+            not self.session_key or 
             not self.session_expires_at or 
             datetime.now() >= self.session_expires_at - timedelta(minutes=5)):
+            
+            # Clear old session before re-authenticating
+            if force_refresh:
+                self.session_key = None
+                self.session_expires_at = None
+                logger.info("Force refreshing RMS session...")
             
             return self.authenticate()
         
