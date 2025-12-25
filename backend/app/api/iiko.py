@@ -923,9 +923,9 @@ async def get_olap_report(request: OlapReportRequest):
 @router.get("/rms/bi/dish-statistics/{user_id}")
 async def get_dish_statistics(
     user_id: str,
+    period_type: str = "LAST_MONTH",
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    period_type: str = "LAST_MONTH",
     top_n: int = 10,
     organization_id: Optional[str] = None
 ):
@@ -967,13 +967,23 @@ async def get_dish_statistics(
         org_id = organization_id or user_credentials.get("selected_organization_id") or user_credentials.get("organization_id")
         
         try:
-            statistics = rms_client.get_dish_statistics(
-                date_from=date_from,
-                date_to=date_to,
-                period_type=period_type,
-                top_n=top_n,
-                organization_id=org_id if org_id and org_id != "default" else None
-            )
+            # Если указаны даты, используем CUSTOM период
+            if date_from and date_to:
+                statistics = rms_client.get_dish_statistics(
+                    date_from=date_from,
+                    date_to=date_to,
+                    period_type="CUSTOM",
+                    top_n=top_n,
+                    organization_id=org_id if org_id and org_id != "default" else None
+                )
+            else:
+                statistics = rms_client.get_dish_statistics(
+                    date_from=date_from,
+                    date_to=date_to,
+                    period_type=period_type,
+                    top_n=top_n,
+                    organization_id=org_id if org_id and org_id != "default" else None
+                )
         except Exception as e:
             logger.error(f"Error getting dish statistics: {str(e)}", exc_info=True)
             raise
@@ -995,13 +1005,15 @@ async def get_dish_statistics(
 async def get_revenue_by_period(
     user_id: str,
     period_type: str = "LAST_MONTH",
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     organization_id: Optional[str] = None
 ):
     """
-    🧪 ТЕСТОВЫЙ ENDPOINT: Получить выручку по периодам
+    Получить выручку по периодам
     """
     try:
-        logger.info(f"🧪 Testing revenue report for user: {user_id}, period: {period_type}")
+        logger.info(f"Getting revenue report for user: {user_id}, period: {period_type}")
         
         rms_service = get_iiko_rms_service()
         credentials_collection = db.get_collection("iiko_rms_credentials")
@@ -1026,15 +1038,27 @@ async def get_revenue_by_period(
         rms_client.authenticate()
         org_id = organization_id or user_credentials.get("selected_organization_id")
         
-        revenue = rms_client.get_revenue_by_period(
-            period_type=period_type,
-            organization_id=org_id if org_id and org_id != "default" else None
-        )
+        # Если указаны даты, используем CUSTOM период
+        if date_from and date_to:
+            revenue = rms_client.get_olap_report(
+                report_type="SALES",
+                date_from=date_from,
+                date_to=date_to,
+                period_type="CUSTOM",
+                group_by_row_fields=["OpenDate.Typed"],
+                aggregate_fields=["DishSumInt", "DiscountSum"],
+                organization_id=org_id if org_id and org_id != "default" else None
+            )
+        else:
+            revenue = rms_client.get_revenue_by_period(
+                period_type=period_type,
+                organization_id=org_id if org_id and org_id != "default" else None
+            )
         
         return {
             "status": "success",
             "revenue": revenue,
-            "message": f"Выручка за период {period_type}"
+            "message": f"Выручка за период {period_type if not (date_from and date_to) else f'{date_from} - {date_to}'}"
         }
         
     except HTTPException:
@@ -1047,9 +1071,9 @@ async def get_revenue_by_period(
 @router.get("/rms/bi/shifts/{user_id}")
 async def get_sales_by_shifts(
     user_id: str,
+    period_type: str = "YESTERDAY",
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    period_type: str = "YESTERDAY",
     organization_id: Optional[str] = None
 ):
     """
@@ -1087,12 +1111,21 @@ async def get_sales_by_shifts(
         
         org_id = organization_id or user_credentials.get("selected_organization_id") or user_credentials.get("organization_id")
         
-        shifts_report = rms_client.get_sales_by_shifts(
-            date_from=date_from,
-            date_to=date_to,
-            period_type=period_type,
-            organization_id=org_id if org_id and org_id != "default" else None
-        )
+        # Если указаны даты, используем CUSTOM период
+        if date_from and date_to:
+            shifts_report = rms_client.get_sales_by_shifts(
+                date_from=date_from,
+                date_to=date_to,
+                period_type="CUSTOM",
+                organization_id=org_id if org_id and org_id != "default" else None
+            )
+        else:
+            shifts_report = rms_client.get_sales_by_shifts(
+                date_from=date_from,
+                date_to=date_to,
+                period_type=period_type,
+                organization_id=org_id if org_id and org_id != "default" else None
+            )
         
         return {
             "status": "success",

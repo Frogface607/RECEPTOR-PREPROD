@@ -26,13 +26,17 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
     const [periodType, setPeriodType] = useState('LAST_MONTH');
     const [topN, setTopN] = useState(10);
     const [activeTab, setActiveTab] = useState('overview'); // 'overview' или 'shifts'
+    const [customDateFrom, setCustomDateFrom] = useState(null);
+    const [customDateTo, setCustomDateTo] = useState(null);
     
     // Статус подключения
     const [rmsStatus, setRmsStatus] = useState(null);
     
     useEffect(() => {
         checkConnection();
-        loadAllData();
+        if (periodType !== 'CUSTOM') {
+            loadAllData();
+        }
     }, [periodType]);
     
     const checkConnection = async () => {
@@ -64,16 +68,85 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
         }
     };
     
-    const loadShiftsReport = async () => {
+    const loadShiftsReport = async (dateFrom = null, dateTo = null) => {
         try {
+            const params = {};
+            if (periodType === 'CUSTOM' && dateFrom && dateTo) {
+                params.date_from = dateFrom;
+                params.date_to = dateTo;
+            } else {
+                params.period_type = periodType;
+            }
+            
             const response = await axios.get(
                 `${apiUrl}/iiko/rms/bi/shifts/${userId}`,
-                { params: { period_type: periodType } }
+                { params }
             );
             setShiftsReport(response.data);
         } catch (error) {
             console.error('Error loading shifts report:', error);
             // Не критичная ошибка - просто не показываем отчет по сменам
+        }
+    };
+    
+    const loadAllDataWithDates = async (dateFrom, dateTo) => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            await Promise.all([
+                loadDishStatisticsWithDates(dateFrom, dateTo),
+                loadRevenueWithDates(dateFrom, dateTo),
+                loadShiftsReport(dateFrom, dateTo)
+            ]);
+        } catch (err) {
+            setError(err.response?.data?.detail || err.message || 'Ошибка загрузки данных');
+            console.error('Error loading BI data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const loadDishStatisticsWithDates = async (dateFrom, dateTo) => {
+        try {
+            const params = {};
+            if (dateFrom && dateTo) {
+                params.date_from = dateFrom;
+                params.date_to = dateTo;
+            } else {
+                params.period_type = periodType;
+            }
+            params.top_n = topN;
+            
+            const response = await axios.get(
+                `${apiUrl}/iiko/rms/bi/dish-statistics/${userId}`,
+                { params }
+            );
+            setDishStatistics(response.data);
+        } catch (error) {
+            console.error('Error loading dish statistics:', error);
+            throw error;
+        }
+    };
+    
+    const loadRevenueWithDates = async (dateFrom, dateTo) => {
+        try {
+            const params = {};
+            if (dateFrom && dateTo) {
+                params.date_from = dateFrom;
+                params.date_to = dateTo;
+            } else {
+                params.period_type = periodType;
+            }
+            
+            const response = await axios.get(
+                `${apiUrl}/iiko/rms/bi/revenue/${userId}`,
+                { params }
+            );
+            setRevenue(response.data);
+        } catch (error) {
+            console.error('Error loading revenue:', error);
+            throw error;
         }
     };
     
@@ -252,7 +325,13 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                     <button
                         onClick={() => {
                             setActiveTab('shifts');
-                            if (!shiftsReport) loadShiftsReport();
+                            if (!shiftsReport) {
+                                if (periodType === 'CUSTOM' && customDateFrom && customDateTo) {
+                                    loadShiftsReport(customDateFrom, customDateTo);
+                                } else {
+                                    loadShiftsReport();
+                                }
+                            }
                         }}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             activeTab === 'shifts'
@@ -432,11 +511,61 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                         {shiftsReport.shifts.data && shiftsReport.shifts.data.length > 0 ? (
                             <div className="space-y-4">
                                 {shiftsReport.shifts.data.map((shift, index) => {
-                                    const shiftDate = shift['SessionOpenDate.Typed'] || 
-                                                     shift['OpenDate.Typed'] || 
-                                                     shift['SessionDate.Typed'] || 
-                                                     shift.date || 
-                                                     'Неизвестно';
+                                    // Пробуем разные варианты полей для даты
+                                    let shiftDate = null;
+                                    const dateFields = [
+                                        'SessionOpenDate.Typed',
+                                        'OpenDate.Typed', 
+                                        'SessionDate.Typed',
+                                        'SessionOpenDate',
+                                        'OpenDate',
+                                        'date',
+                                        'Date'
+                                    ];
+                                    
+                                    for (const field of dateFields) {
+                                        if (shift[field]) {
+                                            shiftDate = shift[field];
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // Если не нашли, пробуем найти любое поле с датой
+                                    if (!shiftDate) {
+                                        for (const key in shift) {
+                                            if (key.toLowerCase().includes('date') || key.toLowerCase().includes('time')) {
+                                                shiftDate = shift[key];
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Форматируем дату
+                                    let formattedDate = 'Дата не указана';
+                                    if (shiftDate) {
+                                        try {
+                                            const date = new Date(shiftDate);
+                                            if (!isNaN(date.getTime())) {
+                                                formattedDate = date.toLocaleDateString('ru-RU', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                });
+                                            } else {
+                                                // Если это строка, пробуем распарсить
+                                                formattedDate = typeof shiftDate === 'string' 
+                                                    ? shiftDate.split('T')[0] 
+                                                    : String(shiftDate);
+                                            }
+                                        } catch (e) {
+                                            formattedDate = typeof shiftDate === 'string' 
+                                                ? shiftDate.split('T')[0] 
+                                                : String(shiftDate);
+                                        }
+                                    }
+                                    
                                     const revenue = parseFloat(shift.DishSumInt || shift.dishSumInt || 0);
                                     const amount = parseFloat(shift.DishAmountInt || shift.dishAmountInt || 0);
                                     
@@ -446,19 +575,22 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                                             className="flex items-center justify-between p-4 bg-gray-900 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
                                         >
                                             <div className="flex items-center gap-4 flex-1">
-                                                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+                                                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
                                                     {index + 1}
                                                 </div>
-                                                <div className="flex-1">
-                                                    <p className="text-white font-semibold">
-                                                        Смена: {typeof shiftDate === 'string' ? shiftDate.split('T')[0] : shiftDate}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-white font-semibold truncate">
+                                                        Смена {index + 1}
                                                     </p>
                                                     <p className="text-gray-400 text-sm">
+                                                        {formattedDate}
+                                                    </p>
+                                                    <p className="text-gray-400 text-sm mt-1">
                                                         Позиций продано: {formatNumber(amount)}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right flex-shrink-0 ml-4">
                                                 <p className="text-green-400 font-bold text-xl">
                                                     {formatCurrency(revenue)}
                                                 </p>
