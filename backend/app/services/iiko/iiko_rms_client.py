@@ -707,6 +707,286 @@ class IikoRmsClient:
                 "error": str(e),
                 "timestamp": datetime.now().isoformat()
             }
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_olap_columns(self, report_type: str = "SALES") -> Dict[str, Any]:
+        """
+        Получить список доступных полей для OLAP отчета
+        
+        Args:
+            report_type: Тип отчета - "SALES", "TRANSACTIONS", "DELIVERIES"
+        
+        Returns:
+            Словарь с описанием полей отчета
+        """
+        try:
+            session_key = self._get_session_key()
+            
+            endpoint = "/resto/api/v2/reports/olap/columns"
+            url = self._make_url(endpoint)
+            params = {
+                "key": session_key,
+                "reportType": report_type
+            }
+            
+            logger.info(f"Fetching OLAP columns for report type: {report_type}")
+            response = self.session.get(url, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            
+            columns_data = response.json() if response.content else {}
+            logger.info(f"✅ Successfully fetched OLAP columns for {report_type}")
+            
+            return {
+                "report_type": report_type,
+                "columns": columns_data,
+                "fetched_at": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error fetching OLAP columns: {str(e)}")
+            raise IikoRmsAPIError(f"Failed to get OLAP columns: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_olap_report(
+        self,
+        report_type: str = "SALES",
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        period_type: str = "CUSTOM",
+        group_by_row_fields: Optional[List[str]] = None,
+        group_by_col_fields: Optional[List[str]] = None,
+        aggregate_fields: Optional[List[str]] = None,
+        build_summary: bool = True,
+        organization_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Получить OLAP отчет из iiko RMS Server
+        
+        Args:
+            report_type: "SALES", "TRANSACTIONS", "DELIVERIES"
+            date_from: Дата начала (YYYY-MM-DD или ISO format)
+            date_to: Дата окончания (YYYY-MM-DD или ISO format)
+            period_type: "CUSTOM", "TODAY", "YESTERDAY", "CURRENT_WEEK", "CURRENT_MONTH", "LAST_MONTH", etc.
+            group_by_row_fields: Поля для группировки по строкам (например, ["DishName", "DishGroup"])
+            group_by_col_fields: Поля для группировки по столбцам
+            aggregate_fields: Поля для агрегации (например, ["DishAmountInt", "DishSumInt"])
+            build_summary: Строить ли итоговую строку
+            organization_id: ID организации (опционально)
+        
+        Returns:
+            Словарь с данными отчета
+        """
+        try:
+            session_key = self._get_session_key()
+            
+            # Подготовка дат
+            if not date_from and period_type == "CUSTOM":
+                # По умолчанию - вчерашний день
+                yesterday = datetime.now() - timedelta(days=1)
+                date_from = yesterday.strftime("%Y-%m-%dT00:00:00.000")
+                date_to = yesterday.strftime("%Y-%m-%dT23:59:59.999")
+            elif date_from and date_to:
+                # Конвертируем в ISO формат если нужно
+                if "T" not in date_from:
+                    date_from = f"{date_from}T00:00:00.000"
+                if "T" not in date_to:
+                    date_to = f"{date_to}T23:59:59.999"
+            
+            # Значения по умолчанию для полей
+            if not group_by_row_fields:
+                if report_type == "SALES":
+                    group_by_row_fields = ["DishName"]
+                else:
+                    group_by_row_fields = []
+            
+            if not aggregate_fields:
+                if report_type == "SALES":
+                    aggregate_fields = ["DishAmountInt", "DishSumInt"]
+                else:
+                    aggregate_fields = []
+            
+            # Построение фильтров
+            filters = {}
+            if date_from and date_to:
+                filters["OpenDate.Typed"] = {
+                    "filterType": "DateRange",
+                    "periodType": period_type,
+                    "from": date_from,
+                    "to": date_to,
+                    "includeLow": True,
+                    "includeHigh": True
+                }
+            
+            # Добавляем фильтр по организации если указана
+            if organization_id and organization_id != "default":
+                filters["Department.Id"] = {
+                    "filterType": "IncludeValues",
+                    "values": [organization_id]
+                }
+            
+            # Тело запроса
+            request_body = {
+                "reportType": report_type,
+                "buildSummary": build_summary,
+                "groupByRowFields": group_by_row_fields,
+                "groupByColFields": group_by_col_fields or [],
+                "aggregateFields": aggregate_fields,
+                "filters": filters
+            }
+            
+            endpoint = "/resto/api/v2/reports/olap"
+            url = self._make_url(endpoint)
+            params = {"key": session_key}
+            
+            logger.info(f"Fetching OLAP report: type={report_type}, period={period_type}, from={date_from}, to={date_to}")
+            response = self.session.post(
+                url,
+                params=params,
+                json=request_body,
+                timeout=self.timeout * 2  # OLAP запросы могут быть долгими
+            )
+            
+            if response.status_code == 400:
+                error_data = response.json() if response.content else {}
+                error_msg = error_data.get("message", response.text)
+                logger.error(f"OLAP request validation error: {error_msg}")
+                raise IikoRmsAPIError(f"Invalid OLAP request: {error_msg}")
+            
+            response.raise_for_status()
+            report_data = response.json() if response.content else {}
+            
+            logger.info(f"✅ Successfully fetched OLAP report: {report_type}")
+            
+            return {
+                "report_type": report_type,
+                "data": report_data.get("data", []),
+                "summary": report_data.get("summary", []),
+                "date_from": date_from,
+                "date_to": date_to,
+                "period_type": period_type,
+                "fetched_at": datetime.now().isoformat(),
+                "row_count": len(report_data.get("data", []))
+            }
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Network error fetching OLAP report: {str(e)}")
+            raise IikoRmsAPIError(f"Failed to get OLAP report: Network error")
+        except Exception as e:
+            logger.error(f"Error fetching OLAP report: {str(e)}", exc_info=True)
+            if isinstance(e, IikoRmsAPIError):
+                raise
+            raise IikoRmsAPIError(f"Failed to get OLAP report: {str(e)}")
+    
+    def get_sales_report(
+        self,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        period_type: str = "YESTERDAY",
+        group_by: str = "dish",  # "dish", "date", "group"
+        organization_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Получить отчет по продажам через OLAP API (упрощенный интерфейс)
+        
+        Args:
+            date_from: Дата начала (YYYY-MM-DD)
+            date_to: Дата окончания (YYYY-MM-DD)
+            period_type: Тип периода
+            group_by: Группировка - "dish" (по блюдам), "date" (по датам), "group" (по группам)
+            organization_id: ID организации
+        
+        Returns:
+            Упрощенный отчет по продажам
+        """
+        # Настройка группировки
+        if group_by == "dish":
+            group_by_row_fields = ["DishName", "DishGroup"]
+        elif group_by == "date":
+            group_by_row_fields = ["OpenDate.Typed"]
+        elif group_by == "group":
+            group_by_row_fields = ["DishGroup"]
+        else:
+            group_by_row_fields = ["DishName"]
+        
+        aggregate_fields = ["DishAmountInt", "DishSumInt", "DiscountSum"]
+        
+        return self.get_olap_report(
+            report_type="SALES",
+            date_from=date_from,
+            date_to=date_to,
+            period_type=period_type,
+            group_by_row_fields=group_by_row_fields,
+            aggregate_fields=aggregate_fields,
+            organization_id=organization_id
+        )
+    
+    def get_revenue_by_period(
+        self,
+        period_type: str = "LAST_MONTH",
+        organization_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Получить выручку по периодам
+        
+        Args:
+            period_type: Тип периода
+            organization_id: ID организации
+        
+        Returns:
+            Отчет с выручкой по периодам
+        """
+        return self.get_olap_report(
+            report_type="SALES",
+            period_type=period_type,
+            group_by_row_fields=["OpenDate.Typed"],
+            aggregate_fields=["DishSumInt", "DiscountSum"],
+            organization_id=organization_id
+        )
+    
+    def get_dish_statistics(
+        self,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        period_type: str = "LAST_MONTH",
+        top_n: int = 10,
+        organization_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Получить статистику по блюдам (топ продаж)
+        
+        Args:
+            date_from: Дата начала
+            date_to: Дата окончания
+            period_type: Тип периода
+            top_n: Количество топ блюд
+            organization_id: ID организации
+        
+        Returns:
+            Статистика по блюдам
+        """
+        report = self.get_olap_report(
+            report_type="SALES",
+            date_from=date_from,
+            date_to=date_to,
+            period_type=period_type,
+            group_by_row_fields=["DishName", "DishGroup"],
+            aggregate_fields=["DishAmountInt", "DishSumInt"],
+            organization_id=organization_id
+        )
+        
+        # Сортируем по сумме продаж и берем топ-N
+        data = report.get("data", [])
+        if data:
+            # Сортируем по DishSumInt (сумма продаж)
+            sorted_data = sorted(
+                data,
+                key=lambda x: float(x.get("DishSumInt", 0) or 0),
+                reverse=True
+            )
+            report["data"] = sorted_data[:top_n]
+            report["top_n"] = top_n
+        
+        return report
 
 # Global RMS client instance
 _iiko_rms_client: Optional[IikoRmsClient] = None

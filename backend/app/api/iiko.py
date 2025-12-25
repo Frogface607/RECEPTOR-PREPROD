@@ -803,6 +803,278 @@ async def disconnect_iiko_rms(user_id: str):
         )
 
 
+# ============ BI & ANALYTICS ENDPOINTS (TESTING) ============
+
+class OlapReportRequest(BaseModel):
+    """Request for OLAP report"""
+    user_id: str = Field(..., description="User ID")
+    report_type: str = Field(default="SALES", description="Report type: SALES, TRANSACTIONS, DELIVERIES")
+    date_from: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
+    date_to: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
+    period_type: str = Field(default="YESTERDAY", description="Period type: TODAY, YESTERDAY, LAST_MONTH, etc.")
+    group_by: Optional[str] = Field(None, description="Group by: dish, date, group")
+    organization_id: Optional[str] = Field(None, description="Organization ID")
+
+
+@router.post("/rms/bi/olap-report")
+async def get_olap_report(request: OlapReportRequest):
+    """
+    🧪 ТЕСТОВЫЙ ENDPOINT: Получить OLAP отчет из iiko RMS
+    
+    Использует сохраненные credentials пользователя для подключения к RMS серверу.
+    """
+    try:
+        logger.info(f"🧪 Testing OLAP report request for user: {request.user_id}")
+        
+        # Получаем RMS service для доступа к credentials
+        rms_service = get_iiko_rms_service()
+        
+        # Получаем credentials пользователя из БД
+        credentials_collection = db.get_collection("iiko_rms_credentials")
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        user_credentials = credentials_collection.find_one({"user_id": request.user_id})
+        if not user_credentials:
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO RMS не подключен для этого пользователя. Сначала подключитесь через /rms/connect"
+            )
+        
+        host = user_credentials.get("host")
+        login = user_credentials.get("login")
+        password = user_credentials.get("password")
+        
+        if not host or not login or not password:
+            raise HTTPException(
+                status_code=400,
+                detail="Неполные credentials для подключения к RMS"
+            )
+        
+        # Создаем RMS client с credentials пользователя
+        from app.services.iiko.iiko_rms_client import IikoRmsClient
+        rms_client = IikoRmsClient(host=host, login=login, password=password)
+        
+        # Аутентификация
+        try:
+            session_key = rms_client.authenticate()
+            logger.info(f"✅ Authenticated with RMS server")
+        except Exception as e:
+            raise HTTPException(
+                status_code=401,
+                detail=f"Ошибка аутентификации с RMS сервером: {str(e)}"
+            )
+        
+        # Определяем organization_id
+        org_id = request.organization_id or user_credentials.get("selected_organization_id") or "default"
+        
+        # Вызываем соответствующий метод в зависимости от group_by
+        if request.group_by == "dish":
+            report = rms_client.get_sales_report(
+                date_from=request.date_from,
+                date_to=request.date_to,
+                period_type=request.period_type,
+                group_by="dish",
+                organization_id=org_id if org_id != "default" else None
+            )
+        elif request.group_by == "date":
+            report = rms_client.get_sales_report(
+                date_from=request.date_from,
+                date_to=request.date_to,
+                period_type=request.period_type,
+                group_by="date",
+                organization_id=org_id if org_id != "default" else None
+            )
+        else:
+            # Полный OLAP отчет
+            report = rms_client.get_olap_report(
+                report_type=request.report_type,
+                date_from=request.date_from,
+                date_to=request.date_to,
+                period_type=request.period_type,
+                organization_id=org_id if org_id != "default" else None
+            )
+        
+        logger.info(f"✅ OLAP report retrieved successfully: {len(report.get('data', []))} rows")
+        
+        return {
+            "status": "success",
+            "report": report,
+            "organization_id": org_id,
+            "message": f"Отчет получен успешно ({len(report.get('data', []))} строк)"
+        }
+        
+    except HTTPException:
+        raise
+    except IikoRmsAPIError as e:
+        logger.error(f"IIKO RMS API error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка получения OLAP отчета: {str(e)}"
+        )
+    except Exception as e:
+        logger.error(f"Error getting OLAP report: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Внутренняя ошибка: {str(e)}"
+        )
+
+
+@router.get("/rms/bi/dish-statistics/{user_id}")
+async def get_dish_statistics(
+    user_id: str,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    period_type: str = "LAST_MONTH",
+    top_n: int = 10,
+    organization_id: Optional[str] = None
+):
+    """
+    🧪 ТЕСТОВЫЙ ENDPOINT: Получить статистику по блюдам (топ продаж)
+    """
+    try:
+        logger.info(f"🧪 Testing dish statistics for user: {user_id}")
+        
+        rms_service = get_iiko_rms_service()
+        credentials_collection = db.get_collection("iiko_rms_credentials")
+        
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        user_credentials = credentials_collection.find_one({"user_id": user_id})
+        if not user_credentials:
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO RMS не подключен. Сначала подключитесь через /rms/connect"
+            )
+        
+        from app.services.iiko.iiko_rms_client import IikoRmsClient
+        rms_client = IikoRmsClient(
+            host=user_credentials.get("host"),
+            login=user_credentials.get("login"),
+            password=user_credentials.get("password")
+        )
+        
+        rms_client.authenticate()
+        org_id = organization_id or user_credentials.get("selected_organization_id")
+        
+        statistics = rms_client.get_dish_statistics(
+            date_from=date_from,
+            date_to=date_to,
+            period_type=period_type,
+            top_n=top_n,
+            organization_id=org_id if org_id and org_id != "default" else None
+        )
+        
+        return {
+            "status": "success",
+            "statistics": statistics,
+            "message": f"Статистика получена: топ {top_n} блюд"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting dish statistics: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/rms/bi/revenue/{user_id}")
+async def get_revenue_by_period(
+    user_id: str,
+    period_type: str = "LAST_MONTH",
+    organization_id: Optional[str] = None
+):
+    """
+    🧪 ТЕСТОВЫЙ ENDPOINT: Получить выручку по периодам
+    """
+    try:
+        logger.info(f"🧪 Testing revenue report for user: {user_id}, period: {period_type}")
+        
+        rms_service = get_iiko_rms_service()
+        credentials_collection = db.get_collection("iiko_rms_credentials")
+        
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        user_credentials = credentials_collection.find_one({"user_id": user_id})
+        if not user_credentials:
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO RMS не подключен. Сначала подключитесь через /rms/connect"
+            )
+        
+        from app.services.iiko.iiko_rms_client import IikoRmsClient
+        rms_client = IikoRmsClient(
+            host=user_credentials.get("host"),
+            login=user_credentials.get("login"),
+            password=user_credentials.get("password")
+        )
+        
+        rms_client.authenticate()
+        org_id = organization_id or user_credentials.get("selected_organization_id")
+        
+        revenue = rms_client.get_revenue_by_period(
+            period_type=period_type,
+            organization_id=org_id if org_id and org_id != "default" else None
+        )
+        
+        return {
+            "status": "success",
+            "revenue": revenue,
+            "message": f"Выручка за период {period_type}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting revenue: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/rms/bi/olap-columns/{user_id}")
+async def get_olap_columns(user_id: str, report_type: str = "SALES"):
+    """
+    🧪 ТЕСТОВЫЙ ENDPOINT: Получить список доступных полей для OLAP отчета
+    """
+    try:
+        logger.info(f"🧪 Testing OLAP columns for user: {user_id}, type: {report_type}")
+        
+        credentials_collection = db.get_collection("iiko_rms_credentials")
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        user_credentials = credentials_collection.find_one({"user_id": user_id})
+        if not user_credentials:
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO RMS не подключен. Сначала подключитесь через /rms/connect"
+            )
+        
+        from app.services.iiko.iiko_rms_client import IikoRmsClient
+        rms_client = IikoRmsClient(
+            host=user_credentials.get("host"),
+            login=user_credentials.get("login"),
+            password=user_credentials.get("password")
+        )
+        
+        rms_client.authenticate()
+        
+        columns = rms_client.get_olap_columns(report_type=report_type)
+        
+        return {
+            "status": "success",
+            "columns": columns,
+            "message": f"Доступные поля для отчета {report_type}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting OLAP columns: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ PRODUCT SEARCH ENDPOINTS ============
 
 @router.get("/products/search")
