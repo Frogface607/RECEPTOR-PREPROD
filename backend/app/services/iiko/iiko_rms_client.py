@@ -1055,6 +1055,86 @@ class IikoRmsClient:
             report["top_n"] = top_n
         
         return report
+    
+    def get_sales_by_shifts(
+        self,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        period_type: str = "YESTERDAY",
+        organization_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Получить отчет по продажам сгруппированный по кассовым сменам
+        
+        Args:
+            date_from: Дата начала (YYYY-MM-DD)
+            date_to: Дата окончания (YYYY-MM-DD)
+            period_type: Тип периода
+            organization_id: ID организации
+        
+        Returns:
+            Отчет по сменам с выручкой и количеством чеков
+        """
+        # Пробуем разные варианты полей для группировки по сменам
+        # В разных версиях iiko могут быть разные названия полей
+        possible_shift_fields = [
+            ["SessionOpenDate.Typed", "SessionCloseDate.Typed"],
+            ["Session.Id", "SessionOpenDate.Typed"],
+            ["CashSessionOpenDate.Typed"],
+            ["SessionDate.Typed"]
+        ]
+        
+        # Сначала пытаемся получить список доступных полей
+        try:
+            columns = self.get_olap_columns(report_type="SALES")
+            available_columns = columns.get("columns", {})
+            
+            # Ищем подходящие поля для смен
+            shift_fields = None
+            for field_set in possible_shift_fields:
+                if all(field in available_columns for field in field_set):
+                    shift_fields = field_set
+                    break
+                # Или хотя бы одно поле из набора
+                for field in field_set:
+                    if field in available_columns:
+                        shift_fields = [field]
+                        break
+                    if shift_fields:
+                        break
+            
+            # Если не нашли специфичные поля, используем SessionOpenDate или SessionDate
+            if not shift_fields:
+                # Пробуем найти любое поле со словом Session
+                for field_name in available_columns.keys():
+                    if "ession" in field_name or "hift" in field_name or "ession" in field_name.lower():
+                        shift_fields = [field_name]
+                        break
+            
+            # Если ничего не нашли, используем OpenDate как fallback
+            if not shift_fields:
+                shift_fields = ["OpenDate.Typed"]
+                logger.warning("Session fields not found, using OpenDate.Typed as fallback")
+        except Exception as e:
+            logger.warning(f"Could not fetch OLAP columns, using default: {str(e)}")
+            shift_fields = ["OpenDate.Typed"]
+        
+        # Получаем отчет с группировкой по сменам
+        report = self.get_olap_report(
+            report_type="SALES",
+            date_from=date_from,
+            date_to=date_to,
+            period_type=period_type,
+            group_by_row_fields=shift_fields,
+            aggregate_fields=["DishSumInt", "DishAmountInt", "DiscountSum"],
+            organization_id=organization_id
+        )
+        
+        # Добавляем метаданную о том, какие поля использовались
+        report["group_by_fields"] = shift_fields
+        report["report_subtype"] = "shifts"
+        
+        return report
 
 # Global RMS client instance
 _iiko_rms_client: Optional[IikoRmsClient] = None

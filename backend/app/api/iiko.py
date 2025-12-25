@@ -1044,6 +1044,69 @@ async def get_revenue_by_period(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/rms/bi/shifts/{user_id}")
+async def get_sales_by_shifts(
+    user_id: str,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    period_type: str = "YESTERDAY",
+    organization_id: Optional[str] = None
+):
+    """
+    🧪 ТЕСТОВЫЙ ENDPOINT: Получить отчет по продажам по кассовым сменам
+    """
+    try:
+        logger.info(f"🧪 Getting sales by shifts for user: {user_id}, period: {period_type}")
+        
+        credentials_collection = db.get_collection("iiko_rms_credentials")
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        user_credentials = credentials_collection.find_one({"user_id": user_id})
+        if not user_credentials:
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO RMS не подключен. Сначала подключитесь через /rms/connect"
+            )
+        
+        from app.services.iiko.iiko_rms_client import IikoRmsClient
+        rms_client = IikoRmsClient(
+            host=user_credentials.get("host"),
+            login=user_credentials.get("login"),
+            password=user_credentials.get("password")
+        )
+        
+        try:
+            rms_client.authenticate()
+        except Exception as auth_error:
+            logger.error(f"Authentication failed: {str(auth_error)}")
+            raise HTTPException(
+                status_code=401,
+                detail=f"Ошибка аутентификации с RMS сервером: {str(auth_error)}"
+            )
+        
+        org_id = organization_id or user_credentials.get("selected_organization_id") or user_credentials.get("organization_id")
+        
+        shifts_report = rms_client.get_sales_by_shifts(
+            date_from=date_from,
+            date_to=date_to,
+            period_type=period_type,
+            organization_id=org_id if org_id and org_id != "default" else None
+        )
+        
+        return {
+            "status": "success",
+            "shifts": shifts_report,
+            "message": f"Отчет по сменам за период {period_type}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting shifts report: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/rms/bi/olap-columns/{user_id}")
 async def get_olap_columns(user_id: str, report_type: str = "SALES"):
     """

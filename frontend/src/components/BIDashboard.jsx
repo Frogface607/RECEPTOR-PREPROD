@@ -20,10 +20,12 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
     const [dishStatistics, setDishStatistics] = useState(null);
     const [revenue, setRevenue] = useState(null);
     const [salesReport, setSalesReport] = useState(null);
+    const [shiftsReport, setShiftsReport] = useState(null);
     
     // Фильтры
     const [periodType, setPeriodType] = useState('LAST_MONTH');
     const [topN, setTopN] = useState(10);
+    const [activeTab, setActiveTab] = useState('overview'); // 'overview' или 'shifts'
     
     // Статус подключения
     const [rmsStatus, setRmsStatus] = useState(null);
@@ -51,13 +53,27 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
             await Promise.all([
                 loadDishStatistics(),
                 loadRevenue(),
-                loadSalesReport()
+                loadSalesReport(),
+                loadShiftsReport()
             ]);
         } catch (err) {
             setError(err.response?.data?.detail || err.message || 'Ошибка загрузки данных');
             console.error('Error loading BI data:', err);
         } finally {
             setLoading(false);
+        }
+    };
+    
+    const loadShiftsReport = async () => {
+        try {
+            const response = await axios.get(
+                `${apiUrl}/iiko/rms/bi/shifts/${userId}`,
+                { params: { period_type: periodType } }
+            );
+            setShiftsReport(response.data);
+        } catch (error) {
+            console.error('Error loading shifts report:', error);
+            // Не критичная ошибка - просто не показываем отчет по сменам
         }
     };
     
@@ -221,6 +237,33 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                     <p className="text-gray-400 mt-1">Аналитика и отчеты по продажам</p>
                 </div>
                 
+                {/* Табы для переключения между обзором и сменами */}
+                <div className="flex gap-2 bg-gray-800 rounded-lg p-1">
+                    <button
+                        onClick={() => setActiveTab('overview')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            activeTab === 'overview'
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-400 hover:text-white'
+                        }`}
+                    >
+                        Обзор
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveTab('shifts');
+                            if (!shiftsReport) loadShiftsReport();
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            activeTab === 'shifts'
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-400 hover:text-white'
+                        }`}
+                    >
+                        По сменам
+                    </button>
+                </div>
+                
                 <div className="flex items-center gap-4">
                     {/* Фильтр периода */}
                     <div className="flex items-center gap-2">
@@ -377,6 +420,81 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 </div>
             )}
             
+            {/* Shifts Report Tab */}
+            {activeTab === 'shifts' && shiftsReport?.shifts && (
+                <div className="space-y-6">
+                    <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                            <BarChart3 className="w-6 h-6" />
+                            Продажи по кассовым сменам
+                        </h2>
+                        
+                        {shiftsReport.shifts.data && shiftsReport.shifts.data.length > 0 ? (
+                            <div className="space-y-4">
+                                {shiftsReport.shifts.data.map((shift, index) => {
+                                    const shiftDate = shift['SessionOpenDate.Typed'] || 
+                                                     shift['OpenDate.Typed'] || 
+                                                     shift['SessionDate.Typed'] || 
+                                                     shift.date || 
+                                                     'Неизвестно';
+                                    const revenue = parseFloat(shift.DishSumInt || shift.dishSumInt || 0);
+                                    const amount = parseFloat(shift.DishAmountInt || shift.dishAmountInt || 0);
+                                    
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-4 bg-gray-900 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+                                                    {index + 1}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-white font-semibold">
+                                                        Смена: {typeof shiftDate === 'string' ? shiftDate.split('T')[0] : shiftDate}
+                                                    </p>
+                                                    <p className="text-gray-400 text-sm">
+                                                        Позиций продано: {formatNumber(amount)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-green-400 font-bold text-xl">
+                                                    {formatCurrency(revenue)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                
+                                {/* Итого по всем сменам */}
+                                {shiftsReport.shifts.summary && shiftsReport.shifts.summary.length > 0 && (
+                                    <div className="mt-6 pt-6 border-t border-gray-700">
+                                        <div className="flex items-center justify-between p-4 bg-blue-900/20 rounded-lg border border-blue-700/50">
+                                            <span className="text-white font-bold text-lg">Итого за период:</span>
+                                            <span className="text-blue-400 font-bold text-xl">
+                                                {formatCurrency(
+                                                    shiftsReport.shifts.summary.reduce((sum, item) => 
+                                                        sum + (parseFloat(item.DishSumInt || 0)), 0
+                                                    )
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-gray-400">
+                                Нет данных по сменам за выбранный период
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            
+            {/* Overview Tab - Charts */}
+            {activeTab === 'overview' && (
+            <>
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* График выручки по дням */}
@@ -507,6 +625,8 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+            )}
+            </>
             )}
             
             {/* Connection Status */}
