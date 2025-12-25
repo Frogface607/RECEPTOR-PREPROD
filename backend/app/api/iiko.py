@@ -859,11 +859,35 @@ async def get_olap_report(request: OlapReportRequest):
         try:
             session_key = rms_client.authenticate()
             logger.info(f"✅ Authenticated with RMS server")
-        except Exception as e:
-            raise HTTPException(
-                status_code=401,
-                detail=f"Ошибка аутентификации с RMS сервером: {str(e)}"
-            )
+        except Exception as auth_error:
+            error_msg = str(auth_error)
+            logger.error(f"RMS Authentication failed: {error_msg}")
+            
+            # Если ошибка 403, возвращаем более понятное сообщение
+            if "403" in error_msg or "Access denied" in error_msg:
+                raise HTTPException(
+                    status_code=403,
+                    detail=(
+                        f"Доступ запрещен (403). Возможные причины:\n"
+                        f"- Учетная запись заблокирована\n"
+                        f"- Недостаточно прав доступа\n"
+                        f"- Ограничения на аккаунт\n\n"
+                        f"Проверьте статус учетной записи в iiko RMS и попробуйте переподключиться."
+                    )
+                )
+            elif "401" in error_msg or "Invalid credentials" in error_msg:
+                raise HTTPException(
+                    status_code=401,
+                    detail=(
+                        f"Неверные учетные данные (401). "
+                        f"Проверьте логин и пароль в настройках подключения."
+                    )
+                )
+            else:
+                raise HTTPException(
+                    status_code=401,
+                    detail=f"Ошибка аутентификации с RMS сервером: {error_msg}"
+                )
         
         # Определяем organization_id
         org_id = request.organization_id or user_credentials.get("selected_organization_id") or "default"
@@ -1035,7 +1059,37 @@ async def get_revenue_by_period(
             password=user_credentials.get("password")
         )
         
-        rms_client.authenticate()
+        try:
+            rms_client.authenticate()
+        except Exception as auth_error:
+            error_msg = str(auth_error)
+            logger.error(f"RMS Authentication failed: {error_msg}")
+            
+            if "403" in error_msg or "Access denied" in error_msg:
+                raise HTTPException(
+                    status_code=403,
+                    detail=(
+                        f"Доступ запрещен (403). Возможные причины:\n"
+                        f"- Учетная запись заблокирована\n"
+                        f"- Недостаточно прав доступа\n"
+                        f"- Ограничения на аккаунт\n\n"
+                        f"Проверьте статус учетной записи в iiko RMS и попробуйте переподключиться."
+                    )
+                )
+            elif "401" in error_msg or "Invalid credentials" in error_msg:
+                raise HTTPException(
+                    status_code=401,
+                    detail=(
+                        f"Неверные учетные данные (401). "
+                        f"Проверьте логин и пароль в настройках подключения."
+                    )
+                )
+            else:
+                raise HTTPException(
+                    status_code=401,
+                    detail=f"Ошибка аутентификации с RMS сервером: {error_msg}"
+                )
+        
         org_id = organization_id or user_credentials.get("selected_organization_id")
         
         # Если указаны даты, используем CUSTOM период
@@ -1103,11 +1157,33 @@ async def get_sales_by_shifts(
         try:
             rms_client.authenticate()
         except Exception as auth_error:
-            logger.error(f"Authentication failed: {str(auth_error)}")
-            raise HTTPException(
-                status_code=401,
-                detail=f"Ошибка аутентификации с RMS сервером: {str(auth_error)}"
-            )
+            error_msg = str(auth_error)
+            logger.error(f"RMS Authentication failed: {error_msg}")
+            
+            if "403" in error_msg or "Access denied" in error_msg:
+                raise HTTPException(
+                    status_code=403,
+                    detail=(
+                        f"Доступ запрещен (403). Возможные причины:\n"
+                        f"- Учетная запись заблокирована\n"
+                        f"- Недостаточно прав доступа\n"
+                        f"- Ограничения на аккаунт\n\n"
+                        f"Проверьте статус учетной записи в iiko RMS и попробуйте переподключиться."
+                    )
+                )
+            elif "401" in error_msg or "Invalid credentials" in error_msg:
+                raise HTTPException(
+                    status_code=401,
+                    detail=(
+                        f"Неверные учетные данные (401). "
+                        f"Проверьте логин и пароль в настройках подключения."
+                    )
+                )
+            else:
+                raise HTTPException(
+                    status_code=401,
+                    detail=f"Ошибка аутентификации с RMS сервером: {error_msg}"
+                )
         
         org_id = organization_id or user_credentials.get("selected_organization_id") or user_credentials.get("organization_id")
         
