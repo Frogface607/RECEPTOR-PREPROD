@@ -118,6 +118,77 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
         return new Intl.NumberFormat('ru-RU').format(num);
     };
     
+    // Цвета для категорий (pie chart)
+    const COLORS = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1'
+    ];
+    
+    // Подготовка данных для графиков
+    const revenueChartData = useMemo(() => {
+        if (!revenue?.revenue?.data) return [];
+        
+        return revenue.revenue.data
+            .map(item => {
+                const date = item['OpenDate.Typed'] || item.date || '';
+                const sum = parseFloat(item.DishSumInt || item.dishSumInt || 0);
+                // Форматируем дату для отображения
+                const dateFormatted = date ? new Date(date).toLocaleDateString('ru-RU', { 
+                    day: '2-digit', 
+                    month: '2-digit' 
+                }) : '';
+                
+                return {
+                    date: dateFormatted,
+                    dateFull: date,
+                    revenue: sum
+                };
+            })
+            .filter(item => item.revenue > 0)
+            .slice(0, 30); // Ограничиваем до 30 дней для читаемости
+    }, [revenue]);
+    
+    // Данные для графика по категориям
+    const categoriesChartData = useMemo(() => {
+        if (!dishStatistics?.statistics?.data) return [];
+        
+        const categoryMap = {};
+        dishStatistics.statistics.data.forEach(item => {
+            const category = item.DishGroup || item.dishGroup || 'Без категории';
+            const revenue = parseFloat(item.DishSumInt || item.dishSumInt || 0);
+            
+            if (!categoryMap[category]) {
+                categoryMap[category] = 0;
+            }
+            categoryMap[category] += revenue;
+        });
+        
+        return Object.entries(categoryMap)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10); // Топ 10 категорий
+    }, [dishStatistics]);
+    
+    // Данные для горизонтального графика топ блюд
+    const topDishesChartData = useMemo(() => {
+        if (!dishStatistics?.statistics?.data) return [];
+        
+        return dishStatistics.statistics.data
+            .slice(0, 10) // Топ 10
+            .map(item => {
+                const name = item.DishName || item.dishName || 'Без названия';
+                const revenue = parseFloat(item.DishSumInt || item.dishSumInt || 0);
+                // Сокращаем длинные названия
+                const shortName = name.length > 30 ? name.substring(0, 30) + '...' : name;
+                
+                return {
+                    name: shortName,
+                    fullName: name,
+                    revenue: revenue
+                };
+            });
+    }, [dishStatistics]);
+    
     if (!rmsStatus || rmsStatus.status !== 'connected') {
         return (
             <div className="flex-1 flex items-center justify-center p-8">
