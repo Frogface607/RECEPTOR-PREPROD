@@ -41,10 +41,26 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
     
     const checkConnection = async () => {
         try {
-            const response = await axios.get(`${apiUrl}/iiko/rms/status/${userId}`);
-            setRmsStatus(response.data);
+            // Проверяем Cloud API подключение (приоритет)
+            const cloudResponse = await axios.get(`${apiUrl}/iiko/cloud/status/${userId}`);
+            if (cloudResponse.data?.status === 'connected') {
+                setRmsStatus({ 
+                    status: 'connected', 
+                    type: 'cloud',
+                    organization_name: cloudResponse.data.organization_name 
+                });
+                return;
+            }
         } catch (error) {
-            console.error('Error checking RMS connection:', error);
+            console.log('Cloud API not connected, checking RMS...');
+        }
+        
+        // Fallback на RMS
+        try {
+            const response = await axios.get(`${apiUrl}/iiko/rms/status/${userId}`);
+            setRmsStatus({ ...response.data, type: 'rms' });
+        } catch (error) {
+            console.error('Error checking connection:', error);
             setRmsStatus({ status: 'error', message: 'Не удалось проверить подключение' });
         }
     };
@@ -78,6 +94,7 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 params.period_type = periodType;
             }
             
+            // Отчеты по сменам пока только через RMS (Cloud API не поддерживает смены напрямую)
             const response = await axios.get(
                 `${apiUrl}/iiko/rms/bi/shifts/${userId}`,
                 { params }
@@ -118,10 +135,20 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
             }
             params.top_n = topN;
             
-            const response = await axios.get(
-                `${apiUrl}/iiko/rms/bi/dish-statistics/${userId}`,
-                { params }
-            );
+            // Пробуем сначала Cloud API
+            let response;
+            try {
+                response = await axios.get(
+                    `${apiUrl}/iiko/cloud/bi/dish-statistics/${userId}`,
+                    { params }
+                );
+            } catch (cloudError) {
+                // Fallback на RMS
+                response = await axios.get(
+                    `${apiUrl}/iiko/rms/bi/dish-statistics/${userId}`,
+                    { params }
+                );
+            }
             setDishStatistics(response.data);
         } catch (error) {
             console.error('Error loading dish statistics:', error);
@@ -139,10 +166,20 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 params.period_type = periodType;
             }
             
-            const response = await axios.get(
-                `${apiUrl}/iiko/rms/bi/revenue/${userId}`,
-                { params }
-            );
+            // Пробуем сначала Cloud API
+            let response;
+            try {
+                response = await axios.get(
+                    `${apiUrl}/iiko/cloud/bi/revenue/${userId}`,
+                    { params }
+                );
+            } catch (cloudError) {
+                // Fallback на RMS
+                response = await axios.get(
+                    `${apiUrl}/iiko/rms/bi/revenue/${userId}`,
+                    { params }
+                );
+            }
             setRevenue(response.data);
         } catch (error) {
             console.error('Error loading revenue:', error);
@@ -152,10 +189,20 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
     
     const loadDishStatistics = async () => {
         try {
-            const response = await axios.get(
-                `${apiUrl}/iiko/rms/bi/dish-statistics/${userId}`,
-                { params: { period_type: periodType, top_n: topN } }
-            );
+            // Пробуем сначала Cloud API
+            let response;
+            try {
+                response = await axios.get(
+                    `${apiUrl}/iiko/cloud/bi/dish-statistics/${userId}`,
+                    { params: { period_type: periodType, top_n: topN } }
+                );
+            } catch (cloudError) {
+                // Fallback на RMS
+                response = await axios.get(
+                    `${apiUrl}/iiko/rms/bi/dish-statistics/${userId}`,
+                    { params: { period_type: periodType, top_n: topN } }
+                );
+            }
             setDishStatistics(response.data);
         } catch (error) {
             console.error('Error loading dish statistics:', error);
@@ -165,10 +212,20 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
     
     const loadRevenue = async () => {
         try {
-            const response = await axios.get(
-                `${apiUrl}/iiko/rms/bi/revenue/${userId}`,
-                { params: { period_type: periodType } }
-            );
+            // Пробуем сначала Cloud API
+            let response;
+            try {
+                response = await axios.get(
+                    `${apiUrl}/iiko/cloud/bi/revenue/${userId}`,
+                    { params: { period_type: periodType } }
+                );
+            } catch (cloudError) {
+                // Fallback на RMS
+                response = await axios.get(
+                    `${apiUrl}/iiko/rms/bi/revenue/${userId}`,
+                    { params: { period_type: periodType } }
+                );
+            }
             setRevenue(response.data);
         } catch (error) {
             console.error('Error loading revenue:', error);
@@ -283,9 +340,9 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="text-center max-w-md">
                     <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-white mb-2">IIKO RMS не подключен</h2>
+                    <h2 className="text-2xl font-bold text-white mb-2">IIKO не подключен</h2>
                     <p className="text-gray-400 mb-6">
-                        Для работы с аналитикой необходимо подключить IIKO RMS сервер
+                        Для работы с аналитикой необходимо подключить IIKO Cloud API или RMS сервер
                     </p>
                     <button
                         onClick={() => window.location.hash = '#integrations'}

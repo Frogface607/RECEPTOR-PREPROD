@@ -803,7 +803,125 @@ async def disconnect_iiko_rms(user_id: str):
         )
 
 
-# ============ BI & ANALYTICS ENDPOINTS (TESTING) ============
+# ============ BI & ANALYTICS ENDPOINTS (CLOUD API) ============
+
+@router.get("/cloud/bi/revenue/{user_id}")
+async def get_cloud_revenue_by_period(
+    user_id: str,
+    period_type: str = "LAST_MONTH",
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    organization_id: Optional[str] = None
+):
+    """
+    Получить выручку по периодам из Cloud API
+    """
+    try:
+        logger.info(f"Getting Cloud revenue report for user: {user_id}, period: {period_type}")
+        
+        credentials_collection = db.get_collection("iiko_cloud_credentials")
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = credentials_collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO Cloud не подключен. Сначала подключитесь через /cloud/connect"
+            )
+        
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Организация не выбрана"
+            )
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        revenue = client.get_revenue_by_period(
+            organization_id=org_id,
+            period_type=period_type,
+            date_from=date_from,
+            date_to=date_to
+        )
+        
+        return {
+            "status": "success",
+            "revenue": revenue,
+            "message": f"Выручка за период {period_type if not (date_from and date_to) else f'{date_from} - {date_to}'}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud revenue: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/cloud/bi/dish-statistics/{user_id}")
+async def get_cloud_dish_statistics(
+    user_id: str,
+    period_type: str = "LAST_MONTH",
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    top_n: int = 10,
+    organization_id: Optional[str] = None
+):
+    """
+    Получить статистику по блюдам (топ продаж) из Cloud API
+    """
+    try:
+        logger.info(f"Getting Cloud dish statistics for user: {user_id}")
+        
+        credentials_collection = db.get_collection("iiko_cloud_credentials")
+        if credentials_collection is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        credentials = credentials_collection.find_one({"user_id": user_id})
+        if not credentials or credentials.get("status") != "connected":
+            raise HTTPException(
+                status_code=404,
+                detail="IIKO Cloud не подключен. Сначала подключитесь через /cloud/connect"
+            )
+        
+        org_id = organization_id or credentials.get("selected_organization_id")
+        if not org_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Организация не выбрана"
+            )
+        
+        api_key = credentials.get("api_key")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="API ключ не найден")
+        
+        client = IikoClient(api_login=api_key)
+        statistics = client.get_dish_statistics(
+            organization_id=org_id,
+            period_type=period_type,
+            date_from=date_from,
+            date_to=date_to,
+            top_n=top_n
+        )
+        
+        return {
+            "status": "success",
+            "statistics": statistics,
+            "message": f"Статистика получена: топ {top_n} блюд"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting Cloud dish statistics: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ BI & ANALYTICS ENDPOINTS (RMS - LEGACY) ============
 
 class OlapReportRequest(BaseModel):
     """Request for OLAP report"""
