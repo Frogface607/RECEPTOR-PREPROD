@@ -863,6 +863,224 @@ class IikoClient:
             else:
                 raise IikoAPIError(f"Failed to fetch attendances: {str(e)}")
     
+    # ============ BI & ANALYTICS METHODS ============
+    
+    def _calculate_date_range(self, period_type: str) -> tuple[str, str]:
+        """
+        Calculate date_from and date_to based on period_type
+        
+        Args:
+            period_type: Period type (TODAY, YESTERDAY, CURRENT_WEEK, LAST_WEEK, CURRENT_MONTH, LAST_MONTH)
+        
+        Returns:
+            Tuple of (date_from, date_to) in YYYY-MM-DD format
+        """
+        today = datetime.now()
+        
+        if period_type == "TODAY":
+            date_from = today.strftime("%Y-%m-%d")
+            date_to = today.strftime("%Y-%m-%d")
+        elif period_type == "YESTERDAY":
+            yesterday = today - timedelta(days=1)
+            date_from = yesterday.strftime("%Y-%m-%d")
+            date_to = yesterday.strftime("%Y-%m-%d")
+        elif period_type == "CURRENT_WEEK":
+            # Начало недели (понедельник)
+            days_since_monday = today.weekday()
+            week_start = today - timedelta(days=days_since_monday)
+            date_from = week_start.strftime("%Y-%m-%d")
+            date_to = today.strftime("%Y-%m-%d")
+        elif period_type == "LAST_WEEK":
+            days_since_monday = today.weekday()
+            week_start = today - timedelta(days=days_since_monday)
+            last_week_start = week_start - timedelta(days=7)
+            last_week_end = week_start - timedelta(days=1)
+            date_from = last_week_start.strftime("%Y-%m-%d")
+            date_to = last_week_end.strftime("%Y-%m-%d")
+        elif period_type == "CURRENT_MONTH":
+            date_from = today.replace(day=1).strftime("%Y-%m-%d")
+            date_to = today.strftime("%Y-%m-%d")
+        elif period_type == "LAST_MONTH":
+            first_day_current_month = today.replace(day=1)
+            last_day_last_month = first_day_current_month - timedelta(days=1)
+            first_day_last_month = last_day_last_month.replace(day=1)
+            date_from = first_day_last_month.strftime("%Y-%m-%d")
+            date_to = last_day_last_month.strftime("%Y-%m-%d")
+        else:
+            # Default to LAST_MONTH
+            first_day_current_month = today.replace(day=1)
+            last_day_last_month = first_day_current_month - timedelta(days=1)
+            first_day_last_month = last_day_last_month.replace(day=1)
+            date_from = first_day_last_month.strftime("%Y-%m-%d")
+            date_to = last_day_last_month.strftime("%Y-%m-%d")
+        
+        return date_from, date_to
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_revenue_by_period(
+        self,
+        organization_id: str,
+        period_type: str = "LAST_MONTH",
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get revenue report by period using Cloud API
+        
+        Args:
+            organization_id: Organization ID
+            period_type: Period type (TODAY, YESTERDAY, CURRENT_WEEK, LAST_WEEK, CURRENT_MONTH, LAST_MONTH)
+            date_from: Start date (YYYY-MM-DD), optional if period_type is set
+            date_to: End date (YYYY-MM-DD), optional if period_type is set
+        
+        Returns:
+            Dictionary with revenue data grouped by day
+        """
+        try:
+            if not date_from or not date_to:
+                date_from, date_to = self._calculate_date_range(period_type)
+            
+            # Используем sales report с группировкой по дням
+            sales_report = self.get_sales_report(organization_id, date_from, date_to, group_by="DAY")
+            
+            # Обрабатываем структуру ответа
+            # Cloud API может возвращать данные в разных форматах
+            revenue_data = []
+            total_revenue = 0.0
+            
+            if isinstance(sales_report, dict):
+                # Если есть готовые данные по дням
+                if "items" in sales_report:
+                    for item in sales_report["items"]:
+                        date = item.get("date") or item.get("period")
+                        revenue = float(item.get("revenue", 0) or item.get("sum", 0) or item.get("total", 0))
+                        revenue_data.append({
+                            "date": date,
+                            "revenue": revenue
+                        })
+                        total_revenue += revenue
+                elif "report" in sales_report and isinstance(sales_report["report"], list):
+                    for item in sales_report["report"]:
+                        date = item.get("date") or item.get("period")
+                        revenue = float(item.get("revenue", 0) or item.get("sum", 0) or item.get("total", 0))
+                        revenue_data.append({
+                            "date": date,
+                            "revenue": revenue
+                        })
+                        total_revenue += revenue
+                elif "totalRevenue" in sales_report:
+                    # Если есть только общая сумма
+                    total_revenue = float(sales_report.get("totalRevenue", 0))
+            
+            return {
+                "period_type": period_type,
+                "date_from": date_from,
+                "date_to": date_to,
+                "data": revenue_data,
+                "total_revenue": total_revenue,
+                "source": "cloud_api"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_revenue_by_period: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            raise IikoAPIError(f"Failed to get revenue by period: {str(e)}")
+    
+    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
+    def get_dish_statistics(
+        self,
+        organization_id: str,
+        period_type: str = "LAST_MONTH",
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        top_n: int = 10
+    ) -> Dict[str, Any]:
+        """
+        Get top dishes statistics from Cloud API using orders
+        
+        Args:
+            organization_id: Organization ID
+            period_type: Period type (TODAY, YESTERDAY, CURRENT_WEEK, LAST_WEEK, CURRENT_MONTH, LAST_MONTH)
+            date_from: Start date (YYYY-MM-DD), optional if period_type is set
+            date_to: End date (YYYY-MM-DD), optional if period_type is set
+            top_n: Number of top dishes to return
+        
+        Returns:
+            Dictionary with dish statistics
+        """
+        try:
+            if not date_from or not date_to:
+                date_from, date_to = self._calculate_date_range(period_type)
+            
+            # Получаем заказы за период
+            orders_data = self.get_orders(organization_id, date_from, date_to)
+            orders = orders_data.get("orders", [])
+            
+            # Агрегируем данные по блюдам
+            dish_stats = {}  # dish_name -> {amount: float, revenue: float, count: int}
+            
+            for order in orders:
+                if not isinstance(order, dict):
+                    continue
+                
+                # Обрабатываем позиции заказа
+                items = order.get("items", []) or order.get("orderItems", []) or []
+                
+                for item in items:
+                    if not isinstance(item, dict):
+                        continue
+                    
+                    dish_name = item.get("name") or item.get("productName") or item.get("dishName") or "Без названия"
+                    
+                    # Получаем количество и сумму
+                    amount = float(item.get("amount", 0) or item.get("quantity", 0) or item.get("count", 0) or 1)
+                    price = float(item.get("price", 0) or item.get("sum", 0) or item.get("totalPrice", 0) or 0)
+                    revenue = amount * price
+                    
+                    # Если есть отдельное поле с суммой
+                    if "sum" in item or "totalPrice" in item or "total" in item:
+                        revenue = float(item.get("sum") or item.get("totalPrice") or item.get("total") or 0)
+                    
+                    if dish_name not in dish_stats:
+                        dish_stats[dish_name] = {
+                            "DishName": dish_name,
+                            "DishAmountInt": 0.0,
+                            "DishSumInt": 0.0,
+                            "count": 0
+                        }
+                    
+                    dish_stats[dish_name]["DishAmountInt"] += amount
+                    dish_stats[dish_name]["DishSumInt"] += revenue
+                    dish_stats[dish_name]["count"] += 1
+            
+            # Сортируем по выручке и берем топ-N
+            sorted_dishes = sorted(
+                dish_stats.values(),
+                key=lambda x: x["DishSumInt"],
+                reverse=True
+            )[:top_n]
+            
+            # Рассчитываем общую выручку
+            total_revenue = sum(dish["DishSumInt"] for dish in dish_stats.values())
+            
+            return {
+                "data": sorted_dishes,
+                "total_revenue": total_revenue,
+                "total_dishes": len(dish_stats),
+                "top_n": top_n,
+                "period_type": period_type,
+                "date_from": date_from,
+                "date_to": date_to,
+                "source": "cloud_api_orders"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_dish_statistics: {str(e)}", exc_info=True)
+            if isinstance(e, IikoAPIError):
+                raise
+            raise IikoAPIError(f"Failed to get dish statistics: {str(e)}")
+    
     def health_check(self) -> Dict[str, Any]:
         """
         Perform health check to verify API connectivity and authentication.
