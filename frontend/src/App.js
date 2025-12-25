@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3 } from 'lucide-react';
 import axios from 'axios';
 import VenueProfile from './components/VenueProfile';
 import Integrations from './components/Integrations';
+import BIDashboard from './components/BIDashboard';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
 
@@ -569,6 +570,17 @@ function App() {
             <Link2 size={16} />
             Интеграции (iiko)
           </button>
+          <button 
+            onClick={() => setCurrentPage('bi')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === 'bi'
+                ? 'bg-emerald-600/10 text-emerald-500'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            <BarChart3 size={16} />
+            BI Dashboard
+          </button>
           <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
             <Settings size={16} />
             Настройки
@@ -595,6 +607,8 @@ function App() {
           <VenueProfile userId={USER_ID} onBack={() => setCurrentPage('chat')} />
         ) : currentPage === 'integrations' ? (
           <Integrations userId={USER_ID} apiUrl={API_URL} />
+        ) : currentPage === 'bi' ? (
+          <BIDashboard userId={USER_ID} apiUrl={API_URL} />
         ) : (
           <>
             {/* Chat Messages */}

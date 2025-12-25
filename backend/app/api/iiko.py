@@ -955,16 +955,28 @@ async def get_dish_statistics(
             password=user_credentials.get("password")
         )
         
-        rms_client.authenticate()
-        org_id = organization_id or user_credentials.get("selected_organization_id")
+        try:
+            rms_client.authenticate()
+        except Exception as auth_error:
+            logger.error(f"Authentication failed: {str(auth_error)}")
+            raise HTTPException(
+                status_code=401,
+                detail=f"Ошибка аутентификации с RMS сервером: {str(auth_error)}"
+            )
         
-        statistics = rms_client.get_dish_statistics(
-            date_from=date_from,
-            date_to=date_to,
-            period_type=period_type,
-            top_n=top_n,
-            organization_id=org_id if org_id and org_id != "default" else None
-        )
+        org_id = organization_id or user_credentials.get("selected_organization_id") or user_credentials.get("organization_id")
+        
+        try:
+            statistics = rms_client.get_dish_statistics(
+                date_from=date_from,
+                date_to=date_to,
+                period_type=period_type,
+                top_n=top_n,
+                organization_id=org_id if org_id and org_id != "default" else None
+            )
+        except Exception as e:
+            logger.error(f"Error getting dish statistics: {str(e)}", exc_info=True)
+            raise
         
         return {
             "status": "success",

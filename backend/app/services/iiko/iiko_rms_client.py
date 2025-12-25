@@ -779,18 +779,57 @@ class IikoRmsClient:
         try:
             session_key = self._get_session_key()
             
-            # Подготовка дат
-            if not date_from and period_type == "CUSTOM":
-                # По умолчанию - вчерашний день
-                yesterday = datetime.now() - timedelta(days=1)
-                date_from = yesterday.strftime("%Y-%m-%dT00:00:00.000")
-                date_to = yesterday.strftime("%Y-%m-%dT23:59:59.999")
+            # Подготовка дат на основе period_type
+            if period_type != "CUSTOM" and not date_from and not date_to:
+                # Генерируем даты на основе period_type
+                now = datetime.now()
+                if period_type == "TODAY":
+                    date_from = now.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = now.strftime("%Y-%m-%dT23:59:59.999")
+                elif period_type == "YESTERDAY":
+                    yesterday = now - timedelta(days=1)
+                    date_from = yesterday.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = yesterday.strftime("%Y-%m-%dT23:59:59.999")
+                elif period_type == "LAST_MONTH":
+                    # Первый день прошлого месяца
+                    first_day_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
+                    # Последний день прошлого месяца
+                    last_day_last_month = now.replace(day=1) - timedelta(days=1)
+                    date_from = first_day_last_month.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = last_day_last_month.strftime("%Y-%m-%dT23:59:59.999")
+                elif period_type == "CURRENT_MONTH":
+                    first_day = now.replace(day=1)
+                    date_from = first_day.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = now.strftime("%Y-%m-%dT23:59:59.999")
+                elif period_type == "LAST_WEEK":
+                    # Понедельник прошлой недели
+                    days_since_monday = now.weekday()
+                    last_monday = now - timedelta(days=days_since_monday + 7)
+                    last_sunday = last_monday + timedelta(days=6)
+                    date_from = last_monday.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = last_sunday.strftime("%Y-%m-%dT23:59:59.999")
+                elif period_type == "CURRENT_WEEK":
+                    # Понедельник текущей недели
+                    days_since_monday = now.weekday()
+                    this_monday = now - timedelta(days=days_since_monday)
+                    date_from = this_monday.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = now.strftime("%Y-%m-%dT23:59:59.999")
+                else:
+                    # По умолчанию - вчерашний день
+                    yesterday = now - timedelta(days=1)
+                    date_from = yesterday.strftime("%Y-%m-%dT00:00:00.000")
+                    date_to = yesterday.strftime("%Y-%m-%dT23:59:59.999")
             elif date_from and date_to:
                 # Конвертируем в ISO формат если нужно
                 if "T" not in date_from:
                     date_from = f"{date_from}T00:00:00.000"
                 if "T" not in date_to:
                     date_to = f"{date_to}T23:59:59.999"
+            elif not date_from and period_type == "CUSTOM":
+                # По умолчанию для CUSTOM - вчерашний день
+                yesterday = datetime.now() - timedelta(days=1)
+                date_from = yesterday.strftime("%Y-%m-%dT00:00:00.000")
+                date_to = yesterday.strftime("%Y-%m-%dT23:59:59.999")
             
             # Значения по умолчанию для полей
             if not group_by_row_fields:
@@ -870,7 +909,13 @@ class IikoRmsClient:
             
         except requests.exceptions.RequestException as e:
             logger.error(f"Network error fetching OLAP report: {str(e)}")
-            raise IikoRmsAPIError(f"Failed to get OLAP report: Network error")
+            error_detail = str(e)
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    error_detail = e.response.text[:200]
+                except:
+                    pass
+            raise IikoRmsAPIError(f"Network error: {error_detail}")
         except Exception as e:
             logger.error(f"Error fetching OLAP report: {str(e)}", exc_info=True)
             if isinstance(e, IikoRmsAPIError):
