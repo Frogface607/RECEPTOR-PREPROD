@@ -1,12 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3, Sparkles } from 'lucide-react';
 import axios from 'axios';
-import VenueProfile from './components/VenueProfile';
-import Integrations from './components/Integrations';
-import BIDashboard from './components/BIDashboard';
 import { ToastContainer, toast } from './components/Toast';
 import { API_URL, USER_ID } from './config';
+
+// Lazy load heavy components — only loaded when user navigates to them
+const VenueProfile = lazy(() => import('./components/VenueProfile'));
+const Integrations = lazy(() => import('./components/Integrations'));
+const BIDashboard = lazy(() => import('./components/BIDashboard'));
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
@@ -618,11 +620,17 @@ function App() {
 
         {/* Content based on current page */}
         {currentPage === 'profile' ? (
-          <VenueProfile userId={USER_ID} onBack={() => setCurrentPage('chat')} />
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <VenueProfile userId={USER_ID} onBack={() => setCurrentPage('chat')} />
+          </Suspense>
         ) : currentPage === 'integrations' ? (
-          <Integrations userId={USER_ID} apiUrl={API_URL} />
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <Integrations userId={USER_ID} apiUrl={API_URL} />
+          </Suspense>
         ) : currentPage === 'bi' ? (
-          <BIDashboard userId={USER_ID} apiUrl={API_URL} />
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <BIDashboard userId={USER_ID} apiUrl={API_URL} />
+          </Suspense>
         ) : (
           <>
             {/* Chat Messages */}
