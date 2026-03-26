@@ -3,9 +3,13 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import db
+from app.core.logging_config import setup_logging
+from app.core.rate_limit import RateLimitMiddleware
 from app.api import chat, venue, iiko, history
 import logging
 
+# Configure structured logging before anything else
+setup_logging()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -13,6 +17,9 @@ app = FastAPI(
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
+
+# Rate limiting — 60 requests per minute per IP
+app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
 
 # CORS — настраивается через CORS_ORIGINS env var
 app.add_middleware(
