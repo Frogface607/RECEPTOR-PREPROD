@@ -289,7 +289,20 @@ async def chat_message(request: ChatRequest):
     """
     user_query = request.messages[-1].content
     user_id = request.user_id or "default_user"
-    
+
+    # Check usage limits
+    from app.services.billing import check_message_limit, increment_message_count
+    limit_check = check_message_limit(user_id)
+    if not limit_check["allowed"]:
+        return {
+            "role": "assistant",
+            "content": limit_check["reason"],
+            "paywall": True,
+            "plan": limit_check.get("plan", "free"),
+            "messages_today": limit_check.get("messages_today", 0),
+            "messages_limit": limit_check.get("messages_limit", 10),
+        }
+
     # Загружаем профиль заведения и deep research
     venue_profile = get_venue_profile(user_id)
     venue_research = get_venue_research(user_id)
@@ -1363,14 +1376,17 @@ async def chat_message(request: ChatRequest):
                         suggestions = fallback_suggestions[:3]
                         logger.info(f"✅ Fallback extraction successful: {suggestions}")
         
+        # Track usage
+        increment_message_count(user_id)
+
         return {
-            "role": "assistant", 
+            "role": "assistant",
             "content": clean_response,
-            "model": model_used,  # Показываем какая модель ответила
+            "model": model_used,
             "usage": usage_info,
-            "suggestions": suggestions  # Предложения следующих шагов
+            "suggestions": suggestions
         }
-        
+
     except Exception as e:
         logger.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))

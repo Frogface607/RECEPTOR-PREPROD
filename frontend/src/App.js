@@ -5,6 +5,9 @@ import axios from 'axios';
 import { ToastContainer, toast } from './components/Toast';
 import { API_URL, USER_ID } from './config';
 
+import PaywallBanner from './components/PaywallBanner';
+import ReferralModal from './components/ReferralModal';
+
 // Lazy load heavy components — only loaded when user navigates to them
 const VenueProfile = lazy(() => import('./components/VenueProfile'));
 const Integrations = lazy(() => import('./components/Integrations'));
@@ -43,10 +46,24 @@ function App() {
   const [recognition, setRecognition] = useState(null);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
 
-  // Load chat history on mount
+  // Billing state
+  const [userPlan, setUserPlan] = useState(null);
+  const [showReferralModal, setShowReferralModal] = useState(false);
+
+  // Load chat history and user plan on mount
   useEffect(() => {
     loadChatHistory();
+    loadUserPlan();
   }, []);
+
+  const loadUserPlan = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/billing/usage/${USER_ID}`);
+      setUserPlan(response.data);
+    } catch (error) {
+      // Billing service might not be ready yet — fail silently
+    }
+  };
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -328,13 +345,15 @@ function App() {
         user_id: USER_ID
       });
       
-      // Добавляем сообщение с предложениями если есть
       const assistantMessage = {
         ...response.data,
         suggestions: response.data.suggestions || []
       };
-      
+
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Refresh plan info after each message (updates remaining count)
+      loadUserPlan();
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
@@ -736,6 +755,17 @@ function App() {
               </div>
             </div>
 
+            {/* Paywall Banner */}
+            {userPlan && (
+              <PaywallBanner
+                plan={userPlan.plan}
+                messagesRemaining={userPlan.messages_remaining}
+                messagesLimit={userPlan.messages_limit}
+                onUpgrade={() => toast('Оплата скоро будет доступна. Пока пользуйтесь реферальной программой!', 'info')}
+                onReferral={() => setShowReferralModal(true)}
+              />
+            )}
+
             {/* Input Area */}
             <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800">
               <div className="max-w-3xl mx-auto">
@@ -791,6 +821,12 @@ function App() {
           </>
         )}
       </div>
+
+      {/* Referral Modal */}
+      <ReferralModal
+        isOpen={showReferralModal}
+        onClose={() => setShowReferralModal(false)}
+      />
     </div>
   );
 }
