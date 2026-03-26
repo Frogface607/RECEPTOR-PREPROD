@@ -870,7 +870,7 @@ class IikoRmsClient:
             if hasattr(e, 'response') and e.response is not None:
                 try:
                     error_detail = e.response.text[:200]
-                except:
+                except Exception:
                     pass
             raise IikoRmsAPIError(f"Network error: {error_detail}")
         except Exception as e:

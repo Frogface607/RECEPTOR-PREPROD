@@ -39,7 +39,7 @@ def get_venue_profile(user_id: str) -> Optional[Dict[str, Any]]:
             profile.pop("_id", None)
             return profile
     except Exception as e:
-        print(f"⚠️ Error loading venue profile: {e}")
+        logger.warning(f"Error loading venue profile: {e}")
     return None
 
 
@@ -52,7 +52,7 @@ def get_venue_research(user_id: str) -> Optional[Dict[str, Any]]:
             research.pop("_id", None)
             return research
     except Exception as e:
-        print(f"⚠️ Error loading venue research: {e}")
+        logger.warning(f"Error loading venue research: {e}")
     return None
 
 
@@ -686,7 +686,7 @@ async def chat_message(request: ChatRequest):
                                             sample_products = search_iiko_products("", org_id, limit=5, iiko_type="rms", user_id=user_id)
                                             for p in sample_products[:5]:
                                                 context += f"- {p.get('name', 'н/д')}\n"
-                                        except:
+                                        except Exception:
                                             pass
                             else:
                                 error_msg = summary.get("error", "Неизвестная ошибка") if summary else "Сервис не инициализирован"
@@ -803,7 +803,7 @@ async def chat_message(request: ChatRequest):
                 now = datetime.now()
                 try:
                     date_str = datetime(now.year, 12, day).strftime('%Y-%m-%d')  # Пока только декабрь
-                except:
+                except (ValueError, TypeError):
                     pass
             
             # Если дата не найдена, пробуем другие форматы
@@ -814,7 +814,7 @@ async def chat_message(request: ChatRequest):
                     now = datetime.now()
                     try:
                         date_str = datetime(now.year, month, day).strftime('%Y-%m-%d')
-                    except:
+                    except (ValueError, TypeError):
                         pass
             
             # Если дата не указана, используем вчерашний день
@@ -1372,7 +1372,7 @@ async def chat_message(request: ChatRequest):
         }
         
     except Exception as e:
-        print(f"❌ Error in chat: {e}")
+        logger.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

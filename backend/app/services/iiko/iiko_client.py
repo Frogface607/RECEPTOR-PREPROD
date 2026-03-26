@@ -522,7 +522,7 @@ class IikoClient:
                                 # Продолжаем пробовать другие endpoints, но не считаем это критической ошибкой
                                 last_error = f"HTTP {response.status_code}: Permission denied - {error_desc}"
                                 continue
-                        except:
+                        except Exception:
                             pass
                         logger.warning(f"Endpoint {endpoint} returned {response.status_code}: {response.text[:200]}")
                         last_error = f"HTTP {response.status_code}: {response.text[:200]}"

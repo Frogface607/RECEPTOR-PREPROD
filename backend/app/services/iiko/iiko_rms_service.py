@@ -146,7 +146,7 @@ class IikoRmsService:
                     {"$set": credentials_data},
                     upsert=True
                 )
-            except:
+            except Exception:
                 pass
                 
             logger.error(f"Failed to connect to iiko RMS {host}: {str(e)}")

@@ -8,7 +8,7 @@ import logging
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
-from pymongo import MongoClient, ASCENDING, DESCENDING, TEXT
+from pymongo import ASCENDING, DESCENDING, TEXT
 from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError, PyMongoError
 import re
