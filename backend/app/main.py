@@ -1,7 +1,6 @@
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pymongo import MongoClient
 from app.core.config import settings
 from app.core.database import db
 from app.api import chat, venue, iiko, history
@@ -86,13 +85,9 @@ async def reindex_knowledge_base(background_tasks: BackgroundTasks, secret: str 
         try:
             from app.services.rag.indexer import index_all_documents, KNOWLEDGE_BASE_PATH
 
-            client = MongoClient(settings.mongo_connection_string)
-            db_mongo = client[settings.DB_NAME]
-            collection = db_mongo["knowledge_base_chunks"]
-
+            collection = db.get_collection("knowledge_base_chunks")
             results = index_all_documents(collection, force_reindex=True)
 
-            client.close()
             logger.info(f"Indexing complete: {results}")
             return results
         except Exception as e:
@@ -115,16 +110,12 @@ async def test_search(query: str = "авторизация iiko API", secret: st
         from app.services.rag.search import search_knowledge_base
         from app.services.rag.indexer import get_indexed_chunks
 
-        client = MongoClient(settings.mongo_connection_string)
-        db_mongo = client[settings.DB_NAME]
-        collection = db_mongo["knowledge_base_chunks"]
+        collection = db.get_collection("knowledge_base_chunks")
 
         chunks = get_indexed_chunks(collection)
         chunks_with_emb = [c for c in chunks if c.get('embedding')]
 
         results = search_knowledge_base(query, top_k=5, db_collection=collection)
-
-        client.close()
 
         return {
             "query": query,
@@ -150,9 +141,7 @@ async def get_index_status(secret: str = ""):
     """Получить статус индекса базы знаний"""
     _check_admin_secret(secret)
     try:
-        client = MongoClient(settings.mongo_connection_string)
-        db_mongo = client[settings.DB_NAME]
-        collection = db_mongo["knowledge_base_chunks"]
+        collection = db.get_collection("knowledge_base_chunks")
 
         total_chunks = collection.count_documents({"indexed": True, "type": {"$ne": "metadata"}})
 
@@ -176,8 +165,6 @@ async def get_index_status(secret: str = ""):
         sample_chunk = collection.find_one({"indexed": True, "type": {"$ne": "metadata"}})
         has_embedding_sample = sample_chunk and sample_chunk.get("embedding") is not None if sample_chunk else False
         embedding_length = len(sample_chunk.get("embedding", [])) if sample_chunk and sample_chunk.get("embedding") else 0
-
-        client.close()
 
         return {
             "status": "ok",

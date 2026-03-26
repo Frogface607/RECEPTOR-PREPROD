@@ -361,9 +361,8 @@ async def chat_message(request: ChatRequest):
         
         # Подключаем коллекцию с проиндексированными чанками
         try:
-            from pymongo import MongoClient
-            mongo_client = MongoClient(settings.mongo_connection_string)
-            kb_collection = mongo_client[settings.DB_NAME]["knowledge_base_chunks"]
+            from app.core.database import db as central_db
+            kb_collection = central_db.get_collection("knowledge_base_chunks")
             
             # Диагностика
             total_chunks = kb_collection.count_documents({"indexed": True, "type": {"$ne": "metadata"}})

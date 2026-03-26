@@ -7,19 +7,21 @@ import os
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
-from pymongo import MongoClient
 from bson import ObjectId
+
+from app.core.database import db as central_db
 
 logger = logging.getLogger(__name__)
 
 
 class ExportTrackingService:
     """Service for tracking export history and audit logs"""
-    
+
     def __init__(self):
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/receptor_dev')
-        self.client = MongoClient(mongo_url)
-        self.db = self.client.get_default_database()
+        # Use centralized database connection
+        if central_db.db is None:
+            central_db.connect()
+        self.db = central_db.db
         self.exports = self.db.export_history
         self.audit_logs = self.db.export_audit
         

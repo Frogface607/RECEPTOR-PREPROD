@@ -13,6 +13,8 @@ from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError, PyMongoError
 import re
 
+from app.core.config import settings
+from app.core.database import db as central_db
 from .iiko_client import IikoClient, get_iiko_client, IikoAPIError
 from .iiko_models import (
     IikoToken, IikoProduct, IikoProductGroup, IikoSyncStatus,
@@ -29,12 +31,10 @@ class IikoService:
     """Service for managing iikoCloud integration data"""
     
     def __init__(self):
-        # Get MongoDB connection
-        mongo_url = os.getenv('MONGODB_URI') or os.getenv('MONGO_URL', 'mongodb://localhost:27017/receptor_pro')
-        db_name = os.getenv('DB_NAME', 'receptor_pro')
-        
-        self.client = MongoClient(mongo_url)
-        self.db = self.client[db_name.strip('"')]
+        # Use centralized database connection
+        if central_db.db is None:
+            central_db.connect()
+        self.db = central_db.db
         
         # Initialize collections
         self.tokens: Collection = self.db[IIKO_TOKENS_COLLECTION]

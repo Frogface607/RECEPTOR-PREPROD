@@ -8,11 +8,12 @@ import logging
 import re
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime, timezone, timedelta
-from pymongo import MongoClient, ASCENDING, DESCENDING, TEXT
+from pymongo import ASCENDING, DESCENDING, TEXT
 from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError, PyMongoError
 from fuzzywuzzy import fuzz
 
+from app.core.database import db as central_db
 from .iiko_rms_client import IikoRmsClient, get_iiko_rms_client, IikoRmsAPIError
 from .iiko_rms_models import (
     IikoRmsCredentials, IikoRmsProduct, IikoRmsGroup, IikoRmsSyncStatus, IikoRmsMapping, IikoRmsPrice,  # IK-03: Added IikoRmsPrice
@@ -33,12 +34,10 @@ class IikoRmsService:
     """Service for managing iiko RMS integration data and operations"""
     
     def __init__(self):
-        # Get MongoDB connection
-        mongo_url = settings.MONGODB_URI
-        db_name = settings.DB_NAME
-        
-        self.client = MongoClient(mongo_url)
-        self.db = self.client[db_name]
+        # Use centralized database connection
+        if central_db.db is None:
+            central_db.connect()
+        self.db = central_db.db
         
         # Initialize collections
         self.credentials: Collection = self.db[IIKO_RMS_CREDENTIALS_COLLECTION]
