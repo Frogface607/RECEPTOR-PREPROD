@@ -563,9 +563,14 @@ function App() {
             <Store size={16} />
             Профиль заведения
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 rounded-lg text-sm cursor-not-allowed"
+            title="Скоро"
+            disabled
+          >
             <Database size={16} />
             База знаний
+            <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">скоро</span>
           </button>
           <button 
             onClick={() => setCurrentPage('integrations')}
@@ -589,9 +594,14 @@ function App() {
             <BarChart3 size={16} />
             BI Dashboard
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 rounded-lg text-sm cursor-not-allowed"
+            title="Скоро"
+            disabled
+          >
             <Settings size={16} />
             Настройки
+            <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">скоро</span>
           </button>
         </div>
       </div>

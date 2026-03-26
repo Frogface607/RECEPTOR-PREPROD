@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { 
-    BarChart3, TrendingUp, DollarSign, Package, 
+import {
+    BarChart3, TrendingUp, DollarSign, Package,
     Loader2, RefreshCw, Calendar, Filter,
-    AlertCircle, CheckCircle2, XCircle
+    AlertCircle, CheckCircle2, XCircle, Download
 } from 'lucide-react';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -247,6 +247,36 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
         }
     };
     
+    const exportToCSV = () => {
+        if (!dishStatistics?.statistics?.data) return;
+
+        const data = dishStatistics.statistics.data;
+        const headers = ['Блюдо', 'Группа', 'Количество', 'Сумма (₽)'];
+        const rows = data.map(item => [
+            item.DishName || item.dishName || '',
+            item.DishGroup || item.dishGroup || '',
+            item.DishAmountInt || item.dishAmountInt || 0,
+            item.DishSumInt || item.dishSumInt || 0,
+        ]);
+
+        // BOM for Excel UTF-8 support
+        const BOM = '\uFEFF';
+        const csvContent = BOM + [
+            headers.join(';'),
+            ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `receptor_bi_${periodType.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    };
+
     const formatCurrency = (value) => {
         if (!value) return '0 ₽';
         const num = typeof value === 'string' ? parseFloat(value) : value;
@@ -418,6 +448,18 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                         </select>
                     </div>
                     
+                    {/* Кнопка экспорта */}
+                    {dishStatistics?.statistics?.data && (
+                        <button
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-gray-800/80 border border-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-all duration-200 font-medium"
+                            title="Экспорт данных в CSV"
+                        >
+                            <Download className="w-4 h-4" />
+                            CSV
+                        </button>
+                    )}
+
                     {/* Кнопка обновления */}
                     <button
                         onClick={loadAllData}
