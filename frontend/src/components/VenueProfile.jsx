@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, ArrowLeft, Loader2, CheckCircle, FileText } from 'lucide-react';
 import axios from 'axios';
 import ResearchResults from './ResearchResults';
-
-const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
+import { API_URL } from '../config';
 
 // Справочники
 const VENUE_TYPES = {

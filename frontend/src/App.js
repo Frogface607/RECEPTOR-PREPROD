@@ -6,11 +6,7 @@ import VenueProfile from './components/VenueProfile';
 import Integrations from './components/Integrations';
 import BIDashboard from './components/BIDashboard';
 import { ToastContainer, toast } from './components/Toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
-
-// Временный user_id (потом заменим на авторизацию)
-const USER_ID = 'default_user';
+import { API_URL, USER_ID } from './config';
 
 const WELCOME_MESSAGE = {
   role: 'assistant',

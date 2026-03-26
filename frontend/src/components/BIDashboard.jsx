@@ -9,8 +9,7 @@ import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-
-const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
+import { API_URL } from '../config';
 
 function BIDashboard({ userId, apiUrl = API_URL }) {
     const [loading, setLoading] = useState(false);
