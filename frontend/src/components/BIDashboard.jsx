@@ -363,7 +363,66 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 };
             });
     }, [dishStatistics]);
-    
+
+    // ABC-анализ блюд (Парето: A=80% выручки, B=15%, C=5%)
+    const abcAnalysis = useMemo(() => {
+        if (!dishStatistics?.statistics?.data) return null;
+
+        const dishes = dishStatistics.statistics.data
+            .map(item => ({
+                name: item.DishName || item.dishName || 'Без названия',
+                group: item.DishGroup || item.dishGroup || '',
+                revenue: parseFloat(item.DishSumInt || item.dishSumInt || 0),
+                quantity: parseFloat(item.DishAmountInt || item.dishAmountInt || 0),
+            }))
+            .filter(d => d.revenue > 0)
+            .sort((a, b) => b.revenue - a.revenue);
+
+        const totalRevenue = dishes.reduce((s, d) => s + d.revenue, 0);
+        if (totalRevenue === 0) return null;
+
+        let cumulative = 0;
+        const classified = dishes.map(dish => {
+            cumulative += dish.revenue;
+            const percent = cumulative / totalRevenue;
+            const category = percent <= 0.8 ? 'A' : percent <= 0.95 ? 'B' : 'C';
+            return { ...dish, category, sharePercent: (dish.revenue / totalRevenue * 100).toFixed(1) };
+        });
+
+        return {
+            dishes: classified,
+            summary: {
+                A: classified.filter(d => d.category === 'A').length,
+                B: classified.filter(d => d.category === 'B').length,
+                C: classified.filter(d => d.category === 'C').length,
+            },
+            totalRevenue,
+            totalDishes: classified.length,
+        };
+    }, [dishStatistics]);
+
+    // Расширенные KPI
+    const kpiMetrics = useMemo(() => {
+        if (!dishStatistics?.statistics?.data) return null;
+
+        const data = dishStatistics.statistics.data;
+        const totalRevenue = data.reduce((s, item) =>
+            s + parseFloat(item.DishSumInt || item.dishSumInt || 0), 0);
+        const totalQuantity = data.reduce((s, item) =>
+            s + parseFloat(item.DishAmountInt || item.dishAmountInt || 0), 0);
+
+        const daysCount = revenueChartData.length || 1;
+
+        return {
+            totalRevenue,
+            totalQuantity,
+            avgCheck: totalQuantity > 0 ? totalRevenue / totalQuantity : 0,
+            revenuePerDay: totalRevenue / daysCount,
+            dishesPerDay: totalQuantity / daysCount,
+            uniqueDishes: data.length,
+        };
+    }, [dishStatistics, revenueChartData]);
+
     if (!rmsStatus || rmsStatus.status !== 'connected') {
         return (
             <div className="flex-1 flex items-center justify-center p-8">
@@ -500,50 +559,32 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 </div>
             )}
             
-            {/* Stats Cards */}
-            {(dishStatistics || revenue) && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700/50 shadow-lg hover:shadow-xl hover:border-emerald-500/50 transition-all duration-300 group">
-                        <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <DollarSign className="w-5 h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                                    <p className="text-gray-400 text-sm font-medium">Общая выручка</p>
-                                </div>
-                                <p className="text-3xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
-                                    {formatCurrency(
-                                        dishStatistics?.statistics?.data?.reduce((sum, item) => 
-                                            sum + (parseFloat(item.DishSumInt || item.dishSumInt || 0)), 0
-                                        ) || 0
-                                    )}
-                                </p>
-                            </div>
-                            <DollarSign className="w-8 h-8 text-green-500" />
-                        </div>
+            {/* KPI Cards */}
+            {kpiMetrics && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div className="bg-gradient-to-br from-emerald-900/40 to-gray-900 rounded-xl p-4 border border-emerald-700/30">
+                        <p className="text-gray-400 text-xs mb-1">Выручка</p>
+                        <p className="text-xl font-bold text-emerald-400">{formatCurrency(kpiMetrics.totalRevenue)}</p>
                     </div>
-                    
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-gray-400 text-sm mb-1">Топ блюд</p>
-                                <p className="text-2xl font-bold text-white">
-                                    {dishStatistics?.statistics?.data?.length || 0}
-                                </p>
-                            </div>
-                            <Package className="w-8 h-8 text-blue-500" />
-                        </div>
+                    <div className="bg-gradient-to-br from-blue-900/40 to-gray-900 rounded-xl p-4 border border-blue-700/30">
+                        <p className="text-gray-400 text-xs mb-1">Выручка / день</p>
+                        <p className="text-xl font-bold text-blue-400">{formatCurrency(kpiMetrics.revenuePerDay)}</p>
                     </div>
-                    
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-gray-400 text-sm mb-1">Период</p>
-                                <p className="text-lg font-semibold text-white capitalize">
-                                    {periodType.toLowerCase().replace('_', ' ')}
-                                </p>
-                            </div>
-                            <TrendingUp className="w-8 h-8 text-purple-500" />
-                        </div>
+                    <div className="bg-gradient-to-br from-purple-900/40 to-gray-900 rounded-xl p-4 border border-purple-700/30">
+                        <p className="text-gray-400 text-xs mb-1">Средний чек</p>
+                        <p className="text-xl font-bold text-purple-400">{formatCurrency(kpiMetrics.avgCheck)}</p>
+                    </div>
+                    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700/50">
+                        <p className="text-gray-400 text-xs mb-1">Продано позиций</p>
+                        <p className="text-xl font-bold text-white">{formatNumber(kpiMetrics.totalQuantity)}</p>
+                    </div>
+                    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700/50">
+                        <p className="text-gray-400 text-xs mb-1">Позиций / день</p>
+                        <p className="text-xl font-bold text-white">{formatNumber(Math.round(kpiMetrics.dishesPerDay))}</p>
+                    </div>
+                    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700/50">
+                        <p className="text-gray-400 text-xs mb-1">Уникальных блюд</p>
+                        <p className="text-xl font-bold text-white">{kpiMetrics.uniqueDishes}</p>
                     </div>
                 </div>
             )}
@@ -613,6 +654,63 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
                 </div>
             )}
             
+            {/* ABC Analysis */}
+            {abcAnalysis && activeTab === 'overview' && (
+                <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <TrendingUp className="w-6 h-6" />
+                            ABC-анализ меню
+                        </h2>
+                        <div className="flex gap-3 text-sm">
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                A — хиты ({abcAnalysis.summary.A})
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                                B — стандарт ({abcAnalysis.summary.B})
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-full bg-gray-500"></span>
+                                C — аутсайдеры ({abcAnalysis.summary.C})
+                            </span>
+                        </div>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-4">
+                        Категория A — 80% выручки (хиты, которые кормят бизнес). B — 15%. C — 5% (кандидаты на вывод или переработку).
+                    </p>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {abcAnalysis.dishes.slice(0, 30).map((dish, index) => {
+                            const colors = {
+                                A: { bg: 'bg-emerald-900/30', border: 'border-emerald-700/50', badge: 'bg-emerald-600', text: 'text-emerald-400' },
+                                B: { bg: 'bg-blue-900/20', border: 'border-blue-700/30', badge: 'bg-blue-600', text: 'text-blue-400' },
+                                C: { bg: 'bg-gray-900/50', border: 'border-gray-700/30', badge: 'bg-gray-600', text: 'text-gray-400' },
+                            };
+                            const c = colors[dish.category];
+                            return (
+                                <div key={index} className={`flex items-center justify-between p-3 ${c.bg} rounded-lg border ${c.border}`}>
+                                    <div className="flex items-center gap-3 flex-1">
+                                        <span className={`w-7 h-7 ${c.badge} rounded-full flex items-center justify-center text-white text-xs font-bold`}>
+                                            {dish.category}
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-white text-sm truncate">{dish.name}</p>
+                                            <p className="text-gray-500 text-xs">{dish.group}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6 text-sm">
+                                        <span className="text-gray-400">{formatNumber(dish.quantity)} шт.</span>
+                                        <span className={`font-semibold ${c.text}`}>{formatCurrency(dish.revenue)}</span>
+                                        <span className="text-gray-500 w-14 text-right">{dish.sharePercent}%</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Shifts Report Tab */}
             {activeTab === 'shifts' && shiftsReport?.shifts && (
                 <div className="space-y-6">

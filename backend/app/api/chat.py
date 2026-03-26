@@ -896,11 +896,48 @@ async def chat_message(request: ChatRequest):
                             context += f"⚠️ Ошибка получения отчёта через Cloud API: {str(e)}\n"
                             context += "Попробуйте использовать RMS Server для получения отчётов.\n"
                     
-                    # Для RMS Server API отчёты пока не реализованы
                     elif iiko_type == "rms":
-                        context += "⚠️ Получение отчетов о выручке через RMS Server API пока не реализовано.\n"
-                        context += "Для получения отчетов используйте iikoOffice или запросите отчет через администратора.\n"
-                        context += f"Запрошенная дата: {date_str}\n"
+                        try:
+                            rms_service = get_iiko_rms_service()
+                            if rms_service and rms_service.rms_client:
+                                # Определяем период
+                                period_type = "YESTERDAY"
+                                query_lower_rev = user_query.lower()
+                                if "сегодня" in query_lower_rev:
+                                    period_type = "TODAY"
+                                elif "неделю" in query_lower_rev or "неделя" in query_lower_rev:
+                                    period_type = "CURRENT_WEEK"
+                                elif "месяц" in query_lower_rev:
+                                    if "прошл" in query_lower_rev:
+                                        period_type = "LAST_MONTH"
+                                    else:
+                                        period_type = "CURRENT_MONTH"
+
+                                report = rms_service.rms_client.get_dish_statistics(
+                                    period_type=period_type, top_n=15, organization_id=org_id
+                                )
+                                data = report.get("data", [])
+                                if data:
+                                    total_rev = sum(float(d.get("DishSumInt", 0) or 0) for d in data)
+                                    total_qty = sum(float(d.get("DishAmountInt", 0) or 0) for d in data)
+                                    avg = total_rev / total_qty if total_qty > 0 else 0
+                                    context += f"✅ ОТЧЕТ О ПРОДАЖАХ ({period_type}):\n"
+                                    context += f"- Общая выручка: {total_rev:,.0f} руб\n"
+                                    context += f"- Продано позиций: {total_qty:,.0f}\n"
+                                    context += f"- Средний чек за позицию: {avg:,.0f} руб\n\n"
+                                    context += "Топ блюд по выручке:\n"
+                                    for i, d in enumerate(data[:10], 1):
+                                        name = d.get("DishName", "?")
+                                        rev = float(d.get("DishSumInt", 0) or 0)
+                                        qty = float(d.get("DishAmountInt", 0) or 0)
+                                        context += f"{i}. {name}: {rev:,.0f} руб ({qty:,.0f} шт.)\n"
+                                else:
+                                    context += f"Нет данных за период {period_type}.\n"
+                            else:
+                                context += "RMS-сервис не инициализирован.\n"
+                        except Exception as rms_err:
+                            logger.error(f"Error getting RMS sales: {rms_err}")
+                            context += f"Ошибка получения отчёта через RMS: {str(rms_err)}\n"
         
         except Exception as e:
             logger.error(f"❌ Error getting revenue report: {e}", exc_info=True)
@@ -1575,7 +1612,8 @@ def detect_intent(query: str) -> str:
         return "iiko_products"
     
     # Запросы о выручке/продажах/отчетах (живые данные)
-    revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales"]
+    revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales",
+                        "топ блюд", "лучше всего продается", "популярн", "средний чек", "прибыль"]
     if any(w in query_lower for w in revenue_keywords):
         # Проверяем, запрашивается ли OLAP отчёт
         olap_keywords = ["olap", "олап", "отчет за месяц", "отчет за период", "отчет по продажам"]
