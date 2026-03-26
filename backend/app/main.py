@@ -40,6 +40,24 @@ async def root():
     return {"message": "Welcome to RECEPTOR CO-PILOT API v2.0", "status": "online"}
 
 
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for monitoring and deploy probes."""
+    health = {"status": "ok", "version": settings.VERSION}
+    try:
+        # Quick MongoDB ping
+        if db.client:
+            db.client.admin.command("ping")
+            health["database"] = "connected"
+        else:
+            health["database"] = "not_initialized"
+            health["status"] = "degraded"
+    except Exception:
+        health["database"] = "unreachable"
+        health["status"] = "degraded"
+    return health
+
+
 def _check_admin_secret(secret: str):
     """Проверяет admin-секрет. Вызывает HTTPException при ошибке."""
     if not settings.ADMIN_SECRET:

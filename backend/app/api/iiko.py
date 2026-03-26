@@ -972,7 +972,7 @@ async def get_olap_report(request: OlapReportRequest):
         
         host = user_credentials.get("host")
         login = user_credentials.get("login")
-        password = user_credentials.get("password")
+        password = decrypt_value(user_credentials.get("password", ""))
         
         if not host or not login or not password:
             raise HTTPException(
@@ -1105,7 +1105,7 @@ async def get_dish_statistics(
         rms_client = IikoRmsClient(
             host=user_credentials.get("host"),
             login=user_credentials.get("login"),
-            password=user_credentials.get("password")
+            password=decrypt_value(user_credentials.get("password", ""))
         )
         
         try:
@@ -1185,7 +1185,7 @@ async def get_revenue_by_period(
         rms_client = IikoRmsClient(
             host=user_credentials.get("host"),
             login=user_credentials.get("login"),
-            password=user_credentials.get("password")
+            password=decrypt_value(user_credentials.get("password", ""))
         )
         
         try:
@@ -1280,7 +1280,7 @@ async def get_sales_by_shifts(
         rms_client = IikoRmsClient(
             host=user_credentials.get("host"),
             login=user_credentials.get("login"),
-            password=user_credentials.get("password")
+            password=decrypt_value(user_credentials.get("password", ""))
         )
         
         try:
@@ -1368,7 +1368,7 @@ async def get_olap_columns(user_id: str, report_type: str = "SALES"):
         rms_client = IikoRmsClient(
             host=user_credentials.get("host"),
             login=user_credentials.get("login"),
-            password=user_credentials.get("password")
+            password=decrypt_value(user_credentials.get("password", ""))
         )
         
         try:
