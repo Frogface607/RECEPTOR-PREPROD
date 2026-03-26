@@ -7,6 +7,7 @@ import os
 import logging
 import time
 import hashlib
+import threading
 import requests
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
@@ -64,8 +65,10 @@ class IikoRmsClient:
         self.login = login
         self.password = password
         self.timeout = timeout
+        self.olap_timeout = timeout * 4  # OLAP-запросы могут быть долгими (120сек по умолчанию)
         self.session_key = None
         self.session_expires_at = None
+        self._auth_lock = threading.Lock()  # Защита от race condition при аутентификации
         self.session = requests.Session()
         self.session.timeout = timeout
         
@@ -153,25 +156,34 @@ class IikoRmsClient:
     
     def _get_session_key(self, force_refresh: bool = False) -> str:
         """
-        Get valid session key, authenticate if needed
-        
+        Get valid session key, authenticate if needed.
+        Thread-safe: uses lock to prevent concurrent re-authentication.
+
         Args:
             force_refresh: If True, force re-authentication even if session is valid
         """
-        if (force_refresh or
-            not self.session_key or 
-            not self.session_expires_at or 
-            datetime.now() >= self.session_expires_at - timedelta(minutes=5)):
-            
-            # Clear old session before re-authenticating
+        # Fast path: session is valid, no lock needed
+        if (not force_refresh and
+            self.session_key and
+            self.session_expires_at and
+            datetime.now() < self.session_expires_at - timedelta(minutes=5)):
+            return self.session_key
+
+        # Slow path: need to authenticate, use lock to prevent race condition
+        with self._auth_lock:
+            # Double-check after acquiring lock (another thread may have already authenticated)
+            if (not force_refresh and
+                self.session_key and
+                self.session_expires_at and
+                datetime.now() < self.session_expires_at - timedelta(minutes=5)):
+                return self.session_key
+
             if force_refresh:
                 self.session_key = None
                 self.session_expires_at = None
                 logger.info("Force refreshing RMS session...")
-            
+
             return self.authenticate()
-        
-        return self.session_key
     
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def get_organizations(self) -> List[Dict[str, Any]]:
@@ -195,7 +207,7 @@ class IikoRmsClient:
                     response = self.session.get(url, params=params, timeout=self.timeout)
                     
                     if response.status_code == 200:
-                        data = response.json() if response.content else {}
+                        data = self._safe_json(response)
                         
                         # Parse organizations from response
                         organizations = []
@@ -278,7 +290,7 @@ class IikoRmsClient:
                     response = self.session.get(url, params=params, timeout=self.timeout)
                     
                     if response.status_code == 200:
-                        data = response.json() if response.content else {}
+                        data = self._safe_json(response)
                         
                         logger.info(f"✅ Successfully fetched data from {endpoint}")
                         
@@ -395,7 +407,7 @@ class IikoRmsClient:
                 response = self.session.get(url, params=params, timeout=self.timeout)
                 
                 if response.status_code == 200:
-                    data = response.json() if response.content else {}
+                    data = self._safe_json(response)
                     
                     if isinstance(data, list):
                         raw_groups = data
@@ -578,124 +590,20 @@ class IikoRmsClient:
             logger.warning(f"Failed to normalize product {raw_product.get('name', 'unknown')}: {str(e)}")
             return None
     
-    @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
-    def get_olap_report(
-        self,
-        report_type: str = "SALES",
-        date_from: Optional[str] = None,
-        date_to: Optional[str] = None,
-        organization_id: Optional[str] = None,
-        group_by_row_fields: Optional[List[str]] = None,
-        aggregate_fields: Optional[List[str]] = None,
-        build_summary: bool = True
-    ) -> Dict[str, Any]:
-        """
-        Get OLAP report from iiko RMS Server.
-        
-        Args:
-            report_type: Type of report (SALES, TRANSACTIONS, DELIVERIES)
-            date_from: Start date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.000)
-            date_to: End date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.000)
-            organization_id: Organization ID (optional)
-            group_by_row_fields: Fields to group by rows (e.g., ["DishName", "DishGroup"])
-            aggregate_fields: Fields to aggregate (e.g., ["DishAmountInt", "DishSumInt"])
-            build_summary: Whether to build summary
-        
-        Returns:
-            Dictionary with report data and summary
-        """
+    def _safe_json(self, response: requests.Response) -> dict:
+        """Safely parse JSON response, handle HTML errors gracefully."""
         try:
-            session_key = self._get_session_key()
-            
-            # Default fields for sales report
-            if not group_by_row_fields:
-                group_by_row_fields = ["DishName", "DishGroup"]
-            if not aggregate_fields:
-                aggregate_fields = ["DishAmountInt", "DishSumInt"]
-            
-            # Default date range: current month if not specified
-            if not date_from or not date_to:
-                now = datetime.now()
-                if not date_from:
-                    date_from = now.replace(day=1).strftime('%Y-%m-%dT00:00:00.000')
-                if not date_to:
-                    # Last day of current month
-                    if now.month == 12:
-                        last_day = now.replace(year=now.year + 1, month=1, day=1) - timedelta(days=1)
-                    else:
-                        last_day = now.replace(month=now.month + 1, day=1) - timedelta(days=1)
-                    date_to = last_day.strftime('%Y-%m-%dT23:59:59.000')
-            
-            # Ensure date format includes time
-            if 'T' not in date_from:
-                date_from = f"{date_from}T00:00:00.000"
-            if 'T' not in date_to:
-                date_to = f"{date_to}T23:59:59.000"
-            
-            logger.info(f"Fetching OLAP report: type={report_type}, from={date_from}, to={date_to}")
-            
-            # Build request body
-            request_body = {
-                "reportType": report_type,
-                "buildSummary": build_summary,
-                "groupByRowFields": group_by_row_fields,
-                "groupByColFields": [],
-                "aggregateFields": aggregate_fields,
-                "filters": {}
-            }
-            
-            # Add date filter (required for SALES reports)
-            if report_type == "SALES":
-                request_body["filters"]["OpenDate.Typed"] = {
-                    "filterType": "DateRange",
-                    "periodType": "CUSTOM",
-                    "from": date_from,
-                    "to": date_to,
-                    "includeLow": True,
-                    "includeHigh": True
-                }
-            elif report_type == "TRANSACTIONS":
-                request_body["filters"]["DateTime.Typed"] = {
-                    "filterType": "DateRange",
-                    "periodType": "CUSTOM",
-                    "from": date_from,
-                    "to": date_to,
-                    "includeLow": True,
-                    "includeHigh": True
-                }
-            
-            # Add organization filter if specified
-            if organization_id:
-                request_body["filters"]["RestaurantId"] = {
-                    "filterType": "IncludeValues",
-                    "values": [organization_id]
-                }
-            
-            # Make request
-            url = self._make_url("/resto/api/reports/olap")
-            params = {"key": session_key}
-            
-            response = self.session.post(
-                url,
-                params=params,
-                json=request_body,
-                timeout=self.timeout
+            return self._safe_json(response)
+        except (ValueError, requests.exceptions.JSONDecodeError) as e:
+            # iiko sometimes returns HTML error pages instead of JSON
+            content_preview = response.text[:200] if response.text else "(empty)"
+            logger.error(f"Failed to parse JSON response (HTTP {response.status_code}): {content_preview}")
+            raise IikoRmsAPIError(
+                f"iiko returned non-JSON response (HTTP {response.status_code}). "
+                f"Server may be overloaded or misconfigured.",
+                status_code=response.status_code
             )
-            
-            response.raise_for_status()
-            
-            report_data = response.json()
-            logger.info(f"✅ OLAP report received: {len(report_data.get('data', []))} rows")
-            
-            return report_data
-            
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP error getting OLAP report: {e}, response: {e.response.text if e.response else 'no response'}")
-            raise IikoRmsAPIError(f"Failed to get OLAP report: {str(e)}", status_code=e.response.status_code if e.response else None)
-        except Exception as e:
-            logger.error(f"Error getting OLAP report: {str(e)}", exc_info=True)
-            raise IikoRmsAPIError(f"Failed to get OLAP report: {str(e)}")
-    
+
     def health_check(self) -> Dict[str, Any]:
         """Perform health check for iiko RMS connectivity"""
         try:
@@ -759,7 +667,7 @@ class IikoRmsClient:
             response = self.session.get(url, params=params, timeout=self.timeout)
             response.raise_for_status()
             
-            columns_data = response.json() if response.content else {}
+            columns_data = self._safe_json(response)
             logger.info(f"✅ Successfully fetched OLAP columns for {report_type}")
             
             return {
@@ -931,17 +839,17 @@ class IikoRmsClient:
                 url,
                 params=params,
                 json=request_body,
-                timeout=self.timeout * 2  # OLAP запросы могут быть долгими
+                timeout=self.olap_timeout  # OLAP запросы могут быть долгими (120сек по умолчанию)
             )
-            
+
             if response.status_code == 400:
-                error_data = response.json() if response.content else {}
+                error_data = self._safe_json(response)
                 error_msg = error_data.get("message", response.text)
                 logger.error(f"OLAP request validation error: {error_msg}")
                 raise IikoRmsAPIError(f"Invalid OLAP request: {error_msg}")
-            
+
             response.raise_for_status()
-            report_data = response.json() if response.content else {}
+            report_data = self._safe_json(response)
             
             logger.info(f"✅ Successfully fetched OLAP report: {report_type}")
             

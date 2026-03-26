@@ -7,6 +7,7 @@ import os
 import logging
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime, timezone, timedelta
+from bson import ObjectId
 from pymongo import MongoClient, ASCENDING, DESCENDING, TEXT
 from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError, PyMongoError
@@ -183,7 +184,7 @@ class IikoService:
             )
             
             result = self.sync_status.insert_one(sync_record.model_dump(by_alias=True))
-            sync_id = str(result.inserted_id)
+            sync_id = result.inserted_id  # Keep as ObjectId for MongoDB queries
             
             logger.info(f"Starting nomenclature sync for organization {organization_id}")
             
@@ -275,7 +276,7 @@ class IikoService:
             
             return {
                 "status": "completed",
-                "sync_id": sync_id,
+                "sync_id": str(sync_id),
                 "stats": stats
             }
             
