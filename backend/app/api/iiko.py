@@ -11,9 +11,19 @@ from app.services.iiko.iiko_client import IikoClient, IikoAPIError
 from app.services.iiko.iiko_rms_service import get_iiko_rms_service, IikoRmsService
 from app.services.iiko.iiko_rms_client import IikoRmsAPIError
 from app.core.database import db
+from app.core.encryption import encrypt_value, decrypt_value
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+def _get_cloud_api_key(user_id: str) -> Optional[str]:
+    """Get decrypted Cloud API key for a user. Returns None if not found."""
+    collection = db.get_collection("iiko_cloud_credentials")
+    credentials = collection.find_one({"user_id": user_id})
+    if not credentials or not credentials.get("api_key"):
+        return None
+    return decrypt_value(credentials["api_key"])
 
 
 # ============ REQUEST/RESPONSE MODELS ============
@@ -88,7 +98,7 @@ async def connect_iiko_cloud(credentials: IikoCloudCredentials):
             {
                 "$set": {
                     "user_id": credentials.user_id,
-                    "api_key": credentials.api_key,  # In production, encrypt this!
+                    "api_key": encrypt_value(credentials.api_key),
                     "status": "connected",
                     "last_connection": datetime.utcnow(),
                     "organizations_count": len(organizations),
@@ -142,7 +152,8 @@ async def get_iiko_cloud_status(user_id: str):
             return {"status": "not_connected", "message": "iikoCloud не подключен"}
         
         # Mask API key for security
-        masked_key = credentials["api_key"][:8] + "..." if credentials.get("api_key") else None
+        raw_key = decrypt_value(credentials.get("api_key", "")) if credentials.get("api_key") else None
+        masked_key = raw_key[:8] + "..." if raw_key else None
         
         # Получаем список организаций и выбранную
         organizations = credentials.get("organizations", [])
@@ -243,7 +254,7 @@ async def sync_cloud_nomenclature(request: OrganizationSelect):
         logger.info(f"📡 Testing Cloud API connection for org: {org_id}")
         
         # Создаём клиент и проверяем подключение
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -357,7 +368,7 @@ async def get_cloud_menu(user_id: str, organization_id: Optional[str] = None):
         if not org_id:
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
-        client = IikoClient(api_login=credentials["api_key"])
+        client = IikoClient(api_login=decrypt_value(credentials.get("api_key", "")))
         nomenclature = client.fetch_nomenclature(org_id, use_direct_http=True)
         
         return {
@@ -399,7 +410,7 @@ async def get_cloud_sales_report(
         if not org_id:
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -442,7 +453,7 @@ async def get_cloud_stock_report(
         if not org_id:
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -485,7 +496,7 @@ async def get_cloud_purchases_report(
         if not org_id:
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -530,7 +541,7 @@ async def get_cloud_orders(
         if not org_id:
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -573,7 +584,7 @@ async def get_cloud_employees(
         if not org_id:
             raise HTTPException(status_code=400, detail="Организация не выбрана")
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -610,7 +621,7 @@ async def get_cloud_employee_attendances(
         if not credentials or credentials.get("status") != "connected":
             raise HTTPException(status_code=400, detail="iikoCloud не подключен")
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -837,7 +848,7 @@ async def get_cloud_revenue_by_period(
                 detail="Организация не выбрана"
             )
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
@@ -895,7 +906,7 @@ async def get_cloud_dish_statistics(
                 detail="Организация не выбрана"
             )
         
-        api_key = credentials.get("api_key")
+        api_key = decrypt_value(credentials.get("api_key", ""))
         if not api_key:
             raise HTTPException(status_code=400, detail="API ключ не найден")
         
