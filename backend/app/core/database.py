@@ -7,7 +7,7 @@ class Database:
     db = None
 
     def connect(self):
-        self.client = MongoClient(settings.MONGODB_URI)
+        self.client = MongoClient(settings.mongo_connection_string)
         self.db = self.client[settings.DB_NAME]
         print(f"✅ Connected to MongoDB: {settings.DB_NAME}")
 
