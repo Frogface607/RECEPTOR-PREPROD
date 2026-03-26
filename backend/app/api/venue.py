@@ -125,8 +125,16 @@ async def start_deep_research(request: DeepResearchRequest, background_tasks: Ba
     """
     Запускает глубокое исследование заведения в фоне
     """
-    logger.info(f"🔬 Deep research requested: {request.venue_name}, {request.city}")
-    
+    # Check plan limits
+    from app.services.billing import check_research_limit, increment_research_count
+    limit_check = check_research_limit(request.user_id)
+    if not limit_check["allowed"]:
+        raise HTTPException(status_code=403, detail=limit_check["reason"])
+
+    logger.info(f"Deep research requested: {request.venue_name}, {request.city}")
+
+    increment_research_count(request.user_id)
+
     # Запускаем в фоне
     background_tasks.add_task(
         run_deep_research_task,

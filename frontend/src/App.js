@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3, Sparkles } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3, Sparkles, Zap } from 'lucide-react';
 import axios from 'axios';
 import { ToastContainer, toast } from './components/Toast';
 import { API_URL, USER_ID } from './config';
@@ -12,6 +12,7 @@ import ReferralModal from './components/ReferralModal';
 const VenueProfile = lazy(() => import('./components/VenueProfile'));
 const Integrations = lazy(() => import('./components/Integrations'));
 const BIDashboard = lazy(() => import('./components/BIDashboard'));
+const PricingPage = lazy(() => import('./components/PricingPage'));
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
@@ -612,13 +613,15 @@ function App() {
             BI Dashboard
           </button>
           <button
-            className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 rounded-lg text-sm cursor-not-allowed"
-            title="Скоро"
-            disabled
+            onClick={() => setCurrentPage('pricing')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === 'pricing'
+                ? 'bg-emerald-600/10 text-emerald-500'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
           >
-            <Settings size={16} />
-            Настройки
-            <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">скоро</span>
+            <Zap size={16} />
+            Тарифы
           </button>
         </div>
       </div>
@@ -649,6 +652,15 @@ function App() {
         ) : currentPage === 'bi' ? (
           <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
             <BIDashboard userId={USER_ID} apiUrl={API_URL} />
+          </Suspense>
+        ) : currentPage === 'pricing' ? (
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <PricingPage
+              onBack={() => setCurrentPage('chat')}
+              onSelectPlan={(action) => {
+                if (action === 'referral') setShowReferralModal(true);
+              }}
+            />
           </Suspense>
         ) : (
           <>
