@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3 } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import VenueProfile from './components/VenueProfile';
 import Integrations from './components/Integrations';
 import BIDashboard from './components/BIDashboard';
+import { ToastContainer, toast } from './components/Toast';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
 
@@ -13,7 +14,13 @@ const USER_ID = 'default_user';
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
-  content: 'Привет! 👋\n\nЯ **RECEPTOR** — твой AI-помощник для ресторанного бизнеса.\n\nПомогаю с техкартами, меню, аналитикой, оптимизацией процессов и всем, что нужно для успешной работы заведения. Интегрирован с iiko и всегда готов помочь.\n\nЧем могу помочь?'
+  content: 'Привет! 👋\n\nЯ **RECEPTOR** — твой AI-помощник для ресторанного бизнеса.\n\nПомогаю с техкартами, меню, аналитикой, оптимизацией процессов и всем, что нужно для успешной работы заведения. Интегрирован с iiko и всегда готов помочь.\n\nЧем могу помочь?',
+  suggestions: [
+    'Покажи выручку за последний месяц',
+    'Какие блюда продаются лучше всего?',
+    'Помоги составить техкарту',
+    'Проверь подключение к iiko',
+  ]
 };
 
 function App() {
@@ -71,9 +78,9 @@ function App() {
           if (event.error === 'no-speech') {
             // Не показываем alert для no-speech, это нормально
           } else if (event.error === 'not-allowed') {
-            alert('Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+            toast('Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.', 'warning');
           } else if (event.error === 'network') {
-            alert('Ошибка сети. Проверьте подключение к интернету.');
+            toast('Ошибка сети. Проверьте подключение к интернету.', 'error');
           }
         };
 
@@ -235,7 +242,7 @@ function App() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting chat:', error);
-      alert('Ошибка при экспорте чата: ' + (error.response?.data?.detail || error.message));
+      toast('Ошибка при экспорте чата: ' + (error.response?.data?.detail || error.message), 'error');
     }
   };
 
@@ -343,6 +350,7 @@ function App() {
 
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100 overflow-hidden font-sans">
+      <ToastContainer />
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-gray-950 border-r border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 overflow-hidden`}>
         <div className="p-4 flex items-center gap-2 border-b border-gray-800">
