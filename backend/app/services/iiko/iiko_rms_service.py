@@ -14,6 +14,7 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 from fuzzywuzzy import fuzz
 
 from app.core.database import db as central_db
+from app.core.encryption import encrypt_value, decrypt_value
 from .iiko_rms_client import IikoRmsClient, get_iiko_rms_client, IikoRmsAPIError
 from .iiko_rms_models import (
     IikoRmsCredentials, IikoRmsProduct, IikoRmsGroup, IikoRmsSyncStatus, IikoRmsMapping, IikoRmsPrice,  # IK-03: Added IikoRmsPrice
@@ -103,7 +104,7 @@ class IikoRmsService:
                 user_id=user_id,
                 host=host,
                 login=login,
-                password=password,  # In production, should encrypt this
+                password=encrypt_value(password),
                 status=IikoRmsConnectionStatus.CONNECTED,
                 last_connection=datetime.now(timezone.utc),
                 session_key=session_key,
@@ -135,7 +136,7 @@ class IikoRmsService:
                     user_id=user_id,
                     host=host,
                     login=login,
-                    password=password,
+                    password=encrypt_value(password),
                     status=IikoRmsConnectionStatus.ERROR
                 )
                 
@@ -174,7 +175,7 @@ class IikoRmsService:
             rms_client = IikoRmsClient(
                 credentials_record["host"],
                 credentials_record["login"], 
-                credentials_record["password"]
+                decrypt_value(credentials_record["password"])
             )
             
             organizations = rms_client.get_organizations()
@@ -964,7 +965,7 @@ class IikoRmsService:
         return IikoRmsClient(
             credentials_record["host"],
             credentials_record["login"],
-            credentials_record["password"]
+            decrypt_value(credentials_record["password"])
         )
     
     def _generate_auto_mappings(self, organization_id: str):
@@ -1118,7 +1119,7 @@ class IikoRmsService:
                 rms_client = IikoRmsClient(
                     credentials_record["host"],
                     credentials_record["login"], 
-                    credentials_record["password"]
+                    decrypt_value(credentials_record["password"])
                 )
                 
                 # Test connection by authenticating
