@@ -140,7 +140,8 @@ function App() {
       
       const url = `${API_URL}/history/chats/${USER_ID}${params.toString() ? '?' + params.toString() : ''}`;
       const response = await axios.get(url);
-      setChatHistory(response.data || []);
+      const historyData = response.data;
+      setChatHistory(Array.isArray(historyData) ? historyData : historyData?.chats || []);
     } catch (error) {
       console.error('Error loading chat history:', error);
     } finally {
@@ -435,7 +436,7 @@ function App() {
             {chatHistory.length === 0 && !historyLoading && (
               <p className="text-gray-600 text-xs px-3 py-2">Нет сохранённых чатов</p>
             )}
-            {chatHistory.map((chat) => (
+            {(chatHistory || []).map((chat) => (
               <div
                 key={chat.id}
                 className={`group relative rounded-lg transition-colors ${
@@ -747,7 +748,7 @@ function App() {
                     {/* Suggested next steps - только для сообщений ассистента */}
                     {msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0 && (
                       <div className={`flex flex-wrap gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} max-w-[85%] ml-12`}>
-                        {msg.suggestions.map((suggestion, sugIndex) => (
+                        {(msg.suggestions || []).map((suggestion, sugIndex) => (
                           <button
                             key={sugIndex}
                             onClick={() => {
