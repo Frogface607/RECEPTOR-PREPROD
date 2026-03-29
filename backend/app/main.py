@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.core.database import db
 from app.core.logging_config import setup_logging
 from app.core.rate_limit import RateLimitMiddleware
-from app.api import chat, venue, iiko, history, billing
+from app.api import chat, venue, iiko, history, billing, menu, staff
 import logging
 
 # Configure structured logging before anything else
@@ -211,3 +211,5 @@ app.include_router(venue.router, prefix="/api/venue", tags=["venue"])
 app.include_router(iiko.router, prefix="/api/iiko", tags=["iiko"])
 app.include_router(history.router, prefix="/api/history", tags=["history"])
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
+app.include_router(menu.router, prefix="/api/menu", tags=["menu"])
+app.include_router(staff.router, prefix="/api/staff", tags=["staff"])
