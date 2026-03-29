@@ -1,5 +1,8 @@
+import logging
 from pymongo import MongoClient
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -7,14 +10,14 @@ class Database:
     db = None
 
     def connect(self):
-        self.client = MongoClient(settings.MONGODB_URI)
+        self.client = MongoClient(settings.mongo_connection_string)
         self.db = self.client[settings.DB_NAME]
-        print(f"✅ Connected to MongoDB: {settings.DB_NAME}")
+        logger.info(f"Connected to MongoDB: {settings.DB_NAME}")
 
     def close(self):
         if self.client:
             self.client.close()
-            print("❌ Disconnected from MongoDB")
+            logger.info("Disconnected from MongoDB")
     
     def get_collection(self, name: str):
         """Получить коллекцию MongoDB"""

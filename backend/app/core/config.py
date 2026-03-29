@@ -24,9 +24,34 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "dev_secret_key_change_me"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week
-    
+
+    # Admin
+    ADMIN_SECRET: str = ""
+
+    # CORS
+    CORS_ORIGINS: str = "*"
+
     # Environment
     ENVIRONMENT: str = "development"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Парсит CORS_ORIGINS из строки в список"""
+        if self.CORS_ORIGINS == "*":
+            return ["*"]
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    def validate_for_production(self):
+        """Проверяет что критичные настройки изменены для продакшена"""
+        warnings = []
+        if self.ENVIRONMENT == "production":
+            if self.JWT_SECRET_KEY == "dev_secret_key_change_me":
+                warnings.append("CRITICAL: JWT_SECRET_KEY is using default value! Set a secure secret.")
+            if self.CORS_ORIGINS == "*":
+                warnings.append("WARNING: CORS_ORIGINS is set to '*'. Restrict to specific domains.")
+            if not self.ADMIN_SECRET:
+                warnings.append("WARNING: ADMIN_SECRET is not set. Admin endpoints will be disabled.")
+        return warnings
     
     @property
     def mongo_connection_string(self) -> str:

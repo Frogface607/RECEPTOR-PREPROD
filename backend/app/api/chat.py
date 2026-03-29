@@ -39,7 +39,7 @@ def get_venue_profile(user_id: str) -> Optional[Dict[str, Any]]:
             profile.pop("_id", None)
             return profile
     except Exception as e:
-        print(f"⚠️ Error loading venue profile: {e}")
+        logger.warning(f"Error loading venue profile: {e}")
     return None
 
 
@@ -52,7 +52,7 @@ def get_venue_research(user_id: str) -> Optional[Dict[str, Any]]:
             research.pop("_id", None)
             return research
     except Exception as e:
-        print(f"⚠️ Error loading venue research: {e}")
+        logger.warning(f"Error loading venue research: {e}")
     return None
 
 
@@ -289,7 +289,20 @@ async def chat_message(request: ChatRequest):
     """
     user_query = request.messages[-1].content
     user_id = request.user_id or "default_user"
-    
+
+    # Check usage limits
+    from app.services.billing import check_message_limit, increment_message_count
+    limit_check = check_message_limit(user_id)
+    if not limit_check["allowed"]:
+        return {
+            "role": "assistant",
+            "content": limit_check["reason"],
+            "paywall": True,
+            "plan": limit_check.get("plan", "free"),
+            "messages_today": limit_check.get("messages_today", 0),
+            "messages_limit": limit_check.get("messages_limit", 10),
+        }
+
     # Загружаем профиль заведения и deep research
     venue_profile = get_venue_profile(user_id)
     venue_research = get_venue_research(user_id)
@@ -361,9 +374,8 @@ async def chat_message(request: ChatRequest):
         
         # Подключаем коллекцию с проиндексированными чанками
         try:
-            from pymongo import MongoClient
-            mongo_client = MongoClient(settings.mongo_connection_string)
-            kb_collection = mongo_client[settings.DB_NAME]["knowledge_base_chunks"]
+            from app.core.database import db as central_db
+            kb_collection = central_db.get_collection("knowledge_base_chunks")
             
             # Диагностика
             total_chunks = kb_collection.count_documents({"indexed": True, "type": {"$ne": "metadata"}})
@@ -687,7 +699,7 @@ async def chat_message(request: ChatRequest):
                                             sample_products = search_iiko_products("", org_id, limit=5, iiko_type="rms", user_id=user_id)
                                             for p in sample_products[:5]:
                                                 context += f"- {p.get('name', 'н/д')}\n"
-                                        except:
+                                        except Exception:
                                             pass
                             else:
                                 error_msg = summary.get("error", "Неизвестная ошибка") if summary else "Сервис не инициализирован"
@@ -804,7 +816,7 @@ async def chat_message(request: ChatRequest):
                 now = datetime.now()
                 try:
                     date_str = datetime(now.year, 12, day).strftime('%Y-%m-%d')  # Пока только декабрь
-                except:
+                except (ValueError, TypeError):
                     pass
             
             # Если дата не найдена, пробуем другие форматы
@@ -815,7 +827,7 @@ async def chat_message(request: ChatRequest):
                     now = datetime.now()
                     try:
                         date_str = datetime(now.year, month, day).strftime('%Y-%m-%d')
-                    except:
+                    except (ValueError, TypeError):
                         pass
             
             # Если дата не указана, используем вчерашний день
@@ -884,11 +896,48 @@ async def chat_message(request: ChatRequest):
                             context += f"⚠️ Ошибка получения отчёта через Cloud API: {str(e)}\n"
                             context += "Попробуйте использовать RMS Server для получения отчётов.\n"
                     
-                    # Для RMS Server API отчёты пока не реализованы
                     elif iiko_type == "rms":
-                        context += "⚠️ Получение отчетов о выручке через RMS Server API пока не реализовано.\n"
-                        context += "Для получения отчетов используйте iikoOffice или запросите отчет через администратора.\n"
-                        context += f"Запрошенная дата: {date_str}\n"
+                        try:
+                            rms_service = get_iiko_rms_service()
+                            if rms_service and rms_service.rms_client:
+                                # Определяем период
+                                period_type = "YESTERDAY"
+                                query_lower_rev = user_query.lower()
+                                if "сегодня" in query_lower_rev:
+                                    period_type = "TODAY"
+                                elif "неделю" in query_lower_rev or "неделя" in query_lower_rev:
+                                    period_type = "CURRENT_WEEK"
+                                elif "месяц" in query_lower_rev:
+                                    if "прошл" in query_lower_rev:
+                                        period_type = "LAST_MONTH"
+                                    else:
+                                        period_type = "CURRENT_MONTH"
+
+                                report = rms_service.rms_client.get_dish_statistics(
+                                    period_type=period_type, top_n=15, organization_id=org_id
+                                )
+                                data = report.get("data", [])
+                                if data:
+                                    total_rev = sum(float(d.get("DishSumInt", 0) or 0) for d in data)
+                                    total_qty = sum(float(d.get("DishAmountInt", 0) or 0) for d in data)
+                                    avg = total_rev / total_qty if total_qty > 0 else 0
+                                    context += f"✅ ОТЧЕТ О ПРОДАЖАХ ({period_type}):\n"
+                                    context += f"- Общая выручка: {total_rev:,.0f} руб\n"
+                                    context += f"- Продано позиций: {total_qty:,.0f}\n"
+                                    context += f"- Средний чек за позицию: {avg:,.0f} руб\n\n"
+                                    context += "Топ блюд по выручке:\n"
+                                    for i, d in enumerate(data[:10], 1):
+                                        name = d.get("DishName", "?")
+                                        rev = float(d.get("DishSumInt", 0) or 0)
+                                        qty = float(d.get("DishAmountInt", 0) or 0)
+                                        context += f"{i}. {name}: {rev:,.0f} руб ({qty:,.0f} шт.)\n"
+                                else:
+                                    context += f"Нет данных за период {period_type}.\n"
+                            else:
+                                context += "RMS-сервис не инициализирован.\n"
+                        except Exception as rms_err:
+                            logger.error(f"Error getting RMS sales: {rms_err}")
+                            context += f"Ошибка получения отчёта через RMS: {str(rms_err)}\n"
         
         except Exception as e:
             logger.error(f"❌ Error getting revenue report: {e}", exc_info=True)
@@ -1364,16 +1413,19 @@ async def chat_message(request: ChatRequest):
                         suggestions = fallback_suggestions[:3]
                         logger.info(f"✅ Fallback extraction successful: {suggestions}")
         
+        # Track usage
+        increment_message_count(user_id)
+
         return {
-            "role": "assistant", 
+            "role": "assistant",
             "content": clean_response,
-            "model": model_used,  # Показываем какая модель ответила
+            "model": model_used,
             "usage": usage_info,
-            "suggestions": suggestions  # Предложения следующих шагов
+            "suggestions": suggestions
         }
-        
+
     except Exception as e:
-        print(f"❌ Error in chat: {e}")
+        logger.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1560,7 +1612,8 @@ def detect_intent(query: str) -> str:
         return "iiko_products"
     
     # Запросы о выручке/продажах/отчетах (живые данные)
-    revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales"]
+    revenue_keywords = ["выручк", "продаж", "отчет", "аналитик", "сколько заработал", "доход", "revenue", "sales",
+                        "топ блюд", "лучше всего продается", "популярн", "средний чек", "прибыль"]
     if any(w in query_lower for w in revenue_keywords):
         # Проверяем, запрашивается ли OLAP отчёт
         olap_keywords = ["olap", "олап", "отчет за месяц", "отчет за период", "отчет по продажам"]

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from './Toast';
 import { 
   Download, 
   TrendingUp, 
@@ -57,7 +58,7 @@ function ResearchResults({ research, venueName, onClose }) {
       pdf.save(`${venueName || 'venue'}_research_${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('Error exporting PDF:', error);
-      alert('Ошибка при экспорте PDF');
+      toast('Ошибка при экспорте PDF', 'error');
     } finally {
       setExporting(false);
     }

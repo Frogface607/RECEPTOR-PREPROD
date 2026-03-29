@@ -13,11 +13,20 @@ import json
 import re
 
 from app.core.database import db
+from bson.errors import InvalidId
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 CHATS_COLLECTION = "chat_history"
+
+
+def _valid_object_id(chat_id: str) -> ObjectId:
+    """Validate and convert string to ObjectId. Raises HTTPException on invalid format."""
+    try:
+        return _valid_object_id(chat_id)
+    except (InvalidId, TypeError):
+        raise HTTPException(status_code=400, detail=f"Invalid chat ID format: {chat_id}")
 
 
 # ============ MODELS ============
@@ -173,7 +182,7 @@ async def get_chat(chat_id: str):
     try:
         collection = db.get_collection(CHATS_COLLECTION)
         
-        chat = collection.find_one({"_id": ObjectId(chat_id)})
+        chat = collection.find_one({"_id": _valid_object_id(chat_id)})
         
         if not chat:
             raise HTTPException(status_code=404, detail="Чат не найден")
@@ -219,7 +228,7 @@ async def update_chat(chat_id: str, update_data: ChatUpdate):
                 update_fields["title"] = generate_chat_title(update_data.messages)
         
         result = collection.update_one(
-            {"_id": ObjectId(chat_id)},
+            {"_id": _valid_object_id(chat_id)},
             {"$set": update_fields}
         )
         
@@ -227,7 +236,7 @@ async def update_chat(chat_id: str, update_data: ChatUpdate):
             raise HTTPException(status_code=404, detail="Чат не найден")
         
         # Возвращаем обновлённый чат
-        chat = collection.find_one({"_id": ObjectId(chat_id)})
+        chat = collection.find_one({"_id": _valid_object_id(chat_id)})
         return serialize_chat(chat)
         
     except HTTPException:
@@ -250,7 +259,7 @@ async def add_message_to_chat(chat_id: str, message: Message):
         }
         
         result = collection.update_one(
-            {"_id": ObjectId(chat_id)},
+            {"_id": _valid_object_id(chat_id)},
             {
                 "$push": {"messages": msg_data},
                 "$set": {"updated_at": datetime.utcnow()}
@@ -275,7 +284,7 @@ async def delete_chat(chat_id: str):
     try:
         collection = db.get_collection(CHATS_COLLECTION)
         
-        result = collection.delete_one({"_id": ObjectId(chat_id)})
+        result = collection.delete_one({"_id": _valid_object_id(chat_id)})
         
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Чат не найден")
@@ -297,7 +306,7 @@ async def export_chat(chat_id: str, format: str = Query("markdown", regex="^(mar
     """Экспортировать чат в Markdown или JSON"""
     try:
         collection = db.get_collection(CHATS_COLLECTION)
-        chat = collection.find_one({"_id": ObjectId(chat_id)})
+        chat = collection.find_one({"_id": _valid_object_id(chat_id)})
         
         if not chat:
             raise HTTPException(status_code=404, detail="Чат не найден")
@@ -425,13 +434,13 @@ async def toggle_favorite(chat_id: str):
     try:
         collection = db.get_collection(CHATS_COLLECTION)
         
-        chat = collection.find_one({"_id": ObjectId(chat_id)})
+        chat = collection.find_one({"_id": _valid_object_id(chat_id)})
         if not chat:
             raise HTTPException(status_code=404, detail="Чат не найден")
         
         new_favorite = not chat.get("is_favorite", False)
         collection.update_one(
-            {"_id": ObjectId(chat_id)},
+            {"_id": _valid_object_id(chat_id)},
             {"$set": {"is_favorite": new_favorite, "updated_at": datetime.utcnow()}}
         )
         

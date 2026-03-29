@@ -105,21 +105,12 @@ class ArticleAllocator:
     - Уникальность: по (orgId, article)
     """
     
-    def __init__(self, mongo_client: MongoClient = None):
-        if mongo_client is None:
-            mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017/ai_menu_designer')
-            mongo_client = MongoClient(mongo_url)
-        
-        # BUGFIX: Use DB_NAME env var instead of parsing URL (MongoDB limit: 63 chars)
-        db_name = os.environ.get('DB_NAME', 'receptor_pro').strip('"')
-        
-        # Validate DB name length (MongoDB limit)
-        if len(db_name) > 63:
-            logger.error(f"❌ DB name too long ({len(db_name)} chars): {db_name}")
-            db_name = db_name[:63]  # Truncate to 63 chars
-            logger.warning(f"⚠️ Truncated to: {db_name}")
-        
-        self.db = mongo_client[db_name]
+    def __init__(self, mongo_client=None):
+        from app.core.database import db as central_db
+        # Use centralized database connection
+        if central_db.db is None:
+            central_db.connect()
+        self.db = central_db.db
         
         # Коллекции
         self.reservations = self.db.article_reservations

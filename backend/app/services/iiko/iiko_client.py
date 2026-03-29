@@ -87,6 +87,20 @@ class IikoClient:
         except Exception as e:
             logger.error(f"Failed to initialize iikoCloud API client: {str(e)}")
             raise IikoAPIError(f"Client initialization failed: {str(e)}")
+
+    @staticmethod
+    def _safe_json(response: requests.Response) -> dict:
+        """Safely parse JSON response, handle HTML errors gracefully."""
+        try:
+            return response.json() if response.content else {}
+        except (ValueError, requests.exceptions.JSONDecodeError) as e:
+            content_preview = response.text[:200] if response.text else "(empty)"
+            logger.error(f"Failed to parse JSON (HTTP {response.status_code}): {content_preview}")
+            raise IikoAPIError(
+                f"iiko Cloud returned non-JSON response (HTTP {response.status_code}). "
+                f"Server may be overloaded or misconfigured.",
+                status_code=response.status_code
+            )
     
     @retry_on_failure(max_retries=3, delay=1.0, backoff_multiplier=2.0)
     def get_access_token(self) -> Dict[str, Any]:
@@ -107,8 +121,9 @@ class IikoClient:
                 raise IikoAPIError("Failed to get access token - invalid response")
             
             # Token is managed internally by pyiikocloudapi
-            # We simulate token response for compatibility
-            self._token_expires_at = datetime.now() + timedelta(hours=1)
+            # iiko Cloud API tokens are valid for ~15 minutes (not 1 hour)
+            # Use conservative TTL to avoid using expired tokens
+            self._token_expires_at = datetime.now() + timedelta(minutes=14)
             
             token_info = {
                 "access_token": "managed_by_client",
@@ -290,7 +305,7 @@ class IikoClient:
             )
             
             response.raise_for_status()
-            token_data = response.json()
+            token_data = self._safe_json(response)
             
             token = token_data.get("token")
             if not token:
@@ -356,7 +371,7 @@ class IikoClient:
                     )
                     
                     if response.status_code == 200:
-                        report_data = response.json()
+                        report_data = self._safe_json(response)
                         logger.info(f"✅ Sales report received from {endpoint}")
                         return report_data
                     elif response.status_code == 404:
@@ -390,7 +405,7 @@ class IikoClient:
                 )
                 
                 if response.status_code == 200:
-                    orders_data = response.json()
+                    orders_data = self._safe_json(response)
                     logger.info(f"✅ Orders data received, calculating sales from orders...")
                     
                     # Calculate sales from orders
@@ -476,7 +491,7 @@ class IikoClient:
                     )
                     
                     if response.status_code == 200:
-                        menu_data = response.json()
+                        menu_data = self._safe_json(response)
                         logger.info(f"✅ Menu/nomenclature received from {endpoint}")
                         
                         # Parse response structure
@@ -499,7 +514,7 @@ class IikoClient:
                     elif response.status_code == 401 or response.status_code == 403:
                         # Проверяем, есть ли сообщение о правах доступа
                         try:
-                            error_data = response.json()
+                            error_data = self._safe_json(response)
                             error_desc = error_data.get("errorDescription", "")
                             if "not allowed" in error_desc.lower() or "right" in error_desc.lower():
                                 logger.warning(f"⚠️ API key does not have permission for {endpoint}: {error_desc}")
@@ -507,7 +522,7 @@ class IikoClient:
                                 # Продолжаем пробовать другие endpoints, но не считаем это критической ошибкой
                                 last_error = f"HTTP {response.status_code}: Permission denied - {error_desc}"
                                 continue
-                        except:
+                        except Exception:
                             pass
                         logger.warning(f"Endpoint {endpoint} returned {response.status_code}: {response.text[:200]}")
                         last_error = f"HTTP {response.status_code}: {response.text[:200]}"
@@ -585,7 +600,7 @@ class IikoClient:
             response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
             response.raise_for_status()
             
-            orders_data = response.json()
+            orders_data = self._safe_json(response)
             orders = orders_data.get("orders", []) if isinstance(orders_data, dict) else orders_data if isinstance(orders_data, list) else []
             
             logger.info(f"✅ Received {len(orders)} orders")
@@ -641,7 +656,7 @@ class IikoClient:
             response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
             response.raise_for_status()
             
-            stock_data = response.json()
+            stock_data = self._safe_json(response)
             logger.info(f"✅ Stock report received")
             
             return stock_data
@@ -692,7 +707,7 @@ class IikoClient:
             response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
             response.raise_for_status()
             
-            purchases_data = response.json()
+            purchases_data = self._safe_json(response)
             logger.info(f"✅ Purchases report received")
             
             return purchases_data
@@ -783,7 +798,7 @@ class IikoClient:
             
             response.raise_for_status()
             
-            employees_data = response.json()
+            employees_data = self._safe_json(response)
             logger.debug(f"📦 Raw employees response: {type(employees_data)}, keys: {employees_data.keys() if isinstance(employees_data, dict) else 'N/A (list)'}")
             
             # Обрабатываем разные форматы ответа
@@ -843,7 +858,7 @@ class IikoClient:
             response = requests.get(endpoint, headers=headers, params=params, timeout=self.timeout)
             response.raise_for_status()
             
-            attendances_data = response.json()
+            attendances_data = self._safe_json(response)
             attendances = attendances_data.get("attendances", []) if isinstance(attendances_data, dict) else attendances_data if isinstance(attendances_data, list) else []
             
             logger.info(f"✅ Received {len(attendances)} attendances")

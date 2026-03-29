@@ -1,19 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3 } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, FileText, Settings, Database, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Filter, Copy, Mic, MicOff, BarChart3, Sparkles, Zap } from 'lucide-react';
 import axios from 'axios';
-import VenueProfile from './components/VenueProfile';
-import Integrations from './components/Integrations';
-import BIDashboard from './components/BIDashboard';
+import { ToastContainer, toast } from './components/Toast';
+import { API_URL, USER_ID } from './config';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
+import PaywallBanner from './components/PaywallBanner';
+import ReferralModal from './components/ReferralModal';
 
-// Временный user_id (потом заменим на авторизацию)
-const USER_ID = 'default_user';
+// Lazy load heavy components — only loaded when user navigates to them
+const VenueProfile = lazy(() => import('./components/VenueProfile'));
+const Integrations = lazy(() => import('./components/Integrations'));
+const BIDashboard = lazy(() => import('./components/BIDashboard'));
+const PricingPage = lazy(() => import('./components/PricingPage'));
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
-  content: 'Привет! 👋\n\nЯ **RECEPTOR** — твой AI-помощник для ресторанного бизнеса.\n\nПомогаю с техкартами, меню, аналитикой, оптимизацией процессов и всем, что нужно для успешной работы заведения. Интегрирован с iiko и всегда готов помочь.\n\nЧем могу помочь?'
+  content: 'Привет! 👋\n\nЯ **RECEPTOR** — твой AI-помощник для ресторанного бизнеса.\n\nПомогаю с техкартами, меню, аналитикой, оптимизацией процессов и всем, что нужно для успешной работы заведения. Интегрирован с iiko и всегда готов помочь.\n\nЧем могу помочь?',
+  suggestions: [
+    'Покажи выручку за последний месяц',
+    'Какие блюда продаются лучше всего?',
+    'Помоги составить техкарту',
+    'Проверь подключение к iiko',
+  ]
 };
 
 function App() {
@@ -38,10 +47,24 @@ function App() {
   const [recognition, setRecognition] = useState(null);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
 
-  // Load chat history on mount
+  // Billing state
+  const [userPlan, setUserPlan] = useState(null);
+  const [showReferralModal, setShowReferralModal] = useState(false);
+
+  // Load chat history and user plan on mount
   useEffect(() => {
     loadChatHistory();
+    loadUserPlan();
   }, []);
+
+  const loadUserPlan = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/billing/usage/${USER_ID}`);
+      setUserPlan(response.data);
+    } catch (error) {
+      // Billing service might not be ready yet — fail silently
+    }
+  };
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -71,9 +94,9 @@ function App() {
           if (event.error === 'no-speech') {
             // Не показываем alert для no-speech, это нормально
           } else if (event.error === 'not-allowed') {
-            alert('Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+            toast('Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.', 'warning');
           } else if (event.error === 'network') {
-            alert('Ошибка сети. Проверьте подключение к интернету.');
+            toast('Ошибка сети. Проверьте подключение к интернету.', 'error');
           }
         };
 
@@ -235,7 +258,7 @@ function App() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting chat:', error);
-      alert('Ошибка при экспорте чата: ' + (error.response?.data?.detail || error.message));
+      toast('Ошибка при экспорте чата: ' + (error.response?.data?.detail || error.message), 'error');
     }
   };
 
@@ -323,13 +346,15 @@ function App() {
         user_id: USER_ID
       });
       
-      // Добавляем сообщение с предложениями если есть
       const assistantMessage = {
         ...response.data,
         suggestions: response.data.suggestions || []
       };
-      
+
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Refresh plan info after each message (updates remaining count)
+      loadUserPlan();
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
@@ -343,6 +368,7 @@ function App() {
 
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100 overflow-hidden font-sans">
+      <ToastContainer />
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-gray-950 border-r border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 overflow-hidden`}>
         <div className="p-4 flex items-center gap-2 border-b border-gray-800">
@@ -555,9 +581,14 @@ function App() {
             <Store size={16} />
             Профиль заведения
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 rounded-lg text-sm cursor-not-allowed"
+            title="Скоро"
+            disabled
+          >
             <Database size={16} />
             База знаний
+            <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">скоро</span>
           </button>
           <button 
             onClick={() => setCurrentPage('integrations')}
@@ -581,9 +612,16 @@ function App() {
             <BarChart3 size={16} />
             BI Dashboard
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm transition-colors">
-            <Settings size={16} />
-            Настройки
+          <button
+            onClick={() => setCurrentPage('pricing')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === 'pricing'
+                ? 'bg-emerald-600/10 text-emerald-500'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            <Zap size={16} />
+            Тарифы
           </button>
         </div>
       </div>
@@ -604,11 +642,26 @@ function App() {
 
         {/* Content based on current page */}
         {currentPage === 'profile' ? (
-          <VenueProfile userId={USER_ID} onBack={() => setCurrentPage('chat')} />
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <VenueProfile userId={USER_ID} onBack={() => setCurrentPage('chat')} />
+          </Suspense>
         ) : currentPage === 'integrations' ? (
-          <Integrations userId={USER_ID} apiUrl={API_URL} />
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <Integrations userId={USER_ID} apiUrl={API_URL} />
+          </Suspense>
         ) : currentPage === 'bi' ? (
-          <BIDashboard userId={USER_ID} apiUrl={API_URL} />
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <BIDashboard userId={USER_ID} apiUrl={API_URL} />
+          </Suspense>
+        ) : currentPage === 'pricing' ? (
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <PricingPage
+              onBack={() => setCurrentPage('chat')}
+              onSelectPlan={(action) => {
+                if (action === 'referral') setShowReferralModal(true);
+              }}
+            />
+          </Suspense>
         ) : (
           <>
             {/* Chat Messages */}
@@ -714,6 +767,17 @@ function App() {
               </div>
             </div>
 
+            {/* Paywall Banner */}
+            {userPlan && (
+              <PaywallBanner
+                plan={userPlan.plan}
+                messagesRemaining={userPlan.messages_remaining}
+                messagesLimit={userPlan.messages_limit}
+                onUpgrade={() => toast('Оплата скоро будет доступна. Пока пользуйтесь реферальной программой!', 'info')}
+                onReferral={() => setShowReferralModal(true)}
+              />
+            )}
+
             {/* Input Area */}
             <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800">
               <div className="max-w-3xl mx-auto">
@@ -769,6 +833,12 @@ function App() {
           </>
         )}
       </div>
+
+      {/* Referral Modal */}
+      <ReferralModal
+        isOpen={showReferralModal}
+        onClose={() => setShowReferralModal(false)}
+      />
     </div>
   );
 }

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, ArrowLeft, Loader2, CheckCircle, FileText } from 'lucide-react';
 import axios from 'axios';
 import ResearchResults from './ResearchResults';
-
-const API_URL = process.env.REACT_APP_API_URL || 'https://receptor-preprod-production.up.railway.app/api';
+import { API_URL } from '../config';
 
 // Справочники
 const VENUE_TYPES = {
@@ -122,31 +121,43 @@ function VenueProfile({ userId, onBack }) {
     setResearchError('');
 
     try {
-      const response = await axios.post(`${API_URL}/venue/research/start`, {
+      await axios.post(`${API_URL}/venue/research/start`, {
         venue_name: profile.venue_name,
         city: profile.city,
         user_id: userId
       });
-      
-      console.log('Deep research started:', response.data);
-      
-      // Ждём 120 секунд и проверяем результат
-      setTimeout(async () => {
+
+      // Polling: проверяем каждые 10 секунд, максимум 3 минуты
+      const maxAttempts = 18;
+      let attempt = 0;
+
+      const pollInterval = setInterval(async () => {
+        attempt++;
         try {
           const checkResponse = await axios.get(`${API_URL}/venue/research/status/${userId}`);
           if (checkResponse.data.status === 'completed') {
+            clearInterval(pollInterval);
             setResearchDone(true);
             setResearchData(checkResponse.data);
-            console.log('Research completed:', checkResponse.data);
-          } else {
-            console.log('Research not ready yet:', checkResponse.data);
+            setResearching(false);
+          } else if (checkResponse.data.status === 'failed') {
+            clearInterval(pollInterval);
+            setResearchError('Исследование завершилось с ошибкой. Попробуйте ещё раз.');
+            setResearching(false);
+          } else if (attempt >= maxAttempts) {
+            clearInterval(pollInterval);
+            setResearchError('Исследование занимает слишком много времени. Обновите страницу позже.');
+            setResearching(false);
           }
         } catch (err) {
-          console.error('Research check error:', err);
+          if (attempt >= maxAttempts) {
+            clearInterval(pollInterval);
+            setResearchError('Не удалось проверить статус исследования');
+            setResearching(false);
+          }
         }
-        setResearching(false);
-      }, 120000); // 120 секунд (2 минуты)
-      
+      }, 10000);
+
     } catch (error) {
       console.error('Deep research error:', error);
       setResearchError('Ошибка при запуске исследования');
