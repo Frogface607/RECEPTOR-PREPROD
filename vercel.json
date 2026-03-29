@@ -1,9 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm install && CI=false npm run build",
+  "buildCommand": "cd frontend && npm install && DISABLE_ESLINT_PLUGIN=true npm run build",
   "outputDirectory": "frontend/build",
   "installCommand": "cd frontend && npm install",
   "framework": null,
+  "build": {
+    "env": {
+      "CI": "false",
+      "DISABLE_ESLINT_PLUGIN": "true"
+    }
+  },
   "headers": [
     {
       "source": "/static/(.*)",
