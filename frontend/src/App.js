@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Menu, Plus, ChefHat, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Copy, Mic, MicOff, BarChart3, Sparkles, Zap } from 'lucide-react';
+import { Send, Menu, Plus, ChefHat, Loader2, Store, Link2, MessageSquare, Trash2, Search, Star, Download, Edit2, X, Check, Copy, Mic, MicOff, BarChart3, Sparkles, Zap, Settings } from 'lucide-react';
 import axios from 'axios';
 import { ToastContainer, toast } from './components/Toast';
 import { API_URL, USER_ID } from './config';
