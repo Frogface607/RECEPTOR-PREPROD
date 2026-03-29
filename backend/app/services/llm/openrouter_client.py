@@ -8,37 +8,37 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Конфигурация моделей через OpenRouter (лучшие для каждой задачи)
+# Конфигурация моделей через OpenRouter (лучшие для каждой задачи, актуально 2026)
 OPENROUTER_MODELS = {
     "simple": {
-        "model": "openai/gpt-4o-mini",  # Дешёвый и быстрый
+        "model": "anthropic/claude-haiku-4-5-20251001",  # Быстрый и дешёвый
         "description": "Простые запросы, поиск, короткие ответы",
-        "cost_per_1k_input": 0.00015,
-        "cost_per_1k_output": 0.0006,
+        "cost_per_1k_input": 0.0008,
+        "cost_per_1k_output": 0.004,
     },
     "standard": {
-        "model": "openai/gpt-4o",  # Баланс цена/качество
+        "model": "anthropic/claude-sonnet-4-6",  # Баланс цена/качество
         "description": "Рецепты, советы, средняя сложность",
-        "cost_per_1k_input": 0.0025,
-        "cost_per_1k_output": 0.01,
+        "cost_per_1k_input": 0.003,
+        "cost_per_1k_output": 0.015,
     },
     "advanced": {
-        "model": "anthropic/claude-3.5-sonnet",  # Лучший для генерации контента
+        "model": "anthropic/claude-sonnet-4-6",  # Лучший для генерации контента
         "description": "Техкарты, детальная генерация, анализ",
         "cost_per_1k_input": 0.003,
         "cost_per_1k_output": 0.015,
     },
     "reasoning": {
-        "model": "openai/o3-mini",  # Лучший reasoning
+        "model": "anthropic/claude-opus-4-6",  # Лучший reasoning
         "description": "Глубокий анализ, стратегия, бизнес-модели",
-        "cost_per_1k_input": 0.01,
-        "cost_per_1k_output": 0.04,
+        "cost_per_1k_input": 0.015,
+        "cost_per_1k_output": 0.075,
     },
     "expert": {
-        "model": "anthropic/claude-3.5-sonnet",  # Флагман для сложных задач
+        "model": "anthropic/claude-opus-4-6",  # Флагман для сложных задач
         "description": "Максимум интеллекта, сложные цепочки",
-        "cost_per_1k_input": 0.003,
-        "cost_per_1k_output": 0.015,
+        "cost_per_1k_input": 0.015,
+        "cost_per_1k_output": 0.075,
     }
 }
 
