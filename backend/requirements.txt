@@ -15,6 +15,7 @@ requests
 pyiikocloudapi
 pymongo
 cryptography
+yookassa
 fuzzywuzzy
 python-levenshtein
 

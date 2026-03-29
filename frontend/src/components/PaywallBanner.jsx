@@ -52,7 +52,7 @@ function PaywallBanner({ plan, messagesRemaining, messagesLimit, onUpgrade, onRe
             className="flex items-center gap-1.5 px-4 py-1.5 text-sm bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white rounded-lg transition-all shadow-lg shadow-emerald-500/20 font-medium"
           >
             <Crown size={14} />
-            Pro за 6 990₽/мес
+            Starter за 990₽/мес
           </button>
         </div>
       </div>
