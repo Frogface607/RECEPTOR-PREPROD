@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, Play, Loader2, Copy, Check, Lock, Crown } from 'lucide-react';
+import { ArrowLeft, Play, Loader2, Copy, Check, Crown } from 'lucide-react';
 import axios from 'axios';
 import { API_URL, USER_ID } from '../config';
 import { getToolById, CATEGORIES } from '../data/tools-catalog';

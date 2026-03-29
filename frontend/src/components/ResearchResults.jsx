@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { toast } from './Toast';
-import { 
-  Download, 
-  TrendingUp, 
-  TrendingDown, 
-  Award, 
-  AlertCircle,
+import {
+  Download,
+  TrendingUp,
+  TrendingDown,
   DollarSign,
   Users,
   Star,
