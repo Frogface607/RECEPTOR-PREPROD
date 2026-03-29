@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import {
-    BarChart3, TrendingUp, DollarSign, Package,
-    Loader2, RefreshCw, Calendar, Filter,
-    AlertCircle, CheckCircle2, XCircle, Download
+    BarChart3, TrendingUp, Package,
+    RefreshCw, Calendar,
+    AlertCircle, XCircle, Download
 } from 'lucide-react';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -18,15 +18,15 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
     // Данные для дашбордов
     const [dishStatistics, setDishStatistics] = useState(null);
     const [revenue, setRevenue] = useState(null);
-    const [salesReport, setSalesReport] = useState(null);
+    const [, setSalesReport] = useState(null);
     const [shiftsReport, setShiftsReport] = useState(null);
     
     // Фильтры
     const [periodType, setPeriodType] = useState('LAST_MONTH');
     const [topN, setTopN] = useState(10);
     const [activeTab, setActiveTab] = useState('overview'); // 'overview' или 'shifts'
-    const [customDateFrom, setCustomDateFrom] = useState(null);
-    const [customDateTo, setCustomDateTo] = useState(null);
+    const [customDateFrom] = useState(null);
+    const [customDateTo] = useState(null);
     
     // Статус подключения
     const [rmsStatus, setRmsStatus] = useState(null);
@@ -105,6 +105,7 @@ function BIDashboard({ userId, apiUrl = API_URL }) {
         }
     };
     
+    // eslint-disable-next-line no-unused-vars
     const loadAllDataWithDates = async (dateFrom, dateTo) => {
         setLoading(true);
         setError(null);

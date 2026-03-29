@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-    Cloud, Server, CheckCircle2, XCircle, Loader2, 
-    RefreshCw, Eye, EyeOff, Unlink, Database, 
-    Building2, Wifi, WifiOff, AlertCircle, ChevronDown
+import {
+    Cloud, Server, CheckCircle2, Loader2,
+    RefreshCw, Eye, EyeOff, Unlink, Database,
+    Building2, Wifi, WifiOff, AlertCircle
 } from 'lucide-react';
 
 function Integrations({ userId, apiUrl }) {

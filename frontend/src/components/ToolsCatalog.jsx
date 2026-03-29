@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChefHat, Users, Megaphone, BarChart3, UserPlus, Shield, Search, Zap, Crown, Lock } from 'lucide-react';
+import { ChefHat, Users, Megaphone, BarChart3, UserPlus, Shield, Search, Zap, Lock } from 'lucide-react';
 import { CATEGORIES, TOOLS, getToolsByCategory } from '../data/tools-catalog';
 
 const ICON_MAP = {

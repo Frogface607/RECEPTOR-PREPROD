@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Check, X, Zap, Gift, ArrowLeft } from 'lucide-react';
+import { Check, X, Gift, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { API_URL, USER_ID } from '../config';
 import { toast } from './Toast';
@@ -19,7 +19,7 @@ const PLAN_FEATURES = [
 
 function PricingPage({ onBack, onSelectPlan }) {
   const [currentPlan, setCurrentPlan] = useState('free');
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     loadCurrentPlan();
