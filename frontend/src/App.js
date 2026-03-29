@@ -13,6 +13,8 @@ const VenueProfile = lazy(() => import('./components/VenueProfile'));
 const Integrations = lazy(() => import('./components/Integrations'));
 const BIDashboard = lazy(() => import('./components/BIDashboard'));
 const PricingPage = lazy(() => import('./components/PricingPage'));
+const ToolsCatalog = lazy(() => import('./components/ToolsCatalog'));
+const ToolRunner = lazy(() => import('./components/ToolRunner'));
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
@@ -26,7 +28,8 @@ const WELCOME_MESSAGE = {
 };
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('chat');
+  const [currentPage, setCurrentPage] = useState('tools');  // Default to tools catalog
+  const [selectedToolId, setSelectedToolId] = useState(null);
   const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -582,13 +585,16 @@ function App() {
             Профиль заведения
           </button>
           <button
-            className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 rounded-lg text-sm cursor-not-allowed"
-            title="Скоро"
-            disabled
+            onClick={() => { setCurrentPage('tools'); setSelectedToolId(null); }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === 'tools' || currentPage === 'tool-run'
+                ? 'bg-emerald-600/10 text-emerald-500'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
           >
-            <Database size={16} />
-            База знаний
-            <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">скоро</span>
+            <Sparkles size={16} />
+            Инструменты
+            <span className="ml-auto text-[10px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">{20}</span>
           </button>
           <button 
             onClick={() => setCurrentPage('integrations')}
@@ -661,6 +667,14 @@ function App() {
                 if (action === 'referral') setShowReferralModal(true);
               }}
             />
+          </Suspense>
+        ) : currentPage === 'tools' ? (
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <ToolsCatalog onSelectTool={(id) => { setSelectedToolId(id); setCurrentPage('tool-run'); }} />
+          </Suspense>
+        ) : currentPage === 'tool-run' && selectedToolId ? (
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+            <ToolRunner toolId={selectedToolId} onBack={() => { setCurrentPage('tools'); setSelectedToolId(null); }} />
           </Suspense>
         ) : (
           <>
