@@ -5,15 +5,16 @@ import { API_URL, USER_ID } from '../config';
 import { toast } from './Toast';
 
 const PLAN_FEATURES = [
-  { name: 'AI-чат с контекстом заведения', free: '10 сообщений/день', pro: 'Безлимитно', enterprise: 'Безлимитно' },
-  { name: 'Интеграция iiko (Cloud + RMS)', free: true, pro: true, enterprise: true },
-  { name: 'Поиск по номенклатуре', free: true, pro: true, enterprise: true },
-  { name: 'Профиль заведения', free: true, pro: true, enterprise: true },
-  { name: 'Deep Research (конкурентный анализ)', free: false, pro: '5/месяц', enterprise: 'Безлимитно' },
-  { name: 'BI Dashboard', free: true, pro: true, enterprise: true },
-  { name: 'Экспорт данных (CSV)', free: false, pro: true, enterprise: true },
-  { name: 'Приоритетная поддержка', free: false, pro: false, enterprise: true },
-  { name: 'API доступ', free: false, pro: false, enterprise: true },
+  { name: 'AI-инструменты', free: '5/день', starter: 'Безлимитно', business: 'Безлимитно', pro: 'Безлимитно' },
+  { name: 'AI-чат с контекстом', free: '5 сообщений/день', starter: 'Безлимитно', business: 'Безлимитно', pro: 'Безлимитно' },
+  { name: 'Профиль заведения', free: true, starter: true, business: true, pro: true },
+  { name: 'Deep Research (SWOT)', free: false, starter: '2/мес', business: '5/мес', pro: 'Безлимитно' },
+  { name: 'Экспорт данных (CSV)', free: false, starter: true, business: true, pro: true },
+  { name: 'Управление меню', free: false, starter: false, business: true, pro: true },
+  { name: 'Управление персоналом', free: false, starter: false, business: true, pro: true },
+  { name: 'Обучение сотрудников', free: false, starter: false, business: true, pro: true },
+  { name: 'Интеграция iiko', free: false, starter: false, business: false, pro: true },
+  { name: 'BI Dashboard + ABC-анализ', free: false, starter: false, business: false, pro: true },
 ];
 
 function PricingPage({ onBack, onSelectPlan }) {
@@ -44,33 +45,36 @@ function PricingPage({ onBack, onSelectPlan }) {
   const plans = [
     {
       key: 'free',
-      name: 'Starter',
+      name: 'Free',
       price: '0',
       period: '',
-      description: 'Попробуйте RECEPTOR бесплатно',
+      description: 'Попробуйте RECEPTOR',
       color: 'gray',
-      gradient: 'from-gray-700 to-gray-800',
-      badge: null,
     },
     {
-      key: 'pro',
-      name: 'Professional',
-      price: '6 990',
+      key: 'starter',
+      name: 'Starter',
+      price: '990',
       period: '₽/мес',
-      description: 'Для активных рестораторов',
+      description: 'Все инструменты без ограничений',
       color: 'emerald',
-      gradient: 'from-emerald-600 to-emerald-700',
+    },
+    {
+      key: 'business',
+      name: 'Business',
+      price: '2 990',
+      period: '₽/мес',
+      description: 'Управление командой и заведением',
+      color: 'blue',
       badge: 'Популярный',
     },
     {
-      key: 'enterprise',
-      name: 'Enterprise',
-      price: '14 990',
+      key: 'pro',
+      name: 'Pro',
+      price: '5 990',
       period: '₽/мес',
-      description: 'Для сетей и холдингов',
+      description: 'iiko, аналитика, всё без ограничений',
       color: 'purple',
-      gradient: 'from-purple-600 to-purple-700',
-      badge: null,
     },
   ];
 
@@ -114,7 +118,7 @@ function PricingPage({ onBack, onSelectPlan }) {
             <div
               key={plan.key}
               className={`relative bg-gray-900 border rounded-2xl p-6 flex flex-col ${
-                plan.key === 'pro'
+                plan.badge
                   ? 'border-emerald-500/50 shadow-lg shadow-emerald-500/10 scale-105'
                   : 'border-gray-700'
               }`}
@@ -134,16 +138,24 @@ function PricingPage({ onBack, onSelectPlan }) {
               </div>
 
               <button
-                onClick={() => {
-                  if (plan.key === currentPlan) return;
-                  if (plan.key === 'free') return;
-                  toast('Оплата скоро будет доступна. Пока используйте реферальную программу!', 'info');
+                onClick={async () => {
+                  if (plan.key === currentPlan || plan.key === 'free') return;
+                  try {
+                    const res = await axios.post(`${API_URL}/billing/pay`, {
+                      user_id: USER_ID, plan: plan.key
+                    });
+                    if (res.data.confirmation_url) {
+                      window.location.href = res.data.confirmation_url;
+                    }
+                  } catch (err) {
+                    toast(err.response?.data?.detail || 'Ошибка создания платежа', 'error');
+                  }
                 }}
                 disabled={plan.key === currentPlan}
                 className={`w-full py-3 rounded-xl font-semibold text-sm transition-all mb-6 ${
                   plan.key === currentPlan
                     ? 'bg-gray-800 text-gray-500 cursor-default'
-                    : plan.key === 'pro'
+                    : plan.badge
                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-500 hover:to-emerald-600 shadow-lg shadow-emerald-500/20'
                       : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-700'
                 }`}

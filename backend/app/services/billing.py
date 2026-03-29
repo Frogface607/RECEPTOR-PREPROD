@@ -19,25 +19,40 @@ REFERRALS_COLLECTION = "referrals"
 
 PLANS = {
     "free": {
-        "name": "Starter",
-        "messages_per_day": 10,
+        "name": "Free",
+        "messages_per_day": 5,
         "deep_research_per_month": 0,
         "bi_export": False,
+        "staff_management": False,
+        "iiko_integration": False,
         "price_rub": 0,
     },
-    "pro": {
-        "name": "Professional",
+    "starter": {
+        "name": "Starter",
         "messages_per_day": -1,  # unlimited
+        "deep_research_per_month": 2,
+        "bi_export": True,
+        "staff_management": False,
+        "iiko_integration": False,
+        "price_rub": 990,
+    },
+    "business": {
+        "name": "Business",
+        "messages_per_day": -1,
         "deep_research_per_month": 5,
         "bi_export": True,
-        "price_rub": 6990,
+        "staff_management": True,
+        "iiko_integration": False,
+        "price_rub": 2990,
     },
-    "enterprise": {
-        "name": "Enterprise",
+    "pro": {
+        "name": "Pro",
         "messages_per_day": -1,
         "deep_research_per_month": -1,
         "bi_export": True,
-        "price_rub": 14990,
+        "staff_management": True,
+        "iiko_integration": True,
+        "price_rub": 5990,
     },
 }
 
