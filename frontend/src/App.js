@@ -594,7 +594,7 @@ function App() {
           >
             <Sparkles size={16} />
             Инструменты
-            <span className="ml-auto text-[10px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">{20}</span>
+            <span className="ml-auto text-[10px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">30</span>
           </button>
           <button 
             onClick={() => setCurrentPage('integrations')}
