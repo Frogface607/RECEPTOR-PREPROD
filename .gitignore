@@ -1,86 +1,49 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# IDE and editors
-.idea/
-.vscode/
-
-# Dependencies
-node_modules/
+# dependencies
 /node_modules
 /.pnp
-.pnp.js
-.yarn/install-state.gz
+.pnp.*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# Testing
+# testing
 /coverage
 
-# Next.js
+# next.js
 /.next/
 /out/
-next-env.d.ts
-*.tsbuildinfo
 
-# Production builds
+# production
 /build
-dist/
-dist
 
-# Environment files (comprehensive coverage)
+# misc
+.DS_Store
+*.pem
 
-*token.json*
-*credentials.json*
-
-# Logs and debug files
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-dump.rdb
 
-# System files
-.DS_Store
-*.pem
+# env files (can opt-in for committing if needed)
+.env*
+!.env*.example
 
-# Python
-__pycache__/
-*pyc*
-venv/
-.venv/
-
-# Development tools
-chainlit.md
-.chainlit
-.ipynb_checkpoints/
-.ac
-
-# Deployment
+# vercel
 .vercel
 
-# Data and databases
-agenthub/agents/youtube/db
+# editors
+.idea/
+.vscode/
 
-# Archive files and large assets
-**/*.zip
-**/*.tar.gz
-**/*.tar
-**/*.tgz
-*.pack
-*.deb
-*.dylib
+# test coverage
+/coverage
 
-# Build caches
-.cache/
-
-# Mobile development
-android-sdk/
-
-# Environment files
-*.env
-*.env.*
-!*.env.example
-!*.env.production
+# typescript
+*.tsbuildinfo
+next-env.d.ts

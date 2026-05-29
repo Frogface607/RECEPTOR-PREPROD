@@ -1,75 +1,73 @@
-# RECEPTOR CO-PILOT
+# Receptor v2
 
-AI-powered restaurant management copilot with deep iiko integration.
+AI-копайлот владельца ресторана. Подключение к iiko (Cloud + RMS) → BI dashboard + AI-чат с tool-calling над OLAP данными.
 
-## What is RECEPTOR?
+**Status:** Phase 0 (scaffold) → mock-first build. Live: [receptorai.pro](https://www.receptorai.pro).
 
-RECEPTOR helps restaurant owners and managers optimize their operations through AI — from menu engineering and tech card generation to sales analytics and competitive intelligence. Natively integrated with iiko POS (Cloud API + RMS Server).
+## Stack
 
-### Key Features
+- **Next.js 16** (App Router, Turbopack) · React 19 · TypeScript 5 · Tailwind 4
+- **shadcn/ui** (`base-nova` style, `@base-ui/react`) · Recharts 3 · lucide-react
+- **Supabase** (Auth + Postgres) — keys arrive after 31 May 2026
+- **Anthropic Claude** (tool-calling) + OpenRouter (fallback)
+- **Vitest** + Testing Library (jsdom)
+- **Vercel** deploy → `receptorai.pro`
 
-- **AI Chat** — Conversational interface for all restaurant operations. Ask about revenue, search products, get recommendations
-- **iiko Integration** — Dual support: iikoCloud API + iiko RMS Server. Sync nomenclature, pull sales reports, manage organizations
-- **BI Dashboard** — Revenue analytics, top dishes, category breakdowns, shift reports. CSV export
-- **Deep Research** — Automated competitive analysis with SWOT, competitor benchmarking, market positioning
-- **Venue Profile** — Restaurant context that personalizes all AI responses
+## Repo layout
 
-## Tech Stack
+```
+src/
+├── app/                  Next.js App Router (routes + API routes)
+├── components/
+│   ├── ui/               shadcn primitives
+│   ├── dashboard/        KPI cards, charts (Phase 2)
+│   ├── chat/             AI chat drawer (Phase 4)
+│   └── marketing/        Landing sections (Phase 2)
+└── lib/
+    ├── iiko/             iiko Cloud + RMS clients (Phase 1, port of v1 Python)
+    ├── db/               Supabase client + queries (Phase 3)
+    ├── mock/             Edison-shaped fixtures (Phase 1)
+    ├── ai/               Claude tool-calling (Phase 4)
+    ├── format.ts         RU number formatters (TDD ✓)
+    └── utils.ts          shadcn cn() helper
+docs/
+├── brand-guide.md        Receptor brand v2.0
+└── v1-iiko-reference/    Python clients to port → TypeScript
+```
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3.11, FastAPI, PyMongo |
-| Frontend | React 18, Tailwind CSS, Recharts |
-| Database | MongoDB |
-| AI/LLM | OpenAI, OpenRouter (multi-model routing) |
-| Search | Tavily (web), RAG (knowledge base) |
-| iiko | pyiikocloudapi, REST API |
-| Deploy | Vercel (frontend), Render (backend) |
-
-## Quick Start
-
-### Backend
+## Scripts
 
 ```bash
-cd backend
-cp .env.example .env  # Fill in your values
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+npm run dev         # next dev (Turbopack)
+npm run build       # next build (production)
+npm run start       # next start
+npm run lint        # eslint
+npm run typecheck   # tsc --noEmit
+npm test            # vitest run
+npm run test:watch  # vitest --watch
 ```
 
-### Frontend
+## Build phases
 
-```bash
-cd frontend
-cp .env.example .env.local  # Set REACT_APP_API_URL
-npm install
-npm start
-```
+See `D:\PROJECTS\FROGFACE-VAULT\canonical\plans\2026-05-30-receptor-build-kickoff.md`.
 
-### Environment Variables
+| Phase | Scope | Mode |
+|---|---|---|
+| 0 | Scaffold, tooling, v1 archive | ✅ |
+| 1 | Mock fixtures + iiko client port | TDD |
+| 2 | Landing + BI Dashboard | frontend-design |
+| 3 | Supabase Auth + onboarding + settings | frontend-design |
+| 4 | AI Chat + Claude tools | TDD + frontend-design |
+| 5 | Pricing + billing UI | frontend-design |
+| 6 | Polish + Михно demo | — |
 
-See `backend/.env.example` and `frontend/.env.example` for all required configuration.
+## Mock-first
 
-## Project Structure
+Until iiko keys arrive, `USE_MOCK_IIKO=true` makes `lib/iiko/client.ts` read from `lib/mock/`. Flip to `false` to use real clients with same interface. See `.env.local.example`.
 
-```
-├── backend/
-│   ├── app/
-│   │   ├── api/          # FastAPI routes (chat, iiko, venue, history)
-│   │   ├── core/         # Config, database, encryption
-│   │   └── services/     # Business logic (iiko, LLM, RAG, research)
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── config.js     # Centralized configuration
-│   │   └── App.js        # Main application
-│   └── package.json
-├── docs/archive/         # Historical documentation
-├── tests/legacy/         # Test scripts archive
-└── render.yaml           # Render deployment config
-```
+## v1 reference
 
-## License
+Полный inventory of v1 codebase (что работает / что выкинуть):
+`D:\PROJECTS\FROGFACE-VAULT\canonical\plans\2026-05-29-receptor-inventory-report.md`.
 
-Proprietary. All rights reserved.
+История v1 заморожена в ветке `legacy-v1`.
