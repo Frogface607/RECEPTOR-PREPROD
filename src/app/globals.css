@@ -4,12 +4,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ----------------------------------------------------------------------- */
+/* RECEPTOR design tokens                                                  */
+/*                                                                         */
+/* Premium Dark aesthetic — Linear / Vercel territory but with a warmer,   */
+/* restaurant-bar feel: emerald primary, signature serif-italic display    */
+/* moments, restrained accent palette per brand-guide.md.                  */
+/* ----------------------------------------------------------------------- */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-geist-sans);
+  /* `--font-display` (Cormorant Garamond) is exposed directly by next/font. */
+
+  /* shadcn token bridge */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -18,11 +30,13 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
+
   --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -39,6 +53,15 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Brand-tier accents — direct exposure to bg-/text-/border-* utilities */
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-iiko: var(--iiko);
+  --color-pro: var(--pro);
+  --color-ai: var(--ai);
+  --color-bi: var(--bi);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -48,6 +71,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Light theme — placeholder; product never renders this in v1. */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -55,23 +79,23 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.696 0.179 162.48);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.45 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.637 0.237 25.33);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --ring: oklch(0.696 0.179 162.48);
+  --chart-1: oklch(0.696 0.179 162.48);
+  --chart-2: oklch(0.715 0.144 215.21);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.624 0.214 259.86);
+  --chart-5: oklch(0.606 0.25 292.71);
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -80,51 +104,90 @@
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.696 0.179 162.48);
+
+  --brand: oklch(0.696 0.179 162.48);
+  --brand-hover: oklch(0.765 0.177 163.22);
+  --iiko: oklch(0.715 0.144 215.21);
+  --pro: oklch(0.769 0.188 70.08);
+  --ai: oklch(0.606 0.25 292.71);
+  --bi: oklch(0.624 0.214 259.86);
 }
 
+/* Dark theme — the canonical Receptor surface. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  /* Neutral scale (zinc-tuned, slightly cooler than pure black) */
+  --background: oklch(0.145 0 0);              /* #0a0a0a */
+  --foreground: oklch(0.985 0 0);              /* #fafafa */
+
+  --card: oklch(0.198 0 0);                    /* subtle elevation */
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.18 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+
+  --secondary: oklch(0.245 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.62 0 0);
+  --accent: oklch(0.255 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
+
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+
+  /* Brand emerald — primary, CTAs, success */
+  --primary: oklch(0.696 0.179 162.48);        /* emerald-500 #10b981 */
+  --primary-foreground: oklch(0.145 0 0);
+  --ring: oklch(0.696 0.179 162.48);
+  --brand: oklch(0.696 0.179 162.48);
+  --brand-hover: oklch(0.765 0.177 163.22);
+
+  /* Functional accents — restrained, only where they earn their place */
+  --iiko: oklch(0.715 0.144 215.21);           /* cyan-500 — iiko surface */
+  --pro: oklch(0.769 0.188 70.08);             /* amber-500 — Pro badge */
+  --ai: oklch(0.606 0.25 292.71);              /* purple-500 — AI chat */
+  --bi: oklch(0.624 0.214 259.86);             /* blue-500 — analytics */
+  --destructive: oklch(0.637 0.237 25.33);     /* red-500 — errors */
+
+  /* Recharts palette — brand emerald leads, supporting accents follow */
+  --chart-1: oklch(0.696 0.179 162.48);        /* emerald (revenue) */
+  --chart-2: oklch(0.715 0.144 215.21);        /* cyan (iiko / beer) */
+  --chart-3: oklch(0.769 0.188 70.08);         /* amber (cocktails / Pro) */
+  --chart-4: oklch(0.624 0.214 259.86);        /* blue (snacks) */
+  --chart-5: oklch(0.606 0.25 292.71);         /* purple (desserts) */
+
+  /* Sidebar — slightly deeper than app background to anchor nav */
+  --sidebar: oklch(0.12 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-primary: oklch(0.696 0.179 162.48);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.22 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.696 0.179 162.48);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11"; /* Geist refined alternates */
+  }
+  /* Lining-tabular numbers for KPI cards, charts, tables */
+  .numeric {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum", "lnum";
+  }
+  /* Display moments — hero tagline, brand name, editorial pull-quotes */
+  .font-display {
+    font-family: var(--font-display), Georgia, serif;
+    font-feature-settings: "ss01", "liga", "kern";
+    letter-spacing: -0.01em;
   }
 }
