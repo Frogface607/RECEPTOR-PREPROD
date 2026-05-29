@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { ChatDrawer } from "@/components/chat/chat-drawer";
 import { getVenue } from "@/lib/venues/get-venue";
 
 export default async function DashboardLayout({
@@ -17,6 +18,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen">
       <DashboardSidebar activeHref={`/dashboard/${venueId}`} />
       <div className="flex-1 min-w-0 flex flex-col">{children}</div>
+      <ChatDrawer venueId={venue.id} venueName={venue.name} />
     </div>
   );
 }

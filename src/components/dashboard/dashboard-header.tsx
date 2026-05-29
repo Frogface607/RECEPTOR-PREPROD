@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Download, Sparkles } from "lucide-react";
 import { PeriodSelector } from "./period-selector";
 import type { ResolvedVenue } from "@/lib/venues/get-venue";
@@ -11,6 +12,7 @@ export function DashboardHeader({
   period: PeriodType;
 }) {
   const exportHref = `/api/export/dishes?venueId=${venue.id}&period=${period}`;
+  const chatHref = `/dashboard/${venue.id}?period=${period}&chat=1`;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-background/85 backdrop-blur-xl">
@@ -37,13 +39,15 @@ export function DashboardHeader({
             Экспорт CSV
           </a>
 
-          <button
-            type="button"
+          <Link
+            href={chatHref}
+            scroll={false}
+            replace
             className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
           >
             <Sparkles className="size-4" />
             Спросить Receptor
-          </button>
+          </Link>
         </div>
       </div>
     </header>
