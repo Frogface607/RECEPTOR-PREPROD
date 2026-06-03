@@ -14,17 +14,35 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="ml-auto flex items-center gap-7 text-sm text-muted-foreground">
-          <Link href="/#что-делает" className="transition-colors hover:text-foreground">
+        <nav className="ml-auto flex items-center gap-5 text-sm text-muted-foreground sm:gap-7">
+          <Link
+            href="/#что-делает"
+            className="hidden transition-colors hover:text-foreground md:inline"
+          >
             Что делает
           </Link>
-          <Link href="/#цены" className="transition-colors hover:text-foreground">
+          <Link
+            href="/tools"
+            className="hidden transition-colors hover:text-foreground md:inline"
+          >
+            Инструменты
+          </Link>
+          <Link
+            href="/#цены"
+            className="hidden transition-colors hover:text-foreground sm:inline"
+          >
             Цены
           </Link>
-          <Link href="/dashboard/edison-demo" className="transition-colors hover:text-foreground">
+          <Link
+            href="/dashboard/edison-demo"
+            className="transition-colors hover:text-foreground"
+          >
             Демо
           </Link>
-          <Link href="/auth" className="transition-colors hover:text-foreground hidden sm:inline">
+          <Link
+            href="/auth"
+            className="hidden transition-colors hover:text-foreground sm:inline"
+          >
             Войти
           </Link>
           <LinkButton
@@ -32,7 +50,8 @@ export function SiteHeader() {
             size="sm"
             className="bg-brand text-primary-foreground hover:bg-brand-hover"
           >
-            Начать бесплатно
+            <span className="hidden sm:inline">Начать бесплатно</span>
+            <span className="sm:hidden">Начать</span>
           </LinkButton>
         </nav>
       </div>

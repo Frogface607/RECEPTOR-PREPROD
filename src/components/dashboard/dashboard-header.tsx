@@ -15,14 +15,16 @@ export function DashboardHeader({
   const chatHref = `/dashboard/${venue.id}?period=${period}&chat=1`;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/40 bg-background/85 backdrop-blur-xl">
-      <div className="flex h-16 items-center gap-4 px-6 lg:px-10">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-[15px] font-medium text-foreground">{venue.name}</h1>
-          <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+    <header className="static z-30 border-b border-border/40 bg-background/85 backdrop-blur-xl lg:sticky lg:top-0">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6 lg:h-16 lg:flex-nowrap lg:py-0 lg:px-10">
+        <div className="flex min-w-0 items-baseline gap-2 sm:gap-3">
+          <h1 className="truncate text-[15px] font-medium text-foreground">
+            {venue.name}
+          </h1>
+          <span className="whitespace-nowrap text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             {venue.city} · {venue.type === "bar" ? "Бар" : venue.type}
           </span>
-          <span className="hidden font-mono text-[10px] uppercase tracking-widest text-[color:var(--iiko)] md:inline">
+          <span className="hidden whitespace-nowrap font-mono text-[10px] uppercase tracking-widest text-[color:var(--iiko)] md:inline">
             · iiko {venue.iiko.channel === "cloud" ? "Cloud" : "RMS"} connected
           </span>
         </div>
@@ -34,19 +36,21 @@ export function DashboardHeader({
             href={exportHref}
             download
             className="hidden md:inline-flex items-center gap-2 rounded-lg border border-border/60 bg-card/60 px-3.5 py-2 text-sm text-foreground transition-colors hover:bg-card"
+            aria-label="Экспорт CSV"
           >
             <Download className="size-4 text-muted-foreground" />
-            Экспорт CSV
+            <span className="hidden lg:inline">Экспорт CSV</span>
           </a>
 
           <Link
             href={chatHref}
             scroll={false}
             replace
-            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover sm:px-4"
           >
             <Sparkles className="size-4" />
-            Спросить Receptor
+            <span className="hidden sm:inline">Спросить Receptor</span>
+            <span className="sm:hidden">Receptor</span>
           </Link>
         </div>
       </div>
