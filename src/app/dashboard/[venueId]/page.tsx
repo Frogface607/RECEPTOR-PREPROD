@@ -10,14 +10,7 @@ import {
   parsePeriodSearchParams,
   PERIOD_LABELS_RU,
 } from "@/lib/venues/period";
-import { getIikoClient } from "@/lib/iiko/client";
-
-/**
- * Dashboard "today" anchor.
- * Phase 0–3: deterministic 2026-05-29 for stable demos and screenshots.
- * Phase 4+: read from the server clock once real iiko credentials land.
- */
-const ANCHOR = "2026-05-29";
+import { getDashboardClient, resolveIikoClientConfig } from "@/lib/iiko/config";
 
 export default async function DashboardPage({
   params,
@@ -32,12 +25,14 @@ export default async function DashboardPage({
 
   const period = parsePeriodSearchParams(sp);
 
-  const client = getIikoClient({
-    channel: "cloud",
-    apiLogin: "",
-    organizationId: venue.iiko.organizationId,
-    today: ANCHOR,
-  });
+  // Mock (deterministic Edison fixtures) or real Cloud, decided by env.
+  // Flipping USE_MOCK_IIKO=false + pasting apiLogin is the only change needed.
+  const client = getDashboardClient(venue);
+  const cfg = resolveIikoClientConfig(
+    venue,
+    process.env,
+    new Date().toISOString().slice(0, 10),
+  );
 
   const [summary, dishes, categories, shifts] = await Promise.all([
     client.getRevenueSummary(period),
@@ -98,7 +93,10 @@ export default async function DashboardPage({
         </div>
 
         <p className="mt-12 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          Receptor v2 · USE_MOCK_IIKO=true · anchor {ANCHOR}
+          Receptor v2 ·{" "}
+          {cfg.mode === "real"
+            ? "live iiko Cloud"
+            : `демо-данные · anchor ${cfg.today}`}
         </p>
       </main>
     </>

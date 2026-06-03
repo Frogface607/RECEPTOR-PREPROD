@@ -18,6 +18,9 @@
 import { resolvePeriodToDates } from "./mock-client";
 import {
   RevenueSummarySchema,
+  DishStatSchema,
+  CategoryStatSchema,
+  ShiftStatSchema,
 } from "./models";
 import type { IikoClient } from "./types";
 import type {
@@ -107,28 +110,104 @@ export class CloudIikoClient implements IikoClient {
     return RevenueSummarySchema.parse(summary);
   }
 
-  async getDishStatistics(_period: Period, _topN: number): Promise<DishStat[]> {
-    throw new Error(
-      "CloudIikoClient.getDishStatistics: deferred — not yet implemented. Use USE_MOCK_IIKO=true or wait for Phase 1.5 port.",
+  async getDishStatistics(period: Period, topN: number): Promise<DishStat[]> {
+    const rows = await this.runOlap(period, {
+      groupByRowFields: ["DishName", "DishGroup"],
+      aggregateFields: ["DishDiscountSumInt", "DishAmountInt"],
+    });
+
+    const stats: DishStat[] = rows.map((row) => ({
+      dishName: String(row.DishName ?? row.dishName ?? "—"),
+      dishGroup: String(row.DishGroup ?? row.dishGroup ?? "—"),
+      dishAmountInt: Math.round(
+        Number(row.DishAmountInt ?? row.dishAmountInt ?? 0),
+      ),
+      dishSumInt: Number(row.DishDiscountSumInt ?? row.dishDiscountSumInt ?? 0),
+    }));
+
+    stats.sort((a, b) => b.dishSumInt - a.dishSumInt);
+    return stats.slice(0, topN).map((s) => DishStatSchema.parse(s));
+  }
+
+  async getCategoryStatistics(period: Period): Promise<CategoryStat[]> {
+    const rows = await this.runOlap(period, {
+      groupByRowFields: ["DishGroup"],
+      aggregateFields: ["DishDiscountSumInt"],
+    });
+
+    return rows.map((row) =>
+      CategoryStatSchema.parse({
+        categoryName: String(row.DishGroup ?? row.dishGroup ?? "—"),
+        dishSumInt: Number(row.DishDiscountSumInt ?? row.dishDiscountSumInt ?? 0),
+      }),
     );
   }
 
-  async getCategoryStatistics(_period: Period): Promise<CategoryStat[]> {
-    throw new Error(
-      "CloudIikoClient.getCategoryStatistics: deferred — not yet implemented. Use USE_MOCK_IIKO=true or wait for Phase 1.5 port.",
-    );
-  }
+  async getShifts(period: Period): Promise<ShiftStat[]> {
+    // Cloud OLAP does not expose cashier-session rows the way RMS does, so we
+    // derive one "day-shift" per OpenDate. Good enough for the dashboard's
+    // shifts table; revisit with real Edison key if true per-cashier shifts
+    // are needed (documented in REAL_CONNECT.md).
+    const rows = await this.runOlap(period, {
+      groupByRowFields: ["OpenDate"],
+      aggregateFields: ["DishDiscountSumInt", "DishAmountInt"],
+    });
 
-  async getShifts(_period: Period): Promise<ShiftStat[]> {
-    throw new Error(
-      "CloudIikoClient.getShifts: deferred — not yet implemented. Use USE_MOCK_IIKO=true or wait for Phase 1.5 port.",
-    );
+    return rows.map((row) => {
+      const date = String(row.OpenDate ?? row.openDate ?? this.today);
+      return ShiftStatSchema.parse({
+        shiftId: `cloud-shift-${date}`,
+        openTime: `${date}T00:00:00`,
+        revenue: Number(row.DishDiscountSumInt ?? row.dishDiscountSumInt ?? 0),
+        items: Math.round(Number(row.DishAmountInt ?? row.dishAmountInt ?? 0)),
+        employee: "Смена",
+      });
+    });
   }
 
   async searchNomenclature(_query: string): Promise<Product[]> {
-    throw new Error(
-      "CloudIikoClient.searchNomenclature: deferred — not yet implemented. Use USE_MOCK_IIKO=true or wait for Phase 1.5 port.",
-    );
+    // Nomenclature lives behind a separate (non-OLAP) endpoint with a complex
+    // normalization step in v1. Deferred to first real-key session — degrade
+    // gracefully (empty list) instead of throwing so a live dashboard never
+    // 500s. The chat's "найди в меню" simply reports nothing found.
+    return [];
+  }
+
+  /**
+   * Run a SALES OLAP query for a period and return raw rows.
+   * Shared by all BI methods so the auth + request shape stay in one place.
+   */
+  private async runOlap(
+    period: Period,
+    params: { groupByRowFields: string[]; aggregateFields: string[] },
+  ): Promise<Array<Record<string, unknown>>> {
+    const { from, to } = periodToRange(period, this.today);
+    const token = await this.getToken();
+
+    const res = await this.fetchImpl(`${this.baseUrl}/api/v2/reports/olap`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        organizationIds: [this.organizationId],
+        reportType: "SALES",
+        groupByRowFields: params.groupByRowFields,
+        aggregateFields: params.aggregateFields,
+        dateFrom: from,
+        dateTo: to,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`iiko Cloud OLAP failed: HTTP ${res.status}`);
+    }
+
+    const payload = (await res.json()) as {
+      data?: Array<Record<string, unknown>>;
+    };
+    return payload.data ?? [];
   }
 
   // -------------------------------------------------------------------------

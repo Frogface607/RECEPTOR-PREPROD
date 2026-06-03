@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getIikoClient } from "@/lib/iiko/client";
+import { getDashboardClient } from "@/lib/iiko/config";
 import { getVenue } from "@/lib/venues/get-venue";
 import { runMockChatTurn } from "@/lib/ai/mock-chat";
-
-const ANCHOR = "2026-05-29";
 
 const BodySchema = z.object({
   venueId: z.string().min(1),
@@ -37,12 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "venue not found" }, { status: 404 });
   }
 
-  const iikoClient = getIikoClient({
-    channel: "cloud",
-    apiLogin: "",
-    organizationId: venue.iiko.organizationId,
-    today: ANCHOR,
-  });
+  const iikoClient = getDashboardClient(venue);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({

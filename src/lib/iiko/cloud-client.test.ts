@@ -179,18 +179,16 @@ describe("CloudIikoClient.getRevenueSummary", () => {
   });
 });
 
-describe("CloudIikoClient — methods deferred to post-31-May", () => {
-  test.each([
-    ["getDishStatistics", (c: CloudIikoClient) => c.getDishStatistics({ type: "TODAY" }, 10)],
-    ["getCategoryStatistics", (c: CloudIikoClient) => c.getCategoryStatistics({ type: "TODAY" })],
-    ["getShifts", (c: CloudIikoClient) => c.getShifts({ type: "TODAY" })],
-    ["searchNomenclature", (c: CloudIikoClient) => c.searchNomenclature("burger")],
-  ])("%s throws explicit deferral error", async (_label, call) => {
+// getDishStatistics / getCategoryStatistics / getShifts are now ported via
+// OLAP — see cloud-client.olap.test.ts. searchNomenclature degrades to an
+// empty list on Cloud (documented in REAL_CONNECT.md), no longer throws.
+describe("CloudIikoClient.searchNomenclature", () => {
+  test("returns empty list on Cloud (graceful deferral)", async () => {
     const client = new CloudIikoClient({
       apiLogin: API_LOGIN,
       organizationId: ORG_ID,
       today: ANCHOR,
     });
-    await expect(call(client)).rejects.toThrow(/not yet implemented|deferred/i);
+    await expect(client.searchNomenclature("burger")).resolves.toEqual([]);
   });
 });

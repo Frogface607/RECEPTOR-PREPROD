@@ -1,22 +1,17 @@
-import { getIikoClient } from "@/lib/iiko/client";
+import { MockIikoClient } from "@/lib/iiko/mock-client";
+import { DEMO_ANCHOR } from "@/lib/iiko/config";
 import { formatRubles, formatInteger } from "@/lib/format";
 
-const ANCHOR = "2026-05-29";
-
 /**
- * Server component — renders REAL numbers from `MockIikoClient` against
- * Edison fixtures. The same data layer that powers the dashboard.
+ * Server component — renders numbers from `MockIikoClient` against Edison
+ * fixtures. Always the demo dataset (this is a public marketing page),
+ * pinned to the shared DEMO_ANCHOR so it never drifts.
  *
  * Choice: showing actual product data on the landing builds more trust
  * than another mock screenshot.
  */
 export async function LiveSnapshot() {
-  const client = getIikoClient({
-    channel: "cloud",
-    apiLogin: "",
-    organizationId: "edison",
-    today: ANCHOR,
-  });
+  const client = new MockIikoClient({ today: DEMO_ANCHOR });
 
   const [summary, topDishes] = await Promise.all([
     client.getRevenueSummary({ type: "LAST_WEEK" }),
