@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getToolById } from "@/lib/tools/catalog";
-import { runToolMock, validateToolInput } from "@/lib/tools/mock-runner";
-import { runToolWithClaude, isAiConfigured } from "@/lib/tools/ai-runner";
+import { validateToolInput } from "@/lib/tools/mock-runner";
+import { executeTool } from "@/lib/tools/execute";
 
 export const runtime = "nodejs";
 
@@ -41,17 +41,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // Real Claude when configured; deterministic mock otherwise. Same response
-  // shape either way, so the UI is agnostic to which backend ran.
+  // Claude when configured; otherwise (or on any Claude failure) the
+  // deterministic mock. executeTool guarantees a usable result so the demo
+  // never shows a red API error.
   try {
-    const markdown = isAiConfigured()
-      ? await runToolWithClaude(tool, values)
-      : runToolMock(toolId, values);
-
-    return NextResponse.json(
-      { markdown, backend: isAiConfigured() ? "claude" : "mock" },
-      { status: 200, headers: { "Cache-Control": "no-store" } },
-    );
+    const result = await executeTool(tool, values);
+    return NextResponse.json(result, {
+      status: 200,
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "run failed" },
