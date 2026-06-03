@@ -76,14 +76,14 @@ export function NavContent({
       </nav>
 
       <div className="border-t border-border/40 px-3 py-4">
-        <Link
-          href="/auth?signout=1"
+        <a
+          href="/auth/signout"
           onClick={onNavigate}
           className="flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
         >
           <LogOut className="size-4 shrink-0" />
           <span>Выйти</span>
-        </Link>
+        </a>
       </div>
     </>
   );
