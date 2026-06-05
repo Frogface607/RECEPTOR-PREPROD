@@ -71,23 +71,25 @@ export function KpiGrid({
   ];
 
   return (
-    <div className="grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 xl:grid-cols-4">
       {items.map((k) => (
         <div
           key={k.label}
-          className="flex flex-col justify-between gap-6 bg-card/60 p-6 transition-colors hover:bg-card/95"
+          className="flex flex-col gap-3 bg-card/60 p-4 transition-colors hover:bg-card/95 sm:gap-5 sm:p-6"
         >
-          <div className="flex items-start justify-between">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px] sm:tracking-[0.2em]">
               {k.label}
             </p>
             <DeltaPill delta={k.delta} />
           </div>
           <div>
-            <p className="numeric font-display text-[40px] leading-none tracking-[-0.02em] text-foreground">
+            <p className="numeric font-display text-[clamp(1.5rem,6vw,2.5rem)] leading-none tracking-[-0.02em] text-foreground">
               {k.value}
             </p>
-            <p className="mt-3 text-[12px] text-muted-foreground">{k.hint}</p>
+            <p className="mt-2 text-[11px] text-muted-foreground sm:mt-3 sm:text-[12px]">
+              {k.hint}
+            </p>
           </div>
         </div>
       ))}

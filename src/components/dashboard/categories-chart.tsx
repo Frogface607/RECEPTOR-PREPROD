@@ -61,7 +61,7 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
 
       <div className="mt-6 grid items-center gap-6 lg:grid-cols-2">
         <div className="h-[260px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={categories}

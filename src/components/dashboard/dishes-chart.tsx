@@ -65,13 +65,13 @@ export function DishesChart({ dishes }: { dishes: Dish[] }) {
             По выручке
           </h3>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          MockIikoClient
+        <span className="hidden font-mono text-[10px] uppercase tracking-widest text-muted-foreground sm:inline">
+          iiko OLAP
         </span>
       </div>
 
       <div className="mt-6 h-[420px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart
             data={data}
             layout="vertical"

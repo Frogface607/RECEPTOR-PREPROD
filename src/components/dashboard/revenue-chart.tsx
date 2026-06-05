@@ -57,8 +57,8 @@ export function RevenueChart({ points }: { points: Point[] }) {
         </span>
       </div>
 
-      <div className="mt-6 h-[280px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="mt-6 h-[260px] w-full sm:h-[280px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <AreaChart
             data={points}
             margin={{ top: 8, right: 6, left: 0, bottom: 0 }}

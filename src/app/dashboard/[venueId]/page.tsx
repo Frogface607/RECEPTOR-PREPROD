@@ -92,12 +92,15 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        <p className="mt-12 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          Receptor v2 ·{" "}
-          {cfg.mode === "real"
-            ? "live iiko Cloud"
-            : `демо-данные · anchor ${cfg.today}`}
-        </p>
+        <div className="mt-12 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span
+            className={
+              "size-1.5 rounded-full " +
+              (cfg.mode === "real" ? "bg-brand" : "bg-[color:var(--pro)]")
+            }
+          />
+          {cfg.mode === "real" ? "Живые данные iiko Cloud" : "Демо-данные Edison"}
+        </div>
       </main>
     </>
   );
