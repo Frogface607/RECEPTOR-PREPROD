@@ -280,8 +280,11 @@ export default function PricingPage() {
                 Сравнение тарифов
               </h2>
             </div>
-            <div className="mt-10 overflow-x-auto rounded-2xl border border-border/60">
-              <table className="w-full text-left text-[14px]">
+            <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-muted-foreground sm:hidden">
+              ← листайте таблицу →
+            </p>
+            <div className="mt-4 overflow-x-auto rounded-2xl border border-border/60 sm:mt-10">
+              <table className="w-full min-w-[560px] text-left text-[14px]">
                 <thead>
                   <tr className="border-b border-border/50 bg-card/60 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                     <th className="px-6 py-4 font-normal">Возможность</th>
