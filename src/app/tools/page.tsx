@@ -31,7 +31,7 @@ export default function ToolsPage() {
               {TOOLS.length} инструментов.
               <br />
               Один клик —{" "}
-              <span className="font-display italic text-brand">
+              <span className="font-display italic text-brand glow-brand-soft">
                 готовый результат.
               </span>
             </h1>

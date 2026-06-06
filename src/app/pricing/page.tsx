@@ -117,7 +117,9 @@ export default function PricingPage() {
             </p>
             <h1 className="mt-6 text-balance text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1] tracking-[-0.025em]">
               Платите за{" "}
-              <span className="font-display italic text-brand">ответы.</span>
+              <span className="font-display italic text-brand glow-brand-soft">
+                ответы.
+              </span>
               <br />
               Не за{" "}
               <span className="font-display italic text-muted-foreground">

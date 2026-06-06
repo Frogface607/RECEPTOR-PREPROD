@@ -126,7 +126,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={
-        "rounded-full border px-3.5 py-1.5 text-[13px] transition-colors " +
+        "inline-flex min-h-[40px] items-center rounded-full border px-4 py-2 text-[13px] transition-colors " +
         (active
           ? "border-brand/50 bg-brand/10 text-brand"
           : "border-border/60 bg-card/40 text-muted-foreground hover:bg-card hover:text-foreground")
@@ -141,7 +141,7 @@ function ToolCard({ tool, accent }: { tool: Tool; accent: string }) {
   return (
     <Link
       href={`/tools/${tool.id}`}
-      className="group flex h-full flex-col rounded-2xl border border-border/60 bg-card/50 p-5 transition-all hover:border-brand/40 hover:bg-card/90"
+      className="press group flex h-full flex-col rounded-2xl border border-border/60 bg-card/50 p-5 transition-all hover:border-brand/40 hover:bg-card/90"
     >
       <div className="flex items-start justify-between">
         <span

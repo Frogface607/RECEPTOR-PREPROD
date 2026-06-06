@@ -34,7 +34,9 @@ export function Hero() {
           <h1 className="mt-8 text-balance text-[clamp(3rem,7vw,6.25rem)] font-medium leading-[0.95] tracking-[-0.03em]">
             Чувствует
             <br />
-            <span className="font-display italic text-brand">кухню.</span>
+            <span className="font-display italic text-brand glow-brand-soft">
+              кухню.
+            </span>
           </h1>
 
           <p className="mt-8 max-w-xl text-balance text-[17px] leading-[1.55] text-muted-foreground">
@@ -49,7 +51,7 @@ export function Hero() {
             <LinkButton
               href="/auth"
               size="lg"
-              className="h-12 bg-brand px-6 text-base text-primary-foreground hover:bg-brand-hover"
+              className="press h-12 bg-brand px-6 text-base text-primary-foreground shadow-[0_8px_40px_-12px_var(--brand)] transition-shadow hover:bg-brand-hover hover:shadow-[0_10px_48px_-10px_var(--brand)]"
             >
               Начать бесплатно
               <ArrowRight className="ml-1 size-4" />
@@ -58,7 +60,7 @@ export function Hero() {
               href="/dashboard/edison-demo"
               size="lg"
               variant="ghost"
-              className="h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
+              className="press h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
             >
               Смотреть демо на Edison
               <ArrowRight className="ml-1 size-4 opacity-60" />

@@ -197,6 +197,68 @@
     font-feature-settings: "ss01", "liga", "kern";
     letter-spacing: -0.01em;
   }
+
+  /* ---------------------------------------------------------------------- */
+  /* Accessibility — keyboard focus. One polished offset ring for every     */
+  /* interactive element, only on keyboard focus (:focus-visible), never on */
+  /* mouse click. Brand emerald ring with a dark gap so it reads on OLED.   */
+  /* ---------------------------------------------------------------------- */
+  :focus-visible {
+    outline: none;
+    border-radius: max(var(--radius-sm), 4px);
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px color-mix(in oklch, var(--ring) 85%, transparent);
+  }
+  /* Native form controls keep a tighter ring that hugs their own radius. */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px color-mix(in oklch, var(--ring) 70%, transparent);
+  }
+
+  /* Pointer affordance for non-native interactive elements. */
+  a[href],
+  button:not(:disabled),
+  summary,
+  [role="button"]:not([aria-disabled="true"]),
+  label[for] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  /* OLED "minimal glow" — signature emerald elements get a soft halo.
+     Subtle by design; the skill's Key Effect for premium dark UIs. */
+  .glow-brand {
+    text-shadow: 0 0 18px color-mix(in oklch, var(--brand) 45%, transparent);
+  }
+  .glow-brand-soft {
+    text-shadow: 0 0 24px color-mix(in oklch, var(--brand) 28%, transparent);
+  }
+
+  /* Tactile press — gentle scale on active for tappable cards/buttons.
+     Disabled under reduced-motion. */
+  .press {
+    transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .press {
+      transition: none;
+    }
+    .press:active {
+      transform: none;
+    }
+  }
 }
 
 /* ----------------------------------------------------------------------- */

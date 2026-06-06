@@ -57,7 +57,7 @@ export default async function DashboardPage({
             </p>
             <h2 className="mt-2 text-balance text-2xl font-medium leading-tight tracking-[-0.02em] sm:text-3xl">
               Что{" "}
-              <span className="font-display italic text-brand">
+              <span className="font-display italic text-brand glow-brand-soft">
                 Receptor видит
               </span>{" "}
               в зале сегодня
