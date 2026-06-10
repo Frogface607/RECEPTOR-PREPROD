@@ -77,24 +77,24 @@ export async function buildDailyBrief(
   const topCategory = categories.sort((a, b) => b.dishSumInt - a.dishSumInt)[0];
 
   const highlights = [
-    `Выручка ${periodTitle(period)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta)}.`,
+    `Деньги ${periodTitle(period)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta)}.`,
     topDish
-      ? `Лидер по блюдам: ${topDish.dishName} (${formatRubles(topDish.dishSumInt)}, ${formatInteger(topDish.dishAmountInt)} порций).`
+      ? `Главное блюдо периода: ${topDish.dishName} (${formatRubles(topDish.dishSumInt)}, ${formatInteger(topDish.dishAmountInt)} порций).`
       : "Нет данных по блюдам за период.",
     topCategory
-      ? `Главная категория: ${topCategory.categoryName} (${formatRubles(topCategory.dishSumInt)}).`
+      ? `Категория, которая держит выручку: ${topCategory.categoryName} (${formatRubles(topCategory.dishSumInt)}).`
       : "Нет данных по категориям за период.",
   ];
 
   const actions = [
     delta < 0
-      ? "Проверь смены и категории с просадкой: нужен быстрый разбор причины падения."
-      : "Закрепи рост: повтори условия сильного дня в расписании и промо.",
+      ? "Начни с просевших смен и категорий: найди, где потеряли деньги, а не просто констатируй падение."
+      : "Зафиксируй, что сработало: расписание, промо, погода, посадка, команда на смене.",
     topDish
-      ? `Поставь ${topDish.dishName} в фокус официантам и проверь наличие ингредиентов.`
+      ? `Дай официантам фокус на ${topDish.dishName} и проверь стоп-лист/заготовки до вечерней посадки.`
       : "Проверь корректность выгрузки блюд из iiko.",
     topCategory
-      ? `Посмотри маржинальность категории ${topCategory.categoryName}: лидерство по выручке не всегда равно прибыли.`
+      ? `Разбери маржинальность категории ${topCategory.categoryName}: высокая выручка не всегда означает прибыль.`
       : "Проверь категории меню и настройки номенклатуры.",
   ];
 

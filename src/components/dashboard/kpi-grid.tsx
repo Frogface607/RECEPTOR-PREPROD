@@ -63,10 +63,10 @@ export function KpiGrid({
       hint: "По всем сменам",
     },
     {
-      label: "Уникальных блюд",
+      label: "Блюд в продажах",
       value: formatInteger(uniqueDishes),
       delta: { value: "−2", direction: "down" },
-      hint: "Активный SKU",
+      hint: "Позиции с продажами",
     },
   ];
 

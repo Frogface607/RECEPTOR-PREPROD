@@ -46,7 +46,7 @@ export function DashboardHeader({
             className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover sm:px-4"
           >
             <MessageSquare className="size-4" />
-            <span className="hidden sm:inline">Спросить Receptor</span>
+            <span className="hidden sm:inline">Открыть Copilot</span>
             <span className="sm:hidden">Receptor</span>
           </Link>
         </div>

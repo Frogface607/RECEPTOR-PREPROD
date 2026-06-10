@@ -8,7 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Send, Sparkles, X, Wrench } from "lucide-react";
+import { Bot, Database, Send, X, Wrench } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -167,19 +167,20 @@ export function ChatDrawer({
     <Sheet open={isOpen} onOpenChange={setOpen}>
       <SheetContent
         side="right"
-        className="flex w-full flex-col gap-0 border-l border-border/60 bg-background p-0 sm:max-w-[480px]"
+        showCloseButton={false}
+        className="flex w-full flex-col gap-0 border-l border-border/60 bg-background p-0 data-[side=right]:sm:w-[min(100vw,820px)] data-[side=right]:sm:max-w-[820px]"
       >
-        <SheetHeader className="border-b border-border/40 px-5 py-4">
+        <SheetHeader className="border-b border-border/40 px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-brand/15 text-brand">
-              <Sparkles className="size-4" />
+            <div className="flex size-10 items-center justify-center rounded-lg border border-border/60 bg-card/50 text-brand">
+              <Bot className="size-5" />
             </div>
             <div className="flex flex-1 flex-col">
-              <SheetTitle className="text-[15px] font-medium tracking-tight">
-                Receptor
+              <SheetTitle className="text-[17px] font-medium tracking-[-0.01em]">
+                Copilot Receptor
               </SheetTitle>
-              <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                {venueName} · live data
+              <span className="mt-0.5 text-[12px] text-muted-foreground">
+                {venueName} · отвечает по выручке, блюдам, сменам и категориям
               </span>
             </div>
             <button
@@ -195,7 +196,7 @@ export function ChatDrawer({
 
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto px-5 py-6 space-y-6"
+          className="flex-1 space-y-6 overflow-y-auto px-5 py-6 sm:px-7"
         >
           {!hasConversation ? (
             <EmptyState onPick={send} />
@@ -206,9 +207,9 @@ export function ChatDrawer({
 
         <form
           onSubmit={handleSubmit}
-          className="border-t border-border/40 bg-background px-5 py-4"
+          className="border-t border-border/40 bg-background px-5 py-4 sm:px-7"
         >
-          <div className="flex items-end gap-2 rounded-xl border border-border/60 bg-card/80 p-2 focus-within:border-brand/50">
+          <div className="flex items-end gap-3 rounded-xl border border-border/60 bg-card/70 p-3 focus-within:border-brand/50">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -219,21 +220,21 @@ export function ChatDrawer({
                 }
               }}
               rows={1}
-              placeholder="Спроси про выручку, блюда, смены…"
+              placeholder="Например: почему выручка просела на прошлой неделе?"
               disabled={busy}
-              className="min-h-[36px] max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none disabled:opacity-60"
+              className="min-h-[44px] max-h-36 flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/65 focus:outline-none disabled:opacity-60"
             />
             <button
               type="submit"
               disabled={busy || !input.trim()}
-              className="inline-flex items-center justify-center rounded-lg bg-brand p-2 text-primary-foreground transition-colors hover:bg-brand-hover disabled:opacity-40"
+              className="inline-flex size-10 items-center justify-center rounded-lg bg-brand text-primary-foreground transition-colors hover:bg-brand-hover disabled:opacity-40"
               aria-label="Отправить"
             >
               <Send className="size-4" />
             </button>
           </div>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Enter — отправить · Shift+Enter — новая строка
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Enter — отправить. Shift+Enter — новая строка.
           </p>
         </form>
       </SheetContent>
@@ -243,31 +244,39 @@ export function ChatDrawer({
 
 function EmptyState({ onPick }: { onPick: (text: string) => void }) {
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          Что я умею
-        </p>
-        <h3 className="mt-2 font-display text-[28px] italic leading-tight text-foreground">
-          Спроси по-человечески — отвечу цифрами.
-        </h3>
-        <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-          Receptor читает выручку, блюда, смены и категории прямо из iiko и
-          отвечает на конкретный вопрос. Без отчётов, без «выгрузить-открыть».
-        </p>
+    <div className="flex min-h-full flex-col justify-between gap-8">
+      <div className="rounded-xl border border-border/60 bg-card/45 p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-brand">
+            <Database className="size-4" />
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              Copilot по данным iiko
+            </p>
+            <h3 className="mt-2 max-w-xl text-[24px] font-medium leading-tight tracking-[-0.02em] text-foreground sm:text-[30px]">
+              Задайте вопрос как управляющему аналитику.
+            </h3>
+            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
+              Receptor читает продажи, блюда, категории и смены, затем отвечает
+              нормальным языком: что произошло, почему это важно и что сделать
+              сегодня.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div>
-        <p className="mb-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Попробуй
+        <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          Быстрые вопросы
         </p>
-        <div className="flex flex-col gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           {SUGGESTED_PROMPTS.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => onPick(p)}
-              className="group rounded-lg border border-border/60 bg-card/60 px-3.5 py-3 text-left text-sm text-foreground/85 transition-colors hover:border-brand/40 hover:bg-card hover:text-foreground"
+              className="group rounded-lg border border-border/60 bg-card/55 px-3.5 py-3 text-left text-sm leading-snug text-foreground/85 transition-colors hover:border-brand/40 hover:bg-card hover:text-foreground"
             >
               {p}
             </button>
@@ -282,7 +291,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-[14px] text-foreground">
+        <div className="max-w-[85%] rounded-xl bg-muted px-4 py-3 text-[14px] leading-relaxed text-foreground">
           {message.text}
         </div>
       </div>
@@ -290,8 +299,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   }
 
   return (
-    <div className="space-y-2">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+    <div className="space-y-2 rounded-xl border border-border/50 bg-card/35 p-4">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         Receptor
       </p>
       {message.toolCalls.length > 0 ? (
@@ -308,7 +317,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         </div>
       ) : null}
       {message.text ? (
-        <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-foreground/90">
+        <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/90">
           {message.text}
         </div>
       ) : null}

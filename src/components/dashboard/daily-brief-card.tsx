@@ -23,7 +23,7 @@ export function DailyBriefCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              Brief владельца
+              Разбор дня
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <SendBriefButton venueId={venueId} period={brief.period} />

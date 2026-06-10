@@ -59,16 +59,16 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
         </span>
       </div>
 
-      <div className="mt-6 grid items-center gap-6 lg:grid-cols-2">
-        <div className="h-[260px] w-full">
+      <div className="mt-6 grid min-w-0 items-center gap-6 xl:grid-cols-2">
+        <div className="h-[230px] w-full min-w-0 sm:h-[250px] xl:h-[260px]">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={categories}
                 dataKey="dishSumInt"
                 nameKey="categoryName"
-                innerRadius={68}
-                outerRadius={108}
+                innerRadius={58}
+                outerRadius={96}
                 paddingAngle={2}
                 stroke="var(--card)"
                 strokeWidth={3}
@@ -85,7 +85,7 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
           </ResponsiveContainer>
         </div>
 
-        <ul className="space-y-3">
+        <ul className="min-w-0 space-y-3">
           {categories.map((c) => {
             const share = total > 0 ? (c.dishSumInt / total) * 100 : 0;
             return (
@@ -100,13 +100,13 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
                       CATEGORY_COLOR[c.categoryName] ?? "var(--chart-1)",
                   }}
                 />
-                <span className="flex-1 text-[14px] text-foreground/90">
+                <span className="min-w-0 flex-1 truncate text-[14px] text-foreground/90">
                   {c.categoryName}
                 </span>
-                <span className="numeric font-mono text-[12px] text-muted-foreground">
+                <span className="numeric shrink-0 font-mono text-[12px] text-muted-foreground">
                   {share.toFixed(1)}%
                 </span>
-                <span className="numeric w-[88px] text-right font-mono text-[13px] text-foreground">
+                <span className="numeric w-[86px] shrink-0 text-right font-mono text-[13px] text-foreground">
                   {formatRubles(c.dishSumInt)}
                 </span>
               </li>
