@@ -101,9 +101,10 @@ The growth workflow:
 3. Build Tech Card Studio MVP. Done.
 4. Connect venue profile context into tool prompts. Done.
 5. Add Tech Card AI autofill. Done.
-6. Save tech card history in Supabase.
-7. Restore iiko article mapping after a working pilot key.
-8. Add a minimal Team OS module inspired by Edison knowledge base.
+6. Add Tech Card JSON export/import. Done.
+7. Save tech card history in Supabase.
+8. Restore iiko article mapping after a working pilot key.
+9. Add a minimal Team OS module inspired by Edison knowledge base.
 
 ## Current Context Layer
 
@@ -132,6 +133,15 @@ Implemented:
 - critical blockers for missing dish name, ingredients, or quantities;
 - warnings for missing prices, missing KBJU, high losses, output mismatch, and low iiko article coverage;
 - next-action list before PDF/iiko export.
+
+## Current Tech Card Portability Layer
+
+Implemented:
+
+- JSON export for a complete tech card;
+- JSON import back into Tech Card Studio;
+- venue profile preserved in exported document;
+- schema/version guard before import.
 
 ## Demo Framing
 

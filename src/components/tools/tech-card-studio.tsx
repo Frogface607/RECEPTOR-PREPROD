@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowDownToLine,
   Building2,
   Copy,
+  Download,
   FileText,
+  Upload,
   Loader2,
   Plus,
   Printer,
@@ -19,6 +21,8 @@ import {
   createTechCardMarkdown,
   evaluateTechCardQuality,
   formatRub,
+  parseTechCardExportDocument,
+  serializeTechCard,
   type TechCardQualityReport,
   type TechCardIngredient,
   type TechCardInput,
@@ -83,12 +87,14 @@ function numberValue(value: string): number {
 }
 
 export function TechCardStudio() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [input, setInput] = useState<TechCardInput>(() => emptyInput());
   const [venueProfile, setVenueProfile] = useState<VenueIntelligenceProfile>(
     DEFAULT_VENUE_INTELLIGENCE,
   );
   const [draftIdea, setDraftIdea] = useState("");
   const [draftRun, setDraftRun] = useState<DraftRunState>({ status: "idle" });
+  const [fileMessage, setFileMessage] = useState("");
   const [history, setHistory] = useState<SavedTechCard[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -170,6 +176,39 @@ export function TechCardStudio() {
     window.print();
   };
 
+  const exportJson = () => {
+    const json = serializeTechCard(input, venueProfile);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safeName =
+      input.dishName.trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") ||
+      "tech-card";
+    link.href = url;
+    link.download = `receptor-${safeName}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setFileMessage("JSON-файл техкарты скачан.");
+  };
+
+  const importJson = async (file: File | null) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const document = parseTechCardExportDocument(text);
+      setInput(document.input);
+      if (document.venueProfile) setVenueProfile(document.venueProfile);
+      setDraftIdea(document.input.dishName);
+      setFileMessage("Техкарта импортирована из JSON.");
+    } catch (err) {
+      setFileMessage(
+        err instanceof Error ? err.message : "Не удалось импортировать JSON.",
+      );
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const reset = () => {
     setInput(emptyInput());
     setDraftIdea("");
@@ -248,6 +287,15 @@ export function TechCardStudio() {
               <ActionButton onClick={copyMarkdown} icon={<Copy className="size-4" />}>
                 {copied ? "Скопировано" : "Markdown"}
               </ActionButton>
+              <ActionButton onClick={exportJson} icon={<Download className="size-4" />}>
+                JSON
+              </ActionButton>
+              <ActionButton
+                onClick={() => fileInputRef.current?.click()}
+                icon={<Upload className="size-4" />}
+              >
+                Импорт
+              </ActionButton>
               <ActionButton onClick={printPdf} icon={<Printer className="size-4" />}>
                 PDF
               </ActionButton>
@@ -256,6 +304,20 @@ export function TechCardStudio() {
               </ActionButton>
             </div>
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(event) => {
+              void importJson(event.target.files?.[0] ?? null);
+            }}
+          />
+          {fileMessage ? (
+            <p className="mt-4 rounded-lg border border-border/50 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+              {fileMessage}
+            </p>
+          ) : null}
 
           <div className="mt-6 grid gap-4 lg:grid-cols-4">
             <Field

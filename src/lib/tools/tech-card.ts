@@ -68,6 +68,14 @@ export type TechCardQualityReport = {
   nextActions: string[];
 };
 
+export type TechCardExportDocument = {
+  schema: "receptor.tech-card";
+  version: 1;
+  exportedAt: string;
+  input: TechCardInput;
+  venueProfile?: VenueIntelligenceProfile;
+};
+
 const round = (value: number, digits = 2): number => {
   if (!Number.isFinite(value)) return 0;
   const factor = 10 ** digits;
@@ -290,6 +298,112 @@ export function evaluateTechCardQuality(
       : issues.slice(0, 4).map((issue) => issue.title);
 
   return { status, score, issues, nextActions };
+}
+
+export function createTechCardExportDocument(
+  input: TechCardInput,
+  venueProfile?: VenueIntelligenceProfile,
+  exportedAt = new Date().toISOString(),
+): TechCardExportDocument {
+  return {
+    schema: "receptor.tech-card",
+    version: 1,
+    exportedAt,
+    input,
+    venueProfile,
+  };
+}
+
+export function serializeTechCard(
+  input: TechCardInput,
+  venueProfile?: VenueIntelligenceProfile,
+): string {
+  return JSON.stringify(
+    createTechCardExportDocument(input, venueProfile),
+    null,
+    2,
+  );
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function parseIngredient(
+  value: unknown,
+  index: number,
+): TechCardIngredient | null {
+  if (!isObject(value)) return null;
+
+  const unit = value.unit === "ml" || value.unit === "pcs" ? value.unit : "g";
+  return {
+    id:
+      typeof value.id === "string" && value.id.trim()
+        ? value.id
+        : `import-${index + 1}`,
+    name: typeof value.name === "string" ? value.name : "",
+    unit,
+    grossQty: positive(Number(value.grossQty)),
+    netQty: positive(Number(value.netQty)),
+    pricePerKg: positive(Number(value.pricePerKg)),
+    proteinPer100g: positive(Number(value.proteinPer100g)),
+    fatPer100g: positive(Number(value.fatPer100g)),
+    carbsPer100g: positive(Number(value.carbsPer100g)),
+    kcalPer100g: positive(Number(value.kcalPer100g)),
+    article: typeof value.article === "string" ? value.article : "",
+  };
+}
+
+function parseTechCardInput(value: unknown): TechCardInput {
+  if (!isObject(value)) {
+    throw new Error("Некорректный файл техкарты: input должен быть объектом.");
+  }
+
+  const ingredients = Array.isArray(value.ingredients)
+    ? value.ingredients
+        .map((ingredient, index) => parseIngredient(ingredient, index))
+        .filter((ingredient): ingredient is TechCardIngredient =>
+          Boolean(ingredient),
+        )
+    : [];
+
+  return {
+    dishName: typeof value.dishName === "string" ? value.dishName : "",
+    category: typeof value.category === "string" ? value.category : "",
+    portions: Math.max(positive(Number(value.portions)), 1),
+    outputWeight: positive(Number(value.outputWeight)),
+    targetFoodCostPercent: Math.max(
+      positive(Number(value.targetFoodCostPercent)),
+      1,
+    ),
+    process: typeof value.process === "string" ? value.process : "",
+    ingredients,
+  };
+}
+
+export function parseTechCardExportDocument(
+  json: string,
+): TechCardExportDocument {
+  const parsed = JSON.parse(json) as unknown;
+  if (!isObject(parsed)) {
+    throw new Error("Некорректный файл техкарты.");
+  }
+  if (parsed.schema !== "receptor.tech-card" || parsed.version !== 1) {
+    throw new Error("Неподдерживаемый формат техкарты Receptor.");
+  }
+
+  return {
+    schema: "receptor.tech-card",
+    version: 1,
+    exportedAt:
+      typeof parsed.exportedAt === "string"
+        ? parsed.exportedAt
+        : new Date().toISOString(),
+    input: parseTechCardInput(parsed.input),
+    venueProfile: isObject(parsed.venueProfile)
+      ? (parsed.venueProfile as VenueIntelligenceProfile)
+      : undefined,
+  };
 }
 
 export function createTechCardMarkdown(

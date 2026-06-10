@@ -4,8 +4,11 @@ import {
   createTechCardMarkdown,
   evaluateTechCardQuality,
   formatRub,
+  parseTechCardExportDocument,
+  serializeTechCard,
   type TechCardInput,
 } from "./tech-card";
+import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const input: TechCardInput = {
   dishName: "Паста с креветками",
@@ -156,5 +159,24 @@ describe("evaluateTechCardQuality", () => {
         "Мало iiko-артикулов",
       ]),
     );
+  });
+});
+
+describe("tech card JSON export", () => {
+  test("serializes and parses a tech card with venue profile", () => {
+    const json = serializeTechCard(input, DEFAULT_VENUE_INTELLIGENCE);
+    const document = parseTechCardExportDocument(json);
+
+    expect(document.schema).toBe("receptor.tech-card");
+    expect(document.version).toBe(1);
+    expect(document.input.dishName).toBe(input.dishName);
+    expect(document.input.ingredients[0].name).toBe("Паста");
+    expect(document.venueProfile?.format).toBe(DEFAULT_VENUE_INTELLIGENCE.format);
+  });
+
+  test("rejects unsupported import format", () => {
+    expect(() =>
+      parseTechCardExportDocument(JSON.stringify({ schema: "unknown", version: 1 })),
+    ).toThrow(/Неподдерживаемый формат/);
   });
 });
