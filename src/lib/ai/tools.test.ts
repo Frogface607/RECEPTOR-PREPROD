@@ -4,6 +4,7 @@ import {
   getDishStatisticsTool,
   getShiftsTool,
   comparePeriodsTool,
+  getOwnerBriefTool,
   searchNomenclatureTool,
   AI_TOOLS,
 } from "./tools";
@@ -16,13 +17,14 @@ function client() {
 }
 
 describe("AI_TOOLS catalog", () => {
-  test("exposes the 5 Phase-4 tools (get_olap_report deferred)", () => {
+  test("exposes the Phase-4 tools (get_olap_report deferred)", () => {
     const names = AI_TOOLS.map((t) => t.name);
     expect(names).toEqual([
       "get_revenue",
       "get_dish_statistics",
       "get_shifts",
       "compare_periods",
+      "get_owner_brief",
       "get_nomenclature_search",
     ]);
   });
@@ -157,5 +159,21 @@ describe("searchNomenclatureTool", () => {
     await expect(
       searchNomenclatureTool.handler({ query: "" }, client()),
     ).rejects.toThrow();
+  });
+});
+
+describe("getOwnerBriefTool", () => {
+  test("combines money, menu, categories and shifts", async () => {
+    const out = await getOwnerBriefTool.handler(
+      { period: "LAST_WEEK" },
+      client(),
+    );
+
+    expect(out.revenue.total).toBeGreaterThan(0);
+    expect(out.menu.topDish?.dishName).toBeTruthy();
+    expect(out.menu.topCategory?.categoryName).toBeTruthy();
+    expect(out.shifts.count).toBeGreaterThan(0);
+    expect(out.risks.length).toBeGreaterThan(0);
+    expect(out.actions.length).toBeGreaterThan(0);
   });
 });

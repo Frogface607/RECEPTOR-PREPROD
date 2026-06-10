@@ -64,6 +64,7 @@ function systemPrompt(input: ChatTurnInput): string {
     formatVenueProfileForPrompt(input.venueProfile),
     "Отвечай по-русски, коротко и управленчески: факт, вывод, действие.",
     "Если вопрос про выручку, блюда, смены, сравнение периодов или меню — обязательно вызови подходящий инструмент.",
+    "Если вопрос про общий разбор, совет владельцу, просадку, риски или что делать сегодня — используй get_owner_brief.",
     "Не выдумывай метрики. Используй только данные, которые вернул инструмент.",
     "Если данных не хватает, явно скажи, какой доступ или отчёт нужен.",
   ].join("\n");
@@ -133,20 +134,11 @@ async function runToolByName(
   args: Record<string, unknown>,
   iikoClient: IikoClient,
 ): Promise<unknown> {
-  switch (name) {
-    case "get_revenue":
-      return (AI_TOOLS[0] as RuntimeTool).handler(args, iikoClient);
-    case "get_dish_statistics":
-      return (AI_TOOLS[1] as RuntimeTool).handler(args, iikoClient);
-    case "get_shifts":
-      return (AI_TOOLS[2] as RuntimeTool).handler(args, iikoClient);
-    case "compare_periods":
-      return (AI_TOOLS[3] as RuntimeTool).handler(args, iikoClient);
-    case "get_nomenclature_search":
-      return (AI_TOOLS[4] as RuntimeTool).handler(args, iikoClient);
-    default:
-      throw new Error(`Unsupported OpenAI tool call: ${name}`);
+  const tool = AI_TOOLS.find((candidate) => candidate.name === name);
+  if (!tool) {
+    throw new Error(`Unsupported OpenAI tool call: ${name}`);
   }
+  return (tool as RuntimeTool).handler(args, iikoClient);
 }
 
 export function isOpenAIChatConfigured(): boolean {

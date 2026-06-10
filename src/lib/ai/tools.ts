@@ -296,10 +296,148 @@ export const searchNomenclatureTool: ToolDefinition<
   },
 };
 
+const GetOwnerBriefInput = z.object({
+  period: PeriodTypeSchema.exclude(["CUSTOM"]),
+});
+
+export const getOwnerBriefTool: ToolDefinition<
+  { period: PeriodType },
+  {
+    period: PeriodType;
+    revenue: {
+      total: number;
+      averageCheck: number;
+      itemsSold: number;
+      activeDishes: number;
+    };
+    menu: {
+      topDish?: {
+        dishName: string;
+        dishGroup: string;
+        dishAmountInt: number;
+        dishSumInt: number;
+      };
+      topCategory?: {
+        categoryName: string;
+        dishSumInt: number;
+        sharePct: number;
+      };
+    };
+    shifts: {
+      count: number;
+      weakest?: {
+        employee: string;
+        openTime: string;
+        revenue: number;
+        items: number;
+      };
+    };
+    risks: string[];
+    actions: string[];
+    summary: string;
+  }
+> = {
+  name: "get_owner_brief",
+  description:
+    "Управленческий разбор для владельца: собирает выручку, блюда, категории " +
+    "и смены за период, выделяет риски и действия на сегодня. Используй для " +
+    "вопросов «что происходит», «что делать», «где просадка», «дай совет».",
+  input_schema: {
+    type: "object",
+    properties: { period: PERIOD_PROP_SCHEMA },
+    required: ["period"],
+  },
+  handler: async (raw, client) => {
+    const { period } = GetOwnerBriefInput.parse(raw);
+    const [revenue, dishes, categories, shifts] = await Promise.all([
+      client.getRevenueSummary(asPeriod(period)),
+      client.getDishStatistics(asPeriod(period), 5),
+      client.getCategoryStatistics(asPeriod(period)),
+      client.getShifts(asPeriod(period)),
+    ]);
+
+    const topDish = dishes[0];
+    const totalCategoryRevenue = categories.reduce(
+      (sum, category) => sum + category.dishSumInt,
+      0,
+    );
+    const topCategory = [...categories].sort(
+      (a, b) => b.dishSumInt - a.dishSumInt,
+    )[0];
+    const weakestShift = [...shifts].sort((a, b) => a.revenue - b.revenue)[0];
+    const topCategoryShare =
+      topCategory && totalCategoryRevenue > 0
+        ? Number(((topCategory.dishSumInt / totalCategoryRevenue) * 100).toFixed(1))
+        : 0;
+
+    const risks = [
+      topCategoryShare >= 35 && topCategory
+        ? `Сильная зависимость от категории «${topCategory.categoryName}»: ${topCategoryShare}% выручки.`
+        : "Категорийная выручка распределена без явной концентрации.",
+      weakestShift
+        ? `Слабейшая смена периода: ${weakestShift.employee}, ${formatRubles(weakestShift.revenue)}.`
+        : "По сменам нет данных для сравнения.",
+      revenue.averageCheck > 0
+        ? `Средний чек ${formatRubles(revenue.averageCheck)} — проверяй вместе с количеством позиций в чеке.`
+        : "Средний чек не рассчитан: нужен чековый срез из iiko.",
+    ];
+
+    const actions = [
+      topDish
+        ? `Поставить «${topDish.dishName}» в фокус смены и проверить заготовки/стоп-лист.`
+        : "Проверить выгрузку блюд и номенклатуру.",
+      topCategory
+        ? `Разобрать маржинальность категории «${topCategory.categoryName}».`
+        : "Разметить категории меню для управленческого анализа.",
+      weakestShift
+        ? `Разобрать смену ${weakestShift.openTime.slice(0, 10)}: посадка, команда, стоп-лист, сервис.`
+        : "Добавить корректные сменные данные.",
+    ];
+
+    return {
+      period,
+      revenue: {
+        total: revenue.revenue,
+        averageCheck: revenue.averageCheck,
+        itemsSold: revenue.itemsSold,
+        activeDishes: revenue.uniqueDishes,
+      },
+      menu: {
+        topDish,
+        topCategory: topCategory
+          ? {
+              categoryName: topCategory.categoryName,
+              dishSumInt: topCategory.dishSumInt,
+              sharePct: topCategoryShare,
+            }
+          : undefined,
+      },
+      shifts: {
+        count: shifts.length,
+        weakest: weakestShift
+          ? {
+              employee: weakestShift.employee,
+              openTime: weakestShift.openTime,
+              revenue: weakestShift.revenue,
+              items: weakestShift.items,
+            }
+          : undefined,
+      },
+      risks,
+      actions,
+      summary:
+        `Owner brief: ${formatRubles(revenue.revenue)}, ` +
+        `${formatInteger(revenue.itemsSold)} позиций, ` +
+        `${topDish ? `лидер «${topDish.dishName}»` : "лидер не найден"}.`,
+    };
+  },
+};
+
 export const AI_TOOLS = [
   getRevenueTool,
   getDishStatisticsTool,
   getShiftsTool,
   comparePeriodsTool,
+  getOwnerBriefTool,
   searchNomenclatureTool,
 ] as const;

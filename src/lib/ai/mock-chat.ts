@@ -19,6 +19,7 @@ import {
   getDishStatisticsTool,
   getShiftsTool,
   comparePeriodsTool,
+  getOwnerBriefTool,
   searchNomenclatureTool,
 } from "./tools";
 import { formatRubles, formatInteger } from "@/lib/format";
@@ -55,6 +56,7 @@ export type ChatTurnInput = {
 // ---------------------------------------------------------------------------
 
 type Route =
+  | { kind: "brief"; period: PeriodType }
   | { kind: "compare"; periodA: PeriodType; periodB: PeriodType }
   | { kind: "shifts"; period: PeriodType }
   | { kind: "dishes"; period: PeriodType; topN: number }
@@ -89,6 +91,10 @@ function pickTopN(text: string, fallback = 5): number {
 
 function routeMessage(message: string): Route {
   const t = message.toLowerCase();
+
+  if (/(что\s+делать|дай\s+совет|разбор|ситуац|где\s+просад|почему|риск|не\s+потерять|вечер)/i.test(t)) {
+    return { kind: "brief", period: pickPeriod(t, "LAST_WEEK") };
+  }
 
   if (/сравн/i.test(t)) {
     const a: PeriodType = /прошл\w*\s*недел/i.test(t) ? "LAST_WEEK" : "LAST_MONTH";
@@ -264,6 +270,34 @@ function formatSuggestAnswer(
   ].join("\n");
 }
 
+function formatOwnerBriefAnswer(
+  profile: VenueIntelligenceProfile,
+  out: Awaited<ReturnType<typeof getOwnerBriefTool.handler>>,
+): string {
+  return [
+    "Управленческий разбор:",
+    "",
+    `Факт: выручка ${formatRubles(out.revenue.total)}, средний чек ${formatRubles(out.revenue.averageCheck)}, продано ${formatInteger(out.revenue.itemsSold)} позиций.`,
+    out.menu.topDish
+      ? `Меню: лидер — ${out.menu.topDish.dishName} (${formatRubles(out.menu.topDish.dishSumInt)}, ${formatInteger(out.menu.topDish.dishAmountInt)} порций).`
+      : "Меню: лидер не найден, нужна проверка выгрузки блюд.",
+    out.menu.topCategory
+      ? `Категории: ${out.menu.topCategory.categoryName} даёт ${out.menu.topCategory.sharePct}% выручки.`
+      : "Категории: нет данных для структуры меню.",
+    out.shifts.weakest
+      ? `Смена к разбору: ${out.shifts.weakest.openTime.slice(0, 10)} · ${out.shifts.weakest.employee} — ${formatRubles(out.shifts.weakest.revenue)}.`
+      : "Смены: нет слабой смены для сравнения.",
+    "",
+    "Риски:",
+    ...out.risks.map((risk) => `• ${risk}`),
+    `• ${profile.operatingRisks[0]}`,
+    "",
+    "Что сделать сегодня:",
+    ...out.actions.map((action, index) => `${index + 1}. ${action}`),
+    `${out.actions.length + 1}. ${profile.recommendedFocus[3]}`,
+  ].join("\n");
+}
+
 // ---------------------------------------------------------------------------
 // The stream
 // ---------------------------------------------------------------------------
@@ -283,6 +317,24 @@ export async function* runMockChatTurn(
   };
 
   switch (route.kind) {
+    case "brief": {
+      const output = await getOwnerBriefTool.handler(
+        { period: route.period },
+        input.iikoClient,
+      );
+      yield {
+        type: "tool",
+        tool: "get_owner_brief",
+        input: { period: route.period },
+        output,
+      };
+      yield {
+        type: "text",
+        text: formatOwnerBriefAnswer(input.venueProfile, output),
+      };
+      break;
+    }
+
     case "revenue": {
       const output = await getRevenueTool.handler(
         { period: route.period },
@@ -398,5 +450,7 @@ function routeLabel(r: Route): string {
       return "поиск в меню";
     case "suggest":
       return "подсказки";
+    case "brief":
+      return "разбор владельца";
   }
 }

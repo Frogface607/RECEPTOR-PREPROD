@@ -107,6 +107,8 @@ Implemented:
 - Dashboard card: goals, risks, Copilot focus
 - Copilot prompt receives profile context
 - Mock Copilot uses profile warnings in revenue, menu and shift answers
+- `get_owner_brief` tool combines revenue, menu, categories and shifts into
+  risks/actions for owner-level questions
 - SQL migration placeholder for `venues.intelligence_profile`
 
 ## Next Implementation Slice
@@ -114,6 +116,7 @@ Implemented:
 1. Add owner questionnaire to onboarding/settings.
 2. Add `/api/venue/research` using OpenAI/Perplexity-style web research.
 3. Store `intelligence_profile` in Supabase `venues`.
-4. Add an owner brief tool that combines revenue, dishes, categories and shifts.
+4. Add model routing: cheap model for simple tool answers, premium model for
+   Deep Research and strategic owner brief synthesis.
 5. Add menu engineering view once margin/food-cost data exists.
 6. Add review intelligence module from MyReply.
