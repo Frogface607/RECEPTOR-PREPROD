@@ -126,7 +126,9 @@ export class CloudIikoClient implements IikoClient {
     });
 
     if (!res.ok) {
-      throw new Error(`iiko Cloud organizations failed: HTTP ${res.status}`);
+      throw new Error(
+        `iiko Cloud organizations failed: HTTP ${res.status}${await readIikoError(res)}`,
+      );
     }
 
     const payload = (await res.json()) as {
@@ -232,7 +234,9 @@ export class CloudIikoClient implements IikoClient {
     });
 
     if (!res.ok) {
-      throw new Error(`iiko Cloud OLAP failed: HTTP ${res.status}`);
+      throw new Error(
+        `iiko Cloud OLAP failed: HTTP ${res.status}${await readIikoError(res)}`,
+      );
     }
 
     const payload = (await res.json()) as {
@@ -257,7 +261,14 @@ export class CloudIikoClient implements IikoClient {
     });
 
     if (!res.ok) {
-      throw new Error(`iiko Cloud auth failed: HTTP ${res.status}`);
+      if (res.status === 401) {
+        throw new Error(
+          "iiko Cloud не принял apiLogin. Вставьте именно значение apiLogin из карточки интеграции, не название строки и не secret/key.",
+        );
+      }
+      throw new Error(
+        `iiko Cloud auth failed: HTTP ${res.status}${await readIikoError(res)}`,
+      );
     }
 
     const payload = (await res.json()) as { token?: string };
@@ -268,6 +279,16 @@ export class CloudIikoClient implements IikoClient {
     this.cachedToken = payload.token;
     this.tokenExpiresAt = Date.now() + TOKEN_TTL_MS;
     return payload.token;
+  }
+}
+
+async function readIikoError(res: Response): Promise<string> {
+  try {
+    const text = await res.text();
+    if (!text) return "";
+    return `: ${text.slice(0, 500)}`;
+  } catch {
+    return "";
   }
 }
 

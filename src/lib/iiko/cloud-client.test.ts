@@ -107,6 +107,22 @@ describe("CloudIikoClient — authentication", () => {
     );
   });
 
+  test("explains 401 as an invalid apiLogin", async () => {
+    mockFetchSequence([
+      { url: "auth", data: { error: "unauthorized" }, status: 401 },
+    ]);
+
+    const client = new CloudIikoClient({
+      apiLogin: "EdisonCraft",
+      organizationId: ORG_ID,
+      today: ANCHOR,
+    });
+
+    await expect(client.getRevenueSummary({ type: "TODAY" })).rejects.toThrow(
+      /не принял apiLogin/i,
+    );
+  });
+
   test("includes Bearer header on BI requests", async () => {
     const { calls } = mockFetchSequence([
       { url: "auth", data: { token: TOKEN } },

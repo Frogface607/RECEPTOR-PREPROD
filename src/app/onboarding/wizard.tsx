@@ -181,8 +181,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 Подключение iiko
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                Вставьте apiLogin из личного кабинета iiko Web (Настройки →
-                API). Это единственное, что нужно для Cloud-подключения.
+                Откройте карточку интеграции в iiko Web и вставьте именно
+                значение apiLogin. Название строки вроде EdisonCraft и
+                secret/key сюда не подходят.
               </p>
             </div>
 
@@ -246,8 +247,10 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               </Field>
             ) : (
               <div className="rounded-lg border border-border/50 bg-background/40 p-4 text-[13px] leading-relaxed text-muted-foreground">
-                Введите apiLogin и загрузите организации iiko. Для холдингов
-                выберите конкретную точку, к которой привяжем BI и copilot.
+                Нужен apiLogin из карточки Cloud API. Если видите в списке
+                только название интеграции, откройте строку и скопируйте
+                отдельное значение apiLogin. Для холдингов затем выберите
+                конкретную точку, к которой привяжем BI и copilot.
               </div>
             )}
           </div>
