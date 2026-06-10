@@ -107,7 +107,7 @@ describe("CloudIikoClient — authentication", () => {
     );
   });
 
-  test("explains 401 as an invalid apiLogin", async () => {
+  test("explains 401 as an invalid API key", async () => {
     mockFetchSequence([
       { url: "auth", data: { error: "unauthorized" }, status: 401 },
     ]);
@@ -119,7 +119,7 @@ describe("CloudIikoClient — authentication", () => {
     });
 
     await expect(client.getRevenueSummary({ type: "TODAY" })).rejects.toThrow(
-      /не принял apiLogin/i,
+      /не принял API ключ/i,
     );
   });
 

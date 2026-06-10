@@ -181,13 +181,13 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 Подключение iiko
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                Откройте карточку интеграции в iiko Web и вставьте именно
-                значение apiLogin. Название строки вроде EdisonCraft и
-                secret/key сюда не подходят.
+                Откройте карточку интеграции в iiko Web и вставьте полный API
+                ключ из строки «API ключ». Поле «Имя API логина» вроде
+                EdisonCraft — это только название интеграции.
               </p>
             </div>
 
-            <Field label="iiko apiLogin">
+            <Field label="iiko API ключ">
               <input
                 value={apiLogin}
                 onChange={(e) => {
@@ -195,7 +195,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                   setOrganizations([]);
                   setOrganizationId("");
                 }}
-                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                placeholder="Скопируйте кнопкой рядом с «API ключ»"
                 className="input-base font-mono text-[13px]"
               />
             </Field>
@@ -247,10 +247,10 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               </Field>
             ) : (
               <div className="rounded-lg border border-border/50 bg-background/40 p-4 text-[13px] leading-relaxed text-muted-foreground">
-                Нужен apiLogin из карточки Cloud API. Если видите в списке
-                только название интеграции, откройте строку и скопируйте
-                отдельное значение apiLogin. Для холдингов затем выберите
-                конкретную точку, к которой привяжем BI и copilot.
+                Нужен полный API ключ, который скрыт маской вроде
+                261******69b. Нажмите иконку копирования рядом с ключом в iiko
+                Web и вставьте получившееся значение сюда. Для холдингов затем
+                выберите конкретную точку, к которой привяжем BI и copilot.
               </div>
             )}
           </div>

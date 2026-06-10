@@ -263,7 +263,7 @@ export class CloudIikoClient implements IikoClient {
     if (!res.ok) {
       if (res.status === 401) {
         throw new Error(
-          "iiko Cloud не принял apiLogin. Вставьте именно значение apiLogin из карточки интеграции, не название строки и не secret/key.",
+          "iiko Cloud не принял API ключ. Скопируйте полный ключ кнопкой рядом с полем «API ключ» в iiko Web; имя интеграции вроде EdisonCraft и значение со звёздочками не подойдут.",
         );
       }
       throw new Error(
