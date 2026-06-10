@@ -123,6 +123,29 @@ describe("CloudIikoClient — authentication", () => {
     );
   });
 
+  test("explains 423 as an expired Cloud API license", async () => {
+    mockFetchSequence([
+      {
+        url: "auth",
+        data: {
+          errorDescription:
+            "Apilogin's license for using the Cloud API has expired.",
+        },
+        status: 423,
+      },
+    ]);
+
+    const client = new CloudIikoClient({
+      apiLogin: API_LOGIN,
+      organizationId: ORG_ID,
+      today: ANCHOR,
+    });
+
+    await expect(client.getRevenueSummary({ type: "TODAY" })).rejects.toThrow(
+      /Лицензия iiko Cloud API истекла/i,
+    );
+  });
+
   test("includes Bearer header on BI requests", async () => {
     const { calls } = mockFetchSequence([
       { url: "auth", data: { token: TOKEN } },

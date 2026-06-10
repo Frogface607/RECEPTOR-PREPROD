@@ -49,7 +49,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const [checkingIiko, setCheckingIiko] = useState(false);
 
   const canNext0 = name.trim().length > 0;
-  const canNext1 = demoMode || organizationId.length > 0;
+  const canNext1 = organizationId.length > 0;
 
   const checkIiko = () => {
     setError(null);
@@ -66,6 +66,10 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
       setOrganizations(res.organizations);
       setOrganizationId(res.organizations[0]?.id ?? "");
     });
+  };
+
+  const openSandbox = () => {
+    router.push("/dashboard/dev-venue");
   };
 
   const finish = () => {
@@ -246,11 +250,21 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 </div>
               </Field>
             ) : (
-              <div className="rounded-lg border border-border/50 bg-background/40 p-4 text-[13px] leading-relaxed text-muted-foreground">
-                Нужен полный API ключ, который скрыт маской вроде
-                261******69b. Нажмите иконку копирования рядом с ключом в iiko
-                Web и вставьте получившееся значение сюда. Для холдингов затем
-                выберите конкретную точку, к которой привяжем BI и copilot.
+              <div className="space-y-3 rounded-lg border border-border/50 bg-background/40 p-4 text-[13px] leading-relaxed text-muted-foreground">
+                <p>
+                  Нужен полный API ключ, который скрыт маской вроде
+                  261******69b. Нажмите иконку копирования рядом с ключом в
+                  iiko Web и вставьте получившееся значение сюда.
+                </p>
+                {demoMode ? (
+                  <button
+                    type="button"
+                    onClick={openSandbox}
+                    className="inline-flex h-9 items-center justify-center rounded-md border border-border/60 bg-card/70 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/40"
+                  >
+                    Открыть тестовый кабинет без iiko
+                  </button>
+                ) : null}
               </div>
             )}
           </div>
@@ -264,7 +278,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Откроем рабочий кабинет. Реальные цифры подключатся, когда добавите iiko-ключ."
+                ? "Откроем тестовый кабинет. Реальные цифры появятся после успешной проверки активного iiko Cloud API."
                 : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
             </p>
             {error ? (

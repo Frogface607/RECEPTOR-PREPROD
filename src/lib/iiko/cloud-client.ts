@@ -261,6 +261,11 @@ export class CloudIikoClient implements IikoClient {
     });
 
     if (!res.ok) {
+      if (res.status === 423) {
+        throw new Error(
+          "Лицензия iiko Cloud API истекла. Ключ распознан, но iiko не отдаёт данные до продления лицензии Cloud API.",
+        );
+      }
       if (res.status === 401) {
         throw new Error(
           "iiko Cloud не принял API ключ. Скопируйте полный ключ кнопкой рядом с полем «API ключ» в iiko Web; имя интеграции вроде EdisonCraft и значение со звёздочками не подойдут.",

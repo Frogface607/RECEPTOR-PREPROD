@@ -28,7 +28,7 @@ export type ProbeIikoResult =
   | { ok: false; error: string };
 
 const ProbeInput = z.object({
-  apiLogin: z.string().trim().min(1, "iiko apiLogin обязателен"),
+  apiLogin: z.string().trim().min(1, "iiko API ключ обязателен"),
 });
 
 export async function probeIikoOrganizationsAction(
@@ -36,7 +36,7 @@ export async function probeIikoOrganizationsAction(
 ): Promise<ProbeIikoResult> {
   const parsed = ProbeInput.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, error: "Введите iiko apiLogin." };
+    return { ok: false, error: "Введите iiko API ключ." };
   }
 
   try {
@@ -49,7 +49,7 @@ export async function probeIikoOrganizationsAction(
     if (organizations.length === 0) {
       return {
         ok: false,
-        error: "iiko не вернул ни одной организации для этого apiLogin.",
+        error: "iiko не вернул ни одной организации для этого API ключа.",
       };
     }
     return { ok: true, organizations };
@@ -91,7 +91,7 @@ export async function createVenueAction(
     return { ok: false, error: "Нужно войти, чтобы подключить заведение." };
   }
   if (!parsed.data.apiLogin) {
-    return { ok: false, error: "Введите iiko apiLogin." };
+    return { ok: false, error: "Введите iiko API ключ." };
   }
   if (!parsed.data.organizationId) {
     return { ok: false, error: "Выберите организацию iiko." };
