@@ -36,6 +36,23 @@ function asPeriod(type: PeriodType): Period {
   return { type };
 }
 
+function previousCustomPeriod(period: Extract<Period, { type: "CUSTOM" }>): Period {
+  const from = new Date(`${period.from}T00:00:00.000Z`);
+  const to = new Date(`${period.to}T00:00:00.000Z`);
+  const days =
+    Math.round((to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+  const previousTo = new Date(from);
+  previousTo.setUTCDate(previousTo.getUTCDate() - 1);
+  const previousFrom = new Date(previousTo);
+  previousFrom.setUTCDate(previousFrom.getUTCDate() - days + 1);
+
+  return {
+    type: "CUSTOM",
+    from: previousFrom.toISOString().slice(0, 10),
+    to: previousTo.toISOString().slice(0, 10),
+  };
+}
+
 function deltaPct(current: number, previous: number): number {
   if (previous <= 0) return current > 0 ? 100 : 0;
   return Number((((current - previous) / previous) * 100).toFixed(1));
@@ -62,14 +79,20 @@ function periodTitle(period: PeriodType): string {
 
 export async function buildDailyBrief(
   client: IikoClient,
-  period: PeriodType = "YESTERDAY",
+  period: Period | PeriodType = "YESTERDAY",
 ): Promise<DailyBrief> {
-  const comparisonPeriod = COMPARISON_PERIOD[period] ?? "LAST_WEEK";
+  const currentPeriod = typeof period === "string" ? asPeriod(period) : period;
+  const periodType = currentPeriod.type;
+  const comparisonPeriod = COMPARISON_PERIOD[periodType] ?? "LAST_WEEK";
+  const comparisonRange =
+    currentPeriod.type === "CUSTOM"
+      ? previousCustomPeriod(currentPeriod)
+      : asPeriod(comparisonPeriod);
   const [current, previous, dishes, categories] = await Promise.all([
-    client.getRevenueSummary(asPeriod(period)),
-    client.getRevenueSummary(asPeriod(comparisonPeriod)),
-    client.getDishStatistics(asPeriod(period), 5),
-    client.getCategoryStatistics(asPeriod(period)),
+    client.getRevenueSummary(currentPeriod),
+    client.getRevenueSummary(comparisonRange),
+    client.getDishStatistics(currentPeriod, 5),
+    client.getCategoryStatistics(currentPeriod),
   ]);
 
   const delta = deltaPct(current.revenue, previous.revenue);
@@ -77,7 +100,7 @@ export async function buildDailyBrief(
   const topCategory = categories.sort((a, b) => b.dishSumInt - a.dishSumInt)[0];
 
   const highlights = [
-    `Деньги ${periodTitle(period)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta)}.`,
+    `Деньги ${periodTitle(periodType)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta)}.`,
     topDish
       ? `Главное блюдо периода: ${topDish.dishName} (${formatRubles(topDish.dishSumInt)}, ${formatInteger(topDish.dishAmountInt)} порций).`
       : "Нет данных по блюдам за период.",
@@ -99,12 +122,12 @@ export async function buildDailyBrief(
   ];
 
   return {
-    period,
+    period: periodType,
     comparisonPeriod,
     headline:
       delta < 0
-        ? `Выручка ${periodTitle(period)} просела: ${formatRubles(current.revenue)}.`
-        : `Выручка ${periodTitle(period)} в плюсе: ${formatRubles(current.revenue)}.`,
+        ? `Выручка ${periodTitle(periodType)} просела: ${formatRubles(current.revenue)}.`
+        : `Выручка ${periodTitle(periodType)} в плюсе: ${formatRubles(current.revenue)}.`,
     revenue: {
       current: current.revenue,
       previous: previous.revenue,

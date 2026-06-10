@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   const period = parsePeriodSearchParams(Object.fromEntries(url.searchParams));
   const client = getDashboardClient(access.venue);
-  const brief = await buildDailyBrief(client, period.type);
+  const brief = await buildDailyBrief(client, period);
 
   if (format === "text") {
     return new NextResponse(

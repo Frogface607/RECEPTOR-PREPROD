@@ -40,7 +40,11 @@ export function parsePeriodSearchParams(
   if (raw === "CUSTOM") {
     const from = typeof params.from === "string" ? params.from : "";
     const to = typeof params.to === "string" ? params.to : "";
-    if (/^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to)) {
+    if (
+      /^\d{4}-\d{2}-\d{2}$/.test(from) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(to) &&
+      from <= to
+    ) {
       return { type: "CUSTOM", from, to };
     }
   }
@@ -53,4 +57,17 @@ export function periodToSearchParams(period: Period): Record<string, string> {
     return { period: "CUSTOM", from: period.from, to: period.to };
   }
   return { period: period.type };
+}
+
+export function formatPeriodLabel(period: Period): string {
+  if (period.type !== "CUSTOM") {
+    return PERIOD_LABELS_RU[period.type];
+  }
+
+  return `${formatDateRu(period.from)} - ${formatDateRu(period.to)}`;
+}
+
+function formatDateRu(value: string): string {
+  const [year, month, day] = value.split("-");
+  return `${day}.${month}.${year}`;
 }

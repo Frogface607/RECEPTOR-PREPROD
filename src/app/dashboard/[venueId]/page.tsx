@@ -8,8 +8,8 @@ import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import {
+  formatPeriodLabel,
   parsePeriodSearchParams,
-  PERIOD_LABELS_RU,
 } from "@/lib/venues/period";
 import { getDashboardClient } from "@/lib/iiko/config";
 import { getVenueAccess } from "@/lib/auth/venue-access";
@@ -42,19 +42,19 @@ export default async function DashboardPage({
     client.getDishStatistics(period, 10),
     client.getCategoryStatistics(period),
     client.getShifts(period),
-    buildDailyBrief(client, period.type),
+    buildDailyBrief(client, period),
   ]);
 
-  const periodLabel = PERIOD_LABELS_RU[period.type];
+  const periodLabel = formatPeriodLabel(period);
 
   return (
     <>
-      <DashboardHeader venue={venue} period={period.type} />
+      <DashboardHeader venue={venue} period={period} />
 
       <main className="flex-1 px-4 py-7 sm:px-6 lg:px-10 lg:py-10">
-        {/* key={period.type} re-triggers the entrance animation on each
+        {/* key={periodLabel} re-triggers the entrance animation on each
             period switch — the dashboard feels alive during exploration. */}
-        <div key={period.type} className="contents">
+        <div key={periodLabel} className="contents">
           <div className="reveal reveal-1 mb-7">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               Сводка · {periodLabel}

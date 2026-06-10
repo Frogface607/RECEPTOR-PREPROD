@@ -33,4 +33,15 @@ describe("buildDailyBrief", () => {
     expect(text).toContain("Что сделать сегодня:");
     expect(text).toContain(brief.headline);
   });
+
+  test("uses custom date ranges for owner brief data", async () => {
+    const brief = await buildDailyBrief(
+      new MockIikoClient({ today: "2026-05-29" }),
+      { type: "CUSTOM", from: "2025-01-01", to: "2025-12-31" },
+    );
+
+    expect(brief.period).toBe("CUSTOM");
+    expect(brief.comparisonPeriod).toBe("CUSTOM");
+    expect(brief.revenue.current).toBeGreaterThan(0);
+  });
 });

@@ -2,17 +2,23 @@ import Link from "next/link";
 import { Download, MessageSquare } from "lucide-react";
 import { PeriodSelector } from "./period-selector";
 import type { ResolvedVenue } from "@/lib/venues/get-venue";
-import type { PeriodType } from "@/lib/iiko/models";
+import type { Period } from "@/lib/iiko/models";
+import { periodToSearchParams } from "@/lib/venues/period";
 
 export function DashboardHeader({
   venue,
   period,
 }: {
   venue: ResolvedVenue;
-  period: PeriodType;
+  period: Period;
 }) {
-  const exportHref = `/api/export/dishes?venueId=${venue.id}&period=${period}`;
-  const chatHref = `/dashboard/${venue.id}?period=${period}&chat=1`;
+  const periodParams = new URLSearchParams(periodToSearchParams(period));
+  const exportParams = new URLSearchParams(periodParams);
+  exportParams.set("venueId", venue.id);
+  const chatParams = new URLSearchParams(periodParams);
+  chatParams.set("chat", "1");
+  const exportHref = `/api/export/dishes?${exportParams.toString()}`;
+  const chatHref = `/dashboard/${venue.id}?${chatParams.toString()}`;
 
   return (
     <header className="static z-30 border-b border-border/40 bg-background/85 backdrop-blur-xl lg:sticky lg:top-0">
