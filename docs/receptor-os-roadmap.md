@@ -124,6 +124,15 @@ Implemented:
 - fallback draft when AI is unavailable;
 - UI action to fill dish, category, output, ingredients, prices, KBJU, and process.
 
+## Current Tech Card Quality Layer
+
+Implemented:
+
+- quality score for each tech card;
+- critical blockers for missing dish name, ingredients, or quantities;
+- warnings for missing prices, missing KBJU, high losses, output mismatch, and low iiko article coverage;
+- next-action list before PDF/iiko export.
+
 ## Demo Framing
 
 For tomorrow:

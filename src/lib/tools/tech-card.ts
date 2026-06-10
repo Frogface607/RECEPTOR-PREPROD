@@ -53,6 +53,21 @@ export type TechCardCalculation = {
   yieldDelta: number;
 };
 
+export type TechCardQualitySeverity = "ok" | "warning" | "critical";
+
+export type TechCardQualityIssue = {
+  severity: Exclude<TechCardQualitySeverity, "ok">;
+  title: string;
+  description: string;
+};
+
+export type TechCardQualityReport = {
+  status: TechCardQualitySeverity;
+  score: number;
+  issues: TechCardQualityIssue[];
+  nextActions: string[];
+};
+
 const round = (value: number, digits = 2): number => {
   if (!Number.isFinite(value)) return 0;
   const factor = 10 ** digits;
@@ -162,6 +177,119 @@ export function calculateTechCard(input: TechCardInput): TechCardCalculation {
 
 export function formatRub(value: number): string {
   return `${round(value, 2).toLocaleString("ru-RU")} ₽`;
+}
+
+export function evaluateTechCardQuality(
+  input: TechCardInput,
+  calculation: TechCardCalculation,
+): TechCardQualityReport {
+  const issues: TechCardQualityIssue[] = [];
+  const filledIngredients = input.ingredients.filter((ingredient) =>
+    ingredient.name.trim(),
+  );
+
+  if (!input.dishName.trim()) {
+    issues.push({
+      severity: "critical",
+      title: "Нет названия блюда",
+      description: "Без названия техкарту нельзя нормально сохранить, печатать или маппить в iiko.",
+    });
+  }
+
+  if (filledIngredients.length === 0) {
+    issues.push({
+      severity: "critical",
+      title: "Нет ингредиентов",
+      description: "Добавьте хотя бы один ингредиент с нетто, ценой и КБЖУ.",
+    });
+  }
+
+  const missingQty = filledIngredients.filter(
+    (ingredient) => ingredient.netQty <= 0 || ingredient.grossQty <= 0,
+  );
+  if (missingQty.length > 0) {
+    issues.push({
+      severity: "critical",
+      title: "Не заполнены брутто/нетто",
+      description: `${missingQty.length} ингредиент(а) без корректного количества. Расчёт себестоимости и выхода будет неточным.`,
+    });
+  }
+
+  const missingPrices = filledIngredients.filter(
+    (ingredient) => ingredient.pricePerKg <= 0,
+  );
+  if (missingPrices.length > 0) {
+    issues.push({
+      severity: "warning",
+      title: "Не заполнены цены",
+      description: `${missingPrices.length} ингредиент(а) без цены. Фудкост и рекомендуемая цена занижены.`,
+    });
+  }
+
+  const missingNutrition = filledIngredients.filter(
+    (ingredient) =>
+      ingredient.kcalPer100g <= 0 &&
+      ingredient.proteinPer100g <= 0 &&
+      ingredient.fatPer100g <= 0 &&
+      ingredient.carbsPer100g <= 0,
+  );
+  if (missingNutrition.length > 0) {
+    issues.push({
+      severity: "warning",
+      title: "Не заполнено КБЖУ",
+      description: `${missingNutrition.length} ингредиент(а) без пищевой ценности. КБЖУ на 100 г будет неполным.`,
+    });
+  }
+
+  const excessiveLoss = calculation.ingredients.filter(
+    (ingredient) => ingredient.name.trim() && ingredient.lossPercent > 45,
+  );
+  if (excessiveLoss.length > 0) {
+    issues.push({
+      severity: "warning",
+      title: "Высокие потери",
+      description: `${excessiveLoss.length} ингредиент(а) с потерями выше 45%. Проверьте брутто/нетто или технологию обработки.`,
+    });
+  }
+
+  if (input.outputWeight > 0 && Math.abs(calculation.yieldDelta) > 20) {
+    issues.push({
+      severity: "warning",
+      title: "Выход не сходится",
+      description: `Сумма нетто отличается от указанного выхода на ${calculation.yieldDelta} г. Для печати и iiko лучше выровнять.`,
+    });
+  }
+
+  if (
+    filledIngredients.length > 0 &&
+    calculation.mappingCoveragePercent < 80
+  ) {
+    issues.push({
+      severity: "warning",
+      title: "Мало iiko-артикулов",
+      description: `Покрытие артикулами: ${calculation.mappingCoveragePercent}%. Для iiko-экспорта нужно довести маппинг почти до 100%.`,
+    });
+  }
+
+  const criticalCount = issues.filter(
+    (issue) => issue.severity === "critical",
+  ).length;
+  const warningCount = issues.filter(
+    (issue) => issue.severity === "warning",
+  ).length;
+  const score = Math.max(0, 100 - criticalCount * 28 - warningCount * 12);
+  const status: TechCardQualitySeverity =
+    criticalCount > 0 ? "critical" : warningCount > 0 ? "warning" : "ok";
+
+  const nextActions =
+    issues.length === 0
+      ? [
+          "Можно печатать PDF или переходить к iiko-маппингу.",
+          "Перед продажей проверьте фактические цены поставщиков.",
+        ]
+      : issues.slice(0, 4).map((issue) => issue.title);
+
+  return { status, score, issues, nextActions };
 }
 
 export function createTechCardMarkdown(

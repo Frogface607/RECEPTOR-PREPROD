@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   calculateTechCard,
   createTechCardMarkdown,
+  evaluateTechCardQuality,
   formatRub,
   type TechCardInput,
 } from "./tech-card";
@@ -90,5 +91,70 @@ describe("tech card formatting", () => {
     expect(markdown).toContain("# Технологическая карта: Паста с креветками");
     expect(markdown).toContain("| Паста | 220 g | 200 g | 9.1% | 36 ₽ | 00001 |");
     expect(markdown).toContain("Покрытие артикулами iiko: 50%");
+  });
+});
+
+describe("evaluateTechCardQuality", () => {
+  test("returns ok for a filled and mapped tech card", () => {
+    const filled: TechCardInput = {
+      ...input,
+      outputWeight: 380,
+      ingredients: input.ingredients.map((ingredient, index) => ({
+        ...ingredient,
+        article: `0000${index + 1}`,
+      })),
+    };
+    const calculation = calculateTechCard(filled);
+    const quality = evaluateTechCardQuality(filled, calculation);
+
+    expect(quality.status).toBe("ok");
+    expect(quality.score).toBe(100);
+    expect(quality.issues).toHaveLength(0);
+  });
+
+  test("marks missing core fields as critical", () => {
+    const empty: TechCardInput = {
+      dishName: "",
+      category: "",
+      portions: 1,
+      outputWeight: 0,
+      targetFoodCostPercent: 30,
+      process: "",
+      ingredients: [],
+    };
+    const quality = evaluateTechCardQuality(empty, calculateTechCard(empty));
+
+    expect(quality.status).toBe("critical");
+    expect(quality.issues.some((issue) => issue.title === "Нет названия блюда")).toBe(true);
+    expect(quality.issues.some((issue) => issue.title === "Нет ингредиентов")).toBe(true);
+  });
+
+  test("warns about missing prices, nutrition, output mismatch and low mapping", () => {
+    const draft: TechCardInput = {
+      ...input,
+      outputWeight: 1000,
+      ingredients: [
+        {
+          ...input.ingredients[0],
+          pricePerKg: 0,
+          proteinPer100g: 0,
+          fatPer100g: 0,
+          carbsPer100g: 0,
+          kcalPer100g: 0,
+          article: "",
+        },
+      ],
+    };
+    const quality = evaluateTechCardQuality(draft, calculateTechCard(draft));
+
+    expect(quality.status).toBe("warning");
+    expect(quality.issues.map((issue) => issue.title)).toEqual(
+      expect.arrayContaining([
+        "Не заполнены цены",
+        "Не заполнено КБЖУ",
+        "Выход не сходится",
+        "Мало iiko-артикулов",
+      ]),
+    );
   });
 });

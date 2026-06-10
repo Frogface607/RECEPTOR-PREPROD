@@ -17,7 +17,9 @@ import {
 import {
   calculateTechCard,
   createTechCardMarkdown,
+  evaluateTechCardQuality,
   formatRub,
+  type TechCardQualityReport,
   type TechCardIngredient,
   type TechCardInput,
 } from "@/lib/tools/tech-card";
@@ -99,6 +101,10 @@ export function TechCardStudio() {
   const [copied, setCopied] = useState(false);
 
   const calculation = useMemo(() => calculateTechCard(input), [input]);
+  const quality = useMemo(
+    () => evaluateTechCardQuality(input, calculation),
+    [input, calculation],
+  );
   const markdown = useMemo(
     () => createTechCardMarkdown(input, calculation, venueProfile),
     [input, calculation, venueProfile],
@@ -445,6 +451,7 @@ export function TechCardStudio() {
                 Контроль качества
               </p>
             </div>
+            <QualityPreflight report={quality} />
             <div className="mt-5 space-y-3">
               <QualityRow
                 label="Выход"
@@ -746,6 +753,84 @@ function NumericCell({
         className="h-9 w-[74px] rounded-lg border border-border/50 bg-background/50 px-2 text-right text-[12px] outline-none focus:border-brand/50"
       />
     </td>
+  );
+}
+
+function QualityPreflight({ report }: { report: TechCardQualityReport }) {
+  const statusClass =
+    report.status === "ok"
+      ? "border-brand/35 bg-brand/10 text-brand"
+      : report.status === "critical"
+        ? "border-destructive/35 bg-destructive/10 text-destructive"
+        : "border-[color:var(--pro)]/35 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  const label =
+    report.status === "ok"
+      ? "Готово"
+      : report.status === "critical"
+        ? "Блокеры"
+        : "Проверить";
+
+  return (
+    <div className="mt-5 rounded-xl border border-border/55 bg-background/35 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className={
+            "rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] " +
+            statusClass
+          }
+        >
+          {label}
+        </span>
+        <div className="text-right">
+          <p className="text-2xl font-medium tracking-[-0.02em] text-foreground">
+            {report.score}
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+            score
+          </p>
+        </div>
+      </div>
+
+      {report.issues.length > 0 ? (
+        <div className="mt-4 space-y-2">
+          {report.issues.slice(0, 5).map((issue) => (
+            <div
+              key={`${issue.severity}-${issue.title}`}
+              className="rounded-lg border border-border/45 bg-card/35 p-3"
+            >
+              <p
+                className={
+                  "text-[13px] font-medium " +
+                  (issue.severity === "critical"
+                    ? "text-destructive"
+                    : "text-foreground")
+                }
+              >
+                {issue.title}
+              </p>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                {issue.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
+          Блокеров нет. Техкарту можно печатать или готовить к iiko-маппингу.
+        </p>
+      )}
+
+      <div className="mt-4 border-t border-border/40 pt-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          Следующие действия
+        </p>
+        <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+          {report.nextActions.map((action) => (
+            <li key={action}>• {action}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
