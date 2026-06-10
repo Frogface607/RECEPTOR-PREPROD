@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/marketing/site-footer";
 import { ToolIcon } from "@/components/tools/tool-icon";
 import { ToolRunner } from "@/components/tools/tool-runner";
 import { getToolById, getToolsByCategory, CATEGORIES, TOOLS } from "@/lib/tools/catalog";
+import { getToolStrategy } from "@/lib/tools/strategy";
 
 export function generateStaticParams() {
   return TOOLS.map((t) => ({ toolId: t.id }));
@@ -36,6 +37,7 @@ export default async function ToolPage({
   if (!tool) notFound();
 
   const category = CATEGORIES.find((c) => c.id === tool.category)!;
+  const strategy = getToolStrategy(tool.id);
   const related = getToolsByCategory(tool.category)
     .filter((t) => t.id !== tool.id)
     .slice(0, 4);
@@ -63,6 +65,9 @@ export default async function ToolPage({
                   <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                     {category.name}
                   </span>
+                  <span className="rounded-full border border-brand/35 bg-brand/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-brand">
+                    {strategy.label}
+                  </span>
                   {tool.free ? (
                     <span className="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-brand">
                       Free
@@ -79,6 +84,24 @@ export default async function ToolPage({
                 <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
                   {tool.description}
                 </p>
+                <div className="mt-5 grid max-w-3xl gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-border/55 bg-card/45 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Результат
+                    </p>
+                    <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
+                      {strategy.result}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border/55 bg-card/45 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Роль в продукте
+                    </p>
+                    <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
+                      {strategy.note}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

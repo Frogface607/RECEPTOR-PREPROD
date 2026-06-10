@@ -7,7 +7,7 @@ import { TOOLS, CATEGORIES, getFreeTools } from "@/lib/tools/catalog";
 export const metadata: Metadata = {
   title: "Инструменты — RECEPTOR",
   description:
-    "27 AI-инструментов для ресторана: рецепты, себестоимость, скрипты официантов, маркетинг, HR, HACCP. Один клик — готовый результат.",
+    "Рабочие AI-сценарии для ресторана: техкарты, меню, BI, зал, маркетинг и репутация в одном кабинете.",
 };
 
 export default function ToolsPage() {
@@ -24,24 +24,25 @@ export default function ToolsPage() {
 
           <div className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
             <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-              Инструменты
+              Рабочие процессы
             </p>
             <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.02] tracking-[-0.025em]">
-              {TOOLS.length} инструментов.
+              Ресторанная рабочая станция.
               <br />
-              Один клик — готовый результат.
+              Не просто набор промптов.
             </h1>
             <p className="mt-7 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
-              Рецепты и себестоимость, скрипты официантов, посты и ответы на
-              отзывы, вакансии, HACCP и СанПиН. Всё, что обычно делают вручную
-              или отдают разным подрядчикам — здесь в одном окне.
+              Техкарты и себестоимость, меню, скрипты зала, отзывы, маркетинг,
+              обучение команды и операционные брифинги. Инструменты сгруппированы
+              в сценарии, которые потом питаются профилем заведения, BI и iiko.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-x-7 gap-y-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+              <span>{TOOLS.length} инструментов</span>
               <span>{CATEGORIES.length} направлений</span>
               <span>{freeCount} бесплатных</span>
-              <span>Русский язык</span>
-              <span>Без эмодзи-воды</span>
+              <span>Профиль заведения</span>
+              <span>BI-ready</span>
             </div>
           </div>
         </section>
