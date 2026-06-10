@@ -9,12 +9,12 @@ export function SiteFooter() {
             <div className="flex items-baseline gap-2">
               <span className="text-sm font-medium tracking-[0.22em]">RECEPTOR</span>
               <span className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                ресторанный copilot
+                restaurant AI OS
               </span>
             </div>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground leading-relaxed">
-              AI-копайлот владельца ресторана. Подключение к iiko, живая
-              аналитика и чат с цифрами вечера.
+              AI operating system для ресторана: iiko, BI, Copilot, техкарты,
+              меню и ежедневные решения владельца.
             </p>
           </div>
 

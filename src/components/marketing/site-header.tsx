@@ -10,7 +10,7 @@ export function SiteHeader() {
             RECEPTOR
           </span>
           <span className="hidden text-[12px] uppercase tracking-[0.16em] text-muted-foreground transition-colors group-hover:text-foreground sm:inline">
-            ресторанный copilot
+            restaurant AI OS
           </span>
         </Link>
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileSpreadsheet } from "lucide-react";
 import { ToolIcon } from "@/components/tools/tool-icon";
 import {
   CATEGORIES,
@@ -24,19 +24,46 @@ export function ToolsTeaser() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <p className="text-xs uppercase tracking-[0.22em] text-brand">
-              Инструменты
+              Рабочие сценарии
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              {TOOLS.length} AI-инструментов под каждую роль в зале и на кухне.
+              Не россыпь генераторов, а операционный слой ресторана.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            Рецепты и себестоимость, скрипты официантов, посты, вакансии, HACCP.
-            То, что обычно отдают разным подрядчикам — в одном окне.
+            Техкарты, себестоимость, меню, скрипты зала, отзывы, HR и HACCP
+            становятся частью одной системы, которая знает контекст заведения.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-3">
+        <Link
+          href="/tools/tech-card-studio"
+          className="mt-10 flex flex-col gap-5 rounded-xl border border-brand/30 bg-brand/[0.06] p-7 transition-colors hover:border-brand/45 hover:bg-brand/[0.09] md:flex-row md:items-center md:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-brand/35 bg-brand/10 text-brand">
+              <FileSpreadsheet className="size-5" />
+            </span>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+                Новый сценарий
+              </p>
+              <h3 className="mt-2 text-xl font-medium tracking-[-0.02em] text-foreground">
+                Tech Card Studio
+              </h3>
+              <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+                Техкарта с ингредиентами, фудкостом, КБЖУ, iiko-артикулами,
+                историей и PDF-печатью. Это фундамент будущего меню-модуля.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-brand">
+            Открыть студию
+            <ArrowRight className="size-4" />
+          </span>
+        </Link>
+
+        <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((cat) => {
             const count = getToolsByCategory(cat.id).length;
             const sample = getToolsByCategory(cat.id)

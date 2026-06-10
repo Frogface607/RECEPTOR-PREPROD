@@ -26,20 +26,20 @@ export function Hero() {
       <div className="mx-auto grid max-w-7xl gap-16 px-6 pb-28 pt-20 lg:grid-cols-12 lg:gap-12 lg:pb-36 lg:pt-28">
         <div className="lg:col-span-7">
           <div className="inline-flex items-center border-l border-brand/50 pl-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            AI-копайлот владельца ресторана
+            AI operating system для ресторана
           </div>
 
           <h1 className="mt-8 text-balance text-[clamp(3rem,7vw,6rem)] font-medium leading-[0.96] tracking-[-0.035em]">
-            Чувствует
+            Управляет
             <br />
-            <span className="text-foreground/70">кухню.</span>
+            <span className="text-foreground/70">рестораном.</span>
           </h1>
 
           <p className="mt-8 max-w-xl text-balance text-[17px] leading-[1.55] text-muted-foreground">
-            Receptor подключается к iiko и превращает выручку, чеки и сменные
-            продажи в один экран и живой чат с цифрами вечера.{" "}
+            Receptor подключается к iiko и собирает BI, Copilot, техкарты,
+            меню, команду и ежедневные решения в одну рабочую систему.{" "}
             <span className="text-foreground/85">
-              Без 18 окон бэк-офиса и Excel.
+              Не ещё один отчёт, а операционный контур владельца.
             </span>
           </p>
 
@@ -68,6 +68,7 @@ export function Hero() {
             <span>RMS Server</span>
             <span>BI</span>
             <span>Copilot</span>
+            <span>Tech Cards</span>
           </div>
         </div>
 
