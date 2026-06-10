@@ -10,7 +10,7 @@ import { getCurrentUser, type SessionUser } from "./session";
 import { getServerSupabase } from "@/lib/db/server";
 import { decryptSecret } from "@/lib/db/encryption";
 import { getVenue, type ResolvedVenue } from "@/lib/venues/get-venue";
-import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
+import { normalizeVenueProfile } from "@/lib/venues/intelligence";
 
 type VenueAccessOk = {
   ok: true;
@@ -32,6 +32,7 @@ type DbVenue = {
   city: string | null;
   type: ResolvedVenue["type"] | null;
   timezone: string | null;
+  intelligence_profile?: unknown | null;
 };
 
 type DbIikoCredential = {
@@ -51,7 +52,7 @@ function toResolvedVenue(
     city: venue.city ?? "",
     type: venue.type ?? "other",
     timezone: venue.timezone ?? "Asia/Irkutsk",
-    intelligence: DEFAULT_VENUE_INTELLIGENCE,
+    intelligence: normalizeVenueProfile(venue.intelligence_profile),
     iiko: {
       channel: credential?.channel ?? "cloud",
       organizationId: credential?.iiko_org_id ?? venue.id,
@@ -84,12 +85,26 @@ export async function getVenueAccess(venueId: string): Promise<VenueAccess> {
     return { ok: false, status: 401, error: "unauthorized" };
   }
 
-  const { data: venue } = await supabase
+  let venueResult = await supabase
     .from("venues")
-    .select("id,name,city,type,timezone")
+    .select("id,name,city,type,timezone,intelligence_profile")
     .eq("id", venueId)
     .eq("owner_user_id", user.id)
     .maybeSingle<DbVenue>();
+
+  if (
+    venueResult.error &&
+    /intelligence_profile/i.test(venueResult.error.message)
+  ) {
+    venueResult = await supabase
+      .from("venues")
+      .select("id,name,city,type,timezone")
+      .eq("id", venueId)
+      .eq("owner_user_id", user.id)
+      .maybeSingle<DbVenue>();
+  }
+
+  const { data: venue } = venueResult;
 
   if (!venue) {
     return { ok: false, status: 404, error: "venue not found" };

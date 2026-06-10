@@ -5,11 +5,13 @@ import { getServerSupabase } from "@/lib/db/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { encryptSecret } from "@/lib/db/encryption";
 import { CloudIikoClient } from "@/lib/iiko/cloud-client";
+import { normalizeVenueProfile } from "@/lib/venues/intelligence";
 
 const VenueInput = z.object({
   name: z.string().min(1).max(120),
   type: z.enum(["restaurant", "cafe", "coffee", "bar", "chain", "other"]),
   city: z.string().max(120).optional().default(""),
+  intelligenceProfile: z.unknown().optional(),
   apiLogin: z.string().trim().optional().default(""),
   organizationId: z.string().optional().default(""),
 });
@@ -109,16 +111,40 @@ export async function createVenueAction(
       return { ok: false, error: "Выбранная организация iiko недоступна для этого apiLogin." };
     }
 
-    const { data, error } = await supabase
+    const venueInsert = {
+      owner_user_id: user.id,
+      name: parsed.data.name,
+      type: parsed.data.type,
+      city: parsed.data.city || null,
+      intelligence_profile: normalizeVenueProfile(
+        parsed.data.intelligenceProfile,
+      ),
+    };
+
+    let insertResult = await supabase
       .from("venues")
-      .insert({
-        owner_user_id: user.id,
-        name: parsed.data.name,
-        type: parsed.data.type,
-        city: parsed.data.city || null,
-      })
+      .insert(venueInsert)
       .select("id")
       .single();
+
+    if (
+      insertResult.error &&
+      /intelligence_profile/i.test(insertResult.error.message)
+    ) {
+      const fallbackInsert = {
+        owner_user_id: venueInsert.owner_user_id,
+        name: venueInsert.name,
+        type: venueInsert.type,
+        city: venueInsert.city,
+      };
+      insertResult = await supabase
+        .from("venues")
+        .insert(fallbackInsert)
+        .select("id")
+        .single();
+    }
+
+    const { data, error } = insertResult;
 
     if (error || !data) {
       return { ok: false, error: error?.message ?? "Не удалось сохранить." };

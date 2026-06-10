@@ -10,12 +10,15 @@ import {
   ArrowLeft,
   Check,
   Loader2,
+  Search,
+  Sparkles,
 } from "lucide-react";
 import {
   createVenueAction,
   probeIikoOrganizationsAction,
   type IikoOrganizationOption,
 } from "./actions";
+import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
 
 type VenueType = "restaurant" | "cafe" | "coffee" | "bar" | "chain" | "other";
 
@@ -47,9 +50,55 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const [organizations, setOrganizations] = useState<IikoOrganizationOption[]>([]);
   const [organizationId, setOrganizationId] = useState("");
   const [checkingIiko, setCheckingIiko] = useState(false);
+  const [ownerContext, setOwnerContext] = useState("");
+  const [intelligenceProfile, setIntelligenceProfile] =
+    useState<VenueIntelligenceProfile | null>(null);
+  const [researchingVenue, setResearchingVenue] = useState(false);
+  const [researchProvider, setResearchProvider] = useState<string | null>(null);
 
   const canNext0 = name.trim().length > 0;
   const canNext1 = organizationId.length > 0;
+
+  const researchVenue = async () => {
+    if (!name.trim()) {
+      setError("Введите название заведения.");
+      return;
+    }
+
+    setError(null);
+    setResearchingVenue(true);
+    try {
+      const response = await fetch("/api/venue/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          city: city.trim(),
+          type,
+          ownerContext: ownerContext.trim(),
+        }),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        provider?: string;
+        profile?: VenueIntelligenceProfile;
+      };
+      if (!response.ok || !data.profile) {
+        throw new Error(data.error || "Не удалось изучить заведение.");
+      }
+
+      setIntelligenceProfile(data.profile);
+      setResearchProvider(data.provider ?? "research");
+      setOwnerContext(data.profile.positioning);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Не удалось изучить заведение.",
+      );
+    } finally {
+      setResearchingVenue(false);
+    }
+  };
 
   const checkIiko = () => {
     setError(null);
@@ -79,6 +128,15 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
         name,
         type,
         city,
+        intelligenceProfile: intelligenceProfile
+          ? { ...intelligenceProfile, positioning: ownerContext || intelligenceProfile.positioning }
+          : ownerContext
+            ? {
+                format: `${type} · ${city || "город не указан"}`,
+                positioning: ownerContext,
+                researchStatus: "manual",
+              }
+            : undefined,
         apiLogin,
         organizationId,
       });
@@ -177,6 +235,75 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 className="input-base"
               />
             </Field>
+
+            <div className="rounded-lg border border-border/50 bg-background/35 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[13px] font-medium text-foreground">
+                    Профиль заведения для Copilot
+                  </p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                    Receptor изучит публичный контекст, отзывы и концепцию,
+                    чтобы Copilot отвечал не как общий чат, а как помощник
+                    именно этого заведения.
+                  </p>
+                </div>
+                {researchProvider ? (
+                  <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {researchProvider}
+                  </span>
+                ) : null}
+              </div>
+
+              <textarea
+                value={ownerContext}
+                onChange={(event) => setOwnerContext(event.target.value)}
+                placeholder="Концепция, специфика, боли владельца, что важно учитывать..."
+                rows={4}
+                className="mt-4 input-base min-h-28 resize-y leading-relaxed"
+              />
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={researchVenue}
+                  disabled={researchingVenue || !name.trim()}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 text-sm text-foreground transition-colors hover:border-brand/40 disabled:opacity-50"
+                >
+                  {researchingVenue ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Изучаю
+                      заведение...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="size-4" /> Изучить и заполнить
+                    </>
+                  )}
+                </button>
+                <span className="text-[12px] text-muted-foreground">
+                  Можно оставить вручную и продолжить.
+                </span>
+              </div>
+
+              {intelligenceProfile ? (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <ProfileList
+                    icon={<Sparkles className="size-4 text-brand" />}
+                    title="Сильные стороны"
+                    items={intelligenceProfile.strengths}
+                  />
+                  <ProfileList
+                    icon={<Search className="size-4 text-amber-400" />}
+                    title="Что учитывать"
+                    items={[
+                      ...intelligenceProfile.guestPains.slice(0, 2),
+                      ...intelligenceProfile.operatingRisks.slice(0, 1),
+                    ]}
+                  />
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : step === 1 ? (
           <div className="flex flex-col gap-5">
@@ -327,6 +454,30 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ProfileList({
+  icon,
+  title,
+  items,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  items: string[];
+}) {
+  return (
+    <div className="rounded-lg border border-border/50 bg-card/35 p-3">
+      <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-foreground">
+        {icon}
+        {title}
+      </div>
+      <ul className="space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+        {items.slice(0, 4).map((item) => (
+          <li key={item}>• {item}</li>
+        ))}
+      </ul>
     </div>
   );
 }

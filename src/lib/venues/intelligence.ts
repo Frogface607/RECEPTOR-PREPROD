@@ -1,3 +1,18 @@
+import { z } from "zod";
+
+export const VenueIntelligenceSchema = z.object({
+  format: z.string().min(1),
+  positioning: z.string().min(1),
+  audience: z.array(z.string().min(1)).default([]),
+  strengths: z.array(z.string().min(1)).default([]),
+  guestPains: z.array(z.string().min(1)).default([]),
+  ownerGoals: z.array(z.string().min(1)).default([]),
+  operatingRisks: z.array(z.string().min(1)).default([]),
+  decisionRules: z.array(z.string().min(1)).default([]),
+  recommendedFocus: z.array(z.string().min(1)).default([]),
+  researchStatus: z.enum(["template", "manual", "researched"]).default("template"),
+});
+
 export type VenueIntelligenceProfile = {
   format: string;
   positioning: string;
@@ -55,6 +70,39 @@ export const DEFAULT_VENUE_INTELLIGENCE: VenueIntelligenceProfile = {
   ],
   researchStatus: "template",
 };
+
+export function normalizeVenueProfile(
+  value: unknown,
+): VenueIntelligenceProfile {
+  const parsed = VenueIntelligenceSchema.safeParse(value);
+  if (!parsed.success) return DEFAULT_VENUE_INTELLIGENCE;
+
+  return {
+    ...DEFAULT_VENUE_INTELLIGENCE,
+    ...parsed.data,
+    audience: parsed.data.audience.length
+      ? parsed.data.audience
+      : DEFAULT_VENUE_INTELLIGENCE.audience,
+    strengths: parsed.data.strengths.length
+      ? parsed.data.strengths
+      : DEFAULT_VENUE_INTELLIGENCE.strengths,
+    guestPains: parsed.data.guestPains.length
+      ? parsed.data.guestPains
+      : DEFAULT_VENUE_INTELLIGENCE.guestPains,
+    ownerGoals: parsed.data.ownerGoals.length
+      ? parsed.data.ownerGoals
+      : DEFAULT_VENUE_INTELLIGENCE.ownerGoals,
+    operatingRisks: parsed.data.operatingRisks.length
+      ? parsed.data.operatingRisks
+      : DEFAULT_VENUE_INTELLIGENCE.operatingRisks,
+    decisionRules: parsed.data.decisionRules.length
+      ? parsed.data.decisionRules
+      : DEFAULT_VENUE_INTELLIGENCE.decisionRules,
+    recommendedFocus: parsed.data.recommendedFocus.length
+      ? parsed.data.recommendedFocus
+      : DEFAULT_VENUE_INTELLIGENCE.recommendedFocus,
+  };
+}
 
 export function formatVenueProfileForPrompt(
   profile: VenueIntelligenceProfile,
