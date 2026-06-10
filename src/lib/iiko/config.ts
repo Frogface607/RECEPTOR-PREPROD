@@ -2,9 +2,8 @@
  * iiko client configuration resolver.
  *
  * Single source of truth for "which iiko backend does this venue use right
- * now" — mock (deterministic Edison fixtures) vs real Cloud (apiLogin from
- * env). The dashboard, chat, and tools all resolve through here so flipping
- * to live data is one env change, no code change.
+ * now" — real integration credentials first, env fallback for dev/demo.
+ * The dashboard, chat, and tools all resolve through here.
  *
  * Pure + env-injected so it's fully testable. The thin builder
  * `getDashboardClient` wires it to real clients.
@@ -40,15 +39,23 @@ function venueEnvPrefix(venueId: string): string {
 /**
  * Resolve the iiko config for a venue given an env bag and the current date.
  *
- * Real mode requires BOTH `USE_MOCK_IIKO=false` and an apiLogin to be present
- * (venue-specific `<PREFIX>_IIKO_API_LOGIN` wins over generic `IIKO_API_LOGIN`).
- * Otherwise we stay on mock — safer default that never 500s a demo.
+ * Real mode is selected when a venue carries a stored apiLogin. Env keys remain
+ * a dev fallback and require `USE_MOCK_IIKO=false`.
  */
 export function resolveIikoClientConfig(
   venue: ResolvedVenue,
   env: Record<string, string | undefined>,
   today: string,
 ): IikoClientConfig {
+  if (venue.iiko.apiLogin?.trim()) {
+    return {
+      mode: "real",
+      today,
+      apiLogin: venue.iiko.apiLogin.trim(),
+      organizationId: venue.iiko.organizationId,
+    };
+  }
+
   const wantReal = env.USE_MOCK_IIKO === "false";
 
   if (wantReal) {
@@ -93,6 +100,7 @@ export function getDashboardClient(venue: ResolvedVenue): IikoClient {
       apiLogin: cfg.apiLogin,
       organizationId: cfg.organizationId,
       today: cfg.today,
+      forceReal: true,
     });
   }
 

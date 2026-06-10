@@ -11,7 +11,19 @@ type State =
   | { status: "sent"; email: string }
   | { status: "error"; message: string };
 
-export function AuthForm({ demoMode }: { demoMode: boolean }) {
+function safeNextPath(value: string): string {
+  return value.startsWith("/") && !value.startsWith("//")
+    ? value
+    : "/onboarding";
+}
+
+export function AuthForm({
+  demoMode,
+  nextPath,
+}: {
+  demoMode: boolean;
+  nextPath: string;
+}) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<State>({ status: "idle" });
 
@@ -33,7 +45,7 @@ export function AuthForm({ demoMode }: { demoMode: boolean }) {
     const { error } = await supabase.auth.signInWithOtp({
       email: value,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`,
       },
     });
 

@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { OnboardingWizard } from "./wizard";
 import { isSupabaseConfigured } from "@/lib/db/env";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Настройка — RECEPTOR",
 };
 
-export default function OnboardingPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OnboardingPage() {
   const demoMode = !isSupabaseConfigured();
+  const user = await getCurrentUser();
+  if (!demoMode && !user) {
+    redirect("/auth?next=/onboarding");
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden px-6 py-14">

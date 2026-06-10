@@ -16,6 +16,7 @@ export type ResolvedVenue = {
   iiko: {
     channel: "cloud" | "rms";
     organizationId: string;
+    apiLogin?: string;
   };
 };
 

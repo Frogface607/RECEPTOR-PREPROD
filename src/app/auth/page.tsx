@@ -7,8 +7,19 @@ export const metadata: Metadata = {
   title: "Вход — RECEPTOR",
 };
 
-export default function AuthPage() {
+function safeNextPath(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (raw?.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/onboarding";
+}
+
+export default async function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const demoMode = !isSupabaseConfigured();
+  const nextPath = safeNextPath((await searchParams).next);
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
@@ -29,7 +40,7 @@ export default function AuthPage() {
           </span>
         </Link>
 
-        <AuthForm demoMode={demoMode} />
+        <AuthForm demoMode={demoMode} nextPath={nextPath} />
 
         <p className="mt-8 text-center text-[12px] text-muted-foreground">
           Нажимая «Прислать ссылку», вы соглашаетесь с условиями использования.

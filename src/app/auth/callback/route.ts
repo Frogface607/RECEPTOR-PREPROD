@@ -9,7 +9,11 @@ import { getServerSupabase } from "@/lib/db/server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/onboarding";
+  const rawNext = url.searchParams.get("next") ?? "/onboarding";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//")
+      ? rawNext
+      : "/onboarding";
 
   if (code) {
     const supabase = await getServerSupabase();

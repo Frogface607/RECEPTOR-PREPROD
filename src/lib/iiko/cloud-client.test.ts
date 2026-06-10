@@ -125,6 +125,38 @@ describe("CloudIikoClient — authentication", () => {
   });
 });
 
+describe("CloudIikoClient.listOrganizations", () => {
+  test("fetches organizations after auth and normalizes id/name", async () => {
+    const { calls } = mockFetchSequence([
+      { url: "auth", data: { token: TOKEN } },
+      {
+        url: "organizations",
+        data: {
+          organizations: [
+            { id: "org-1", name: "Mihno Group" },
+            { id: "org-2", name: "Second Venue" },
+          ],
+        },
+      },
+    ]);
+
+    const client = new CloudIikoClient({
+      apiLogin: API_LOGIN,
+      organizationId: "",
+      today: ANCHOR,
+    });
+
+    await expect(client.listOrganizations()).resolves.toEqual([
+      { id: "org-1", name: "Mihno Group" },
+      { id: "org-2", name: "Second Venue" },
+    ]);
+    expect(calls[1].url).toContain("/api/1/organizations");
+    expect(new Headers(calls[1].init?.headers).get("Authorization")).toBe(
+      `Bearer ${TOKEN}`,
+    );
+  });
+});
+
 describe("CloudIikoClient.getRevenueSummary", () => {
   test("parses iiko OLAP rows into RevenueSummary", async () => {
     mockFetchSequence([

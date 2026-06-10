@@ -1,33 +1,32 @@
 /**
  * Tool execution orchestrator with graceful degradation.
  *
- * Decides the backend (Claude vs mock) and — critically for a live demo —
- * falls back to the deterministic mock if a real Claude call fails for any
+ * Decides the backend (OpenAI/Claude vs mock) and — critically for a live demo —
+ * falls back to the deterministic mock if a real model call fails for any
  * reason (low credits, rate limit, network blip). The user always gets a
  * useful result; they never see a red API error mid-presentation.
  *
- * Dependencies are injected so this is unit-testable without the Anthropic
- * SDK or a key. The route passes the real wiring.
+ * Dependencies are injected so this is unit-testable without external API keys.
  */
 
 import { runToolMock, validateToolInput } from "./mock-runner";
-import { isAiConfigured } from "./ai-runner";
-import { runToolWithClaude } from "./ai-runner";
+import { getConfiguredAiBackend, runToolWithAi } from "./ai-runner";
+import type { AiBackend, AiToolRunResult } from "./ai-runner";
 import type { Tool } from "./catalog";
 
 export type ToolResult = {
   markdown: string;
-  backend: "claude" | "mock";
+  backend: AiBackend | "mock";
 };
 
 export type ExecuteDeps = {
-  aiConfigured: () => boolean;
-  callClaude: (tool: Tool, values: Record<string, string>) => Promise<string>;
+  aiBackend: () => AiBackend | null;
+  callAi: (tool: Tool, values: Record<string, string>) => Promise<AiToolRunResult>;
 };
 
 const DEFAULT_DEPS: ExecuteDeps = {
-  aiConfigured: isAiConfigured,
-  callClaude: runToolWithClaude,
+  aiBackend: getConfiguredAiBackend,
+  callAi: runToolWithAi,
 };
 
 export async function executeTool(
@@ -43,14 +42,14 @@ export async function executeTool(
     );
   }
 
-  if (deps.aiConfigured()) {
+  const backend = deps.aiBackend();
+  if (backend) {
     try {
-      const markdown = await deps.callClaude(tool, values);
-      return { markdown, backend: "claude" };
+      return await deps.callAi(tool, values);
     } catch (err) {
       // Demo-safe: never surface the AI error — degrade to the mock preview.
       console.warn(
-        `[tools] Claude failed for "${tool.id}", falling back to mock:`,
+        `[tools] ${backend} failed for "${tool.id}", falling back to mock:`,
         err instanceof Error ? err.message : err,
       );
     }

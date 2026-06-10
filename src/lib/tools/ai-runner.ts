@@ -1,31 +1,51 @@
 /**
- * AI runner — real Claude execution for the tools showcase.
+ * AI runner — real model execution for the tools showcase.
  *
- * `isAiConfigured()` decides whether `/api/tools/run` calls Claude or falls
- * back to the deterministic mock. The Anthropic SDK is imported lazily so the
- * mock path (and the test suite) never needs the dependency loaded or a key.
+ * `getConfiguredAiBackend()` decides whether `/api/tools/run` calls OpenAI,
+ * Anthropic, or falls back to the deterministic mock.
  *
- * When Босс pastes `ANTHROPIC_API_KEY` into env, the showcase goes live with
- * zero code change — the route already branches on `isAiConfigured()`.
+ * OpenAI is intentionally implemented with fetch instead of the SDK so the
+ * project can switch providers without adding a dependency or touching the
+ * lockfile.
  */
 
 import type { Tool } from "./catalog";
+
+export type AiBackend = "openai" | "claude";
 
 const PLACEHOLDERS = new Set([
   "your-key-here",
   "your_key_here",
   "changeme",
   "sk-ant-xxx",
+  "sk-xxx",
   "todo",
 ]);
 
-/** True only for a plausibly-real Anthropic key. */
-export function isAiConfigured(): boolean {
-  const key = (process.env.ANTHROPIC_API_KEY ?? "").trim();
+function isUsableKey(key: string): boolean {
   if (!key) return false;
   if (PLACEHOLDERS.has(key.toLowerCase())) return false;
-  // Real Anthropic keys start with "sk-ant-".
-  return key.startsWith("sk-ant-");
+  return true;
+}
+
+/** Prefer OpenAI when present; Anthropic remains a compatible fallback. */
+export function getConfiguredAiBackend(): AiBackend | null {
+  const openaiKey = (process.env.OPENAI_API_KEY ?? "").trim();
+  if (isUsableKey(openaiKey) && openaiKey.startsWith("sk-")) {
+    return "openai";
+  }
+
+  const anthropicKey = (process.env.ANTHROPIC_API_KEY ?? "").trim();
+  if (isUsableKey(anthropicKey) && anthropicKey.startsWith("sk-ant-")) {
+    return "claude";
+  }
+
+  return null;
+}
+
+/** Backward-compatible boolean used by older tests and callers. */
+export function isAiConfigured(): boolean {
+  return getConfiguredAiBackend() !== null;
 }
 
 const SYSTEM_PROMPT =
@@ -33,8 +53,81 @@ const SYSTEM_PROMPT =
   "структурно, в markdown. По делу, без воды и без маркетинговой лексики. " +
   "Выводы должны вести к действиям владельца или команды.";
 
-const MODEL = "claude-sonnet-4-6";
+const CLAUDE_MODEL = "claude-sonnet-4-6";
+const OPENAI_MODEL = process.env.OPENAI_MODEL?.trim() || "gpt-5.5";
 const MAX_TOKENS = 2000;
+
+export type AiToolRunResult = {
+  markdown: string;
+  backend: AiBackend;
+};
+
+export async function runToolWithAi(
+  tool: Tool,
+  values: Record<string, string>,
+): Promise<AiToolRunResult> {
+  const backend = getConfiguredAiBackend();
+  if (backend === "openai") {
+    return { markdown: await runToolWithOpenAI(tool, values), backend };
+  }
+  if (backend === "claude") {
+    return { markdown: await runToolWithClaude(tool, values), backend };
+  }
+  throw new Error("AI backend is not configured");
+}
+
+type OpenAITextBlock = { type?: string; text?: string };
+type OpenAIResponse = {
+  output_text?: string;
+  output?: Array<{
+    content?: OpenAITextBlock[];
+  }>;
+};
+
+function extractOpenAIText(payload: OpenAIResponse): string {
+  if (typeof payload.output_text === "string") {
+    return payload.output_text.trim();
+  }
+
+  return (payload.output ?? [])
+    .flatMap((item) => item.content ?? [])
+    .map((block) => block.text ?? "")
+    .join("\n")
+    .trim();
+}
+
+export async function runToolWithOpenAI(
+  tool: Tool,
+  values: Record<string, string>,
+): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      instructions: SYSTEM_PROMPT,
+      input: tool.buildPrompt(values),
+      max_output_tokens: MAX_TOKENS,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`OpenAI failed: HTTP ${response.status} ${detail}`);
+  }
+
+  const payload = (await response.json()) as OpenAIResponse;
+  const text = extractOpenAIText(payload);
+  if (!text) throw new Error("OpenAI returned an empty response");
+
+  return `# ${tool.name}\n\n${text}`;
+}
 
 /**
  * Run a tool through Claude using its `buildPrompt`. Lazily imports the SDK
@@ -50,7 +143,7 @@ export async function runToolWithClaude(
   const userPrompt = tool.buildPrompt(values);
 
   const response = await client.messages.create({
-    model: MODEL,
+    model: CLAUDE_MODEL,
     max_tokens: MAX_TOKENS,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userPrompt }],

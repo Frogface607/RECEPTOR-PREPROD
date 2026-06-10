@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { MobileTopbar } from "@/components/dashboard/mobile-topbar";
 import { ChatDrawer } from "@/components/chat/chat-drawer";
-import { getVenue } from "@/lib/venues/get-venue";
+import { getVenueAccess } from "@/lib/auth/venue-access";
 
 export default async function DashboardLayout({
   children,
@@ -12,8 +12,13 @@ export default async function DashboardLayout({
   params: Promise<{ venueId: string }>;
 }) {
   const { venueId } = await params;
-  const venue = getVenue(venueId);
-  if (!venue) notFound();
+  const access = await getVenueAccess(venueId);
+  if (!access.ok) {
+    if (access.status === 401) {
+      redirect(`/auth?next=/dashboard/${encodeURIComponent(venueId)}`);
+    }
+    notFound();
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -22,7 +27,7 @@ export default async function DashboardLayout({
         <MobileTopbar activeHref={`/dashboard/${venueId}`} />
         {children}
       </div>
-      <ChatDrawer venueId={venue.id} venueName={venue.name} />
+      <ChatDrawer venueId={access.venue.id} venueName={access.venue.name} />
     </div>
   );
 }

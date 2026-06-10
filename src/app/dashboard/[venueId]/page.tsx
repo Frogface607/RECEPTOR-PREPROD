@@ -1,16 +1,18 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KpiGrid } from "@/components/dashboard/kpi-grid";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { DishesChart } from "@/components/dashboard/dishes-chart";
 import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
-import { getVenue } from "@/lib/venues/get-venue";
+import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
 import {
   parsePeriodSearchParams,
   PERIOD_LABELS_RU,
 } from "@/lib/venues/period";
 import { getDashboardClient, resolveIikoClientConfig } from "@/lib/iiko/config";
+import { getVenueAccess } from "@/lib/auth/venue-access";
+import { buildDailyBrief } from "@/lib/brief/daily-brief";
 
 export default async function DashboardPage({
   params,
@@ -20,8 +22,14 @@ export default async function DashboardPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ venueId }, sp] = await Promise.all([params, searchParams]);
-  const venue = getVenue(venueId);
-  if (!venue) notFound();
+  const access = await getVenueAccess(venueId);
+  if (!access.ok) {
+    if (access.status === 401) {
+      redirect(`/auth?next=/dashboard/${encodeURIComponent(venueId)}`);
+    }
+    notFound();
+  }
+  const { venue } = access;
 
   const period = parsePeriodSearchParams(sp);
 
@@ -34,11 +42,12 @@ export default async function DashboardPage({
     new Date().toISOString().slice(0, 10),
   );
 
-  const [summary, dishes, categories, shifts] = await Promise.all([
+  const [summary, dishes, categories, shifts, brief] = await Promise.all([
     client.getRevenueSummary(period),
     client.getDishStatistics(period, 10),
     client.getCategoryStatistics(period),
     client.getShifts(period),
+    buildDailyBrief(client, period.type),
   ]);
 
   const periodLabel = PERIOD_LABELS_RU[period.type];
@@ -74,7 +83,11 @@ export default async function DashboardPage({
             />
           </div>
 
-          <div className="reveal reveal-3 mt-10 grid gap-6 lg:grid-cols-5">
+          <div className="reveal reveal-3 mt-6">
+            <DailyBriefCard brief={brief} venueId={venueId} />
+          </div>
+
+          <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">
             <div className="lg:col-span-3">
               <RevenueChart points={summary.points} />
             </div>
@@ -83,7 +96,7 @@ export default async function DashboardPage({
             </div>
           </div>
 
-          <div className="reveal reveal-4 mt-6">
+          <div className="reveal reveal-5 mt-6">
             <DishesChart dishes={dishes} />
           </div>
 

@@ -8,31 +8,37 @@ const values = { venue: "Кофейня, утренний трафик" };
 describe("executeTool — backend selection + fallback", () => {
   test("uses mock when AI is not configured", async () => {
     const res = await executeTool(tool, values, {
-      aiConfigured: () => false,
-      callClaude: async () => "SHOULD NOT BE CALLED",
+      aiBackend: () => null,
+      callAi: async () => ({
+        markdown: "SHOULD NOT BE CALLED",
+        backend: "openai",
+      }),
     });
     expect(res.backend).toBe("mock");
     expect(res.markdown).toContain("# Идея акции");
   });
 
-  test("uses Claude when configured and the call succeeds", async () => {
+  test("uses OpenAI when configured and the call succeeds", async () => {
     const res = await executeTool(tool, values, {
-      aiConfigured: () => true,
-      callClaude: async () => "# Идея акции\n\nЖивой ответ Claude",
+      aiBackend: () => "openai",
+      callAi: async () => ({
+        markdown: "# Идея акции\n\nЖивой ответ OpenAI",
+        backend: "openai",
+      }),
     });
-    expect(res.backend).toBe("claude");
-    expect(res.markdown).toContain("Живой ответ Claude");
+    expect(res.backend).toBe("openai");
+    expect(res.markdown).toContain("Живой ответ OpenAI");
   });
 
-  test("falls back to mock when Claude throws (credits/rate-limit/network)", async () => {
-    const callClaude = vi.fn(async () => {
+  test("falls back to mock when the configured AI throws (credits/rate-limit/network)", async () => {
+    const callAi = vi.fn(async () => {
       throw new Error("credit balance is too low");
     });
     const res = await executeTool(tool, values, {
-      aiConfigured: () => true,
-      callClaude,
+      aiBackend: () => "claude",
+      callAi,
     });
-    expect(callClaude).toHaveBeenCalledOnce();
+    expect(callAi).toHaveBeenCalledOnce();
     expect(res.backend).toBe("mock");
     expect(res.markdown).toContain("# Идея акции");
   });
@@ -40,8 +46,8 @@ describe("executeTool — backend selection + fallback", () => {
   test("still validates required fields before any backend runs", async () => {
     await expect(
       executeTool(tool, {}, {
-        aiConfigured: () => true,
-        callClaude: async () => "x",
+        aiBackend: () => "openai",
+        callAi: async () => ({ markdown: "x", backend: "openai" }),
       }),
     ).rejects.toThrow(/required|обязател/i);
   });

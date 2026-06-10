@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDashboardClient } from "@/lib/iiko/config";
-import { getVenue } from "@/lib/venues/get-venue";
 import { runMockChatTurn } from "@/lib/ai/mock-chat";
+import {
+  isOpenAIChatConfigured,
+  runOpenAIChatTurn,
+} from "@/lib/ai/openai-chat";
+import { getVenueAccess } from "@/lib/auth/venue-access";
 
 const BodySchema = z.object({
   venueId: z.string().min(1),
@@ -30,35 +34,57 @@ export async function POST(request: Request) {
     );
   }
 
-  const venue = getVenue(parsed.data.venueId);
-  if (!venue) {
-    return NextResponse.json({ error: "venue not found" }, { status: 404 });
+  const access = await getVenueAccess(parsed.data.venueId);
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
   }
+  const { venue } = access;
 
   const iikoClient = getDashboardClient(venue);
+  const useOpenAI = isOpenAIChatConfigured();
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        for await (const event of runMockChatTurn({
+        const input = {
           message: parsed.data.message,
           venueName: venue.name,
           venueType: venue.type,
           venueCity: venue.city,
           iikoClient,
-        })) {
+        };
+        const events = useOpenAI
+          ? runOpenAIChatTurn(input)
+          : runMockChatTurn(input);
+
+        for await (const event of events) {
           controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
         }
       } catch (err) {
-        controller.enqueue(
-          encoder.encode(
-            JSON.stringify({
-              type: "error",
-              message: err instanceof Error ? err.message : "unknown",
-            }) + "\n",
-          ),
-        );
+        if (useOpenAI) {
+          for await (const event of runMockChatTurn({
+            message: parsed.data.message,
+            venueName: venue.name,
+            venueType: venue.type,
+            venueCity: venue.city,
+            iikoClient,
+          })) {
+            controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+          }
+        } else {
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({
+                type: "error",
+                message: err instanceof Error ? err.message : "unknown",
+              }) + "\n",
+            ),
+          );
+        }
       } finally {
         controller.close();
       }
@@ -69,7 +95,7 @@ export async function POST(request: Request) {
     status: 200,
     headers: {
       "Content-Type": "application/x-ndjson; charset=utf-8",
-      "X-Receptor-Backend": "mock-chat",
+      "X-Receptor-Backend": useOpenAI ? "openai-chat" : "mock-chat",
       "Cache-Control": "no-store",
     },
   });

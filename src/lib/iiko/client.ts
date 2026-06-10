@@ -25,6 +25,7 @@ export type IikoClientOptions =
       baseUrl?: string;
       today: string;
       fetchImpl?: typeof fetch;
+      forceReal?: boolean;
     }
   | {
       channel: "rms";
@@ -32,6 +33,7 @@ export type IikoClientOptions =
       login: string;
       password: string;
       today: string;
+      forceReal?: boolean;
     };
 
 function shouldUseMock(): boolean {
@@ -41,7 +43,7 @@ function shouldUseMock(): boolean {
 }
 
 export function getIikoClient(opts: IikoClientOptions): IikoClient {
-  if (shouldUseMock()) {
+  if (!opts.forceReal && shouldUseMock()) {
     return new MockIikoClient({ today: opts.today });
   }
 

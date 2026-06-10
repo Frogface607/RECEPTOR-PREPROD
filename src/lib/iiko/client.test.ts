@@ -38,6 +38,18 @@ describe("getIikoClient facade", () => {
     expect(rms).toBeInstanceOf(MockIikoClient);
   });
 
+  test("forceReal bypasses mock flag for stored production credentials", () => {
+    process.env.USE_MOCK_IIKO = "true";
+    const c = getIikoClient({
+      channel: "cloud",
+      apiLogin: "stored-login",
+      organizationId: "o",
+      today: "2026-05-29",
+      forceReal: true,
+    });
+    expect(c).toBeInstanceOf(CloudIikoClient);
+  });
+
   test("when flag absent → defaults to mock (safe default for Phase 0–3)", () => {
     const c = getIikoClient({
       channel: "cloud",

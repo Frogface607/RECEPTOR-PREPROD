@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-import { getIikoClient } from "@/lib/iiko/client";
-import { getVenue } from "@/lib/venues/get-venue";
+import { getDashboardClient } from "@/lib/iiko/config";
 import {
   parsePeriodSearchParams,
   PERIOD_LABELS_RU,
 } from "@/lib/venues/period";
 import { toCsv, type CsvColumn } from "@/lib/export/csv";
 import type { DishStat } from "@/lib/iiko/models";
-
-const ANCHOR = "2026-05-29";
+import { getVenueAccess } from "@/lib/auth/venue-access";
 
 const COLUMNS: CsvColumn<DishStat>[] = [
   { header: "Блюдо", value: (d) => d.dishName },
@@ -20,21 +18,19 @@ const COLUMNS: CsvColumn<DishStat>[] = [
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const venueId = url.searchParams.get("venueId") ?? "";
-  const venue = getVenue(venueId);
-
-  if (!venue) {
-    return NextResponse.json({ error: "venue not found" }, { status: 404 });
+  const access = await getVenueAccess(venueId);
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
   }
+  const { venue } = access;
 
   const period = parsePeriodSearchParams(
     Object.fromEntries(url.searchParams),
   );
-  const client = getIikoClient({
-    channel: "cloud",
-    apiLogin: "",
-    organizationId: venue.iiko.organizationId,
-    today: ANCHOR,
-  });
+  const client = getDashboardClient(venue);
 
   const dishes = await client.getDishStatistics(period, 100);
   const body = toCsv(dishes, COLUMNS);

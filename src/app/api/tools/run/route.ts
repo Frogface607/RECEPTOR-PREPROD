@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Claude when configured; otherwise (or on any Claude failure) the
+  // OpenAI/Claude when configured; otherwise (or on any model failure) the
   // deterministic mock. executeTool guarantees a usable result so the demo
   // never shows a red API error.
   try {

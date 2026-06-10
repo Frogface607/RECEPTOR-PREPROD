@@ -45,6 +45,11 @@ export interface CloudIikoClientOptions {
   fetchImpl?: typeof fetch;
 }
 
+export type IikoOrganization = {
+  id: string;
+  name: string;
+};
+
 export class CloudIikoClient implements IikoClient {
   private readonly apiLogin: string;
   private readonly organizationId: string;
@@ -108,6 +113,32 @@ export class CloudIikoClient implements IikoClient {
     };
 
     return RevenueSummarySchema.parse(summary);
+  }
+
+  async listOrganizations(): Promise<IikoOrganization[]> {
+    const token = await this.getToken();
+    const res = await this.fetchImpl(`${this.baseUrl}/api/1/organizations`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`iiko Cloud organizations failed: HTTP ${res.status}`);
+    }
+
+    const payload = (await res.json()) as {
+      organizations?: Array<Record<string, unknown>>;
+    };
+
+    return (payload.organizations ?? [])
+      .map((org) => ({
+        id: String(org.id ?? ""),
+        name: String(org.name ?? org.title ?? ""),
+      }))
+      .filter((org) => org.id.length > 0);
   }
 
   async getDishStatistics(period: Period, topN: number): Promise<DishStat[]> {

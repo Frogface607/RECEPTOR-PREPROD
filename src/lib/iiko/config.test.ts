@@ -12,6 +12,22 @@ const venue: ResolvedVenue = {
 };
 
 describe("resolveIikoClientConfig", () => {
+  test("stored venue apiLogin selects real mode without env flags", () => {
+    const cfg = resolveIikoClientConfig(
+      {
+        ...venue,
+        iiko: { ...venue.iiko, apiLogin: "stored-login" },
+      },
+      {},
+      "2026-06-03",
+    );
+    expect(cfg.mode).toBe("real");
+    if (cfg.mode === "real") {
+      expect(cfg.apiLogin).toBe("stored-login");
+      expect(cfg.organizationId).toBe("edison-org");
+    }
+  });
+
   test("mock mode when USE_MOCK_IIKO unset → deterministic anchor", () => {
     const cfg = resolveIikoClientConfig(venue, {}, "2026-06-03");
     expect(cfg.mode).toBe("mock");

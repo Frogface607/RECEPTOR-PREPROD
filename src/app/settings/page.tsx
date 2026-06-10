@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowLeft,
   User,
@@ -12,30 +13,89 @@ import {
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
-import { resolveIikoClientConfig } from "@/lib/iiko/config";
-import { getVenue } from "@/lib/venues/get-venue";
+import { getServerSupabase } from "@/lib/db/server";
+import { listKnownVenues } from "@/lib/venues/get-venue";
 
 export const metadata: Metadata = {
   title: "Настройки — RECEPTOR",
 };
 
+export const dynamic = "force-dynamic";
+
+type SettingsVenue = {
+  id: string;
+  name: string;
+  city: string;
+  type: string;
+  iikoConnected: boolean;
+};
+
+async function listSettingsVenues(): Promise<SettingsVenue[]> {
+  const user = await getCurrentUser();
+  if (!user || user.isDemo) {
+    return listKnownVenues().map((venue) => ({
+      id: venue.id,
+      name: venue.name,
+      city: venue.city,
+      type: venue.type,
+      iikoConnected: Boolean(venue.iiko.apiLogin),
+    }));
+  }
+
+  const supabase = await getServerSupabase();
+  if (!supabase) return [];
+
+  const { data: venues } = await supabase
+    .from("venues")
+    .select("id,name,city,type")
+    .eq("owner_user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const rows = (venues ?? []) as Array<{
+    id: string;
+    name: string;
+    city: string | null;
+    type: string | null;
+  }>;
+
+  const ids = rows.map((venue) => venue.id);
+  const { data: creds } = ids.length
+    ? await supabase
+        .from("iiko_credentials")
+        .select("venue_id")
+        .in("venue_id", ids)
+        .eq("status", "active")
+    : { data: [] };
+  const connected = new Set(
+    ((creds ?? []) as Array<{ venue_id: string }>).map((cred) => cred.venue_id),
+  );
+
+  return rows.map((venue) => ({
+    id: venue.id,
+    name: venue.name,
+    city: venue.city ?? "",
+    type: venue.type ?? "other",
+    iikoConnected: connected.has(venue.id),
+  }));
+}
+
 export default async function SettingsPage() {
   const user = await getCurrentUser();
   const configured = isSupabaseConfigured();
-  const venue = getVenue("edison-demo")!;
-  const iikoCfg = resolveIikoClientConfig(
-    venue,
-    process.env,
-    new Date().toISOString().slice(0, 10),
-  );
-  const iikoLive = iikoCfg.mode === "real";
+  if (configured && !user) {
+    redirect("/auth?next=/settings");
+  }
+  const venues = await listSettingsVenues();
+  const firstVenueHref = venues[0]
+    ? `/dashboard/${venues[0].id}`
+    : "/onboarding";
 
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border/40">
         <div className="mx-auto flex h-16 max-w-4xl items-center gap-4 px-6">
           <Link
-            href="/dashboard/edison-demo"
+            href={firstVenueHref}
             className="inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
@@ -66,21 +126,46 @@ export default async function SettingsPage() {
           </Section>
 
           <Section icon={Store} title="Заведения">
-            <div className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3">
-              <div>
-                <p className="text-[14px] font-medium text-foreground">
-                  {venue.name}
+            <div className="space-y-2">
+              {venues.length > 0 ? (
+                venues.map((venue) => (
+                  <div
+                    key={venue.id}
+                    className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3"
+                  >
+                    <div>
+                      <p className="text-[14px] font-medium text-foreground">
+                        {venue.name}
+                      </p>
+                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                        {venue.city || "город не указан"} · {venue.type}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {venue.iikoConnected ? (
+                        <span className="hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-brand sm:inline-flex">
+                          <CheckCircle2 className="size-3.5" />
+                          iiko
+                        </span>
+                      ) : (
+                        <span className="hidden text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
+                          нет iiko
+                        </span>
+                      )}
+                      <Link
+                        href={`/dashboard/${venue.id}`}
+                        className="text-[13px] text-brand underline-offset-4 hover:underline"
+                      >
+                        Открыть
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-[13px] text-muted-foreground">
+                  Заведения ещё не подключены.
                 </p>
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                  {venue.city} · Бар
-                </p>
-              </div>
-              <Link
-                href={`/dashboard/${venue.id}`}
-                className="text-[13px] text-brand underline-offset-4 hover:underline"
-              >
-                Открыть
-              </Link>
+              )}
             </div>
             <Link
               href="/onboarding"
@@ -92,26 +177,25 @@ export default async function SettingsPage() {
 
           <Section icon={Plug} title="Подключение iiko">
             <div className="flex items-center gap-3">
-              {iikoLive ? (
+              {venues.some((venue) => venue.iikoConnected) ? (
                 <>
                   <CheckCircle2 className="size-4 text-brand" />
                   <span className="text-[14px] text-foreground">
-                    iiko Cloud подключён — живые данные
+                    iiko Cloud подключён — BI и copilot работают на живых данных
                   </span>
                 </>
               ) : (
                 <>
                   <span className="size-2 rounded-full bg-[color:var(--pro)]" />
                   <span className="text-[14px] text-muted-foreground">
-                    Демо-данные. apiLogin не подключён.
+                    iiko apiLogin ещё не подключён.
                   </span>
                 </>
               )}
             </div>
             <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-              Подключение настраивается через переменные окружения
-              (<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">EDISON_IIKO_API_LOGIN</code>).
-              См. docs/REAL_CONNECT.md.
+              Новый apiLogin добавляется через onboarding. Ключ проверяется в
+              iiko Cloud, шифруется и хранится в Supabase credentials.
             </p>
           </Section>
 
