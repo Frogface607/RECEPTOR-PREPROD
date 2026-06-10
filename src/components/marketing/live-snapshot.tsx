@@ -14,7 +14,7 @@ export async function LiveSnapshot() {
     {
       label: "Выручка / 7 дней",
       value: formatRubles(summary.revenue),
-      note: "Sandbox · LAST_WEEK",
+      note: "Preview · LAST_WEEK",
     },
     {
       label: "Средний чек",
@@ -47,8 +47,8 @@ export async function LiveSnapshot() {
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            В sandbox используются тестовые данные. На пилоте этот же экран
-            подключается к iiko и показывает реальные продажи ресторана.
+            На пилоте этот же экран подключается к iiko и показывает реальные
+            продажи ресторана без Excel и ручных выгрузок.
           </p>
         </div>
 

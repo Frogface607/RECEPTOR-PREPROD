@@ -62,7 +62,7 @@ export function Hero() {
               variant="ghost"
               className="press h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
             >
-              Смотреть sandbox
+              Открыть preview
               <ArrowRight className="ml-1 size-4 opacity-60" />
             </LinkButton>
           </div>
@@ -74,7 +74,7 @@ export function Hero() {
             <span className="text-border">/</span>
             <span>OLAP-аналитика</span>
             <span className="text-border">/</span>
-            <span>Claude tool-calling</span>
+            <span>AI tool-calling</span>
           </div>
         </div>
 

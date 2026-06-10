@@ -3,9 +3,9 @@ import Link from "next/link";
 const CASES = [
   {
     venue: "Demo Restaurant",
-    city: "Sandbox",
-    status: "Sandbox" as const,
-    tagline: "Тестовый кабинет Receptor для проверки BI, copilot и onboarding.",
+    city: "Preview",
+    status: "Preview" as const,
+    tagline: "Презентационный кабинет Receptor для проверки BI, copilot и onboarding.",
     metric: "4.7 млн / 30 дней",
     href: "/dashboard/dev-venue",
   },
@@ -30,7 +30,7 @@ type Case = (typeof CASES)[number];
 
 function StatusBadge({ status }: { status: Case["status"] }) {
   const styles: Record<Case["status"], string> = {
-    Sandbox: "bg-brand/15 text-brand border-brand/40",
+    Preview: "bg-brand/15 text-brand border-brand/40",
     Pilot: "bg-[color:var(--pro)]/12 text-[color:var(--pro)] border-[color:var(--pro)]/35",
     Open: "bg-muted text-muted-foreground border-border",
   };

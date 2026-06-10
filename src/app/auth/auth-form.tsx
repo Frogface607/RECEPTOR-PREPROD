@@ -165,16 +165,16 @@ export function AuthForm({
       ) : demoMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Sandbox
+            Preview
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Auth еще не настроен в этом окружении. Можно открыть тестовый кабинет.
+            Auth еще не настроен в этом окружении. Можно открыть preview-кабинет.
           </p>
           <Link
             href="/dashboard/dev-venue"
             className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 py-2.5 text-sm text-foreground transition-colors hover:border-brand/40 hover:bg-card"
           >
-            Открыть sandbox
+            Открыть preview
             <ArrowRight className="size-4 text-brand" />
           </Link>
         </div>

@@ -41,9 +41,9 @@ export function NavContent({
           Заведение
         </p>
         <div className="rounded-lg border border-border/50 bg-card/60 px-3 py-2.5">
-          <p className="text-[13px] font-medium text-foreground">Demo Restaurant</p>
+          <p className="text-[13px] font-medium text-foreground">Preview Restaurant</p>
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Sandbox · Cloud
+            Preview · Cloud
           </p>
         </div>
 

@@ -35,7 +35,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link href="/dashboard/dev-venue" className="text-foreground/80 transition-colors hover:text-foreground">
-                  Sandbox
+                  Preview
                 </Link>
               </li>
             </ul>

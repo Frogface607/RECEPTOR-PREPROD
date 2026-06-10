@@ -380,7 +380,7 @@ export default function PricingPage() {
                 variant="ghost"
                 className="h-12 px-6 text-base"
               >
-                Смотреть sandbox
+                Смотреть preview
               </LinkButton>
             </div>
           </div>

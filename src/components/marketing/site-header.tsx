@@ -37,7 +37,7 @@ export function SiteHeader() {
             href="/dashboard/dev-venue"
             className="transition-colors hover:text-foreground"
           >
-            Sandbox
+            Preview
           </Link>
           <Link
             href="/auth"

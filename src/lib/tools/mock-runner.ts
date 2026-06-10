@@ -6,7 +6,7 @@
  * category-shaped markdown preview that echoes the user's input so the
  * preview feels alive while a real AI key is unavailable.
  *
- * It is honest: each result carries a small "демо-превью" note. When the
+ * It is honest: each result carries a small preview note. When the
  * API key arrives, the `/api/tools/run` route swaps this for a real Claude
  * call built from `tool.buildPrompt(values)` — the UI never changes.
  *
@@ -30,7 +30,7 @@ export function validateToolInput(
 }
 
 const DEMO_NOTE =
-  "> _Демо-превью на mock-данных. С подключённым AI-ключом Receptor выдаёт полный развёрнутый результат._";
+  "> _Preview output. With a connected AI key, Receptor returns a fuller production-grade result._";
 
 /** Non-empty field values in declared order, as {label, value} pairs. */
 function filledInputs(tool: Tool, values: Record<string, string>) {

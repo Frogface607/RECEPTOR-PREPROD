@@ -261,7 +261,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Откроем sandbox-кабинет. Реальные цифры подключатся, когда добавите iiko-ключ."
+                ? "Откроем preview-кабинет. Реальные цифры подключатся, когда добавите iiko-ключ."
                 : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
             </p>
             {error ? (

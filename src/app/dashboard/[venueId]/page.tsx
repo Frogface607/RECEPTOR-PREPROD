@@ -112,7 +112,7 @@ export default async function DashboardPage({
               (cfg.mode === "real" ? "bg-brand" : "bg-[color:var(--pro)]")
             }
           />
-          {cfg.mode === "real" ? "Живые данные iiko Cloud" : "Sandbox-данные"}
+          {cfg.mode === "real" ? "Живые данные iiko Cloud" : "Preview data"}
         </div>
       </main>
     </>

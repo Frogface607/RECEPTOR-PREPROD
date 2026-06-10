@@ -110,7 +110,7 @@ export default async function SettingsPage() {
           <div className="mb-8 flex items-start gap-3 rounded-xl border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4">
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
             <p className="text-[13px] leading-relaxed text-foreground/85">
-              Демо-режим. {configured ? "Войдите" : "Подключите Supabase и войдите"},
+              Preview access. {configured ? "Войдите" : "Подключите Supabase и войдите"},
               чтобы сохранять профиль, заведения и подключения.
             </p>
           </div>
@@ -121,7 +121,7 @@ export default async function SettingsPage() {
             <Row label="Email" value={user?.email ?? "—"} />
             <Row
               label="Статус"
-              value={user?.isDemo ? "Демо-аккаунт" : "Авторизован"}
+              value={user?.isDeveloper ? "Developer access" : user?.isDemo ? "Preview account" : "Авторизован"}
             />
           </Section>
 
