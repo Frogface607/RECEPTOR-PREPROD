@@ -24,11 +24,11 @@ describe("buildDailyBrief", () => {
     );
 
     const text = renderDailyBriefText(brief, {
-      venueName: "Demo Restaurant",
+      venueName: "Ресторан Премьера",
       generatedAt: new Date("2026-05-30T06:00:00.000Z"),
     });
 
-    expect(text).toContain("Receptor Daily Brief: Demo Restaurant");
+    expect(text).toContain("Receptor Daily Brief: Ресторан Премьера");
     expect(text).toContain("Главное:");
     expect(text).toContain("Что сделать сегодня:");
     expect(text).toContain(brief.headline);

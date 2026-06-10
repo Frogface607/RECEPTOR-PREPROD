@@ -7,9 +7,8 @@
 /* ----------------------------------------------------------------------- */
 /* RECEPTOR design tokens                                                  */
 /*                                                                         */
-/* Premium Dark aesthetic — Linear / Vercel territory but with a warmer,   */
-/* restaurant-bar feel: emerald primary, signature serif-italic display    */
-/* moments, restrained accent palette per brand-guide.md.                  */
+/* Premium operational dark surface: graphite panels, quiet typography,    */
+/* restrained accent color, and minimal decoration for owner-grade SaaS.   */
 /* ----------------------------------------------------------------------- */
 
 @theme inline {
@@ -135,26 +134,26 @@
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
 
-  /* Brand emerald — primary, CTAs, success */
-  --primary: oklch(0.696 0.179 162.48);        /* emerald-500 #10b981 */
+  /* Brand accent — muted emerald, used sparingly for action/success */
+  --primary: oklch(0.68 0.105 162.48);
   --primary-foreground: oklch(0.145 0 0);
-  --ring: oklch(0.696 0.179 162.48);
-  --brand: oklch(0.696 0.179 162.48);
-  --brand-hover: oklch(0.765 0.177 163.22);
+  --ring: oklch(0.68 0.105 162.48);
+  --brand: oklch(0.68 0.105 162.48);
+  --brand-hover: oklch(0.74 0.11 162.48);
 
-  /* Functional accents — restrained, only where they earn their place */
-  --iiko: oklch(0.715 0.144 215.21);           /* cyan-500 — iiko surface */
-  --pro: oklch(0.769 0.188 70.08);             /* amber-500 — Pro badge */
-  --ai: oklch(0.606 0.25 292.71);              /* purple-500 — AI chat */
-  --bi: oklch(0.624 0.214 259.86);             /* blue-500 — analytics */
+  /* Functional accents — deliberately muted */
+  --iiko: oklch(0.67 0.06 220);
+  --pro: oklch(0.72 0.08 80);
+  --ai: oklch(0.68 0.07 285);
+  --bi: oklch(0.66 0.06 245);
   --destructive: oklch(0.637 0.237 25.33);     /* red-500 — errors */
 
-  /* Recharts palette — brand emerald leads, supporting accents follow */
-  --chart-1: oklch(0.696 0.179 162.48);        /* emerald (revenue) */
-  --chart-2: oklch(0.715 0.144 215.21);        /* cyan (iiko / beer) */
-  --chart-3: oklch(0.769 0.188 70.08);         /* amber (cocktails / Pro) */
-  --chart-4: oklch(0.624 0.214 259.86);        /* blue (snacks) */
-  --chart-5: oklch(0.606 0.25 292.71);         /* purple (desserts) */
+  /* Recharts palette — tonal, not decorative */
+  --chart-1: oklch(0.68 0.105 162.48);
+  --chart-2: oklch(0.67 0.06 220);
+  --chart-3: oklch(0.72 0.08 80);
+  --chart-4: oklch(0.66 0.06 245);
+  --chart-5: oklch(0.68 0.07 285);
 
   /* Sidebar — slightly deeper than app background to anchor nav */
   --sidebar: oklch(0.12 0 0);
@@ -234,13 +233,12 @@
 }
 
 @layer utilities {
-  /* OLED "minimal glow" — signature emerald elements get a soft halo.
-     Subtle by design; the skill's Key Effect for premium dark UIs. */
+  /* Reserved for rare emphasis. The product stays quiet by default. */
   .glow-brand {
-    text-shadow: 0 0 18px color-mix(in oklch, var(--brand) 45%, transparent);
+    text-shadow: none;
   }
   .glow-brand-soft {
-    text-shadow: 0 0 24px color-mix(in oklch, var(--brand) 28%, transparent);
+    text-shadow: none;
   }
 
   /* Tactile press — gentle scale on active for tappable cards/buttons.

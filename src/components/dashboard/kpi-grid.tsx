@@ -71,7 +71,7 @@ export function KpiGrid({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 xl:grid-cols-4">
       {items.map((k) => (
         <div
           key={k.label}
@@ -84,7 +84,7 @@ export function KpiGrid({
             <DeltaPill delta={k.delta} />
           </div>
           <div>
-            <p className="numeric font-display text-[clamp(1.5rem,6vw,2.5rem)] leading-none tracking-[-0.02em] text-foreground">
+            <p className="numeric text-[clamp(1.45rem,6vw,2.35rem)] font-medium leading-none tracking-[-0.01em] text-foreground">
               {k.value}
             </p>
             <p className="mt-2 text-[11px] text-muted-foreground sm:mt-3 sm:text-[12px]">

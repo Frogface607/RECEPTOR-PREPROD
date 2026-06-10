@@ -64,8 +64,7 @@ export function PricingTeaser() {
             04 · Цены
           </p>
           <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-            Один тариф окупится первой найденной{" "}
-            <span className="font-display italic text-brand">просадкой.</span>
+            Один тариф окупится первой найденной просадкой.
           </h2>
           <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
             Receptor находит дыру в фудкосте, проваленную смену или забытую
@@ -80,9 +79,9 @@ export function PricingTeaser() {
               <article
                 key={t.name}
                 className={
-                  "relative flex flex-col rounded-2xl border p-8 transition-all " +
+                  "relative flex flex-col rounded-xl border p-8 transition-all " +
                   (isFeatured
-                    ? "border-brand/60 bg-card shadow-[0_0_80px_-30px_var(--brand)]"
+                    ? "border-brand/55 bg-card"
                     : "border-border/60 bg-card/60 hover:bg-card/95")
                 }
               >
@@ -107,7 +106,7 @@ export function PricingTeaser() {
                 <div className="mt-8 flex items-baseline gap-2">
                   <span
                     className={
-                      "numeric font-display text-[56px] leading-none tracking-[-0.02em] " +
+                      "numeric text-[54px] font-medium leading-none tracking-[-0.01em] " +
                       (isFeatured ? "text-brand" : "text-foreground")
                     }
                   >

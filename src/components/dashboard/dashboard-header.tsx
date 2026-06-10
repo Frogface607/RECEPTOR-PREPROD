@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Sparkles } from "lucide-react";
+import { Download, MessageSquare } from "lucide-react";
 import { PeriodSelector } from "./period-selector";
 import type { ResolvedVenue } from "@/lib/venues/get-venue";
 import type { PeriodType } from "@/lib/iiko/models";
@@ -24,9 +24,6 @@ export function DashboardHeader({
           <span className="whitespace-nowrap text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             {venue.city} · {venue.type === "bar" ? "Бар" : venue.type}
           </span>
-          <span className="hidden whitespace-nowrap font-mono text-[10px] uppercase tracking-widest text-[color:var(--iiko)] md:inline">
-            · iiko {venue.iiko.channel === "cloud" ? "Cloud" : "RMS"} connected
-          </span>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
@@ -48,7 +45,7 @@ export function DashboardHeader({
             replace
             className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover sm:px-4"
           >
-            <Sparkles className="size-4" />
+            <MessageSquare className="size-4" />
             <span className="hidden sm:inline">Спросить Receptor</span>
             <span className="sm:hidden">Receptor</span>
           </Link>

@@ -141,7 +141,7 @@ function ToolCard({ tool, accent }: { tool: Tool; accent: string }) {
   return (
     <Link
       href={`/tools/${tool.id}`}
-      className="press group flex h-full flex-col rounded-2xl border border-border/60 bg-card/50 p-5 transition-all hover:border-brand/40 hover:bg-card/90"
+      className="press group flex h-full flex-col rounded-xl border border-border/60 bg-card/50 p-5 transition-all hover:border-brand/40 hover:bg-card/90"
     >
       <div className="flex items-start justify-between">
         <span

@@ -9,7 +9,7 @@ const ANCHOR = "2026-05-29";
 function input(message: string) {
   return {
     message,
-    venueName: "Demo Restaurant",
+    venueName: "Ресторан Премьера",
     venueType: "bar",
     venueCity: "Иркутск",
     iikoClient: new MockIikoClient({ today: ANCHOR }),

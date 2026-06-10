@@ -18,7 +18,7 @@ import type {
 
 export const SANDBOX_VENUE: Organization = {
   id: "sandbox-restaurant",
-  name: "Demo Restaurant",
+  name: "Ресторан Премьера",
   timezone: "Asia/Irkutsk",
 };
 

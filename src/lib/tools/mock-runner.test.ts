@@ -61,9 +61,9 @@ describe("runToolMock — contract for every tool", () => {
     expect(a).toBe(b);
   });
 
-  test("labels the output as a preview while on deterministic fallback", () => {
+  test("labels the output as a draft while on deterministic fallback", () => {
     const md = runToolMock("review-response", { review: "Долго ждали" });
-    expect(md.toLowerCase()).toContain("preview output");
+    expect(md).toContain("Черновик Receptor");
   });
 
   test("throws on unknown tool id", () => {

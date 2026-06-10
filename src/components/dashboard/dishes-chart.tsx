@@ -55,7 +55,7 @@ function ChartTooltip({
 export function DishesChart({ dishes }: { dishes: Dish[] }) {
   const data = dishes.slice(0, 10);
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/60 p-6">
+    <div className="rounded-xl border border-border/60 bg-card/55 p-6">
       <div className="flex items-baseline justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.2em] text-brand">

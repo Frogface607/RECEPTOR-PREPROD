@@ -124,7 +124,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
         })}
       </ol>
 
-      <div className="rounded-2xl border border-border/60 bg-card/50 p-7">
+      <div className="rounded-xl border border-border/60 bg-card/50 p-7">
         {step === 0 ? (
           <div className="flex flex-col gap-5">
             <div>
@@ -140,7 +140,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Demo Restaurant"
+                placeholder="Название ресторана"
                 className="input-base"
               />
             </Field>
@@ -253,7 +253,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4 py-6 text-center">
-            <div className="flex size-14 items-center justify-center rounded-xl bg-brand/15 text-brand">
+            <div className="flex size-14 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-brand">
               <Rocket className="size-7" />
             </div>
             <h2 className="text-2xl font-medium tracking-[-0.02em]">
@@ -261,7 +261,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Откроем preview-кабинет. Реальные цифры подключатся, когда добавите iiko-ключ."
+                ? "Откроем рабочий кабинет. Реальные цифры подключатся, когда добавите iiko-ключ."
                 : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
             </p>
             {error ? (

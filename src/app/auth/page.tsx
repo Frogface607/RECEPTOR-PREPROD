@@ -31,7 +31,6 @@ export default async function AuthPage({
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-[-20%] h-[520px] w-[700px] -translate-x-1/2 rounded-full bg-brand/12 blur-[150px]" />
       </div>
 
       <div className="w-full max-w-md">
@@ -42,8 +41,8 @@ export default async function AuthPage({
           <span className="text-[15px] font-medium tracking-[0.22em] text-foreground">
             RECEPTOR
           </span>
-          <span className="font-display italic text-muted-foreground text-[15px]">
-            чувствует кухню
+          <span className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+            ресторанный copilot
           </span>
         </Link>
 

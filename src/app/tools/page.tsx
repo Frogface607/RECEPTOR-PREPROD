@@ -20,7 +20,6 @@ export default function ToolsPage() {
         {/* Hero */}
         <section className="relative overflow-hidden border-b border-border/40">
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute left-1/2 top-[-40%] h-[560px] w-[820px] -translate-x-1/2 rounded-full bg-brand/12 blur-[150px]" />
           </div>
 
           <div className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
@@ -30,10 +29,7 @@ export default function ToolsPage() {
             <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.02] tracking-[-0.025em]">
               {TOOLS.length} инструментов.
               <br />
-              Один клик —{" "}
-              <span className="font-display italic text-brand glow-brand-soft">
-                готовый результат.
-              </span>
+              Один клик — готовый результат.
             </h1>
             <p className="mt-7 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
               Рецепты и себестоимость, скрипты официантов, посты и ответы на
@@ -43,11 +39,8 @@ export default function ToolsPage() {
 
             <div className="mt-9 flex flex-wrap gap-x-7 gap-y-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
               <span>{CATEGORIES.length} направлений</span>
-              <span className="text-border">/</span>
               <span>{freeCount} бесплатных</span>
-              <span className="text-border">/</span>
               <span>Русский язык</span>
-              <span className="text-border">/</span>
               <span>Без эмодзи-воды</span>
             </div>
           </div>

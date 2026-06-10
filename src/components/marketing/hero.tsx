@@ -4,39 +4,35 @@ import { LinkButton } from "@/components/ui/link-button";
 export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border/40">
-      {/* Atmospheric backdrop: focused emerald glow + faint grid. */}
+      {/* Quiet graphite backdrop with a restrained grid. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 opacity-90"
       >
-        <div className="absolute left-1/2 top-[-30%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-brand/15 blur-[140px]" />
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
-            backgroundSize: "64px 64px",
+              "linear-gradient(to right, rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.032) 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
             maskImage:
-              "radial-gradient(ellipse at 50% 30%, black 40%, transparent 75%)",
+              "linear-gradient(to bottom, black 0%, black 45%, transparent 88%)",
             WebkitMaskImage:
-              "radial-gradient(ellipse at 50% 30%, black 40%, transparent 75%)",
+              "linear-gradient(to bottom, black 0%, black 45%, transparent 88%)",
           }}
         />
       </div>
 
       <div className="mx-auto grid max-w-7xl gap-16 px-6 pb-28 pt-20 lg:grid-cols-12 lg:gap-12 lg:pb-36 lg:pt-28">
         <div className="lg:col-span-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-            <span className="size-1.5 rounded-full bg-brand animate-pulse" />
+          <div className="inline-flex items-center border-l border-brand/50 pl-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             AI-копайлот владельца ресторана
           </div>
 
-          <h1 className="mt-8 text-balance text-[clamp(3rem,7vw,6.25rem)] font-medium leading-[0.95] tracking-[-0.03em]">
+          <h1 className="mt-8 text-balance text-[clamp(3rem,7vw,6rem)] font-medium leading-[0.96] tracking-[-0.035em]">
             Чувствует
             <br />
-            <span className="font-display italic text-brand glow-brand-soft">
-              кухню.
-            </span>
+            <span className="text-foreground/70">кухню.</span>
           </h1>
 
           <p className="mt-8 max-w-xl text-balance text-[17px] leading-[1.55] text-muted-foreground">
@@ -51,7 +47,7 @@ export function Hero() {
             <LinkButton
               href="/auth"
               size="lg"
-              className="press h-12 bg-brand px-6 text-base text-primary-foreground shadow-[0_8px_40px_-12px_var(--brand)] transition-shadow hover:bg-brand-hover hover:shadow-[0_10px_48px_-10px_var(--brand)]"
+              className="press h-12 bg-brand px-6 text-base text-primary-foreground shadow-none transition-colors hover:bg-brand-hover"
             >
               Начать бесплатно
               <ArrowRight className="ml-1 size-4" />
@@ -62,32 +58,28 @@ export function Hero() {
               variant="ghost"
               className="press h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
             >
-              Открыть preview
+              Открыть кабинет
               <ArrowRight className="ml-1 size-4 opacity-60" />
             </LinkButton>
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center gap-x-7 gap-y-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="mt-12 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
             <span>iiko Cloud</span>
-            <span className="text-border">/</span>
-            <span>iiko RMS Server</span>
-            <span className="text-border">/</span>
-            <span>OLAP-аналитика</span>
-            <span className="text-border">/</span>
-            <span>AI tool-calling</span>
+            <span>RMS Server</span>
+            <span>BI</span>
+            <span>Copilot</span>
           </div>
         </div>
 
-        {/* Right column — editorial "chat snippet" mock. */}
+        {/* Right column — compact working-room snapshot. */}
         <div className="lg:col-span-5">
           <div className="relative">
-            <div className="absolute inset-0 -z-10 translate-x-3 translate-y-3 rounded-2xl bg-brand/10 blur-2xl" />
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl shadow-2xl shadow-black/40">
+            <div className="rounded-xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl shadow-2xl shadow-black/30">
               <div className="flex items-center justify-between border-b border-border/50 pb-4">
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-brand" />
                   <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Demo Restaurant · сегодня
+                    Рабочий кабинет · сегодня
                   </span>
                 </div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">

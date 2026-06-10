@@ -15,8 +15,8 @@ export type NavItem = {
 };
 
 export const DASHBOARD_NAV: NavItem[] = [
-  { href: "/dashboard/dev-venue", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/dashboard/dev-venue?chat=1", icon: MessageSquare, label: "AI чат" },
+  { href: "/dashboard/dev-venue", icon: LayoutDashboard, label: "BI кабинет" },
+  { href: "/dashboard/dev-venue?chat=1", icon: MessageSquare, label: "Copilot" },
   { href: "/tools", icon: Wrench, label: "Инструменты" },
   { href: "/settings", icon: Settings, label: "Настройки" },
   { href: "/#что-делает", icon: BookOpen, label: "Помощь" },
@@ -40,10 +40,10 @@ export function NavContent({
         <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           Заведение
         </p>
-        <div className="rounded-lg border border-border/50 bg-card/60 px-3 py-2.5">
-          <p className="text-[13px] font-medium text-foreground">Preview Restaurant</p>
+        <div className="rounded-lg border border-border/50 bg-card/50 px-3 py-2.5">
+          <p className="text-[13px] font-medium text-foreground">Рабочий кабинет</p>
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Preview · Cloud
+            BI · Copilot
           </p>
         </div>
 

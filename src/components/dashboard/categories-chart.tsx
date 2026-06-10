@@ -44,7 +44,7 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
   const total = categories.reduce((s, c) => s + c.dishSumInt, 0);
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/60 p-6">
+    <div className="rounded-xl border border-border/60 bg-card/55 p-6">
       <div className="flex items-baseline justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
@@ -91,7 +91,7 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
             return (
               <li
                 key={c.categoryName}
-                className="flex items-center gap-3 border-b border-border/30 pb-3 last:border-b-0 last:pb-0"
+                className="flex items-center gap-2.5 border-b border-border/30 pb-3 last:border-b-0 last:pb-0"
               >
                 <span
                   className="size-2.5 rounded-full"
@@ -106,7 +106,7 @@ export function CategoriesChart({ categories }: { categories: Cat[] }) {
                 <span className="numeric font-mono text-[12px] text-muted-foreground">
                   {share.toFixed(1)}%
                 </span>
-                <span className="numeric w-[100px] text-right font-mono text-[13px] text-foreground">
+                <span className="numeric w-[88px] text-right font-mono text-[13px] text-foreground">
                   {formatRubles(c.dishSumInt)}
                 </span>
               </li>

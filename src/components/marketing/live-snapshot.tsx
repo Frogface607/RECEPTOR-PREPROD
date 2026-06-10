@@ -14,7 +14,7 @@ export async function LiveSnapshot() {
     {
       label: "Выручка / 7 дней",
       value: formatRubles(summary.revenue),
-      note: "Preview · LAST_WEEK",
+      note: "Период: 7 дней",
     },
     {
       label: "Средний чек",
@@ -42,8 +42,7 @@ export async function LiveSnapshot() {
               02 · Что вы видите
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              BI, который выглядит как{" "}
-              <span className="font-display italic text-brand">живой кабинет</span>.
+              BI, который выглядит как рабочий кабинет.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
@@ -52,7 +51,7 @@ export async function LiveSnapshot() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-4">
           {KPIS.map((k) => (
             <div
               key={k.label}
@@ -61,7 +60,7 @@ export async function LiveSnapshot() {
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 {k.label}
               </p>
-              <p className="numeric font-display text-[44px] leading-none tracking-[-0.02em] text-foreground">
+              <p className="numeric text-[42px] font-medium leading-none tracking-[-0.01em] text-foreground">
                 {k.value}
               </p>
               <p className="text-[12px] text-muted-foreground">{k.note}</p>
@@ -70,7 +69,7 @@ export async function LiveSnapshot() {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <article className="rounded-2xl border border-border/60 bg-card/60 p-8">
+          <article className="rounded-xl border border-border/60 bg-card/55 p-8">
             <div className="flex items-center justify-between">
               <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
                 Топ-3 блюда недели
@@ -102,11 +101,11 @@ export async function LiveSnapshot() {
             </ol>
           </article>
 
-          <article className="rounded-2xl border border-border/60 bg-card/60 p-8">
+          <article className="rounded-xl border border-border/60 bg-card/55 p-8">
             <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
               Что Receptor отвечает
             </p>
-            <blockquote className="mt-6 font-display italic text-[24px] leading-[1.25] text-foreground">
+            <blockquote className="mt-6 text-[22px] font-medium leading-[1.35] tracking-[-0.01em] text-foreground">
               «Лидер недели держит категорию, но рост выручки идет неравномерно.
               Проверьте смены с просадкой и поставьте сильную позицию в фокус
               официантам на вечер.»

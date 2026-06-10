@@ -8,8 +8,8 @@ export function SiteFooter() {
           <div className="md:col-span-2">
             <div className="flex items-baseline gap-2">
               <span className="text-sm font-medium tracking-[0.22em]">RECEPTOR</span>
-              <span className="font-display italic text-muted-foreground text-base">
-                чувствует кухню
+              <span className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                ресторанный copilot
               </span>
             </div>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground leading-relaxed">
@@ -31,11 +31,6 @@ export function SiteFooter() {
               <li>
                 <Link href="/#цены" className="text-foreground/80 transition-colors hover:text-foreground">
                   Цены
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/dev-venue" className="text-foreground/80 transition-colors hover:text-foreground">
-                  Preview
                 </Link>
               </li>
             </ul>

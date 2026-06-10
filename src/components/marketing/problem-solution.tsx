@@ -31,8 +31,7 @@ export function ProblemSolution() {
             01 · Идея
           </p>
           <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-            Управлять рестораном можно с
-            <span className="font-display italic text-brand"> одного экрана.</span>
+            Управлять рестораном можно с одного экрана.
           </h2>
           <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
             20+ инструментов BI и AI собраны вокруг одного вопроса:
@@ -41,7 +40,7 @@ export function ProblemSolution() {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 md:grid-cols-3">
+        <div className="mt-16 grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 md:grid-cols-3">
           {COLUMNS.map((col, idx) => (
             <article
               key={col.eyebrow}

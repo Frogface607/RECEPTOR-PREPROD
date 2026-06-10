@@ -1,12 +1,12 @@
 /**
- * Mock tool runner — deterministic, demo-safe stand-in for a real LLM call.
+ * Mock tool runner — deterministic, presentation-safe stand-in for a real LLM call.
  *
  * While `ANTHROPIC_API_KEY` is absent, every tool in `/tools` runs through
  * this function: it validates inputs, then renders a believable,
- * category-shaped markdown preview that echoes the user's input so the
- * preview feels alive while a real AI key is unavailable.
+ * category-shaped markdown draft that echoes the user's input so the
+ * product feels alive while a real AI key is unavailable.
  *
- * It is honest: each result carries a small preview note. When the
+ * It is honest: each result carries a small draft note. When the
  * API key arrives, the `/api/tools/run` route swaps this for a real Claude
  * call built from `tool.buildPrompt(values)` — the UI never changes.
  *
@@ -30,7 +30,7 @@ export function validateToolInput(
 }
 
 const DEMO_NOTE =
-  "> _Preview output. With a connected AI key, Receptor returns a fuller production-grade result._";
+  "> _Черновик Receptor. На подключённом AI-ключе ответ будет глубже и готов к работе._";
 
 /** Non-empty field values in declared order, as {label, value} pairs. */
 function filledInputs(tool: Tool, values: Record<string, string>) {

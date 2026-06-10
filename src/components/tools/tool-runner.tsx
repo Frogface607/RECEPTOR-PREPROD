@@ -28,13 +28,13 @@ type RunState =
 function backendLabel(backend: string): string {
   if (backend === "openai") return "OpenAI";
   if (backend === "claude") return "Claude";
-  return "Receptor preview";
+  return "Receptor";
 }
 
 function exampleValue(field: ToolField, toolName: string): string {
   const label = field.label.toLowerCase();
   if (field.placeholder) return field.placeholder;
-  if (label.includes("заведение")) return "Demo Restaurant";
+  if (label.includes("заведение")) return "Ресторан Премьера";
   if (label.includes("город")) return "Иркутск";
   if (label.includes("цель")) return "увеличить продажи ужинов в будни";
   if (label.includes("блюдо")) return "бургер с говядиной";
@@ -273,7 +273,7 @@ function ResultPlaceholder({ toolName }: { toolName: string }) {
         <Sparkles className="size-6" />
       </span>
       <div>
-        <p className="font-display text-2xl italic text-foreground/85">
+        <p className="text-2xl font-medium tracking-[-0.01em] text-foreground/85">
           {toolName}
         </p>
         <p className="mt-2 max-w-sm text-[13px] leading-relaxed text-muted-foreground">

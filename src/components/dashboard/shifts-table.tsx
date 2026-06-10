@@ -26,7 +26,7 @@ export function ShiftsTable({ shifts }: { shifts: ShiftStat[] }) {
   const totalItems = shifts.reduce((s, x) => s + x.items, 0);
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/60 p-6">
+    <div className="rounded-xl border border-border/60 bg-card/55 p-6">
       <div className="flex items-baseline justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
@@ -37,7 +37,7 @@ export function ShiftsTable({ shifts }: { shifts: ShiftStat[] }) {
           </h3>
         </div>
         <div className="text-right">
-          <p className="numeric font-display text-[20px] tracking-[-0.01em] text-foreground">
+          <p className="numeric text-[20px] font-medium tracking-[-0.01em] text-foreground">
             {formatRubles(totalRevenue)}
           </p>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">

@@ -1,4 +1,4 @@
-import { ExternalLink, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { ClipboardList, ExternalLink, TrendingDown, TrendingUp } from "lucide-react";
 import { formatRubles } from "@/lib/format";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 import { SendBriefButton } from "./send-brief-button";
@@ -15,15 +15,15 @@ export function DailyBriefCard({
   const textBriefHref = `/api/brief?venueId=${encodeURIComponent(venueId)}&period=${brief.period}&format=text`;
 
   return (
-    <section className="rounded-2xl border border-border/60 bg-card/55 p-5 sm:p-6">
+    <section className="rounded-xl border border-border/60 bg-card/50 p-5 sm:p-6">
       <div className="flex flex-wrap items-start gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand/15 text-brand">
-          <Sparkles className="size-5" />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-brand">
+          <ClipboardList className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              Daily Brief
+              Brief владельца
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <SendBriefButton venueId={venueId} period={brief.period} />

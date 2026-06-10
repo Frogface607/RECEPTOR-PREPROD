@@ -110,7 +110,8 @@ export default async function SettingsPage() {
           <div className="mb-8 flex items-start gap-3 rounded-xl border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4">
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
             <p className="text-[13px] leading-relaxed text-foreground/85">
-              Preview access. {configured ? "Войдите" : "Подключите Supabase и войдите"},
+              Тестовый доступ.{" "}
+              {configured ? "Войдите" : "Подключите Supabase и войдите"},
               чтобы сохранять профиль, заведения и подключения.
             </p>
           </div>
@@ -121,7 +122,13 @@ export default async function SettingsPage() {
             <Row label="Email" value={user?.email ?? "—"} />
             <Row
               label="Статус"
-              value={user?.isDeveloper ? "Developer access" : user?.isDemo ? "Preview account" : "Авторизован"}
+              value={
+                user?.isDeveloper
+                  ? "Разработчик"
+                  : user?.isDemo
+                    ? "Тестовый доступ"
+                    : "Авторизован"
+              }
             />
           </Section>
 
@@ -239,7 +246,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border/60 bg-card/50 p-6">
+    <section className="rounded-xl border border-border/60 bg-card/50 p-6">
       <div className="mb-5 flex items-center gap-2.5">
         <span className="flex size-8 items-center justify-center rounded-lg border border-border/50 bg-background/60 text-brand">
           <Icon className="size-4" />

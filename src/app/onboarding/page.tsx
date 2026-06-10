@@ -22,7 +22,6 @@ export default async function OnboardingPage() {
   return (
     <main className="relative min-h-screen overflow-hidden px-6 py-14">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-[-25%] h-[520px] w-[760px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
       <div className="mx-auto max-w-xl">
@@ -30,8 +29,8 @@ export default async function OnboardingPage() {
           <span className="text-[14px] font-medium tracking-[0.22em] text-foreground">
             RECEPTOR
           </span>
-          <span className="font-display italic text-muted-foreground text-[14px]">
-            чувствует кухню
+          <span className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+            ресторанный copilot
           </span>
         </Link>
 
@@ -39,8 +38,7 @@ export default async function OnboardingPage() {
           Настройка · 1 минута
         </p>
         <h1 className="mt-3 mb-9 text-balance text-3xl font-medium tracking-[-0.02em]">
-          Давайте подключим ваш{" "}
-          <span className="font-display italic text-brand">ресторан</span>
+          Давайте подключим ваш ресторан
         </h1>
 
         <OnboardingWizard demoMode={previewMode} />

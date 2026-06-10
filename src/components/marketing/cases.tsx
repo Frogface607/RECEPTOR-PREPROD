@@ -2,10 +2,10 @@ import Link from "next/link";
 
 const CASES = [
   {
-    venue: "Demo Restaurant",
-    city: "Preview",
-    status: "Preview" as const,
-    tagline: "Презентационный кабинет Receptor для проверки BI, copilot и onboarding.",
+    venue: "Рабочий кабинет",
+    city: "Product",
+    status: "Product" as const,
+    tagline: "BI, copilot и onboarding собраны в один пилотный сценарий.",
     metric: "4.7 млн / 30 дней",
     href: "/dashboard/dev-venue",
   },
@@ -30,7 +30,7 @@ type Case = (typeof CASES)[number];
 
 function StatusBadge({ status }: { status: Case["status"] }) {
   const styles: Record<Case["status"], string> = {
-    Preview: "bg-brand/15 text-brand border-brand/40",
+    Product: "bg-brand/10 text-brand border-brand/35",
     Pilot: "bg-[color:var(--pro)]/12 text-[color:var(--pro)] border-[color:var(--pro)]/35",
     Open: "bg-muted text-muted-foreground border-border",
   };
@@ -54,8 +54,7 @@ export function Cases() {
               03 · Кто уже внутри
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              Receptor готовится к первым{" "}
-              <span className="font-display italic text-brand">живым пилотам.</span>
+              Receptor готовится к первым живым пилотам.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
@@ -67,7 +66,7 @@ export function Cases() {
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {CASES.map((c) => {
             const inner = (
-              <article className="group flex h-full flex-col rounded-2xl border border-border/60 bg-card/60 p-8 transition-all hover:border-border hover:bg-card/95">
+              <article className="group flex h-full flex-col rounded-xl border border-border/60 bg-card/55 p-8 transition-all hover:border-border hover:bg-card/90">
                 <div className="flex items-center justify-between">
                   <StatusBadge status={c.status} />
                   <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -80,7 +79,7 @@ export function Cases() {
                 <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
                   {c.tagline}
                 </p>
-                <p className="numeric mt-auto pt-10 font-display text-[22px] italic text-foreground">
+                <p className="numeric mt-auto pt-10 text-[22px] font-medium tracking-[-0.01em] text-foreground">
                   {c.metric}
                 </p>
               </article>

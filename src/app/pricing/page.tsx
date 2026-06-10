@@ -1,4 +1,4 @@
-import { Check, ArrowRight, Sparkles } from "lucide-react";
+import { Check, ArrowRight, BadgePercent } from "lucide-react";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { LinkButton } from "@/components/ui/link-button";
@@ -108,7 +108,6 @@ export default function PricingPage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 -z-10"
           >
-            <div className="absolute left-1/2 top-[-30%] h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-brand/12 blur-[140px]" />
           </div>
 
           <div className="mx-auto max-w-5xl px-6 py-24 text-center">
@@ -116,15 +115,9 @@ export default function PricingPage() {
               Тарифы
             </p>
             <h1 className="mt-6 text-balance text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1] tracking-[-0.025em]">
-              Платите за{" "}
-              <span className="font-display italic text-brand glow-brand-soft">
-                ответы.
-              </span>
+              Платите за ответы.
               <br />
-              Не за{" "}
-              <span className="font-display italic text-muted-foreground">
-                интеграции.
-              </span>
+              Не за интеграции.
             </h1>
             <p className="mx-auto mt-8 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
               Один найденный инсайт — забытая позиция, проваленная смена,
@@ -144,9 +137,9 @@ export default function PricingPage() {
                   <article
                     key={t.name}
                     className={
-                      "relative flex flex-col rounded-2xl border p-8 transition-all " +
+                      "relative flex flex-col rounded-xl border p-8 transition-all " +
                       (isFeatured
-                        ? "border-brand/60 bg-card shadow-[0_0_80px_-30px_var(--brand)]"
+                        ? "border-brand/55 bg-card"
                         : "border-border/60 bg-card/60 hover:bg-card/95")
                     }
                   >
@@ -171,7 +164,7 @@ export default function PricingPage() {
                     <div className="mt-8 flex items-baseline gap-2">
                       <span
                         className={
-                          "numeric font-display text-[56px] leading-none tracking-[-0.02em] " +
+                          "numeric text-[54px] font-medium leading-none tracking-[-0.01em] " +
                           (isFeatured ? "text-brand" : "text-foreground")
                         }
                       >
@@ -222,14 +215,14 @@ export default function PricingPage() {
         <section className="border-b border-border/40 bg-background">
           <div className="mx-auto max-w-7xl px-6 py-16">
             <div className="grid gap-6 lg:grid-cols-2">
-              <article className="rounded-2xl border border-border/60 bg-card/60 p-8">
+              <article className="rounded-xl border border-border/60 bg-card/55 p-8">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                   Опционально
                 </p>
                 <h3 className="mt-3 text-[24px] font-medium tracking-[-0.01em]">
                   Одноразовая настройка
                 </h3>
-                <p className="numeric mt-6 font-display text-[42px] tracking-[-0.02em] text-foreground">
+                <p className="numeric mt-6 text-[42px] font-medium tracking-[-0.01em] text-foreground">
                   39 000 ₽
                 </p>
                 <p className="mt-4 text-[14px] leading-relaxed text-muted-foreground">
@@ -239,15 +232,15 @@ export default function PricingPage() {
                 </p>
               </article>
 
-              <article className="relative overflow-hidden rounded-2xl border border-brand/40 bg-card/80 p-8">
-                <Sparkles className="absolute right-6 top-6 size-5 text-brand" />
+              <article className="relative overflow-hidden rounded-xl border border-brand/35 bg-card/75 p-8">
+                <BadgePercent className="absolute right-6 top-6 size-5 text-brand" />
                 <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
                   Пилоты-первооткрыватели
                 </p>
                 <h3 className="mt-3 text-[24px] font-medium tracking-[-0.01em]">
                   3 первых клиента
                 </h3>
-                <p className="numeric mt-6 font-display text-[42px] italic tracking-[-0.02em] text-brand">
+                <p className="numeric mt-6 text-[42px] font-medium tracking-[-0.01em] text-brand">
                   19 900 ₽
                 </p>
                 <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -285,7 +278,7 @@ export default function PricingPage() {
             <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-muted-foreground sm:hidden">
               ← листайте таблицу →
             </p>
-            <div className="mt-4 overflow-x-auto rounded-2xl border border-border/60 sm:mt-10">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border/60 sm:mt-10">
               <table className="w-full min-w-[560px] text-left text-[14px]">
                 <thead>
                   <tr className="border-b border-border/50 bg-card/60 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -329,8 +322,7 @@ export default function PricingPage() {
               Вопросы
             </p>
             <h2 className="mt-4 text-balance text-[40px] font-medium leading-[1.05] tracking-[-0.02em]">
-              Что обычно{" "}
-              <span className="font-display italic text-brand">спрашивают</span>
+              Что обычно спрашивают
             </h2>
 
             <div className="mt-10 space-y-4">
@@ -358,8 +350,7 @@ export default function PricingPage() {
         <section className="bg-background">
           <div className="mx-auto max-w-4xl px-6 py-24 text-center">
             <h2 className="text-balance text-[44px] font-medium leading-[1.05] tracking-[-0.02em]">
-              Подключиться можно{" "}
-              <span className="font-display italic text-brand">за десять минут.</span>
+              Подключиться можно за десять минут.
             </h2>
             <p className="mt-6 text-[16px] text-muted-foreground">
               Начните с Free, потрогайте свои реальные цифры. Перейти на Pro
@@ -380,7 +371,7 @@ export default function PricingPage() {
                 variant="ghost"
                 className="h-12 px-6 text-base"
               >
-                Смотреть preview
+                Открыть кабинет
               </LinkButton>
             </div>
           </div>

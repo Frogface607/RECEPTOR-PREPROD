@@ -2,7 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Loader2, LockKeyhole, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  LockKeyhole,
+  Mail,
+} from "lucide-react";
 import { getBrowserSupabase } from "@/lib/db/browser";
 
 type State =
@@ -62,8 +68,8 @@ export function AuthForm({
 
   if (state.status === "sent") {
     return (
-      <div className="rounded-2xl border border-border/60 bg-card/60 p-8 text-center">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-brand/15 text-brand">
+      <div className="rounded-xl border border-border/60 bg-card/55 p-8 text-center">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-brand">
           <CheckCircle2 className="size-6" />
         </div>
         <h2 className="mt-5 text-xl font-medium tracking-[-0.01em]">
@@ -86,7 +92,7 @@ export function AuthForm({
   }
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/60 p-8">
+    <div className="rounded-xl border border-border/60 bg-card/55 p-8">
       <h1 className="text-2xl font-medium tracking-[-0.02em]">Вход в Receptor</h1>
       <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
         Введите email, и мы пришлем одноразовую ссылку для входа.
@@ -165,16 +171,17 @@ export function AuthForm({
       ) : demoMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Preview
+            Режим разработчика
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Auth еще не настроен в этом окружении. Можно открыть preview-кабинет.
+            Auth еще не настроен в этом окружении. Можно открыть рабочий
+            кабинет для проверки сценария.
           </p>
           <Link
             href="/dashboard/dev-venue"
             className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 py-2.5 text-sm text-foreground transition-colors hover:border-brand/40 hover:bg-card"
           >
-            Открыть preview
+            Открыть кабинет
             <ArrowRight className="size-4 text-brand" />
           </Link>
         </div>

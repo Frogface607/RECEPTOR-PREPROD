@@ -27,11 +27,7 @@ export function ToolsTeaser() {
               Инструменты
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              {TOOLS.length} AI-инструментов под{" "}
-              <span className="font-display italic text-brand">
-                каждую роль
-              </span>{" "}
-              в зале и на кухне.
+              {TOOLS.length} AI-инструментов под каждую роль в зале и на кухне.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
@@ -40,7 +36,7 @@ export function ToolsTeaser() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((cat) => {
             const count = getToolsByCategory(cat.id).length;
             const sample = getToolsByCategory(cat.id)

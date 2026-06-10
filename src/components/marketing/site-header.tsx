@@ -9,8 +9,8 @@ export function SiteHeader() {
           <span className="text-[15px] font-medium tracking-[0.22em] text-foreground">
             RECEPTOR
           </span>
-          <span className="hidden font-display italic text-muted-foreground text-[15px] leading-none transition-colors group-hover:text-brand sm:inline">
-            · чувствует кухню
+          <span className="hidden text-[12px] uppercase tracking-[0.16em] text-muted-foreground transition-colors group-hover:text-foreground sm:inline">
+            ресторанный copilot
           </span>
         </Link>
 
@@ -32,12 +32,6 @@ export function SiteHeader() {
             className="hidden transition-colors hover:text-foreground sm:inline"
           >
             Цены
-          </Link>
-          <Link
-            href="/dashboard/dev-venue"
-            className="transition-colors hover:text-foreground"
-          >
-            Preview
           </Link>
           <Link
             href="/auth"

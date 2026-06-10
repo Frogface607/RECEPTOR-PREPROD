@@ -10,7 +10,7 @@ import {
   parsePeriodSearchParams,
   PERIOD_LABELS_RU,
 } from "@/lib/venues/period";
-import { getDashboardClient, resolveIikoClientConfig } from "@/lib/iiko/config";
+import { getDashboardClient } from "@/lib/iiko/config";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
 
@@ -36,12 +36,6 @@ export default async function DashboardPage({
   // Sandbox fixtures or real Cloud, decided by env/credentials.
   // Flipping USE_MOCK_IIKO=false + pasting apiLogin is the only change needed.
   const client = getDashboardClient(venue);
-  const cfg = resolveIikoClientConfig(
-    venue,
-    process.env,
-    new Date().toISOString().slice(0, 10),
-  );
-
   const [summary, dishes, categories, shifts, brief] = await Promise.all([
     client.getRevenueSummary(period),
     client.getDishStatistics(period, 10),
@@ -65,12 +59,12 @@ export default async function DashboardPage({
               Сводка · {periodLabel}
             </p>
             <h2 className="mt-2 text-balance text-2xl font-medium leading-tight tracking-[-0.02em] sm:text-3xl">
-              Что{" "}
-              <span className="font-display italic text-brand glow-brand-soft">
-                Receptor видит
-              </span>{" "}
-              в зале сегодня
+              Операционная картина зала
             </h2>
+            <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
+              Выручка, категории, блюда, смены и brief владельца за выбранный
+              период.
+            </p>
           </div>
 
           <div className="reveal reveal-2">
@@ -105,15 +99,6 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          <span
-            className={
-              "size-1.5 rounded-full " +
-              (cfg.mode === "real" ? "bg-brand" : "bg-[color:var(--pro)]")
-            }
-          />
-          {cfg.mode === "real" ? "Живые данные iiko Cloud" : "Preview data"}
-        </div>
       </main>
     </>
   );

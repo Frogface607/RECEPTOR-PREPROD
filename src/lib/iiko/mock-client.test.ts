@@ -189,7 +189,7 @@ describe("MockIikoClient.searchNomenclature", () => {
 
 describe("SANDBOX_VENUE fixture", () => {
   test("has expected anchoring details", () => {
-    expect(SANDBOX_VENUE.name).toBe("Demo Restaurant");
+    expect(SANDBOX_VENUE.name).toBe("Ресторан Премьера");
     expect(SANDBOX_VENUE.timezone).toBe("Asia/Irkutsk");
   });
 });
