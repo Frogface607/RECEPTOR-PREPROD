@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { executeTool } from "./execute";
 import { getToolById } from "./catalog";
+import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const tool = getToolById("promo-idea")!;
 const values = { venue: "Кофейня, утренний трафик" };
@@ -28,6 +29,24 @@ describe("executeTool — backend selection + fallback", () => {
     });
     expect(res.backend).toBe("openai");
     expect(res.markdown).toContain("Живой ответ OpenAI");
+  });
+
+  test("passes venue profile into the AI call when provided", async () => {
+    const callAi = vi.fn(async () => ({
+      markdown: "# Идея акции\n\nС учётом профиля",
+      backend: "openai" as const,
+    }));
+    const res = await executeTool(tool, values, DEFAULT_VENUE_INTELLIGENCE, {
+      aiBackend: () => "openai",
+      callAi,
+    });
+
+    expect(res.backend).toBe("openai");
+    expect(callAi).toHaveBeenCalledWith(
+      tool,
+      values,
+      DEFAULT_VENUE_INTELLIGENCE,
+    );
   });
 
   test("falls back to mock when the configured AI throws (credits/rate-limit/network)", async () => {

@@ -99,11 +99,20 @@ The growth workflow:
 1. Make the website and app speak in OS language. Done.
 2. Keep tools grouped as workflows, not categories. Done.
 3. Build Tech Card Studio MVP. Done.
-4. Connect venue profile context into tool prompts.
+4. Connect venue profile context into tool prompts. Done.
 5. Add Tech Card AI autofill.
 6. Save tech card history in Supabase.
 7. Restore iiko article mapping after a working pilot key.
 8. Add a minimal Team OS module inspired by Edison knowledge base.
+
+## Current Context Layer
+
+Implemented:
+
+- tool runner can send venue profile context into AI prompts;
+- tools still fall back safely to deterministic mock when AI fails;
+- Tech Card Studio includes venue format, positioning, and owner goal in markdown/PDF;
+- venue context is editable in UI while full persisted profile comes from onboarding later.
 
 ## Demo Framing
 

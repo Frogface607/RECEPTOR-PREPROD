@@ -5,6 +5,7 @@ import {
   Check,
   Clipboard,
   Copy,
+  Building2,
   Loader2,
   Play,
   RotateCcw,
@@ -12,6 +13,10 @@ import {
 } from "lucide-react";
 import { Markdown } from "./markdown";
 import type { ToolField } from "@/lib/tools/catalog";
+import {
+  DEFAULT_VENUE_INTELLIGENCE,
+  type VenueIntelligenceProfile,
+} from "@/lib/venues/intelligence";
 
 export type RunnableTool = {
   id: string;
@@ -53,6 +58,10 @@ export function ToolRunner({ tool }: { tool: RunnableTool }) {
   const [values, setValues] = useState<Record<string, string>>(initialValues);
   const [run, setRun] = useState<RunState>({ status: "idle" });
   const [copied, setCopied] = useState(false);
+  const [useVenueContext, setUseVenueContext] = useState(true);
+  const [venueProfile, setVenueProfile] = useState<VenueIntelligenceProfile>(
+    DEFAULT_VENUE_INTELLIGENCE,
+  );
 
   const missingRequired = tool.fields
     .filter((f) => f.required && !values[f.id].trim())
@@ -79,7 +88,11 @@ export function ToolRunner({ tool }: { tool: RunnableTool }) {
       const res = await fetch("/api/tools/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ toolId: tool.id, values }),
+        body: JSON.stringify({
+          toolId: tool.id,
+          values,
+          venueProfile: useVenueContext ? venueProfile : undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -135,6 +148,13 @@ export function ToolRunner({ tool }: { tool: RunnableTool }) {
         </div>
 
         <div className="mt-5 flex flex-col gap-4">
+          <VenueContextPanel
+            enabled={useVenueContext}
+            profile={venueProfile}
+            onToggle={setUseVenueContext}
+            onChange={setVenueProfile}
+          />
+
           {tool.fields.map((field) => (
             <div key={field.id} className="flex flex-col gap-2">
               <label
@@ -263,6 +283,131 @@ export function ToolRunner({ tool }: { tool: RunnableTool }) {
         )}
       </div>
     </div>
+  );
+}
+
+function VenueContextPanel({
+  enabled,
+  profile,
+  onToggle,
+  onChange,
+}: {
+  enabled: boolean;
+  profile: VenueIntelligenceProfile;
+  onToggle: (enabled: boolean) => void;
+  onChange: (profile: VenueIntelligenceProfile) => void;
+}) {
+  const update = (patch: Partial<VenueIntelligenceProfile>) => {
+    onChange({ ...profile, ...patch });
+  };
+
+  const updateList = (
+    field: "ownerGoals" | "guestPains" | "recommendedFocus",
+    value: string,
+  ) => {
+    update({
+      [field]: value
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    });
+  };
+
+  return (
+    <section className="rounded-lg border border-brand/25 bg-brand/[0.045] p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+            <Building2 className="size-4" />
+          </span>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+              Контекст заведения
+            </p>
+            <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+              Инструмент будет учитывать формат, позиционирование, боли и цели
+              ресторана. Это черновой профиль; после onboarding сюда попадёт
+              исследованный профиль заведения.
+            </p>
+          </div>
+        </div>
+
+        <label className="inline-flex cursor-pointer items-center gap-2 text-[12px] text-foreground">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(event) => onToggle(event.target.checked)}
+            className="size-4 accent-brand"
+          />
+          Включить
+        </label>
+      </div>
+
+      {enabled ? (
+        <div className="mt-4 grid gap-3">
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium text-foreground">
+              Формат
+            </span>
+            <input
+              value={profile.format}
+              onChange={(event) => update({ format: event.target.value })}
+              className="h-9 rounded-lg border border-border/60 bg-background/55 px-3 text-[13px] outline-none focus:border-brand/50"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium text-foreground">
+              Позиционирование
+            </span>
+            <textarea
+              value={profile.positioning}
+              onChange={(event) => update({ positioning: event.target.value })}
+              rows={2}
+              className="min-h-[70px] rounded-lg border border-border/60 bg-background/55 px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-brand/50"
+            />
+          </label>
+          <div className="grid gap-3 md:grid-cols-3">
+            <ContextList
+              label="Цели владельца"
+              value={profile.ownerGoals.join("\n")}
+              onChange={(value) => updateList("ownerGoals", value)}
+            />
+            <ContextList
+              label="Боли гостей"
+              value={profile.guestPains.join("\n")}
+              onChange={(value) => updateList("guestPains", value)}
+            />
+            <ContextList
+              label="Фокус Receptor"
+              value={profile.recommendedFocus.join("\n")}
+              onChange={(value) => updateList("recommendedFocus", value)}
+            />
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function ContextList({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="grid gap-1.5">
+      <span className="text-[12px] font-medium text-foreground">{label}</span>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={4}
+        className="min-h-[104px] rounded-lg border border-border/60 bg-background/55 px-3 py-2 text-[12px] leading-relaxed outline-none focus:border-brand/50"
+      />
+    </label>
   );
 }
 

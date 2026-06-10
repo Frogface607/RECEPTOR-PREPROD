@@ -10,6 +10,10 @@
  */
 
 import type { Tool } from "./catalog";
+import {
+  formatVenueProfileForPrompt,
+  type VenueIntelligenceProfile,
+} from "@/lib/venues/intelligence";
 
 export type AiBackend = "openai" | "claude";
 
@@ -65,13 +69,14 @@ export type AiToolRunResult = {
 export async function runToolWithAi(
   tool: Tool,
   values: Record<string, string>,
+  venueProfile?: VenueIntelligenceProfile,
 ): Promise<AiToolRunResult> {
   const backend = getConfiguredAiBackend();
   if (backend === "openai") {
-    return { markdown: await runToolWithOpenAI(tool, values), backend };
+    return { markdown: await runToolWithOpenAI(tool, values, venueProfile), backend };
   }
   if (backend === "claude") {
-    return { markdown: await runToolWithClaude(tool, values), backend };
+    return { markdown: await runToolWithClaude(tool, values, venueProfile), backend };
   }
   throw new Error("AI backend is not configured");
 }
@@ -99,6 +104,7 @@ function extractOpenAIText(payload: OpenAIResponse): string {
 export async function runToolWithOpenAI(
   tool: Tool,
   values: Record<string, string>,
+  venueProfile?: VenueIntelligenceProfile,
 ): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
@@ -112,7 +118,7 @@ export async function runToolWithOpenAI(
     body: JSON.stringify({
       model: OPENAI_MODEL,
       instructions: SYSTEM_PROMPT,
-      input: tool.buildPrompt(values),
+      input: buildToolInput(tool, values, venueProfile),
       max_output_tokens: MAX_TOKENS,
     }),
   });
@@ -136,11 +142,12 @@ export async function runToolWithOpenAI(
 export async function runToolWithClaude(
   tool: Tool,
   values: Record<string, string>,
+  venueProfile?: VenueIntelligenceProfile,
 ): Promise<string> {
   const { default: Anthropic } = await import("@anthropic-ai/sdk");
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  const userPrompt = tool.buildPrompt(values);
+  const userPrompt = buildToolInput(tool, values, venueProfile);
 
   const response = await client.messages.create({
     model: CLAUDE_MODEL,
@@ -155,4 +162,23 @@ export async function runToolWithClaude(
     .trim();
 
   return `# ${tool.name}\n\n${text}`;
+}
+
+export function buildToolInput(
+  tool: Tool,
+  values: Record<string, string>,
+  venueProfile?: VenueIntelligenceProfile,
+): string {
+  const basePrompt = tool.buildPrompt(values);
+  if (!venueProfile) return basePrompt;
+
+  return [
+    "Контекст заведения Receptor:",
+    formatVenueProfileForPrompt(venueProfile),
+    "",
+    "Задача инструмента:",
+    basePrompt,
+    "",
+    "Используй контекст заведения для тона, рекомендаций, ограничений и практических действий. Если данных не хватает, явно отделяй предположение от факта.",
+  ].join("\n");
 }

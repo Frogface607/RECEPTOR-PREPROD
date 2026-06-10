@@ -3,6 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowDownToLine,
+  Building2,
   Copy,
   FileText,
   Plus,
@@ -18,6 +19,10 @@ import {
   type TechCardIngredient,
   type TechCardInput,
 } from "@/lib/tools/tech-card";
+import {
+  DEFAULT_VENUE_INTELLIGENCE,
+  type VenueIntelligenceProfile,
+} from "@/lib/venues/intelligence";
 
 type SavedTechCard = {
   id: string;
@@ -69,6 +74,9 @@ function numberValue(value: string): number {
 
 export function TechCardStudio() {
   const [input, setInput] = useState<TechCardInput>(() => emptyInput());
+  const [venueProfile, setVenueProfile] = useState<VenueIntelligenceProfile>(
+    DEFAULT_VENUE_INTELLIGENCE,
+  );
   const [history, setHistory] = useState<SavedTechCard[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -82,8 +90,8 @@ export function TechCardStudio() {
 
   const calculation = useMemo(() => calculateTechCard(input), [input]);
   const markdown = useMemo(
-    () => createTechCardMarkdown(input, calculation),
-    [input, calculation],
+    () => createTechCardMarkdown(input, calculation, venueProfile),
+    [input, calculation, venueProfile],
   );
 
   const updateInput = <K extends keyof TechCardInput>(
@@ -222,6 +230,11 @@ export function TechCardStudio() {
               onChange={(value) => updateInput("targetFoodCostPercent", value)}
             />
           </div>
+
+          <VenueProfileStrip
+            profile={venueProfile}
+            onChange={setVenueProfile}
+          />
 
           <div className="mt-7 overflow-x-auto rounded-xl border border-border/55">
             <table className="numeric min-w-[1040px] w-full text-left text-[12px]">
@@ -433,8 +446,78 @@ export function TechCardStudio() {
         </aside>
       </div>
 
-      <PrintableTechCard input={input} />
+      <PrintableTechCard input={input} venueProfile={venueProfile} />
     </div>
+  );
+}
+
+function VenueProfileStrip({
+  profile,
+  onChange,
+}: {
+  profile: VenueIntelligenceProfile;
+  onChange: (profile: VenueIntelligenceProfile) => void;
+}) {
+  const update = (patch: Partial<VenueIntelligenceProfile>) => {
+    onChange({ ...profile, ...patch });
+  };
+
+  return (
+    <section className="mt-6 rounded-xl border border-brand/25 bg-brand/[0.045] p-4">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+          <Building2 className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+            Профиль заведения
+          </p>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+            Техкарта сохраняет контекст концепции. Позже Copilot сможет
+            автособирать блюда и меню именно под этот профиль.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <label className="grid gap-1.5">
+          <span className="text-[12px] font-medium text-foreground">Формат</span>
+          <input
+            value={profile.format}
+            onChange={(event) => update({ format: event.target.value })}
+            className="h-9 rounded-lg border border-border/60 bg-background/55 px-3 text-[13px] outline-none focus:border-brand/50"
+          />
+        </label>
+        <label className="grid gap-1.5">
+          <span className="text-[12px] font-medium text-foreground">
+            Цель владельца
+          </span>
+          <input
+            value={profile.ownerGoals[0] ?? ""}
+            onChange={(event) =>
+              update({
+                ownerGoals: [
+                  event.target.value,
+                  ...profile.ownerGoals.slice(1),
+                ].filter(Boolean),
+              })
+            }
+            className="h-9 rounded-lg border border-border/60 bg-background/55 px-3 text-[13px] outline-none focus:border-brand/50"
+          />
+        </label>
+      </div>
+      <label className="mt-3 grid gap-1.5">
+        <span className="text-[12px] font-medium text-foreground">
+          Позиционирование
+        </span>
+        <textarea
+          value={profile.positioning}
+          onChange={(event) => update({ positioning: event.target.value })}
+          rows={2}
+          className="min-h-[70px] rounded-lg border border-border/60 bg-background/55 px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-brand/50"
+        />
+      </label>
+    </section>
   );
 }
 
@@ -550,7 +633,13 @@ function QualityRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PrintableTechCard({ input }: { input: TechCardInput }) {
+function PrintableTechCard({
+  input,
+  venueProfile,
+}: {
+  input: TechCardInput;
+  venueProfile: VenueIntelligenceProfile;
+}) {
   const calculation = calculateTechCard(input);
 
   return (
@@ -567,6 +656,15 @@ function PrintableTechCard({ input }: { input: TechCardInput }) {
           <PrintMetric label="Порций" value={String(input.portions || 1)} />
           <PrintMetric label="Выход" value={`${input.outputWeight || 0} г`} />
           <PrintMetric label="Себестоимость" value={formatRub(calculation.totalCost)} />
+        </div>
+
+        <div className="mt-5 border border-neutral-300 p-3 text-xs">
+          <p className="font-semibold uppercase tracking-[0.12em] text-neutral-500">
+            Контекст заведения
+          </p>
+          <p className="mt-2 leading-relaxed">
+            {venueProfile.format}. {venueProfile.positioning}
+          </p>
         </div>
 
         <table className="mt-8 w-full border-collapse text-left text-xs">

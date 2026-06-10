@@ -1,5 +1,11 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { getConfiguredAiBackend, isAiConfigured } from "./ai-runner";
+import { getToolById } from "./catalog";
+import {
+  buildToolInput,
+  getConfiguredAiBackend,
+  isAiConfigured,
+} from "./ai-runner";
+import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const ORIGINAL_ANTHROPIC = process.env.ANTHROPIC_API_KEY;
 const ORIGINAL_OPENAI = process.env.OPENAI_API_KEY;
@@ -49,5 +55,25 @@ describe("isAiConfigured", () => {
     process.env.OPENAI_API_KEY = "sk-proj-abc123";
     process.env.ANTHROPIC_API_KEY = "sk-ant-api03-abc123";
     expect(getConfiguredAiBackend()).toBe("openai");
+  });
+});
+
+describe("buildToolInput", () => {
+  test("keeps the original tool prompt when venue profile is absent", () => {
+    const tool = getToolById("promo-idea")!;
+    const input = buildToolInput(tool, { venue: "Кофейня" });
+
+    expect(input).toContain("Предложи 5 идей");
+    expect(input).not.toContain("Контекст заведения Receptor");
+  });
+
+  test("adds venue profile context when provided", () => {
+    const tool = getToolById("promo-idea")!;
+    const input = buildToolInput(tool, { venue: "Кофейня" }, DEFAULT_VENUE_INTELLIGENCE);
+
+    expect(input).toContain("Контекст заведения Receptor");
+    expect(input).toContain(DEFAULT_VENUE_INTELLIGENCE.format);
+    expect(input).toContain("Задача инструмента");
+    expect(input).toContain("Предложи 5 идей");
   });
 });

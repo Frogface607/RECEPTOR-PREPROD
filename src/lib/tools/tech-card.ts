@@ -165,6 +165,7 @@ export function formatRub(value: number): string {
 export function createTechCardMarkdown(
   input: TechCardInput,
   calculation: TechCardCalculation,
+  venueProfile?: VenueIntelligenceProfile,
 ): string {
   const rows = calculation.ingredients
     .map(
@@ -173,12 +174,23 @@ export function createTechCardMarkdown(
     )
     .join("\n");
 
+  const venueBlock = venueProfile
+    ? `
+## Контекст заведения
+
+- Формат: ${venueProfile.format}
+- Позиционирование: ${venueProfile.positioning}
+- Фокус владельца: ${venueProfile.ownerGoals.slice(0, 3).join("; ")}
+`
+    : "";
+
   return `# Технологическая карта: ${input.dishName || "Новое блюдо"}
 
 **Категория:** ${input.category || "-"}
 **Порций:** ${input.portions || 1}
 **Выход:** ${input.outputWeight || calculation.totalNetWeight} г
 **Целевой фудкост:** ${input.targetFoodCostPercent || calculation.foodCostPercent}%
+${venueBlock}
 
 ## Сводка
 
@@ -199,3 +211,4 @@ ${rows}
 ${input.process || "Опишите технологию приготовления, подачу и условия хранения."}
 `;
 }
+import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";

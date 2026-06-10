@@ -3,12 +3,14 @@ import { z } from "zod";
 import { getToolById } from "@/lib/tools/catalog";
 import { validateToolInput } from "@/lib/tools/mock-runner";
 import { executeTool } from "@/lib/tools/execute";
+import { VenueIntelligenceSchema, normalizeVenueProfile } from "@/lib/venues/intelligence";
 
 export const runtime = "nodejs";
 
 const BodySchema = z.object({
   toolId: z.string().min(1),
   values: z.record(z.string(), z.string()),
+  venueProfile: VenueIntelligenceSchema.optional(),
 });
 
 export async function POST(request: Request) {
@@ -28,6 +30,9 @@ export async function POST(request: Request) {
   }
 
   const { toolId, values } = parsed.data;
+  const venueProfile = parsed.data.venueProfile
+    ? normalizeVenueProfile(parsed.data.venueProfile)
+    : undefined;
   const tool = getToolById(toolId);
   if (!tool) {
     return NextResponse.json({ error: "tool not found" }, { status: 404 });
@@ -45,7 +50,7 @@ export async function POST(request: Request) {
   // deterministic mock. executeTool guarantees a usable result so the demo
   // never shows a red API error.
   try {
-    const result = await executeTool(tool, values);
+    const result = await executeTool(tool, values, venueProfile);
     return NextResponse.json(result, {
       status: 200,
       headers: { "Cache-Control": "no-store" },

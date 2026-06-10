@@ -13,6 +13,7 @@ import { runToolMock, validateToolInput } from "./mock-runner";
 import { getConfiguredAiBackend, runToolWithAi } from "./ai-runner";
 import type { AiBackend, AiToolRunResult } from "./ai-runner";
 import type { Tool } from "./catalog";
+import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
 
 export type ToolResult = {
   markdown: string;
@@ -21,7 +22,11 @@ export type ToolResult = {
 
 export type ExecuteDeps = {
   aiBackend: () => AiBackend | null;
-  callAi: (tool: Tool, values: Record<string, string>) => Promise<AiToolRunResult>;
+  callAi: (
+    tool: Tool,
+    values: Record<string, string>,
+    venueProfile?: VenueIntelligenceProfile,
+  ) => Promise<AiToolRunResult>;
 };
 
 const DEFAULT_DEPS: ExecuteDeps = {
@@ -32,8 +37,20 @@ const DEFAULT_DEPS: ExecuteDeps = {
 export async function executeTool(
   tool: Tool,
   values: Record<string, string>,
-  deps: ExecuteDeps = DEFAULT_DEPS,
+  venueProfileOrDeps?: VenueIntelligenceProfile | ExecuteDeps,
+  maybeDeps?: ExecuteDeps,
 ): Promise<ToolResult> {
+  const hasDepsAsThirdArg =
+    venueProfileOrDeps &&
+    "aiBackend" in venueProfileOrDeps &&
+    "callAi" in venueProfileOrDeps;
+  const venueProfile = hasDepsAsThirdArg
+    ? undefined
+    : (venueProfileOrDeps as VenueIntelligenceProfile | undefined);
+  const deps = hasDepsAsThirdArg
+    ? (venueProfileOrDeps as ExecuteDeps)
+    : (maybeDeps ?? DEFAULT_DEPS);
+
   // Validate first — same error contract regardless of backend.
   const validation = validateToolInput(tool, values);
   if (!validation.ok) {
@@ -45,7 +62,7 @@ export async function executeTool(
   const backend = deps.aiBackend();
   if (backend) {
     try {
-      return await deps.callAi(tool, values);
+      return await deps.callAi(tool, values, venueProfile);
     } catch (err) {
       // Demo-safe: never surface the AI error — degrade to the mock preview.
       console.warn(
