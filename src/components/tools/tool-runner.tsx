@@ -34,7 +34,7 @@ function backendLabel(backend: string): string {
 function exampleValue(field: ToolField, toolName: string): string {
   const label = field.label.toLowerCase();
   if (field.placeholder) return field.placeholder;
-  if (label.includes("заведение")) return "Ресторан Премьера";
+  if (label.includes("заведение")) return "Тестовое заведение";
   if (label.includes("город")) return "Иркутск";
   if (label.includes("цель")) return "увеличить продажи ужинов в будни";
   if (label.includes("блюдо")) return "бургер с говядиной";

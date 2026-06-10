@@ -4,7 +4,7 @@ import type { ResolvedVenue } from "@/lib/venues/get-venue";
 
 const venue: ResolvedVenue = {
   id: "dev-venue",
-  name: "Ресторан Премьера",
+  name: "Тестовое заведение",
   city: "Sandbox",
   type: "restaurant",
   timezone: "Asia/Irkutsk",
