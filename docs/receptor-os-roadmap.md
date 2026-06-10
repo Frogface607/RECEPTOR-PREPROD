@@ -102,9 +102,10 @@ The growth workflow:
 4. Connect venue profile context into tool prompts. Done.
 5. Add Tech Card AI autofill. Done.
 6. Add Tech Card JSON export/import. Done.
-7. Save tech card history in Supabase.
-8. Restore iiko article mapping after a working pilot key.
-9. Add a minimal Team OS module inspired by Edison knowledge base.
+7. Add Dish Launch Pack from tech card. Done.
+8. Save tech card history in Supabase.
+9. Restore iiko article mapping after a working pilot key.
+10. Add a minimal Team OS module inspired by Edison knowledge base.
 
 ## Current Context Layer
 
@@ -142,6 +143,16 @@ Implemented:
 - JSON import back into Tech Card Studio;
 - venue profile preserved in exported document;
 - schema/version guard before import.
+
+## Current Dish Launch Layer
+
+Implemented:
+
+- menu description from tech card;
+- waiter pitch;
+- upsell ideas;
+- owner notes with price/preflight/iiko mapping context;
+- copyable markdown launch pack.
 
 ## Demo Framing
 

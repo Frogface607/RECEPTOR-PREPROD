@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   calculateTechCard,
+  createTechCardLaunchPack,
   createTechCardMarkdown,
   evaluateTechCardQuality,
   formatRub,
@@ -178,5 +179,24 @@ describe("tech card JSON export", () => {
     expect(() =>
       parseTechCardExportDocument(JSON.stringify({ schema: "unknown", version: 1 })),
     ).toThrow(/Неподдерживаемый формат/);
+  });
+});
+
+describe("createTechCardLaunchPack", () => {
+  test("creates menu, waiter and owner materials from a tech card", () => {
+    const calculation = calculateTechCard(input);
+    const quality = evaluateTechCardQuality(input, calculation);
+    const pack = createTechCardLaunchPack(
+      input,
+      calculation,
+      quality,
+      DEFAULT_VENUE_INTELLIGENCE,
+    );
+
+    expect(pack.menuDescription).toContain(input.dishName);
+    expect(pack.waiterPitch).toContain("ключевые ингредиенты");
+    expect(pack.upsellIdeas.length).toBeGreaterThanOrEqual(3);
+    expect(pack.ownerNotes.join("\n")).toContain("Preflight score");
+    expect(pack.markdown).toContain("# Launch Pack");
   });
 });

@@ -76,6 +76,14 @@ export type TechCardExportDocument = {
   venueProfile?: VenueIntelligenceProfile;
 };
 
+export type TechCardLaunchPack = {
+  menuDescription: string;
+  waiterPitch: string;
+  upsellIdeas: string[];
+  ownerNotes: string[];
+  markdown: string;
+};
+
 const round = (value: number, digits = 2): number => {
   if (!Number.isFinite(value)) return 0;
   const factor = 10 ** digits;
@@ -403,6 +411,78 @@ export function parseTechCardExportDocument(
     venueProfile: isObject(parsed.venueProfile)
       ? (parsed.venueProfile as VenueIntelligenceProfile)
       : undefined,
+  };
+}
+
+function topCostIngredients(calculation: TechCardCalculation): string[] {
+  return [...calculation.ingredients]
+    .filter((ingredient) => ingredient.name.trim())
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 3)
+    .map((ingredient) => ingredient.name);
+}
+
+function dishBase(input: TechCardInput): string {
+  return input.dishName.trim() || "Новое блюдо";
+}
+
+export function createTechCardLaunchPack(
+  input: TechCardInput,
+  calculation: TechCardCalculation,
+  quality: TechCardQualityReport,
+  venueProfile?: VenueIntelligenceProfile,
+): TechCardLaunchPack {
+  const dish = dishBase(input);
+  const format = venueProfile?.format || "ресторан";
+  const positioning = venueProfile?.positioning || "понятная подача и стабильное качество";
+  const keyIngredients = topCostIngredients(calculation);
+  const ingredientText = keyIngredients.length
+    ? keyIngredients.join(", ")
+    : "сбалансированные ингредиенты";
+  const priceHint = calculation.recommendedPrice
+    ? `Рекомендуемая цена при целевом фудкосте: ${formatRub(calculation.recommendedPrice)}.`
+    : "Рекомендуемую цену стоит уточнить после заполнения цен.";
+
+  const menuDescription = `${dish} — блюдо для формата «${format}»: ${ingredientText}, аккуратная технология и подача в логике заведения. ${positioning}`;
+  const waiterPitch = `Если гость выбирает ${dish.toLowerCase()}, предложите его как понятное и продуманное блюдо: подчеркните ключевые ингредиенты (${ingredientText}) и скажите, что оно собрано под стиль заведения, а не просто добавлено в меню.`;
+  const upsellIdeas = [
+    "Предложить напиток, который усиливает основной вкус блюда.",
+    "Предложить лёгкую закуску или салат, если блюдо берут как основное.",
+    "Предложить десерт или кофе после блюда, если чек нужно мягко поднять.",
+  ];
+  const ownerNotes = [
+    priceHint,
+    `Preflight score: ${quality.score}. ${quality.status === "ok" ? "Блокеров нет." : "Перед запуском стоит закрыть замечания preflight."}`,
+    calculation.mappingCoveragePercent < 100
+      ? `iiko-маппинг: ${calculation.mappingCoveragePercent}%. Перед импортом довести артикулы до 100%.`
+      : "iiko-маппинг заполнен.",
+  ];
+
+  const markdown = `# Launch Pack: ${dish}
+
+## Описание для меню
+
+${menuDescription}
+
+## Скрипт официанта
+
+${waiterPitch}
+
+## Upsell
+
+${upsellIdeas.map((idea) => `- ${idea}`).join("\n")}
+
+## Заметки владельца
+
+${ownerNotes.map((note) => `- ${note}`).join("\n")}
+`;
+
+  return {
+    menuDescription,
+    waiterPitch,
+    upsellIdeas,
+    ownerNotes,
+    markdown,
   };
 }
 

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import {
   calculateTechCard,
+  createTechCardLaunchPack,
   createTechCardMarkdown,
   evaluateTechCardQuality,
   formatRub,
@@ -26,6 +27,7 @@ import {
   type TechCardQualityReport,
   type TechCardIngredient,
   type TechCardInput,
+  type TechCardLaunchPack,
 } from "@/lib/tools/tech-card";
 import {
   DEFAULT_VENUE_INTELLIGENCE,
@@ -105,11 +107,16 @@ export function TechCardStudio() {
     }
   });
   const [copied, setCopied] = useState(false);
+  const [launchCopied, setLaunchCopied] = useState(false);
 
   const calculation = useMemo(() => calculateTechCard(input), [input]);
   const quality = useMemo(
     () => evaluateTechCardQuality(input, calculation),
     [input, calculation],
+  );
+  const launchPack = useMemo(
+    () => createTechCardLaunchPack(input, calculation, quality, venueProfile),
+    [input, calculation, quality, venueProfile],
   );
   const markdown = useMemo(
     () => createTechCardMarkdown(input, calculation, venueProfile),
@@ -170,6 +177,12 @@ export function TechCardStudio() {
     await navigator.clipboard.writeText(markdown);
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
+  };
+
+  const copyLaunchPack = async () => {
+    await navigator.clipboard.writeText(launchPack.markdown);
+    setLaunchCopied(true);
+    setTimeout(() => setLaunchCopied(false), 1600);
   };
 
   const printPdf = () => {
@@ -538,6 +551,12 @@ export function TechCardStudio() {
             </div>
           </section>
 
+          <LaunchPackPanel
+            pack={launchPack}
+            copied={launchCopied}
+            onCopy={copyLaunchPack}
+          />
+
           <section className="rounded-xl border border-border/60 bg-card/35 p-5">
             <div className="flex items-center justify-between gap-3">
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -815,6 +834,72 @@ function NumericCell({
         className="h-9 w-[74px] rounded-lg border border-border/50 bg-background/50 px-2 text-right text-[12px] outline-none focus:border-brand/50"
       />
     </td>
+  );
+}
+
+function LaunchPackPanel({
+  pack,
+  copied,
+  onCopy,
+}: {
+  pack: TechCardLaunchPack;
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  return (
+    <section className="rounded-xl border border-border/60 bg-card/35 p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-[color:var(--ai)]">
+            <Sparkles className="size-4" />
+            <p className="text-[11px] uppercase tracking-[0.18em]">
+              Launch Pack
+            </p>
+          </div>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+            Материалы, чтобы блюдо не просто появилось в меню, а продавалось
+            залом.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onCopy}
+          className="inline-flex h-8 shrink-0 items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 text-[12px] text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+        >
+          <Copy className="size-3.5" />
+          {copied ? "Скопировано" : "Copy"}
+        </button>
+      </div>
+
+      <div className="mt-5 space-y-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Описание для меню
+          </p>
+          <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
+            {pack.menuDescription}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Скрипт официанта
+          </p>
+          <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
+            {pack.waiterPitch}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Upsell
+          </p>
+          <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+            {pack.upsellIdeas.map((idea) => (
+              <li key={idea}>• {idea}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }
 
