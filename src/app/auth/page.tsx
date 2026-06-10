@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthForm } from "./auth-form";
 import { isSupabaseConfigured } from "@/lib/db/env";
-import { isDeveloperAccessEnabled } from "@/lib/auth/developer";
+import {
+  isDeveloperAccessEnabled,
+  isPresentationAccessVisible,
+} from "@/lib/auth/developer";
 
 export const metadata: Metadata = {
   title: "Вход — RECEPTOR",
@@ -23,6 +26,7 @@ export default async function AuthPage({
   const sp = await searchParams;
   const nextPath = safeNextPath(sp.next);
   const devError = sp.dev === "invalid";
+  const showPresentationAccess = sp.present === "1";
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
@@ -45,7 +49,10 @@ export default async function AuthPage({
 
         <AuthForm
           demoMode={demoMode}
-          developerMode={isDeveloperAccessEnabled()}
+          developerMode={
+            isDeveloperAccessEnabled() ||
+            (showPresentationAccess && isPresentationAccessVisible())
+          }
           developerError={devError}
           nextPath={nextPath}
         />

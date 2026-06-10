@@ -12,6 +12,10 @@ function isEnabled(value: string | undefined): boolean {
   return value?.trim().toLowerCase() === "true";
 }
 
+function isExplicitlyDisabled(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === "false";
+}
+
 function hashAccessKey(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -19,10 +23,15 @@ function hashAccessKey(value: string): string {
 export function getDeveloperAccessConfig(
   env: Record<string, string | undefined> = process.env,
 ): DeveloperAccessConfig | null {
-  const accessKey = env.RECEPTOR_DEV_ACCESS_KEY?.trim();
+  const accessKey =
+    env.RECEPTOR_DEV_ACCESS_KEY?.trim() ||
+    (env.NODE_ENV !== "production" ? "receptor-preview" : "");
   const email = env.RECEPTOR_DEV_EMAIL?.trim() || "developer@receptor.local";
 
-  if (!isEnabled(env.RECEPTOR_DEV_MODE) || !accessKey) return null;
+  if (!accessKey || isExplicitlyDisabled(env.RECEPTOR_DEV_MODE)) return null;
+  if (!isEnabled(env.RECEPTOR_DEV_MODE) && !env.RECEPTOR_DEV_ACCESS_KEY?.trim()) {
+    return null;
+  }
 
   return {
     enabled: true,
@@ -35,6 +44,12 @@ export function isDeveloperAccessEnabled(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
   return getDeveloperAccessConfig(env) !== null;
+}
+
+export function isPresentationAccessVisible(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return isDeveloperAccessEnabled(env) || env.NODE_ENV !== "production";
 }
 
 export function verifyDeveloperAccessKey(value: string): boolean {
