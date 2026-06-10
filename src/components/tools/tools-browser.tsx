@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, ArrowUpRight, Route } from "lucide-react";
+import { FileSpreadsheet, Search, ArrowUpRight, Route } from "lucide-react";
 import { ToolIcon } from "./tool-icon";
 import {
   CATEGORIES,
@@ -140,6 +140,13 @@ function WorkflowView() {
               Инструменты остаются библиотекой, но продукт продаётся как
               рабочие процессы: деньги, меню, команда и репутация.
             </p>
+            <Link
+              href="/tools/tech-card-studio"
+              className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-[13px] font-medium text-primary-foreground transition hover:bg-brand-hover"
+            >
+              <FileSpreadsheet className="size-4" />
+              Открыть Tech Card Studio
+            </Link>
           </div>
           <div className="grid min-w-[220px] grid-cols-3 gap-2 text-center">
             <Metric label="ядро" value="9" />

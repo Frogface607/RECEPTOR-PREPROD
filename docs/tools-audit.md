@@ -120,8 +120,29 @@ restaurant assistants, but the product focus is operating intelligence."
 
 ## Next Build Steps
 
-1. Repackage `/tools` around workflows instead of categories.
-2. Add strategic labels: core, free entry, support, caution, later.
-3. Build Tech Card Studio MVP with structured inputs and print/PDF output.
+1. Repackage `/tools` around workflows instead of categories. Done.
+2. Add strategic labels: core, free entry, support, caution, later. Done.
+3. Build Tech Card Studio MVP with structured inputs and print/PDF output. Done.
 4. Connect tool prompts to venue profile context.
 5. Restore legacy iiko ingredient/article mapping after working Cloud API pilot.
+
+## Current Tech Card Studio MVP
+
+Implemented in `/tools/tech-card-studio`:
+
+- structured ingredient table;
+- gross/net/loss calculation;
+- food cost, portion cost, target-price calculation;
+- KBJU totals and per-100g values;
+- iiko article coverage indicator;
+- local browser version history;
+- markdown copy;
+- browser print/PDF output.
+
+Not implemented yet:
+
+- Supabase-saved history;
+- AI autofill from dish idea or existing menu;
+- iiko nomenclature search and article mapping;
+- iiko-compatible XLSX/ZIP export;
+- validated GOST template with organization metadata.
