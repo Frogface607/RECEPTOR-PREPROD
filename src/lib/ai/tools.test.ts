@@ -174,6 +174,10 @@ describe("getOwnerBriefTool", () => {
     expect(out.menu.topCategory?.categoryName).toBeTruthy();
     expect(out.shifts.count).toBeGreaterThan(0);
     expect(out.risks.length).toBeGreaterThan(0);
+    expect(out.signals.length).toBeGreaterThan(0);
+    expect(out.signals.map((signal) => signal.title)).toContain(
+      "Категорийная зависимость",
+    );
     expect(out.actions.length).toBeGreaterThan(0);
   });
 });

@@ -1,7 +1,20 @@
 import { formatInteger, formatRubles } from "@/lib/format";
 import type { IikoClient } from "@/lib/iiko/types";
-import type { Period, PeriodType } from "@/lib/iiko/models";
+import type {
+  CategoryStat,
+  DishStat,
+  Period,
+  PeriodType,
+  RevenueSummary,
+} from "@/lib/iiko/models";
 import { PERIOD_LABELS_RU } from "@/lib/venues/period";
+
+export type OwnerSignal = {
+  level: "risk" | "watch" | "ok";
+  title: string;
+  detail: string;
+  metric?: string;
+};
 
 export type DailyBrief = {
   period: PeriodType;
@@ -13,6 +26,7 @@ export type DailyBrief = {
     deltaPct: number;
   };
   highlights: string[];
+  signals: OwnerSignal[];
   actions: string[];
 };
 
@@ -77,6 +91,78 @@ function periodTitle(period: PeriodType): string {
   return titles[period];
 }
 
+function sharePct(part: number, total: number): number {
+  if (total <= 0) return 0;
+  return Number(((part / total) * 100).toFixed(1));
+}
+
+export function buildOwnerSignals(
+  current: RevenueSummary,
+  dishes: DishStat[],
+  categories: CategoryStat[],
+): OwnerSignal[] {
+  const sortedPoints = [...current.points].sort((a, b) => a.revenue - b.revenue);
+  const weakestDay = sortedPoints[0];
+  const strongestDay = sortedPoints[sortedPoints.length - 1];
+  const topDish = dishes[0];
+  const categoryTotal = categories.reduce(
+    (sum, category) => sum + category.dishSumInt,
+    0,
+  );
+  const topCategory = [...categories].sort(
+    (a, b) => b.dishSumInt - a.dishSumInt,
+  )[0];
+  const topCategoryShare = topCategory
+    ? sharePct(topCategory.dishSumInt, categoryTotal)
+    : 0;
+  const topDishShare = topDish ? sharePct(topDish.dishSumInt, current.revenue) : 0;
+
+  const signals: OwnerSignal[] = [];
+
+  if (topCategory) {
+    signals.push({
+      level: topCategoryShare >= 42 ? "risk" : topCategoryShare >= 30 ? "watch" : "ok",
+      title: "Категорийная зависимость",
+      detail:
+        topCategoryShare >= 42
+          ? `Категория «${topCategory.categoryName}» забирает слишком большую долю периода. Проверь маржу и не держится ли выручка на одном плече.`
+          : topCategoryShare >= 30
+            ? `Категория «${topCategory.categoryName}» заметно влияет на итог. Это хорошо для фокуса продаж, но рискованно без маржинального контроля.`
+            : `Лидер категории — «${topCategory.categoryName}», перекоса по категориям не видно.`,
+      metric: `${topCategoryShare}%`,
+    });
+  }
+
+  if (weakestDay && strongestDay && strongestDay.revenue > 0) {
+    const weakestToStrongest = sharePct(weakestDay.revenue, strongestDay.revenue);
+    signals.push({
+      level: weakestToStrongest < 55 ? "risk" : weakestToStrongest < 72 ? "watch" : "ok",
+      title: "Разброс по дням",
+      detail:
+        weakestToStrongest < 55
+          ? `Слабый день (${weakestDay.date}) дал меньше 55% от сильного (${strongestDay.date}). Нужен разбор причины: посадка, команда, стоп-лист, локальный спрос.`
+          : weakestToStrongest < 72
+            ? `Есть заметная разница между слабым и сильным днем. Проверь, повторяется ли паттерн по неделям.`
+            : `Дни периода выглядят относительно ровно, без резкой просадки.`,
+      metric: `${formatRubles(weakestDay.revenue)} / ${formatRubles(strongestDay.revenue)}`,
+    });
+  }
+
+  if (topDish) {
+    signals.push({
+      level: topDishShare >= 18 ? "watch" : "ok",
+      title: "Зависимость от хита",
+      detail:
+        topDishShare >= 18
+          ? `«${topDish.dishName}» дает заметную долю выручки. Держи его наличие, скорость отдачи и апсейл под контролем.`
+          : `Топ-блюдо «${topDish.dishName}» не выглядит единственной опорой выручки.`,
+      metric: `${topDishShare}%`,
+    });
+  }
+
+  return signals;
+}
+
 export async function buildDailyBrief(
   client: IikoClient,
   period: Period | PeriodType = "YESTERDAY",
@@ -98,6 +184,7 @@ export async function buildDailyBrief(
   const delta = deltaPct(current.revenue, previous.revenue);
   const topDish = dishes[0];
   const topCategory = categories.sort((a, b) => b.dishSumInt - a.dishSumInt)[0];
+  const signals = buildOwnerSignals(current, dishes, categories);
 
   const highlights = [
     `Деньги ${periodTitle(periodType)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta)}.`,
@@ -134,6 +221,7 @@ export async function buildDailyBrief(
       deltaPct: delta,
     },
     highlights,
+    signals,
     actions,
   };
 }
@@ -156,6 +244,9 @@ export function renderDailyBriefText(
     "",
     "Главное:",
     ...brief.highlights.map((item) => `- ${item}`),
+    "",
+    "Диагностика:",
+    ...brief.signals.map((item) => `- ${item.title}: ${item.detail}`),
     "",
     "Что сделать сегодня:",
     ...brief.actions.map((item, index) => `${index + 1}. ${item}`),

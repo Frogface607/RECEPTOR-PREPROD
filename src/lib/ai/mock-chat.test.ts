@@ -61,6 +61,8 @@ describe("runMockChatTurn — routing", () => {
     const ev = await collect("Что делать сегодня, чтобы не потерять вечер?");
     const toolEvent = ev.find((e) => e.type === "tool");
     expect(toolEvent?.tool).toBe("get_owner_brief");
+    const text = ev.find((e) => e.type === "text");
+    expect(text?.text).toContain("Диагностика:");
   });
 
   test("greeting / off-topic → suggests prompts without tool calls", async () => {

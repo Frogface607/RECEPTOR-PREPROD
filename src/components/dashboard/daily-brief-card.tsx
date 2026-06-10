@@ -1,4 +1,11 @@
-import { ClipboardList, ExternalLink, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  ExternalLink,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { formatRubles } from "@/lib/format";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 import { SendBriefButton } from "./send-brief-button";
@@ -92,6 +99,60 @@ export function DailyBriefCard({
           </ol>
         </div>
       </div>
+
+      {brief.signals.length > 0 ? (
+        <div className="mt-6">
+          <p className="mb-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            Диагностика владельца
+          </p>
+          <div className="grid gap-3 lg:grid-cols-3">
+            {brief.signals.map((signal) => {
+              const isRisk = signal.level === "risk";
+              const isWatch = signal.level === "watch";
+              const Icon = isRisk || isWatch ? AlertTriangle : CheckCircle2;
+              return (
+                <div
+                  key={signal.title}
+                  className={
+                    "rounded-lg border bg-background/35 p-3 " +
+                    (isRisk
+                      ? "border-destructive/30"
+                      : isWatch
+                        ? "border-amber-500/25"
+                        : "border-border/50")
+                  }
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Icon
+                        className={
+                          "mt-0.5 size-4 shrink-0 " +
+                          (isRisk
+                            ? "text-destructive"
+                            : isWatch
+                              ? "text-amber-400"
+                              : "text-brand")
+                        }
+                      />
+                      <p className="text-[13px] font-medium text-foreground">
+                        {signal.title}
+                      </p>
+                    </div>
+                    {signal.metric ? (
+                      <span className="shrink-0 rounded-md border border-border/50 bg-card/50 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+                        {signal.metric}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                    {signal.detail}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

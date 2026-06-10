@@ -17,10 +17,10 @@ import {
   PeriodTypeSchema,
   type PeriodType,
   type Period,
-  type IikoClientWithTools,
 } from "./types";
 import { formatRubles, formatInteger } from "@/lib/format";
 import type { IikoClient } from "@/lib/iiko/types";
+import { buildOwnerSignals, type OwnerSignal } from "@/lib/brief/daily-brief";
 
 // ---------------------------------------------------------------------------
 // Shared shapes
@@ -333,6 +333,7 @@ export const getOwnerBriefTool: ToolDefinition<
       };
     };
     risks: string[];
+    signals: OwnerSignal[];
     actions: string[];
     summary: string;
   }
@@ -369,6 +370,7 @@ export const getOwnerBriefTool: ToolDefinition<
       topCategory && totalCategoryRevenue > 0
         ? Number(((topCategory.dishSumInt / totalCategoryRevenue) * 100).toFixed(1))
         : 0;
+    const signals = buildOwnerSignals(revenue, dishes, categories);
 
     const risks = [
       topCategoryShare >= 35 && topCategory
@@ -424,6 +426,7 @@ export const getOwnerBriefTool: ToolDefinition<
           : undefined,
       },
       risks,
+      signals,
       actions,
       summary:
         `Owner brief: ${formatRubles(revenue.revenue)}, ` +

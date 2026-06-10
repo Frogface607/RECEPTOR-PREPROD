@@ -13,6 +13,8 @@ describe("buildDailyBrief", () => {
     expect(brief.comparisonPeriod).toBe("LAST_MONTH");
     expect(brief.headline).toMatch(/Выручка/);
     expect(brief.highlights).toHaveLength(3);
+    expect(brief.signals.length).toBeGreaterThanOrEqual(2);
+    expect(brief.signals.map((s) => s.title)).toContain("Разброс по дням");
     expect(brief.actions).toHaveLength(3);
     expect(brief.revenue.current).toBeGreaterThan(0);
   });
@@ -30,6 +32,7 @@ describe("buildDailyBrief", () => {
 
     expect(text).toContain("Receptor Daily Brief: Тестовое заведение");
     expect(text).toContain("Главное:");
+    expect(text).toContain("Диагностика:");
     expect(text).toContain("Что сделать сегодня:");
     expect(text).toContain(brief.headline);
   });
@@ -42,6 +45,7 @@ describe("buildDailyBrief", () => {
 
     expect(brief.period).toBe("CUSTOM");
     expect(brief.comparisonPeriod).toBe("CUSTOM");
+    expect(brief.signals.length).toBeGreaterThan(0);
     expect(brief.revenue.current).toBeGreaterThan(0);
   });
 });

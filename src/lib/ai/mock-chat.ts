@@ -288,6 +288,11 @@ function formatOwnerBriefAnswer(
       ? `Смена к разбору: ${out.shifts.weakest.openTime.slice(0, 10)} · ${out.shifts.weakest.employee} — ${formatRubles(out.shifts.weakest.revenue)}.`
       : "Смены: нет слабой смены для сравнения.",
     "",
+    "Диагностика:",
+    ...out.signals.map((signal) =>
+      `• ${signal.title}${signal.metric ? ` (${signal.metric})` : ""}: ${signal.detail}`,
+    ),
+    "",
     "Риски:",
     ...out.risks.map((risk) => `• ${risk}`),
     `• ${profile.operatingRisks[0]}`,
