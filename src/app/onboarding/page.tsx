@@ -17,6 +17,7 @@ export default async function OnboardingPage() {
   if (!demoMode && !user) {
     redirect("/auth?next=/onboarding");
   }
+  const previewMode = demoMode || Boolean(user?.isDemo);
 
   return (
     <main className="relative min-h-screen overflow-hidden px-6 py-14">
@@ -42,7 +43,7 @@ export default async function OnboardingPage() {
           <span className="font-display italic text-brand">ресторан</span>
         </h1>
 
-        <OnboardingWizard demoMode={demoMode} />
+        <OnboardingWizard demoMode={previewMode} />
       </div>
     </main>
   );
