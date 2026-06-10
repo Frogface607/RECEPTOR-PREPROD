@@ -375,12 +375,12 @@ export default function PricingPage() {
                 <ArrowRight className="ml-1 size-4" />
               </LinkButton>
               <LinkButton
-                href="/dashboard/edison-demo"
+                href="/dashboard/dev-venue"
                 size="lg"
                 variant="ghost"
                 className="h-12 px-6 text-base"
               >
-                Смотреть демо на Edison
+                Смотреть sandbox
               </LinkButton>
             </div>
           </div>

@@ -33,7 +33,7 @@ export default async function DashboardPage({
 
   const period = parsePeriodSearchParams(sp);
 
-  // Mock (deterministic Edison fixtures) or real Cloud, decided by env.
+  // Sandbox fixtures or real Cloud, decided by env/credentials.
   // Flipping USE_MOCK_IIKO=false + pasting apiLogin is the only change needed.
   const client = getDashboardClient(venue);
   const cfg = resolveIikoClientConfig(
@@ -58,7 +58,7 @@ export default async function DashboardPage({
 
       <main className="flex-1 px-4 py-7 sm:px-6 lg:px-10 lg:py-10">
         {/* key={period.type} re-triggers the entrance animation on each
-            period switch — the dashboard feels alive during the demo. */}
+            period switch — the dashboard feels alive during exploration. */}
         <div key={period.type} className="contents">
           <div className="reveal reveal-1 mb-7">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
@@ -112,7 +112,7 @@ export default async function DashboardPage({
               (cfg.mode === "real" ? "bg-brand" : "bg-[color:var(--pro)]")
             }
           />
-          {cfg.mode === "real" ? "Живые данные iiko Cloud" : "Демо-данные Edison"}
+          {cfg.mode === "real" ? "Живые данные iiko Cloud" : "Sandbox-данные"}
         </div>
       </main>
     </>

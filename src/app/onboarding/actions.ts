@@ -15,7 +15,7 @@ const VenueInput = z.object({
 });
 
 export type OnboardingResult =
-  | { ok: true; mode: "saved" | "demo"; venueId: string }
+  | { ok: true; mode: "saved" | "sandbox"; venueId: string }
   | { ok: false; error: string };
 
 export type IikoOrganizationOption = {
@@ -66,11 +66,11 @@ export async function probeIikoOrganizationsAction(
  *
  * - Real mode (Supabase configured + logged in): validate iiko Cloud,
  *   insert into `venues` + encrypted `iiko_credentials`, return the new id.
- * - Demo mode: nothing to persist — return the demo venue id so the wizard
- *   still completes and lands the user on the Edison dashboard.
+ * - Sandbox mode: nothing to persist — return the sandbox venue id so the
+ *   wizard still completes in development.
  *
  * Wrapped defensively: a DB hiccup never blocks the user from reaching the
- * dashboard during a demo.
+ * dashboard during a sandbox run.
  */
 export async function createVenueAction(
   raw: unknown,
@@ -83,9 +83,9 @@ export async function createVenueAction(
   const user = await getCurrentUser();
   const supabase = await getServerSupabase();
 
-  // Demo mode: skip persistence, proceed.
+  // Sandbox mode: skip persistence, proceed.
   if (!supabase || user?.isDemo) {
-    return { ok: true, mode: "demo", venueId: "edison-demo" };
+    return { ok: true, mode: "sandbox", venueId: "dev-venue" };
   }
   if (!user) {
     return { ok: false, error: "Нужно войти, чтобы подключить заведение." };

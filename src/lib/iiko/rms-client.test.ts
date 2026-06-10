@@ -3,7 +3,7 @@ import { RmsIikoClient } from "./rms-client";
 
 /**
  * RMS Server port is deferred to Phase 1.5. RMS is only used by chain
- * restaurants (think Edison + 4 more locations under one corporate iiko Office).
+ * restaurants under one corporate iiko Office.
  * We have zero chain pilots in the pipeline, so porting OLAP-on-RMS is
  * effort-without-customer.
  *
@@ -12,7 +12,7 @@ import { RmsIikoClient } from "./rms-client";
  * a clear deferral error.
  */
 
-const HOST = "edison-bar.iiko.it";
+const HOST = "sandbox.iiko.local";
 const LOGIN = "Sergey";
 const PASSWORD = "secret";
 const ANCHOR = "2026-05-29";

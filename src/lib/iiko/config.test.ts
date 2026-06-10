@@ -3,12 +3,12 @@ import { resolveIikoClientConfig, DEMO_ANCHOR } from "./config";
 import type { ResolvedVenue } from "@/lib/venues/get-venue";
 
 const venue: ResolvedVenue = {
-  id: "edison-demo",
-  name: "Edison Bar",
-  city: "Иркутск",
-  type: "bar",
+  id: "dev-venue",
+  name: "Demo Restaurant",
+  city: "Sandbox",
+  type: "restaurant",
   timezone: "Asia/Irkutsk",
-  iiko: { channel: "cloud", organizationId: "edison-org" },
+  iiko: { channel: "cloud", organizationId: "sandbox-org" },
 };
 
 describe("resolveIikoClientConfig", () => {
@@ -24,11 +24,11 @@ describe("resolveIikoClientConfig", () => {
     expect(cfg.mode).toBe("real");
     if (cfg.mode === "real") {
       expect(cfg.apiLogin).toBe("stored-login");
-      expect(cfg.organizationId).toBe("edison-org");
+      expect(cfg.organizationId).toBe("sandbox-org");
     }
   });
 
-  test("mock mode when USE_MOCK_IIKO unset → deterministic anchor", () => {
+  test("mock mode when USE_MOCK_IIKO unset uses deterministic anchor", () => {
     const cfg = resolveIikoClientConfig(venue, {}, "2026-06-03");
     expect(cfg.mode).toBe("mock");
     if (cfg.mode === "mock") {
@@ -45,17 +45,16 @@ describe("resolveIikoClientConfig", () => {
     expect(cfg.mode).toBe("mock");
   });
 
-  test("real mode requires USE_MOCK_IIKO=false AND an apiLogin", () => {
+  test("real mode requires USE_MOCK_IIKO=false and an apiLogin", () => {
     const cfg = resolveIikoClientConfig(
       venue,
-      { USE_MOCK_IIKO: "false", EDISON_IIKO_API_LOGIN: "real-login-123" },
+      { USE_MOCK_IIKO: "false", IIKO_API_LOGIN: "real-login-123" },
       "2026-06-03",
     );
     expect(cfg.mode).toBe("real");
     if (cfg.mode === "real") {
       expect(cfg.apiLogin).toBe("real-login-123");
-      expect(cfg.organizationId).toBe("edison-org");
-      // real client uses the actual current date, not the demo anchor
+      expect(cfg.organizationId).toBe("sandbox-org");
       expect(cfg.today).toBe("2026-06-03");
     }
   });
@@ -67,32 +66,5 @@ describe("resolveIikoClientConfig", () => {
       "2026-06-03",
     );
     expect(cfg.mode).toBe("mock");
-  });
-
-  test("generic IIKO_API_LOGIN works for any venue when venue-specific absent", () => {
-    const cfg = resolveIikoClientConfig(
-      venue,
-      { USE_MOCK_IIKO: "false", IIKO_API_LOGIN: "global-login" },
-      "2026-06-03",
-    );
-    expect(cfg.mode).toBe("real");
-    if (cfg.mode === "real") {
-      expect(cfg.apiLogin).toBe("global-login");
-    }
-  });
-
-  test("venue-specific key takes precedence over generic", () => {
-    const cfg = resolveIikoClientConfig(
-      venue,
-      {
-        USE_MOCK_IIKO: "false",
-        IIKO_API_LOGIN: "global",
-        EDISON_IIKO_API_LOGIN: "venue-specific",
-      },
-      "2026-06-03",
-    );
-    if (cfg.mode === "real") {
-      expect(cfg.apiLogin).toBe("venue-specific");
-    }
   });
 });

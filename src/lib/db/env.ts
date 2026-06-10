@@ -1,12 +1,3 @@
-/**
- * Supabase configuration gate.
- *
- * Receptor degrades gracefully: with real Supabase env vars it runs full
- * auth; without them (local dev, or a fresh deploy before keys land) it falls
- * into "demo mode" where the dashboard stays open via a synthetic session.
- * This keeps the Михно demo bulletproof regardless of env state.
- */
-
 const PLACEHOLDERS = new Set([
   "your-url-here",
   "your_url_here",
@@ -26,7 +17,6 @@ export function isSupabaseConfigured(
   if (PLACEHOLDERS.has(url.toLowerCase()) || PLACEHOLDERS.has(anon.toLowerCase()))
     return false;
 
-  // Must be an https supabase-style endpoint.
   return /^https:\/\/.+\.supabase\.(co|in|net)/i.test(url);
 }
 

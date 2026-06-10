@@ -1,11 +1,4 @@
-/**
- * Venue resolver — stubbed for Phase 2.
- *
- * Phase 3 swaps the implementation to read from Supabase
- * (`venues` table joined with `iiko_credentials`). The signature stays the same.
- */
-
-import { EDISON_VENUE } from "@/lib/mock/edison-fixtures";
+import { SANDBOX_VENUE as SANDBOX_ORG } from "@/lib/mock/sandbox-fixtures";
 
 export type ResolvedVenue = {
   id: string;
@@ -20,20 +13,20 @@ export type ResolvedVenue = {
   };
 };
 
-const DEMO_VENUE: ResolvedVenue = {
-  id: "edison-demo",
-  name: EDISON_VENUE.name,
-  city: "Иркутск",
-  type: "bar",
-  timezone: EDISON_VENUE.timezone ?? "Asia/Irkutsk",
+const SANDBOX_VENUE: ResolvedVenue = {
+  id: "dev-venue",
+  name: SANDBOX_ORG.name,
+  city: "Sandbox",
+  type: "restaurant",
+  timezone: SANDBOX_ORG.timezone ?? "Asia/Irkutsk",
   iiko: {
     channel: "cloud",
-    organizationId: EDISON_VENUE.id,
+    organizationId: SANDBOX_ORG.id,
   },
 };
 
 const KNOWN_VENUES: Record<string, ResolvedVenue> = {
-  "edison-demo": DEMO_VENUE,
+  "dev-venue": SANDBOX_VENUE,
 };
 
 export function getVenue(id: string): ResolvedVenue | null {
@@ -41,5 +34,5 @@ export function getVenue(id: string): ResolvedVenue | null {
 }
 
 export function listKnownVenues(): ResolvedVenue[] {
-  return Object.values(KNOWN_VENUES);
+  return [SANDBOX_VENUE];
 }

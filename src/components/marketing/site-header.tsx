@@ -34,10 +34,10 @@ export function SiteHeader() {
             Цены
           </Link>
           <Link
-            href="/dashboard/edison-demo"
+            href="/dashboard/dev-venue"
             className="transition-colors hover:text-foreground"
           >
-            Демо
+            Sandbox
           </Link>
           <Link
             href="/auth"

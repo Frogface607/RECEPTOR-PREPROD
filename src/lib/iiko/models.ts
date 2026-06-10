@@ -7,7 +7,7 @@
  *
  * The same schemas validate both:
  *   1. Real iiko Cloud / RMS API responses (in `cloud-client.ts` / `rms-client.ts`)
- *   2. Edison-shaped fixtures (in `lib/mock/`)
+ *   2. Sandbox fixtures (in `lib/mock/`)
  *
  * Why Zod (vs hand-rolled types):
  *   - Single source of truth for type + runtime validation.

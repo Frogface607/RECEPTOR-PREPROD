@@ -1,7 +1,7 @@
 /**
  * Contract every iiko client (mock or real) must satisfy.
  *
- * The Phase 2 dashboard, Phase 4 AI tools, and Phase 0 Михно demo all talk
+ * The dashboard, AI tools, and automation surfaces all talk
  * to this surface — never to a concrete client directly.
  *
  * Real implementations live in `cloud-client.ts` / `rms-client.ts`.

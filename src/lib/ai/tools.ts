@@ -9,7 +9,7 @@
  *
  * Tools are pure functions of `(input, client)`. They never touch
  * `process.env`, never call `Date.now()`, never randomise. Determinism is
- * what lets the Михно demo screenshot reliably.
+ * what keeps screenshots and tests stable.
  */
 
 import { z } from "zod";

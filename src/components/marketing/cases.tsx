@@ -2,25 +2,25 @@ import Link from "next/link";
 
 const CASES = [
   {
-    venue: "Edison Bar",
-    city: "Иркутск",
-    status: "Live demo" as const,
-    tagline: "Крафтовый бар, 9.5 лет работы. Демо-аккаунт Receptor.",
-    metric: "₽4.7 млн / 30 дней",
-    href: "/dashboard/edison-demo",
+    venue: "Demo Restaurant",
+    city: "Sandbox",
+    status: "Sandbox" as const,
+    tagline: "Тестовый кабинет Receptor для проверки BI, copilot и onboarding.",
+    metric: "4.7 млн / 30 дней",
+    href: "/dashboard/dev-venue",
   },
   {
-    venue: "Сергей Михно",
-    city: "Кафе, Иркутск",
+    venue: "Первый пилот",
+    city: "Ресторанная группа",
     status: "Pilot" as const,
-    tagline: "Пилот №1. ₽19 900 setup + 3 месяца Pro бесплатно.",
+    tagline: "Подключение реального iiko, ежедневный brief и BI по живым данным.",
     metric: "Подключение на этой неделе",
   },
   {
-    venue: "Coming soon",
-    city: "—",
+    venue: "Next pilot",
+    city: "-",
     status: "Open" as const,
-    tagline: "Слот для второго пилота. Свяжись, если хочешь раннюю цену.",
+    tagline: "Слот для следующего ресторана или небольшой сети.",
     metric: "Места: 2 из 3",
     href: "mailto:bro@frogface.space?subject=Receptor%20pilot",
   },
@@ -30,7 +30,7 @@ type Case = (typeof CASES)[number];
 
 function StatusBadge({ status }: { status: Case["status"] }) {
   const styles: Record<Case["status"], string> = {
-    "Live demo": "bg-brand/15 text-brand border-brand/40",
+    Sandbox: "bg-brand/15 text-brand border-brand/40",
     Pilot: "bg-[color:var(--pro)]/12 text-[color:var(--pro)] border-[color:var(--pro)]/35",
     Open: "bg-muted text-muted-foreground border-border",
   };
@@ -54,13 +54,13 @@ export function Cases() {
               03 · Кто уже внутри
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              Три места — три истории. Receptor{" "}
-              <span className="font-display italic text-brand">не для всех.</span>
+              Receptor готовится к первым{" "}
+              <span className="font-display italic text-brand">живым пилотам.</span>
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            Мы берём в пилот один или два ресторана за раз — чтобы заметить,
-            подкрутить и не сломать.
+            Сначала подключаем одну-две точки, проверяем реальные цифры,
+            ежедневный brief и copilot, потом масштабируем на сеть.
           </p>
         </div>
 

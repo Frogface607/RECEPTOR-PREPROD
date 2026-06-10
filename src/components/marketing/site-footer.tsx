@@ -34,8 +34,8 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/edison-demo" className="text-foreground/80 transition-colors hover:text-foreground">
-                  Живое демо
+                <Link href="/dashboard/dev-venue" className="text-foreground/80 transition-colors hover:text-foreground">
+                  Sandbox
                 </Link>
               </li>
             </ul>

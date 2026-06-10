@@ -140,7 +140,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Edison Bar"
+                placeholder="Demo Restaurant"
                 className="input-base"
               />
             </Field>
@@ -261,7 +261,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Откроем дашборд на демо-данных Edison. Реальные цифры подключатся, когда добавите iiko-ключ."
+                ? "Откроем sandbox-кабинет. Реальные цифры подключатся, когда добавите iiko-ключ."
                 : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
             </p>
             {error ? (

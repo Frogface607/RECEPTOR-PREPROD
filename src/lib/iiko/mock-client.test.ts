@@ -8,12 +8,12 @@ import {
   ProductSchema,
   type Period,
 } from "./models";
-import { EDISON_VENUE } from "@/lib/mock/edison-fixtures";
+import { SANDBOX_VENUE } from "@/lib/mock/sandbox-fixtures";
 
 /**
  * Mock client is deterministic — repeated calls with the same period must
  * return the same numbers. This is what makes UI screenshots stable for
- * the Михно demo and keeps tests independent of the wall-clock.
+ * sandbox views and keeps tests independent of the wall-clock.
  *
  * Anchor date for the mock "today" is 2026-05-29 (the day the spec was written).
  */
@@ -50,7 +50,7 @@ describe("MockIikoClient.getRevenueSummary", () => {
     expect(() => RevenueSummarySchema.parse(summary)).not.toThrow();
   });
 
-  test("daily revenue stays inside Edison-plausible range (₽80k–₽400k)", async () => {
+  test("daily revenue stays inside plausible range (₽80k–₽400k)", async () => {
     const summary = await client.getRevenueSummary({ type: "LAST_MONTH" });
     for (const p of summary.points) {
       expect(p.revenue).toBeGreaterThanOrEqual(80_000);
@@ -112,14 +112,14 @@ describe("MockIikoClient.getDishStatistics", () => {
     }
   });
 
-  test('"Бургер Нечто" appears in top dishes (Edison signature)', async () => {
+  test('"Бургер Нечто" appears in top dishes', async () => {
     const dishes = await client.getDishStatistics({ type: "LAST_MONTH" }, 20);
     expect(dishes.some((d) => d.dishName === "Бургер Нечто")).toBe(true);
   });
 });
 
 describe("MockIikoClient.getCategoryStatistics", () => {
-  test("returns at least the 5 Edison categories", async () => {
+  test("returns at least the 5 sandbox categories", async () => {
     const cats = await client.getCategoryStatistics({ type: "LAST_WEEK" });
     const names = new Set(cats.map((c) => c.categoryName));
     expect(names.has("Бургеры")).toBe(true);
@@ -187,9 +187,9 @@ describe("MockIikoClient.searchNomenclature", () => {
   });
 });
 
-describe("EDISON_VENUE fixture", () => {
+describe("SANDBOX_VENUE fixture", () => {
   test("has expected anchoring details", () => {
-    expect(EDISON_VENUE.name).toBe("Edison Bar");
-    expect(EDISON_VENUE.timezone).toBe("Asia/Irkutsk");
+    expect(SANDBOX_VENUE.name).toBe("Demo Restaurant");
+    expect(SANDBOX_VENUE.timezone).toBe("Asia/Irkutsk");
   });
 });

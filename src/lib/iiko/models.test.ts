@@ -15,9 +15,9 @@ import {
 
 describe("OrganizationSchema", () => {
   test("parses minimal valid org", () => {
-    const valid = { id: "11111111-2222-3333-4444-555555555555", name: "Edison Bar" };
+    const valid = { id: "11111111-2222-3333-4444-555555555555", name: "Demo Restaurant" };
     const parsed = OrganizationSchema.parse(valid);
-    expect(parsed.name).toBe("Edison Bar");
+    expect(parsed.name).toBe("Demo Restaurant");
   });
 
   test("rejects missing name", () => {
@@ -28,7 +28,7 @@ describe("OrganizationSchema", () => {
   test("accepts optional timezone", () => {
     const parsed: Organization = OrganizationSchema.parse({
       id: "org1",
-      name: "Edison",
+      name: "Demo Restaurant",
       timezone: "Asia/Irkutsk",
     });
     expect(parsed.timezone).toBe("Asia/Irkutsk");

@@ -2,7 +2,7 @@
  * Unified iiko client facade.
  *
  * Phase 0–3 default to `MockIikoClient` so the dashboard, AI tools, and
- * Михно demo can ship before real apiLogin keys arrive (post-31-May 2026).
+ * product can run before real apiLogin keys arrive.
  *
  * When `USE_MOCK_IIKO=false` AND a real `channel` is selected, returns
  * the corresponding real client. RMS port is still a placeholder

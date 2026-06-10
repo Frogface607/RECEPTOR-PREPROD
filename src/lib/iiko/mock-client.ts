@@ -1,8 +1,8 @@
 /**
- * Mock implementation of `IikoClient` — backed by deterministic Edison fixtures.
+ * Mock implementation of `IikoClient` backed by deterministic sandbox fixtures.
  *
  * Used in dev/preview while real iiko keys are pending (Phase 0–3), and as
- * the demo backend for the Михно meeting (`receptorai.pro?demo=1`).
+ * the fallback backend while real iiko credentials are absent.
  *
  * Determinism guarantees:
  *  - Same anchor date + same period → same numbers, every run.
@@ -11,12 +11,12 @@
  */
 
 import {
-  EDISON_CATEGORY_MIX,
-  EDISON_DISHES,
-  EDISON_PRODUCTS,
-  EDISON_SHIFT_EMPLOYEES,
-  edisonDailyRevenue,
-} from "@/lib/mock/edison-fixtures";
+  SANDBOX_CATEGORY_MIX,
+  SANDBOX_DISHES,
+  SANDBOX_PRODUCTS,
+  SANDBOX_SHIFT_EMPLOYEES,
+  sandboxDailyRevenue,
+} from "@/lib/mock/sandbox-fixtures";
 
 import type { IikoClient } from "./types";
 import type {
@@ -48,7 +48,7 @@ export class MockIikoClient implements IikoClient {
     const dates = resolvePeriodToDates(period, this.today);
     const points: RevenuePoint[] = dates.map((date) => ({
       date,
-      revenue: edisonDailyRevenue(date),
+      revenue: sandboxDailyRevenue(date),
     }));
 
     const revenue = points.reduce((sum, p) => sum + p.revenue, 0);
@@ -57,7 +57,7 @@ export class MockIikoClient implements IikoClient {
       0,
     );
     const averageCheck = itemsSold > 0 ? Math.round(revenue / itemsSold) : 0;
-    const uniqueDishes = Math.min(EDISON_DISHES.length, 60 + dates.length);
+    const uniqueDishes = Math.min(SANDBOX_DISHES.length, 60 + dates.length);
 
     return {
       revenue,
@@ -73,10 +73,10 @@ export class MockIikoClient implements IikoClient {
     topN: number,
   ): Promise<DishStat[]> {
     const dates = resolvePeriodToDates(period, this.today);
-    const totalRevenue = dates.reduce((s, d) => s + edisonDailyRevenue(d), 0);
+    const totalRevenue = dates.reduce((s, d) => s + sandboxDailyRevenue(d), 0);
 
-    const stats: DishStat[] = EDISON_DISHES.map((dish) => {
-      const categoryShare = EDISON_CATEGORY_MIX[dish.category] ?? 0;
+    const stats: DishStat[] = SANDBOX_DISHES.map((dish) => {
+      const categoryShare = SANDBOX_CATEGORY_MIX[dish.category] ?? 0;
       const dishRevenue = totalRevenue * categoryShare * dish.weight;
       const dishSumInt = Math.round(dishRevenue);
       const dishAmountInt = Math.round(dishRevenue / dish.price);
@@ -94,9 +94,9 @@ export class MockIikoClient implements IikoClient {
 
   async getCategoryStatistics(period: Period): Promise<CategoryStat[]> {
     const dates = resolvePeriodToDates(period, this.today);
-    const totalRevenue = dates.reduce((s, d) => s + edisonDailyRevenue(d), 0);
+    const totalRevenue = dates.reduce((s, d) => s + sandboxDailyRevenue(d), 0);
 
-    return Object.entries(EDISON_CATEGORY_MIX).map(([categoryName, share]) => ({
+    return Object.entries(SANDBOX_CATEGORY_MIX).map(([categoryName, share]) => ({
       categoryName,
       dishSumInt: Math.round(totalRevenue * share),
     }));
@@ -105,10 +105,10 @@ export class MockIikoClient implements IikoClient {
   async getShifts(period: Period): Promise<ShiftStat[]> {
     const dates = resolvePeriodToDates(period, this.today);
     return dates.map((date, idx) => {
-      const revenue = edisonDailyRevenue(date);
+      const revenue = sandboxDailyRevenue(date);
       const items = dailyItemsSold(revenue);
       const employee =
-        EDISON_SHIFT_EMPLOYEES[idx % EDISON_SHIFT_EMPLOYEES.length];
+        SANDBOX_SHIFT_EMPLOYEES[idx % SANDBOX_SHIFT_EMPLOYEES.length];
       const next = addDays(date, 1);
       return {
         shiftId: `shift-${date}`,
@@ -124,7 +124,7 @@ export class MockIikoClient implements IikoClient {
   async searchNomenclature(query: string): Promise<Product[]> {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    return EDISON_PRODUCTS.filter((p) => p.name.toLowerCase().includes(q));
+    return SANDBOX_PRODUCTS.filter((p) => p.name.toLowerCase().includes(q));
   }
 }
 

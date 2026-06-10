@@ -8,12 +8,12 @@ import { CloudIikoClient } from "./cloud-client";
  * Instead we mock `globalThis.fetch` and assert the SHAPE of the HTTP
  * conversation: auth endpoint, headers, body, response parsing.
  *
- * This is enough to guarantee that when Edison apiLogin arrives (post-31-May),
+ * This is enough to guarantee that when a live apiLogin arrives,
  * the wiring is correct end-to-end.
  */
 
 const API_LOGIN = "test-api-login";
-const ORG_ID = "edison-bar-org";
+const ORG_ID = "sandbox-org";
 const ANCHOR = "2026-05-29";
 const TOKEN = "iiko-token-abc";
 
@@ -133,7 +133,7 @@ describe("CloudIikoClient.listOrganizations", () => {
         url: "organizations",
         data: {
           organizations: [
-            { id: "org-1", name: "Mihno Group" },
+            { id: "org-1", name: "Pilot Group" },
             { id: "org-2", name: "Second Venue" },
           ],
         },
@@ -147,7 +147,7 @@ describe("CloudIikoClient.listOrganizations", () => {
     });
 
     await expect(client.listOrganizations()).resolves.toEqual([
-      { id: "org-1", name: "Mihno Group" },
+      { id: "org-1", name: "Pilot Group" },
       { id: "org-2", name: "Second Venue" },
     ]);
     expect(calls[1].url).toContain("/api/1/organizations");

@@ -28,14 +28,6 @@ export type IikoClientConfig =
       organizationId: string;
     };
 
-/** Derive the env prefix for a venue's apiLogin, e.g. "edison-demo" → "EDISON". */
-function venueEnvPrefix(venueId: string): string {
-  return venueId
-    .replace(/-demo$/i, "")
-    .replace(/[^a-z0-9]+/gi, "_")
-    .toUpperCase();
-}
-
 /**
  * Resolve the iiko config for a venue given an env bag and the current date.
  *
@@ -59,11 +51,7 @@ export function resolveIikoClientConfig(
   const wantReal = env.USE_MOCK_IIKO === "false";
 
   if (wantReal) {
-    const prefix = venueEnvPrefix(venue.id);
-    const apiLogin =
-      env[`${prefix}_IIKO_API_LOGIN`]?.trim() ||
-      env.IIKO_API_LOGIN?.trim() ||
-      "";
+    const apiLogin = env.IIKO_API_LOGIN?.trim() || "";
 
     if (apiLogin) {
       return {

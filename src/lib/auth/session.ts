@@ -7,16 +7,23 @@
  * server client.
  *
  * Demo mode (Supabase absent) returns a synthetic user so the dashboard and
- * tools stay open for the Михно demo without a real login.
+ * tools stay open without a real email login.
  */
 
+import { cookies } from "next/headers";
 import { getServerSupabase } from "@/lib/db/server";
 import { isSupabaseConfigured } from "@/lib/db/env";
+import {
+  DEVELOPER_SESSION_COOKIE,
+  getDeveloperAccessConfig,
+  isValidDeveloperSessionCookie,
+} from "./developer";
 
 export type SessionUser = {
   id: string;
   email: string;
   isDemo: boolean;
+  isDeveloper?: boolean;
 };
 
 export const DEMO_USER: SessionUser = {
@@ -24,6 +31,17 @@ export const DEMO_USER: SessionUser = {
   email: "demo@receptorai.pro",
   isDemo: true,
 };
+
+export function getDeveloperUser(): SessionUser | null {
+  const config = getDeveloperAccessConfig();
+  if (!config) return null;
+  return {
+    id: "developer-user",
+    email: config.email,
+    isDemo: true,
+    isDeveloper: true,
+  };
+}
 
 export function resolveSessionUser(input: {
   configured: boolean;
@@ -40,6 +58,15 @@ export function resolveSessionUser(input: {
 
 /** Resolve the current session user on the server (RSC / route handlers). */
 export async function getCurrentUser(): Promise<SessionUser | null> {
+  const cookieStore = await cookies();
+  if (
+    isValidDeveloperSessionCookie(
+      cookieStore.get(DEVELOPER_SESSION_COOKIE)?.value,
+    )
+  ) {
+    return getDeveloperUser();
+  }
+
   const configured = isSupabaseConfigured();
   if (!configured) return DEMO_USER;
 

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowRight, Mail, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, LockKeyhole, Mail } from "lucide-react";
 import { getBrowserSupabase } from "@/lib/db/browser";
 
 type State =
@@ -19,9 +19,13 @@ function safeNextPath(value: string): string {
 
 export function AuthForm({
   demoMode,
+  developerMode,
+  developerError,
   nextPath,
 }: {
   demoMode: boolean;
+  developerMode: boolean;
+  developerError: boolean;
   nextPath: string;
 }) {
   const [email, setEmail] = useState("");
@@ -36,7 +40,7 @@ export function AuthForm({
     if (!supabase) {
       setState({
         status: "error",
-        message: "Авторизация ещё не настроена. Открой демо без входа.",
+        message: "Auth is not configured in this environment.",
       });
       return;
     }
@@ -67,8 +71,8 @@ export function AuthForm({
         </h2>
         <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
           Ссылка для входа ушла на{" "}
-          <span className="text-foreground">{state.email}</span>. Открой её на
-          этом устройстве — и попадёшь в Receptor.
+          <span className="text-foreground">{state.email}</span>. Открой ее на
+          этом устройстве, чтобы попасть в Receptor.
         </p>
         <button
           type="button"
@@ -85,7 +89,7 @@ export function AuthForm({
     <div className="rounded-2xl border border-border/60 bg-card/60 p-8">
       <h1 className="text-2xl font-medium tracking-[-0.02em]">Вход в Receptor</h1>
       <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-        Введи email — пришлём ссылку для входа без пароля.
+        Введите email, и мы пришлем одноразовую ссылку для входа.
       </p>
 
       <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-3">
@@ -95,7 +99,7 @@ export function AuthForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="boss@frogface.space"
+            placeholder="name@company.ru"
             autoComplete="email"
             required
             className="w-full rounded-lg border border-border/60 bg-background/60 py-3 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
@@ -109,7 +113,7 @@ export function AuthForm({
         >
           {state.status === "sending" ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Отправляю…
+              <Loader2 className="size-4 animate-spin" /> Отправляю...
             </>
           ) : (
             <>
@@ -123,20 +127,54 @@ export function AuthForm({
         ) : null}
       </form>
 
-      {demoMode ? (
+      {developerMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Демо-режим
+            Developer access
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Вход ещё не подключён на этом окружении. Можно сразу открыть
-            дашборд на демо-данных Edison.
+            Для тестирования без email-ссылки. Доступ появляется только когда
+            включены dev-переменные окружения.
+          </p>
+          <form action="/api/auth/dev" method="post" className="mt-4 space-y-3">
+            <input type="hidden" name="next" value={safeNextPath(nextPath)} />
+            <div className="relative">
+              <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="password"
+                name="accessKey"
+                placeholder="Developer key"
+                required
+                className="w-full rounded-lg border border-border/60 bg-background/60 py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 text-sm text-foreground transition-colors hover:border-brand/40 hover:bg-card"
+            >
+              Войти как разработчик
+              <ArrowRight className="size-4 text-brand" />
+            </button>
+            {developerError ? (
+              <p className="text-[13px] text-destructive">
+                Ключ не подошел. Проверь RECEPTOR_DEV_ACCESS_KEY.
+              </p>
+            ) : null}
+          </form>
+        </div>
+      ) : demoMode ? (
+        <div className="mt-7 border-t border-border/40 pt-6">
+          <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+            Sandbox
+          </p>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+            Auth еще не настроен в этом окружении. Можно открыть тестовый кабинет.
           </p>
           <Link
-            href="/dashboard/edison-demo"
+            href="/dashboard/dev-venue"
             className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 py-2.5 text-sm text-foreground transition-colors hover:border-brand/40 hover:bg-card"
           >
-            Открыть демо без входа
+            Открыть sandbox
             <ArrowRight className="size-4 text-brand" />
           </Link>
         </div>

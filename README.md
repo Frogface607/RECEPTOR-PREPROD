@@ -1,73 +1,63 @@
-# Receptor v2
+# Receptor
 
-AI-копайлот владельца ресторана. Подключение к iiko (Cloud + RMS) → BI dashboard + AI-чат с tool-calling над OLAP данными.
+Operational BI and AI copilot for restaurant owners.
 
-**Status:** Phase 0 (scaffold) → mock-first build. Live: [receptorai.pro](https://www.receptorai.pro).
+Receptor connects to iiko, turns sales data into a dashboard, answers questions
+through an AI copilot, and generates a Daily Brief for owner-level decisions.
 
 ## Stack
 
-- **Next.js 16** (App Router, Turbopack) · React 19 · TypeScript 5 · Tailwind 4
-- **shadcn/ui** (`base-nova` style, `@base-ui/react`) · Recharts 3 · lucide-react
-- **Supabase** (Auth + Postgres) — keys arrive after 31 May 2026
-- **Anthropic Claude** (tool-calling) + OpenRouter (fallback)
-- **Vitest** + Testing Library (jsdom)
-- **Vercel** deploy → `receptorai.pro`
+- Next.js 16 App Router, React 19, TypeScript
+- Supabase Auth and Postgres
+- iiko Cloud/RMS client facade
+- OpenAI/Anthropic AI backends with deterministic fallback
+- Vitest, ESLint, Vercel
 
-## Repo layout
+## Core Surfaces
 
-```
-src/
-├── app/                  Next.js App Router (routes + API routes)
-├── components/
-│   ├── ui/               shadcn primitives
-│   ├── dashboard/        KPI cards, charts (Phase 2)
-│   ├── chat/             AI chat drawer (Phase 4)
-│   └── marketing/        Landing sections (Phase 2)
-└── lib/
-    ├── iiko/             iiko Cloud + RMS clients (Phase 1, port of v1 Python)
-    ├── db/               Supabase client + queries (Phase 3)
-    ├── mock/             Edison-shaped fixtures (Phase 1)
-    ├── ai/               Claude tool-calling (Phase 4)
-    ├── format.ts         RU number formatters (TDD ✓)
-    └── utils.ts          shadcn cn() helper
-docs/
-├── brand-guide.md        Receptor brand v2.0
-└── v1-iiko-reference/    Python clients to port → TypeScript
-```
+- `/onboarding` - connect iiko apiLogin and select organization
+- `/dashboard/[venueId]` - BI, charts, shifts, Daily Brief, AI chat
+- `/settings` - account and venue connection status
+- `/api/brief` - JSON/text Daily Brief
+- `/api/brief/send` - delivery hook for Daily Brief
+- `/api/auth/dev` - protected developer sandbox login
+
+## Environment
+
+See `.env.local.example`.
+
+Important production variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `ENCRYPTION_KEY`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+
+Optional developer access:
+
+- `RECEPTOR_DEV_MODE=true`
+- `RECEPTOR_DEV_EMAIL=you@example.com`
+- `RECEPTOR_DEV_ACCESS_KEY=<private key>`
+
+Optional Telegram delivery:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
 
 ## Scripts
 
 ```bash
-npm run dev         # next dev (Turbopack)
-npm run build       # next build (production)
-npm run start       # next start
-npm run lint        # eslint
-npm run typecheck   # tsc --noEmit
-npm test            # vitest run
-npm run test:watch  # vitest --watch
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+npm test
 ```
 
-## Build phases
+## Sandbox
 
-See `D:\PROJECTS\FROGFACE-VAULT\canonical\plans\2026-05-30-receptor-build-kickoff.md`.
-
-| Phase | Scope | Mode |
-|---|---|---|
-| 0 | Scaffold, tooling, v1 archive | ✅ |
-| 1 | Mock fixtures + iiko client port | TDD |
-| 2 | Landing + BI Dashboard | frontend-design |
-| 3 | Supabase Auth + onboarding + settings | frontend-design |
-| 4 | AI Chat + Claude tools | TDD + frontend-design |
-| 5 | Pricing + billing UI | frontend-design |
-| 6 | Polish + Михно demo | — |
-
-## Mock-first
-
-Until iiko keys arrive, `USE_MOCK_IIKO=true` makes `lib/iiko/client.ts` read from `lib/mock/`. Flip to `false` to use real clients with same interface. See `.env.local.example`.
-
-## v1 reference
-
-Полный inventory of v1 codebase (что работает / что выкинуть):
-`D:\PROJECTS\FROGFACE-VAULT\canonical\plans\2026-05-29-receptor-inventory-report.md`.
-
-История v1 заморожена в ветке `legacy-v1`.
+When real iiko credentials are absent, `USE_MOCK_IIKO=true` uses deterministic
+sandbox fixtures from `src/lib/mock`. The public UI points to
+`/dashboard/dev-venue` for local/product testing.

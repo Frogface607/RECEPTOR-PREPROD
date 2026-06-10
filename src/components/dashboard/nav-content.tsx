@@ -15,8 +15,8 @@ export type NavItem = {
 };
 
 export const DASHBOARD_NAV: NavItem[] = [
-  { href: "/dashboard/edison-demo", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/dashboard/edison-demo?chat=1", icon: MessageSquare, label: "AI чат" },
+  { href: "/dashboard/dev-venue", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/dashboard/dev-venue?chat=1", icon: MessageSquare, label: "AI чат" },
   { href: "/tools", icon: Wrench, label: "Инструменты" },
   { href: "/settings", icon: Settings, label: "Настройки" },
   { href: "/#что-делает", icon: BookOpen, label: "Помощь" },
@@ -41,9 +41,9 @@ export function NavContent({
           Заведение
         </p>
         <div className="rounded-lg border border-border/50 bg-card/60 px-3 py-2.5">
-          <p className="text-[13px] font-medium text-foreground">Edison Bar</p>
+          <p className="text-[13px] font-medium text-foreground">Demo Restaurant</p>
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Иркутск · Cloud
+            Sandbox · Cloud
           </p>
         </div>
 

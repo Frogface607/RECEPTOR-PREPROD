@@ -1,15 +1,7 @@
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { DEMO_ANCHOR } from "@/lib/iiko/config";
-import { formatRubles, formatInteger } from "@/lib/format";
+import { formatInteger, formatRubles } from "@/lib/format";
 
-/**
- * Server component — renders numbers from `MockIikoClient` against Edison
- * fixtures. Always the demo dataset (this is a public marketing page),
- * pinned to the shared DEMO_ANCHOR so it never drifts.
- *
- * Choice: showing actual product data on the landing builds more trust
- * than another mock screenshot.
- */
 export async function LiveSnapshot() {
   const client = new MockIikoClient({ today: DEMO_ANCHOR });
 
@@ -22,7 +14,7 @@ export async function LiveSnapshot() {
     {
       label: "Выручка / 7 дней",
       value: formatRubles(summary.revenue),
-      note: "Edison Bar · LAST_WEEK",
+      note: "Sandbox · LAST_WEEK",
     },
     {
       label: "Средний чек",
@@ -50,15 +42,13 @@ export async function LiveSnapshot() {
               02 · Что вы видите
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              Живые цифры с{" "}
-              <span className="font-display italic text-brand">демо-аккаунта</span>{" "}
-              Edison Bar.
+              BI, который выглядит как{" "}
+              <span className="font-display italic text-brand">живой кабинет</span>.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            Числа ниже честные — Receptor читает их через стандартный
-            интерфейс iiko, тот же, что подключится к вашему ресторану за
-            десять минут.
+            В sandbox используются тестовые данные. На пилоте этот же экран
+            подключается к iiko и показывает реальные продажи ресторана.
           </p>
         </div>
 
@@ -86,7 +76,7 @@ export async function LiveSnapshot() {
                 Топ-3 блюда недели
               </p>
               <span className="font-mono text-[10px] text-muted-foreground">
-                MockIikoClient.getDishStatistics()
+                iiko OLAP
               </span>
             </div>
             <ol className="mt-6 space-y-4">
@@ -117,12 +107,12 @@ export async function LiveSnapshot() {
               Что Receptor отвечает
             </p>
             <blockquote className="mt-6 font-display italic text-[24px] leading-[1.25] text-foreground">
-              «Бургер Нечто держит топ — 38% выручки бургерной категории. Но
-              маржа в коктейлях растёт на 12% к прошлому месяцу. Подумайте о
-              переброске продвижения.»
+              «Лидер недели держит категорию, но рост выручки идет неравномерно.
+              Проверьте смены с просадкой и поставьте сильную позицию в фокус
+              официантам на вечер.»
             </blockquote>
             <p className="mt-5 text-[13px] uppercase tracking-[0.16em] text-muted-foreground">
-              Claude · tool-calls к iiko OLAP
+              AI copilot · tool-calls к iiko OLAP
             </p>
           </article>
         </div>

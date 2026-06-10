@@ -4,7 +4,7 @@
  * While `ANTHROPIC_API_KEY` is absent, every tool in `/tools` runs through
  * this function: it validates inputs, then renders a believable,
  * category-shaped markdown preview that echoes the user's input so the
- * showcase feels alive during the Михно demo.
+ * preview feels alive while a real AI key is unavailable.
  *
  * It is honest: each result carries a small "демо-превью" note. When the
  * API key arrives, the `/api/tools/run` route swaps this for a real Claude

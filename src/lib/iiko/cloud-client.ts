@@ -8,10 +8,10 @@
  *
  * Methods not yet ported (`getDishStatistics`, `getCategoryStatistics`,
  * `getShifts`, `searchNomenclature`) throw a clear deferral error.
- * They will land when Edison apiLogin arrives (post-31-May 2026) and we can
+ * They will land when a live apiLogin arrives and we can
  * validate the actual OLAP response shape end-to-end.
  *
- * For dev/preview/Михно demo, the facade in `client.ts` selects
+ * For dev/preview, the facade in `client.ts` selects
  * `MockIikoClient` instead via `USE_MOCK_IIKO=true`.
  */
 
@@ -177,7 +177,7 @@ export class CloudIikoClient implements IikoClient {
   async getShifts(period: Period): Promise<ShiftStat[]> {
     // Cloud OLAP does not expose cashier-session rows the way RMS does, so we
     // derive one "day-shift" per OpenDate. Good enough for the dashboard's
-    // shifts table; revisit with real Edison key if true per-cashier shifts
+    // shifts table; revisit with live data if true per-cashier shifts
     // are needed (documented in REAL_CONNECT.md).
     const rows = await this.runOlap(period, {
       groupByRowFields: ["OpenDate"],

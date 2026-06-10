@@ -57,12 +57,12 @@ export function Hero() {
               <ArrowRight className="ml-1 size-4" />
             </LinkButton>
             <LinkButton
-              href="/dashboard/edison-demo"
+              href="/dashboard/dev-venue"
               size="lg"
               variant="ghost"
               className="press h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
             >
-              Смотреть демо на Edison
+              Смотреть sandbox
               <ArrowRight className="ml-1 size-4 opacity-60" />
             </LinkButton>
           </div>
@@ -87,7 +87,7 @@ export function Hero() {
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-brand" />
                   <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Edison Bar · сегодня
+                    Demo Restaurant · сегодня
                   </span>
                 </div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -135,7 +135,7 @@ export function Hero() {
                       <span className="font-mono text-[11px] text-muted-foreground">
                         03
                       </span>
-                      <span className="flex-1">Edison Sour</span>
+                      <span className="flex-1">Signature Sour</span>
                       <span className="numeric font-mono text-foreground">
                         ₽98&nbsp;400
                       </span>

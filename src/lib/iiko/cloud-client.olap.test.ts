@@ -8,12 +8,12 @@ import {
 
 /**
  * OLAP method ports for the real Cloud client. Verified against mocked fetch
- * (no live key in CI). When Edison apiLogin arrives, only the real response
+ * (no live key in CI). With a live apiLogin, only the real response
  * shape needs a 30-min sanity check — the wiring is locked here.
  */
 
 const API_LOGIN = "test-login";
-const ORG = "edison-org";
+const ORG = "sandbox-org";
 const ANCHOR = "2026-05-29";
 const TOKEN = "tok-123";
 
@@ -53,7 +53,7 @@ describe("CloudIikoClient.getDishStatistics", () => {
         data: {
           data: [
             { DishName: "Бургер Нечто", DishGroup: "Бургеры", DishDiscountSumInt: 165600, DishAmountInt: 240 },
-            { DishName: "Edison Sour", DishGroup: "Авторские коктейли", DishDiscountSumInt: 98400, DishAmountInt: 167 },
+            { DishName: "Signature Sour", DishGroup: "Авторские коктейли", DishDiscountSumInt: 98400, DishAmountInt: 167 },
             { DishName: "Крафт IPA 0.5л", DishGroup: "Крафтовое пиво", DishDiscountSumInt: 142100, DishAmountInt: 374 },
           ],
         },
