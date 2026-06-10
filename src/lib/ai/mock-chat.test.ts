@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { runMockChatTurn } from "./mock-chat";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
+import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const ANCHOR = "2026-05-29";
 
@@ -15,6 +16,7 @@ async function collect(message: string) {
     venueName: "Тестовое заведение",
     venueType: "Бар",
     venueCity: "Иркутск",
+    venueProfile: DEFAULT_VENUE_INTELLIGENCE,
     iikoClient: client(),
   })) {
     events.push(ev);

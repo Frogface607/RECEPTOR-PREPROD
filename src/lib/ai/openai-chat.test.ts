@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { runOpenAIChatTurn, isOpenAIChatConfigured } from "./openai-chat";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
+import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const ORIGINAL_OPENAI_KEY = process.env.OPENAI_API_KEY;
 const ORIGINAL_OPENAI_MODEL = process.env.OPENAI_MODEL;
@@ -12,6 +13,7 @@ function input(message: string) {
     venueName: "Тестовое заведение",
     venueType: "bar",
     venueCity: "Иркутск",
+    venueProfile: DEFAULT_VENUE_INTELLIGENCE,
     iikoClient: new MockIikoClient({ today: ANCHOR }),
   };
 }

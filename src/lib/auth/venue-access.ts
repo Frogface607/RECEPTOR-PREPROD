@@ -10,6 +10,7 @@ import { getCurrentUser, type SessionUser } from "./session";
 import { getServerSupabase } from "@/lib/db/server";
 import { decryptSecret } from "@/lib/db/encryption";
 import { getVenue, type ResolvedVenue } from "@/lib/venues/get-venue";
+import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 type VenueAccessOk = {
   ok: true;
@@ -50,6 +51,7 @@ function toResolvedVenue(
     city: venue.city ?? "",
     type: venue.type ?? "other",
     timezone: venue.timezone ?? "Asia/Irkutsk",
+    intelligence: DEFAULT_VENUE_INTELLIGENCE,
     iiko: {
       channel: credential?.channel ?? "cloud",
       organizationId: credential?.iiko_org_id ?? venue.id,

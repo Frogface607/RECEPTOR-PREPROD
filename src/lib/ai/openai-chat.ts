@@ -9,6 +9,7 @@
 import { AI_TOOLS } from "./tools";
 import type { ChatEvent, ChatTurnInput } from "./mock-chat";
 import type { IikoClient } from "@/lib/iiko/types";
+import { formatVenueProfileForPrompt } from "@/lib/venues/intelligence";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_MODEL = "gpt-5.5";
@@ -59,9 +60,12 @@ function systemPrompt(input: ChatTurnInput): string {
   return [
     `Ты — Receptor, AI-копайлот владельца заведения ${input.venueName}.`,
     `Тип: ${input.venueType}. Город: ${input.venueCity}.`,
-    "Отвечай по-русски, коротко и управленчески: цифры, вывод, действие.",
+    "Профиль заведения:",
+    formatVenueProfileForPrompt(input.venueProfile),
+    "Отвечай по-русски, коротко и управленчески: факт, вывод, действие.",
     "Если вопрос про выручку, блюда, смены, сравнение периодов или меню — обязательно вызови подходящий инструмент.",
     "Не выдумывай метрики. Используй только данные, которые вернул инструмент.",
+    "Если данных не хватает, явно скажи, какой доступ или отчёт нужен.",
   ].join("\n");
 }
 

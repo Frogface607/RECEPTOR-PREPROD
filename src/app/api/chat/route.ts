@@ -55,6 +55,7 @@ export async function POST(request: Request) {
           venueName: venue.name,
           venueType: venue.type,
           venueCity: venue.city,
+          venueProfile: venue.intelligence,
           iikoClient,
         };
         const events = useOpenAI
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
             venueName: venue.name,
             venueType: venue.type,
             venueCity: venue.city,
+            venueProfile: venue.intelligence,
             iikoClient,
           })) {
             controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));

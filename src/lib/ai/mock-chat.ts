@@ -24,6 +24,7 @@ import {
 import { formatRubles, formatInteger } from "@/lib/format";
 import type { IikoClient } from "@/lib/iiko/types";
 import type { PeriodType } from "@/lib/iiko/models";
+import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
 
 // ---------------------------------------------------------------------------
 // Stream event shapes (also used by the API route + UI)
@@ -45,6 +46,7 @@ export type ChatTurnInput = {
   venueName: string;
   venueType: string;
   venueCity: string;
+  venueProfile: VenueIntelligenceProfile;
   iikoClient: IikoClient;
 };
 
@@ -142,6 +144,7 @@ const PERIOD_PHRASE: Record<PeriodType, string> = {
 
 function formatRevenueAnswer(
   venueName: string,
+  profile: VenueIntelligenceProfile,
   out: Awaited<ReturnType<typeof getRevenueTool.handler>>,
   period: PeriodType,
 ): string {
@@ -151,7 +154,9 @@ function formatRevenueAnswer(
     `Выручка: ${formatRubles(out.revenue)}`,
     `Средний чек: ${formatRubles(out.averageCheck)}`,
     `Позиций продано: ${formatInteger(out.itemsSold)}`,
-    `Уникальных блюд: ${formatInteger(out.uniqueDishes)}`,
+    `Блюд в продажах: ${formatInteger(out.uniqueDishes)}`,
+    "",
+    `Вывод: смотри динамику не отдельно, а вместе с меню и сменами. ${profile.decisionRules[2]}`,
   ];
   if (out.points.length > 1) {
     const last = out.points[out.points.length - 1];
@@ -164,6 +169,7 @@ function formatRevenueAnswer(
 }
 
 function formatDishesAnswer(
+  profile: VenueIntelligenceProfile,
   out: Awaited<ReturnType<typeof getDishStatisticsTool.handler>>,
   period: PeriodType,
 ): string {
@@ -175,10 +181,17 @@ function formatDishesAnswer(
         `(${formatInteger(d.dishAmountInt)} порций)`,
     )
     .join("\n");
-  return `${head}\n${rows}`;
+  return [
+    head,
+    rows,
+    "",
+    `Вывод: ${profile.operatingRisks[1]}`,
+    "Действие: проверь маржинальность лидеров и поставь 1-2 сильные позиции в фокус смены.",
+  ].join("\n");
 }
 
 function formatShiftsAnswer(
+  profile: VenueIntelligenceProfile,
   out: Awaited<ReturnType<typeof getShiftsTool.handler>>,
   period: PeriodType,
 ): string {
@@ -193,7 +206,12 @@ function formatShiftsAnswer(
   const tail =
     `\nВсего за период: ${formatRubles(out.totalRevenue)} ` +
     `(${formatInteger(out.totalItems)} позиций).`;
-  return `${head}\n${rows}${tail}`;
+  return [
+    `${head}\n${rows}${tail}`,
+    "",
+    `Важно: ${profile.operatingRisks[2]}`,
+    "Действие: используй смены как сигнал для разбора, а не как автоматический рейтинг сотрудников.",
+  ].join("\n");
 }
 
 function formatCompareAnswer(
@@ -229,15 +247,20 @@ function formatSearchAnswer(
   return `Нашёл ${out.products.length} позиций по «${query}»:\n${rows}`;
 }
 
-function formatSuggestAnswer(venueName: string): string {
+function formatSuggestAnswer(
+  venueName: string,
+  profile: VenueIntelligenceProfile,
+): string {
   return [
-    `Я Receptor — кулинарный копайлот ${venueName}. Спроси меня:`,
+    `Я Receptor — Copilot ${venueName}. Я учитываю профиль заведения, iiko-цифры и управленческий контекст.`,
     "",
-    "• какая выручка за прошлую неделю?",
-    "• покажи топ-5 блюд за месяц",
-    "• сравни прошлую и текущую неделю",
-    "• сколько сделали смены вчера?",
-    "• найди в меню бургер нечто",
+    `Фокус сейчас: ${profile.recommendedFocus.slice(0, 3).join("; ")}.`,
+    "",
+    "Спроси меня:",
+    "• что произошло с выручкой за прошлую неделю?",
+    "• какие блюда дали максимум денег и порций?",
+    "• какие смены стоит проверить?",
+    "• что сделать сегодня, чтобы не потерять вечер?",
   ].join("\n");
 }
 
@@ -273,7 +296,12 @@ export async function* runMockChatTurn(
       };
       yield {
         type: "text",
-        text: formatRevenueAnswer(input.venueName, output, route.period),
+        text: formatRevenueAnswer(
+          input.venueName,
+          input.venueProfile,
+          output,
+          route.period,
+        ),
       };
       break;
     }
@@ -289,7 +317,10 @@ export async function* runMockChatTurn(
         input: { period: route.period, top_n: route.topN },
         output,
       };
-      yield { type: "text", text: formatDishesAnswer(output, route.period) };
+      yield {
+        type: "text",
+        text: formatDishesAnswer(input.venueProfile, output, route.period),
+      };
       break;
     }
 
@@ -304,7 +335,10 @@ export async function* runMockChatTurn(
         input: { period: route.period },
         output,
       };
-      yield { type: "text", text: formatShiftsAnswer(output, route.period) };
+      yield {
+        type: "text",
+        text: formatShiftsAnswer(input.venueProfile, output, route.period),
+      };
       break;
     }
 
@@ -339,7 +373,10 @@ export async function* runMockChatTurn(
     }
 
     case "suggest": {
-      yield { type: "text", text: formatSuggestAnswer(input.venueName) };
+      yield {
+        type: "text",
+        text: formatSuggestAnswer(input.venueName, input.venueProfile),
+      };
       break;
     }
   }

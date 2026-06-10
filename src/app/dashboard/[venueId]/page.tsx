@@ -6,6 +6,7 @@ import { DishesChart } from "@/components/dashboard/dishes-chart";
 import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
+import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import {
   parsePeriodSearchParams,
   PERIOD_LABELS_RU,
@@ -79,6 +80,10 @@ export default async function DashboardPage({
 
           <div className="reveal reveal-3 mt-6">
             <DailyBriefCard brief={brief} venueId={venueId} />
+          </div>
+
+          <div className="reveal reveal-3 mt-6">
+            <VenueIntelligenceCard profile={venue.intelligence} />
           </div>
 
           <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">
