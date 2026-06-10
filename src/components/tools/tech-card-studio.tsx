@@ -6,10 +6,12 @@ import {
   Building2,
   Copy,
   FileText,
+  Loader2,
   Plus,
   Printer,
   RotateCcw,
   Save,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import {
@@ -29,6 +31,12 @@ type SavedTechCard = {
   savedAt: string;
   input: TechCardInput;
 };
+
+type DraftRunState =
+  | { status: "idle" }
+  | { status: "running" }
+  | { status: "done"; provider: string; note: string }
+  | { status: "error"; message: string };
 
 const STORAGE_KEY = "receptor.tech-card-studio.history";
 
@@ -77,6 +85,8 @@ export function TechCardStudio() {
   const [venueProfile, setVenueProfile] = useState<VenueIntelligenceProfile>(
     DEFAULT_VENUE_INTELLIGENCE,
   );
+  const [draftIdea, setDraftIdea] = useState("");
+  const [draftRun, setDraftRun] = useState<DraftRunState>({ status: "idle" });
   const [history, setHistory] = useState<SavedTechCard[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -156,7 +166,48 @@ export function TechCardStudio() {
 
   const reset = () => {
     setInput(emptyInput());
+    setDraftIdea("");
     setCopied(false);
+  };
+
+  const generateDraft = async () => {
+    const idea = draftIdea.trim() || input.dishName.trim();
+    if (!idea || draftRun.status === "running") return;
+
+    setDraftRun({ status: "running" });
+    try {
+      const response = await fetch("/api/tools/tech-card-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idea,
+          category: input.category,
+          portions: input.portions,
+          targetFoodCostPercent: input.targetFoodCostPercent,
+          venueProfile,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setDraftRun({
+          status: "error",
+          message: data.error ?? `HTTP ${response.status}`,
+        });
+        return;
+      }
+      setInput(data.input);
+      setDraftIdea(data.input.dishName || idea);
+      setDraftRun({
+        status: "done",
+        provider: data.provider ?? "fallback",
+        note: data.note ?? "Черновик готов.",
+      });
+    } catch (err) {
+      setDraftRun({
+        status: "error",
+        message: err instanceof Error ? err.message : "network error",
+      });
+    }
   };
 
   return (
@@ -230,6 +281,13 @@ export function TechCardStudio() {
               onChange={(value) => updateInput("targetFoodCostPercent", value)}
             />
           </div>
+
+          <DraftGeneratorPanel
+            idea={draftIdea}
+            state={draftRun}
+            onIdeaChange={setDraftIdea}
+            onGenerate={generateDraft}
+          />
 
           <VenueProfileStrip
             profile={venueProfile}
@@ -448,6 +506,75 @@ export function TechCardStudio() {
 
       <PrintableTechCard input={input} venueProfile={venueProfile} />
     </div>
+  );
+}
+
+function DraftGeneratorPanel({
+  idea,
+  state,
+  onIdeaChange,
+  onGenerate,
+}: {
+  idea: string;
+  state: DraftRunState;
+  onIdeaChange: (value: string) => void;
+  onGenerate: () => void;
+}) {
+  return (
+    <section className="mt-6 rounded-xl border border-[color:var(--ai)]/25 bg-[color:var(--ai)]/[0.05] p-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-[color:var(--ai)]">
+            <Sparkles className="size-4" />
+            <p className="text-[11px] uppercase tracking-[0.18em]">
+              AI-черновик
+            </p>
+          </div>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+            Введите идею блюда. Receptor набросает ингредиенты, граммовки,
+            КБЖУ, цену и технологию с учётом профиля заведения.
+          </p>
+        </div>
+        <div className="flex w-full flex-col gap-2 lg:w-[420px]">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              value={idea}
+              onChange={(event) => onIdeaChange(event.target.value)}
+              placeholder="Например: цезарь с креветками в премиальной подаче"
+              className="h-10 min-w-0 flex-1 rounded-lg border border-border/60 bg-background/55 px-3.5 text-sm text-foreground placeholder:text-muted-foreground/55 focus:border-brand/50 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={onGenerate}
+              disabled={!idea.trim() || state.status === "running"}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-[13px] font-medium text-primary-foreground transition hover:bg-brand-hover disabled:opacity-45"
+            >
+              {state.status === "running" ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Собираю
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  Заполнить
+                </>
+              )}
+            </button>
+          </div>
+          {state.status === "done" ? (
+            <p className="text-[12px] leading-relaxed text-muted-foreground">
+              {state.provider === "openai" ? "OpenAI" : "Receptor fallback"}:{" "}
+              {state.note}
+            </p>
+          ) : state.status === "error" ? (
+            <p className="text-[12px] leading-relaxed text-destructive">
+              Ошибка: {state.message}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 

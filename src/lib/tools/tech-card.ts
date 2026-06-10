@@ -1,3 +1,5 @@
+import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
+
 export type TechCardIngredient = {
   id: string;
   name: string;
@@ -211,4 +213,3 @@ ${rows}
 ${input.process || "Опишите технологию приготовления, подачу и условия хранения."}
 `;
 }
-import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";

@@ -100,7 +100,7 @@ The growth workflow:
 2. Keep tools grouped as workflows, not categories. Done.
 3. Build Tech Card Studio MVP. Done.
 4. Connect venue profile context into tool prompts. Done.
-5. Add Tech Card AI autofill.
+5. Add Tech Card AI autofill. Done.
 6. Save tech card history in Supabase.
 7. Restore iiko article mapping after a working pilot key.
 8. Add a minimal Team OS module inspired by Edison knowledge base.
@@ -113,6 +113,16 @@ Implemented:
 - tools still fall back safely to deterministic mock when AI fails;
 - Tech Card Studio includes venue format, positioning, and owner goal in markdown/PDF;
 - venue context is editable in UI while full persisted profile comes from onboarding later.
+
+## Current Tech Card AI Layer
+
+Implemented:
+
+- AI draft endpoint for Tech Card Studio;
+- strict JSON contract normalized into editable ingredient rows;
+- venue profile context included in prompt;
+- fallback draft when AI is unavailable;
+- UI action to fill dish, category, output, ingredients, prices, KBJU, and process.
 
 ## Demo Framing
 
