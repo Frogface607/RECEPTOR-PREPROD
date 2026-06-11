@@ -8,7 +8,18 @@ import {
   type FormEvent,
 } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Bot, Database, Send, X, Wrench } from "lucide-react";
+import {
+  BarChart3,
+  Bot,
+  ChefHat,
+  Clock3,
+  Database,
+  Send,
+  Sparkles,
+  Target,
+  X,
+  Wrench,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -180,7 +191,7 @@ export function ChatDrawer({
                 Copilot Receptor
               </SheetTitle>
               <span className="mt-0.5 text-[12px] text-muted-foreground">
-                {venueName} · отвечает по выручке, блюдам, сменам и категориям
+                {venueName} · продажи, меню, смены и действия владельца
               </span>
             </div>
             <button
@@ -242,34 +253,77 @@ export function ChatDrawer({
   );
 }
 
+const COPILOT_MODES = [
+  {
+    icon: BarChart3,
+    title: "Деньги",
+    text: "Выручка, средний чек, динамика и просадки по периодам.",
+  },
+  {
+    icon: ChefHat,
+    title: "Меню",
+    text: "Блюда, категории, оборот, порции и точки для фудкоста.",
+  },
+  {
+    icon: Clock3,
+    title: "Смены",
+    text: "Где просел чек, скорость и качество управленческого контроля.",
+  },
+  {
+    icon: Target,
+    title: "Действия",
+    text: "Что сделать сегодня, чтобы не терять вечер и маржу.",
+  },
+];
+
 function EmptyState({ onPick }: { onPick: (text: string) => void }) {
   return (
     <div className="flex min-h-full flex-col justify-between gap-8">
-      <div className="rounded-xl border border-border/60 bg-card/45 p-5 sm:p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-brand">
-            <Database className="size-4" />
+      <div className="rounded-xl border border-brand/25 bg-brand/[0.045] p-5 sm:p-6">
+        <div className="flex flex-col gap-5">
+          <div className="flex items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+              <Database className="size-5" />
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+                Copilot по данным iiko и профилю заведения
+              </p>
+              <h3 className="mt-2 max-w-2xl text-[28px] font-medium leading-[1.06] tracking-[-0.025em] text-foreground sm:text-[36px]">
+                Спросите как у сильного операционного директора.
+              </h3>
+              <p className="mt-4 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
+                Receptor соединяет цифры iiko, контекст заведения и ресторанную
+                логику: объясняет, что произошло, почему это важно и какие
+                действия стоит сделать сегодня.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              Copilot по данным iiko
-            </p>
-            <h3 className="mt-2 max-w-xl text-[24px] font-medium leading-tight tracking-[-0.02em] text-foreground sm:text-[30px]">
-              Задайте вопрос как управляющему аналитику.
-            </h3>
-            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
-              Receptor читает продажи, блюда, категории и смены, затем отвечает
-              нормальным языком: что произошло, почему это важно и что сделать
-              сегодня.
-            </p>
+
+          <div className="grid gap-px overflow-hidden rounded-lg border border-border/50 bg-border/40 sm:grid-cols-2">
+            {COPILOT_MODES.map((mode) => {
+              const Icon = mode.icon;
+              return (
+                <div key={mode.title} className="bg-card/65 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-foreground">
+                    <Icon className="size-4 text-brand" />
+                    {mode.title}
+                  </div>
+                  <p className="text-[12px] leading-relaxed text-muted-foreground">
+                    {mode.text}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
       <div>
-        <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          Быстрые вопросы
-        </p>
+        <div className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <Sparkles className="size-3.5 text-brand" />
+          Вопросы владельца
+        </div>
         <div className="grid gap-2 sm:grid-cols-2">
           {SUGGESTED_PROMPTS.map((p) => (
             <button
@@ -299,10 +353,11 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-border/50 bg-card/35 p-4">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="space-y-3 rounded-xl border border-border/50 bg-card/45 p-4">
+      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        <Bot className="size-3.5 text-brand" />
         Receptor
-      </p>
+      </div>
       {message.toolCalls.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {message.toolCalls.map((tc, i) => (
