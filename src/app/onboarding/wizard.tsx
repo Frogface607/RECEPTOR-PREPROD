@@ -12,6 +12,9 @@ import {
   Loader2,
   Search,
   Sparkles,
+  Target,
+  TriangleAlert,
+  Users,
 } from "lucide-react";
 import {
   createVenueAction,
@@ -301,21 +304,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               </div>
 
               {intelligenceProfile ? (
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <ProfileList
-                    icon={<Sparkles className="size-4 text-brand" />}
-                    title="Сильные стороны"
-                    items={intelligenceProfile.strengths}
-                  />
-                  <ProfileList
-                    icon={<Search className="size-4 text-amber-400" />}
-                    title="Что учитывать"
-                    items={[
-                      ...intelligenceProfile.guestPains.slice(0, 2),
-                      ...intelligenceProfile.operatingRisks.slice(0, 1),
-                    ]}
-                  />
-                </div>
+                <ResearchProfilePreview profile={intelligenceProfile} />
               ) : null}
             </div>
           </div>
@@ -472,6 +461,67 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   );
 }
 
+function ResearchProfilePreview({
+  profile,
+}: {
+  profile: VenueIntelligenceProfile;
+}) {
+  return (
+    <div className="mt-5 overflow-hidden rounded-xl border border-brand/25 bg-brand/[0.04]">
+      <div className="border-b border-border/45 bg-background/35 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-brand">
+              <Sparkles className="size-4" />
+              <p className="text-[11px] uppercase tracking-[0.18em]">
+                Receptor понял заведение
+              </p>
+            </div>
+            <h3 className="mt-2 text-lg font-medium tracking-[-0.01em] text-foreground">
+              {profile.format}
+            </h3>
+          </div>
+          <span className="rounded-md border border-brand/30 bg-brand/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-brand">
+            Готово для Copilot
+          </span>
+        </div>
+        <p className="mt-3 text-[14px] leading-relaxed text-foreground/85">
+          {profile.positioning}
+        </p>
+      </div>
+
+      <div className="grid gap-px bg-border/35 md:grid-cols-2">
+        <ProfileList
+          icon={<Sparkles className="size-4 text-brand" />}
+          title="Сильные стороны"
+          items={profile.strengths}
+        />
+        <ProfileList
+          icon={<Users className="size-4 text-[color:var(--bi)]" />}
+          title="Кто приходит"
+          items={profile.audience}
+        />
+        <ProfileList
+          icon={<TriangleAlert className="size-4 text-amber-400" />}
+          title="Риски и боли"
+          items={[
+            ...profile.guestPains.slice(0, 2),
+            ...profile.operatingRisks.slice(0, 2),
+          ]}
+        />
+        <ProfileList
+          icon={<Target className="size-4 text-[color:var(--ai)]" />}
+          title="Фокус Copilot"
+          items={[
+            ...profile.ownerGoals.slice(0, 2),
+            ...profile.recommendedFocus.slice(0, 2),
+          ]}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ProfileList({
   icon,
   title,
@@ -482,14 +532,17 @@ function ProfileList({
   items: string[];
 }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-card/35 p-3">
+    <div className="bg-card/65 p-4">
       <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-foreground">
         {icon}
         {title}
       </div>
-      <ul className="space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+      <ul className="space-y-2 text-[12px] leading-relaxed text-muted-foreground">
         {items.slice(0, 4).map((item) => (
-          <li key={item}>• {item}</li>
+          <li key={item} className="flex gap-2">
+            <span className="mt-2 size-1 shrink-0 rounded-full bg-brand/70" />
+            <span>{item}</span>
+          </li>
         ))}
       </ul>
     </div>
