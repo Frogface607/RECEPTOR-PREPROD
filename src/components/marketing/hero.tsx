@@ -80,21 +80,21 @@ export function Hero() {
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-brand" />
                   <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Рабочий кабинет · сегодня
+                    Операционный контур
                   </span>
                 </div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  receptor.ai
+                  пример интерфейса
                 </span>
               </div>
 
               <div className="mt-5 space-y-5">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Серёжа
+                    Владелец
                   </p>
                   <p className="mt-1 text-[15px] leading-snug">
-                    Какие топ-5 блюд за неделю?
+                    Что мне проверить сегодня?
                   </p>
                 </div>
 
@@ -103,58 +103,37 @@ export function Hero() {
                     Receptor
                   </p>
                   <p className="mt-1 text-[15px] leading-snug text-foreground/90">
-                    За последние 7 дней:
+                    Начал бы с четырёх зон:
                   </p>
                   <ol className="mt-2 space-y-1.5 text-[14px] text-foreground/85">
                     <li className="flex items-baseline gap-2">
                       <span className="font-mono text-[11px] text-muted-foreground">
                         01
                       </span>
-                      <span className="flex-1">Бургер Нечто</span>
-                      <span className="numeric font-mono text-foreground">
-                        ₽328&nbsp;500
-                      </span>
+                      <span className="flex-1">Продажи против такого же дня недели</span>
                     </li>
                     <li className="flex items-baseline gap-2">
                       <span className="font-mono text-[11px] text-muted-foreground">
                         02
                       </span>
-                      <span className="flex-1">Крафт IPA 0.5л</span>
-                      <span className="numeric font-mono text-foreground">
-                        ₽142&nbsp;100
-                      </span>
+                      <span className="flex-1">Блюда с оборотом, но слабой маржой</span>
                     </li>
                     <li className="flex items-baseline gap-2">
                       <span className="font-mono text-[11px] text-muted-foreground">
                         03
                       </span>
-                      <span className="flex-1">Signature Sour</span>
-                      <span className="numeric font-mono text-foreground">
-                        ₽98&nbsp;400
-                      </span>
+                      <span className="flex-1">Смены, где просел средний чек</span>
                     </li>
                     <li className="flex items-baseline gap-2">
                       <span className="font-mono text-[11px] text-muted-foreground">
                         04
                       </span>
-                      <span className="flex-1">Бургер Двойной Нечто</span>
-                      <span className="numeric font-mono text-foreground">
-                        ₽89&nbsp;300
-                      </span>
-                    </li>
-                    <li className="flex items-baseline gap-2">
-                      <span className="font-mono text-[11px] text-muted-foreground">
-                        05
-                      </span>
-                      <span className="flex-1">Old Fashioned</span>
-                      <span className="numeric font-mono text-foreground">
-                        ₽76&nbsp;700
-                      </span>
+                      <span className="flex-1">Позиции без техкарт и iiko-связки</span>
                     </li>
                   </ol>
                   <p className="mt-3 text-[13px] leading-snug text-muted-foreground">
-                    Бургеры дают&nbsp;35% выручки. Хочешь увидеть,&nbsp;что
-                    тянет вниз?
+                    Live-ответ появится после iiko Cloud API и профиля
+                    заведения. Без ключа показываем только структуру системы.
                   </p>
                 </div>
               </div>

@@ -3,7 +3,6 @@ import { ArrowRight, FileSpreadsheet } from "lucide-react";
 import { ToolIcon } from "@/components/tools/tool-icon";
 import {
   CATEGORIES,
-  TOOLS,
   getToolsByCategory,
   type ToolCategoryId,
 } from "@/lib/tools/catalog";
@@ -27,7 +26,7 @@ export function ToolsTeaser() {
               Рабочие сценарии
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              Не россыпь генераторов, а операционный слой ресторана.
+              Операционный слой ресторана.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
@@ -65,7 +64,6 @@ export function ToolsTeaser() {
 
         <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((cat) => {
-            const count = getToolsByCategory(cat.id).length;
             const sample = getToolsByCategory(cat.id)
               .slice(0, 3)
               .map((t) => t.name)
@@ -85,9 +83,7 @@ export function ToolsTeaser() {
                   >
                     <ToolIcon name={cat.icon} className="size-5" />
                   </span>
-                  <span className="font-mono text-[11px] text-muted-foreground">
-                    {count} шт
-                  </span>
+                  <ArrowRight className="size-4 text-muted-foreground/45 transition-colors group-hover:text-brand" />
                 </div>
                 <div>
                   <h3 className="text-[18px] font-medium tracking-[-0.01em] text-foreground">
@@ -107,7 +103,7 @@ export function ToolsTeaser() {
             href="/tools"
             className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-card/60 px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-brand/40 hover:bg-card"
           >
-            Открыть все {TOOLS.length} инструментов
+            Открыть рабочие сценарии
             <ArrowRight className="size-4 text-brand" />
           </Link>
         </div>

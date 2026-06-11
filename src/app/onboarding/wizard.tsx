@@ -85,15 +85,15 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
         profile?: VenueIntelligenceProfile;
       };
       if (!response.ok || !data.profile) {
-        throw new Error(data.error || "Не удалось изучить заведение.");
+        throw new Error(data.error || "Не удалось собрать профиль заведения.");
       }
 
       setIntelligenceProfile(data.profile);
-      setResearchProvider(data.provider ?? "research");
+      setResearchProvider(data.provider ?? "profile");
       setOwnerContext(data.profile.positioning);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Не удалось изучить заведение.",
+        err instanceof Error ? err.message : "Не удалось собрать профиль заведения.",
       );
     } finally {
       setResearchingVenue(false);
@@ -243,9 +243,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                     Профиль заведения для Copilot
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                    Receptor изучит публичный контекст, отзывы и концепцию,
-                    чтобы Copilot отвечал не как общий чат, а как помощник
-                    именно этого заведения.
+                    Receptor соберёт черновик профиля: концепцию, сильные
+                    стороны, риски и правила для Copilot. Если подключён
+                    web-research провайдер, добавим публичный контекст и отзывы.
                   </p>
                 </div>
                 {researchProvider ? (
@@ -277,7 +277,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                     </>
                   ) : (
                     <>
-                      <Search className="size-4" /> Изучить и заполнить
+                      <Search className="size-4" /> Собрать профиль
                     </>
                   )}
                 </button>

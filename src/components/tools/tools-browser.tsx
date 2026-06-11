@@ -64,14 +64,14 @@ export function ToolsBrowser() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Поиск инструмента…"
+            placeholder="Поиск сценария..."
             className="w-full rounded-lg border border-border/60 bg-card/60 py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-brand/50 focus:outline-none"
           />
         </div>
 
         <div className="flex flex-wrap gap-2">
           <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-            Все · {TOOLS.length}
+            Все сценарии
           </FilterChip>
           {CATEGORIES.map((c) => (
             <FilterChip
@@ -130,15 +130,16 @@ function WorkflowView() {
             <div className="flex items-center gap-2 text-brand">
               <Route className="size-4" />
               <p className="text-[11px] uppercase tracking-[0.2em]">
-                Рекомендуемый демо-путь
+                Операционный маршрут
               </p>
             </div>
             <h2 className="mt-3 max-w-3xl text-2xl font-medium tracking-[-0.02em] text-foreground">
               Профиль заведения, BI-диагностика, затем техкарта или меню.
             </h2>
             <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-              Инструменты остаются библиотекой, но продукт продаётся как
-              рабочие процессы: деньги, меню, команда и репутация.
+              Сценарии подключаются к профилю заведения и данным iiko, когда
+              доступен ключ. Так Copilot работает не как общий чат, а как
+              управленческий помощник конкретного ресторана.
             </p>
             <Link
               href="/tools/tech-card-studio"
@@ -148,10 +149,10 @@ function WorkflowView() {
               Открыть Tech Card Studio
             </Link>
           </div>
-          <div className="grid min-w-[220px] grid-cols-3 gap-2 text-center">
-            <Metric label="ядро" value="9" />
-            <Metric label="вход" value="3" />
-            <Metric label="осторожно" value="3" />
+          <div className="grid min-w-[260px] grid-cols-3 gap-2 text-center">
+            <Metric label="контекст" value="Profile" />
+            <Metric label="данные" value="BI" />
+            <Metric label="действия" value="Ops" />
           </div>
         </div>
       </div>
@@ -197,7 +198,7 @@ function WorkflowView() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border/50 bg-background/40 px-3 py-2">
-      <p className="text-lg font-medium text-foreground">{value}</p>
+      <p className="text-sm font-medium text-foreground">{value}</p>
       <p className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>

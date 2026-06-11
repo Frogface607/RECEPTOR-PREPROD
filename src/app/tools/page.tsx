@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { ToolsBrowser } from "@/components/tools/tools-browser";
-import { TOOLS, CATEGORIES, getFreeTools } from "@/lib/tools/catalog";
 
 export const metadata: Metadata = {
   title: "Инструменты — RECEPTOR",
@@ -11,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function ToolsPage() {
-  const freeCount = getFreeTools().length;
-
   return (
     <>
       <SiteHeader />
@@ -29,7 +26,7 @@ export default function ToolsPage() {
             <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.02] tracking-[-0.025em]">
               Ресторанная рабочая станция.
               <br />
-              Не просто набор промптов.
+              От идеи блюда до решения владельца.
             </h1>
             <p className="mt-7 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
               Техкарты и себестоимость, меню, скрипты зала, отзывы, маркетинг,
@@ -38,11 +35,10 @@ export default function ToolsPage() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-x-7 gap-y-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-              <span>{TOOLS.length} инструментов</span>
-              <span>{CATEGORIES.length} направлений</span>
-              <span>{freeCount} бесплатных</span>
               <span>Профиль заведения</span>
               <span>BI-ready</span>
+              <span>Tech Card Studio</span>
+              <span>Copilot context</span>
             </div>
           </div>
         </section>

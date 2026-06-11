@@ -45,7 +45,9 @@ function researchInstructions(): string {
   return `Ты — ресторанный бизнес-аналитик Receptor.
 
 Задача: изучить заведение и собрать профиль для BI + Copilot владельца.
-Ищи публичный контекст: сайт, соцсети, Яндекс Карты, 2ГИС, Google, отзывы, меню, позиционирование.
+Если у тебя есть доступ к web research, используй публичный контекст: сайт,
+соцсети, карты, отзывы, меню, позиционирование. Если web-доступа нет, честно
+собери черновик по названию, городу, типу и контексту владельца.
 
 Верни только JSON:
 {
@@ -58,7 +60,7 @@ function researchInstructions(): string {
   "operatingRisks": ["операционный риск"],
   "decisionRules": ["как Copilot должен делать выводы"],
   "recommendedFocus": ["что анализировать в первую очередь"],
-  "researchStatus": "researched"
+  "researchStatus": "manual"
 }
 
 Правила:
@@ -181,25 +183,29 @@ async function researchWithOpenRouter(
 export async function researchVenue(
   input: VenueResearchInput,
 ): Promise<VenueResearchResult> {
-  if (openAIKey()) {
-    try {
-      const profile = await researchWithOpenAI(input);
-      return { profile, provider: "openai", summary: "Профиль собран через OpenAI." };
-    } catch (err) {
-      console.warn("[venue-research] OpenAI failed:", err);
-    }
-  }
-
   if (openRouterKey()) {
     try {
       const profile = await researchWithOpenRouter(input);
       return {
-        profile,
+        profile: { ...profile, researchStatus: "researched" },
         provider: "openrouter",
         summary: "Профиль собран через web research.",
       };
     } catch (err) {
       console.warn("[venue-research] OpenRouter failed:", err);
+    }
+  }
+
+  if (openAIKey()) {
+    try {
+      const profile = await researchWithOpenAI(input);
+      return {
+        profile: { ...profile, researchStatus: "manual" },
+        provider: "openai",
+        summary: "Черновик профиля собран через OpenAI по анкете и введённому контексту.",
+      };
+    } catch (err) {
+      console.warn("[venue-research] OpenAI failed:", err);
     }
   }
 
