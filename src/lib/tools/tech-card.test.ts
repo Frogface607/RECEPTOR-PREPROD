@@ -193,9 +193,46 @@ describe("createTechCardLaunchPack", () => {
     );
 
     expect(pack.menuDescription).toContain(input.dishName);
-    expect(pack.waiterPitch).toContain("ключевые ингредиенты");
+    expect(pack.menuDescription).not.toContain("Городское заведение");
+    expect(pack.menuDescription).not.toContain("формата");
+    expect(pack.waiterPitch).toContain("Рекомендуйте");
+    expect(pack.waiterPitch).toContain("Коротко подсветите состав");
     expect(pack.upsellIdeas.length).toBeGreaterThanOrEqual(3);
     expect(pack.ownerNotes.join("\n")).toContain("Preflight score");
     expect(pack.markdown).toContain("# Launch Pack");
+  });
+
+  test("creates dish-specific launch copy for fish dishes", () => {
+    const fishInput: TechCardInput = {
+      ...input,
+      dishName: "Треска в панировке с брокколи и соусом биск",
+      category: "Горячая кухня",
+      ingredients: [
+        {
+          ...input.ingredients[0],
+          id: "cod",
+          name: "Филе трески",
+          pricePerKg: 980,
+        },
+        {
+          ...input.ingredients[1],
+          id: "bisque",
+          name: "Соус биск",
+          pricePerKg: 780,
+        },
+      ],
+    };
+    const calculation = calculateTechCard(fishInput);
+    const quality = evaluateTechCardQuality(fishInput, calculation);
+    const pack = createTechCardLaunchPack(
+      fishInput,
+      calculation,
+      quality,
+      DEFAULT_VENUE_INTELLIGENCE,
+    );
+
+    expect(pack.menuDescription).toContain("морская глубина");
+    expect(pack.waiterPitch).toContain("Филе трески");
+    expect(pack.upsellIdeas.join("\n")).toContain("белого вина");
   });
 });

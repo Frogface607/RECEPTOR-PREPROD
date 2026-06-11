@@ -415,6 +415,56 @@ function dishBase(input: TechCardInput): string {
   return input.dishName.trim() || "Новое блюдо";
 }
 
+function humanList(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} и ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} и ${items[items.length - 1]}`;
+}
+
+function dishTone(input: TechCardInput, keyIngredients: string[]): string {
+  const text = `${input.dishName} ${input.category} ${keyIngredients.join(" ")}`.toLowerCase();
+  if (/треск|рыб|кревет|морепродукт|биск/.test(text)) {
+    return "хрустящая текстура, морская глубина и аккуратный сливочно-овощной баланс";
+  }
+  if (/паст|ризот|слив|пармезан|мортадел/.test(text)) {
+    return "сливочная база, плотный вкус и мягкая солёность";
+  }
+  if (/стейк|говядин|утк|томл/.test(text)) {
+    return "насыщенный мясной вкус, сочность и понятная ресторанная подача";
+  }
+  if (/салат|зелень|овощ/.test(text)) {
+    return "свежесть, лёгкая текстура и чистый вкус ингредиентов";
+  }
+  if (/десерт|шоколад|медов|фондан/.test(text)) {
+    return "выразительная сладость, понятная текстура и финальный акцент после основного блюда";
+  }
+  return "понятный вкус, аккуратная подача и стабильное качество";
+}
+
+function pairingIdeas(input: TechCardInput): string[] {
+  const text = `${input.dishName} ${input.category}`.toLowerCase();
+  if (/треск|рыб|кревет|морепродукт|биск/.test(text)) {
+    return [
+      "Предложить бокал сухого белого вина или безалкогольный цитрусовый лимонад.",
+      "Добавить лёгкую закуску перед блюдом, если гость выбирает полноценный ужин.",
+      "После блюда предложить десерт с мягкой кислотностью или кофе.",
+    ];
+  }
+  if (/паст|ризот|слив|пармезан|мортадел/.test(text)) {
+    return [
+      "Предложить бокал белого или лёгкого красного вина под сливочную основу.",
+      "Добавить салат или овощную закуску, чтобы сбалансировать плотное блюдо.",
+      "Предложить десерт или эспрессо после основного блюда.",
+    ];
+  }
+  return [
+    "Предложить напиток, который усиливает основной вкус блюда.",
+    "Предложить лёгкую закуску или салат, если блюдо берут как основное.",
+    "Предложить десерт или кофе после блюда, если чек нужно мягко поднять.",
+  ];
+}
+
 export function createTechCardLaunchPack(
   input: TechCardInput,
   calculation: TechCardCalculation,
@@ -422,29 +472,28 @@ export function createTechCardLaunchPack(
   venueProfile?: VenueIntelligenceProfile,
 ): TechCardLaunchPack {
   const dish = dishBase(input);
-  const format = venueProfile?.format || "ресторан";
-  const positioning = venueProfile?.positioning || "понятная подача и стабильное качество";
   const keyIngredients = topCostIngredients(calculation);
   const ingredientText = keyIngredients.length
-    ? keyIngredients.join(", ")
-    : "сбалансированные ингредиенты";
+    ? humanList(keyIngredients)
+    : "основные ингредиенты блюда";
+  const tone = dishTone(input, keyIngredients);
   const priceHint = calculation.recommendedPrice
     ? `Рекомендуемая цена при целевом фудкосте: ${formatRub(calculation.recommendedPrice)}.`
     : "Рекомендуемую цену стоит уточнить после заполнения цен.";
+  const profileFocus = venueProfile?.ownerGoals[0]
+    ? `Фокус владельца: ${venueProfile.ownerGoals[0]}.`
+    : "Фокус владельца: проверить цену, выход и стабильность приготовления.";
 
-  const menuDescription = `${dish} — блюдо для формата «${format}»: ${ingredientText}, аккуратная технология и подача в логике заведения. ${positioning}`;
-  const waiterPitch = `Если гость выбирает ${dish.toLowerCase()}, предложите его как понятное и продуманное блюдо: подчеркните ключевые ингредиенты (${ingredientText}) и скажите, что оно собрано под стиль заведения, а не просто добавлено в меню.`;
-  const upsellIdeas = [
-    "Предложить напиток, который усиливает основной вкус блюда.",
-    "Предложить лёгкую закуску или салат, если блюдо берут как основное.",
-    "Предложить десерт или кофе после блюда, если чек нужно мягко поднять.",
-  ];
+  const menuDescription = `${dish} — ${tone}. В основе: ${ingredientText}.`;
+  const waiterPitch = `Рекомендуйте ${dish.toLowerCase()} гостю, который хочет понятное горячее блюдо с выразительным вкусом. Коротко подсветите состав: ${ingredientText}.`;
+  const upsellIdeas = pairingIdeas(input);
   const ownerNotes = [
     priceHint,
     `Preflight score: ${quality.score}. ${quality.status === "ok" ? "Блокеров нет." : "Перед запуском стоит закрыть замечания preflight."}`,
     calculation.mappingCoveragePercent < 100
-      ? `iiko-маппинг: ${calculation.mappingCoveragePercent}%. Перед импортом довести артикулы до 100%.`
+      ? "iiko-маппинг появится после подключения номенклатуры и артикулов."
       : "iiko-маппинг заполнен.",
+    profileFocus,
   ];
 
   const markdown = `# Launch Pack: ${dish}
