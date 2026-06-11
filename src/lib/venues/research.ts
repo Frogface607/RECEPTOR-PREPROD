@@ -20,6 +20,7 @@ export type VenueResearchResult = {
   profile: VenueIntelligenceProfile;
   provider: "openai" | "openrouter" | "fallback";
   summary: string;
+  diagnostics?: string[];
 };
 
 type OpenAIResponse = {
@@ -192,6 +193,8 @@ async function researchWithOpenRouter(
 export async function researchVenue(
   input: VenueResearchInput,
 ): Promise<VenueResearchResult> {
+  const diagnostics: string[] = [];
+
   if (openRouterKey()) {
     try {
       const profile = await researchWithOpenRouter(input);
@@ -199,9 +202,11 @@ export async function researchVenue(
         profile: { ...profile, researchStatus: "researched" },
         provider: "openrouter",
         summary: "Профиль собран через web research.",
+        diagnostics,
       };
     } catch (err) {
       console.warn("[venue-research] OpenRouter failed:", err);
+      diagnostics.push(formatResearchFailure("OpenRouter", err));
     }
   }
 
@@ -212,9 +217,11 @@ export async function researchVenue(
         profile: { ...profile, researchStatus: "researched" },
         provider: "openai",
         summary: "Профиль собран через OpenAI web research.",
+        diagnostics,
       };
     } catch (err) {
       console.warn("[venue-research] OpenAI web research failed:", err);
+      diagnostics.push(formatResearchFailure("OpenAI web research", err));
     }
   }
 
@@ -225,15 +232,26 @@ export async function researchVenue(
         profile: { ...profile, researchStatus: "manual" },
         provider: "openai",
         summary: "Web research не сработал, собран черновик через OpenAI по анкете.",
+        diagnostics,
       };
     } catch (err) {
       console.warn("[venue-research] OpenAI fallback failed:", err);
+      diagnostics.push(formatResearchFailure("OpenAI profile draft", err));
     }
   }
 
+  const noAiKey = !openAIKey() && !openRouterKey();
   return {
     profile: fallbackProfile(input),
     provider: "fallback",
-    summary: "Профиль создан из анкеты. Его можно уточнить вручную.",
+    summary: noAiKey
+      ? "AI-ключ для исследования не настроен. Добавьте OPENAI_API_KEY в Vercel, чтобы Receptor искал публичный контекст."
+      : "AI-исследование не сработало. Профиль создан из анкеты, его можно уточнить вручную.",
+    diagnostics,
   };
+}
+
+function formatResearchFailure(provider: string, err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  return `${provider}: ${message}`;
 }

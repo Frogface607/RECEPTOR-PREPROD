@@ -72,6 +72,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
     useState<VenueIntelligenceProfile | null>(null);
   const [researchingVenue, setResearchingVenue] = useState(false);
   const [researchProvider, setResearchProvider] = useState<string | null>(null);
+  const [researchSummary, setResearchSummary] = useState<string | null>(null);
+  const [researchDiagnostics, setResearchDiagnostics] = useState<string[]>([]);
 
   const canNext0 = name.trim().length > 0;
   const canNext1 = organizationId.length > 0;
@@ -99,6 +101,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
       const data = (await response.json()) as {
         error?: string;
         provider?: string;
+        summary?: string;
+        diagnostics?: string[];
         profile?: VenueIntelligenceProfile;
       };
       if (!response.ok || !data.profile) {
@@ -107,6 +111,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
 
       setIntelligenceProfile(data.profile);
       setResearchProvider(data.provider ?? "profile");
+      setResearchSummary(data.summary ?? null);
+      setResearchDiagnostics(data.diagnostics ?? []);
       setOwnerContext(data.profile.positioning);
     } catch (err) {
       setError(
@@ -271,6 +277,17 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                   </span>
                 ) : null}
               </div>
+
+              {researchSummary ? (
+                <div className="mt-3 rounded-lg border border-border/50 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+                  <p>{researchSummary}</p>
+                  {researchDiagnostics.length > 0 ? (
+                    <p className="mt-1 text-[11px] text-muted-foreground/75">
+                      {researchDiagnostics.join(" · ")}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
 
               <textarea
                 value={ownerContext}

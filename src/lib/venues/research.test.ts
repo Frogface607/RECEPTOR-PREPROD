@@ -22,6 +22,7 @@ describe("researchVenue", () => {
     expect(result.provider).toBe("fallback");
     expect(result.profile.researchStatus).toBe("manual");
     expect(result.profile.positioning).toContain("Семейный ресторан");
+    expect(result.summary).toContain("OPENAI_API_KEY");
   });
 
   test("uses OpenAI web search when an OpenAI key is configured", async () => {
@@ -61,6 +62,7 @@ describe("researchVenue", () => {
     expect(result.provider).toBe("openai");
     expect(result.profile.researchStatus).toBe("researched");
     expect(result.summary).toContain("web research");
+    expect(result.diagnostics).toEqual([]);
     expect(body.tools?.[0]).toMatchObject({
       type: "web_search",
       search_context_size: "high",
