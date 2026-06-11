@@ -45,9 +45,9 @@ function researchInstructions(): string {
   return `Ты — ресторанный бизнес-аналитик Receptor.
 
 Задача: изучить заведение и собрать профиль для BI + Copilot владельца.
-Если у тебя есть доступ к web research, используй публичный контекст: сайт,
-соцсети, карты, отзывы, меню, позиционирование. Если web-доступа нет, честно
-собери черновик по названию, городу, типу и контексту владельца.
+Обязательно используй web search, если он доступен: сайт, соцсети, карты,
+отзывы, меню, позиционирование, новости и упоминания. Если публичных данных
+мало, честно дополни профиль по названию, городу, типу и контексту владельца.
 
 Верни только JSON:
 {
@@ -60,11 +60,12 @@ function researchInstructions(): string {
   "operatingRisks": ["операционный риск"],
   "decisionRules": ["как Copilot должен делать выводы"],
   "recommendedFocus": ["что анализировать в первую очередь"],
-  "researchStatus": "manual"
+  "researchStatus": "researched"
 }
 
 Правила:
 - Не выдумывай точные рейтинги и факты, если не нашёл их уверенно.
+- Не называй источник, если не уверен, что видел его в поиске.
 - Если публичных данных мало, делай аккуратный профиль по названию/городу/контексту владельца.
 - Пиши по-русски, конкретно для ресторатора.`;
 }
@@ -120,9 +121,22 @@ function extractOpenAIText(response: OpenAIResponse): string {
 
 async function researchWithOpenAI(
   input: VenueResearchInput,
+  options: { webSearch: boolean },
 ): Promise<VenueIntelligenceProfile> {
   const key = openAIKey();
   if (!key) throw new Error("OPENAI_API_KEY is not set");
+
+  const body: Record<string, unknown> = {
+    model: process.env.OPENAI_RESEARCH_MODEL?.trim() || DEFAULT_OPENAI_MODEL,
+    instructions: researchInstructions(),
+    input: [{ role: "user", content: userPrompt(input) }],
+    max_output_tokens: 2200,
+  };
+
+  if (options.webSearch) {
+    body.tools = [{ type: "web_search", search_context_size: "high" }];
+    body.tool_choice = "required";
+  }
 
   const response = await fetch(OPENAI_RESPONSES_URL, {
     method: "POST",
@@ -130,12 +144,7 @@ async function researchWithOpenAI(
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: process.env.OPENAI_RESEARCH_MODEL?.trim() || DEFAULT_OPENAI_MODEL,
-      instructions: researchInstructions(),
-      input: [{ role: "user", content: userPrompt(input) }],
-      max_output_tokens: 1800,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -198,14 +207,27 @@ export async function researchVenue(
 
   if (openAIKey()) {
     try {
-      const profile = await researchWithOpenAI(input);
+      const profile = await researchWithOpenAI(input, { webSearch: true });
+      return {
+        profile: { ...profile, researchStatus: "researched" },
+        provider: "openai",
+        summary: "Профиль собран через OpenAI web research.",
+      };
+    } catch (err) {
+      console.warn("[venue-research] OpenAI web research failed:", err);
+    }
+  }
+
+  if (openAIKey()) {
+    try {
+      const profile = await researchWithOpenAI(input, { webSearch: false });
       return {
         profile: { ...profile, researchStatus: "manual" },
         provider: "openai",
-        summary: "Черновик профиля собран через OpenAI по анкете и введённому контексту.",
+        summary: "Web research не сработал, собран черновик через OpenAI по анкете.",
       };
     } catch (err) {
-      console.warn("[venue-research] OpenAI failed:", err);
+      console.warn("[venue-research] OpenAI fallback failed:", err);
     }
   }
 

@@ -37,6 +37,20 @@ const STEPS = [
   { icon: Rocket, label: "Готово" },
 ];
 
+function researchProviderLabel(
+  provider: string | null,
+  profile: VenueIntelligenceProfile | null,
+): string | null {
+  if (!provider) return null;
+  if (profile?.researchStatus === "researched") {
+    if (provider === "openai") return "OpenAI Web Research";
+    if (provider === "openrouter") return "Web Research";
+    return "Deep Research";
+  }
+  if (provider === "fallback") return "Анкета";
+  return "Черновик профиля";
+}
+
 export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -243,14 +257,14 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                     Профиль заведения для Copilot
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                    Receptor соберёт черновик профиля: концепцию, сильные
-                    стороны, риски и правила для Copilot. Если подключён
-                    web-research провайдер, добавим публичный контекст и отзывы.
+                    Receptor исследует публичный контекст, отзывы и
+                    позиционирование, а затем соберёт профиль: концепцию,
+                    сильные стороны, риски и правила для Copilot.
                   </p>
                 </div>
-                {researchProvider ? (
+                {researchProviderLabel(researchProvider, intelligenceProfile) ? (
                   <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    {researchProvider}
+                    {researchProviderLabel(researchProvider, intelligenceProfile)}
                   </span>
                 ) : null}
               </div>

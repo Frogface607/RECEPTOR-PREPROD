@@ -3,6 +3,7 @@ import { z } from "zod";
 import { researchVenue } from "@/lib/venues/research";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const BodySchema = z.object({
   name: z.string().trim().min(1),
