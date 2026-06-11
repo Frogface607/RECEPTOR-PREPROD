@@ -196,7 +196,7 @@ describe("createTechCardLaunchPack", () => {
     expect(pack.menuDescription).not.toContain("Городское заведение");
     expect(pack.menuDescription).not.toContain("формата");
     expect(pack.waiterPitch).toContain("Рекомендуйте");
-    expect(pack.waiterPitch).toContain("Коротко подсветите состав");
+    expect(pack.waiterPitch).toContain("вкус без лишней сложности");
     expect(pack.upsellIdeas.length).toBeGreaterThanOrEqual(3);
     expect(pack.ownerNotes.join("\n")).toContain("Preflight score");
     expect(pack.markdown).toContain("# Launch Pack");
@@ -231,8 +231,38 @@ describe("createTechCardLaunchPack", () => {
       DEFAULT_VENUE_INTELLIGENCE,
     );
 
-    expect(pack.menuDescription).toContain("морская глубина");
+    expect(pack.menuDescription).toContain("хрустящая рыба");
     expect(pack.waiterPitch).toContain("Филе трески");
     expect(pack.upsellIdeas.join("\n")).toContain("белого вина");
+  });
+
+  test("does not overexplain supporting ingredients in menu copy", () => {
+    const pastaInput: TechCardInput = {
+      ...input,
+      dishName: "Паста с мортаделлой в сливочном соусе",
+      ingredients: [
+        { ...input.ingredients[0], name: "Мортаделла", netQty: 90, pricePerKg: 900 },
+        { ...input.ingredients[1], name: "Сливки 33%", netQty: 80, pricePerKg: 420 },
+        {
+          ...input.ingredients[1],
+          id: "cheese",
+          name: "Пармезан или твердый выдержанный сыр",
+          netQty: 24,
+          pricePerKg: 1400,
+        },
+      ],
+    };
+    const calculation = calculateTechCard(pastaInput);
+    const quality = evaluateTechCardQuality(pastaInput, calculation);
+    const pack = createTechCardLaunchPack(
+      pastaInput,
+      calculation,
+      quality,
+      DEFAULT_VENUE_INTELLIGENCE,
+    );
+
+    expect(pack.menuDescription).not.toContain("Сливки");
+    expect(pack.menuDescription).not.toContain("Пармезан");
+    expect(pack.waiterPitch).toContain("Мортаделла");
   });
 });

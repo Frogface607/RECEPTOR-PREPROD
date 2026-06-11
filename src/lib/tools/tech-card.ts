@@ -422,13 +422,34 @@ function humanList(items: string[]): string {
   return `${items.slice(0, -1).join(", ")} и ${items[items.length - 1]}`;
 }
 
+function isSupportingIngredient(name: string): boolean {
+  return /сливк|масл|сыр|пармезан|паниров|соль|сахар|мук|зелень|декор|вода|соус/i.test(name);
+}
+
+function heroIngredients(calculation: TechCardCalculation): string[] {
+  const named = [...calculation.ingredients].filter((ingredient) =>
+    ingredient.name.trim(),
+  );
+  const heroes = named
+    .filter((ingredient) => !isSupportingIngredient(ingredient.name))
+    .sort((a, b) => b.netQty - a.netQty)
+    .slice(0, 2)
+    .map((ingredient) => ingredient.name);
+
+  if (heroes.length > 0) return heroes;
+  return named
+    .sort((a, b) => b.netQty - a.netQty)
+    .slice(0, 2)
+    .map((ingredient) => ingredient.name);
+}
+
 function dishTone(input: TechCardInput, keyIngredients: string[]): string {
   const text = `${input.dishName} ${input.category} ${keyIngredients.join(" ")}`.toLowerCase();
   if (/треск|рыб|кревет|морепродукт|биск/.test(text)) {
-    return "хрустящая текстура, морская глубина и аккуратный сливочно-овощной баланс";
+    return "хрустящая рыба, мягкий гарнир и насыщенный соус";
   }
   if (/паст|ризот|слив|пармезан|мортадел/.test(text)) {
-    return "сливочная база, плотный вкус и мягкая солёность";
+    return "плотная паста с мягкой солёностью и ресторанной подачей";
   }
   if (/стейк|говядин|утк|томл/.test(text)) {
     return "насыщенный мясной вкус, сочность и понятная ресторанная подача";
@@ -473,10 +494,9 @@ export function createTechCardLaunchPack(
 ): TechCardLaunchPack {
   const dish = dishBase(input);
   const keyIngredients = topCostIngredients(calculation);
-  const ingredientText = keyIngredients.length
-    ? humanList(keyIngredients)
-    : "основные ингредиенты блюда";
-  const tone = dishTone(input, keyIngredients);
+  const heroes = heroIngredients(calculation);
+  const heroText = heroes.length ? humanList(heroes) : "понятная основа блюда";
+  const tone = dishTone(input, [...keyIngredients, ...heroes]);
   const priceHint = calculation.recommendedPrice
     ? `Рекомендуемая цена при целевом фудкосте: ${formatRub(calculation.recommendedPrice)}.`
     : "Рекомендуемую цену стоит уточнить после заполнения цен.";
@@ -484,8 +504,8 @@ export function createTechCardLaunchPack(
     ? `Фокус владельца: ${venueProfile.ownerGoals[0]}.`
     : "Фокус владельца: проверить цену, выход и стабильность приготовления.";
 
-  const menuDescription = `${dish} — ${tone}. В основе: ${ingredientText}.`;
-  const waiterPitch = `Рекомендуйте ${dish.toLowerCase()} гостю, который хочет понятное горячее блюдо с выразительным вкусом. Коротко подсветите состав: ${ingredientText}.`;
+  const menuDescription = `${dish} — ${tone}.`;
+  const waiterPitch = `Рекомендуйте ${dish.toLowerCase()} как понятное горячее блюдо: ${heroText}, аккуратная подача, вкус без лишней сложности.`;
   const upsellIdeas = pairingIdeas(input);
   const ownerNotes = [
     priceHint,
