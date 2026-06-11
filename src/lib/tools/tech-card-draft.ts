@@ -123,14 +123,14 @@ export function normalizeTechCardDraft(
 
   return {
     dishName: asString(raw.dishName, fallback.idea),
-    category: asString(raw.category, fallback.category || "Черновик"),
+    category: asString(raw.category, fallback.category || fallbackCategory(fallback.idea)),
     portions: Math.max(asNumber(raw.portions, fallback.portions || 1), 1),
     outputWeight: asNumber(raw.outputWeight),
     targetFoodCostPercent: Math.max(
       asNumber(raw.targetFoodCostPercent, fallback.targetFoodCostPercent || 30),
       1,
     ),
-    process: asString(raw.process, "Уточните технологию приготовления."),
+    process: asString(raw.process, fallbackProcess(fallback.idea)),
     ingredients: ingredients.length ? ingredients : fallbackIngredients(fallback.idea),
   };
 }
@@ -138,7 +138,36 @@ export function normalizeTechCardDraft(
 function fallbackIngredients(idea: string): TechCardIngredient[] {
   const lower = idea.toLowerCase();
   const base =
-    lower.includes("салат") || lower.includes("цезар")
+    lower.includes("треск") || lower.includes("рыб")
+      ? [
+          ["Филе трески", 230, 200, 980, 18, 0.7, 0, 82],
+          ["Панировка панко", 42, 35, 420, 10, 3, 72, 360],
+          ["Брокколи", 150, 130, 260, 2.8, 0.4, 7, 34],
+          ["Соус биск", 70, 60, 780, 4, 18, 6, 210],
+          ["Масло для жарки", 18, 12, 190, 0, 100, 0, 899],
+        ]
+      : lower.includes("куриц") || lower.includes("цыплен")
+        ? [
+            ["Филе куриное", 210, 180, 420, 23, 2, 0, 110],
+            ["Маринад", 45, 35, 260, 1, 8, 7, 110],
+            ["Овощной гарнир", 170, 145, 240, 2.5, 0.5, 9, 52],
+            ["Соус", 55, 45, 520, 2, 22, 6, 230],
+          ]
+        : lower.includes("стейк") || lower.includes("говядин")
+          ? [
+              ["Говядина", 280, 220, 1450, 20, 13, 0, 210],
+              ["Картофельный гарнир", 180, 150, 160, 2, 0.4, 17, 80],
+              ["Соус перечный", 60, 50, 620, 3, 18, 8, 210],
+              ["Зелень / декор", 12, 10, 700, 2, 0.5, 3, 25],
+            ]
+          : lower.includes("паст") || lower.includes("ризот")
+            ? [
+                ["Основная крупа / паста", 150, 140, 240, 8, 1.5, 70, 350],
+                ["Белковый ингредиент", 120, 100, 950, 20, 4, 0, 120],
+                ["Сливочный соус", 90, 80, 420, 3, 18, 6, 210],
+                ["Сыр", 28, 24, 1100, 25, 28, 1.5, 360],
+              ]
+            : lower.includes("салат") || lower.includes("цезар")
       ? [
           ["Лист салата", 90, 80, 450, 1.4, 0.2, 2.9, 17],
           ["Белковый ингредиент", 110, 100, 950, 20, 4, 0, 120],
@@ -146,9 +175,9 @@ function fallbackIngredients(idea: string): TechCardIngredient[] {
           ["Сыр", 25, 22, 1100, 25, 28, 1.5, 360],
         ]
       : [
-          ["Основной продукт", 220, 200, 800, 18, 8, 0, 160],
-          ["Гарнир", 180, 160, 180, 3, 1, 22, 120],
-          ["Соус", 45, 40, 520, 2, 24, 5, 250],
+          ["Основной ингредиент", 220, 200, 800, 18, 8, 0, 160],
+          ["Гарнир / овощи", 180, 160, 180, 3, 1, 22, 120],
+          ["Соус / заправка", 45, 40, 520, 2, 24, 5, 250],
           ["Декор / зелень", 12, 10, 700, 2, 0.5, 3, 25],
         ];
 
@@ -176,14 +205,36 @@ function fallbackDraft(input: TechCardDraftInput): TechCardInput {
 
   return {
     dishName: input.idea,
-    category: input.category || "Черновик",
+    category: input.category || fallbackCategory(input.idea),
     portions: Math.max(input.portions || 1, 1),
     outputWeight,
     targetFoodCostPercent: input.targetFoodCostPercent || 30,
     process:
-      "Подготовить ингредиенты, обработать основной продукт, соединить компоненты, довести вкус, оформить подачу. Уточните технологию под фактическую кухню и оборудование.",
+      fallbackProcess(input.idea),
     ingredients,
   };
+}
+
+function fallbackCategory(idea: string): string {
+  const lower = idea.toLowerCase();
+  if (lower.includes("салат") || lower.includes("цезар")) return "Закуски и салаты";
+  if (lower.includes("десерт") || lower.includes("фондан") || lower.includes("медов")) return "Десерты";
+  if (lower.includes("коктейл") || lower.includes("напит")) return "Барная карта";
+  return "Горячая кухня";
+}
+
+function fallbackProcess(idea: string): string {
+  const lower = idea.toLowerCase();
+  if (lower.includes("треск") || lower.includes("рыб")) {
+    return [
+      "Филе рыбы зачистить, обсушить и порционировать.",
+      "Запанировать в панко, обжарить до золотистой корочки и довести до готовности.",
+      "Брокколи бланшировать, быстро прогреть перед подачей.",
+      "Соус биск прогреть отдельно, проверить соль, кислотность и плотность.",
+      "Выложить рыбу, гарнир и соус в тёплую тарелку. Контроль: хрустящая панировка, сочная рыба, горячая подача.",
+    ].join("\n");
+  }
+  return "Подготовить ингредиенты, обработать основной продукт, приготовить гарнир и соус, довести вкус, оформить подачу. Перед запуском уточните технологию под фактическое оборудование кухни.";
 }
 
 function systemPrompt(): string {

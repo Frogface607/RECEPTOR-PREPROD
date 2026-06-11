@@ -274,7 +274,10 @@ export function TechCardStudio() {
         <SummaryCard label="Себестоимость" value={formatRub(calculation.totalCost)} />
         <SummaryCard label="Порция" value={formatRub(calculation.costPerPortion)} />
         <SummaryCard label="Цена при фудкосте" value={formatRub(calculation.recommendedPrice)} />
-        <SummaryCard label="iiko артикулы" value={`${calculation.mappingCoveragePercent}%`} />
+        <SummaryCard
+          label="iiko-маппинг"
+          value={calculation.mappingCoveragePercent > 0 ? `${calculation.mappingCoveragePercent}%` : "после iiko"}
+        />
       </div>
 
       <div className="print:hidden grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(340px,0.75fr)]">
@@ -285,29 +288,18 @@ export function TechCardStudio() {
                 Tech Card Studio
               </p>
               <h2 className="mt-2 text-2xl font-medium tracking-[-0.02em]">
-                Технологическая карта
+                Быстрый черновик техкарты
               </h2>
               <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-                Считаем рабочую основу: брутто/нетто, потери, себестоимость,
-                КБЖУ, фудкост и артикулы iiko. Дальше этот слой станет PDF,
-                историей и экспортом в iiko.
+                Введите идею блюда — Receptor соберёт ингредиенты, граммовки,
+                себестоимость, КБЖУ, технологию и launch pack. Это
+                презентационный MVP: перед запуском технолог уточняет цены,
+                выходы и iiko-маппинг.
               </p>
             </div>
             <div className="flex max-w-full flex-wrap gap-2 lg:justify-end">
               <ActionButton onClick={saveVersion} icon={<Save className="size-4" />}>
                 Сохранить
-              </ActionButton>
-              <ActionButton onClick={copyMarkdown} icon={<Copy className="size-4" />}>
-                {copied ? "Скопировано" : "Markdown"}
-              </ActionButton>
-              <ActionButton onClick={exportJson} icon={<Download className="size-4" />}>
-                JSON
-              </ActionButton>
-              <ActionButton
-                onClick={() => fileInputRef.current?.click()}
-                icon={<Upload className="size-4" />}
-              >
-                Импорт
               </ActionButton>
               <ActionButton onClick={printPdf} icon={<Printer className="size-4" />}>
                 PDF
@@ -368,6 +360,13 @@ export function TechCardStudio() {
             state={draftRun}
             onIdeaChange={setDraftIdea}
             onGenerate={generateDraft}
+          />
+
+          <ExportStrip
+            copied={copied}
+            onCopyMarkdown={copyMarkdown}
+            onExportJson={exportJson}
+            onImportJson={() => fileInputRef.current?.click()}
           />
 
           <VenueProfileStrip
@@ -545,8 +544,12 @@ export function TechCardStudio() {
                 value={`${calculation.kcalPer100g} / ${calculation.proteinPer100g} / ${calculation.fatPer100g} / ${calculation.carbsPer100g}`}
               />
               <QualityRow
-                label="Артикулы iiko"
-                value={`${calculation.mappingCoveragePercent}%`}
+                label="iiko-маппинг"
+                value={
+                  calculation.mappingCoveragePercent > 0
+                    ? `${calculation.mappingCoveragePercent}%`
+                    : "после подключения"
+                }
               />
             </div>
           </section>
@@ -663,6 +666,38 @@ function DraftGeneratorPanel({
         </div>
       </div>
     </section>
+  );
+}
+
+function ExportStrip({
+  copied,
+  onCopyMarkdown,
+  onExportJson,
+  onImportJson,
+}: {
+  copied: boolean;
+  onCopyMarkdown: () => void;
+  onExportJson: () => void;
+  onImportJson: () => void;
+}) {
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-border/50 bg-background/30 p-3">
+      <span className="mr-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+        Экспорт
+      </span>
+      <ActionButton onClick={onCopyMarkdown} icon={<Copy className="size-4" />}>
+        {copied ? "Скопировано" : "Markdown"}
+      </ActionButton>
+      <ActionButton onClick={onExportJson} icon={<Download className="size-4" />}>
+        JSON
+      </ActionButton>
+      <ActionButton onClick={onImportJson} icon={<Upload className="size-4" />}>
+        Импорт
+      </ActionButton>
+      <span className="text-[12px] leading-relaxed text-muted-foreground">
+        Для демо достаточно PDF и launch pack; JSON нужен для переноса версии.
+      </span>
+    </div>
   );
 }
 

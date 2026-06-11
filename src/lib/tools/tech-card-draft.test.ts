@@ -49,6 +49,21 @@ describe("normalizeTechCardDraft", () => {
     expect(result.process.length).toBeGreaterThan(0);
   });
 
+  test("builds a specific fallback for breaded cod with broccoli and bisque", () => {
+    const result = normalizeTechCardDraft(
+      {},
+      { idea: "треска в панировке с брокколи и соусом биск" },
+    );
+
+    const names = result.ingredients.map((ingredient) => ingredient.name);
+    expect(result.category).toBe("Горячая кухня");
+    expect(names).toContain("Филе трески");
+    expect(names).toContain("Панировка панко");
+    expect(names).toContain("Брокколи");
+    expect(names).toContain("Соус биск");
+    expect(result.process).toContain("Запанировать");
+  });
+
   test("rejects unsupported units to grams", () => {
     const result = normalizeTechCardDraft(
       {

@@ -133,7 +133,7 @@ describe("evaluateTechCardQuality", () => {
     expect(quality.issues.some((issue) => issue.title === "Нет ингредиентов")).toBe(true);
   });
 
-  test("warns about missing prices, nutrition, output mismatch and low mapping", () => {
+  test("warns about missing prices, nutrition and output mismatch", () => {
     const draft: TechCardInput = {
       ...input,
       outputWeight: 1000,
@@ -157,7 +157,6 @@ describe("evaluateTechCardQuality", () => {
         "Не заполнены цены",
         "Не заполнено КБЖУ",
         "Выход не сходится",
-        "Мало iiko-артикулов",
       ]),
     );
   });

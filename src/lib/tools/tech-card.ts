@@ -276,17 +276,6 @@ export function evaluateTechCardQuality(
     });
   }
 
-  if (
-    filledIngredients.length > 0 &&
-    calculation.mappingCoveragePercent < 80
-  ) {
-    issues.push({
-      severity: "warning",
-      title: "Мало iiko-артикулов",
-      description: `Покрытие артикулами: ${calculation.mappingCoveragePercent}%. Для iiko-экспорта нужно довести маппинг почти до 100%.`,
-    });
-  }
-
   const criticalCount = issues.filter(
     (issue) => issue.severity === "critical",
   ).length;
