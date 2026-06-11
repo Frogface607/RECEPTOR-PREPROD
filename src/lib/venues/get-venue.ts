@@ -1,6 +1,6 @@
 import { SANDBOX_VENUE as SANDBOX_ORG } from "@/lib/mock/sandbox-fixtures";
 import {
-  DEFAULT_VENUE_INTELLIGENCE,
+  DEMO_RESTAURANT_INTELLIGENCE,
   type VenueIntelligenceProfile,
 } from "./intelligence";
 
@@ -21,10 +21,10 @@ export type ResolvedVenue = {
 const SANDBOX_VENUE: ResolvedVenue = {
   id: "dev-venue",
   name: SANDBOX_ORG.name,
-  city: "Sandbox",
+  city: "Иркутск",
   type: "restaurant",
   timezone: SANDBOX_ORG.timezone ?? "Asia/Irkutsk",
-  intelligence: DEFAULT_VENUE_INTELLIGENCE,
+  intelligence: DEMO_RESTAURANT_INTELLIGENCE,
   iiko: {
     channel: "cloud",
     organizationId: SANDBOX_ORG.id,

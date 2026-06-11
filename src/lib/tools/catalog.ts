@@ -548,7 +548,7 @@ ${f.process}
     icon: "PartyPopper",
     fields: [
       { id: "event", label: "Что за мероприятие", placeholder: "Живая музыка, джаз-квартет, пятница 20:00, вход свободный", required: true },
-      { id: "venue", label: "Название заведения", placeholder: "Тестовое заведение", required: false },
+      { id: "venue", label: "Название заведения", placeholder: "Тестовый ресторан", required: false },
     ],
     buildPrompt: (f) =>
       `Напиши анонс мероприятия для соцсетей и Telegram-канала:\n\nМероприятие: ${f.event}\n${f.venue ? `Заведение: ${f.venue}` : ""}\n\nСоздай 2 варианта:\n1. Telegram-пост (короткий, с эмодзи, call to action — "бронируй стол")\n2. Instagram-пост (более развёрнутый, с хэштегами)\n\nТон: энергичный, создающий предвкушение. Формат: markdown.`,

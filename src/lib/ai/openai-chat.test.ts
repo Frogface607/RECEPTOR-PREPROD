@@ -10,7 +10,7 @@ const ANCHOR = "2026-05-29";
 function input(message: string) {
   return {
     message,
-    venueName: "Тестовое заведение",
+    venueName: "Тестовый ресторан",
     venueType: "bar",
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,

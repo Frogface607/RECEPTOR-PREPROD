@@ -13,7 +13,7 @@ async function collect(message: string) {
   const events = [];
   for await (const ev of runMockChatTurn({
     message,
-    venueName: "Тестовое заведение",
+    venueName: "Тестовый ресторан",
     venueType: "Бар",
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,

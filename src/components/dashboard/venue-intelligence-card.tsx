@@ -30,7 +30,7 @@ export function VenueIntelligenceCard({
             ? "Deep Research"
             : profile.researchStatus === "manual"
               ? "Настроено вручную"
-              : "Шаблон пилота"}
+              : "Демо-профиль"}
         </span>
       </div>
 

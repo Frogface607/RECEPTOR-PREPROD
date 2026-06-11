@@ -18,7 +18,7 @@ import type {
 
 export const SANDBOX_VENUE: Organization = {
   id: "sandbox-restaurant",
-  name: "Тестовое заведение",
+  name: "Тестовый ресторан",
   timezone: "Asia/Irkutsk",
 };
 
@@ -92,8 +92,8 @@ export const SANDBOX_PRODUCTS: Product[] = SANDBOX_DISHES.map((d) => ({
   sizePrices: [{ price: { currentPrice: d.price } }],
 }));
 
-/** Three shift cashiers cycling through the week (deterministic). */
-export const SANDBOX_SHIFT_EMPLOYEES = ["Маша", "Дима", "Аня"] as const;
+/** Three shift managers cycling through the week (deterministic). */
+export const SANDBOX_SHIFT_EMPLOYEES = ["Анна", "Илья", "Мария"] as const;
 
 /**
  * Deterministic per-day revenue for the sandbox restaurant.

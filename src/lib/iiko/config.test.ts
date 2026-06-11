@@ -5,8 +5,8 @@ import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const venue: ResolvedVenue = {
   id: "dev-venue",
-  name: "Тестовое заведение",
-  city: "Sandbox",
+  name: "Тестовый ресторан",
+  city: "Иркутск",
   type: "restaurant",
   timezone: "Asia/Irkutsk",
   intelligence: DEFAULT_VENUE_INTELLIGENCE,
