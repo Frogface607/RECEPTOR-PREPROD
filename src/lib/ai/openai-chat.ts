@@ -57,9 +57,15 @@ function openAIKey(): string | null {
 }
 
 function systemPrompt(input: ChatTurnInput): string {
+  const dataModeNote =
+    input.dataMode === "mock"
+      ? "Важно: профиль заведения может быть реальным, но BI/iiko-цифры сейчас тестовые sandbox-данные до подключения активного iiko Cloud API. Не выдавай их за реальные показатели заведения."
+      : "BI/iiko-цифры получены из подключенного источника данных заведения.";
+
   return [
     `Ты — Receptor, AI-копайлот владельца заведения ${input.venueName}.`,
     `Тип: ${input.venueType}. Город: ${input.venueCity}.`,
+    dataModeNote,
     "Профиль заведения:",
     formatVenueProfileForPrompt(input.venueProfile),
     "Отвечай по-русски, коротко и управленчески: факт, вывод, действие.",

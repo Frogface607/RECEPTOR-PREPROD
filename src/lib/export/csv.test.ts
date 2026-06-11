@@ -34,14 +34,14 @@ describe("toCsv", () => {
   test("emits one data row per dish", () => {
     const rows: Dish[] = [
       {
-        dishName: "Бургер Нечто",
-        dishGroup: "Бургеры",
+        dishName: "Стейк из говядины",
+        dishGroup: "Горячая кухня",
         dishAmountInt: 240,
         dishSumInt: 165600,
       },
       {
-        dishName: "Крафт IPA 0.5л",
-        dishGroup: "Крафтовое пиво",
+        dishName: "Авторский коктейль",
+        dishGroup: "Барная карта",
         dishAmountInt: 198,
         dishSumInt: 75240,
       },
@@ -49,9 +49,9 @@ describe("toCsv", () => {
     const csv = toCsv(rows, dishColumns);
     const lines = csv.slice(BOM.length).split("\n");
     expect(lines).toHaveLength(3); // header + 2 rows
-    expect(lines[1]).toBe('"Бургер Нечто";"Бургеры";"240";"165600"');
+    expect(lines[1]).toBe('"Стейк из говядины";"Горячая кухня";"240";"165600"');
     expect(lines[2]).toBe(
-      '"Крафт IPA 0.5л";"Крафтовое пиво";"198";"75240"',
+      '"Авторский коктейль";"Барная карта";"198";"75240"',
     );
   });
 

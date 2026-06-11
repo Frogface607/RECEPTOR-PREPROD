@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getDashboardClient } from "@/lib/iiko/config";
+import { getDashboardClient, resolveIikoClientConfig } from "@/lib/iiko/config";
 import { runMockChatTurn } from "@/lib/ai/mock-chat";
 import {
   isOpenAIChatConfigured,
@@ -44,6 +44,11 @@ export async function POST(request: Request) {
   const { venue } = access;
 
   const iikoClient = getDashboardClient(venue);
+  const iikoConfig = resolveIikoClientConfig(
+    venue,
+    process.env,
+    new Date().toISOString().slice(0, 10),
+  );
   const useOpenAI = isOpenAIChatConfigured();
 
   const encoder = new TextEncoder();
@@ -56,6 +61,7 @@ export async function POST(request: Request) {
           venueType: venue.type,
           venueCity: venue.city,
           venueProfile: venue.intelligence,
+          dataMode: iikoConfig.mode,
           iikoClient,
         };
         const events = useOpenAI
@@ -73,6 +79,7 @@ export async function POST(request: Request) {
             venueType: venue.type,
             venueCity: venue.city,
             venueProfile: venue.intelligence,
+            dataMode: iikoConfig.mode,
             iikoClient,
           })) {
             controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));

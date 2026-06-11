@@ -138,18 +138,18 @@ describe("comparePeriodsTool", () => {
 describe("searchNomenclatureTool", () => {
   test("finds dishes by partial name", async () => {
     const out = await searchNomenclatureTool.handler(
-      { query: "нечто" },
+      { query: "стейк" },
       client(),
     );
     expect(out.products.length).toBeGreaterThan(0);
     expect(
-      out.products.every((p) => p.name.toLowerCase().includes("нечто")),
+      out.products.every((p) => p.name.toLowerCase().includes("стейк")),
     ).toBe(true);
   });
 
   test("returns count in summary", async () => {
     const out = await searchNomenclatureTool.handler(
-      { query: "крафт" },
+      { query: "коктейль" },
       client(),
     );
     expect(out.summary).toMatch(/\d+/);

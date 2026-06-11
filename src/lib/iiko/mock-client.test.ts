@@ -112,9 +112,9 @@ describe("MockIikoClient.getDishStatistics", () => {
     }
   });
 
-  test('"Бургер Нечто" appears in top dishes', async () => {
+  test("signature hot dish appears in top dishes", async () => {
     const dishes = await client.getDishStatistics({ type: "LAST_MONTH" }, 20);
-    expect(dishes.some((d) => d.dishName === "Бургер Нечто")).toBe(true);
+    expect(dishes.some((d) => d.dishName === "Стейк из говядины")).toBe(true);
   });
 });
 
@@ -122,11 +122,11 @@ describe("MockIikoClient.getCategoryStatistics", () => {
   test("returns at least the 5 sandbox categories", async () => {
     const cats = await client.getCategoryStatistics({ type: "LAST_WEEK" });
     const names = new Set(cats.map((c) => c.categoryName));
-    expect(names.has("Бургеры")).toBe(true);
-    expect(names.has("Крафтовое пиво")).toBe(true);
-    expect(names.has("Авторские коктейли")).toBe(true);
-    expect(names.has("Закуски")).toBe(true);
+    expect(names.has("Горячая кухня")).toBe(true);
+    expect(names.has("Закуски и салаты")).toBe(true);
+    expect(names.has("Барная карта")).toBe(true);
     expect(names.has("Десерты")).toBe(true);
+    expect(names.has("Безалкогольные напитки")).toBe(true);
   });
 
   test("each row validates against CategoryStatSchema", async () => {
@@ -169,9 +169,9 @@ describe("MockIikoClient.getShifts", () => {
 
 describe("MockIikoClient.searchNomenclature", () => {
   test("case-insensitive substring match on product name", async () => {
-    const results = await client.searchNomenclature("нечто");
+    const results = await client.searchNomenclature("стейк");
     expect(results.length).toBeGreaterThan(0);
-    expect(results.every((p) => p.name.toLowerCase().includes("нечто"))).toBe(true);
+    expect(results.every((p) => p.name.toLowerCase().includes("стейк"))).toBe(true);
   });
 
   test("empty query returns empty list", async () => {
@@ -180,7 +180,7 @@ describe("MockIikoClient.searchNomenclature", () => {
   });
 
   test("each result validates against ProductSchema", async () => {
-    const results = await client.searchNomenclature("пиво");
+    const results = await client.searchNomenclature("чай");
     for (const r of results) {
       expect(() => ProductSchema.parse(r)).not.toThrow();
     }

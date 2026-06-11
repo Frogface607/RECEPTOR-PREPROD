@@ -12,11 +12,11 @@ import { formatRubles } from "@/lib/format";
 type Cat = { categoryName: string; dishSumInt: number };
 
 const CATEGORY_COLOR: Record<string, string> = {
-  Бургеры: "var(--chart-1)",
-  "Крафтовое пиво": "var(--chart-2)",
-  "Авторские коктейли": "var(--chart-3)",
-  Закуски: "var(--chart-4)",
+  "Горячая кухня": "var(--chart-1)",
+  "Закуски и салаты": "var(--chart-2)",
+  "Барная карта": "var(--chart-3)",
   Десерты: "var(--chart-5)",
+  "Безалкогольные напитки": "var(--chart-4)",
 };
 
 function ChartTooltip({

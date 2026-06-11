@@ -274,7 +274,7 @@ export const searchNomenclatureTool: ToolDefinition<
       query: {
         type: "string",
         minLength: 1,
-        description: "Часть названия блюда: «бургер», «крафт ipa», «нечто».",
+        description: "Часть названия блюда: «стейк», «салат», «коктейль».",
       },
     },
     required: ["query"],

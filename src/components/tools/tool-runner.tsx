@@ -42,7 +42,7 @@ function exampleValue(field: ToolField, toolName: string): string {
   if (label.includes("заведение")) return "Тестовое заведение";
   if (label.includes("город")) return "Иркутск";
   if (label.includes("цель")) return "увеличить продажи ужинов в будни";
-  if (label.includes("блюдо")) return "бургер с говядиной";
+  if (label.includes("блюдо")) return "стейк из говядины";
   if (label.includes("аудитория")) return "гости 25-40, офисы рядом";
   if (field.multiline) {
     return `${toolName}: нужен аккуратный рабочий результат для ресторана, без воды.`;

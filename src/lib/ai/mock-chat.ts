@@ -48,6 +48,7 @@ export type ChatTurnInput = {
   venueType: string;
   venueCity: string;
   venueProfile: VenueIntelligenceProfile;
+  dataMode?: "mock" | "real";
   iikoClient: IikoClient;
 };
 
@@ -271,10 +272,20 @@ function formatSuggestAnswer(
 }
 
 function formatOwnerBriefAnswer(
+  dataMode: ChatTurnInput["dataMode"],
   profile: VenueIntelligenceProfile,
   out: Awaited<ReturnType<typeof getOwnerBriefTool.handler>>,
 ): string {
+  const prefix =
+    dataMode === "mock"
+      ? [
+          "Важно: профиль заведения собран по реальному контексту, но BI-цифры ниже — тестовый sandbox до подключения активного iiko Cloud API.",
+          "",
+        ]
+      : [];
+
   return [
+    ...prefix,
     "Управленческий разбор:",
     "",
     `Факт: выручка ${formatRubles(out.revenue.total)}, средний чек ${formatRubles(out.revenue.averageCheck)}, продано ${formatInteger(out.revenue.itemsSold)} позиций.`,
@@ -335,7 +346,7 @@ export async function* runMockChatTurn(
       };
       yield {
         type: "text",
-        text: formatOwnerBriefAnswer(input.venueProfile, output),
+        text: formatOwnerBriefAnswer(input.dataMode, input.venueProfile, output),
       };
       break;
     }
