@@ -7,6 +7,8 @@ import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
+import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
+import { SurvivalBriefCard } from "@/components/dashboard/survival-brief-card";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -63,8 +65,8 @@ export default async function DashboardPage({
               Операционная картина зала
             </h2>
             <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
-              Выручка, категории, блюда, смены и brief владельца за выбранный
-              период.
+              Выручка, категории, блюда, смены и разбор для владельца за
+              выбранный период.
             </p>
           </div>
 
@@ -83,7 +85,19 @@ export default async function DashboardPage({
           </div>
 
           <div className="reveal reveal-3 mt-6">
+            <SurvivalBriefCard
+              brief={brief}
+              dishes={dishes}
+              categories={categories}
+            />
+          </div>
+
+          <div className="reveal reveal-3 mt-6">
             <VenueIntelligenceCard profile={venue.intelligence} />
+          </div>
+
+          <div className="reveal reveal-4 mt-6">
+            <MenuEngineeringCard dishes={dishes} />
           </div>
 
           <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">

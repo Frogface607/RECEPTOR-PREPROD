@@ -13,7 +13,7 @@ const CASES = [
     venue: "Первый пилот",
     city: "Ресторанная группа",
     status: "Pilot" as const,
-    tagline: "Подключение реального iiko, ежедневный brief и BI по живым данным.",
+    tagline: "Подключение реального iiko, ежедневный разбор и BI по живым данным.",
     metric: "Подключение на этой неделе",
   },
   {
@@ -59,7 +59,7 @@ export function Cases() {
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
             Сначала подключаем одну-две точки, проверяем реальные цифры,
-            ежедневный brief и copilot, потом масштабируем на сеть.
+            ежедневный разбор и Copilot, потом масштабируем на сеть.
           </p>
         </div>
 

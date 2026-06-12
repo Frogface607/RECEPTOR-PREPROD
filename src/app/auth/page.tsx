@@ -42,7 +42,7 @@ export default async function AuthPage({
             RECEPTOR
           </span>
           <span className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            ресторанный copilot
+            рабочий кабинет ресторана
           </span>
         </Link>
 

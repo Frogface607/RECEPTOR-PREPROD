@@ -67,7 +67,7 @@ export function PricingTeaser() {
             Один тариф окупится первой найденной просадкой.
           </h2>
           <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
-            Receptor находит дыру в фудкосте, проваленную смену или забытую
+            Receptor находит дыру в себестоимости, проваленную смену или забытую
             позицию меню. Один такой инсайт окупает год Pro.
           </p>
         </div>

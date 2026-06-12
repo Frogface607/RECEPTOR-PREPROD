@@ -8,7 +8,7 @@ import { TechCardStudio } from "@/components/tools/tech-card-studio";
 export const metadata: Metadata = {
   title: "Tech Card Studio — RECEPTOR",
   description:
-    "Рабочая студия техкарт: ингредиенты, себестоимость, КБЖУ, фудкост, артикулы iiko и PDF-печать.",
+    "Рабочая студия техкарт: ингредиенты, себестоимость, КБЖУ, артикулы iiko и PDF-печать.",
 };
 
 export default function TechCardStudioPage() {
@@ -45,7 +45,7 @@ export default function TechCardStudioPage() {
                 <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
                   Первый взрослый сценарий инструментов: не генератор текста, а
                   рабочая техкарта с расчётами, историей версии и печатью в PDF.
-                  Следующий слой — автозаполнение через Copilot и iiko-артикулы.
+                  Следующий слой — автозаполнение и связка с артикулами iiko.
                 </p>
               </div>
             </div>

@@ -118,11 +118,12 @@ export class CloudIikoClient implements IikoClient {
   async listOrganizations(): Promise<IikoOrganization[]> {
     const token = await this.getToken();
     const res = await this.fetchImpl(`${this.baseUrl}/api/1/organizations`, {
-      method: "GET",
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({}),
     });
 
     if (!res.ok) {

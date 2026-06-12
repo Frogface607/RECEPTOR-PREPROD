@@ -198,8 +198,8 @@ describe("createTechCardLaunchPack", () => {
     expect(pack.waiterPitch).toContain("Рекомендуйте");
     expect(pack.waiterPitch).toContain("вкус без лишней сложности");
     expect(pack.upsellIdeas.length).toBeGreaterThanOrEqual(3);
-    expect(pack.ownerNotes.join("\n")).toContain("Preflight score");
-    expect(pack.markdown).toContain("# Launch Pack");
+    expect(pack.ownerNotes.join("\n")).toContain("Проверка качества");
+    expect(pack.markdown).toContain("# Запуск блюда");
   });
 
   test("creates dish-specific launch copy for fish dishes", () => {

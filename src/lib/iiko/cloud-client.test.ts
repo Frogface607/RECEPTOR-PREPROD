@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach, vi, afterEach } from "vitest";
+import { describe, expect, test, vi, afterEach } from "vitest";
 import { CloudIikoClient } from "./cloud-client";
 
 /**
@@ -190,6 +190,8 @@ describe("CloudIikoClient.listOrganizations", () => {
       { id: "org-2", name: "Second Venue" },
     ]);
     expect(calls[1].url).toContain("/api/1/organizations");
+    expect(calls[1].init?.method).toBe("POST");
+    expect(JSON.parse(calls[1].init?.body as string)).toEqual({});
     expect(new Headers(calls[1].init?.headers).get("Authorization")).toBe(
       `Bearer ${TOKEN}`,
     );

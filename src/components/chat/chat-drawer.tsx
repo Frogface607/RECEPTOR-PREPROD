@@ -179,7 +179,7 @@ export function ChatDrawer({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="flex w-full flex-col gap-0 border-l border-border/60 bg-background p-0 data-[side=right]:sm:w-[min(100vw,820px)] data-[side=right]:sm:max-w-[820px]"
+        className="flex !w-full !max-w-none flex-col gap-0 border-l border-border/60 bg-background p-0 data-[side=right]:sm:!w-[min(100vw,820px)] data-[side=right]:sm:!max-w-[820px]"
       >
         <SheetHeader className="border-b border-border/40 px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ const COPILOT_MODES = [
   {
     icon: ChefHat,
     title: "Меню",
-    text: "Блюда, категории, оборот, порции и точки для фудкоста.",
+    text: "Блюда, категории, оборот, порции и точки для себестоимости.",
   },
   {
     icon: Clock3,
@@ -272,7 +272,7 @@ const COPILOT_MODES = [
   {
     icon: Target,
     title: "Действия",
-    text: "Что сделать сегодня, чтобы не терять вечер и маржу.",
+    text: "Что сделать сегодня, чтобы вечер работал на прибыль.",
   },
 ];
 

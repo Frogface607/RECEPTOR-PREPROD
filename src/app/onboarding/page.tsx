@@ -30,7 +30,7 @@ export default async function OnboardingPage() {
             RECEPTOR
           </span>
           <span className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            ресторанный copilot
+            рабочий кабинет ресторана
           </span>
         </Link>
 

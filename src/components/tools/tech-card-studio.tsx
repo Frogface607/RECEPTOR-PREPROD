@@ -273,9 +273,9 @@ export function TechCardStudio() {
       <div className="print:hidden grid gap-4 lg:grid-cols-4">
         <SummaryCard label="Себестоимость" value={formatRub(calculation.totalCost)} />
         <SummaryCard label="Порция" value={formatRub(calculation.costPerPortion)} />
-        <SummaryCard label="Цена при фудкосте" value={formatRub(calculation.recommendedPrice)} />
+        <SummaryCard label="Рекомендуемая цена" value={formatRub(calculation.recommendedPrice)} />
         <SummaryCard
-          label="iiko-маппинг"
+          label="Связь с iiko"
           value={calculation.mappingCoveragePercent > 0 ? `${calculation.mappingCoveragePercent}%` : "после iiko"}
         />
       </div>
@@ -292,9 +292,9 @@ export function TechCardStudio() {
               </h2>
               <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
                 Введите идею блюда — Receptor соберёт ингредиенты, граммовки,
-                себестоимость, КБЖУ, технологию и launch pack. Это
+                себестоимость, КБЖУ, технологию и материалы для запуска. Это
                 презентационный MVP: перед запуском технолог уточняет цены,
-                выходы и iiko-маппинг.
+                выходы и связь с iiko.
               </p>
             </div>
             <div className="flex max-w-full flex-wrap gap-2 lg:justify-end">
@@ -349,7 +349,7 @@ export function TechCardStudio() {
               onChange={(value) => updateInput("outputWeight", value)}
             />
             <NumberField
-              label="Фудкост, %"
+              label="Себестоимость, %"
               value={input.targetFoodCostPercent}
               onChange={(value) => updateInput("targetFoodCostPercent", value)}
             />
@@ -544,7 +544,7 @@ export function TechCardStudio() {
                 value={`${calculation.kcalPer100g} / ${calculation.proteinPer100g} / ${calculation.fatPer100g} / ${calculation.carbsPer100g}`}
               />
               <QualityRow
-                label="iiko-маппинг"
+                label="Связь с iiko"
                 value={
                   calculation.mappingCoveragePercent > 0
                     ? `${calculation.mappingCoveragePercent}%`
@@ -695,7 +695,7 @@ function ExportStrip({
         Импорт
       </ActionButton>
       <span className="text-[12px] leading-relaxed text-muted-foreground">
-        Для демо достаточно PDF и launch pack; JSON нужен для переноса версии.
+        Для демо достаточно PDF и материалов запуска; JSON нужен для переноса версии.
       </span>
     </div>
   );
@@ -723,7 +723,7 @@ function VenueProfileStrip({
             Профиль заведения
           </p>
           <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-            Техкарта сохраняет контекст концепции. Позже Copilot сможет
+            Техкарта сохраняет контекст концепции. Позже Receptor сможет
             автособирать блюда и меню именно под этот профиль.
           </p>
         </div>
@@ -888,7 +888,7 @@ function LaunchPackPanel({
           <div className="flex items-center gap-2 text-[color:var(--ai)]">
             <Sparkles className="size-4" />
             <p className="text-[11px] uppercase tracking-[0.18em]">
-              Launch Pack
+              Запуск блюда
             </p>
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
@@ -902,7 +902,7 @@ function LaunchPackPanel({
           className="inline-flex h-8 shrink-0 items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 text-[12px] text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
         >
           <Copy className="size-3.5" />
-          {copied ? "Скопировано" : "Copy"}
+          {copied ? "Скопировано" : "Копировать"}
         </button>
       </div>
 
@@ -925,7 +925,7 @@ function LaunchPackPanel({
         </div>
         <div>
           <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            Upsell
+            Что предложить дополнительно
           </p>
           <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
             {pack.upsellIdeas.map((idea) => (
@@ -968,7 +968,7 @@ function QualityPreflight({ report }: { report: TechCardQualityReport }) {
             {report.score}
           </p>
           <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-            score
+            оценка
           </p>
         </div>
       </div>
@@ -998,7 +998,7 @@ function QualityPreflight({ report }: { report: TechCardQualityReport }) {
         </div>
       ) : (
         <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
-          Блокеров нет. Техкарту можно печатать или готовить к iiko-маппингу.
+          Блокеров нет. Техкарту можно печатать или готовить к связи с iiko.
         </p>
       )}
 
@@ -1088,7 +1088,7 @@ function PrintableTechCard({
 
         <div className="mt-7 grid grid-cols-2 gap-4 text-sm">
           <PrintMetric
-            label="Цена при целевом фудкосте"
+            label="Рекомендуемая цена"
             value={formatRub(calculation.recommendedPrice)}
           />
           <PrintMetric

@@ -208,7 +208,7 @@ export function evaluateTechCardQuality(
     issues.push({
       severity: "critical",
       title: "Нет названия блюда",
-      description: "Без названия техкарту нельзя нормально сохранить, печатать или маппить в iiko.",
+      description: "Без названия техкарту нельзя нормально сохранить, печатать или связать с iiko.",
     });
   }
 
@@ -238,7 +238,7 @@ export function evaluateTechCardQuality(
     issues.push({
       severity: "warning",
       title: "Не заполнены цены",
-      description: `${missingPrices.length} ингредиент(а) без цены. Фудкост и рекомендуемая цена занижены.`,
+      description: `${missingPrices.length} ингредиент(а) без цены. Себестоимость и рекомендуемая цена занижены.`,
     });
   }
 
@@ -289,7 +289,7 @@ export function evaluateTechCardQuality(
   const nextActions =
     issues.length === 0
       ? [
-          "Можно печатать PDF или переходить к iiko-маппингу.",
+          "Можно печатать PDF или переходить к связи с iiko.",
           "Перед продажей проверьте фактические цены поставщиков.",
         ]
       : issues.slice(0, 4).map((issue) => issue.title);
@@ -498,7 +498,7 @@ export function createTechCardLaunchPack(
   const heroText = heroes.length ? humanList(heroes) : "понятная основа блюда";
   const tone = dishTone(input, [...keyIngredients, ...heroes]);
   const priceHint = calculation.recommendedPrice
-    ? `Рекомендуемая цена при целевом фудкосте: ${formatRub(calculation.recommendedPrice)}.`
+    ? `Рекомендуемая цена при целевой себестоимости: ${formatRub(calculation.recommendedPrice)}.`
     : "Рекомендуемую цену стоит уточнить после заполнения цен.";
   const profileFocus = venueProfile?.ownerGoals[0]
     ? `Фокус владельца: ${venueProfile.ownerGoals[0]}.`
@@ -509,14 +509,14 @@ export function createTechCardLaunchPack(
   const upsellIdeas = pairingIdeas(input);
   const ownerNotes = [
     priceHint,
-    `Preflight score: ${quality.score}. ${quality.status === "ok" ? "Блокеров нет." : "Перед запуском стоит закрыть замечания preflight."}`,
+    `Проверка качества: ${quality.score}. ${quality.status === "ok" ? "Блокеров нет." : "Перед запуском стоит закрыть замечания."}`,
     calculation.mappingCoveragePercent < 100
-      ? "iiko-маппинг появится после подключения номенклатуры и артикулов."
-      : "iiko-маппинг заполнен.",
+      ? "Связь с iiko появится после подключения номенклатуры и артикулов."
+      : "Связь с iiko заполнена.",
     profileFocus,
   ];
 
-  const markdown = `# Launch Pack: ${dish}
+  const markdown = `# Запуск блюда: ${dish}
 
 ## Описание для меню
 
@@ -526,7 +526,7 @@ ${menuDescription}
 
 ${waiterPitch}
 
-## Upsell
+## Что предложить дополнительно
 
 ${upsellIdeas.map((idea) => `- ${idea}`).join("\n")}
 
@@ -571,7 +571,7 @@ export function createTechCardMarkdown(
 **Категория:** ${input.category || "-"}
 **Порций:** ${input.portions || 1}
 **Выход:** ${input.outputWeight || calculation.totalNetWeight} г
-**Целевой фудкост:** ${input.targetFoodCostPercent || calculation.foodCostPercent}%
+**Целевая себестоимость:** ${input.targetFoodCostPercent || calculation.foodCostPercent}%
 ${venueBlock}
 
 ## Сводка

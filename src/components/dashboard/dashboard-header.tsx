@@ -53,7 +53,7 @@ export function DashboardHeader({
           >
             <MessageSquare className="size-4" />
             <span className="hidden sm:inline">Открыть Copilot</span>
-            <span className="sm:hidden">Receptor</span>
+            <span className="sm:hidden">Чат</span>
           </Link>
         </div>
       </div>

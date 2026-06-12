@@ -51,7 +51,7 @@ export function ToolsTeaser() {
                 Tech Card Studio
               </h3>
               <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-                Техкарта с ингредиентами, фудкостом, КБЖУ, iiko-артикулами,
+                Техкарта с ингредиентами, себестоимостью, КБЖУ, iiko-артикулами,
                 историей и PDF-печатью. Это фундамент будущего меню-модуля.
               </p>
             </div>
