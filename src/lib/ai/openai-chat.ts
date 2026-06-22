@@ -10,6 +10,7 @@ import { AI_TOOLS } from "./tools";
 import type { ChatEvent, ChatTurnInput } from "./mock-chat";
 import type { IikoClient } from "@/lib/iiko/types";
 import { formatVenueProfileForPrompt } from "@/lib/venues/intelligence";
+import { formatContextAnswersForPrompt } from "@/lib/venues/context-questionnaire";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_MODEL = "gpt-5.5";
@@ -68,6 +69,9 @@ function systemPrompt(input: ChatTurnInput): string {
     dataModeNote,
     "Профиль заведения:",
     formatVenueProfileForPrompt(input.venueProfile),
+    input.venueContext && Object.keys(input.venueContext).length > 0
+      ? ["Контекстная анкета ресторана:", formatContextAnswersForPrompt(input.venueContext)].join("\n")
+      : "Контекстная анкета ресторана: пока не заполнена.",
     "Отвечай по-русски, коротко и управленчески: факт, вывод, действие.",
     "Если вопрос про выручку, блюда, смены, сравнение периодов или меню — обязательно вызови подходящий инструмент.",
     "Если вопрос про общий разбор, совет владельцу, просадку, риски или что делать сегодня — используй get_owner_brief.",

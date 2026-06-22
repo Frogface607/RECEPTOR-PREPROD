@@ -6,12 +6,14 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { encryptSecret } from "@/lib/db/encryption";
 import { CloudIikoClient } from "@/lib/iiko/cloud-client";
 import { normalizeVenueProfile } from "@/lib/venues/intelligence";
+import { normalizeContextAnswers } from "@/lib/venues/context-questionnaire";
 
 const VenueInput = z.object({
   name: z.string().min(1).max(120),
   type: z.enum(["restaurant", "cafe", "coffee", "bar", "chain", "other"]),
   city: z.string().max(120).optional().default(""),
   intelligenceProfile: z.unknown().optional(),
+  contextAnswers: z.unknown().optional(),
   apiLogin: z.string().trim().optional().default(""),
   organizationId: z.string().optional().default(""),
 });
@@ -119,6 +121,7 @@ export async function createVenueAction(
       intelligence_profile: normalizeVenueProfile(
         parsed.data.intelligenceProfile,
       ),
+      context_profile: normalizeContextAnswers(parsed.data.contextAnswers),
     };
 
     let insertResult = await supabase
@@ -129,7 +132,7 @@ export async function createVenueAction(
 
     if (
       insertResult.error &&
-      /intelligence_profile/i.test(insertResult.error.message)
+      /(intelligence_profile|context_profile)/i.test(insertResult.error.message)
     ) {
       const fallbackInsert = {
         owner_user_id: venueInsert.owner_user_id,
@@ -169,6 +172,28 @@ export async function createVenueAction(
         ok: false,
         error: credsError.message,
       };
+    }
+
+    const { error: membershipError } = await supabase
+      .from("venue_memberships")
+      .insert({
+        venue_id: data.id,
+        user_id: user.id,
+        full_name: user.email || "Owner",
+        email: user.email || null,
+        role: "owner",
+        status: "active",
+        shift_label: "owner",
+        created_by: user.id,
+      });
+
+    if (
+      membershipError &&
+      !/venue_memberships|relation .* does not exist/i.test(
+        membershipError.message,
+      )
+    ) {
+      return { ok: false, error: membershipError.message };
     }
 
     return { ok: true, mode: "saved", venueId: data.id as string };

@@ -26,6 +26,7 @@ import { formatRubles, formatInteger } from "@/lib/format";
 import type { IikoClient } from "@/lib/iiko/types";
 import type { PeriodType } from "@/lib/iiko/models";
 import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
+import type { VenueContextAnswers } from "@/lib/venues/context-questionnaire";
 
 // ---------------------------------------------------------------------------
 // Stream event shapes (also used by the API route + UI)
@@ -48,6 +49,7 @@ export type ChatTurnInput = {
   venueType: string;
   venueCity: string;
   venueProfile: VenueIntelligenceProfile;
+  venueContext?: VenueContextAnswers;
   dataMode?: "mock" | "real";
   iikoClient: IikoClient;
 };
@@ -257,9 +259,18 @@ function formatSearchAnswer(
 function formatSuggestAnswer(
   venueName: string,
   profile: VenueIntelligenceProfile,
+  context?: VenueContextAnswers,
 ): string {
+  const teamRoles = Array.isArray(context?.team_roles)
+    ? context.team_roles.slice(0, 4).join(", ")
+    : "";
+  const posSystem = typeof context?.pos_system === "string" ? context.pos_system : "";
+
   return [
     `Я Receptor — Copilot ${venueName}. Я учитываю профиль заведения, iiko-цифры и управленческий контекст.`,
+    teamRoles || posSystem
+      ? `Контекст анкеты: ${posSystem ? `учетная система — ${posSystem}` : ""}${posSystem && teamRoles ? "; " : ""}${teamRoles ? `роли — ${teamRoles}` : ""}.`
+      : "Контекст анкеты пока не заполнен: для точных советов нужны формат, команда, системы и ограничения.",
     "",
     `Фокус сейчас: ${profile.recommendedFocus.slice(0, 3).join("; ")}.`,
     "",
@@ -443,7 +454,11 @@ export async function* runMockChatTurn(
     case "suggest": {
       yield {
         type: "text",
-        text: formatSuggestAnswer(input.venueName, input.venueProfile),
+        text: formatSuggestAnswer(
+          input.venueName,
+          input.venueProfile,
+          input.venueContext,
+        ),
       };
       break;
     }

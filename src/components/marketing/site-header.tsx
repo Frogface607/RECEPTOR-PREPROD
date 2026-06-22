@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { LinkButton } from "@/components/ui/link-button";
 
 export function SiteHeader() {
@@ -28,6 +28,24 @@ export function SiteHeader() {
             Инструменты
           </Link>
           <Link
+            href="/pilot"
+            className="hidden transition-colors hover:text-foreground md:inline"
+          >
+            Пилот
+          </Link>
+          <Link
+            href="/team"
+            className="hidden transition-colors hover:text-foreground lg:inline"
+          >
+            Team OS
+          </Link>
+          <Link
+            href="/context"
+            className="hidden transition-colors hover:text-foreground lg:inline"
+          >
+            Контекст
+          </Link>
+          <Link
             href="/#цены"
             className="hidden transition-colors hover:text-foreground sm:inline"
           >
@@ -52,3 +70,4 @@ export function SiteHeader() {
     </header>
   );
 }
+

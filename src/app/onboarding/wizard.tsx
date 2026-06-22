@@ -22,6 +22,7 @@ import {
   type IikoOrganizationOption,
 } from "./actions";
 import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
+import type { VenueContextAnswers } from "@/lib/venues/context-questionnaire";
 
 type VenueType = "restaurant" | "cafe" | "coffee" | "bar" | "chain" | "other";
 
@@ -52,6 +53,59 @@ function researchProviderLabel(
   }
   if (provider === "fallback") return "Анкета";
   return "Черновик профиля";
+}
+
+function defaultRevenueModel(type: VenueType): string[] {
+  if (type === "bar") return ["зал", "бар", "события"];
+  if (type === "coffee") return ["зал", "самовывоз"];
+  if (type === "chain") return ["зал", "доставка", "самовывоз"];
+  return ["зал", "бар", "доставка"];
+}
+
+function buildOnboardingContextAnswers({
+  type,
+  city,
+  ownerContext,
+  profile,
+}: {
+  type: VenueType;
+  city: string;
+  ownerContext: string;
+  profile: VenueIntelligenceProfile | null;
+}): VenueContextAnswers {
+  return {
+    format: profile?.format ?? `${type} · ${city || "город не указан"}`,
+    positioning: ownerContext || profile?.positioning || "",
+    audience: profile?.audience ?? [],
+    owner_goals: profile?.ownerGoals ?? [
+      "видеть действия на сегодня",
+      "сократить ручные отчеты",
+      "контролировать меню и маржу",
+    ],
+    revenue_model: defaultRevenueModel(type),
+    decision_metrics: [
+      "выручка",
+      "средний чек",
+      "топ блюд",
+      "категории",
+      "смены",
+    ],
+    team_roles: ["владелец", "управляющий", "шеф", "администратор"],
+    responsible_people:
+      "Владелец получает управленческий бриф, управляющий отвечает за смену, кухня за меню и стоп-лист.",
+    service_standards: profile?.decisionRules ?? [],
+    pos_system: "iiko",
+    channels: ["iiko", "Telegram", "ручные отчеты"],
+    integration_pains: profile?.operatingRisks ?? [],
+    ai_provider_policy: "пока не важно",
+    copilot_tone:
+      "Коротко, по делу, как операционный директор: факт, вывод, действие, недостающие данные.",
+    red_lines: [
+      "не делать кадровые выводы без проверки данных",
+      "не менять цены автоматически",
+      "не публиковать контент без подтверждения",
+    ],
+  };
 }
 
 export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
@@ -160,6 +214,12 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 researchStatus: "manual",
               }
             : undefined,
+        contextAnswers: buildOnboardingContextAnswers({
+          type,
+          city,
+          ownerContext,
+          profile: intelligenceProfile,
+        }),
         apiLogin,
         organizationId,
       });

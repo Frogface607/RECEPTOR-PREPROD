@@ -3,6 +3,10 @@ import {
   DEMO_RESTAURANT_INTELLIGENCE,
   type VenueIntelligenceProfile,
 } from "./intelligence";
+import {
+  DEMO_CONTEXT_ANSWERS,
+  type VenueContextAnswers,
+} from "./context-questionnaire";
 
 export type ResolvedVenue = {
   id: string;
@@ -11,6 +15,7 @@ export type ResolvedVenue = {
   type: "restaurant" | "cafe" | "coffee" | "bar" | "chain" | "other";
   timezone: string;
   intelligence: VenueIntelligenceProfile;
+  context: VenueContextAnswers;
   iiko: {
     channel: "cloud" | "rms";
     organizationId: string;
@@ -25,6 +30,7 @@ const SANDBOX_VENUE: ResolvedVenue = {
   type: "restaurant",
   timezone: SANDBOX_ORG.timezone ?? "Asia/Irkutsk",
   intelligence: DEMO_RESTAURANT_INTELLIGENCE,
+  context: DEMO_CONTEXT_ANSWERS,
   iiko: {
     channel: "cloud",
     organizationId: SANDBOX_ORG.id,

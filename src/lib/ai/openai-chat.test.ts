@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { runOpenAIChatTurn, isOpenAIChatConfigured } from "./openai-chat";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
+import { DEMO_CONTEXT_ANSWERS } from "@/lib/venues/context-questionnaire";
 
 const ORIGINAL_OPENAI_KEY = process.env.OPENAI_API_KEY;
 const ORIGINAL_OPENAI_MODEL = process.env.OPENAI_MODEL;
@@ -14,6 +15,7 @@ function input(message: string) {
     venueType: "bar",
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,
+    venueContext: DEMO_CONTEXT_ANSWERS,
     iikoClient: new MockIikoClient({ today: ANCHOR }),
   };
 }
@@ -79,6 +81,11 @@ describe("runOpenAIChatTurn", () => {
     const text = events.find((event) => event.type === "text");
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    const firstBody = JSON.parse(
+      String(fetchMock.mock.calls[0]?.[1]?.body),
+    ) as { instructions?: string };
+    expect(firstBody.instructions).toContain("Контекстная анкета ресторана");
+    expect(firstBody.instructions).toContain("POS/back-office: iiko");
     expect(tool?.tool).toBe("get_revenue");
     expect(text?.text).toContain("Выручка");
     expect(events.at(-1)?.type).toBe("done");

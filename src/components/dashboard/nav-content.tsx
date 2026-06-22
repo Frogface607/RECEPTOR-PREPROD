@@ -6,17 +6,20 @@ import {
   Settings,
   BookOpen,
   LogOut,
+  UsersRound,
+  type LucideIcon,
 } from "lucide-react";
 
 export type NavItem = {
   href: string;
-  icon: typeof LayoutDashboard;
+  icon: LucideIcon;
   label: string;
 };
 
 export const DASHBOARD_NAV: NavItem[] = [
   { href: "/dashboard/dev-venue", icon: LayoutDashboard, label: "BI кабинет" },
   { href: "/dashboard/dev-venue?chat=1", icon: MessageSquare, label: "Copilot" },
+  { href: "/team?role=owner", icon: UsersRound, label: "Team OS" },
   { href: "/tools", icon: Wrench, label: "Инструменты" },
   { href: "/settings", icon: Settings, label: "Настройки" },
   { href: "/#что-делает", icon: BookOpen, label: "Помощь" },

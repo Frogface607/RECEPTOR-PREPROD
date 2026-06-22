@@ -61,6 +61,7 @@ export async function POST(request: Request) {
           venueType: venue.type,
           venueCity: venue.city,
           venueProfile: venue.intelligence,
+          venueContext: venue.context,
           dataMode: iikoConfig.mode,
           iikoClient,
         };
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
             venueType: venue.type,
             venueCity: venue.city,
             venueProfile: venue.intelligence,
+            venueContext: venue.context,
             dataMode: iikoConfig.mode,
             iikoClient,
           })) {

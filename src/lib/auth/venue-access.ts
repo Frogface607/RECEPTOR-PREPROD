@@ -11,6 +11,7 @@ import { getServerSupabase } from "@/lib/db/server";
 import { decryptSecret } from "@/lib/db/encryption";
 import { getVenue, type ResolvedVenue } from "@/lib/venues/get-venue";
 import { normalizeVenueProfile } from "@/lib/venues/intelligence";
+import { normalizeContextAnswers } from "@/lib/venues/context-questionnaire";
 
 type VenueAccessOk = {
   ok: true;
@@ -33,6 +34,7 @@ type DbVenue = {
   type: ResolvedVenue["type"] | null;
   timezone: string | null;
   intelligence_profile?: unknown | null;
+  context_profile?: unknown | null;
 };
 
 type DbIikoCredential = {
@@ -53,6 +55,7 @@ function toResolvedVenue(
     type: venue.type ?? "other",
     timezone: venue.timezone ?? "Asia/Irkutsk",
     intelligence: normalizeVenueProfile(venue.intelligence_profile),
+    context: normalizeContextAnswers(venue.context_profile),
     iiko: {
       channel: credential?.channel ?? "cloud",
       organizationId: credential?.iiko_org_id ?? venue.id,
@@ -87,14 +90,14 @@ export async function getVenueAccess(venueId: string): Promise<VenueAccess> {
 
   let venueResult = await supabase
     .from("venues")
-    .select("id,name,city,type,timezone,intelligence_profile")
+    .select("id,name,city,type,timezone,intelligence_profile,context_profile")
     .eq("id", venueId)
     .eq("owner_user_id", user.id)
     .maybeSingle<DbVenue>();
 
   if (
     venueResult.error &&
-    /intelligence_profile/i.test(venueResult.error.message)
+    /(intelligence_profile|context_profile)/i.test(venueResult.error.message)
   ) {
     venueResult = await supabase
       .from("venues")

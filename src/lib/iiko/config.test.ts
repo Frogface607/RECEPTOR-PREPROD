@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { resolveIikoClientConfig, DEMO_ANCHOR } from "./config";
 import type { ResolvedVenue } from "@/lib/venues/get-venue";
+import { DEMO_CONTEXT_ANSWERS } from "@/lib/venues/context-questionnaire";
 import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 
 const venue: ResolvedVenue = {
@@ -10,6 +11,7 @@ const venue: ResolvedVenue = {
   type: "restaurant",
   timezone: "Asia/Irkutsk",
   intelligence: DEFAULT_VENUE_INTELLIGENCE,
+  context: DEMO_CONTEXT_ANSWERS,
   iiko: { channel: "cloud", organizationId: "sandbox-org" },
 };
 

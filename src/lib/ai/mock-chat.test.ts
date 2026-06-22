@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { runMockChatTurn } from "./mock-chat";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
+import { DEMO_CONTEXT_ANSWERS } from "@/lib/venues/context-questionnaire";
 
 const ANCHOR = "2026-05-29";
 
@@ -17,6 +18,7 @@ async function collect(message: string) {
     venueType: "Бар",
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,
+    venueContext: DEMO_CONTEXT_ANSWERS,
     iikoClient: client(),
   })) {
     events.push(ev);
@@ -70,6 +72,7 @@ describe("runMockChatTurn — routing", () => {
     expect(ev.some((e) => e.type === "tool")).toBe(false);
     const text = ev.find((e) => e.type === "text");
     expect(text?.text.toLowerCase()).toContain("спрос");
+    expect(text?.text).toContain("Контекст анкеты");
   });
 });
 

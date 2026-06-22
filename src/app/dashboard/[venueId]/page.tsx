@@ -6,6 +6,7 @@ import { DishesChart } from "@/components/dashboard/dishes-chart";
 import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
+import { OwnerCockpitCard } from "@/components/dashboard/owner-cockpit-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
 import { SurvivalBriefCard } from "@/components/dashboard/survival-brief-card";
@@ -48,6 +49,11 @@ export default async function DashboardPage({
   ]);
 
   const periodLabel = formatPeriodLabel(period);
+  const dataMode =
+    venue.iiko.apiLogin?.trim() ||
+    (process.env.USE_MOCK_IIKO === "false" && process.env.IIKO_API_LOGIN?.trim())
+      ? "live"
+      : "mock";
 
   return (
     <>
@@ -59,18 +65,27 @@ export default async function DashboardPage({
         <div key={periodLabel} className="contents">
           <div className="reveal reveal-1 mb-7">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-              Сводка · {periodLabel}
+              Owner Cockpit · {periodLabel}
             </p>
             <h2 className="mt-2 text-balance text-2xl font-medium leading-tight tracking-[-0.02em] sm:text-3xl">
-              Операционная картина зала
+              Утренний управленческий экран
             </h2>
             <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
-              Выручка, категории, блюда, смены и разбор для владельца за
-              выбранный период.
+              Сначала решение владельца: что происходит, где риск и что сделать
+              сегодня. Графики ниже — детализация.
             </p>
           </div>
 
           <div className="reveal reveal-2">
+            <OwnerCockpitCard
+              venue={venue}
+              brief={brief}
+              periodLabel={periodLabel}
+              dataMode={dataMode}
+            />
+          </div>
+
+          <div className="reveal reveal-2 mt-6">
             <KpiGrid
               revenue={summary.revenue}
               averageCheck={summary.averageCheck}
@@ -93,7 +108,10 @@ export default async function DashboardPage({
           </div>
 
           <div className="reveal reveal-3 mt-6">
-            <VenueIntelligenceCard profile={venue.intelligence} />
+            <VenueIntelligenceCard
+              profile={venue.intelligence}
+              context={venue.context}
+            />
           </div>
 
           <div className="reveal reveal-4 mt-6">

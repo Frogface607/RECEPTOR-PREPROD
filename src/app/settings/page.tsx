@@ -5,16 +5,20 @@ import {
   ArrowLeft,
   User,
   Store,
+  Brain,
   Plug,
   CreditCard,
   ScrollText,
   CheckCircle2,
   AlertCircle,
+  ArrowUpRight,
+  type LucideIcon,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
 import { listKnownVenues } from "@/lib/venues/get-venue";
+import { calculateContextCompletion } from "@/lib/venues/context-questionnaire";
 
 export const metadata: Metadata = {
   title: "Настройки — RECEPTOR",
@@ -28,34 +32,71 @@ type SettingsVenue = {
   city: string;
   type: string;
   iikoConnected: boolean;
+  contextRequiredPercentage: number;
+  contextMissingRequired: number;
 };
 
 async function listSettingsVenues(): Promise<SettingsVenue[]> {
   const user = await getCurrentUser();
   if (!user || user.isDemo) {
-    return listKnownVenues().map((venue) => ({
-      id: venue.id,
-      name: venue.name,
-      city: venue.city,
-      type: venue.type,
-      iikoConnected: Boolean(venue.iiko.apiLogin),
-    }));
+    return listKnownVenues().map((venue) => {
+      const completion = calculateContextCompletion(venue.context);
+
+      return {
+        id: venue.id,
+        name: venue.name,
+        city: venue.city,
+        type: venue.type,
+        iikoConnected: Boolean(venue.iiko.apiLogin),
+        contextRequiredPercentage: completion.requiredPercentage,
+        contextMissingRequired: completion.missingRequired.length,
+      };
+    });
   }
 
   const supabase = await getServerSupabase();
   if (!supabase) return [];
 
-  const { data: venues } = await supabase
+  const venuesResult = await supabase
     .from("venues")
-    .select("id,name,city,type")
+    .select("id,name,city,type,context_profile")
     .eq("owner_user_id", user.id)
     .order("created_at", { ascending: false });
+
+  let venues = venuesResult.data as
+    | Array<{
+        id: string;
+        name: string;
+        city: string | null;
+        type: string | null;
+        context_profile?: unknown | null;
+      }>
+    | null;
+
+  if (venuesResult.error && /context_profile/i.test(venuesResult.error.message)) {
+    const fallbackResult = await supabase
+      .from("venues")
+      .select("id,name,city,type")
+      .eq("owner_user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    venues = fallbackResult.data as
+      | Array<{
+          id: string;
+          name: string;
+          city: string | null;
+          type: string | null;
+          context_profile?: unknown | null;
+        }>
+      | null;
+  }
 
   const rows = (venues ?? []) as Array<{
     id: string;
     name: string;
     city: string | null;
     type: string | null;
+    context_profile?: unknown | null;
   }>;
 
   const ids = rows.map((venue) => venue.id);
@@ -70,13 +111,19 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
     ((creds ?? []) as Array<{ venue_id: string }>).map((cred) => cred.venue_id),
   );
 
-  return rows.map((venue) => ({
-    id: venue.id,
-    name: venue.name,
-    city: venue.city ?? "",
-    type: venue.type ?? "other",
-    iikoConnected: connected.has(venue.id),
-  }));
+  return rows.map((venue) => {
+    const completion = calculateContextCompletion(venue.context_profile);
+
+    return {
+      id: venue.id,
+      name: venue.name,
+      city: venue.city ?? "",
+      type: venue.type ?? "other",
+      iikoConnected: connected.has(venue.id),
+      contextRequiredPercentage: completion.requiredPercentage,
+      contextMissingRequired: completion.missingRequired.length,
+    };
+  });
 }
 
 export default async function SettingsPage() {
@@ -149,6 +196,7 @@ export default async function SettingsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
+                      <ContextStatus venue={venue} />
                       {venue.iikoConnected ? (
                         <span className="hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-brand sm:inline-flex">
                           <CheckCircle2 className="size-3.5" />
@@ -180,6 +228,49 @@ export default async function SettingsPage() {
             >
               + Добавить заведение
             </Link>
+          </Section>
+
+          <Section icon={Brain} title="Context Engine">
+            <div className="space-y-3">
+              <p className="text-[13px] leading-relaxed text-muted-foreground">
+                Анкета заведения даёт Copilot постоянный контекст: формат,
+                экономику, команду, интеграции и правила работы с AI.
+              </p>
+              {venues.length > 0 ? (
+                <div className="space-y-2">
+                  {venues.map((venue) => (
+                    <div
+                      key={venue.id}
+                      className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3"
+                    >
+                      <div>
+                        <p className="text-[14px] font-medium text-foreground">
+                          {venue.name}
+                        </p>
+                        <p className="text-[12px] text-muted-foreground">
+                          Обязательный контекст заполнен на{" "}
+                          {venue.contextRequiredPercentage}%.
+                          {venue.contextMissingRequired > 0
+                            ? ` Осталось полей: ${venue.contextMissingRequired}.`
+                            : " Готово для пилота."}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/context?venueId=${encodeURIComponent(venue.id)}`}
+                        className="inline-flex items-center gap-1.5 text-[13px] text-brand underline-offset-4 hover:underline"
+                      >
+                        Анкета
+                        <ArrowUpRight className="size-3.5" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[13px] text-muted-foreground">
+                  Добавьте заведение, чтобы собрать его операционный контекст.
+                </p>
+              )}
+            </div>
           </Section>
 
           <Section icon={Plug} title="Подключение iiko">
@@ -236,12 +327,34 @@ export default async function SettingsPage() {
   );
 }
 
+function ContextStatus({ venue }: { venue: SettingsVenue }) {
+  const ready = venue.contextRequiredPercentage >= 100;
+
+  return (
+    <Link
+      href={`/context?venueId=${encodeURIComponent(venue.id)}`}
+      className={
+        ready
+          ? "hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-brand sm:inline-flex"
+          : "hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-[color:var(--pro)] sm:inline-flex"
+      }
+    >
+      {ready ? (
+        <CheckCircle2 className="size-3.5" />
+      ) : (
+        <AlertCircle className="size-3.5" />
+      )}
+      Context {venue.contextRequiredPercentage}%
+    </Link>
+  );
+}
+
 function Section({
   icon: Icon,
   title,
   children,
 }: {
-  icon: typeof User;
+  icon: LucideIcon;
   title: string;
   children: React.ReactNode;
 }) {

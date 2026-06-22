@@ -1,11 +1,19 @@
 import { Brain, Target, TriangleAlert } from "lucide-react";
 import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
+import {
+  calculateContextCompletion,
+  type VenueContextAnswers,
+} from "@/lib/venues/context-questionnaire";
 
 export function VenueIntelligenceCard({
   profile,
+  context,
 }: {
   profile: VenueIntelligenceProfile;
+  context?: VenueContextAnswers;
 }) {
+  const contextCompletion = calculateContextCompletion(context ?? {});
+
   return (
     <section className="rounded-xl border border-border/60 bg-card/50 p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -25,13 +33,18 @@ export function VenueIntelligenceCard({
             </p>
           </div>
         </div>
-        <span className="rounded-lg border border-border/60 bg-background/45 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          {profile.researchStatus === "researched"
-            ? "Deep Research"
-            : profile.researchStatus === "manual"
-              ? "Настроено вручную"
-              : "Демо-профиль"}
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-lg border border-border/60 bg-background/45 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            {profile.researchStatus === "researched"
+              ? "Deep Research"
+              : profile.researchStatus === "manual"
+                ? "Настроено вручную"
+                : "Демо-профиль"}
+          </span>
+          <span className="rounded-lg border border-brand/30 bg-brand/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
+            Context {contextCompletion.requiredPercentage}%
+          </span>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-3">
