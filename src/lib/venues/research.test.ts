@@ -34,7 +34,8 @@ describe("researchVenue", () => {
       json: async () => ({
         output_text: JSON.stringify({
           format: "ресторан",
-          positioning: "Ресторан с авторской кухней и сильной вечерней посадкой.",
+          positioning:
+            "Ресторан с авторской кухней и сильной вечерней посадкой.",
           audience: ["гости на ужин"],
           strengths: ["сильная кухня"],
           guestPains: ["ожидание"],
@@ -49,7 +50,7 @@ describe("researchVenue", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await researchVenue({
-      name: "Премьера",
+      name: "Demo Bistro",
       city: "Иркутск",
       type: "restaurant",
     });

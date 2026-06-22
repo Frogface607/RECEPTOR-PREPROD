@@ -172,7 +172,7 @@ describe("CloudIikoClient.listOrganizations", () => {
         url: "organizations",
         data: {
           organizations: [
-            { id: "org-1", name: "Pilot Group" },
+            { id: "org-1", name: "Demo Group" },
             { id: "org-2", name: "Second Venue" },
           ],
         },
@@ -186,7 +186,7 @@ describe("CloudIikoClient.listOrganizations", () => {
     });
 
     await expect(client.listOrganizations()).resolves.toEqual([
-      { id: "org-1", name: "Pilot Group" },
+      { id: "org-1", name: "Demo Group" },
       { id: "org-2", name: "Second Venue" },
     ]);
     expect(calls[1].url).toContain("/api/1/organizations");

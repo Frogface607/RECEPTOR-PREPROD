@@ -1,4 +1,4 @@
-﻿export type ProductModuleId =
+export type ProductModuleId =
   | "owner_cockpit"
   | "context_engine"
   | "menu_os"
@@ -8,7 +8,7 @@
   | "marketing_os"
   | "integration_pack";
 
-export type ProductModulePhase = "pilot" | "saas" | "scale";
+export type ProductModulePhase = "core" | "operations" | "scale";
 
 export type ProductModule = {
   id: ProductModuleId;
@@ -18,40 +18,40 @@ export type ProductModule = {
   includes: string[];
   source: "receptor" | "edison" | "new";
   phase: ProductModulePhase;
-  pilotPriority: number;
+  displayOrder: number;
 };
 
-export type PilotReadinessState =
-  | "mock"
-  | "waiting_key"
+export type IntegrationReadinessState =
+  | "demo"
+  | "waiting_credentials"
   | "connected"
   | "error";
 
-export type PilotReadinessTone = "ready" | "active" | "waiting" | "error";
+export type IntegrationReadinessTone = "ready" | "active" | "waiting" | "error";
 
-export type PilotCommandCheck = {
+export type IntegrationReadinessCheck = {
   label: string;
   status: "done" | "next" | "waiting" | "blocked";
   detail: string;
 };
 
-export type PilotCommandState = {
-  id: PilotReadinessState;
+export type IntegrationReadinessCard = {
+  id: IntegrationReadinessState;
   label: string;
   statusLabel: string;
-  tone: PilotReadinessTone;
+  tone: IntegrationReadinessTone;
   score: number;
   title: string;
   summary: string;
   ownerMessage: string;
   primaryAction: string;
   secondaryAction: string;
-  checks: PilotCommandCheck[];
+  checks: IntegrationReadinessCheck[];
 };
 
-export type PilotReadinessInput = {
-  liveTargetSelected?: boolean;
-  targetHasIikoKey?: boolean;
+export type IntegrationReadinessInput = {
+  liveVenueSelected?: boolean;
+  hasIikoCredentials?: boolean;
   iikoConnected?: boolean;
   hasConnectionError?: boolean;
 };
@@ -70,8 +70,8 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
       "weekly strategic report",
     ],
     source: "receptor",
-    phase: "pilot",
-    pilotPriority: 1,
+    phase: "core",
+    displayOrder: 1,
   },
   {
     id: "context_engine",
@@ -86,8 +86,8 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
       "AI/data policy",
     ],
     source: "receptor",
-    phase: "pilot",
-    pilotPriority: 2,
+    phase: "core",
+    displayOrder: 2,
   },
   {
     id: "menu_os",
@@ -103,31 +103,31 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
       "iiko article mapping",
     ],
     source: "receptor",
-    phase: "pilot",
-    pilotPriority: 3,
+    phase: "core",
+    displayOrder: 3,
   },
   {
     id: "team_os",
     title: "Team OS",
     shortTitle: "Team",
-    promise: "Roles, access, shifts, knowledge base, tests and team messages.",
+    promise: "Roles, access, shifts, knowledge base, tasks and team messages.",
     includes: [
       "staff roles",
       "permissions",
       "shift schedule",
       "knowledge base",
-      "quizzes and leaderboard",
+      "tasks",
       "team messages",
     ],
     source: "edison",
-    phase: "saas",
-    pilotPriority: 4,
+    phase: "operations",
+    displayOrder: 4,
   },
   {
     id: "guest_os",
     title: "Guest OS",
     shortTitle: "Guests",
-    promise: "Bookings, waitlist, guest cabinet and web/Telegram conversation history.",
+    promise: "Bookings, waitlist, guest cabinet and web conversation history.",
     includes: [
       "bookings",
       "waitlist",
@@ -136,8 +136,8 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
       "web chat",
     ],
     source: "edison",
-    phase: "saas",
-    pilotPriority: 6,
+    phase: "operations",
+    displayOrder: 6,
   },
   {
     id: "delivery_os",
@@ -152,8 +152,8 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
       "kitchen/admin workflow",
     ],
     source: "edison",
-    phase: "saas",
-    pilotPriority: 7,
+    phase: "operations",
+    displayOrder: 7,
   },
   {
     id: "marketing_os",
@@ -168,8 +168,8 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
       "Telegram/VK posting",
     ],
     source: "edison",
-    phase: "saas",
-    pilotPriority: 8,
+    phase: "operations",
+    displayOrder: 8,
   },
   {
     id: "integration_pack",
@@ -185,84 +185,87 @@ export const RESTAURANT_OS_MODULES: ProductModule[] = [
     ],
     source: "new",
     phase: "scale",
-    pilotPriority: 5,
+    displayOrder: 5,
   },
 ];
 
-export const PILOT_BUNDLE_MODULE_IDS: ProductModuleId[] = [
+export const FOUNDATION_MODULE_IDS: ProductModuleId[] = [
   "owner_cockpit",
   "context_engine",
   "menu_os",
   "integration_pack",
 ];
 
-export const PILOT_COMMAND_STATE_ORDER: PilotReadinessState[] = [
-  "mock",
-  "waiting_key",
+export const INTEGRATION_READINESS_STATE_ORDER: IntegrationReadinessState[] = [
+  "demo",
+  "waiting_credentials",
   "connected",
   "error",
 ];
 
-export const PILOT_COMMAND_STATES: Record<PilotReadinessState, PilotCommandState> = {
-  mock: {
-    id: "mock",
-    label: "Mock demo",
+export const INTEGRATION_READINESS_STATES: Record<
+  IntegrationReadinessState,
+  IntegrationReadinessCard
+> = {
+  demo: {
+    id: "demo",
+    label: "Demo workspace",
     statusLabel: "Ready",
     tone: "ready",
-    score: 72,
-    title: "Demo cockpit can be shown today.",
+    score: 74,
+    title: "Workspace can be shown today.",
     summary:
-      "Receptor runs on deterministic iiko fixtures, context answers and owner-grade copy. This is enough for a sales demo while live access is pending.",
+      "Receptor can run on demo data, venue context and product modules. This is enough to show the operating system before live integrations are connected.",
     ownerMessage:
-      "We can show the operating rhythm now: morning facts, interpretation, actions and module plan.",
+      "The restaurant sees the daily rhythm first: facts, interpretation, actions and responsible roles.",
     primaryAction: "Open demo cockpit",
-    secondaryAction: "Collect venue context",
+    secondaryAction: "Complete venue context",
     checks: [
       {
-        label: "Receptor core",
+        label: "Restaurant OS core",
         status: "done",
-        detail: "BI, Copilot, Daily Brief and menu tools are available in code.",
+        detail: "Owner Cockpit, Context Engine, Menu OS and Team OS are available.",
       },
       {
-        label: "Context Engine",
+        label: "Venue context",
         status: "done",
-        detail: "Demo context is complete enough for owner-facing answers.",
+        detail: "The questionnaire creates memory for dashboards, briefs and Copilot answers.",
       },
       {
-        label: "Live iiko data",
+        label: "Live data",
         status: "waiting",
-        detail: "Switch from mock after apiLogin and organization validation.",
+        detail: "Switch from demo to live after iiko credentials and organization validation.",
       },
     ],
   },
-  waiting_key: {
-    id: "waiting_key",
-    label: "Waiting for iiko key",
-    statusLabel: "Blocked by client key",
+  waiting_credentials: {
+    id: "waiting_credentials",
+    label: "Waiting for credentials",
+    statusLabel: "Setup",
     tone: "active",
-    score: 64,
-    title: "Pilot is ready for the key handoff.",
+    score: 66,
+    title: "Product workspace is ready for live credentials.",
     summary:
-      "The product shell is ready. The only hard dependency for the first live brief is Mikhno's apiLogin or a technical contact who can create one.",
+      "The SaaS shell is ready. Live reports require iiko credentials or a technical user with the right organization access.",
     ownerMessage:
-      "Today we prepare the cockpit, context and offer. Tomorrow the key swaps demo facts for live facts.",
-    primaryAction: "Request apiLogin",
-    secondaryAction: "Send iiko sandbox request",
+      "We prepare the cockpit, context and module set first. Credentials turn the same workspace into live operations.",
+    primaryAction: "Add iiko credentials",
+    secondaryAction: "Request sandbox access",
     checks: [
       {
-        label: "Sales shell",
+        label: "Workspace",
         status: "done",
-        detail: "Pilot offer, modules and pricing are packaged as Restaurant OS.",
+        detail: "Core modules and pricing are packaged as Restaurant OS.",
       },
       {
-        label: "Mikhno apiLogin",
+        label: "iiko credentials",
         status: "blocked",
         detail: "Need Cloud apiLogin or a responsible technical contact.",
       },
       {
-        label: "iiko sandbox",
+        label: "Integration path",
         status: "next",
-        detail: "Ask iiko for developer sandbox and Connector/Solution route.",
+        detail: "Use sandbox access for testing and live access for customer data.",
       },
     ],
   },
@@ -272,9 +275,9 @@ export const PILOT_COMMAND_STATES: Record<PilotReadinessState, PilotCommandState
     statusLabel: "Live",
     tone: "ready",
     score: 91,
-    title: "Live pilot can produce the first Morning Brief.",
+    title: "Live workspace can produce the first Morning Brief.",
     summary:
-      "Credentials are stored, organization is selected and the dashboard can read live sales/menu data for a controlled first venue.",
+      "Credentials are stored, organization is selected and the dashboard can read live sales/menu data for the restaurant.",
     ownerMessage:
       "Now the work shifts from setup to verification: compare numbers with iiko and send the first brief.",
     primaryAction: "Generate live brief",
@@ -288,12 +291,12 @@ export const PILOT_COMMAND_STATES: Record<PilotReadinessState, PilotCommandState
       {
         label: "Data verification",
         status: "next",
-        detail: "Compare yesterday revenue, checks and top dishes with iiko UI.",
+        detail: "Compare revenue, checks and top dishes with iiko UI.",
       },
       {
-        label: "Pilot report",
+        label: "Operating cadence",
         status: "next",
-        detail: "Start collecting before/after evidence for the sales case.",
+        detail: "Assign daily actions to owner, manager, kitchen and marketing.",
       },
     ],
   },
@@ -303,18 +306,18 @@ export const PILOT_COMMAND_STATES: Record<PilotReadinessState, PilotCommandState
     statusLabel: "Needs fix",
     tone: "error",
     score: 38,
-    title: "Live path is failing, demo path stays usable.",
+    title: "Live integration needs attention, demo workspace stays available.",
     summary:
-      "A failed iiko call must not kill the pilot. Keep the mock cockpit available, show the exact failure and fix credentials/scopes separately.",
+      "A failed iiko call must not break the product experience. Keep demo data available, show the exact failure and fix credentials/scopes separately.",
     ownerMessage:
-      "The client should still see the operating workflow while we isolate the integration issue.",
+      "The restaurant should still see the operating workflow while the integration issue is isolated.",
     primaryAction: "Inspect iiko error",
-    secondaryAction: "Fallback to mock",
+    secondaryAction: "Fallback to demo",
     checks: [
       {
-        label: "Client demo",
+        label: "Product demo",
         status: "done",
-        detail: "Mock mode remains available for the sales conversation.",
+        detail: "Demo mode remains available for product onboarding.",
       },
       {
         label: "Credentials or scopes",
@@ -336,31 +339,33 @@ export function getProductModule(id: ProductModuleId): ProductModule {
   return productModule;
 }
 
-export function listPilotBundleModules(): ProductModule[] {
-  return PILOT_BUNDLE_MODULE_IDS.map(getProductModule);
+export function listFoundationModules(): ProductModule[] {
+  return FOUNDATION_MODULE_IDS.map(getProductModule);
 }
 
 export function listModulesByPhase(phase: ProductModulePhase): ProductModule[] {
   return RESTAURANT_OS_MODULES.filter((item) => item.phase === phase).sort(
-    (a, b) => a.pilotPriority - b.pilotPriority,
+    (a, b) => a.displayOrder - b.displayOrder,
   );
 }
 
-export function getPilotCommandState(
-  state: PilotReadinessState,
-): PilotCommandState {
-  return PILOT_COMMAND_STATES[state];
+export function getIntegrationReadinessState(
+  state: IntegrationReadinessState,
+): IntegrationReadinessCard {
+  return INTEGRATION_READINESS_STATES[state];
 }
 
-export function listPilotCommandStates(): PilotCommandState[] {
-  return PILOT_COMMAND_STATE_ORDER.map(getPilotCommandState);
+export function listIntegrationReadinessStates(): IntegrationReadinessCard[] {
+  return INTEGRATION_READINESS_STATE_ORDER.map(getIntegrationReadinessState);
 }
 
-export function resolvePilotReadinessState(
-  input: PilotReadinessInput,
-): PilotReadinessState {
+export function resolveIntegrationReadinessState(
+  input: IntegrationReadinessInput,
+): IntegrationReadinessState {
   if (input.hasConnectionError) return "error";
   if (input.iikoConnected) return "connected";
-  if (input.liveTargetSelected && !input.targetHasIikoKey) return "waiting_key";
-  return "mock";
+  if (input.liveVenueSelected && !input.hasIikoCredentials) {
+    return "waiting_credentials";
+  }
+  return "demo";
 }

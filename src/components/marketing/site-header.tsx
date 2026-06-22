@@ -16,7 +16,7 @@ export function SiteHeader() {
 
         <nav className="ml-auto flex items-center gap-5 text-sm text-muted-foreground sm:gap-7">
           <Link
-            href="/#что-делает"
+            href="/#features"
             className="hidden transition-colors hover:text-foreground md:inline"
           >
             Что делает
@@ -28,10 +28,10 @@ export function SiteHeader() {
             Инструменты
           </Link>
           <Link
-            href="/pilot"
+            href="/platform"
             className="hidden transition-colors hover:text-foreground md:inline"
           >
-            Пилот
+            Платформа
           </Link>
           <Link
             href="/team"
@@ -46,7 +46,7 @@ export function SiteHeader() {
             Контекст
           </Link>
           <Link
-            href="/#цены"
+            href="/#pricing"
             className="hidden transition-colors hover:text-foreground sm:inline"
           >
             Цены

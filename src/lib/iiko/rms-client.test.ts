@@ -4,7 +4,7 @@ import { RmsIikoClient } from "./rms-client";
 /**
  * RMS Server port is deferred to Phase 1.5. RMS is only used by chain
  * restaurants under one corporate iiko Office.
- * We have zero chain pilots in the pipeline, so porting OLAP-on-RMS is
+ * We have zero chain deployments in the pipeline, so porting OLAP-on-RMS is
  * effort-without-customer.
  *
  * For Phase 1 we expose the surface (the class exists, methods exist with

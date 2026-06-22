@@ -43,16 +43,16 @@ export function LiveSnapshot() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <p className="text-xs uppercase tracking-[0.22em] text-brand">
-              02 · Что вы видите
+              02 · Рабочий кабинет
             </p>
-            <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              BI, который выглядит как рабочий кабинет.
+            <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] sm:text-[44px]">
+              BI, который выглядит как система управления.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            Сейчас это пример структуры кабинета. На пилоте этот же экран
-            подключается к iiko и показывает реальные продажи ресторана без
-            Excel и ручных выгрузок.
+            Один экран показывает продажи, меню, смены, риски и действия.
+            Ресторану не нужно собирать отчеты вручную, чтобы понять, где
+            сегодня требуется внимание.
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export function LiveSnapshot() {
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 {k.label}
               </p>
-              <p className="text-[30px] font-medium leading-none tracking-[-0.01em] text-foreground">
+              <p className="text-[30px] font-medium leading-none text-foreground">
                 {k.value}
               </p>
               <p className="text-[12px] text-muted-foreground">{k.note}</p>
@@ -105,12 +105,12 @@ export function LiveSnapshot() {
 
           <article className="rounded-xl border border-border/60 bg-card/55 p-8">
             <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
-              Что Receptor отвечает
+              Что отвечает Receptor
             </p>
-            <blockquote className="mt-6 text-[22px] font-medium leading-[1.35] tracking-[-0.01em] text-foreground">
+            <blockquote className="mt-6 text-[22px] font-medium leading-[1.35] text-foreground">
               «Я не просто покажу выручку. Я подсвечу, где теряется маржа,
               какая смена требует разбора и какие позиции надо связать с
-              техкартами, чтобы управлять меню как системой.»
+              техкартами, чтобы управлять меню как системой».
             </blockquote>
             <p className="mt-5 text-[13px] uppercase tracking-[0.16em] text-muted-foreground">
               AI copilot · tool-calls к iiko OLAP

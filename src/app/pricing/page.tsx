@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import {
   ArrowRight,
   BadgeCheck,
-  BadgePercent,
   BookOpenCheck,
   BrainCircuit,
   Check,
@@ -14,12 +13,12 @@ import {
   UtensilsCrossed,
   UsersRound,
 } from "lucide-react";
-import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/site-footer";
+import { SiteHeader } from "@/components/marketing/site-header";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/link-button";
 import {
-  listPilotBundleModules,
+  listFoundationModules,
   RESTAURANT_OS_MODULES,
   type ProductModuleId,
 } from "@/lib/product/modules";
@@ -27,21 +26,21 @@ import {
 export const metadata: Metadata = {
   title: "Тарифы Receptor Restaurant OS — RECEPTOR",
   description:
-    "Модульная подписка на операционную систему управления рестораном: Owner Cockpit, Context Engine, Menu OS, Team OS, Guest OS и интеграции.",
+    "Модульная подписка на операционную систему управления рестораном: Owner Cockpit, Context Engine, Menu OS, Team OS и интеграции.",
 };
 
 const TIERS = [
   {
     name: "Starter",
     price: "9 900",
-    period: "₽ / месяц",
-    blurb: "Один ресторан, утренний контур владельца и базовая память заведения.",
+    period: "руб. / месяц",
+    blurb: "Один ресторан, управленческий cockpit и базовая память заведения.",
     cta: { label: "Начать со Starter", href: "/auth?plan=starter" },
     modules: ["Owner Cockpit", "Context Engine", "Menu OS starter"],
     features: [
       "1 заведение",
       "Daily Brief и KPI по iiko",
-      "Context Engine для Copilot",
+      "Context Engine для AI-помощника",
       "Базовые инструменты меню",
       "До 50 AI-сообщений в день",
       "CSV-экспорт ключевых отчетов",
@@ -51,7 +50,7 @@ const TIERS = [
   {
     name: "Pro OS",
     price: "24 900",
-    period: "₽ / месяц",
+    period: "руб. / месяц",
     blurb: "Рабочий слой для владельца, управляющего, кухни и маркетинга.",
     cta: { label: "Выбрать Pro OS", href: "/auth?plan=pro-os" },
     modules: ["Owner Cockpit", "Menu OS", "Team OS", "Integrations"],
@@ -61,7 +60,7 @@ const TIERS = [
       "Menu OS: QR, food cost, техкарты",
       "Team OS: роли, доступы, задачи",
       "До 200 AI-сообщений в день",
-      "Telegram/web уведомления",
+      "Web-уведомления и командные сценарии",
     ],
     accent: "brand" as const,
     badge: "Основной SaaS",
@@ -69,7 +68,7 @@ const TIERS = [
   {
     name: "Group",
     price: "от 59 000",
-    period: "₽ / месяц",
+    period: "руб. / месяц",
     blurb: "Холдинги, несколько брендов, кастомные роли и отдельный контур данных.",
     cta: {
       label: "Обсудить Group",
@@ -79,9 +78,9 @@ const TIERS = [
     features: [
       "Любое число заведений",
       "Сравнение точек и брендов",
-      "White-label и внутренний домен",
+      "White-label и собственный домен",
       "Расширенные роли и права",
-      "YandexGPT/GigaChat/Qwen режим по требованию",
+      "YandexGPT/GigaChat/Qwen по требованию",
       "Выделенная настройка и поддержка",
     ],
     accent: "pro" as const,
@@ -93,7 +92,7 @@ const COMPARISON_ROWS = [
   { label: "Context Engine", values: ["базовый", "полный", "по холдингу"] },
   { label: "Owner Cockpit", values: ["1 точка", "точки + недели", "холдинг"] },
   { label: "Menu OS", values: ["starter", "полный", "кастом"] },
-  { label: "Team OS", values: ["—", "роли + задачи", "расширенный"] },
+  { label: "Team OS", values: ["-", "роли + задачи", "расширенный"] },
   { label: "Guest/Delivery/Marketing OS", values: ["аддоны", "аддоны", "в сборке"] },
   { label: "AI-сообщений / день", values: ["50", "200", "индивидуально"] },
   { label: "AI provider mode", values: ["OpenAI/OpenRouter", "на выбор", "частный контур"] },
@@ -104,12 +103,12 @@ const FAQ = [
   {
     q: "Это BI, CRM или ChatGPT-обертка?",
     a:
-      "Нет. BI и Copilot входят в ядро, но продукт шире: Receptor хранит контекст ресторана, читает операционные данные, раскладывает роли и превращает цифры в действия для команды.",
+      "Нет. BI и AI входят в ядро, но продукт шире: Receptor хранит контекст ресторана, читает операционные данные, раскладывает роли и превращает цифры в действия для команды.",
   },
   {
-    q: "Что если iiko-ключа пока нет?",
+    q: "Можно ли начать без iiko-ключа?",
     a:
-      "Можно начать с демо и Context Engine. Когда apiLogin появится, подключаем live-данные, сверяем цифры с iiko и включаем Morning Brief на реальной точке.",
+      "Да. Можно собрать контекст, настроить роли и показать кабинет на demo-данных. После подключения iiko те же экраны переходят на live-цифры.",
   },
   {
     q: "Можно ли работать без OpenAI?",
@@ -117,14 +116,14 @@ const FAQ = [
       "Да. Архитектура идет через AI provider adapter: OpenAI/OpenRouter для качества и разработки, YandexGPT/GigaChat/Qwen или частный режим для клиентов с ограничениями по данным.",
   },
   {
-    q: "Зачем отдельный paid pilot?",
+    q: "Что входит во внедрение?",
     a:
-      "Пилот нужен, чтобы не продавать абстрактную платформу. За две недели мы подключаем одну точку, собираем контекст, показываем первые управленческие решения и фиксируем конфигурацию подписки.",
+      "Подключение данных, настройка Context Engine, роли команды, первый Morning Brief, проверка цифр и подбор модулей под конкретный ресторан или сеть.",
   },
   {
-    q: "Как здесь появляется iiko Marketplace?",
+    q: "Как подключается iiko Marketplace?",
     a:
-      "После первых пилотов: нужны кейсы, понятная поддержка, sandbox, требования к интеграции и партнерская экономика. Marketplace должен усиливать продажи, а не заменять прямой запуск.",
+      "Marketplace имеет смысл как канал масштабирования после стабильной интеграции, поддержки и понятной экономики. Продукт остается самостоятельным SaaS, а не разовой кастомной разработкой.",
   },
 ] as const;
 
@@ -139,7 +138,7 @@ const moduleIconMap: Record<ProductModuleId, typeof BrainCircuit> = {
   integration_pack: Plug,
 };
 
-const pilotModules = listPilotBundleModules();
+const foundationModules = listFoundationModules();
 
 function cardClass(accent: (typeof TIERS)[number]["accent"]): string {
   if (accent === "brand") return "border-brand/55 bg-card";
@@ -163,13 +162,13 @@ export default function PricingPage() {
               </h1>
               <p className="mt-8 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
                 Операционная система управления рестораном: данные из iiko,
-                память заведения, Copilot, меню, команда, гости и модули под
-                конкретную боль.
+                память заведения, AI-помощник, меню, команда, гости и модули
+                под конкретную задачу.
               </p>
             </div>
 
             <div className="mt-10 grid gap-3 md:grid-cols-4">
-              {pilotModules.map((module) => {
+              {foundationModules.map((module) => {
                 const Icon = moduleIconMap[module.id];
                 return (
                   <div
@@ -283,15 +282,15 @@ export default function PricingPage() {
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Paid pilot
+                Внедрение
               </p>
               <h2 className="mt-4 text-4xl font-medium leading-tight">
-                Вход через две недели реальной операционной пользы.
+                Запуск начинается с одного рабочего контура.
               </h2>
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                Для первых клиентов не продаем “всю платформу”. Подключаем одну
-                точку, собираем контекст, включаем Morning Brief и фиксируем,
-                какой модуль нужен следующим.
+                Подключаем одну точку или группу, собираем контекст, включаем
+                Morning Brief и фиксируем набор модулей, который реально нужен
+                команде. Это setup к подписке, а не отдельный закрытый проект.
               </p>
             </div>
 
@@ -299,26 +298,26 @@ export default function PricingPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <Badge variant="outline" className="border-brand/35 text-brand">
-                    Первые 3 клиента
+                    Setup
                   </Badge>
                   <h3 className="mt-4 text-2xl font-medium">
-                    Pilot setup + 2 недели запуска
+                    Настройка + 2 недели сопровождения
                   </h3>
                 </div>
-                <BadgePercent className="size-6 text-brand" />
+                <BadgeCheck className="size-6 text-brand" />
               </div>
               <p className="numeric mt-7 text-5xl font-medium text-brand">
-                19 900 ₽
+                39 000 руб.
               </p>
               <p className="mt-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-                засчитывается в первый месяц Pro OS
+                опционально к любому тарифу
               </p>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {[
-                  "iiko live/mock контур",
+                  "iiko live/demo контур",
                   "контекстная анкета заведения",
                   "первый Morning Brief",
-                  "план модулей под команду",
+                  "модульный план подписки",
                 ].map((item) => (
                   <div key={item} className="flex gap-3 text-sm">
                     <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
@@ -327,12 +326,12 @@ export default function PricingPage() {
                 ))}
               </div>
               <LinkButton
-                href="mailto:bro@frogface.space?subject=Receptor%20pilot"
+                href="mailto:bro@frogface.space?subject=Receptor%20setup"
                 size="default"
                 external
                 className="mt-7 bg-brand text-primary-foreground hover:bg-brand-hover"
               >
-                Запустить пилот
+                Обсудить внедрение
                 <ArrowRight className="ml-1 size-4" />
               </LinkButton>
             </article>
@@ -349,8 +348,8 @@ export default function PricingPage() {
                 Подписка собирается как операционный конструктор.
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Ядро одно: данные, контекст, роли и Copilot. Дальше подключаются
-                модули, которые реально нужны конкретному ресторану или холдингу.
+                Ядро одно: данные, контекст, роли и AI. Дальше подключаются
+                модули, которые нужны конкретному ресторану или холдингу.
               </p>
             </div>
 
@@ -464,7 +463,7 @@ export default function PricingPage() {
         <section className="bg-background">
           <div className="mx-auto max-w-4xl px-6 py-20 text-center">
             <h2 className="text-balance text-4xl font-medium leading-tight sm:text-5xl">
-              Начинать надо с одного заведения и одного утреннего решения.
+              Начать нужно с одного заведения и одного утреннего решения.
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-[16px] leading-relaxed text-muted-foreground">
               Подключаем данные, собираем контекст, показываем действие на
@@ -473,21 +472,21 @@ export default function PricingPage() {
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
               <LinkButton
-                href="mailto:bro@frogface.space?subject=Receptor%20pilot"
+                href="mailto:bro@frogface.space?subject=Receptor%20setup"
                 size="lg"
                 external
                 className="h-12 bg-brand px-6 text-base text-primary-foreground hover:bg-brand-hover"
               >
-                Обсудить пилот
+                Обсудить внедрение
                 <ArrowRight className="ml-1 size-4" />
               </LinkButton>
               <LinkButton
-                href="/pilot"
+                href="/platform"
                 size="lg"
                 variant="outline"
                 className="h-12 px-6 text-base"
               >
-                Открыть план запуска
+                Открыть платформу
               </LinkButton>
             </div>
           </div>

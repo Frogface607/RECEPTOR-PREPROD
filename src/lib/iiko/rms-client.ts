@@ -3,7 +3,7 @@
  *
  * RMS (`/resto/api/...` endpoints on a venue-hosted `*.iiko.it` server) is
  * used by chain restaurants that run their own iiko Office. We have no
- * chain pilots in the pipeline for v2 MVP. Porting the 1094-line v1 RMS
+ * chain deployments in the pipeline for v2. Porting the 1094-line v1 RMS
  * client (`docs/v1-iiko-reference/iiko_rms_client.py`) is real work
  * without a customer to validate against.
  *

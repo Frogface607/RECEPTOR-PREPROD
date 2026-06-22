@@ -1,61 +1,61 @@
-﻿import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import {
+  FOUNDATION_MODULE_IDS,
+  getIntegrationReadinessState,
   getProductModule,
-  getPilotCommandState,
+  listFoundationModules,
+  listIntegrationReadinessStates,
   listModulesByPhase,
-  listPilotCommandStates,
-  listPilotBundleModules,
-  PILOT_BUNDLE_MODULE_IDS,
-  resolvePilotReadinessState,
+  resolveIntegrationReadinessState,
 } from "./modules";
 
 describe("restaurant OS modules", () => {
-  test("keeps the pilot bundle focused", () => {
-    const modules = listPilotBundleModules();
+  test("keeps the foundation bundle focused", () => {
+    const modules = listFoundationModules();
 
-    expect(modules.map((module) => module.id)).toEqual(PILOT_BUNDLE_MODULE_IDS);
+    expect(modules.map((module) => module.id)).toEqual(FOUNDATION_MODULE_IDS);
     expect(modules[0]?.id).toBe("owner_cockpit");
     expect(modules.some((module) => module.id === "context_engine")).toBe(true);
   });
 
   test("lists modules by product phase", () => {
-    const pilotModules = listModulesByPhase("pilot");
-    const saasModules = listModulesByPhase("saas");
+    const coreModules = listModulesByPhase("core");
+    const operationsModules = listModulesByPhase("operations");
 
-    expect(pilotModules.map((module) => module.id)).toContain("owner_cockpit");
-    expect(saasModules.map((module) => module.id)).toContain("team_os");
+    expect(coreModules.map((module) => module.id)).toContain("owner_cockpit");
+    expect(operationsModules.map((module) => module.id)).toContain("team_os");
   });
 
   test("throws for unknown module ids", () => {
     expect(() => getProductModule("bad" as never)).toThrow("Unknown product module");
   });
 
-  test("models the pilot command states in launch order", () => {
-    const states = listPilotCommandStates();
+  test("models integration readiness states in setup order", () => {
+    const states = listIntegrationReadinessStates();
 
     expect(states.map((state) => state.id)).toEqual([
-      "mock",
-      "waiting_key",
+      "demo",
+      "waiting_credentials",
       "connected",
       "error",
     ]);
-    expect(getPilotCommandState("waiting_key").primaryAction).toBe(
-      "Request apiLogin",
+    expect(getIntegrationReadinessState("waiting_credentials").primaryAction).toBe(
+      "Add iiko credentials",
     );
   });
 
-  test("resolves the current Mikhno pilot state while the key is missing", () => {
+  test("resolves readiness while live credentials are missing", () => {
     expect(
-      resolvePilotReadinessState({
-        liveTargetSelected: true,
-        targetHasIikoKey: false,
+      resolveIntegrationReadinessState({
+        liveVenueSelected: true,
+        hasIikoCredentials: false,
       }),
-    ).toBe("waiting_key");
+    ).toBe("waiting_credentials");
 
-    expect(resolvePilotReadinessState({ iikoConnected: true })).toBe(
+    expect(resolveIntegrationReadinessState({ iikoConnected: true })).toBe(
       "connected",
     );
-    expect(resolvePilotReadinessState({ hasConnectionError: true })).toBe(
+    expect(resolveIntegrationReadinessState({ hasConnectionError: true })).toBe(
       "error",
     );
   });

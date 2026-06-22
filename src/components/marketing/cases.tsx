@@ -1,48 +1,28 @@
 import Link from "next/link";
 
-const CASES = [
+const AREAS = [
   {
-    venue: "Рабочий кабинет",
-    city: "Product",
-    status: "Product" as const,
-    tagline: "BI, copilot и onboarding собраны в один пилотный сценарий.",
-    metric: "4.7 млн / 30 дней",
+    title: "Owner Cockpit",
+    label: "Core",
+    tagline: "Ежедневный бриф, KPI, риски и действия владельца в одном кабинете.",
+    metric: "Morning Brief",
     href: "/dashboard/dev-venue",
   },
   {
-    venue: "Первый пилот",
-    city: "Ресторанная группа",
-    status: "Pilot" as const,
-    tagline: "Подключение реального iiko, ежедневный разбор и BI по живым данным.",
-    metric: "Подключение на этой неделе",
+    title: "Context Engine",
+    label: "Memory",
+    tagline: "Анкета превращает ресторан в понятный контекст для AI, отчетов и задач.",
+    metric: "Память заведения",
+    href: "/context",
   },
   {
-    venue: "Next pilot",
-    city: "-",
-    status: "Open" as const,
-    tagline: "Слот для следующего ресторана или небольшой сети.",
-    metric: "Места: 2 из 3",
-    href: "mailto:bro@frogface.space?subject=Receptor%20pilot",
+    title: "Team OS",
+    label: "Operations",
+    tagline: "Роли, доступы, задачи и коммуникация для управляющих, кухни и зала.",
+    metric: "Командный слой",
+    href: "/team",
   },
 ] as const;
-
-type Case = (typeof CASES)[number];
-
-function StatusBadge({ status }: { status: Case["status"] }) {
-  const styles: Record<Case["status"], string> = {
-    Product: "bg-brand/10 text-brand border-brand/35",
-    Pilot: "bg-[color:var(--pro)]/12 text-[color:var(--pro)] border-[color:var(--pro)]/35",
-    Open: "bg-muted text-muted-foreground border-border",
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] ${styles[status]}`}
-    >
-      <span className="size-1 rounded-full bg-current" />
-      {status}
-    </span>
-  );
-}
 
 export function Cases() {
   return (
@@ -51,50 +31,43 @@ export function Cases() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <p className="text-xs uppercase tracking-[0.22em] text-brand">
-              03 · Кто уже внутри
+              03 · Что внутри
             </p>
-            <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
-              Receptor готовится к первым живым пилотам.
+            <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] sm:text-[44px]">
+              Платформа собирается из рабочих зон.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            Сначала подключаем одну-две точки, проверяем реальные цифры,
-            ежедневный разбор и Copilot, потом масштабируем на сеть.
+            Каждый модуль закрывает конкретный контур управления рестораном.
+            Можно начать с ядра и подключать дополнительные зоны по мере роста.
           </p>
         </div>
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {CASES.map((c) => {
-            const inner = (
+          {AREAS.map((area) => (
+            <Link key={area.title} href={area.href} className="contents">
               <article className="group flex h-full flex-col rounded-xl border border-border/60 bg-card/55 p-8 transition-all hover:border-border hover:bg-card/90">
                 <div className="flex items-center justify-between">
-                  <StatusBadge status={c.status} />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/35 bg-brand/10 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-brand">
+                    <span className="size-1 rounded-full bg-current" />
+                    {area.label}
+                  </span>
                   <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    {c.city}
+                    Receptor
                   </span>
                 </div>
-                <h3 className="mt-8 text-balance text-[24px] font-medium leading-[1.1] tracking-[-0.01em]">
-                  {c.venue}
+                <h3 className="mt-8 text-balance text-[24px] font-medium leading-[1.1]">
+                  {area.title}
                 </h3>
                 <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-                  {c.tagline}
+                  {area.tagline}
                 </p>
-                <p className="numeric mt-auto pt-10 text-[22px] font-medium tracking-[-0.01em] text-foreground">
-                  {c.metric}
+                <p className="numeric mt-auto pt-10 text-[22px] font-medium text-foreground">
+                  {area.metric}
                 </p>
               </article>
-            );
-
-            if ("href" in c && c.href) {
-              return (
-                <Link key={c.venue} href={c.href} className="contents">
-                  {inner}
-                </Link>
-              );
-            }
-
-            return <div key={c.venue}>{inner}</div>;
-          })}
+            </Link>
+          ))}
         </div>
       </div>
     </section>

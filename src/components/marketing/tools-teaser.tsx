@@ -25,7 +25,7 @@ export function ToolsTeaser() {
             <p className="text-xs uppercase tracking-[0.22em] text-brand">
               Рабочие сценарии
             </p>
-            <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-[44px]">
+            <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] sm:text-[44px]">
               Операционный слой ресторана.
             </h2>
           </div>
@@ -47,12 +47,13 @@ export function ToolsTeaser() {
               <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
                 Новый сценарий
               </p>
-              <h3 className="mt-2 text-xl font-medium tracking-[-0.02em] text-foreground">
+              <h3 className="mt-2 text-xl font-medium text-foreground">
                 Tech Card Studio
               </h3>
               <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-                Техкарта с ингредиентами, себестоимостью, КБЖУ, iiko-артикулами,
-                историей и PDF-печатью. Это фундамент будущего меню-модуля.
+                Техкарта с ингредиентами, себестоимостью, КБЖУ,
+                iiko-артикулами, историей и PDF-печатью. Это фундамент
+                будущего меню-модуля.
               </p>
             </div>
           </div>
@@ -86,7 +87,7 @@ export function ToolsTeaser() {
                   <ArrowRight className="size-4 text-muted-foreground/45 transition-colors group-hover:text-brand" />
                 </div>
                 <div>
-                  <h3 className="text-[18px] font-medium tracking-[-0.01em] text-foreground">
+                  <h3 className="text-[18px] font-medium text-foreground">
                     {cat.name}
                   </h3>
                   <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">

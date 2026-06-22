@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  ArrowLeft,
-  User,
-  Store,
-  Brain,
-  Plug,
-  CreditCard,
-  ScrollText,
-  CheckCircle2,
   AlertCircle,
+  ArrowLeft,
   ArrowUpRight,
+  Brain,
+  CheckCircle2,
+  CreditCard,
+  Plug,
+  ScrollText,
+  Store,
+  User,
   type LucideIcon,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
-import { listKnownVenues } from "@/lib/venues/get-venue";
 import { calculateContextCompletion } from "@/lib/venues/context-questionnaire";
+import { listKnownVenues } from "@/lib/venues/get-venue";
 
 export const metadata: Metadata = {
   title: "Настройки — RECEPTOR",
@@ -166,7 +167,7 @@ export default async function SettingsPage() {
 
         <div className="space-y-6">
           <Section icon={User} title="Профиль">
-            <Row label="Email" value={user?.email ?? "—"} />
+            <Row label="Email" value={user?.email ?? "-"} />
             <Row
               label="Статус"
               value={
@@ -218,7 +219,7 @@ export default async function SettingsPage() {
                 ))
               ) : (
                 <p className="text-[13px] text-muted-foreground">
-                  Заведения ещё не подключены.
+                  Заведения еще не подключены.
                 </p>
               )}
             </div>
@@ -233,8 +234,8 @@ export default async function SettingsPage() {
           <Section icon={Brain} title="Context Engine">
             <div className="space-y-3">
               <p className="text-[13px] leading-relaxed text-muted-foreground">
-                Анкета заведения даёт Copilot постоянный контекст: формат,
-                экономику, команду, интеграции и правила работы с AI.
+                Анкета заведения дает AI постоянный контекст: формат,
+                экономику, команду, интеграции и правила работы с данными.
               </p>
               {venues.length > 0 ? (
                 <div className="space-y-2">
@@ -252,7 +253,7 @@ export default async function SettingsPage() {
                           {venue.contextRequiredPercentage}%.
                           {venue.contextMissingRequired > 0
                             ? ` Осталось полей: ${venue.contextMissingRequired}.`
-                            : " Готово для пилота."}
+                            : " Готово к работе."}
                         </p>
                       </div>
                       <Link
@@ -279,14 +280,14 @@ export default async function SettingsPage() {
                 <>
                   <CheckCircle2 className="size-4 text-brand" />
                   <span className="text-[14px] text-foreground">
-                    iiko Cloud подключён — BI и copilot работают на живых данных
+                    iiko Cloud подключен: BI и AI работают на live-данных.
                   </span>
                 </>
               ) : (
                 <>
                   <span className="size-2 rounded-full bg-[color:var(--pro)]" />
                   <span className="text-[14px] text-muted-foreground">
-                    iiko apiLogin ещё не подключён.
+                    iiko apiLogin еще не подключен.
                   </span>
                 </>
               )}
@@ -356,7 +357,7 @@ function Section({
 }: {
   icon: LucideIcon;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="rounded-xl border border-border/60 bg-card/50 p-6">

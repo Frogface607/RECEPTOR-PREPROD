@@ -1,9 +1,10 @@
 # Receptor
 
-Operational BI and AI copilot for restaurant owners.
+SaaS operating system for restaurant owners and teams.
 
-Receptor connects to iiko, turns sales data into a dashboard, answers questions
-through an AI copilot, and generates a Daily Brief for owner-level decisions.
+Receptor connects to iiko, stores venue context, turns operating data into
+actions, and gives owners, managers, kitchen and service teams one shared
+workspace.
 
 ## Stack
 
@@ -15,8 +16,12 @@ through an AI copilot, and generates a Daily Brief for owner-level decisions.
 
 ## Core Surfaces
 
+- `/platform` - Restaurant OS overview, modules and integration states
+- `/pricing` - SaaS plans and setup offer
 - `/onboarding` - connect iiko apiLogin and select organization
 - `/dashboard/[venueId]` - BI, charts, shifts, Daily Brief, AI chat
+- `/context` - structured venue profile for AI and operational workflows
+- `/team` - roles, tasks, comments and announcements
 - `/settings` - account and venue connection status
 - `/api/brief` - JSON/text Daily Brief
 - `/api/brief/send` - delivery hook for Daily Brief
