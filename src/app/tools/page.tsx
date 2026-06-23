@@ -36,9 +36,9 @@ export default function ToolsPage() {
 
             <div className="mt-9 flex flex-wrap gap-x-7 gap-y-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
               <span>Профиль заведения</span>
-              <span>BI-ready</span>
-              <span>Tech Card Studio</span>
-              <span>Copilot context</span>
+              <span>BI и отчеты</span>
+              <span>Техкарты</span>
+              <span>Контекст Copilot</span>
             </div>
           </div>
         </section>

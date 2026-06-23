@@ -32,11 +32,11 @@ export function OwnerCockpitCard({
   const contextCompletion = calculateContextCompletion(venue.context);
   const prioritySignal = pickPrioritySignal(brief.signals);
   const actions = brief.actions.slice(0, 3);
-  const dataModeLabel = dataMode === "live" ? "Live iiko" : "Mock iiko";
+  const dataModeLabel = dataMode === "live" ? "Live-данные" : "Демо-данные";
   const dataModeDetail =
     dataMode === "live"
       ? "Работает на подключенной организации."
-      : "Демо-цифры, готово к замене на live key.";
+      : "Пример для знакомства с кабинетом.";
 
   return (
     <section className="rounded-xl border border-brand/30 bg-card/70 p-5 sm:p-6">

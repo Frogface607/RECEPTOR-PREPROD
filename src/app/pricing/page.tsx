@@ -69,7 +69,7 @@ const TIERS = [
     name: "Group",
     price: "от 59 000",
     period: "руб. / месяц",
-    blurb: "Холдинги, несколько брендов, кастомные роли и отдельный контур данных.",
+    blurb: "Холдинги, несколько брендов, расширенные роли и отдельный контур данных.",
     cta: {
       label: "Обсудить Group",
       href: "mailto:bro@frogface.space?subject=Receptor%20Group",
@@ -91,7 +91,7 @@ const COMPARISON_ROWS = [
   { label: "Заведений", values: ["1", "до 5", "индивидуально"] },
   { label: "Context Engine", values: ["базовый", "полный", "по холдингу"] },
   { label: "Owner Cockpit", values: ["1 точка", "точки + недели", "холдинг"] },
-  { label: "Menu OS", values: ["starter", "полный", "кастом"] },
+  { label: "Menu OS", values: ["starter", "полный", "расширенный"] },
   { label: "Team OS", values: ["-", "роли + задачи", "расширенный"] },
   { label: "Guest/Delivery/Marketing OS", values: ["аддоны", "аддоны", "в сборке"] },
   { label: "AI-сообщений / день", values: ["50", "200", "индивидуально"] },
@@ -123,7 +123,7 @@ const FAQ = [
   {
     q: "Как подключается iiko Marketplace?",
     a:
-      "Marketplace имеет смысл как канал масштабирования после стабильной интеграции, поддержки и понятной экономики. Продукт остается самостоятельным SaaS, а не разовой кастомной разработкой.",
+      "Marketplace имеет смысл как канал масштабирования после стабильной интеграции, поддержки и понятной экономики. Продукт остается самостоятельным SaaS с понятными тарифами и внедрением.",
   },
 ] as const;
 
@@ -290,7 +290,8 @@ export default function PricingPage() {
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
                 Подключаем одну точку или группу, собираем контекст, включаем
                 Morning Brief и фиксируем набор модулей, который реально нужен
-                команде. Это setup к подписке, а не отдельный закрытый проект.
+                команде. Setup помогает быстрее запустить подписку и передать
+                команде рабочий кабинет.
               </p>
             </div>
 
@@ -361,12 +362,7 @@ export default function PricingPage() {
                     key={module.id}
                     className="rounded-lg border border-border/60 bg-card/45 p-5"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <Icon className="size-5 text-brand" />
-                      <Badge variant="outline" className="text-[10px]">
-                        {module.phase}
-                      </Badge>
-                    </div>
+                    <Icon className="size-5 text-brand" />
                     <h3 className="mt-5 text-base font-medium">{module.title}</h3>
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                       {module.promise}
@@ -385,7 +381,7 @@ export default function PricingPage() {
                 Сравнение
               </p>
               <h2 className="mt-4 text-4xl font-medium leading-tight">
-                Где заканчивается тариф и начинается индивидуальная сборка.
+                Как отличаются тарифы и возможности.
               </h2>
             </div>
             <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-muted-foreground sm:hidden">

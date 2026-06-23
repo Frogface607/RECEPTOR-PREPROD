@@ -137,9 +137,9 @@ function WorkflowView() {
               Профиль заведения, BI-диагностика, затем техкарта или меню.
             </h2>
             <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-              Сценарии подключаются к профилю заведения и данным iiko, когда
-              доступен ключ. Так Copilot работает не как общий чат, а как
-              управленческий помощник конкретного ресторана.
+              Сценарии подключаются к профилю заведения и операционным данным.
+              Так Copilot работает не как общий чат, а как управленческий
+              помощник конкретного ресторана.
             </p>
             <Link
               href="/tools/tech-card-studio"
@@ -150,9 +150,9 @@ function WorkflowView() {
             </Link>
           </div>
           <div className="grid min-w-[260px] grid-cols-3 gap-2 text-center">
-            <Metric label="контекст" value="Profile" />
+            <Metric label="контекст" value="Профиль" />
             <Metric label="данные" value="BI" />
-            <Metric label="действия" value="Ops" />
+            <Metric label="действия" value="Задачи" />
           </div>
         </div>
       </div>

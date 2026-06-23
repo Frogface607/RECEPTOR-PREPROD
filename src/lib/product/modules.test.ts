@@ -1,12 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
   FOUNDATION_MODULE_IDS,
-  getIntegrationReadinessState,
   getProductModule,
   listFoundationModules,
-  listIntegrationReadinessStates,
-  listModulesByPhase,
-  resolveIntegrationReadinessState,
+  listProductModules,
 } from "./modules";
 
 describe("restaurant OS modules", () => {
@@ -18,45 +15,22 @@ describe("restaurant OS modules", () => {
     expect(modules.some((module) => module.id === "context_engine")).toBe(true);
   });
 
-  test("lists modules by product phase", () => {
-    const coreModules = listModulesByPhase("core");
-    const operationsModules = listModulesByPhase("operations");
+  test("lists product modules in display order", () => {
+    const modules = listProductModules();
 
-    expect(coreModules.map((module) => module.id)).toContain("owner_cockpit");
-    expect(operationsModules.map((module) => module.id)).toContain("team_os");
+    expect(modules.map((module) => module.id)).toEqual([
+      "owner_cockpit",
+      "context_engine",
+      "menu_os",
+      "team_os",
+      "integration_pack",
+      "guest_os",
+      "delivery_os",
+      "marketing_os",
+    ]);
   });
 
   test("throws for unknown module ids", () => {
     expect(() => getProductModule("bad" as never)).toThrow("Unknown product module");
-  });
-
-  test("models integration readiness states in setup order", () => {
-    const states = listIntegrationReadinessStates();
-
-    expect(states.map((state) => state.id)).toEqual([
-      "demo",
-      "waiting_credentials",
-      "connected",
-      "error",
-    ]);
-    expect(getIntegrationReadinessState("waiting_credentials").primaryAction).toBe(
-      "Add iiko credentials",
-    );
-  });
-
-  test("resolves readiness while live credentials are missing", () => {
-    expect(
-      resolveIntegrationReadinessState({
-        liveVenueSelected: true,
-        hasIikoCredentials: false,
-      }),
-    ).toBe("waiting_credentials");
-
-    expect(resolveIntegrationReadinessState({ iikoConnected: true })).toBe(
-      "connected",
-    );
-    expect(resolveIntegrationReadinessState({ hasConnectionError: true })).toBe(
-      "error",
-    );
   });
 });

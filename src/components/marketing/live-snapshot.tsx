@@ -1,8 +1,8 @@
 const KPIS = [
   {
     label: "Выручка / период",
-    value: "iiko live",
-    note: "После подключения Cloud API",
+    value: "продажи",
+    note: "Из подключенного учета",
   },
   {
     label: "Средний чек",
@@ -80,7 +80,7 @@ export function LiveSnapshot() {
                 Что проверять первым
               </p>
               <span className="font-mono text-[10px] text-muted-foreground">
-                live после iiko
+                по данным учета
               </span>
             </div>
             <ol className="mt-6 space-y-4">
@@ -113,7 +113,7 @@ export function LiveSnapshot() {
               техкартами, чтобы управлять меню как системой».
             </blockquote>
             <p className="mt-5 text-[13px] uppercase tracking-[0.16em] text-muted-foreground">
-              AI copilot · tool-calls к iiko OLAP
+              AI-помощник с доступом к данным ресторана
             </p>
           </article>
         </div>
