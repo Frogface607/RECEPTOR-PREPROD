@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   mapAnnouncementRow,
+  mapAuditEventRow,
   mapCommentRow,
   mapMembershipRow,
   mapTaskRow,
@@ -128,5 +129,27 @@ describe("Team OS store mapping", () => {
 
     expect(roleAnnouncement.priority).toBe("important");
     expect(roleAnnouncement.audience).toEqual({ type: "role", roleId: "chef" });
+  });
+
+  test("maps audit events", () => {
+    const event = mapAuditEventRow({
+      id: "audit-1",
+      venue_id: "venue-1",
+      event_type: "member_password_reset",
+      target_type: "member",
+      target_id: "member-1",
+      summary: "Пароль сотрудника обновлен.",
+      created_at: "2026-06-23T09:40:00.000Z",
+    });
+
+    expect(event).toMatchObject({
+      id: "audit-1",
+      venueId: "venue-1",
+      type: "member_password_reset",
+      targetType: "member",
+      targetId: "member-1",
+      summary: "Пароль сотрудника обновлен.",
+    });
+    expect(event.createdAtLabel).not.toBe("");
   });
 });

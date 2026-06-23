@@ -114,8 +114,29 @@ export type TeamActionResult =
   | { ok: true; mode: "saved" | "sandbox"; message: string }
   | { ok: false; error: string };
 
+type WritableTeamContext = Extract<
+  Awaited<ReturnType<typeof getWritableTeamContext>>,
+  { ok: true }
+>;
+
+type TeamAuditEventInput = {
+  venueId: string;
+  type:
+    | "member_invited"
+    | "member_status_updated"
+    | "member_password_reset"
+    | "task_created"
+    | "task_status_updated"
+    | "comment_added"
+    | "announcement_created";
+  targetType: "member" | "task" | "comment" | "announcement";
+  targetId?: string | null;
+  summary: string;
+  metadata?: Record<string, unknown>;
+};
+
 function missingTeamTables(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|relation .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|relation .* does not exist/i.test(
     message,
   );
 }
@@ -138,6 +159,35 @@ async function getWritableTeamContext(): Promise<
   }
 
   return { ok: true, mode: "saved", userId: user.id, supabase };
+}
+
+async function writeTeamAuditEvent(
+  ctx: WritableTeamContext,
+  event: TeamAuditEventInput,
+): Promise<void> {
+  if (ctx.mode === "sandbox" || !ctx.supabase) return;
+
+  const { data: membership } = await ctx.supabase
+    .from("venue_memberships")
+    .select("id")
+    .eq("venue_id", event.venueId)
+    .eq("user_id", ctx.userId)
+    .maybeSingle<{ id: string }>();
+
+  const { error } = await ctx.supabase.from("team_audit_events").insert({
+    venue_id: event.venueId,
+    actor_user_id: ctx.userId,
+    actor_membership_id: membership?.id ?? null,
+    event_type: event.type,
+    target_type: event.targetType,
+    target_id: event.targetId ?? null,
+    summary: event.summary,
+    metadata: event.metadata ?? {},
+  });
+
+  if (error && !missingTeamTables(error.message)) {
+    console.warn("Failed to write Team OS audit event:", error.message);
+  }
 }
 
 export async function inviteTeamMemberAction(
@@ -204,17 +254,21 @@ export async function inviteTeamMemberAction(
     createdUserId = data.user.id;
   }
 
-  const { error } = await ctx.supabase.from("venue_memberships").insert({
-    venue_id: parsed.data.venueId,
-    user_id: createdUserId,
-    full_name: parsed.data.fullName,
-    email: loginEmail || parsed.data.email || null,
-    phone: parsed.data.phone || null,
-    role: parsed.data.role,
-    status: createdUserId || !parsed.data.email ? "active" : "invited",
-    shift_label: parsed.data.shiftLabel || "",
-    created_by: ctx.userId,
-  });
+  const { data: member, error } = await ctx.supabase
+    .from("venue_memberships")
+    .insert({
+      venue_id: parsed.data.venueId,
+      user_id: createdUserId,
+      full_name: parsed.data.fullName,
+      email: loginEmail || parsed.data.email || null,
+      phone: parsed.data.phone || null,
+      role: parsed.data.role,
+      status: createdUserId || !parsed.data.email ? "active" : "invited",
+      shift_label: parsed.data.shiftLabel || "",
+      created_by: ctx.userId,
+    })
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (error) {
     if (createdUserId) {
@@ -228,6 +282,19 @@ export async function inviteTeamMemberAction(
     }
     return { ok: false, error: error.message };
   }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "member_invited",
+    targetType: "member",
+    targetId: member?.id ?? null,
+    summary: `Создан доступ для ${parsed.data.fullName}.`,
+    metadata: {
+      role: parsed.data.role,
+      hasLogin: Boolean(createdUserId),
+      email: loginEmail || parsed.data.email || null,
+    },
+  });
 
   revalidatePath("/team");
   return {
@@ -282,6 +349,18 @@ export async function updateTeamMemberStatusAction(
   if (!data) {
     return { ok: false, error: "Сотрудник не найден или нет доступа." };
   }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "member_status_updated",
+    targetType: "member",
+    targetId: parsed.data.memberId,
+    summary:
+      parsed.data.status === "active"
+        ? "Доступ сотрудника активирован."
+        : "Доступ сотрудника поставлен на паузу.",
+    metadata: { status: parsed.data.status },
+  });
 
   revalidatePath("/team");
   revalidatePath("/me");
@@ -347,6 +426,15 @@ export async function resetTeamMemberPasswordAction(
 
   if (error) return { ok: false, error: error.message };
 
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "member_password_reset",
+    targetType: "member",
+    targetId: parsed.data.memberId,
+    summary: `Пароль сотрудника обновлен${member.email ? `: ${member.email}` : ""}.`,
+    metadata: { email: member.email },
+  });
+
   revalidatePath("/team");
   return {
     ok: true,
@@ -389,7 +477,11 @@ export async function createTeamTaskAction(
     created_by: ctx.userId,
   };
 
-  const { error } = await ctx.supabase.from("team_tasks").insert(insert);
+  const { data: task, error } = await ctx.supabase
+    .from("team_tasks")
+    .insert(insert)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (error) {
     if (missingTeamTables(error.message)) {
@@ -400,6 +492,21 @@ export async function createTeamTaskAction(
     }
     return { ok: false, error: error.message };
   }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "task_created",
+    targetType: "task",
+    targetId: task?.id ?? null,
+    summary: `Создана задача: ${parsed.data.title}.`,
+    metadata: {
+      priority: parsed.data.priority,
+      audienceType,
+      audienceMemberId:
+        audienceType === "member" ? parsed.data.audienceMemberId : null,
+      audienceRole: audienceType === "role" ? parsed.data.audienceRole : null,
+    },
+  });
 
   revalidatePath("/team");
   return { ok: true, mode: "saved", message: "Задача создана." };
@@ -446,6 +553,15 @@ export async function updateTeamTaskStatusAction(
     return { ok: false, error: "Задача не найдена или нет доступа." };
   }
 
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "task_status_updated",
+    targetType: "task",
+    targetId: parsed.data.taskId,
+    summary: `Статус задачи обновлен: ${parsed.data.status}.`,
+    metadata: { status: parsed.data.status },
+  });
+
   revalidatePath("/team");
   return { ok: true, mode: "saved", message: "Статус задачи обновлен." };
 }
@@ -476,13 +592,17 @@ export async function addTaskCommentAction(
     .eq("user_id", ctx.userId)
     .maybeSingle<{ id: string }>();
 
-  const { error } = await ctx.supabase.from("team_task_comments").insert({
-    venue_id: parsed.data.venueId,
-    task_id: parsed.data.taskId,
-    author_membership_id: membership?.id ?? null,
-    author_user_id: ctx.userId,
-    body: parsed.data.body,
-  });
+  const { data: comment, error } = await ctx.supabase
+    .from("team_task_comments")
+    .insert({
+      venue_id: parsed.data.venueId,
+      task_id: parsed.data.taskId,
+      author_membership_id: membership?.id ?? null,
+      author_user_id: ctx.userId,
+      body: parsed.data.body,
+    })
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (error) {
     if (missingTeamTables(error.message)) {
@@ -494,6 +614,15 @@ export async function addTaskCommentAction(
     }
     return { ok: false, error: error.message };
   }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "comment_added",
+    targetType: "comment",
+    targetId: comment?.id ?? null,
+    summary: "Добавлен комментарий к задаче.",
+    metadata: { taskId: parsed.data.taskId },
+  });
 
   revalidatePath("/team");
   return { ok: true, mode: "saved", message: "Комментарий добавлен." };
@@ -518,16 +647,20 @@ export async function createTeamAnnouncementAction(
     };
   }
 
-  const { error } = await ctx.supabase.from("team_announcements").insert({
-    venue_id: parsed.data.venueId,
-    title: parsed.data.title,
-    body: parsed.data.body,
-    priority: parsed.data.priority,
-    audience_type: parsed.data.audienceType,
-    audience_role:
-      parsed.data.audienceType === "role" ? parsed.data.audienceRole : null,
-    created_by: ctx.userId,
-  });
+  const { data: announcement, error } = await ctx.supabase
+    .from("team_announcements")
+    .insert({
+      venue_id: parsed.data.venueId,
+      title: parsed.data.title,
+      body: parsed.data.body,
+      priority: parsed.data.priority,
+      audience_type: parsed.data.audienceType,
+      audience_role:
+        parsed.data.audienceType === "role" ? parsed.data.audienceRole : null,
+      created_by: ctx.userId,
+    })
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (error) {
     if (missingTeamTables(error.message)) {
@@ -539,6 +672,20 @@ export async function createTeamAnnouncementAction(
     }
     return { ok: false, error: error.message };
   }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "announcement_created",
+    targetType: "announcement",
+    targetId: announcement?.id ?? null,
+    summary: `Опубликовано объявление: ${parsed.data.title}.`,
+    metadata: {
+      priority: parsed.data.priority,
+      audienceType: parsed.data.audienceType,
+      audienceRole:
+        parsed.data.audienceType === "role" ? parsed.data.audienceRole : null,
+    },
+  });
 
   revalidatePath("/team");
   return { ok: true, mode: "saved", message: "Объявление опубликовано." };

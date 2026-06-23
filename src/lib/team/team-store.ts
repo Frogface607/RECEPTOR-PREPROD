@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth/session";
 import { getServerSupabase } from "@/lib/db/server";
 import {
+  DEMO_TEAM_AUDIT_EVENTS,
   DEMO_TASK_COMMENTS,
   DEMO_STAFF,
   DEMO_TEAM_ANNOUNCEMENTS,
@@ -12,6 +13,8 @@ import {
   roleCan,
   type StaffMember,
   type TeamAnnouncement,
+  type TeamAuditEvent,
+  type TeamAuditEventType,
   type TeamTaskComment,
   type TeamRoleId,
   type TeamTask,
@@ -61,6 +64,16 @@ type DbAnnouncement = {
   created_at: string | null;
 };
 
+type DbAuditEvent = {
+  id: string;
+  venue_id: string;
+  event_type: string;
+  target_type: string;
+  target_id: string | null;
+  summary: string;
+  created_at: string | null;
+};
+
 type DbMembershipWithVenue = DbMembership & {
   venues?: { name: string | null; city: string | null } | null;
 };
@@ -72,6 +85,7 @@ export type TeamWorkspace = {
   tasks: TeamTask[];
   comments: TeamTaskComment[];
   announcements: TeamAnnouncement[];
+  auditEvents: TeamAuditEvent[];
 };
 
 export type PersonalTeamWorkspace =
@@ -108,7 +122,7 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
 ]);
 
 function isMissingTeamTable(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|relation .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|relation .* does not exist/i.test(
     message,
   );
 }
@@ -210,6 +224,39 @@ export function mapAnnouncementRow(row: DbAnnouncement): TeamAnnouncement {
   };
 }
 
+function normalizeAuditEventType(value: string): TeamAuditEventType {
+  const known = new Set<TeamAuditEventType>([
+    "member_invited",
+    "member_status_updated",
+    "member_password_reset",
+    "task_created",
+    "task_status_updated",
+    "comment_added",
+    "announcement_created",
+  ]);
+  return known.has(value as TeamAuditEventType)
+    ? (value as TeamAuditEventType)
+    : "task_created";
+}
+
+export function mapAuditEventRow(row: DbAuditEvent): TeamAuditEvent {
+  return {
+    id: row.id,
+    venueId: row.venue_id,
+    type: normalizeAuditEventType(row.event_type),
+    targetType:
+      row.target_type === "member" ||
+      row.target_type === "task" ||
+      row.target_type === "comment" ||
+      row.target_type === "announcement"
+        ? row.target_type
+        : "task",
+    targetId: row.target_id,
+    summary: row.summary,
+    createdAtLabel: formatCreatedAtLabel(row.created_at),
+  };
+}
+
 export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
   return {
     mode: "sandbox",
@@ -221,6 +268,9 @@ export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
     ),
     announcements: DEMO_TEAM_ANNOUNCEMENTS.filter(
       (announcement) => announcement.venueId === "dev-venue",
+    ),
+    auditEvents: DEMO_TEAM_AUDIT_EVENTS.filter(
+      (event) => event.venueId === "dev-venue",
     ),
   };
 }
@@ -252,6 +302,7 @@ export async function getTeamWorkspace(
       tasks: [],
       comments: [],
       announcements: [],
+      auditEvents: [],
     };
   }
 
@@ -276,6 +327,7 @@ export async function getTeamWorkspace(
       tasks: [],
       comments: [],
       announcements: [],
+      auditEvents: [],
     };
   }
 
@@ -311,6 +363,20 @@ export async function getTeamWorkspace(
           mapAnnouncementRow,
         );
 
+  const auditEventsResult = await supabase
+    .from("team_audit_events")
+    .select("id,venue_id,event_type,target_type,target_id,summary,created_at")
+    .eq("venue_id", venueId)
+    .order("created_at", { ascending: false })
+    .limit(12);
+
+  const auditEvents =
+    auditEventsResult.error && isMissingTeamTable(auditEventsResult.error.message)
+      ? []
+      : ((auditEventsResult.data ?? []) as DbAuditEvent[]).map(
+          mapAuditEventRow,
+        );
+
   return {
     mode: "saved",
     venueId,
@@ -318,6 +384,7 @@ export async function getTeamWorkspace(
     tasks,
     comments,
     announcements,
+    auditEvents,
   };
 }
 

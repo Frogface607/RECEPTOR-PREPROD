@@ -85,6 +85,25 @@ export type TeamAnnouncement = {
   createdAtLabel: string;
 };
 
+export type TeamAuditEventType =
+  | "member_invited"
+  | "member_status_updated"
+  | "member_password_reset"
+  | "task_created"
+  | "task_status_updated"
+  | "comment_added"
+  | "announcement_created";
+
+export type TeamAuditEvent = {
+  id: string;
+  venueId: string;
+  type: TeamAuditEventType;
+  targetType: "member" | "task" | "comment" | "announcement";
+  targetId: string | null;
+  summary: string;
+  createdAtLabel: string;
+};
+
 export type RoleHome = {
   role: TeamRole;
   permissions: TeamPermission[];
@@ -414,6 +433,36 @@ export const DEMO_TEAM_ANNOUNCEMENTS: TeamAnnouncement[] = [
     audience: { type: "role", roleId: "service" },
     createdByName: "Алина",
     createdAtLabel: "10:45",
+  },
+];
+
+export const DEMO_TEAM_AUDIT_EVENTS: TeamAuditEvent[] = [
+  {
+    id: "audit-access-1",
+    venueId: "dev-venue",
+    type: "member_invited",
+    targetType: "member",
+    targetId: "staff-service",
+    summary: "Создан доступ для Маши, роль Официант.",
+    createdAtLabel: "11:42",
+  },
+  {
+    id: "audit-task-1",
+    venueId: "dev-venue",
+    type: "task_created",
+    targetType: "task",
+    targetId: "task-menu-1",
+    summary: "Поставлена задача шефу по стоп-листу.",
+    createdAtLabel: "11:50",
+  },
+  {
+    id: "audit-status-1",
+    venueId: "dev-venue",
+    type: "task_status_updated",
+    targetType: "task",
+    targetId: "task-service-1",
+    summary: "Задача официантов переведена в работу.",
+    createdAtLabel: "12:05",
   },
 ];
 

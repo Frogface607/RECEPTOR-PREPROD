@@ -3,17 +3,20 @@
 import { useMemo, useState, useTransition, type ReactNode } from "react";
 import {
   Copy,
+  History,
   KeyRound,
   PauseCircle,
   PlayCircle,
   Plus,
   Send,
   UserPlus,
+  WandSparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   TEAM_ROLES,
   type StaffMember,
+  type TeamAuditEvent,
   type TeamRoleId,
   type TeamTask,
 } from "@/lib/team/team-os";
@@ -48,19 +51,39 @@ const TASK_PRIORITIES: Array<{ value: TeamTask["priority"]; label: string }> = [
 const FIELD_CLASS =
   "w-full rounded-lg border border-border/55 bg-background/45 px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand/50 focus:ring-2 focus:ring-brand/15";
 
+function generateTemporaryPassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const bytes = new Uint32Array(10);
+  window.crypto.getRandomValues(bytes);
+  const chars = Array.from(bytes, (value) => alphabet[value % alphabet.length]);
+  return `Rcp-${chars.slice(0, 4).join("")}-${chars.slice(4, 8).join("")}-${chars.slice(8).join("")}`;
+}
+
 function resultToMessage(result: TeamActionResult): Message {
   if (!result.ok) return { tone: "error", text: result.error };
   return { tone: "success", text: result.message };
+}
+
+function auditTypeLabel(type: TeamAuditEvent["type"]): string {
+  if (type === "member_invited") return "доступ";
+  if (type === "member_status_updated") return "статус";
+  if (type === "member_password_reset") return "пароль";
+  if (type === "task_created") return "задача";
+  if (type === "task_status_updated") return "статус задачи";
+  if (type === "comment_added") return "комментарий";
+  return "объявление";
 }
 
 export function TeamActionsPanel({
   venueId,
   staff,
   tasks,
+  auditEvents,
 }: {
   venueId: string;
   staff: StaffMember[];
   tasks: TeamTask[];
+  auditEvents: TeamAuditEvent[];
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
@@ -199,14 +222,25 @@ export function TeamActionsPanel({
                   />
                 </FieldLabel>
                 <FieldLabel label="Пароль">
-                  <input
-                    value={memberPassword}
-                    onChange={(event) => setMemberPassword(event.target.value)}
-                    className={FIELD_CLASS}
-                    placeholder="временный пароль"
-                    type="password"
-                    autoComplete="new-password"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      value={memberPassword}
+                      onChange={(event) => setMemberPassword(event.target.value)}
+                      className={FIELD_CLASS}
+                      placeholder="временный пароль"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMemberPassword(generateTemporaryPassword())
+                      }
+                      className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground transition-colors hover:border-brand/40"
+                      title="Сгенерировать пароль"
+                    >
+                      <WandSparkles className="size-4 text-brand" />
+                    </button>
+                  </div>
                 </FieldLabel>
               </div>
               <FieldLabel label="Роль">
@@ -500,7 +534,7 @@ export function TeamActionsPanel({
                         </span>
                       </td>
                       <td className="px-3 py-4">
-                        <div className="flex max-w-[250px] gap-2">
+                        <div className="flex max-w-[300px] gap-2">
                           <input
                             value={resetPassword}
                             onChange={(event) =>
@@ -511,10 +545,23 @@ export function TeamActionsPanel({
                             }
                             className={FIELD_CLASS}
                             placeholder="новый пароль"
-                            type="password"
                             autoComplete="new-password"
                             disabled={!canReset}
                           />
+                          <button
+                            type="button"
+                            disabled={!canReset}
+                            onClick={() =>
+                              setResetPasswords((current) => ({
+                                ...current,
+                                [member.id]: generateTemporaryPassword(),
+                              }))
+                            }
+                            className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground transition-colors hover:border-brand/40 disabled:opacity-40"
+                            title="Сгенерировать пароль"
+                          >
+                            <WandSparkles className="size-4 text-brand" />
+                          </button>
                           <button
                             type="button"
                             disabled={!canReset || pending || resetPassword.length < 6}
@@ -575,6 +622,44 @@ export function TeamActionsPanel({
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-lg border border-border/60 bg-card/50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                Журнал
+              </p>
+              <h3 className="mt-2 text-xl font-medium">Последние действия</h3>
+            </div>
+            <History className="size-5 text-brand" />
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            {auditEvents.length > 0 ? (
+              auditEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+                >
+                  <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {auditTypeLabel(event.type)}
+                  </span>
+                  <p className="text-sm leading-relaxed text-foreground/90">
+                    {event.summary}
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    {event.createdAtLabel || "только что"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-lg border border-border/45 bg-background/35 p-4 text-sm text-muted-foreground">
+                Журнал появится после первого изменения доступа, задачи или
+                объявления.
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -213,6 +213,7 @@ export default async function TeamPage({
           venueId={workspace.venueId}
           staff={workspace.staff}
           tasks={workspace.tasks}
+          auditEvents={workspace.auditEvents}
         />
 
         <TeamCommunicationPanel
