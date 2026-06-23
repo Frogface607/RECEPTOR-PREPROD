@@ -463,14 +463,21 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                   261******69b. Нажмите иконку копирования рядом с ключом в
                   iiko Web и вставьте получившееся значение сюда.
                 </p>
-                {demoMode ? (
-                  <button
-                    type="button"
-                    onClick={openSandbox}
+              {demoMode ? (
+                <button
+                  type="button"
+                  onClick={openSandbox}
                     className="inline-flex h-9 items-center justify-center rounded-md border border-border/60 bg-card/70 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/40"
                   >
                     Открыть тестовый кабинет без iiko
                   </button>
+                ) : null}
+                {demoMode ? (
+                  <p className="text-[12px] text-[color:var(--pro)]">
+                    В developer/demo режиме Receptor может проверить ключ iiko,
+                    но live-заведение и credentials не сохраняются. Для боевого
+                    подключения войдите обычным email/паролем.
+                  </p>
                 ) : null}
               </div>
             )}
@@ -485,7 +492,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Откроем тестовый кабинет. Реальные цифры появятся после успешной проверки активного iiko Cloud API."
+                ? "Developer/demo режим не сохраняет live iiko. Войдите обычной учеткой, чтобы создать заведение и открыть BI на реальных данных."
                 : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
             </p>
             {error ? (

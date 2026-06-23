@@ -234,8 +234,8 @@ export function AuthForm({
             Developer access
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Для тестирования без email-ссылки. Доступ появляется только когда
-            включены dev-переменные окружения.
+            Для просмотра интерфейса без email-ссылки. Live iiko и заведения
+            сохраняются только при обычном входе через Supabase.
           </p>
           <form action="/api/auth/dev" method="post" className="mt-4 space-y-3">
             <input type="hidden" name="next" value={safeNextPath(nextPath)} />

@@ -87,12 +87,19 @@ export async function createVenueAction(
   const user = await getCurrentUser();
   const supabase = await getServerSupabase();
 
-  // Sandbox mode: skip persistence, proceed.
-  if (!supabase || user?.isDemo) {
+  // Local sandbox mode: skip persistence, proceed.
+  if (!supabase) {
     return { ok: true, mode: "sandbox", venueId: "dev-venue" };
   }
   if (!user) {
     return { ok: false, error: "Нужно войти, чтобы подключить заведение." };
+  }
+  if (user.isDemo) {
+    return {
+      ok: false,
+      error:
+        "Developer access проверяет интерфейс, но не сохраняет live iiko. Войдите через обычный email/пароль Supabase и повторите подключение.",
+    };
   }
   if (!parsed.data.apiLogin) {
     return { ok: false, error: "Введите iiko API ключ." };

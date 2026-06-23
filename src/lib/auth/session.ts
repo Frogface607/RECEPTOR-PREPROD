@@ -59,6 +59,20 @@ export function resolveSessionUser(input: {
 /** Resolve the current session user on the server (RSC / route handlers). */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
+  const configured = isSupabaseConfigured();
+
+  if (configured) {
+    const supabase = await getServerSupabase();
+    if (supabase) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const realUser = resolveSessionUser({ configured, supabaseUser: user });
+      if (realUser) return realUser;
+    }
+  }
+
   if (
     isValidDeveloperSessionCookie(
       cookieStore.get(DEVELOPER_SESSION_COOKIE)?.value,
@@ -67,15 +81,6 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     return getDeveloperUser();
   }
 
-  const configured = isSupabaseConfigured();
   if (!configured) return DEMO_USER;
-
-  const supabase = await getServerSupabase();
-  if (!supabase) return DEMO_USER;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return resolveSessionUser({ configured, supabaseUser: user });
+  return null;
 }
