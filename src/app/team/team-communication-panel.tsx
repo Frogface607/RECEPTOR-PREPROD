@@ -78,17 +78,18 @@ export function TeamCommunicationPanel({
 
   return (
     <section className="border-b border-border/40">
-      <div className="mx-auto max-w-7xl px-6 py-14">
-        <div className="max-w-3xl">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-            Team communication
-          </p>
-          <h2 className="mt-4 text-3xl font-medium">
-            Объявления и комментарии вместо потерянных сообщений.
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Объявления фиксируют общее решение для роли или точки. Комментарии
-            живут внутри задачи, поэтому контекст не теряется в ленте.
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+              Связь
+            </p>
+            <h2 className="mt-2 text-2xl font-medium">
+              Объявления и комментарии
+            </h2>
+          </div>
+          <p className="max-w-md text-sm text-muted-foreground">
+            Решения по смене и контекст задач.
           </p>
         </div>
 
@@ -105,7 +106,7 @@ export function TeamCommunicationPanel({
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-5 xl:grid-cols-2">
+        <div className="mt-6 grid gap-4 xl:grid-cols-2">
           <div className="rounded-lg border border-border/60 bg-card/50 p-5">
             <div className="flex items-center gap-3">
               <Megaphone className="size-5 text-brand" />

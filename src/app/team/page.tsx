@@ -97,25 +97,23 @@ export default async function TeamPage({
       <SiteHeader />
       <main className="flex-1">
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 lg:grid-cols-[0.9fr_1.1fr]">
-            <div>
+          <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.72fr_1.28fr]">
+            <div className="flex flex-col justify-between gap-5">
               <Badge variant="outline" className="border-brand/30 text-brand">
                 Team OS
               </Badge>
-              <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.35rem,5vw,4.25rem)] font-medium leading-[1.02]">
-                Личные кабинеты по ролям, а не один общий экран для всех.
+              <h1 className="max-w-2xl text-balance text-[clamp(2rem,4vw,3.25rem)] font-medium leading-[1.04]">
+                Команда, роли и задачи.
               </h1>
-              <p className="mt-6 max-w-2xl text-[16px] leading-relaxed text-muted-foreground">
-                Владелец видит cockpit и всю команду. Управляющий видит задачи,
-                смены и стандарты. Официант видит обучение, свои смены и свои
-                задачи. Это фундамент для встроенного чата позже.
+              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Один рабочий экран для доступа, задач и сменной коммуникации.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3">
                 <LinkButton
                   href="/dashboard/dev-venue"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Вернуться в Owner Cockpit
+                  Owner Cockpit
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton
@@ -143,18 +141,18 @@ export default async function TeamPage({
                 <UserRoundCog className="size-6 shrink-0 text-brand" />
               </div>
 
-              <div className="mt-4 inline-flex rounded-md border border-border/50 bg-background/35 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="mt-4 inline-flex rounded-md border border-border/50 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                 {workspace.mode === "saved" ? "live workspace" : "sandbox workspace"} ·{" "}
                 {workspace.venueId}
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <Metric label="Разделов" value={home.sections.length} />
                 <Metric label="Прав" value={home.permissions.length} />
                 <Metric label="Задач видно" value={home.visibleTasks.length} />
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {home.sections.map((section) => (
                   <span
                     key={section}
@@ -169,17 +167,12 @@ export default async function TeamPage({
         </section>
 
         <section className="border-b border-border/40">
-          <div className="mx-auto max-w-7xl px-6 py-14">
-            <div className="max-w-3xl">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Role switcher
+          <div className="mx-auto max-w-7xl px-6 py-6">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground lg:w-36">
+                Кабинет
               </p>
-              <h2 className="mt-4 text-3xl font-medium">
-                Проверяем продукт глазами каждого сотрудника.
-              </h2>
-            </div>
-
-            <div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-7">
               {TEAM_ROLES.map((role) => {
                 const active = role.id === roleId;
                 return (
@@ -187,24 +180,22 @@ export default async function TeamPage({
                     key={role.id}
                     href={`/team?role=${role.id}&venueId=${encodeURIComponent(workspace.venueId)}`}
                     className={
-                      "rounded-lg border p-4 transition-colors " +
+                      "rounded-lg border px-3 py-2 transition-colors " +
                       (active
                         ? "border-brand/50 bg-card"
                         : "border-border/60 bg-card/45 hover:bg-card/75")
                     }
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium">{role.title}</p>
-                      <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-medium">{role.title}</p>
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                         {role.shortTitle}
                       </span>
                     </div>
-                    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                      {role.description}
-                    </p>
                   </Link>
                 );
               })}
+              </div>
             </div>
           </div>
         </section>
@@ -307,12 +298,11 @@ export default async function TeamPage({
                 <KeyRound className="mt-1 size-5 shrink-0 text-brand" />
                 <div>
                   <h2 className="text-xl font-medium">
-                    Следующий слой: задача превращается в коммуникацию.
+                    Далее: сменный чат.
                   </h2>
                   <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                    Сначала делаем задачи, объявления и комментарии к задачам.
-                    Полноценный чат добавим позже поверх этого слоя, чтобы он не
-                    стал новым хаосом вместо Telegram.
+                    Сейчас фиксируем задачи, объявления и комментарии. Чат
+                    добавим поверх этой структуры.
                   </p>
                 </div>
               </div>

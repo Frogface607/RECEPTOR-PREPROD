@@ -134,18 +134,16 @@ export function TeamActionsPanel({
 
   return (
     <section className="border-b border-border/40">
-      <div className="mx-auto max-w-7xl px-6 py-14">
-        <div className="max-w-3xl">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-            Team actions
-          </p>
-          <h2 className="mt-4 text-3xl font-medium">
-            Первые операции без Telegram.
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Добавляем людей, ставим задачи конкретному человеку, роли или всей
-            точке, и двигаем статус задачи. Комментарии и объявления идут
-            следующим слоем.
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+              Операции
+            </p>
+            <h2 className="mt-2 text-2xl font-medium">Доступы и задачи</h2>
+          </div>
+          <p className="max-w-md text-sm text-muted-foreground">
+            Быстрые действия управляющего.
           </p>
         </div>
 
@@ -162,7 +160,7 @@ export function TeamActionsPanel({
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-5 xl:grid-cols-3">
+        <div className="mt-6 grid gap-4 xl:grid-cols-3">
           <form
             className="rounded-lg border border-border/60 bg-card/50 p-5"
             onSubmit={(event) => {
@@ -268,9 +266,7 @@ export function TeamActionsPanel({
               </FieldLabel>
             </div>
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-              Если задать логин и пароль, Receptor создаст личный вход
-              сотрудника. Короткий логин станет адресом вида
-              login@staff.receptorai.pro.
+              Формат входа: login@staff.receptorai.pro.
             </p>
             <Button type="submit" className="mt-5 w-full" disabled={pending}>
               <Plus className="size-4" />
@@ -451,19 +447,16 @@ export function TeamActionsPanel({
           </form>
         </div>
 
-        <div className="mt-8 rounded-lg border border-border/60 bg-card/50 p-5">
+        <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
                 Доступы
               </p>
-              <h3 className="mt-2 text-xl font-medium">
-                Логины, статусы и сброс пароля
-              </h3>
+              <h3 className="mt-2 text-xl font-medium">Команда</h3>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Активный сотрудник может войти в личный кабинет. Пауза скрывает
-              его кабинет без удаления истории задач.
+              Логины, роли, статусы и пароли.
             </p>
           </div>
 
@@ -625,7 +618,7 @@ export function TeamActionsPanel({
           </div>
         </div>
 
-        <div className="mt-8 rounded-lg border border-border/60 bg-card/50 p-5">
+        <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">

@@ -54,12 +54,12 @@ async function loadDashboardData(
 function dashboardDataErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (/olap.*not allowed|right .*olap.*not allowed/i.test(message)) {
-    return "iiko ключ подключен, но для него не выдано право на OLAP-отчеты api/v2/reports/olap. Попросите в iiko включить это право для API login, после этого Receptor начнет показывать live BI.";
+    return "Нет права на api/v2/reports/olap. Попросите iiko включить OLAP reports для этого API login.";
   }
   if (/401/i.test(message)) {
-    return "iiko отклонил запрос к live-данным. Проверьте права API login и доступ к выбранной организации.";
+    return "iiko отклонил live-запрос. Проверьте права API login.";
   }
-  return "iiko live-данные сейчас недоступны. Receptor открыл кабинет на демо-цифрах, чтобы не блокировать настройку.";
+  return "Live-данные iiko недоступны. Временно показываем demo.";
 }
 
 export default async function DashboardPage({
@@ -135,7 +135,7 @@ export default async function DashboardPage({
                 <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-300" />
                 <div>
                   <p className="font-medium text-foreground">
-                    Live iiko подключен, но BI-отчеты пока недоступны.
+                    iiko подключен. BI ждёт права.
                   </p>
                   <p className="mt-1 leading-relaxed text-muted-foreground">
                     {dataError}

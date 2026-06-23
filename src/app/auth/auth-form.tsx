@@ -50,6 +50,7 @@ export function AuthForm({
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [state, setState] = useState<State>({ status: "idle" });
+  const ownerFlow = safeNextPath(nextPath).startsWith("/onboarding");
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -132,9 +133,13 @@ export function AuthForm({
 
   return (
     <div className="rounded-xl border border-border/60 bg-card/55 p-8">
-      <h1 className="text-2xl font-medium tracking-[-0.02em]">Вход в Receptor</h1>
+      <h1 className="text-2xl font-medium tracking-[-0.02em]">
+        {ownerFlow ? "Подключить ресторан" : "Вход в кабинет"}
+      </h1>
       <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-        Войдите по логину и паролю, который выдал администратор ресторана.
+        {ownerFlow
+          ? "Войдите как владелец, чтобы создать рабочее пространство."
+          : "Используйте логин и пароль, выданные администратором."}
       </p>
 
       <div className="mt-6 grid grid-cols-2 rounded-lg border border-border/60 bg-background/50 p-1">
@@ -230,18 +235,16 @@ export function AuthForm({
 
       {mode === "password" ? (
         <p className="mt-4 text-[12px] leading-relaxed text-muted-foreground">
-          Короткий логин автоматически превращается во внутренний email вида
-          login@staff.receptorai.pro. Для владельца можно использовать обычный
-          email.
+          Сотрудник может входить коротким логином. Владелец — обычным email.
         </p>
       ) : null}
 
       {developerMode ? (
-        <div className="mt-7 border-t border-border/40 pt-6">
-          <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+        <details className="mt-7 border-t border-border/40 pt-5">
+          <summary className="cursor-pointer text-[12px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
             Developer access
-          </p>
-          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+          </summary>
+          <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
             Для просмотра интерфейса без email-ссылки. Live iiko и заведения
             сохраняются только при обычном входе через Supabase.
           </p>
@@ -270,7 +273,7 @@ export function AuthForm({
               </p>
             ) : null}
           </form>
-        </div>
+        </details>
       ) : demoMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
