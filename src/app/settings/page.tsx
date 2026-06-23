@@ -3,18 +3,20 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  Activity,
   AlertCircle,
-  ArrowLeft,
   ArrowUpRight,
   Brain,
   CheckCircle2,
   CreditCard,
+  KeyRound,
   Plug,
   ScrollText,
   Store,
   User,
   type LucideIcon,
 } from "lucide-react";
+import { AppShell } from "@/components/dashboard/app-shell";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
@@ -137,23 +139,47 @@ export default async function SettingsPage() {
   const firstVenueHref = venues[0]
     ? `/dashboard/${venues[0].id}`
     : "/onboarding";
+  const activeVenue = venues[0];
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border/40">
-        <div className="mx-auto flex h-16 max-w-4xl items-center gap-4 px-6">
-          <Link
-            href={firstVenueHref}
-            className="inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            Дашборд
-          </Link>
-          <span className="ml-auto text-[14px] font-medium">Настройки</span>
-        </div>
-      </header>
+    <AppShell
+      activeHref="/settings"
+      venueId={activeVenue?.id ?? "dev-venue"}
+      venueName={activeVenue?.name ?? "Рабочий кабинет"}
+      venueMeta={
+        activeVenue
+          ? [activeVenue.city, activeVenue.type].filter(Boolean).join(" · ") ||
+            "Restaurant OS"
+          : "Restaurant OS"
+      }
+    >
+      <main className="flex-1">
+        <header className="border-b border-border/40 bg-background/85 backdrop-blur-xl lg:sticky lg:top-0 lg:z-30">
+          <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                Workspace
+              </p>
+              <h1 className="mt-1 text-xl font-medium">Настройки</h1>
+            </div>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <Link
+                href={firstVenueHref}
+                className="inline-flex h-9 items-center rounded-lg border border-border/60 bg-card/55 px-3 text-sm text-foreground transition-colors hover:bg-card"
+              >
+                Открыть cockpit
+              </Link>
+              <Link
+                href="/onboarding"
+                className="inline-flex h-9 items-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+              >
+                Добавить заведение
+              </Link>
+            </div>
+          </div>
+        </header>
 
-      <div className="mx-auto max-w-4xl px-6 py-10">
+        <div className="mx-auto max-w-6xl px-6 py-8">
         {user?.isDemo ? (
           <div className="mb-8 flex items-start gap-3 rounded-xl border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4">
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
@@ -165,7 +191,8 @@ export default async function SettingsPage() {
           </div>
         ) : null}
 
-        <div className="space-y-6">
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="space-y-6">
           <Section icon={User} title="Профиль">
             <Row label="Email" value={user?.email ?? "-"} />
             <Row
@@ -230,7 +257,9 @@ export default async function SettingsPage() {
               + Добавить заведение
             </Link>
           </Section>
+          </div>
 
+          <div className="space-y-6">
           <Section icon={Brain} title="Context Engine">
             <div className="space-y-3">
               <p className="text-[13px] leading-relaxed text-muted-foreground">
@@ -274,29 +303,7 @@ export default async function SettingsPage() {
             </div>
           </Section>
 
-          <Section icon={Plug} title="Подключение iiko">
-            <div className="flex items-center gap-3">
-              {venues.some((venue) => venue.iikoConnected) ? (
-                <>
-                  <CheckCircle2 className="size-4 text-brand" />
-                  <span className="text-[14px] text-foreground">
-                    iiko Cloud подключен: BI и AI работают на live-данных.
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="size-2 rounded-full bg-[color:var(--pro)]" />
-                  <span className="text-[14px] text-muted-foreground">
-                    iiko apiLogin еще не подключен.
-                  </span>
-                </>
-              )}
-            </div>
-            <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-              Новый apiLogin добавляется через onboarding. Ключ проверяется в
-              iiko Cloud, шифруется и хранится в Supabase credentials.
-            </p>
-          </Section>
+          <IikoConnectionCenter venues={venues} />
 
           <Section icon={CreditCard} title="Подписка">
             <div className="flex items-center justify-between">
@@ -322,9 +329,144 @@ export default async function SettingsPage() {
               Появится после первого входа и подключения iiko.
             </p>
           </Section>
+          </div>
         </div>
       </div>
-    </main>
+      </main>
+    </AppShell>
+  );
+}
+
+function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
+  const hasVenues = venues.length > 0;
+  const connectedCount = venues.filter((venue) => venue.iikoConnected).length;
+
+  return (
+    <Section icon={Plug} title="iiko">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-lg font-medium">Подключение данных</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+            Ключ хранится в Supabase. BI включается после прав Cloud API.
+          </p>
+        </div>
+        <StatusPill
+          tone={connectedCount > 0 ? "ok" : "warn"}
+          label={connectedCount > 0 ? `${connectedCount} активн.` : "нет ключа"}
+        />
+      </div>
+
+      {hasVenues ? (
+        <div className="space-y-2">
+          {venues.map((venue) => (
+            <div
+              key={venue.id}
+              className="rounded-lg border border-border/50 bg-background/40 p-4"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {venue.name}
+                  </p>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {venue.city || "город не указан"} · {venue.type}
+                  </p>
+                </div>
+                <Link
+                  href={
+                    venue.iikoConnected
+                      ? `/dashboard/${venue.id}`
+                      : "/onboarding"
+                  }
+                  className="inline-flex h-8 items-center justify-center rounded-md border border-border/60 bg-card/55 px-3 text-[13px] text-foreground transition-colors hover:bg-card"
+                >
+                  {venue.iikoConnected ? "Проверить BI" : "Подключить"}
+                </Link>
+              </div>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <DiagnosticItem
+                  icon={KeyRound}
+                  title="API login"
+                  text={venue.iikoConnected ? "сохранён" : "не подключён"}
+                  tone={venue.iikoConnected ? "ok" : "warn"}
+                />
+                <DiagnosticItem
+                  icon={CheckCircle2}
+                  title="Организация"
+                  text={venue.iikoConnected ? "выбрана" : "ожидает ключ"}
+                  tone={venue.iikoConnected ? "ok" : "muted"}
+                />
+                <DiagnosticItem
+                  icon={Activity}
+                  title="BI reports"
+                  text={venue.iikoConnected ? "нужны OLAP-права" : "после ключа"}
+                  tone={venue.iikoConnected ? "warn" : "muted"}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[13px] text-muted-foreground">
+          Добавьте заведение, чтобы подключить iiko.
+        </p>
+      )}
+    </Section>
+  );
+}
+
+function DiagnosticItem({
+  icon: Icon,
+  title,
+  text,
+  tone,
+}: {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  tone: "ok" | "warn" | "muted";
+}) {
+  return (
+    <div className="rounded-md border border-border/45 bg-card/35 p-3">
+      <div className="flex items-center gap-2">
+        <Icon
+          className={
+            "size-3.5 " +
+            (tone === "ok"
+              ? "text-brand"
+              : tone === "warn"
+                ? "text-[color:var(--pro)]"
+                : "text-muted-foreground")
+          }
+        />
+        <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          {title}
+        </p>
+      </div>
+      <p className="mt-2 text-[13px] text-foreground">{text}</p>
+    </div>
+  );
+}
+
+function StatusPill({
+  tone,
+  label,
+}: {
+  tone: "ok" | "warn";
+  label: string;
+}) {
+  return (
+    <span
+      className={
+        "inline-flex h-7 shrink-0 items-center rounded-full border px-2.5 text-[11px] uppercase tracking-[0.14em] " +
+        (tone === "ok"
+          ? "border-brand/30 bg-brand/10 text-brand"
+          : "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]")
+      }
+    >
+      {label}
+    </span>
   );
 }
 

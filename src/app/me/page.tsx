@@ -10,8 +10,7 @@ import {
   LogOut,
   UserRound,
 } from "lucide-react";
-import { SiteFooter } from "@/components/marketing/site-footer";
-import { SiteHeader } from "@/components/marketing/site-header";
+import { AppShell } from "@/components/dashboard/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getTeamRole, type TeamAnnouncement, type TeamTask } from "@/lib/team/team-os";
@@ -53,8 +52,7 @@ export default async function MyCabinetPage() {
     }
 
     return (
-      <>
-        <SiteHeader />
+      <AppShell activeHref="/me" chat={false}>
         <main className="flex-1">
           <section className="mx-auto max-w-3xl px-6 py-20">
             <Badge variant="outline" className="border-brand/30 text-brand">
@@ -76,8 +74,7 @@ export default async function MyCabinetPage() {
             </Link>
           </section>
         </main>
-        <SiteFooter />
-      </>
+      </AppShell>
     );
   }
 
@@ -90,8 +87,12 @@ export default async function MyCabinetPage() {
   );
 
   return (
-    <>
-      <SiteHeader />
+    <AppShell
+      activeHref="/me"
+      venueId={workspace.venueId}
+      venueName={workspace.venueName}
+      venueMeta="Team OS"
+    >
       <main className="flex-1">
         <section className="border-b border-border/40">
           <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 lg:grid-cols-[0.95fr_1.05fr]">
@@ -230,8 +231,7 @@ export default async function MyCabinetPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </>
+    </AppShell>
   );
 }
 

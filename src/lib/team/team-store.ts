@@ -81,6 +81,8 @@ type DbMembershipWithVenue = DbMembership & {
 export type TeamWorkspace = {
   mode: "saved" | "sandbox";
   venueId: string;
+  venueName: string;
+  venueMeta: string;
   staff: StaffMember[];
   tasks: TeamTask[];
   comments: TeamTaskComment[];
@@ -261,6 +263,8 @@ export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
   return {
     mode: "sandbox",
     venueId,
+    venueName: "Demo Restaurant",
+    venueMeta: "Иркутск · restaurant",
     staff: DEMO_STAFF.filter((member) => member.venueId === "dev-venue"),
     tasks: DEMO_TEAM_TASKS.filter((task) => task.venueId === "dev-venue"),
     comments: DEMO_TASK_COMMENTS.filter(
@@ -298,6 +302,8 @@ export async function getTeamWorkspace(
     return {
       mode: "saved",
       venueId,
+      venueName: "Рабочий кабинет",
+      venueMeta: "Restaurant OS",
       staff: [],
       tasks: [],
       comments: [],
@@ -321,6 +327,8 @@ export async function getTeamWorkspace(
     return {
       mode: "saved",
       venueId,
+      venueName: "Рабочий кабинет",
+      venueMeta: "Restaurant OS",
       staff: ((membershipsResult.data ?? []) as DbMembership[]).map(
         mapMembershipRow,
       ),
@@ -335,6 +343,18 @@ export async function getTeamWorkspace(
     mapMembershipRow,
   );
   const tasks = ((tasksResult.data ?? []) as DbTask[]).map(mapTaskRow);
+  const venueResult = await supabase
+    .from("venues")
+    .select("name,city,type")
+    .eq("id", venueId)
+    .maybeSingle<{ name: string; city: string | null; type: string | null }>();
+  const venueName = venueResult.data?.name?.trim() || "Рабочий кабинет";
+  const venueMeta = [
+    venueResult.data?.city?.trim(),
+    venueResult.data?.type?.trim(),
+  ]
+    .filter(Boolean)
+    .join(" · ") || "Restaurant OS";
 
   const commentsResult = await supabase
     .from("team_task_comments")
@@ -380,6 +400,8 @@ export async function getTeamWorkspace(
   return {
     mode: "saved",
     venueId,
+    venueName,
+    venueMeta,
     staff,
     tasks,
     comments,

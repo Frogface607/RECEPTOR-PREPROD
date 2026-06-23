@@ -1,7 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
-import { MobileTopbar } from "@/components/dashboard/mobile-topbar";
-import { ChatDrawer } from "@/components/chat/chat-drawer";
+import { AppShell } from "@/components/dashboard/app-shell";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 
 export default async function DashboardLayout({
@@ -21,13 +19,13 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar activeHref={`/dashboard/${venueId}`} />
-      <div className="flex-1 min-w-0 flex flex-col">
-        <MobileTopbar activeHref={`/dashboard/${venueId}`} />
-        {children}
-      </div>
-      <ChatDrawer venueId={access.venue.id} venueName={access.venue.name} />
-    </div>
+    <AppShell
+      activeHref={`/dashboard/${venueId}`}
+      venueId={access.venue.id}
+      venueName={access.venue.name}
+      venueMeta={`${access.venue.city} · ${access.venue.type}`}
+    >
+      {children}
+    </AppShell>
   );
 }

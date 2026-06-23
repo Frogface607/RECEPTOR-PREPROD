@@ -1,7 +1,17 @@
 import Link from "next/link";
 import { NavContent } from "./nav-content";
 
-export function DashboardSidebar({ activeHref }: { activeHref?: string }) {
+export function DashboardSidebar({
+  activeHref,
+  venueId,
+  venueName,
+  venueMeta,
+}: {
+  activeHref?: string;
+  venueId?: string;
+  venueName?: string;
+  venueMeta?: string;
+}) {
   return (
     <aside className="hidden h-screen sticky top-0 w-60 shrink-0 flex-col border-r border-border/40 bg-sidebar lg:flex">
       <div className="flex h-16 items-center gap-2 border-b border-border/40 px-6">
@@ -11,7 +21,12 @@ export function DashboardSidebar({ activeHref }: { activeHref?: string }) {
           </span>
         </Link>
       </div>
-      <NavContent activeHref={activeHref} />
+      <NavContent
+        activeHref={activeHref}
+        venueId={venueId}
+        venueName={venueName}
+        venueMeta={venueMeta}
+      />
     </aside>
   );
 }

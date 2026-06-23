@@ -4,28 +4,53 @@ import {
   MessageSquare,
   Wrench,
   Settings,
-  BookOpen,
   LogOut,
   UsersRound,
   UserRound,
+  CircleHelp,
   type LucideIcon,
 } from "lucide-react";
 
 export type NavItem = {
   href: string;
+  matchHref: string;
   icon: LucideIcon;
   label: string;
 };
 
-export const DASHBOARD_NAV: NavItem[] = [
-  { href: "/me", icon: UserRound, label: "Мой кабинет" },
-  { href: "/dashboard/dev-venue", icon: LayoutDashboard, label: "BI кабинет" },
-  { href: "/dashboard/dev-venue?chat=1", icon: MessageSquare, label: "Copilot" },
-  { href: "/team?role=owner", icon: UsersRound, label: "Team OS" },
-  { href: "/tools", icon: Wrench, label: "Инструменты" },
-  { href: "/settings", icon: Settings, label: "Настройки" },
-  { href: "/#что-делает", icon: BookOpen, label: "Помощь" },
-];
+export function getDashboardNav(venueId = "dev-venue"): NavItem[] {
+  const dashboardHref = `/dashboard/${encodeURIComponent(venueId)}`;
+
+  return [
+    { href: "/me", matchHref: "/me", icon: UserRound, label: "Мой кабинет" },
+    {
+      href: dashboardHref,
+      matchHref: dashboardHref,
+      icon: LayoutDashboard,
+      label: "Owner Cockpit",
+    },
+    {
+      href: `${dashboardHref}?chat=1`,
+      matchHref: "/copilot",
+      icon: MessageSquare,
+      label: "Copilot",
+    },
+    {
+      href: `/team?role=owner&venueId=${encodeURIComponent(venueId)}`,
+      matchHref: "/team",
+      icon: UsersRound,
+      label: "Team OS",
+    },
+    { href: "/tools", matchHref: "/tools", icon: Wrench, label: "Инструменты" },
+    {
+      href: "/settings",
+      matchHref: "/settings",
+      icon: Settings,
+      label: "Настройки",
+    },
+    { href: "/#что-делает", matchHref: "/help", icon: CircleHelp, label: "Помощь" },
+  ];
+}
 
 /**
  * Shared sidebar body — venue card + nav links + sign-out.
@@ -34,11 +59,19 @@ export const DASHBOARD_NAV: NavItem[] = [
  */
 export function NavContent({
   activeHref,
+  venueId = "dev-venue",
+  venueName = "Рабочий кабинет",
+  venueMeta = "Restaurant OS",
   onNavigate,
 }: {
   activeHref?: string;
+  venueId?: string;
+  venueName?: string;
+  venueMeta?: string;
   onNavigate?: () => void;
 }) {
+  const nav = getDashboardNav(venueId);
+
   return (
     <>
       <nav className="flex-1 px-3 py-6">
@@ -46,9 +79,11 @@ export function NavContent({
           Заведение
         </p>
         <div className="rounded-lg border border-border/50 bg-card/50 px-3 py-2.5">
-          <p className="text-[13px] font-medium text-foreground">Рабочий кабинет</p>
+          <p className="truncate text-[13px] font-medium text-foreground">
+            {venueName}
+          </p>
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            BI · Copilot
+            {venueMeta}
           </p>
         </div>
 
@@ -56,9 +91,10 @@ export function NavContent({
           Меню
         </p>
         <ul className="space-y-0.5">
-          {DASHBOARD_NAV.map((item) => {
+          {nav.map((item) => {
             const Icon = item.icon;
-            const isActive = activeHref === item.href;
+            const isActive =
+              activeHref === item.matchHref || activeHref === item.href;
             return (
               <li key={item.href}>
                 <Link

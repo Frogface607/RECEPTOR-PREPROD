@@ -16,7 +16,17 @@ import { NavContent } from "./nav-content";
  * Mobile-only top bar with a hamburger that opens the dashboard nav as a
  * left Sheet drawer. Hidden on lg+ where the persistent <aside> takes over.
  */
-export function MobileTopbar({ activeHref }: { activeHref?: string }) {
+export function MobileTopbar({
+  activeHref,
+  venueId,
+  venueName,
+  venueMeta,
+}: {
+  activeHref?: string;
+  venueId?: string;
+  venueName?: string;
+  venueMeta?: string;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -37,7 +47,13 @@ export function MobileTopbar({ activeHref }: { activeHref?: string }) {
               RECEPTOR
             </SheetTitle>
           </SheetHeader>
-          <NavContent activeHref={activeHref} onNavigate={() => setOpen(false)} />
+          <NavContent
+            activeHref={activeHref}
+            venueId={venueId}
+            venueName={venueName}
+            venueMeta={venueMeta}
+            onNavigate={() => setOpen(false)}
+          />
         </SheetContent>
       </Sheet>
 

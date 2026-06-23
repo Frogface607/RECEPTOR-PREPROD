@@ -10,8 +10,7 @@ import {
   UserRoundCog,
   UsersRound,
 } from "lucide-react";
-import { SiteFooter } from "@/components/marketing/site-footer";
-import { SiteHeader } from "@/components/marketing/site-header";
+import { AppShell } from "@/components/dashboard/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/link-button";
 import { TeamActionsPanel } from "./team-actions-panel";
@@ -93,8 +92,12 @@ export default async function TeamPage({
     : [];
 
   return (
-    <>
-      <SiteHeader />
+    <AppShell
+      activeHref="/team"
+      venueId={workspace.venueId}
+      venueName={workspace.venueName}
+      venueMeta={workspace.venueMeta}
+    >
       <main className="flex-1">
         <section className="border-b border-border/40">
           <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.72fr_1.28fr]">
@@ -110,7 +113,7 @@ export default async function TeamPage({
               </p>
               <div className="flex flex-wrap gap-3">
                 <LinkButton
-                  href="/dashboard/dev-venue"
+                  href={`/dashboard/${encodeURIComponent(workspace.venueId)}`}
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
                   Owner Cockpit
@@ -142,8 +145,7 @@ export default async function TeamPage({
               </div>
 
               <div className="mt-4 inline-flex rounded-md border border-border/50 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                {workspace.mode === "saved" ? "live workspace" : "sandbox workspace"} ·{" "}
-                {workspace.venueId}
+                {workspace.venueName}
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -310,8 +312,7 @@ export default async function TeamPage({
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </>
+    </AppShell>
   );
 }
 
