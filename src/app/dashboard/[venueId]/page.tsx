@@ -10,13 +10,57 @@ import { OwnerCockpitCard } from "@/components/dashboard/owner-cockpit-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
 import { SurvivalBriefCard } from "@/components/dashboard/survival-brief-card";
+import { AlertTriangle } from "lucide-react";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
 } from "@/lib/venues/period";
-import { getDashboardClient } from "@/lib/iiko/config";
+import { DEMO_ANCHOR, getDashboardClient } from "@/lib/iiko/config";
+import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
+import type { IikoClient } from "@/lib/iiko/types";
+import type {
+  CategoryStat,
+  DishStat,
+  RevenueSummary,
+  ShiftStat,
+} from "@/lib/iiko/models";
+import type { DailyBrief } from "@/lib/brief/daily-brief";
+
+type DashboardData = {
+  summary: RevenueSummary;
+  dishes: DishStat[];
+  categories: CategoryStat[];
+  shifts: ShiftStat[];
+  brief: DailyBrief;
+};
+
+async function loadDashboardData(
+  client: IikoClient,
+  period: Parameters<IikoClient["getRevenueSummary"]>[0],
+): Promise<DashboardData> {
+  const [summary, dishes, categories, shifts, brief] = await Promise.all([
+    client.getRevenueSummary(period),
+    client.getDishStatistics(period, 10),
+    client.getCategoryStatistics(period),
+    client.getShifts(period),
+    buildDailyBrief(client, period),
+  ]);
+
+  return { summary, dishes, categories, shifts, brief };
+}
+
+function dashboardDataErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/olap.*not allowed|right .*olap.*not allowed/i.test(message)) {
+    return "iiko ключ подключен, но для него не выдано право на OLAP-отчеты api/v2/reports/olap. Попросите в iiko включить это право для API login, после этого Receptor начнет показывать live BI.";
+  }
+  if (/401/i.test(message)) {
+    return "iiko отклонил запрос к live-данным. Проверьте права API login и доступ к выбранной организации.";
+  }
+  return "iiko live-данные сейчас недоступны. Receptor открыл кабинет на демо-цифрах, чтобы не блокировать настройку.";
+}
 
 export default async function DashboardPage({
   params,
@@ -39,21 +83,30 @@ export default async function DashboardPage({
 
   // Sandbox fixtures or real Cloud, decided by env/credentials.
   // Flipping USE_MOCK_IIKO=false + pasting apiLogin is the only change needed.
-  const client = getDashboardClient(venue);
-  const [summary, dishes, categories, shifts, brief] = await Promise.all([
-    client.getRevenueSummary(period),
-    client.getDishStatistics(period, 10),
-    client.getCategoryStatistics(period),
-    client.getShifts(period),
-    buildDailyBrief(client, period),
-  ]);
-
-  const periodLabel = formatPeriodLabel(period);
-  const dataMode =
+  const intendedDataMode =
     venue.iiko.apiLogin?.trim() ||
     (process.env.USE_MOCK_IIKO === "false" && process.env.IIKO_API_LOGIN?.trim())
       ? "live"
       : "mock";
+  let dataMode: "live" | "mock" = intendedDataMode;
+  let dataError: string | null = null;
+  let dashboardData: DashboardData;
+
+  try {
+    dashboardData = await loadDashboardData(getDashboardClient(venue), period);
+  } catch (error) {
+    if (intendedDataMode !== "live") throw error;
+
+    dataMode = "mock";
+    dataError = dashboardDataErrorMessage(error);
+    dashboardData = await loadDashboardData(
+      new MockIikoClient({ today: DEMO_ANCHOR }),
+      period,
+    );
+  }
+
+  const { summary, dishes, categories, shifts, brief } = dashboardData;
+  const periodLabel = formatPeriodLabel(period);
 
   return (
     <>
@@ -75,6 +128,22 @@ export default async function DashboardPage({
               сегодня. Графики ниже — детализация.
             </p>
           </div>
+
+          {dataError ? (
+            <div className="reveal reveal-2 mb-6 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-foreground/90">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-300" />
+                <div>
+                  <p className="font-medium text-foreground">
+                    Live iiko подключен, но BI-отчеты пока недоступны.
+                  </p>
+                  <p className="mt-1 leading-relaxed text-muted-foreground">
+                    {dataError}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="reveal reveal-2">
             <OwnerCockpitCard
