@@ -48,6 +48,9 @@ export default async function MyCabinetPage() {
     if (workspace.reason === "unauthenticated" && isSupabaseConfigured()) {
       redirect("/auth?next=/me");
     }
+    if (workspace.reason === "no_membership" && isSupabaseConfigured()) {
+      redirect("/onboarding");
+    }
 
     return (
       <>

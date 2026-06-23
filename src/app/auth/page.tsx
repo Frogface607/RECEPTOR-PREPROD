@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 function safeNextPath(value: string | string[] | undefined): string {
   const raw = Array.isArray(value) ? value[0] : value;
   if (raw?.startsWith("/") && !raw.startsWith("//")) return raw;
-  return "/me";
+  return "/onboarding";
 }
 
 export default async function AuthPage({

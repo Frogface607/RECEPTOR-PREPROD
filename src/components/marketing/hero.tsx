@@ -45,7 +45,7 @@ export function Hero() {
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <LinkButton
-              href="/auth"
+              href="/auth?next=/onboarding"
               size="lg"
               className="press h-12 bg-brand px-6 text-base text-primary-foreground shadow-none transition-colors hover:bg-brand-hover"
             >

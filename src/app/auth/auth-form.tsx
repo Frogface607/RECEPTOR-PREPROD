@@ -24,7 +24,7 @@ type State =
 function safeNextPath(value: string): string {
   return value.startsWith("/") && !value.startsWith("//")
     ? value
-    : "/me";
+    : "/onboarding";
 }
 
 function authCallbackUrl(nextPath: string): string {

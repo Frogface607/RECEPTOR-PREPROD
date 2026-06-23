@@ -52,13 +52,13 @@ export function SiteHeader() {
             Цены
           </Link>
           <Link
-            href="/auth"
+            href="/auth?next=/me"
             className="hidden transition-colors hover:text-foreground sm:inline"
           >
             Войти
           </Link>
           <LinkButton
-            href="/auth"
+            href="/auth?next=/onboarding"
             size="sm"
             className="bg-brand text-primary-foreground hover:bg-brand-hover"
           >
