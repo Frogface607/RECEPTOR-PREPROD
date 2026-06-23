@@ -15,6 +15,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const authCode = request.nextUrl.searchParams.get("code");
+  if (authCode && request.nextUrl.pathname !== "/auth/callback") {
+    const callbackUrl = request.nextUrl.clone();
+    callbackUrl.pathname = "/auth/callback";
+    callbackUrl.search = "";
+    callbackUrl.searchParams.set("code", authCode);
+    callbackUrl.searchParams.set(
+      "next",
+      request.nextUrl.searchParams.get("next") ?? "/onboarding",
+    );
+    return NextResponse.redirect(callbackUrl);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl(), supabaseAnonKey(), {

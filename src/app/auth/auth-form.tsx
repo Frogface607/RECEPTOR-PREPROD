@@ -27,6 +27,14 @@ function safeNextPath(value: string): string {
     : "/me";
 }
 
+function authCallbackUrl(nextPath: string): string {
+  const origin =
+    window.location.hostname.endsWith("receptorai.pro")
+      ? window.location.origin
+      : "https://www.receptorai.pro";
+  return `${origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`;
+}
+
 export function AuthForm({
   demoMode,
   developerMode,
@@ -84,7 +92,7 @@ export function AuthForm({
         : await supabase.auth.signInWithOtp({
             email,
             options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`,
+              emailRedirectTo: authCallbackUrl(nextPath),
             },
           });
 
