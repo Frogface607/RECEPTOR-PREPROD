@@ -20,7 +20,9 @@ import {
 type DbMembership = {
   id: string;
   venue_id: string;
+  user_id?: string | null;
   full_name: string;
+  email?: string | null;
   role: string;
   status: string;
   shift_label: string | null;
@@ -131,7 +133,9 @@ export function normalizeTeamRoleId(value: string | null | undefined): TeamRoleI
 export function mapMembershipRow(row: DbMembership): StaffMember {
   return {
     id: row.id,
+    userId: row.user_id ?? null,
     name: row.full_name,
+    email: row.email ?? null,
     roleId: normalizeTeamRoleId(row.role),
     venueId: row.venue_id,
     status:
@@ -233,7 +237,7 @@ export async function getTeamWorkspace(
 
   const membershipsResult = await supabase
     .from("venue_memberships")
-    .select("id,venue_id,full_name,role,status,shift_label")
+    .select("id,venue_id,user_id,full_name,email,role,status,shift_label")
     .eq("venue_id", venueId)
     .order("created_at", { ascending: true });
 
@@ -347,7 +351,7 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
 
   const membershipResult = await supabase
     .from("venue_memberships")
-    .select("id,venue_id,full_name,role,status,shift_label,venues(name,city)")
+    .select("id,venue_id,user_id,full_name,email,role,status,shift_label,venues(name,city)")
     .eq("user_id", user.id)
     .neq("status", "paused")
     .order("created_at", { ascending: true })
@@ -372,7 +376,7 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
 
   const staffResult = await supabase
     .from("venue_memberships")
-    .select("id,venue_id,full_name,role,status,shift_label")
+    .select("id,venue_id,user_id,full_name,email,role,status,shift_label")
     .eq("venue_id", venueId)
     .order("created_at", { ascending: true });
 

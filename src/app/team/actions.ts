@@ -27,6 +27,7 @@ const TaskStatusSchema = z.enum([
 const TaskAudienceTypeSchema = z.enum(["member", "role", "venue"]);
 const AnnouncementAudienceTypeSchema = z.enum(["role", "venue"]);
 const AnnouncementPrioritySchema = z.enum(["normal", "important"]);
+const MemberStatusSchema = z.enum(["active", "paused"]);
 
 const InviteMemberInput = z.object({
   venueId: z.string().min(1),
@@ -70,6 +71,18 @@ const UpdateTaskStatusInput = z.object({
   venueId: z.string().min(1),
   taskId: z.string().min(1),
   status: TaskStatusSchema,
+});
+
+const UpdateTeamMemberStatusInput = z.object({
+  venueId: z.string().min(1),
+  memberId: z.string().min(1),
+  status: MemberStatusSchema,
+});
+
+const ResetTeamMemberPasswordInput = z.object({
+  venueId: z.string().min(1),
+  memberId: z.string().min(1),
+  password: z.string().min(6).max(72),
 });
 
 const AddTaskCommentInput = z.object({
@@ -223,6 +236,122 @@ export async function inviteTeamMemberAction(
     message: createdUserId
       ? `Сотрудник добавлен. Логин: ${loginEmail}.`
       : "Сотрудник добавлен.",
+  };
+}
+
+export async function updateTeamMemberStatusAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = UpdateTeamMemberStatusInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "Некорректный статус сотрудника." };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  if (ctx.mode === "sandbox" || !ctx.supabase) {
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: "Sandbox: статус доступа обновлен.",
+    };
+  }
+
+  const { data, error } = await ctx.supabase
+    .from("venue_memberships")
+    .update({
+      status: parsed.data.status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", parsed.data.memberId)
+    .eq("venue_id", parsed.data.venueId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    if (missingTeamTables(error.message)) {
+      return {
+        ok: false,
+        error: "В базе нет Team OS таблиц. Примените миграцию 0004_team_os.sql.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  if (!data) {
+    return { ok: false, error: "Сотрудник не найден или нет доступа." };
+  }
+
+  revalidatePath("/team");
+  revalidatePath("/me");
+  return {
+    ok: true,
+    mode: "saved",
+    message:
+      parsed.data.status === "active"
+        ? "Доступ сотрудника активирован."
+        : "Доступ сотрудника поставлен на паузу.",
+  };
+}
+
+export async function resetTeamMemberPasswordAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = ResetTeamMemberPasswordInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "Пароль должен быть не короче 6 символов." };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  if (ctx.mode === "sandbox" || !ctx.supabase) {
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: "Sandbox: пароль сотрудника обновлен.",
+    };
+  }
+
+  const { data: member, error: memberError } = await ctx.supabase
+    .from("venue_memberships")
+    .select("id,user_id,email")
+    .eq("id", parsed.data.memberId)
+    .eq("venue_id", parsed.data.venueId)
+    .maybeSingle<{ id: string; user_id: string | null; email: string | null }>();
+
+  if (memberError) return { ok: false, error: memberError.message };
+  if (!member) {
+    return { ok: false, error: "Сотрудник не найден или нет доступа." };
+  }
+  if (!member.user_id) {
+    return {
+      ok: false,
+      error: "У сотрудника нет созданного логина. Создайте доступ заново.",
+    };
+  }
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    return {
+      ok: false,
+      error:
+        "На сервере не настроен SUPABASE_SERVICE_ROLE_KEY для сброса пароля.",
+    };
+  }
+
+  const { error } = await admin.auth.admin.updateUserById(member.user_id, {
+    password: parsed.data.password,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/team");
+  return {
+    ok: true,
+    mode: "saved",
+    message: `Пароль обновлен${member.email ? ` для ${member.email}` : ""}.`,
   };
 }
 

@@ -17,7 +17,9 @@ describe("Team OS store mapping", () => {
     const member = mapMembershipRow({
       id: "member-1",
       venue_id: "venue-1",
+      user_id: "user-1",
       full_name: "Алина",
+      email: "alina@staff.receptorai.pro",
       role: "venue_manager",
       status: "active",
       shift_label: "12:00-23:00",
@@ -25,7 +27,9 @@ describe("Team OS store mapping", () => {
 
     expect(member).toEqual({
       id: "member-1",
+      userId: "user-1",
       name: "Алина",
+      email: "alina@staff.receptorai.pro",
       roleId: "venue_manager",
       venueId: "venue-1",
       status: "active",

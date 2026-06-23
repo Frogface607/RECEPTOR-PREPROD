@@ -36,7 +36,9 @@ export type TeamPermission = {
 
 export type StaffMember = {
   id: string;
+  userId?: string | null;
   name: string;
+  email?: string | null;
   roleId: TeamRoleId;
   venueId: string;
   status: "active" | "invited" | "paused";

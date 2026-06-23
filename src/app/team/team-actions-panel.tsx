@@ -1,7 +1,15 @@
 "use client";
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
-import { Plus, Send, UserPlus } from "lucide-react";
+import {
+  Copy,
+  KeyRound,
+  PauseCircle,
+  PlayCircle,
+  Plus,
+  Send,
+  UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   TEAM_ROLES,
@@ -12,6 +20,8 @@ import {
 import {
   createTeamTaskAction,
   inviteTeamMemberAction,
+  resetTeamMemberPasswordAction,
+  updateTeamMemberStatusAction,
   updateTeamTaskStatusAction,
   type TeamActionResult,
 } from "./actions";
@@ -61,6 +71,10 @@ export function TeamActionsPanel({
   const [memberPassword, setMemberPassword] = useState("");
   const [memberRole, setMemberRole] = useState<TeamRoleId>("service");
   const [memberShift, setMemberShift] = useState("");
+  const [resetPasswords, setResetPasswords] = useState<
+    Record<string, string>
+  >({});
+  const [copiedMemberId, setCopiedMemberId] = useState<string | null>(null);
 
   const [taskTitle, setTaskTitle] = useState("");
   const [taskPriority, setTaskPriority] =
@@ -86,6 +100,13 @@ export function TeamActionsPanel({
       const result = await action();
       setMessage(resultToMessage(result));
     });
+  }
+
+  async function copyLogin(member: StaffMember) {
+    if (!member.email) return;
+    await navigator.clipboard.writeText(member.email);
+    setCopiedMemberId(member.id);
+    window.setTimeout(() => setCopiedMemberId(null), 1600);
   }
 
   return (
@@ -394,6 +415,167 @@ export function TeamActionsPanel({
               Обновить
             </Button>
           </form>
+        </div>
+
+        <div className="mt-8 rounded-lg border border-border/60 bg-card/50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                Доступы
+              </p>
+              <h3 className="mt-2 text-xl font-medium">
+                Логины, статусы и сброс пароля
+              </h3>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+              Активный сотрудник может войти в личный кабинет. Пауза скрывает
+              его кабинет без удаления истории задач.
+            </p>
+          </div>
+
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[860px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-border/50 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  <th className="px-3 py-3 font-normal">Сотрудник</th>
+                  <th className="px-3 py-3 font-normal">Роль</th>
+                  <th className="px-3 py-3 font-normal">Логин</th>
+                  <th className="px-3 py-3 font-normal">Статус</th>
+                  <th className="px-3 py-3 font-normal">Пароль</th>
+                  <th className="px-3 py-3 font-normal">Действия</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/35">
+                {staff.map((member) => {
+                  const role = TEAM_ROLES.find(
+                    (item) => item.id === member.roleId,
+                  );
+                  const resetPassword = resetPasswords[member.id] ?? "";
+                  const canReset = Boolean(member.userId);
+                  return (
+                    <tr key={member.id} className="align-top">
+                      <td className="px-3 py-4">
+                        <p className="font-medium text-foreground">{member.name}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {member.shiftLabel || "смена не указана"}
+                        </p>
+                      </td>
+                      <td className="px-3 py-4 text-muted-foreground">
+                        {role?.title ?? member.roleId}
+                      </td>
+                      <td className="px-3 py-4">
+                        {member.email ? (
+                          <button
+                            type="button"
+                            onClick={() => copyLogin(member)}
+                            className="inline-flex items-center gap-2 rounded-md border border-border/55 bg-background/45 px-2.5 py-1.5 font-mono text-xs text-foreground transition-colors hover:border-brand/40"
+                          >
+                            <Copy className="size-3.5 text-brand" />
+                            {copiedMemberId === member.id
+                              ? "скопировано"
+                              : member.email}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            нет логина
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-4">
+                        <span
+                          className={
+                            "rounded-md border px-2 py-1 text-[11px] uppercase tracking-[0.14em] " +
+                            (member.status === "active"
+                              ? "border-brand/35 bg-brand/10 text-brand"
+                              : member.status === "paused"
+                                ? "border-destructive/30 bg-destructive/10 text-destructive"
+                                : "border-border/60 bg-background/40 text-muted-foreground")
+                          }
+                        >
+                          {member.status === "active"
+                            ? "активен"
+                            : member.status === "paused"
+                              ? "пауза"
+                              : "приглашен"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-4">
+                        <div className="flex max-w-[250px] gap-2">
+                          <input
+                            value={resetPassword}
+                            onChange={(event) =>
+                              setResetPasswords((current) => ({
+                                ...current,
+                                [member.id]: event.target.value,
+                              }))
+                            }
+                            className={FIELD_CLASS}
+                            placeholder="новый пароль"
+                            type="password"
+                            autoComplete="new-password"
+                            disabled={!canReset}
+                          />
+                          <button
+                            type="button"
+                            disabled={!canReset || pending || resetPassword.length < 6}
+                            onClick={() =>
+                              runAction(async () => {
+                                const result = await resetTeamMemberPasswordAction({
+                                  venueId,
+                                  memberId: member.id,
+                                  password: resetPassword,
+                                });
+                                if (result.ok) {
+                                  setResetPasswords((current) => ({
+                                    ...current,
+                                    [member.id]: "",
+                                  }));
+                                }
+                                return result;
+                              })
+                            }
+                            className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground transition-colors hover:border-brand/40 disabled:opacity-40"
+                            title="Сбросить пароль"
+                          >
+                            <KeyRound className="size-4 text-brand" />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-3 py-4">
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() =>
+                            runAction(() =>
+                              updateTeamMemberStatusAction({
+                                venueId,
+                                memberId: member.id,
+                                status:
+                                  member.status === "paused" ? "active" : "paused",
+                              }),
+                            )
+                          }
+                          className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/40 disabled:opacity-50"
+                        >
+                          {member.status === "paused" ? (
+                            <>
+                              <PlayCircle className="size-3.5 text-brand" />
+                              Активировать
+                            </>
+                          ) : (
+                            <>
+                              <PauseCircle className="size-3.5 text-destructive" />
+                              Пауза
+                            </>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
