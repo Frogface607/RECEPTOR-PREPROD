@@ -6,6 +6,10 @@ import {
   DEMO_TEAM_ANNOUNCEMENTS,
   DEMO_TEAM_TASKS,
   TEAM_ROLES,
+  getTeamRole,
+  listAnnouncementsForRole,
+  listTasksForMember,
+  roleCan,
   type StaffMember,
   type TeamAnnouncement,
   type TeamTaskComment,
@@ -55,6 +59,10 @@ type DbAnnouncement = {
   created_at: string | null;
 };
 
+type DbMembershipWithVenue = DbMembership & {
+  venues?: { name: string | null; city: string | null } | null;
+};
+
 export type TeamWorkspace = {
   mode: "saved" | "sandbox";
   venueId: string;
@@ -63,6 +71,19 @@ export type TeamWorkspace = {
   comments: TeamTaskComment[];
   announcements: TeamAnnouncement[];
 };
+
+export type PersonalTeamWorkspace =
+  | {
+      ok: true;
+      mode: "saved" | "sandbox";
+      venueId: string;
+      venueName: string;
+      member: StaffMember;
+      tasks: TeamTask[];
+      comments: TeamTaskComment[];
+      announcements: TeamAnnouncement[];
+    }
+  | { ok: false; reason: "unauthenticated" | "no_membership" };
 
 const ROLE_IDS = new Set<TeamRoleId>(TEAM_ROLES.map((role) => role.id));
 const TASK_SOURCES = new Set<TeamTask["source"]>([
@@ -291,6 +312,136 @@ export async function getTeamWorkspace(
     venueId,
     staff,
     tasks,
+    comments,
+    announcements,
+  };
+}
+
+function getDemoPersonalWorkspace(): PersonalTeamWorkspace {
+  const member =
+    DEMO_STAFF.find((item) => item.id === "staff-service") ?? DEMO_STAFF[0];
+
+  return {
+    ok: true,
+    mode: "sandbox",
+    venueId: "dev-venue",
+    venueName: "Demo Restaurant",
+    member,
+    tasks: listTasksForMember(member.id),
+    comments: DEMO_TASK_COMMENTS,
+    announcements: listAnnouncementsForRole(member.roleId),
+  };
+}
+
+export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace> {
+  const user = await getCurrentUser();
+  const supabase = await getServerSupabase();
+
+  if (!supabase || user?.isDemo) {
+    return getDemoPersonalWorkspace();
+  }
+
+  if (!user) {
+    return { ok: false, reason: "unauthenticated" };
+  }
+
+  const membershipResult = await supabase
+    .from("venue_memberships")
+    .select("id,venue_id,full_name,role,status,shift_label,venues(name,city)")
+    .eq("user_id", user.id)
+    .neq("status", "paused")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle<DbMembershipWithVenue>();
+
+  if (membershipResult.error) {
+    if (isMissingTeamTable(membershipResult.error.message)) {
+      return getDemoPersonalWorkspace();
+    }
+    return { ok: false, reason: "no_membership" };
+  }
+
+  if (!membershipResult.data) {
+    return { ok: false, reason: "no_membership" };
+  }
+
+  const member = mapMembershipRow(membershipResult.data);
+  const venueId = member.venueId;
+  const venueName =
+    membershipResult.data.venues?.name?.trim() || "Рабочий кабинет";
+
+  const staffResult = await supabase
+    .from("venue_memberships")
+    .select("id,venue_id,full_name,role,status,shift_label")
+    .eq("venue_id", venueId)
+    .order("created_at", { ascending: true });
+
+  const staff =
+    staffResult.error && !isMissingTeamTable(staffResult.error.message)
+      ? [member]
+      : ((staffResult.data ?? [membershipResult.data]) as DbMembership[]).map(
+          mapMembershipRow,
+        );
+
+  const tasksResult = await supabase
+    .from("team_tasks")
+    .select(
+      "id,venue_id,title,source,priority,status,audience_type,audience_member_id,audience_role,due_label",
+    )
+    .eq("venue_id", venueId)
+    .order("created_at", { ascending: false });
+
+  const tasks =
+    tasksResult.error && !isMissingTeamTable(tasksResult.error.message)
+      ? []
+      : ((tasksResult.data ?? []) as DbTask[]).map(mapTaskRow);
+
+  const visibleTasks = roleCan(member.roleId, "view_all_tasks")
+    ? tasks
+    : listTasksForMember(member.id, staff, tasks);
+
+  const commentsResult = await supabase
+    .from("team_task_comments")
+    .select("id,venue_id,task_id,author_membership_id,body,created_at")
+    .eq("venue_id", venueId)
+    .order("created_at", { ascending: true });
+
+  const comments =
+    commentsResult.error && !isMissingTeamTable(commentsResult.error.message)
+      ? []
+      : ((commentsResult.data ?? []) as DbTaskComment[])
+          .map((row) => mapCommentRow(row, staff))
+          .filter((comment) =>
+            visibleTasks.some((task) => task.id === comment.taskId),
+          );
+
+  const announcementsResult = await supabase
+    .from("team_announcements")
+    .select("id,venue_id,title,body,priority,audience_type,audience_role,created_at")
+    .eq("venue_id", venueId)
+    .order("created_at", { ascending: false });
+
+  const announcements =
+    announcementsResult.error &&
+    !isMissingTeamTable(announcementsResult.error.message)
+      ? []
+      : listAnnouncementsForRole(
+          member.roleId,
+          venueId,
+          ((announcementsResult.data ?? []) as DbAnnouncement[]).map(
+            mapAnnouncementRow,
+          ),
+        );
+
+  getTeamRole(member.roleId);
+
+  return {
+    ok: true,
+    mode: "saved",
+    venueId,
+    venueName,
+    member,
+    tasks: visibleTasks,
     comments,
     announcements,
   };

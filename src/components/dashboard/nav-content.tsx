@@ -7,6 +7,7 @@ import {
   BookOpen,
   LogOut,
   UsersRound,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ export type NavItem = {
 };
 
 export const DASHBOARD_NAV: NavItem[] = [
+  { href: "/me", icon: UserRound, label: "Мой кабинет" },
   { href: "/dashboard/dev-venue", icon: LayoutDashboard, label: "BI кабинет" },
   { href: "/dashboard/dev-venue?chat=1", icon: MessageSquare, label: "Copilot" },
   { href: "/team?role=owner", icon: UsersRound, label: "Team OS" },
