@@ -27,3 +27,13 @@ export function supabaseUrl(): string {
 export function supabaseAnonKey(): string {
   return (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 }
+
+export function supabaseServiceRoleKey(): string {
+  return (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+}
+
+export function isSupabaseAdminConfigured(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return isSupabaseConfigured(env) && Boolean(env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}

@@ -57,6 +57,8 @@ export function TeamActionsPanel({
 
   const [memberName, setMemberName] = useState("");
   const [memberEmail, setMemberEmail] = useState("");
+  const [memberLogin, setMemberLogin] = useState("");
+  const [memberPassword, setMemberPassword] = useState("");
   const [memberRole, setMemberRole] = useState<TeamRoleId>("service");
   const [memberShift, setMemberShift] = useState("");
 
@@ -126,12 +128,16 @@ export function TeamActionsPanel({
                   venueId,
                   fullName: memberName,
                   email: memberEmail,
+                  login: memberLogin,
+                  password: memberPassword,
                   role: memberRole,
                   shiftLabel: memberShift,
                 });
                 if (result.ok) {
                   setMemberName("");
                   setMemberEmail("");
+                  setMemberLogin("");
+                  setMemberPassword("");
                   setMemberShift("");
                 }
                 return result;
@@ -161,6 +167,27 @@ export function TeamActionsPanel({
                   type="email"
                 />
               </FieldLabel>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FieldLabel label="Логин">
+                  <input
+                    value={memberLogin}
+                    onChange={(event) => setMemberLogin(event.target.value)}
+                    className={FIELD_CLASS}
+                    placeholder="masha"
+                    autoComplete="off"
+                  />
+                </FieldLabel>
+                <FieldLabel label="Пароль">
+                  <input
+                    value={memberPassword}
+                    onChange={(event) => setMemberPassword(event.target.value)}
+                    className={FIELD_CLASS}
+                    placeholder="временный пароль"
+                    type="password"
+                    autoComplete="new-password"
+                  />
+                </FieldLabel>
+              </div>
               <FieldLabel label="Роль">
                 <select
                   value={memberRole}
@@ -185,6 +212,11 @@ export function TeamActionsPanel({
                 />
               </FieldLabel>
             </div>
+            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+              Если задать логин и пароль, Receptor создаст личный вход
+              сотрудника. Короткий логин станет адресом вида
+              login@staff.receptorai.pro.
+            </p>
             <Button type="submit" className="mt-5 w-full" disabled={pending}>
               <Plus className="size-4" />
               Добавить

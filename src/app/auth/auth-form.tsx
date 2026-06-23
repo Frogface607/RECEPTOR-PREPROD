@@ -8,8 +8,12 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
+  UserRound,
 } from "lucide-react";
+import { normalizeStaffLoginToEmail } from "@/lib/auth/staff-login";
 import { getBrowserSupabase } from "@/lib/db/browser";
+
+type AuthMode = "password" | "magic";
 
 type State =
   | { status: "idle" }
@@ -34,13 +38,32 @@ export function AuthForm({
   developerError: boolean;
   nextPath: string;
 }) {
-  const [email, setEmail] = useState("");
+  const [mode, setMode] = useState<AuthMode>("password");
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
   const [state, setState] = useState<State>({ status: "idle" });
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const value = email.trim();
-    if (!value || state.status === "sending") return;
+    if (state.status === "sending") return;
+
+    const email = normalizeStaffLoginToEmail(login);
+    if (!email) {
+      setState({
+        status: "error",
+        message:
+          "Введите email или короткий латинский логин: masha, chef01, manager.bar.",
+      });
+      return;
+    }
+
+    if (mode === "password" && password.length < 6) {
+      setState({
+        status: "error",
+        message: "Пароль должен быть не короче 6 символов.",
+      });
+      return;
+    }
 
     const supabase = getBrowserSupabase();
     if (!supabase) {
@@ -52,17 +75,25 @@ export function AuthForm({
     }
 
     setState({ status: "sending" });
-    const { error } = await supabase.auth.signInWithOtp({
-      email: value,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`,
-      },
-    });
+    const { error } =
+      mode === "password"
+        ? await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+        : await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`,
+            },
+          });
 
     if (error) {
       setState({ status: "error", message: error.message });
+    } else if (mode === "password") {
+      window.location.assign(safeNextPath(nextPath));
     } else {
-      setState({ status: "sent", email: value });
+      setState({ status: "sent", email });
     }
   };
 
@@ -95,22 +126,74 @@ export function AuthForm({
     <div className="rounded-xl border border-border/60 bg-card/55 p-8">
       <h1 className="text-2xl font-medium tracking-[-0.02em]">Вход в Receptor</h1>
       <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-        Введите email, и мы пришлем одноразовую ссылку для входа.
+        Войдите по логину и паролю, который выдал администратор ресторана.
       </p>
+
+      <div className="mt-6 grid grid-cols-2 rounded-lg border border-border/60 bg-background/50 p-1">
+        <button
+          type="button"
+          onClick={() => {
+            setMode("password");
+            setState({ status: "idle" });
+          }}
+          className={
+            "rounded-md px-3 py-2 text-sm transition-colors " +
+            (mode === "password"
+              ? "bg-card text-foreground"
+              : "text-muted-foreground hover:text-foreground")
+          }
+        >
+          Логин
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMode("magic");
+            setState({ status: "idle" });
+          }}
+          className={
+            "rounded-md px-3 py-2 text-sm transition-colors " +
+            (mode === "magic"
+              ? "bg-card text-foreground"
+              : "text-muted-foreground hover:text-foreground")
+          }
+        >
+          Email-ссылка
+        </button>
+      </div>
 
       <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-3">
         <div className="relative">
-          <Mail className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          {mode === "password" ? (
+            <UserRound className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          ) : (
+            <Mail className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          )}
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@company.ru"
-            autoComplete="email"
+            type="text"
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
+            placeholder={mode === "password" ? "masha или name@company.ru" : "name@company.ru"}
+            autoComplete={mode === "password" ? "username" : "email"}
             required
             className="w-full rounded-lg border border-border/60 bg-background/60 py-3 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
           />
         </div>
+
+        {mode === "password" ? (
+          <div className="relative">
+            <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Пароль"
+              autoComplete="current-password"
+              required
+              className="w-full rounded-lg border border-border/60 bg-background/60 py-3 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
+            />
+          </div>
+        ) : null}
 
         <button
           type="submit"
@@ -119,7 +202,11 @@ export function AuthForm({
         >
           {state.status === "sending" ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Отправляю...
+              <Loader2 className="size-4 animate-spin" /> Проверяю...
+            </>
+          ) : mode === "password" ? (
+            <>
+              Войти <ArrowRight className="size-4" />
             </>
           ) : (
             <>
@@ -132,6 +219,14 @@ export function AuthForm({
           <p className="text-[13px] text-destructive">{state.message}</p>
         ) : null}
       </form>
+
+      {mode === "password" ? (
+        <p className="mt-4 text-[12px] leading-relaxed text-muted-foreground">
+          Короткий логин автоматически превращается во внутренний email вида
+          login@staff.receptorai.pro. Для владельца можно использовать обычный
+          email.
+        </p>
+      ) : null}
 
       {developerMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
+import { normalizeStaffLoginToEmail } from "@/lib/auth/staff-login";
+import { getSupabaseAdmin } from "@/lib/db/admin";
 import { getServerSupabase } from "@/lib/db/server";
 import {
   TEAM_ROLES,
@@ -31,6 +33,8 @@ const InviteMemberInput = z.object({
   fullName: z.string().trim().min(2).max(120),
   email: z.string().trim().email().optional().or(z.literal("")),
   phone: z.string().trim().max(40).optional().or(z.literal("")),
+  login: z.string().trim().max(80).optional().or(z.literal("")),
+  password: z.string().min(6).max(72).optional().or(z.literal("")),
   role: TeamRoleIdSchema,
   shiftLabel: z.string().trim().max(120).optional().or(z.literal("")),
 });
@@ -142,18 +146,67 @@ export async function inviteTeamMemberAction(
     };
   }
 
+  const wantsCredentials = Boolean(parsed.data.login || parsed.data.password);
+  const loginEmail = wantsCredentials
+    ? normalizeStaffLoginToEmail(parsed.data.login || parsed.data.email || "")
+    : null;
+
+  if (wantsCredentials && (!loginEmail || !parsed.data.password)) {
+    return {
+      ok: false,
+      error:
+        "Для доступа сотрудника укажите короткий логин/email и временный пароль от 6 символов.",
+    };
+  }
+
+  let createdUserId: string | null = null;
+  if (wantsCredentials && loginEmail && parsed.data.password) {
+    const admin = getSupabaseAdmin();
+    if (!admin) {
+      return {
+        ok: false,
+        error:
+          "На сервере не настроен SUPABASE_SERVICE_ROLE_KEY для создания логинов сотрудников.",
+      };
+    }
+
+    const { data, error } = await admin.auth.admin.createUser({
+      email: loginEmail,
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: parsed.data.fullName,
+        venue_id: parsed.data.venueId,
+        role: parsed.data.role,
+      },
+    });
+
+    if (error || !data.user) {
+      return {
+        ok: false,
+        error: error?.message ?? "Не удалось создать логин сотрудника.",
+      };
+    }
+
+    createdUserId = data.user.id;
+  }
+
   const { error } = await ctx.supabase.from("venue_memberships").insert({
     venue_id: parsed.data.venueId,
+    user_id: createdUserId,
     full_name: parsed.data.fullName,
-    email: parsed.data.email || null,
+    email: loginEmail || parsed.data.email || null,
     phone: parsed.data.phone || null,
     role: parsed.data.role,
-    status: parsed.data.email ? "invited" : "active",
+    status: createdUserId || !parsed.data.email ? "active" : "invited",
     shift_label: parsed.data.shiftLabel || "",
     created_by: ctx.userId,
   });
 
   if (error) {
+    if (createdUserId) {
+      await getSupabaseAdmin()?.auth.admin.deleteUser(createdUserId);
+    }
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
@@ -164,7 +217,13 @@ export async function inviteTeamMemberAction(
   }
 
   revalidatePath("/team");
-  return { ok: true, mode: "saved", message: "Сотрудник добавлен." };
+  return {
+    ok: true,
+    mode: "saved",
+    message: createdUserId
+      ? `Сотрудник добавлен. Логин: ${loginEmail}.`
+      : "Сотрудник добавлен.",
+  };
 }
 
 export async function createTeamTaskAction(

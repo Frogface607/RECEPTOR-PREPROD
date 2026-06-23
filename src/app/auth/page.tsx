@@ -57,7 +57,8 @@ export default async function AuthPage({
         />
 
         <p className="mt-8 text-center text-[12px] text-muted-foreground">
-          Нажимая «Прислать ссылку», вы соглашаетесь с условиями использования.
+          Доступ выдает администратор ресторана. Если логина нет, запросите его
+          у управляющего или владельца.
         </p>
       </div>
     </main>
