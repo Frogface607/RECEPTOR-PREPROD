@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   CheckCircle2,
@@ -25,6 +26,8 @@ import {
   type TeamTask,
 } from "@/lib/team/team-os";
 import { getTeamWorkspace } from "@/lib/team/team-store";
+import { getCurrentUser } from "@/lib/auth/session";
+import { isSupabaseConfigured } from "@/lib/db/env";
 
 export const metadata: Metadata = {
   title: "Team OS — RECEPTOR",
@@ -71,7 +74,14 @@ export default async function TeamPage({
 }) {
   const sp = await searchParams;
   const roleId = parseRole(sp.role);
-  const workspace = await getTeamWorkspace(parseVenueId(sp.venueId));
+  const venueId = parseVenueId(sp.venueId);
+  const user = await getCurrentUser();
+  if (isSupabaseConfigured() && !user && venueId !== "dev-venue") {
+    const nextPath = `/team?role=${roleId}&venueId=${encodeURIComponent(venueId)}`;
+    redirect(`/auth?next=${encodeURIComponent(nextPath)}`);
+  }
+
+  const workspace = await getTeamWorkspace(venueId);
   const home = buildRoleHome(roleId, workspace.tasks);
   const visibleStaff = workspace.staff.filter((member) =>
     roleId === "owner" ||
