@@ -8,6 +8,7 @@ const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_OPENAI_MODEL = "gpt-5.5";
 const DEFAULT_OPENROUTER_MODEL = "perplexity/sonar-pro";
+const RESEARCH_FETCH_TIMEOUT_MS = 18_000;
 
 export type VenueResearchInput = {
   name: string;
@@ -90,6 +91,10 @@ function extractJson(text: string): unknown {
   return JSON.parse(match[0]) as unknown;
 }
 
+function researchFetchSignal(): AbortSignal {
+  return AbortSignal.timeout(RESEARCH_FETCH_TIMEOUT_MS);
+}
+
 function fallbackProfile(input: VenueResearchInput): VenueIntelligenceProfile {
   const typeLabel =
     input.type === "bar"
@@ -141,6 +146,7 @@ async function researchWithOpenAI(
 
   const response = await fetch(OPENAI_RESPONSES_URL, {
     method: "POST",
+    signal: researchFetchSignal(),
     headers: {
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
@@ -164,6 +170,7 @@ async function researchWithOpenRouter(
 
   const response = await fetch(OPENROUTER_CHAT_URL, {
     method: "POST",
+    signal: researchFetchSignal(),
     headers: {
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
