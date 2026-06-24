@@ -23,9 +23,18 @@ export type IikoClientConfig =
   | { mode: "mock"; today: string; organizationId: string }
   | {
       mode: "real";
+      channel: "cloud";
       today: string;
       apiLogin: string;
       organizationId: string;
+    }
+  | {
+      mode: "real";
+      channel: "rms";
+      today: string;
+      host: string;
+      login: string;
+      password: string;
     };
 
 /**
@@ -39,9 +48,26 @@ export function resolveIikoClientConfig(
   env: Record<string, string | undefined>,
   today: string,
 ): IikoClientConfig {
+  if (
+    venue.iiko.channel === "rms" &&
+    venue.iiko.rmsHost?.trim() &&
+    venue.iiko.rmsLogin?.trim() &&
+    venue.iiko.rmsPassword?.trim()
+  ) {
+    return {
+      mode: "real",
+      channel: "rms",
+      today,
+      host: venue.iiko.rmsHost.trim(),
+      login: venue.iiko.rmsLogin.trim(),
+      password: venue.iiko.rmsPassword,
+    };
+  }
+
   if (venue.iiko.apiLogin?.trim()) {
     return {
       mode: "real",
+      channel: "cloud",
       today,
       apiLogin: venue.iiko.apiLogin.trim(),
       organizationId: venue.iiko.organizationId,
@@ -56,6 +82,7 @@ export function resolveIikoClientConfig(
     if (apiLogin) {
       return {
         mode: "real",
+        channel: "cloud",
         today,
         apiLogin,
         organizationId: venue.iiko.organizationId,
@@ -83,6 +110,17 @@ export function getDashboardClient(venue: ResolvedVenue): IikoClient {
   const cfg = resolveIikoClientConfig(venue, process.env, todayIso());
 
   if (cfg.mode === "real") {
+    if (cfg.channel === "rms") {
+      return getIikoClient({
+        channel: "rms",
+        host: cfg.host,
+        login: cfg.login,
+        password: cfg.password,
+        today: cfg.today,
+        forceReal: true,
+      });
+    }
+
     return getIikoClient({
       channel: "cloud",
       apiLogin: cfg.apiLogin,

@@ -26,9 +26,32 @@ describe("resolveIikoClientConfig", () => {
       "2026-06-03",
     );
     expect(cfg.mode).toBe("real");
-    if (cfg.mode === "real") {
+    if (cfg.mode === "real" && cfg.channel === "cloud") {
       expect(cfg.apiLogin).toBe("stored-login");
       expect(cfg.organizationId).toBe("sandbox-org");
+    }
+  });
+
+  test("stored RMS credentials select real RMS mode without env flags", () => {
+    const cfg = resolveIikoClientConfig(
+      {
+        ...venue,
+        iiko: {
+          ...venue.iiko,
+          channel: "rms",
+          rmsHost: "edison.iiko.it",
+          rmsLogin: "Sergey",
+          rmsPassword: "secret",
+        },
+      },
+      {},
+      "2026-06-03",
+    );
+    expect(cfg.mode).toBe("real");
+    if (cfg.mode === "real" && cfg.channel === "rms") {
+      expect(cfg.host).toBe("edison.iiko.it");
+      expect(cfg.login).toBe("Sergey");
+      expect(cfg.today).toBe("2026-06-03");
     }
   });
 
@@ -56,7 +79,7 @@ describe("resolveIikoClientConfig", () => {
       "2026-06-03",
     );
     expect(cfg.mode).toBe("real");
-    if (cfg.mode === "real") {
+    if (cfg.mode === "real" && cfg.channel === "cloud") {
       expect(cfg.apiLogin).toBe("real-login-123");
       expect(cfg.organizationId).toBe("sandbox-org");
       expect(cfg.today).toBe("2026-06-03");

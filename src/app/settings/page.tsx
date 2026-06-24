@@ -35,9 +35,14 @@ type SettingsVenue = {
   city: string;
   type: string;
   iikoConnected: boolean;
+  iikoChannel: "cloud" | "rms" | null;
   contextRequiredPercentage: number;
   contextMissingRequired: number;
 };
+
+function normalizeIikoChannel(value: string | null | undefined): "cloud" | "rms" | null {
+  return value === "cloud" || value === "rms" ? value : null;
+}
 
 async function listSettingsVenues(): Promise<SettingsVenue[]> {
   const user = await getCurrentUser();
@@ -51,6 +56,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
         city: venue.city,
         type: venue.type,
         iikoConnected: Boolean(venue.iiko.apiLogin),
+        iikoChannel: normalizeIikoChannel(venue.iiko.channel),
         contextRequiredPercentage: completion.requiredPercentage,
         contextMissingRequired: completion.missingRequired.length,
       };
@@ -106,12 +112,19 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
   const { data: creds } = ids.length
     ? await supabase
         .from("iiko_credentials")
-        .select("venue_id")
+        .select("venue_id,channel")
         .in("venue_id", ids)
         .eq("status", "active")
     : { data: [] };
-  const connected = new Set(
-    ((creds ?? []) as Array<{ venue_id: string }>).map((cred) => cred.venue_id),
+  const connected = new Map(
+    ((creds ?? []) as Array<{ venue_id: string; channel: string | null }>).map(
+      (cred) => [
+        cred.venue_id,
+        cred.channel === "rms" || cred.channel === "cloud"
+          ? cred.channel
+          : null,
+      ],
+    ),
   );
 
   return rows.map((venue) => {
@@ -123,6 +136,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
       city: venue.city ?? "",
       type: venue.type ?? "other",
       iikoConnected: connected.has(venue.id),
+      iikoChannel: normalizeIikoChannel(connected.get(venue.id)),
       contextRequiredPercentage: completion.requiredPercentage,
       contextMissingRequired: completion.missingRequired.length,
     };
@@ -228,7 +242,7 @@ export default async function SettingsPage() {
                       {venue.iikoConnected ? (
                         <span className="hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-brand sm:inline-flex">
                           <CheckCircle2 className="size-3.5" />
-                          iiko
+                          {venue.iikoChannel ?? "iiko"}
                         </span>
                       ) : (
                         <span className="hidden text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
@@ -370,6 +384,7 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                   </p>
                   <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     {venue.city || "город не указан"} · {venue.type}
+                    {venue.iikoChannel ? ` · ${venue.iikoChannel}` : ""}
                   </p>
                 </div>
                 <Link
@@ -394,14 +409,32 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                 <DiagnosticItem
                   icon={CheckCircle2}
                   title="Организация"
-                  text={venue.iikoConnected ? "выбрана" : "ожидает ключ"}
+                  text={
+                    venue.iikoConnected
+                      ? venue.iikoChannel === "rms"
+                        ? "RMS server"
+                        : "выбрана"
+                      : "ожидает ключ"
+                  }
                   tone={venue.iikoConnected ? "ok" : "muted"}
                 />
                 <DiagnosticItem
                   icon={Activity}
                   title="BI reports"
-                  text={venue.iikoConnected ? "нужны OLAP-права" : "после ключа"}
-                  tone={venue.iikoConnected ? "warn" : "muted"}
+                  text={
+                    venue.iikoConnected
+                      ? venue.iikoChannel === "rms"
+                        ? "OLAP доступен"
+                        : "нужны OLAP-права"
+                      : "после ключа"
+                  }
+                  tone={
+                    venue.iikoConnected && venue.iikoChannel === "rms"
+                      ? "ok"
+                      : venue.iikoConnected
+                        ? "warn"
+                        : "muted"
+                  }
                 />
               </div>
             </div>

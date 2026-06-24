@@ -1,54 +1,115 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { RmsIikoClient } from "./rms-client";
-
-/**
- * RMS Server port is deferred to Phase 1.5. RMS is only used by chain
- * restaurants under one corporate iiko Office.
- * We have zero chain deployments in the pipeline, so porting OLAP-on-RMS is
- * effort-without-customer.
- *
- * For Phase 1 we expose the surface (the class exists, methods exist with
- * the right signatures so the facade compiles), but every method throws
- * a clear deferral error.
- */
 
 const HOST = "sandbox.iiko.local";
 const LOGIN = "Sergey";
 const PASSWORD = "secret";
-const ANCHOR = "2026-05-29";
+const ANCHOR = "2026-05-31";
+const SESSION = "session-key-1234567890";
 
-describe("RmsIikoClient — all methods deferred to Phase 1.5", () => {
-  const client = new RmsIikoClient({
+type MockResponse = {
+  status?: number;
+  body: unknown;
+  contentType?: string;
+};
+
+function mockFetch(responses: MockResponse[]) {
+  const calls: { url: string; init?: RequestInit }[] = [];
+  const queue = [...responses];
+  const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    calls.push({ url: input.toString(), init });
+    const next = queue.shift();
+    if (!next) throw new Error(`unexpected fetch ${input.toString()}`);
+    const body =
+      typeof next.body === "string" ? next.body : JSON.stringify(next.body);
+    return new Response(body, {
+      status: next.status ?? 200,
+      headers: {
+        "Content-Type": next.contentType ?? "application/json",
+      },
+    });
+  });
+  return { fetchImpl, calls };
+}
+
+function client(fetchImpl: typeof fetch) {
+  return new RmsIikoClient({
     host: HOST,
     login: LOGIN,
     password: PASSWORD,
     today: ANCHOR,
+    fetchImpl,
+  });
+}
+
+afterEach(() => vi.restoreAllMocks());
+
+describe("RmsIikoClient", () => {
+  test("authenticates and parses revenue OLAP rows", async () => {
+    const { fetchImpl, calls } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      {
+        body: {
+          data: [
+            { "OpenDate.Typed": "2026-05-30", DishSumInt: 202590, DishAmountInt: 457 },
+            { "OpenDate.Typed": "2026-05-31", DishSumInt: 377773, DishAmountInt: 922.73 },
+          ],
+        },
+      },
+    ]);
+
+    const summary = await client(fetchImpl).getRevenueSummary({
+      type: "CUSTOM",
+      from: "2026-05-30",
+      to: "2026-05-31",
+    });
+
+    expect(summary.revenue).toBe(580363);
+    expect(summary.itemsSold).toBe(1380);
+    expect(summary.points).toEqual([
+      { date: "2026-05-30", revenue: 202590 },
+      { date: "2026-05-31", revenue: 377773 },
+    ]);
+    expect(calls[0].url).toContain("/resto/api/auth");
+    const body = JSON.parse(calls[1].init?.body as string);
+    expect(body.filters["OpenDate.Typed"].from).toBe("2026-05-30");
+    expect(body.filters["OpenDate.Typed"].to).toBe("2026-05-31");
+    expect(body.groupByRowFields).toEqual(["OpenDate.Typed"]);
   });
 
-  test.each([
-    ["getRevenueSummary", () => client.getRevenueSummary({ type: "TODAY" })],
-    [
-      "getDishStatistics",
-      () => client.getDishStatistics({ type: "TODAY" }, 10),
-    ],
-    [
-      "getCategoryStatistics",
-      () => client.getCategoryStatistics({ type: "TODAY" }),
-    ],
-    ["getShifts", () => client.getShifts({ type: "TODAY" })],
-    ["searchNomenclature", () => client.searchNomenclature("burger")],
-  ])("%s throws explicit deferral error", async (_label, call) => {
-    await expect(call()).rejects.toThrow(/RMS|not yet implemented|deferred/i);
+  test("parses and sorts dish statistics", async () => {
+    const { fetchImpl } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      {
+        body: {
+          data: [
+            { DishName: "A", DishGroup: "Beer", DishSumInt: 100, DishAmountInt: 2 },
+            { DishName: "B", DishGroup: null, DishSumInt: 500, DishAmountInt: 3.4 },
+          ],
+        },
+      },
+    ]);
+
+    const dishes = await client(fetchImpl).getDishStatistics({ type: "TODAY" }, 2);
+    expect(dishes[0]).toMatchObject({
+      dishName: "B",
+      dishGroup: "—",
+      dishAmountInt: 3,
+      dishSumInt: 500,
+    });
   });
 
-  test("constructor stores credentials but does not authenticate eagerly", () => {
-    // No exception should escape construction even with bad creds — we
-    // defer all network I/O until a method is invoked.
-    expect(() => new RmsIikoClient({
-      host: HOST,
-      login: LOGIN,
-      password: PASSWORD,
-      today: ANCHOR,
-    })).not.toThrow();
+  test("falls back to default organization when RMS org endpoints are unavailable", async () => {
+    const { fetchImpl } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      { status: 404, body: "not found", contentType: "text/plain" },
+      { status: 404, body: "not found", contentType: "text/plain" },
+      { status: 404, body: "not found", contentType: "text/plain" },
+      { status: 404, body: "not found", contentType: "text/plain" },
+    ]);
+
+    await expect(client(fetchImpl).listOrganizations()).resolves.toEqual([
+      { id: "default", name: HOST },
+    ]);
   });
 });

@@ -20,6 +20,9 @@ export type ResolvedVenue = {
     channel: "cloud" | "rms";
     organizationId: string;
     apiLogin?: string;
+    rmsHost?: string;
+    rmsLogin?: string;
+    rmsPassword?: string;
   };
 };
 

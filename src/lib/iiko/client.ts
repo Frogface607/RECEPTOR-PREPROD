@@ -33,6 +33,7 @@ export type IikoClientOptions =
       login: string;
       password: string;
       today: string;
+      fetchImpl?: typeof fetch;
       forceReal?: boolean;
     };
 
@@ -62,5 +63,6 @@ export function getIikoClient(opts: IikoClientOptions): IikoClient {
     login: opts.login,
     password: opts.password,
     today: opts.today,
+    fetchImpl: opts.fetchImpl,
   });
 }

@@ -19,12 +19,14 @@ import {
 import {
   createVenueAction,
   probeIikoOrganizationsAction,
+  probeRmsOrganizationsAction,
   type IikoOrganizationOption,
 } from "./actions";
 import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
 import type { VenueContextAnswers } from "@/lib/venues/context-questionnaire";
 
 type VenueType = "restaurant" | "cafe" | "coffee" | "bar" | "chain" | "other";
+type IikoChannel = "cloud" | "rms";
 
 const VENUE_TYPES: { id: VenueType; label: string }[] = [
   { id: "restaurant", label: "Ресторан" },
@@ -117,7 +119,11 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const [name, setName] = useState("");
   const [type, setType] = useState<VenueType>("bar");
   const [city, setCity] = useState("");
+  const [channel, setChannel] = useState<IikoChannel>("cloud");
   const [apiLogin, setApiLogin] = useState("");
+  const [rmsHost, setRmsHost] = useState("");
+  const [rmsLogin, setRmsLogin] = useState("");
+  const [rmsPassword, setRmsPassword] = useState("");
   const [organizations, setOrganizations] = useState<IikoOrganizationOption[]>([]);
   const [organizationId, setOrganizationId] = useState("");
   const [checkingIiko, setCheckingIiko] = useState(false);
@@ -130,7 +136,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const [researchDiagnostics, setResearchDiagnostics] = useState<string[]>([]);
 
   const canNext0 = name.trim().length > 0;
-  const canNext1 = organizationId.length > 0;
+  const canNext1 =
+    organizationId.length > 0 &&
+    (channel === "cloud" ? apiLogin.trim().length > 0 : true);
 
   const researchVenue = async () => {
     if (!name.trim()) {
@@ -181,7 +189,14 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
     setError(null);
     setCheckingIiko(true);
     startTransition(async () => {
-      const res = await probeIikoOrganizationsAction({ apiLogin });
+      const res =
+        channel === "cloud"
+          ? await probeIikoOrganizationsAction({ apiLogin })
+          : await probeRmsOrganizationsAction({
+              host: rmsHost,
+              login: rmsLogin,
+              password: rmsPassword,
+            });
       setCheckingIiko(false);
       if (!res.ok) {
         setOrganizations([]);
@@ -220,8 +235,12 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
           ownerContext,
           profile: intelligenceProfile,
         }),
+        channel,
         apiLogin,
         organizationId,
+        rmsHost,
+        rmsLogin,
+        rmsPassword,
       });
       if (!res.ok) {
         setError(res.error);
@@ -392,29 +411,104 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 Подключение iiko
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                Откройте карточку интеграции в iiko Web и вставьте полный API
-                ключ из строки «API ключ». Поле «Имя API логина» вроде
-                EdisonCraft — это только название интеграции.
+                Выберите Cloud API или прямой iiko RMS. Для Edison сейчас
+                работает RMS, Cloud BI ждёт права OLAP.
               </p>
             </div>
 
-            <Field label="iiko API ключ">
-              <input
-                value={apiLogin}
-                onChange={(e) => {
-                  setApiLogin(e.target.value);
-                  setOrganizations([]);
-                  setOrganizationId("");
-                }}
-                placeholder="Скопируйте кнопкой рядом с «API ключ»"
-                className="input-base font-mono text-[13px]"
-              />
-            </Field>
+            <div className="grid grid-cols-2 rounded-lg border border-border/60 bg-background/50 p-1">
+              {([
+                ["cloud", "Cloud API"],
+                ["rms", "RMS server"],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setChannel(id);
+                    setOrganizations([]);
+                    setOrganizationId("");
+                    setError(null);
+                  }}
+                  className={
+                    "rounded-md px-3 py-2 text-sm transition-colors " +
+                    (channel === id
+                      ? "bg-card text-foreground"
+                      : "text-muted-foreground hover:text-foreground")
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {channel === "cloud" ? (
+              <Field label="iiko API ключ">
+                <input
+                  value={apiLogin}
+                  onChange={(e) => {
+                    setApiLogin(e.target.value);
+                    setOrganizations([]);
+                    setOrganizationId("");
+                  }}
+                  placeholder="Скопируйте кнопкой рядом с «API ключ»"
+                  className="input-base font-mono text-[13px]"
+                />
+              </Field>
+            ) : (
+              <div className="grid gap-4">
+                <Field label="RMS host">
+                  <input
+                    value={rmsHost}
+                    onChange={(e) => {
+                      setRmsHost(e.target.value);
+                      setOrganizations([]);
+                      setOrganizationId("");
+                    }}
+                    placeholder="edison-craft-irkutsk.iiko.it"
+                    className="input-base font-mono text-[13px]"
+                  />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Логин RMS">
+                    <input
+                      value={rmsLogin}
+                      onChange={(e) => {
+                        setRmsLogin(e.target.value);
+                        setOrganizations([]);
+                        setOrganizationId("");
+                      }}
+                      placeholder="Логин"
+                      className="input-base"
+                    />
+                  </Field>
+                  <Field label="Пароль RMS">
+                    <input
+                      value={rmsPassword}
+                      onChange={(e) => {
+                        setRmsPassword(e.target.value);
+                        setOrganizations([]);
+                        setOrganizationId("");
+                      }}
+                      type="password"
+                      placeholder="Пароль"
+                      className="input-base"
+                    />
+                  </Field>
+                </div>
+              </div>
+            )}
 
             <button
               type="button"
               onClick={checkIiko}
-              disabled={!apiLogin.trim() || checkingIiko || pending}
+              disabled={
+                checkingIiko ||
+                pending ||
+                (channel === "cloud"
+                  ? !apiLogin.trim()
+                  : !rmsHost.trim() || !rmsLogin.trim() || !rmsPassword)
+              }
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 text-sm text-foreground transition-colors hover:border-brand/40 disabled:opacity-50"
             >
               {checkingIiko ? (
@@ -422,7 +516,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                   <Loader2 className="size-4 animate-spin" /> Проверяю iiko…
                 </>
               ) : (
-                "Проверить iiko и загрузить точки"
+                "Проверить iiko"
               )}
             </button>
 
@@ -458,11 +552,18 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               </Field>
             ) : (
               <div className="space-y-3 rounded-lg border border-border/50 bg-background/40 p-4 text-[13px] leading-relaxed text-muted-foreground">
-                <p>
-                  Нужен полный API ключ, который скрыт маской вроде
-                  261******69b. Нажмите иконку копирования рядом с ключом в
-                  iiko Web и вставьте получившееся значение сюда.
-                </p>
+                {channel === "cloud" ? (
+                  <p>
+                    Нужен полный API ключ, который скрыт маской вроде
+                    261******69b. Нажмите иконку копирования рядом с ключом в
+                    iiko Web и вставьте получившееся значение сюда.
+                  </p>
+                ) : (
+                  <p>
+                    RMS проверяется через сервер `/resto/api/auth`, а dashboard
+                    читает продажи через `/resto/api/v2/reports/olap`.
+                  </p>
+                )}
               {demoMode ? (
                 <button
                   type="button"

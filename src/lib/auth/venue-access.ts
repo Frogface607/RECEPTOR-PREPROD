@@ -44,10 +44,37 @@ type DbIikoCredential = {
   iv: string;
 };
 
+type RmsCredentialsPayload = {
+  host?: string;
+  login?: string;
+  password?: string;
+};
+
+function parseRmsCredentials(value: string): RmsCredentialsPayload {
+  try {
+    const parsed = JSON.parse(value) as RmsCredentialsPayload;
+    return {
+      host: typeof parsed.host === "string" ? parsed.host : "",
+      login: typeof parsed.login === "string" ? parsed.login : "",
+      password: typeof parsed.password === "string" ? parsed.password : "",
+    };
+  } catch {
+    return {};
+  }
+}
+
 function toResolvedVenue(
   venue: DbVenue,
   credential?: DbIikoCredential | null,
 ): ResolvedVenue {
+  const decrypted = credential
+    ? decryptSecret({
+        ciphertext: credential.creds_encrypted,
+        iv: credential.iv,
+      })
+    : "";
+  const rms = credential?.channel === "rms" ? parseRmsCredentials(decrypted) : {};
+
   return {
     id: venue.id,
     name: venue.name,
@@ -59,12 +86,10 @@ function toResolvedVenue(
     iiko: {
       channel: credential?.channel ?? "cloud",
       organizationId: credential?.iiko_org_id ?? venue.id,
-      apiLogin: credential
-        ? decryptSecret({
-            ciphertext: credential.creds_encrypted,
-            iv: credential.iv,
-          })
-        : undefined,
+      apiLogin: credential?.channel === "cloud" ? decrypted : undefined,
+      rmsHost: rms.host,
+      rmsLogin: rms.login,
+      rmsPassword: rms.password,
     },
   };
 }
