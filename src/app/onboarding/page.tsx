@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { OnboardingWizard } from "./wizard";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getServerSupabase } from "@/lib/db/server";
 
 export const metadata: Metadata = {
   title: "Настройка — RECEPTOR",
@@ -11,12 +12,53 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage() {
+type OnboardingSearchParams = Record<string, string | string[] | undefined>;
+
+function searchParamFlag(
+  params: OnboardingSearchParams,
+  key: string,
+): boolean {
+  const value = params[key];
+  return Array.isArray(value) ? value.includes("1") : value === "1";
+}
+
+async function getFirstOwnedVenueId(userId: string): Promise<string | null> {
+  const supabase = await getServerSupabase();
+  if (!supabase) return null;
+
+  const { data } = await supabase
+    .from("venues")
+    .select("id")
+    .eq("owner_user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  return data?.id ?? null;
+}
+
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<OnboardingSearchParams>;
+}) {
+  const sp = await searchParams;
+  const forceNewVenue = searchParamFlag(sp, "new");
   const demoMode = !isSupabaseConfigured();
   const user = await getCurrentUser();
+
   if (!demoMode && !user) {
-    redirect("/auth?next=/onboarding");
+    const nextPath = forceNewVenue ? "/onboarding?new=1" : "/onboarding";
+    redirect(`/auth?next=${encodeURIComponent(nextPath)}`);
   }
+
+  if (!demoMode && user && !user.isDemo && !forceNewVenue) {
+    const venueId = await getFirstOwnedVenueId(user.id);
+    if (venueId) {
+      redirect(`/dashboard/${venueId}`);
+    }
+  }
+
   const previewMode = demoMode || Boolean(user?.isDemo);
 
   return (

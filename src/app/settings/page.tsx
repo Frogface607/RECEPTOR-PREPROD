@@ -152,7 +152,7 @@ export default async function SettingsPage() {
   const venues = await listSettingsVenues();
   const firstVenueHref = venues[0]
     ? `/dashboard/${venues[0].id}`
-    : "/onboarding";
+    : "/onboarding?new=1";
   const activeVenue = venues[0];
 
   return (
@@ -184,7 +184,7 @@ export default async function SettingsPage() {
                 Открыть cockpit
               </Link>
               <Link
-                href="/onboarding"
+                href="/onboarding?new=1"
                 className="inline-flex h-9 items-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
               >
                 Добавить заведение
@@ -265,7 +265,7 @@ export default async function SettingsPage() {
               )}
             </div>
             <Link
-              href="/onboarding"
+              href="/onboarding?new=1"
               className="mt-3 inline-block text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             >
               + Добавить заведение
@@ -391,7 +391,7 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                   href={
                     venue.iikoConnected
                       ? `/dashboard/${venue.id}`
-                      : "/onboarding"
+                      : "/onboarding?new=1"
                   }
                   className="inline-flex h-8 items-center justify-center rounded-md border border-border/60 bg-card/55 px-3 text-[13px] text-foreground transition-colors hover:bg-card"
                 >

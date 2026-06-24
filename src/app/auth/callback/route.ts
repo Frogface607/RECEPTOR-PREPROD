@@ -4,16 +4,16 @@ import { getServerSupabase } from "@/lib/db/server";
 /**
  * Magic-link / OAuth callback. Supabase redirects here with a `code` (PKCE)
  * which we exchange for a session, then forward the user to `next`
- * (onboarding by default).
+ * (`/me` by default).
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const rawNext = url.searchParams.get("next") ?? "/onboarding";
+  const rawNext = url.searchParams.get("next") ?? "/me";
   const next =
     rawNext.startsWith("/") && !rawNext.startsWith("//")
       ? rawNext
-      : "/onboarding";
+      : "/me";
 
   if (code) {
     const supabase = await getServerSupabase();

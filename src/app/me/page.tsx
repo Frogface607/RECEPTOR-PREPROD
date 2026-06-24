@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
+import { getServerSupabase } from "@/lib/db/server";
 import { getTeamRole, type TeamAnnouncement, type TeamTask } from "@/lib/team/team-os";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { TaskStatusButtons } from "./task-status-buttons";
@@ -40,6 +42,24 @@ function priorityClass(priority: TeamTask["priority"]): string {
   return "border-border bg-muted/40 text-muted-foreground";
 }
 
+async function getFirstOwnedVenueId(): Promise<string | null> {
+  const [user, supabase] = await Promise.all([
+    getCurrentUser(),
+    getServerSupabase(),
+  ]);
+  if (!user || user.isDemo || !supabase) return null;
+
+  const { data } = await supabase
+    .from("venues")
+    .select("id")
+    .eq("owner_user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  return data?.id ?? null;
+}
+
 export default async function MyCabinetPage() {
   const workspace = await getPersonalTeamWorkspace();
 
@@ -48,7 +68,11 @@ export default async function MyCabinetPage() {
       redirect("/auth?next=/me");
     }
     if (workspace.reason === "no_membership" && isSupabaseConfigured()) {
-      redirect("/onboarding");
+      const venueId = await getFirstOwnedVenueId();
+      if (venueId) {
+        redirect(`/dashboard/${venueId}`);
+      }
+      redirect("/onboarding?new=1");
     }
 
     return (

@@ -15,7 +15,11 @@ import {
   formatPeriodLabel,
   parsePeriodSearchParams,
 } from "@/lib/venues/period";
-import { DEMO_ANCHOR, getDashboardClient } from "@/lib/iiko/config";
+import {
+  DEMO_ANCHOR,
+  getDashboardClient,
+  resolveIikoClientConfig,
+} from "@/lib/iiko/config";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
@@ -53,6 +57,9 @@ async function loadDashboardData(
 
 function dashboardDataErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
+  if (/iiko RMS|RMS auth|OLAP-запрос|reports\/olap|resto\/api/i.test(message)) {
+    return "iiko RMS не отдал BI-данные по этому запросу. Проверьте период и права OLAP reports для логина.";
+  }
   if (/olap.*not allowed|right .*olap.*not allowed/i.test(message)) {
     return "Нет права на api/v2/reports/olap. Попросите iiko включить OLAP reports для этого API login.";
   }
@@ -81,13 +88,12 @@ export default async function DashboardPage({
 
   const period = parsePeriodSearchParams(sp);
 
-  // Sandbox fixtures or real Cloud, decided by env/credentials.
-  // Flipping USE_MOCK_IIKO=false + pasting apiLogin is the only change needed.
-  const intendedDataMode =
-    venue.iiko.apiLogin?.trim() ||
-    (process.env.USE_MOCK_IIKO === "false" && process.env.IIKO_API_LOGIN?.trim())
-      ? "live"
-      : "mock";
+  const iikoConfig = resolveIikoClientConfig(
+    venue,
+    process.env,
+    new Date().toISOString().slice(0, 10),
+  );
+  const intendedDataMode = iikoConfig.mode === "real" ? "live" : "mock";
   let dataMode: "live" | "mock" = intendedDataMode;
   let dataError: string | null = null;
   let dashboardData: DashboardData;

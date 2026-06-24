@@ -160,7 +160,7 @@ export function ContextBuilder({
             ) : null}
             {!canPersist ? (
               <Link
-                href="/onboarding"
+                href="/onboarding?new=1"
                 className="mt-3 inline-block text-xs text-brand underline-offset-4 hover:underline"
               >
                 Добавить заведение

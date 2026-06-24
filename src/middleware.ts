@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     callbackUrl.searchParams.set("code", authCode);
     callbackUrl.searchParams.set(
       "next",
-      request.nextUrl.searchParams.get("next") ?? "/onboarding",
+      request.nextUrl.searchParams.get("next") ?? "/me",
     );
     return NextResponse.redirect(callbackUrl);
   }
