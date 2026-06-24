@@ -63,16 +63,26 @@ function parseRmsCredentials(value: string): RmsCredentialsPayload {
   }
 }
 
+function safeDecryptCredential(credential: DbIikoCredential): string {
+  try {
+    return decryptSecret({
+      ciphertext: credential.creds_encrypted,
+      iv: credential.iv,
+    });
+  } catch (error) {
+    console.error("[venue-access] Failed to decrypt iiko credentials", {
+      channel: credential.channel,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return "";
+  }
+}
+
 function toResolvedVenue(
   venue: DbVenue,
   credential?: DbIikoCredential | null,
 ): ResolvedVenue {
-  const decrypted = credential
-    ? decryptSecret({
-        ciphertext: credential.creds_encrypted,
-        iv: credential.iv,
-      })
-    : "";
+  const decrypted = credential ? safeDecryptCredential(credential) : "";
   const rms = credential?.channel === "rms" ? parseRmsCredentials(decrypted) : {};
 
   return {

@@ -44,6 +44,21 @@ function normalizeIikoChannel(value: string | null | undefined): "cloud" | "rms"
   return value === "cloud" || value === "rms" ? value : null;
 }
 
+function uniqueSettingsVenues(venues: SettingsVenue[]): SettingsVenue[] {
+  const seen = new Set<string>();
+
+  return venues.filter((venue) => {
+    const key = [
+      venue.name.trim().toLowerCase(),
+      venue.city.trim().toLowerCase(),
+      venue.type,
+    ].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 async function listSettingsVenues(): Promise<SettingsVenue[]> {
   const user = await getCurrentUser();
   if (!user || user.isDemo) {
@@ -70,7 +85,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
     .from("venues")
     .select("id,name,city,type,context_profile")
     .eq("owner_user_id", user.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   let venues = venuesResult.data as
     | Array<{
@@ -87,7 +102,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
       .from("venues")
       .select("id,name,city,type")
       .eq("owner_user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
     venues = fallbackResult.data as
       | Array<{
@@ -127,7 +142,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
     ),
   );
 
-  return rows.map((venue) => {
+  return uniqueSettingsVenues(rows.map((venue) => {
     const completion = calculateContextCompletion(venue.context_profile);
 
     return {
@@ -140,7 +155,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
       contextRequiredPercentage: completion.requiredPercentage,
       contextMissingRequired: completion.missingRequired.length,
     };
-  });
+  }));
 }
 
 export default async function SettingsPage() {

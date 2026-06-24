@@ -40,7 +40,7 @@ function exampleValue(field: ToolField, toolName: string): string {
   const label = field.label.toLowerCase();
   if (field.placeholder) return field.placeholder;
   if (label.includes("заведение")) return "Тестовый ресторан";
-  if (label.includes("город")) return "Иркутск";
+  if (label.includes("город")) return "Город";
   if (label.includes("цель")) return "увеличить продажи ужинов в будни";
   if (label.includes("блюдо")) return "стейк из говядины";
   if (label.includes("аудитория")) return "гости 25-40, офисы рядом";

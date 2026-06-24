@@ -53,7 +53,7 @@ async function getFirstOwnedVenueId(): Promise<string | null> {
     .from("venues")
     .select("id")
     .eq("owner_user_id", user.id)
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle<{ id: string }>();
 

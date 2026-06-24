@@ -117,7 +117,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState("");
-  const [type, setType] = useState<VenueType>("bar");
+  const [type, setType] = useState<VenueType>("restaurant");
   const [city, setCity] = useState("");
   const [channel, setChannel] = useState<IikoChannel>("cloud");
   const [apiLogin, setApiLogin] = useState("");
@@ -333,7 +333,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               <input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Иркутск"
+                placeholder="Город"
                 className="input-base"
               />
             </Field>
@@ -411,8 +411,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 Подключение iiko
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                Выберите Cloud API или прямой iiko RMS. Для Edison сейчас
-                работает RMS, Cloud BI ждёт права OLAP.
+                Выберите Cloud API или прямой iiko RMS. Доступы хранятся
+                зашифрованно и используются только для BI и операционного контура.
               </p>
             </div>
 
@@ -465,7 +465,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                       setOrganizations([]);
                       setOrganizationId("");
                     }}
-                    placeholder="edison-craft-irkutsk.iiko.it"
+                    placeholder="your-company.iiko.it"
                     className="input-base font-mono text-[13px]"
                   />
                 </Field>
