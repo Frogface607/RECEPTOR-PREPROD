@@ -5,6 +5,7 @@ import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { DishesChart } from "@/components/dashboard/dishes-chart";
 import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
+import { DataQualityStrip } from "@/components/dashboard/data-quality-strip";
 import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
 import { OwnerCockpitCard } from "@/components/dashboard/owner-cockpit-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
@@ -20,6 +21,7 @@ import {
   getDashboardClient,
   resolveIikoClientConfig,
 } from "@/lib/iiko/config";
+import { buildRevenueDataQuality } from "@/lib/iiko/data-quality";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
@@ -88,10 +90,11 @@ export default async function DashboardPage({
 
   const period = parsePeriodSearchParams(sp);
 
+  const runtimeToday = new Date().toISOString().slice(0, 10);
   const iikoConfig = resolveIikoClientConfig(
     venue,
     process.env,
-    new Date().toISOString().slice(0, 10),
+    runtimeToday,
   );
   const intendedDataMode = iikoConfig.mode === "real" ? "live" : "mock";
   let dataMode: "live" | "mock" = intendedDataMode;
@@ -113,6 +116,10 @@ export default async function DashboardPage({
 
   const { summary, dishes, categories, shifts, brief } = dashboardData;
   const periodLabel = formatPeriodLabel(period);
+  const quality = buildRevenueDataQuality(period, summary, {
+    today: dataMode === "mock" ? DEMO_ANCHOR : runtimeToday,
+    dataMode,
+  });
 
   return (
     <>
@@ -163,11 +170,20 @@ export default async function DashboardPage({
           <div className="reveal reveal-2 mt-6">
             <KpiGrid
               revenue={summary.revenue}
+              revenueDeltaPct={
+                brief.revenue.comparisonAvailable
+                  ? brief.revenue.deltaPct
+                  : undefined
+              }
               averageCheck={summary.averageCheck}
               itemsSold={summary.itemsSold}
               uniqueDishes={summary.uniqueDishes}
               periodLabel={periodLabel}
             />
+          </div>
+
+          <div className="reveal reveal-2 mt-6">
+            <DataQualityStrip quality={quality} />
           </div>
 
           <div className="reveal reveal-3 mt-6">

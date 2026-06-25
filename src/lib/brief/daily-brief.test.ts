@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { buildDailyBrief, renderDailyBriefText } from "./daily-brief";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
+import type { IikoClient } from "@/lib/iiko/types";
+import type { Period, RevenueSummary } from "@/lib/iiko/models";
 
 describe("buildDailyBrief", () => {
   test("builds a deterministic owner brief from iiko data", async () => {
@@ -47,5 +49,55 @@ describe("buildDailyBrief", () => {
     expect(brief.comparisonPeriod).toBe("CUSTOM");
     expect(brief.signals.length).toBeGreaterThan(0);
     expect(brief.revenue.current).toBeGreaterThan(0);
+  });
+
+  test("does not report fake growth when comparison has no revenue", async () => {
+    const current: RevenueSummary = {
+      revenue: 120000,
+      averageCheck: 1500,
+      itemsSold: 80,
+      uniqueDishes: 3,
+      points: [{ date: "2026-05-01", revenue: 120000 }],
+    };
+    const previous: RevenueSummary = {
+      revenue: 0,
+      averageCheck: 0,
+      itemsSold: 0,
+      uniqueDishes: 0,
+      points: [],
+    };
+    const client: IikoClient = {
+      getRevenueSummary: async (period: Period) =>
+        period.type === "CUSTOM" && period.from === "2026-05-01"
+          ? current
+          : previous,
+      getDishStatistics: async () => [
+        {
+          dishName: "Паста",
+          dishGroup: "Кухня",
+          dishAmountInt: 10,
+          dishSumInt: 50000,
+        },
+      ],
+      getCategoryStatistics: async () => [
+        { categoryName: "Кухня", dishSumInt: 120000 },
+      ],
+      getShifts: async () => [],
+      searchNomenclature: async () => [],
+    };
+
+    const brief = await buildDailyBrief(client, {
+      type: "CUSTOM",
+      from: "2026-05-01",
+      to: "2026-05-01",
+    });
+
+    expect(brief.revenue.comparisonAvailable).toBe(false);
+    expect(brief.revenue.deltaPct).toBe(0);
+    expect(brief.headline.replace(/\u00a0/g, " ")).toBe(
+      "Выручка за выбранный период: 120 000 ₽.",
+    );
+    expect(brief.highlights[0]).toContain("нет базы сравнения");
+    expect(brief.actions[0]).toContain("стартовую базу");
   });
 });

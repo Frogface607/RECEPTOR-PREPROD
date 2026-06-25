@@ -11,6 +11,7 @@ const baseBrief: DailyBrief = {
     current: 800_000,
     previous: 1_200_000,
     deltaPct: -33.3,
+    comparisonAvailable: true,
   },
   highlights: [],
   signals: [],
@@ -86,6 +87,7 @@ describe("buildSurvivalBrief", () => {
           current: 1_200_000,
           previous: 1_100_000,
           deltaPct: 9.1,
+          comparisonAvailable: true,
         },
       },
       dishes: [

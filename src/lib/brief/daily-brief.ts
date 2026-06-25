@@ -24,6 +24,7 @@ export type DailyBrief = {
     current: number;
     previous: number;
     deltaPct: number;
+    comparisonAvailable: boolean;
   };
   highlights: string[];
   signals: OwnerSignal[];
@@ -72,7 +73,8 @@ function deltaPct(current: number, previous: number): number {
   return Number((((current - previous) / previous) * 100).toFixed(1));
 }
 
-function deltaPhrase(delta: number): string {
+function deltaPhrase(delta: number, comparisonAvailable: boolean): string {
+  if (!comparisonAvailable) return "нет базы сравнения";
   if (delta > 0) return `выше на ${Math.abs(delta)}%`;
   if (delta < 0) return `ниже на ${Math.abs(delta)}%`;
   return "на уровне сравнения";
@@ -181,13 +183,16 @@ export async function buildDailyBrief(
     client.getCategoryStatistics(currentPeriod),
   ]);
 
-  const delta = deltaPct(current.revenue, previous.revenue);
+  const comparisonAvailable = previous.revenue > 0;
+  const delta = comparisonAvailable
+    ? deltaPct(current.revenue, previous.revenue)
+    : 0;
   const topDish = dishes[0];
   const topCategory = categories.sort((a, b) => b.dishSumInt - a.dishSumInt)[0];
   const signals = buildOwnerSignals(current, dishes, categories);
 
   const highlights = [
-    `Деньги ${periodTitle(periodType)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta)}.`,
+    `Деньги ${periodTitle(periodType)}: ${formatRubles(current.revenue)} — ${deltaPhrase(delta, comparisonAvailable)}.`,
     topDish
       ? `Главное блюдо периода: ${topDish.dishName} (${formatRubles(topDish.dishSumInt)}, ${formatInteger(topDish.dishAmountInt)} порций).`
       : "Нет данных по блюдам за период.",
@@ -197,7 +202,9 @@ export async function buildDailyBrief(
   ];
 
   const actions = [
-    delta < 0
+    !comparisonAvailable
+      ? "Зафиксируй этот период как стартовую базу: дальше Receptor сможет сравнивать динамику честно."
+      : delta < 0
       ? "Начни с просевших смен и категорий: найди, где потеряли деньги, а не просто констатируй падение."
       : "Зафиксируй, что сработало: расписание, промо, погода, посадка, команда на смене.",
     topDish
@@ -211,14 +218,16 @@ export async function buildDailyBrief(
   return {
     period: periodType,
     comparisonPeriod,
-    headline:
-      delta < 0
+    headline: comparisonAvailable
+      ? delta < 0
         ? `Выручка ${periodTitle(periodType)} просела: ${formatRubles(current.revenue)}.`
-        : `Выручка ${periodTitle(periodType)} в плюсе: ${formatRubles(current.revenue)}.`,
+        : `Выручка ${periodTitle(periodType)} в плюсе: ${formatRubles(current.revenue)}.`
+      : `Выручка ${periodTitle(periodType)}: ${formatRubles(current.revenue)}.`,
     revenue: {
       current: current.revenue,
       previous: previous.revenue,
       deltaPct: delta,
+      comparisonAvailable,
     },
     highlights,
     signals,

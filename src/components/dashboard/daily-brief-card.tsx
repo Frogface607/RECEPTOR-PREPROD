@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   ClipboardList,
   ExternalLink,
+  Minus,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -17,8 +18,9 @@ export function DailyBriefCard({
   brief: DailyBrief;
   venueId: string;
 }) {
-  const isDown = brief.revenue.deltaPct < 0;
-  const DeltaIcon = isDown ? TrendingDown : TrendingUp;
+  const hasComparison = brief.revenue.comparisonAvailable;
+  const isDown = hasComparison && brief.revenue.deltaPct < 0;
+  const DeltaIcon = !hasComparison ? Minus : isDown ? TrendingDown : TrendingUp;
   const textBriefHref = `/api/brief?venueId=${encodeURIComponent(venueId)}&period=${brief.period}&format=text`;
 
   return (
@@ -51,17 +53,28 @@ export function DailyBriefCard({
           <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 py-1.5 text-[12px] text-muted-foreground">
             <DeltaIcon
               className={
-                "size-3.5 " + (isDown ? "text-destructive" : "text-brand")
+                "size-3.5 " +
+                (!hasComparison
+                  ? "text-muted-foreground"
+                  : isDown
+                    ? "text-destructive"
+                    : "text-brand")
               }
             />
-            <span className="font-mono">
-              {brief.revenue.deltaPct > 0 ? "+" : ""}
-              {brief.revenue.deltaPct}%
-            </span>
-            <span>к сравнению</span>
-            <span className="font-mono">
-              {formatRubles(brief.revenue.previous)}
-            </span>
+            {hasComparison ? (
+              <>
+                <span className="font-mono">
+                  {brief.revenue.deltaPct > 0 ? "+" : ""}
+                  {brief.revenue.deltaPct}%
+                </span>
+                <span>к сравнению</span>
+                <span className="font-mono">
+                  {formatRubles(brief.revenue.previous)}
+                </span>
+              </>
+            ) : (
+              <span>нет базы сравнения</span>
+            )}
           </div>
         </div>
       </div>

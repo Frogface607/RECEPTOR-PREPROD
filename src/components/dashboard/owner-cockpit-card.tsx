@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   CheckCircle2,
   DatabaseZap,
+  Minus,
   RadioTower,
   TrendingDown,
   TrendingUp,
@@ -27,8 +28,9 @@ export function OwnerCockpitCard({
   periodLabel: string;
   dataMode: OwnerCockpitDataMode;
 }) {
-  const isDown = brief.revenue.deltaPct < 0;
-  const DeltaIcon = isDown ? TrendingDown : TrendingUp;
+  const hasComparison = brief.revenue.comparisonAvailable;
+  const isDown = hasComparison && brief.revenue.deltaPct < 0;
+  const DeltaIcon = !hasComparison ? Minus : isDown ? TrendingDown : TrendingUp;
   const contextCompletion = calculateContextCompletion(venue.context);
   const prioritySignal = pickPrioritySignal(brief.signals);
   const actions = brief.actions.slice(0, 3);
@@ -76,8 +78,12 @@ export function OwnerCockpitCard({
             />
             <MetricPill
               label="Сравнение"
-              value={`${brief.revenue.deltaPct > 0 ? "+" : ""}${brief.revenue.deltaPct}%`}
-              detail={isDown ? "просадка к базе" : "динамика к базе"}
+              value={
+                hasComparison
+                  ? `${brief.revenue.deltaPct > 0 ? "+" : ""}${brief.revenue.deltaPct}%`
+                  : "—"
+              }
+              detail={hasComparison ? (isDown ? "просадка к базе" : "динамика к базе") : "нет базы сравнения"}
               icon={<DeltaIcon className={isDown ? "size-4 text-destructive" : "size-4 text-brand"} />}
             />
             <MetricPill

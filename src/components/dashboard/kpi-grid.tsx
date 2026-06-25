@@ -32,40 +32,51 @@ function DeltaPill({ delta }: { delta: Kpi["delta"] }) {
 
 export function KpiGrid({
   revenue,
+  revenueDeltaPct,
   averageCheck,
   itemsSold,
   uniqueDishes,
   periodLabel,
 }: {
   revenue: number;
+  revenueDeltaPct?: number;
   averageCheck: number;
   itemsSold: number;
   uniqueDishes: number;
   periodLabel: string;
 }) {
+  const revenueDelta =
+    typeof revenueDeltaPct === "number"
+      ? {
+          value: `${revenueDeltaPct > 0 ? "+" : ""}${revenueDeltaPct}%`,
+          direction:
+            revenueDeltaPct > 0
+              ? ("up" as const)
+              : revenueDeltaPct < 0
+                ? ("down" as const)
+                : ("flat" as const),
+        }
+      : undefined;
   const items: Kpi[] = [
     {
       label: "Выручка",
       value: formatRubles(revenue),
-      delta: { value: "+8.2%", direction: "up" },
+      delta: revenueDelta,
       hint: periodLabel,
     },
     {
       label: "Средний чек",
       value: formatRubles(averageCheck),
-      delta: { value: "+2.1%", direction: "up" },
-      hint: "По чекам периода",
+      hint: "По заказам периода",
     },
     {
       label: "Позиций продано",
       value: formatInteger(itemsSold),
-      delta: { value: "+5.9%", direction: "up" },
-      hint: "По всем сменам",
+      hint: "Количество проданных позиций",
     },
     {
       label: "Блюд в продажах",
       value: formatInteger(uniqueDishes),
-      delta: { value: "−2", direction: "down" },
       hint: "Позиции с продажами",
     },
   ];
