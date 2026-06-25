@@ -21,6 +21,10 @@ type State =
   | { status: "sent"; email: string }
   | { status: "error"; message: string };
 
+type PasswordLoginResponse =
+  | { ok: true; next: string }
+  | { ok: false; error: string };
+
 function safeNextPath(value: string): string {
   return value.startsWith("/") && !value.startsWith("//")
     ? value
@@ -84,23 +88,45 @@ export function AuthForm({
     }
 
     setState({ status: "sending" });
-    const { error } =
-      mode === "password"
-        ? await supabase.auth.signInWithPassword({
-            email,
-            password,
-          })
-        : await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              emailRedirectTo: authCallbackUrl(nextPath),
-            },
-          });
+
+    if (mode === "password") {
+      const response = await fetch("/auth/password", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          login,
+          password,
+          next: safeNextPath(nextPath),
+        }),
+      });
+      const payload = (await response
+        .json()
+        .catch(() => ({
+          ok: false,
+          error: "Не удалось войти. Попробуйте еще раз.",
+        }))) as PasswordLoginResponse;
+
+      if (!response.ok || !payload.ok) {
+        setState({
+          status: "error",
+          message: payload.ok ? "Не удалось войти." : payload.error,
+        });
+      } else {
+        window.location.assign(safeNextPath(payload.next));
+      }
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: authCallbackUrl(nextPath),
+      },
+    });
 
     if (error) {
       setState({ status: "error", message: error.message });
-    } else if (mode === "password") {
-      window.location.assign(safeNextPath(nextPath));
     } else {
       setState({ status: "sent", email });
     }
