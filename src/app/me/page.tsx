@@ -91,6 +91,7 @@ export default async function MyCabinetPage() {
             </p>
             <Link
               href="/auth/signout"
+              prefetch={false}
               className="mt-8 inline-flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 text-sm text-foreground transition-colors hover:border-brand/40"
             >
               <LogOut className="size-4" />
@@ -141,6 +142,7 @@ export default async function MyCabinetPage() {
                 </Link>
                 <Link
                   href="/auth/signout"
+                  prefetch={false}
                   className="inline-flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 text-sm text-foreground transition-colors hover:border-brand/40"
                 >
                   <LogOut className="size-4" />
