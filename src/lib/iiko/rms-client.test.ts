@@ -51,8 +51,28 @@ describe("RmsIikoClient", () => {
       {
         body: {
           data: [
-            { "OpenDate.Typed": "2026-05-30", DishSumInt: 202590, DishAmountInt: 457 },
-            { "OpenDate.Typed": "2026-05-31", DishSumInt: 377773, DishAmountInt: 922.73 },
+            {
+              "OpenDate.Typed": "2026-05-30",
+              DishAmountInt: 457,
+              DishDiscountSumInt: 172745,
+              DishSumInt: 999202590,
+              UniqOrderId: 120,
+            },
+            {
+              "OpenDate.Typed": "2026-05-31",
+              DishAmountInt: 922.73,
+              DishDiscountSumInt: 299527,
+              DishSumInt: 377773,
+              UniqOrderId: 210,
+            },
+          ],
+        },
+      },
+      {
+        body: {
+          data: [
+            { DishName: "A", DishDiscountSumInt: 100 },
+            { DishName: "B", DishDiscountSumInt: 200 },
           ],
         },
       },
@@ -64,17 +84,22 @@ describe("RmsIikoClient", () => {
       to: "2026-05-31",
     });
 
-    expect(summary.revenue).toBe(580363);
+    expect(summary.revenue).toBe(472272);
+    expect(summary.averageCheck).toBe(1431);
     expect(summary.itemsSold).toBe(1380);
+    expect(summary.uniqueDishes).toBe(2);
     expect(summary.points).toEqual([
-      { date: "2026-05-30", revenue: 202590 },
-      { date: "2026-05-31", revenue: 377773 },
+      { date: "2026-05-30", revenue: 172745 },
+      { date: "2026-05-31", revenue: 299527 },
     ]);
     expect(calls[0].url).toContain("/resto/api/auth");
     const body = JSON.parse(calls[1].init?.body as string);
     expect(body.filters["OpenDate.Typed"].from).toBe("2026-05-30");
     expect(body.filters["OpenDate.Typed"].to).toBe("2026-05-31");
     expect(body.groupByRowFields).toEqual(["OpenDate.Typed"]);
+    expect(body.aggregateFields).toContain("DishDiscountSumInt");
+    expect(body.aggregateFields).toContain("UniqOrderId");
+    expect(body.aggregateFields).not.toContain("DishSumInt");
   });
 
   test("parses and sorts dish statistics", async () => {
@@ -83,8 +108,8 @@ describe("RmsIikoClient", () => {
       {
         body: {
           data: [
-            { DishName: "A", DishGroup: "Beer", DishSumInt: 100, DishAmountInt: 2 },
-            { DishName: "B", DishGroup: null, DishSumInt: 500, DishAmountInt: 3.4 },
+            { DishName: "A", DishGroup: "Beer", DishDiscountSumInt: 100, DishAmountInt: 2 },
+            { DishName: "B", DishGroup: null, DishDiscountSumInt: 500, DishAmountInt: 3.4 },
           ],
         },
       },

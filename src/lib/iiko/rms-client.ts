@@ -40,6 +40,8 @@ export type RmsOrganization = {
 type RmsOlapRow = Record<string, unknown>;
 
 const SESSION_TTL_MS = 115 * 60 * 1000;
+const RMS_REVENUE_FIELD = "DishDiscountSumInt";
+const RMS_ORDER_COUNT_FIELD = "UniqOrderId";
 
 function normalizeHost(host: string): string {
   return host
@@ -96,12 +98,16 @@ export class RmsIikoClient implements IikoClient {
   async getRevenueSummary(period: Period): Promise<RevenueSummary> {
     const rows = await this.runOlap(period, {
       groupByRowFields: ["OpenDate.Typed"],
-      aggregateFields: ["DishAmountInt", "DishSumInt", "DiscountSum"],
+      aggregateFields: [
+        "DishAmountInt",
+        RMS_REVENUE_FIELD,
+        RMS_ORDER_COUNT_FIELD,
+      ],
     });
 
     const points = rows.map((row) => ({
       date: readText(row, "OpenDate.Typed", this.today),
-      revenue: readNumber(row, "DishSumInt"),
+      revenue: readNumber(row, RMS_REVENUE_FIELD),
     }));
     points.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -109,12 +115,16 @@ export class RmsIikoClient implements IikoClient {
     const itemsSold = Math.round(
       rows.reduce((sum, row) => sum + readNumber(row, "DishAmountInt"), 0),
     );
+    const orderCount = Math.round(
+      rows.reduce((sum, row) => sum + readNumber(row, RMS_ORDER_COUNT_FIELD), 0),
+    );
+    const uniqueDishes = await this.getUniqueDishesCount(period);
 
     return RevenueSummarySchema.parse({
       revenue,
-      averageCheck: itemsSold > 0 ? Math.round(revenue / itemsSold) : 0,
+      averageCheck: orderCount > 0 ? Math.round(revenue / orderCount) : 0,
       itemsSold,
-      uniqueDishes: 0,
+      uniqueDishes,
       points,
     });
   }
@@ -125,7 +135,7 @@ export class RmsIikoClient implements IikoClient {
   ): Promise<DishStat[]> {
     const rows = await this.runOlap(period, {
       groupByRowFields: ["DishName", "DishGroup"],
-      aggregateFields: ["DishAmountInt", "DishSumInt", "DiscountSum"],
+      aggregateFields: ["DishAmountInt", RMS_REVENUE_FIELD],
     });
 
     const stats = rows.map((row) =>
@@ -133,7 +143,7 @@ export class RmsIikoClient implements IikoClient {
         dishName: readText(row, "DishName"),
         dishGroup: readText(row, "DishGroup"),
         dishAmountInt: Math.round(readNumber(row, "DishAmountInt")),
-        dishSumInt: readNumber(row, "DishSumInt"),
+        dishSumInt: readNumber(row, RMS_REVENUE_FIELD),
       }),
     );
 
@@ -144,13 +154,13 @@ export class RmsIikoClient implements IikoClient {
   async getCategoryStatistics(period: Period): Promise<CategoryStat[]> {
     const rows = await this.runOlap(period, {
       groupByRowFields: ["DishGroup"],
-      aggregateFields: ["DishSumInt", "DiscountSum"],
+      aggregateFields: [RMS_REVENUE_FIELD],
     });
 
     return rows.map((row) =>
       CategoryStatSchema.parse({
         categoryName: readText(row, "DishGroup"),
-        dishSumInt: readNumber(row, "DishSumInt"),
+        dishSumInt: readNumber(row, RMS_REVENUE_FIELD),
       }),
     );
   }
@@ -158,7 +168,7 @@ export class RmsIikoClient implements IikoClient {
   async getShifts(period: Period): Promise<ShiftStat[]> {
     const rows = await this.runOlap(period, {
       groupByRowFields: ["OpenDate.Typed"],
-      aggregateFields: ["DishAmountInt", "DishSumInt"],
+      aggregateFields: ["DishAmountInt", RMS_REVENUE_FIELD],
     });
 
     return rows.map((row) => {
@@ -166,7 +176,7 @@ export class RmsIikoClient implements IikoClient {
       return ShiftStatSchema.parse({
         shiftId: `rms-shift-${date}`,
         openTime: `${date}T00:00:00`,
-        revenue: readNumber(row, "DishSumInt"),
+        revenue: readNumber(row, RMS_REVENUE_FIELD),
         items: Math.round(readNumber(row, "DishAmountInt")),
         employee: "Смена",
       });
@@ -218,6 +228,19 @@ export class RmsIikoClient implements IikoClient {
 
   async probe(): Promise<void> {
     await this.getSessionKey(true);
+  }
+
+  private async getUniqueDishesCount(period: Period): Promise<number> {
+    const rows = await this.runOlap(period, {
+      groupByRowFields: ["DishName"],
+      aggregateFields: [RMS_REVENUE_FIELD],
+    });
+
+    return rows.filter(
+      (row) =>
+        readText(row, "DishName", "").trim().length > 0 &&
+        readNumber(row, RMS_REVENUE_FIELD) > 0,
+    ).length;
   }
 
   private async runOlap(
