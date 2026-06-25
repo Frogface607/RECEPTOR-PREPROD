@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/app-shell";
+import { IikoDiagnosticsPanel } from "@/components/settings/iiko-diagnostics-panel";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
@@ -620,6 +621,10 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                   }
                 />
               </div>
+              <IikoDiagnosticsPanel
+                venueId={venue.id}
+                connected={venue.iikoConnected}
+              />
             </div>
           ))}
         </div>
