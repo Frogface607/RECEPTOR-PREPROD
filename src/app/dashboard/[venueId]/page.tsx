@@ -6,15 +6,16 @@ import { DishesChart } from "@/components/dashboard/dishes-chart";
 import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DataQualityStrip } from "@/components/dashboard/data-quality-strip";
+import { DataSourcePanel } from "@/components/dashboard/data-source-panel";
 import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
 import { OwnerCockpitCard } from "@/components/dashboard/owner-cockpit-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
 import { SurvivalBriefCard } from "@/components/dashboard/survival-brief-card";
-import { AlertTriangle } from "lucide-react";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
+  periodToSearchParams,
 } from "@/lib/venues/period";
 import {
   DEMO_ANCHOR,
@@ -116,6 +117,9 @@ export default async function DashboardPage({
 
   const { summary, dishes, categories, shifts, brief } = dashboardData;
   const periodLabel = formatPeriodLabel(period);
+  const chatParams = new URLSearchParams(periodToSearchParams(period));
+  chatParams.set("chat", "1");
+  const chatHref = `/dashboard/${encodeURIComponent(venueId)}?${chatParams.toString()}`;
   const quality = buildRevenueDataQuality(period, summary, {
     today: dataMode === "mock" ? DEMO_ANCHOR : runtimeToday,
     dataMode,
@@ -142,21 +146,17 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          {dataError ? (
-            <div className="reveal reveal-2 mb-6 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-foreground/90">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-300" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    iiko подключен. BI ждёт права.
-                  </p>
-                  <p className="mt-1 leading-relaxed text-muted-foreground">
-                    {dataError}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : null}
+          <div className="reveal reveal-2 mb-6">
+            <DataSourcePanel
+              chatHref={chatHref}
+              periodLabel={periodLabel}
+              dataMode={dataMode}
+              intendedDataMode={intendedDataMode}
+              channel={iikoConfig.mode === "real" ? iikoConfig.channel : null}
+              dataError={dataError}
+              quality={quality}
+            />
+          </div>
 
           <div className="reveal reveal-2">
             <OwnerCockpitCard
