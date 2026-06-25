@@ -6,12 +6,14 @@ import {
   Stethoscope,
 } from "lucide-react";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
+import type { RevenueDataQuality } from "@/lib/iiko/data-quality";
 import type { CategoryStat, DishStat } from "@/lib/iiko/models";
 import {
   buildSurvivalBrief,
   type SurvivalFactor,
   type SurvivalStatus,
 } from "@/lib/survival-score";
+import { SurvivalTaskActions } from "./survival-task-actions";
 
 const STATUS_TONE: Record<SurvivalStatus, string> = {
   critical: "border-destructive/45 bg-destructive/8 text-destructive",
@@ -28,18 +30,23 @@ const FACTOR_TONE: Record<SurvivalFactor["level"], string> = {
 };
 
 export function SurvivalBriefCard({
+  venueId,
   brief,
   dishes,
   categories,
+  dataQuality,
 }: {
+  venueId: string;
   brief: DailyBrief;
   dishes: DishStat[];
   categories: CategoryStat[];
+  dataQuality: RevenueDataQuality;
 }) {
   const survival = buildSurvivalBrief({
     dailyBrief: brief,
     dishes,
     categories,
+    dataQuality,
   });
   const topFactors = survival.factors.slice(0, 4);
 
@@ -88,21 +95,12 @@ export function SurvivalBriefCard({
         <div>
           <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             <Flame className="size-3.5 text-brand" />
-            Что сделать уже сегодня
+            Что отправить в работу
           </div>
-          <ol className="space-y-2.5 text-[13px] leading-relaxed text-foreground/85">
-            {survival.actions.map((action, index) => (
-              <li
-                key={action}
-                className="flex gap-3 rounded-lg bg-background/35 px-3 py-2"
-              >
-                <span className="font-mono text-[11px] text-brand">
-                  {index + 1}
-                </span>
-                <span>{action}</span>
-              </li>
-            ))}
-          </ol>
+          <SurvivalTaskActions
+            venueId={venueId}
+            drafts={survival.taskDrafts}
+          />
         </div>
 
         <div>

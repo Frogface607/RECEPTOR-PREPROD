@@ -1,5 +1,7 @@
 import type { DailyBrief } from "./brief/daily-brief";
+import type { RevenueDataQuality } from "./iiko/data-quality";
 import type { CategoryStat, DishStat } from "./iiko/models";
+import type { TeamRoleId, TeamTask } from "./team/team-os";
 import {
   buildMenuEngineering,
   type MenuEngineeringReport,
@@ -16,7 +18,9 @@ export type SurvivalFactor = {
     | "volume-trap"
     | "tail-risk"
     | "margin-unknown"
-    | "revenue-momentum";
+    | "revenue-momentum"
+    | "data-coverage"
+    | "comparison-missing";
   level: "critical" | "serious" | "watch" | "info";
   title: string;
   metric: string;
@@ -29,6 +33,13 @@ export type SurvivalQuestion = {
   text: string;
 };
 
+export type SurvivalTaskDraft = {
+  title: string;
+  priority: TeamTask["priority"];
+  roleId: TeamRoleId;
+  dueLabel: string;
+};
+
 export type SurvivalBrief = {
   score: number;
   status: SurvivalStatus;
@@ -36,6 +47,7 @@ export type SurvivalBrief = {
   summary: string;
   factors: SurvivalFactor[];
   actions: string[];
+  taskDrafts: SurvivalTaskDraft[];
   questions: SurvivalQuestion[];
   missingData: string[];
   menu: MenuEngineeringReport;
@@ -45,6 +57,7 @@ type BuildSurvivalBriefInput = {
   dailyBrief: DailyBrief;
   dishes: DishStat[];
   categories: CategoryStat[];
+  dataQuality?: RevenueDataQuality;
 };
 
 function pct(value: number): string {
@@ -85,6 +98,7 @@ export function buildSurvivalBrief({
   dailyBrief,
   dishes,
   categories,
+  dataQuality,
 }: BuildSurvivalBriefInput): SurvivalBrief {
   const factors: SurvivalFactor[] = [];
   const menu = buildMenuEngineering(dishes);
@@ -105,7 +119,35 @@ export function buildSurvivalBrief({
 
   let score = 0;
 
-  if (dailyBrief.revenue.deltaPct <= -25) {
+  if (dataQuality && dataQuality.status !== "ok") {
+    score += pushFactor(factors, {
+      id: "data-coverage",
+      level: dataQuality.status === "risk" ? "serious" : "watch",
+      title: "Данные требуют проверки",
+      metric: `${dataQuality.activeDays}/${dataQuality.requestedDays}`,
+      detail:
+        dataQuality.status === "risk"
+          ? "Период покрыт не полностью. Сначала проверь дату подключения, смену iiko или выбранный диапазон, иначе выводы будут слишком уверенными."
+          : "Источник выглядит рабочим, но часть периода или метрик требует внимания перед жесткими решениями.",
+      action:
+        "Проверить период, дату подключения iiko и покрытие дней перед тем, как ставить план по выручке.",
+    });
+  }
+
+  if (!dailyBrief.revenue.comparisonAvailable) {
+    score += pushFactor(factors, {
+      id: "comparison-missing",
+      level: "info",
+      title: "Нет базы сравнения",
+      metric: "—",
+      detail:
+        "Рост или просадку нельзя честно посчитать без предыдущего периода с продажами. Этот диапазон лучше считать стартовой базой.",
+      action:
+        "Зафиксировать этот период как базу и не оценивать динамику, пока не появится сопоставимый период.",
+    });
+  }
+
+  if (dailyBrief.revenue.comparisonAvailable && dailyBrief.revenue.deltaPct <= -25) {
     score += pushFactor(factors, {
       id: "revenue-drop",
       level: "critical",
@@ -116,7 +158,7 @@ export function buildSurvivalBrief({
       action:
         "Уже сегодня сравнить слабые дни и смены с нормальными: кто работал, что было в стопе, какие категории просели.",
     });
-  } else if (dailyBrief.revenue.deltaPct < -10) {
+  } else if (dailyBrief.revenue.comparisonAvailable && dailyBrief.revenue.deltaPct < -10) {
     score += pushFactor(factors, {
       id: "revenue-drop",
       level: "serious",
@@ -127,7 +169,7 @@ export function buildSurvivalBrief({
       action:
         "Поставить управляющему задачу найти 2 причины просадки и 1 действие на вечер.",
     });
-  } else {
+  } else if (dailyBrief.revenue.comparisonAvailable) {
     score += pushFactor(factors, {
       id: "revenue-momentum",
       level: dailyBrief.revenue.deltaPct >= 0 ? "info" : "watch",
@@ -231,6 +273,7 @@ export function buildSurvivalBrief({
       "Дать залу один понятный фокус продаж на вечер.",
     "Выбрать 3 блюда из A/B и проверить по ним себестоимость, наличие и скорость отдачи.",
   ];
+  const taskDrafts = buildTaskDrafts(priorityFactors, factors, actions, status);
 
   return {
     score,
@@ -242,6 +285,7 @@ export function buildSurvivalBrief({
         : "Система не видит грубых перекосов, но прибыль всё равно нужно проверять через маржу, меню и дисциплину смен.",
     factors,
     actions,
+    taskDrafts,
     questions: [
       {
         role: "owner",
@@ -267,4 +311,70 @@ export function buildSurvivalBrief({
     ],
     menu,
   };
+}
+
+function buildTaskDrafts(
+  priorityFactors: SurvivalFactor[],
+  allFactors: SurvivalFactor[],
+  fallbackActions: string[],
+  status: SurvivalStatus,
+): SurvivalTaskDraft[] {
+  const sourceFactors =
+    priorityFactors.length > 0 ? priorityFactors : allFactors.slice(0, 2);
+  const drafts = sourceFactors.slice(0, 3).map((factor) => ({
+    title: trimTaskTitle(factor.action),
+    priority: priorityForFactor(factor, status),
+    roleId: roleForFactor(factor),
+    dueLabel: dueForFactor(factor),
+  }));
+
+  for (const action of fallbackActions) {
+    if (drafts.length >= 3) break;
+    drafts.push({
+      title: trimTaskTitle(action),
+      priority: status === "critical" ? "high" : "medium",
+      roleId: "venue_manager",
+      dueLabel: "сегодня",
+    });
+  }
+
+  return drafts;
+}
+
+function trimTaskTitle(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 220) return normalized;
+  return `${normalized.slice(0, 217).trim()}...`;
+}
+
+function priorityForFactor(
+  factor: SurvivalFactor,
+  status: SurvivalStatus,
+): TeamTask["priority"] {
+  if (factor.level === "critical" || status === "critical") return "high";
+  if (factor.level === "serious") return "high";
+  if (factor.level === "info") return "low";
+  return "medium";
+}
+
+function roleForFactor(factor: SurvivalFactor): TeamRoleId {
+  if (factor.id === "revenue-drop" || factor.id === "data-coverage") {
+    return "venue_manager";
+  }
+  if (factor.id === "comparison-missing" || factor.id === "revenue-momentum") {
+    return "operations_manager";
+  }
+  if (factor.id === "hit-dependency") return "service";
+  return "chef";
+}
+
+function dueForFactor(factor: SurvivalFactor): string {
+  if (factor.id === "hit-dependency") return "до вечерней смены";
+  if (factor.id === "data-coverage" || factor.id === "comparison-missing") {
+    return "сегодня";
+  }
+  if (factor.id === "category-concentration" || factor.id === "revenue-drop") {
+    return "до 17:00";
+  }
+  return "до вечерней посадки";
 }

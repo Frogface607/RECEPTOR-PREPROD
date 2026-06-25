@@ -66,6 +66,10 @@ describe("buildSurvivalBrief", () => {
       "category-concentration",
     );
     expect(brief.actions[0]).toContain("сегодня");
+    expect(brief.taskDrafts[0]).toMatchObject({
+      priority: "high",
+      roleId: "venue_manager",
+    });
   });
 
   test("keeps missing margin data explicit instead of pretending profit is known", () => {
@@ -105,5 +109,43 @@ describe("buildSurvivalBrief", () => {
     expect(brief.status).toBe("watch");
     expect(brief.score).toBeLessThan(35);
     expect(brief.factors.map((factor) => factor.id)).toContain("margin-unknown");
+  });
+
+  test("adds data coverage as an operational factor and task", () => {
+    const brief = buildSurvivalBrief({
+      dailyBrief: {
+        ...baseBrief,
+        revenue: {
+          current: 800_000,
+          previous: 0,
+          deltaPct: 0,
+          comparisonAvailable: false,
+        },
+      },
+      dishes: riskyDishes,
+      categories: concentratedCategories,
+      dataQuality: {
+        status: "risk",
+        requestedDays: 365,
+        activeDays: 75,
+        missingDays: 290,
+        coveragePct: 21,
+        firstDataDate: "2025-10-17",
+        lastDataDate: "2025-12-30",
+        basis: "Выручка после скидок, по продажам iiko",
+        summary: "75 из 365 дней с продажами (21%)",
+        warnings: ["В периоде есть продажи только за 75 из 365 дней."],
+      },
+    });
+
+    expect(brief.factors.map((factor) => factor.id)).toContain("data-coverage");
+    expect(brief.factors.map((factor) => factor.id)).toContain(
+      "comparison-missing",
+    );
+    expect(brief.taskDrafts[0]).toMatchObject({
+      roleId: "venue_manager",
+      priority: "high",
+      dueLabel: "сегодня",
+    });
   });
 });

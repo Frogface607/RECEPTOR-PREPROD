@@ -192,9 +192,11 @@ export default async function DashboardPage({
 
           <div className="reveal reveal-3 mt-6">
             <SurvivalBriefCard
+              venueId={venueId}
               brief={brief}
               dishes={dishes}
               categories={categories}
+              dataQuality={quality}
             />
           </div>
 
