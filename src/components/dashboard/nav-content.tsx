@@ -33,7 +33,7 @@ export function getDashboardNav(venueId = "dev-venue"): NavItem[] {
       href: `${dashboardHref}?chat=1`,
       matchHref: "/copilot",
       icon: MessageSquare,
-      label: "AI-помощник",
+      label: "Советник",
     },
     {
       href: `/team?role=owner&venueId=${encodeURIComponent(venueId)}`,

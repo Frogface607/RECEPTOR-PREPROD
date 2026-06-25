@@ -188,7 +188,7 @@ export function ChatDrawer({
             </div>
             <div className="flex flex-1 flex-col">
               <SheetTitle className="text-[17px] font-medium tracking-[-0.01em]">
-                AI-помощник Receptor
+                Советник Receptor
               </SheetTitle>
               <span className="mt-0.5 text-[12px] text-muted-foreground">
                 {venueName} · продажи, меню, смены и действия владельца
@@ -287,7 +287,7 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-                AI-помощник по данным iiko и профилю заведения
+                Советник по данным iiko и профилю заведения
               </p>
               <h3 className="mt-2 max-w-2xl text-[28px] font-medium leading-[1.06] tracking-[-0.025em] text-foreground sm:text-[36px]">
                 Спросите как у сильного операционного директора.

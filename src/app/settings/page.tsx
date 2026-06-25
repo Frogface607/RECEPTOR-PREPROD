@@ -376,7 +376,9 @@ export default async function SettingsPage() {
             </div>
           </Section>
 
-          <IikoConnectionCenter venues={venues} />
+          <div id="iiko">
+            <IikoConnectionCenter venues={venues} />
+          </div>
 
           <Section icon={CreditCard} title="Подписка">
             <div className="flex items-center justify-between">

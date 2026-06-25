@@ -52,7 +52,7 @@ export function DashboardHeader({
             className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover sm:px-4"
           >
             <MessageSquare className="size-4" />
-            <span className="hidden sm:inline">Открыть AI-помощника</span>
+            <span className="hidden sm:inline">Открыть советника</span>
             <span className="sm:hidden">Чат</span>
           </Link>
         </div>

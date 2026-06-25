@@ -127,12 +127,12 @@ export function ContextBuilder({
             Память заведения
           </p>
           <h1 className="mt-4 text-balance text-[clamp(2rem,4vw,3.3rem)] font-medium leading-[1.04]">
-            Анкета, которая делает AI-помощника ресторанным.
+            Анкета, которая делает советника ресторанным.
           </h1>
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
             Receptor должен знать формат, экономику, команду, системы и красные
             линии клиента до того, как начинает советовать. Анкета и ресерч
-            становятся памятью заведения для AI-помощника, брифов и задач.
+            становятся памятью заведения для советника, брифов и задач.
           </p>
 
           <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-4">
@@ -265,13 +265,13 @@ export function ContextBuilder({
             </div>
           ) : (
             <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-4 text-xs leading-relaxed text-foreground/85">
-              Базовый контекст готов для AI-помощника, ежедневного брифа и задач команды.
+              Базовый контекст готов для советника, ежедневного брифа и задач команды.
             </div>
           )}
 
           <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-4">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-              <Sparkles className="size-4 text-brand" /> Память для AI-помощника
+              <Sparkles className="size-4 text-brand" /> Память для советника
             </div>
             <pre className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-md bg-background/60 p-3 text-xs leading-relaxed text-muted-foreground">
               {prompt || "Заполните анкету, чтобы собрать контекст."}

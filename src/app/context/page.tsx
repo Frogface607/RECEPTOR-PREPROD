@@ -13,7 +13,7 @@ import type { VenueContextAnswers } from "@/lib/venues/context-questionnaire";
 export const metadata: Metadata = {
   title: "Память заведения — RECEPTOR",
   description:
-    "Анкета ресторана для AI-помощника Receptor: формат, экономика, команда, системы и ограничения AI.",
+    "Анкета ресторана для советника Receptor: формат, экономика, команда, системы и ограничения AI.",
 };
 
 type ContextVenueOption = {

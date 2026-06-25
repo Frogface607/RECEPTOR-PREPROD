@@ -89,7 +89,7 @@ export function OwnerCockpitCard({
             <MetricPill
               label="Контекст"
               value={`${contextCompletion.requiredPercentage}%`}
-              detail="анкета для AI-помощника"
+              detail="память для советника"
             />
           </div>
         </div>

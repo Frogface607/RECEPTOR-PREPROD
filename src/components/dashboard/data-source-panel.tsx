@@ -52,6 +52,9 @@ export function DataSourcePanel({
       ? "iiko RMS"
       : "iiko Cloud"
     : "Демо-контур";
+  const settingsActionLabel = isLive && !fallbackToDemo
+    ? "Настройки данных"
+    : "Проверить iiko";
 
   return (
     <section className="rounded-xl border border-border/60 bg-card/55 p-4">
@@ -102,18 +105,18 @@ export function DataSourcePanel({
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
-          href="/settings"
+          href="/settings#iiko"
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/60 bg-background/45 px-3 text-sm text-foreground transition-colors hover:bg-card"
         >
           <Settings className="size-4 text-muted-foreground" />
-          Настройки данных
+          {settingsActionLabel}
         </Link>
         <Link
           href={chatHref}
           scroll={false}
           className="inline-flex h-9 items-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
         >
-          Спросить AI-помощника
+          Спросить советника
         </Link>
       </div>
     </section>
