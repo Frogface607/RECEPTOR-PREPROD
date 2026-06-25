@@ -2,21 +2,21 @@ import Link from "next/link";
 
 const AREAS = [
   {
-    title: "Owner Cockpit",
+    title: "Панель владельца",
     label: "Core",
     tagline: "Ежедневный бриф, KPI, риски и действия владельца в одном кабинете.",
-    metric: "Morning Brief",
+    metric: "Ежедневный бриф",
     href: "/dashboard/dev-venue",
   },
   {
-    title: "Context Engine",
+    title: "Память заведения",
     label: "Memory",
     tagline: "Анкета превращает ресторан в понятный контекст для AI, отчетов и задач.",
     metric: "Память заведения",
     href: "/context",
   },
   {
-    title: "Team OS",
+    title: "Команда",
     label: "Operations",
     tagline: "Роли, доступы, задачи и коммуникация для управляющих, кухни и зала.",
     metric: "Командный слой",

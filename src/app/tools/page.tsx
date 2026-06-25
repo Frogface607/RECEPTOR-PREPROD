@@ -38,7 +38,7 @@ export default function ToolsPage() {
               <span>Профиль заведения</span>
               <span>BI и отчеты</span>
               <span>Техкарты</span>
-              <span>Контекст Copilot</span>
+              <span>Контекст AI-помощника</span>
             </div>
           </div>
         </section>

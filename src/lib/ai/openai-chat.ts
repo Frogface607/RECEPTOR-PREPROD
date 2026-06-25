@@ -64,7 +64,7 @@ function systemPrompt(input: ChatTurnInput): string {
       : "BI/iiko-цифры получены из подключенного источника данных заведения.";
 
   return [
-    `Ты — Receptor, AI-копайлот владельца заведения ${input.venueName}.`,
+    `Ты — Receptor, AI-помощник владельца заведения ${input.venueName}.`,
     `Тип: ${input.venueType}. Город: ${input.venueCity}.`,
     dataModeNote,
     "Профиль заведения:",

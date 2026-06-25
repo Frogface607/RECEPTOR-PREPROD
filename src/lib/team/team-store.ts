@@ -303,7 +303,7 @@ export async function getTeamWorkspace(
       mode: "saved",
       venueId,
       venueName: "Рабочий кабинет",
-      venueMeta: "Restaurant OS",
+      venueMeta: "Receptor",
       staff: [],
       tasks: [],
       comments: [],
@@ -328,7 +328,7 @@ export async function getTeamWorkspace(
       mode: "saved",
       venueId,
       venueName: "Рабочий кабинет",
-      venueMeta: "Restaurant OS",
+      venueMeta: "Receptor",
       staff: ((membershipsResult.data ?? []) as DbMembership[]).map(
         mapMembershipRow,
       ),
@@ -354,7 +354,7 @@ export async function getTeamWorkspace(
     venueResult.data?.type?.trim(),
   ]
     .filter(Boolean)
-    .join(" · ") || "Restaurant OS";
+    .join(" · ") || "Receptor";
 
   const commentsResult = await supabase
     .from("team_task_comments")

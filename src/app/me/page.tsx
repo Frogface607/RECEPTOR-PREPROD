@@ -126,7 +126,7 @@ export default async function MyCabinetPage() {
               Для этого пользователя пока нет роли в заведении.
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Попросите владельца или управляющего добавить сотрудника в Team OS
+              Попросите владельца или управляющего добавить сотрудника в команду
               и выдать логин.
             </p>
             <Link
@@ -179,7 +179,7 @@ export default async function MyCabinetPage() {
       activeHref="/me"
       venueId={workspace.venueId}
       venueName={workspace.venueName}
-      venueMeta="Team OS"
+      venueMeta="Команда"
     >
       <main className="flex-1">
         <section className="border-b border-border/40">
@@ -201,7 +201,7 @@ export default async function MyCabinetPage() {
                   className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
                 >
                   <LayoutDashboard className="size-4" />
-                  Открыть Team OS
+                  Открыть команду
                 </Link>
                 <Link
                   href="/auth/signout"
@@ -355,7 +355,7 @@ export default async function MyCabinetPage() {
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 Здесь будет база знаний, чек-листы смены и короткие тесты по
                 роли. Сейчас этот блок фиксирует место для следующего слоя Team
-                OS.
+                команды.
               </p>
             </div>
 

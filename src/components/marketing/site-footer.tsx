@@ -13,7 +13,7 @@ export function SiteFooter() {
               </span>
             </div>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground leading-relaxed">
-              AI operating system для ресторана: iiko, BI, Copilot, техкарты,
+              AI operating system для ресторана: iiko, BI, AI-помощник, техкарты,
               меню и ежедневные решения владельца.
             </p>
           </div>

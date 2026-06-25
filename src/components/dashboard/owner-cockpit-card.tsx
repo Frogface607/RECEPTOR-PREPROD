@@ -46,7 +46,7 @@ export function OwnerCockpitCard({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-brand/35 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-brand">
-              Owner Cockpit
+              Панель владельца
             </span>
             <span
               className={
@@ -89,7 +89,7 @@ export function OwnerCockpitCard({
             <MetricPill
               label="Контекст"
               value={`${contextCompletion.requiredPercentage}%`}
-              detail="анкета для Copilot"
+              detail="анкета для AI-помощника"
             />
           </div>
         </div>

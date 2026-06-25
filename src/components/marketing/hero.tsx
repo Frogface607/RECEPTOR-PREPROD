@@ -66,9 +66,9 @@ export function Hero() {
           <div className="mt-12 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
             <span>iiko Cloud</span>
             <span>BI</span>
-            <span>AI Copilot</span>
+            <span>AI-помощник</span>
             <span>Tech Cards</span>
-            <span>Team OS</span>
+            <span>Команда</span>
           </div>
         </div>
 

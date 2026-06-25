@@ -105,7 +105,7 @@ export function SurvivalTaskActions({
                   </>
                 ) : (
                   <>
-                    <Plus className="size-3.5" /> в Team OS
+                    <Plus className="size-3.5" /> в задачи
                   </>
                 )}
               </Button>

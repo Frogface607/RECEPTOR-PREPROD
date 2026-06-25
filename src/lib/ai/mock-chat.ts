@@ -267,7 +267,7 @@ function formatSuggestAnswer(
   const posSystem = typeof context?.pos_system === "string" ? context.pos_system : "";
 
   return [
-    `Я Receptor — Copilot ${venueName}. Я учитываю профиль заведения, iiko-цифры и управленческий контекст.`,
+    `Я Receptor — AI-помощник ${venueName}. Я учитываю профиль заведения, iiko-цифры и управленческий контекст.`,
     teamRoles || posSystem
       ? `Контекст анкеты: ${posSystem ? `учетная система — ${posSystem}` : ""}${posSystem && teamRoles ? "; " : ""}${teamRoles ? `роли — ${teamRoles}` : ""}.`
       : "Контекст анкеты пока не заполнен: для точных советов нужны формат, команда, системы и ограничения.",

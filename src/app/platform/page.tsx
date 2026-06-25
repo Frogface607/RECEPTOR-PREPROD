@@ -25,7 +25,7 @@ import {
 import { VENUE_CONTEXT_QUESTIONNAIRE } from "@/lib/venues/context-questionnaire";
 
 export const metadata: Metadata = {
-  title: "Receptor Restaurant OS — операционная система ресторана",
+  title: "Receptor — операционная система ресторана",
   description:
     "SaaS-платформа для управления рестораном: данные, контекст, меню, команда, задачи, гости и интеграции.",
 };
@@ -79,7 +79,7 @@ const connectionSteps = [
   },
   {
     title: "Заполнить память",
-    text: "Анкета и ресерч собирают контекст для Copilot, брифов и задач.",
+    text: "Анкета и ресерч собирают контекст для AI-помощника, брифов и задач.",
   },
   {
     title: "Подключить источники",
@@ -113,7 +113,7 @@ export default function PlatformPage() {
           <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
             <div>
               <Badge variant="outline" className="border-brand/30 text-brand">
-                Restaurant OS
+                Операционная система ресторана
               </Badge>
               <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.35rem,5vw,4.25rem)] font-medium leading-[1.02]">
                 Операционная система управления рестораном.
@@ -223,7 +223,7 @@ export default function PlatformPage() {
           <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Context Engine
+                Память заведения
               </p>
               <h2 className="mt-4 text-3xl font-medium">
                 AI отвечает не из пустоты, а из памяти ресторана.
@@ -231,7 +231,7 @@ export default function PlatformPage() {
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 Анкета и ресерч собирают формат, аудиторию, экономику, команду,
                 системы, ограничения и правила решений. Этот контекст питает
-                Copilot, брифы, задачи и настройки модулей.
+                AI-помощник, брифы, задачи и настройки модулей.
               </p>
             </div>
 

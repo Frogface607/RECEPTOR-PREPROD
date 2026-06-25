@@ -7,11 +7,11 @@ const TIERS = [
     name: "Starter",
     price: "9 900",
     cadence: "руб. / месяц",
-    blurb: "Для одного заведения: cockpit владельца, контекст и базовый Menu OS.",
+    blurb: "Для одного заведения: панель владельца, контекст и базовое меню.",
     features: [
       "1 заведение",
-      "Daily Brief",
-      "Context Engine",
+      "Ежедневный бриф",
+      "Память заведения",
       "Базовый dashboard",
       "50 AI-сообщений в день",
     ],
@@ -23,12 +23,12 @@ const TIERS = [
     name: "Pro OS",
     price: "24 900",
     cadence: "руб. / месяц",
-    blurb: "Для владельца и команды: меню, задачи, роли и расширенный cockpit.",
+    blurb: "Для владельца и команды: меню, задачи, роли и расширенная панель.",
     features: [
       "До 5 заведений",
-      "Owner Cockpit",
-      "Menu OS",
-      "Team OS",
+      "Панель владельца",
+      "Меню",
+      "Команда",
       "200 AI-сообщений в день",
       "Приоритетная поддержка",
     ],
@@ -152,7 +152,7 @@ export function PricingTeaser() {
 
         <p className="mt-10 max-w-3xl text-[14px] leading-relaxed text-muted-foreground">
           <span className="text-foreground/80">Внедрение 39 000 руб.</span>{" "}
-          подключает данные, Context Engine, первый Morning Brief и набор
+          подключает данные, память заведения, первый утренний бриф и набор
           модулей под ресторан.{" "}
           <Link
             href="/pricing"

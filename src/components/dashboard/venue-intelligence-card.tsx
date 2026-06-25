@@ -60,7 +60,7 @@ export function VenueIntelligenceCard({
         />
         <InsightColumn
           icon={Brain}
-          title="Фокус Copilot"
+          title="Фокус AI-помощника"
           items={profile.recommendedFocus}
         />
       </div>

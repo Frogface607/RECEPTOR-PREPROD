@@ -24,9 +24,9 @@ import {
 } from "@/lib/product/modules";
 
 export const metadata: Metadata = {
-  title: "Тарифы Receptor Restaurant OS — RECEPTOR",
+  title: "Тарифы Receptor — RECEPTOR",
   description:
-    "Модульная подписка на операционную систему управления рестораном: Owner Cockpit, Context Engine, Menu OS, Team OS и интеграции.",
+    "Модульная подписка на операционную систему управления рестораном: панель владельца, память заведения, меню, команда и интеграции.",
 };
 
 const TIERS = [
@@ -34,13 +34,13 @@ const TIERS = [
     name: "Starter",
     price: "9 900",
     period: "руб. / месяц",
-    blurb: "Один ресторан, управленческий cockpit и базовая память заведения.",
-    cta: { label: "Начать со Starter", href: "/auth?plan=starter" },
-    modules: ["Owner Cockpit", "Context Engine", "Menu OS starter"],
+    blurb: "Один ресторан, панель владельца и базовая память заведения.",
+    cta: { label: "Начать с базового", href: "/auth?plan=starter" },
+    modules: ["Панель владельца", "Память заведения", "Базовое меню"],
     features: [
       "1 заведение",
-      "Daily Brief и KPI по iiko",
-      "Context Engine для AI-помощника",
+      "Ежедневный бриф и KPI по iiko",
+      "Память заведения для AI-помощника",
       "Базовые инструменты меню",
       "До 50 AI-сообщений в день",
       "CSV-экспорт ключевых отчетов",
@@ -53,12 +53,12 @@ const TIERS = [
     period: "руб. / месяц",
     blurb: "Рабочий слой для владельца, управляющего, кухни и маркетинга.",
     cta: { label: "Выбрать Pro OS", href: "/auth?plan=pro-os" },
-    modules: ["Owner Cockpit", "Menu OS", "Team OS", "Integrations"],
+    modules: ["Панель владельца", "Меню", "Команда", "Интеграции"],
     features: [
       "До 5 заведений",
-      "Owner Cockpit и недельный отчет",
-      "Menu OS: QR, food cost, техкарты",
-      "Team OS: роли, доступы, задачи",
+      "Панель владельца и недельный отчет",
+      "Меню: QR, food cost, техкарты",
+      "Команда: роли, доступы, задачи",
       "До 200 AI-сообщений в день",
       "Web-уведомления и командные сценарии",
     ],
@@ -74,7 +74,7 @@ const TIERS = [
       label: "Обсудить Group",
       href: "mailto:bro@frogface.space?subject=Receptor%20Group",
     },
-    modules: ["Multi-venue Cockpit", "Team OS", "Guest OS", "AI policy"],
+    modules: ["Панель холдинга", "Команда", "Гости", "AI-правила"],
     features: [
       "Любое число заведений",
       "Сравнение точек и брендов",
@@ -89,11 +89,11 @@ const TIERS = [
 
 const COMPARISON_ROWS = [
   { label: "Заведений", values: ["1", "до 5", "индивидуально"] },
-  { label: "Context Engine", values: ["базовый", "полный", "по холдингу"] },
-  { label: "Owner Cockpit", values: ["1 точка", "точки + недели", "холдинг"] },
-  { label: "Menu OS", values: ["starter", "полный", "расширенный"] },
-  { label: "Team OS", values: ["-", "роли + задачи", "расширенный"] },
-  { label: "Guest/Delivery/Marketing OS", values: ["аддоны", "аддоны", "в сборке"] },
+  { label: "Память заведения", values: ["базовая", "полная", "по холдингу"] },
+  { label: "Панель владельца", values: ["1 точка", "точки + недели", "холдинг"] },
+  { label: "Меню", values: ["базовое", "полное", "расширенное"] },
+  { label: "Команда", values: ["-", "роли + задачи", "расширенная"] },
+  { label: "Гости, доставка, маркетинг", values: ["аддоны", "аддоны", "в сборке"] },
   { label: "AI-сообщений / день", values: ["50", "200", "индивидуально"] },
   { label: "AI provider mode", values: ["OpenAI/OpenRouter", "на выбор", "частный контур"] },
   { label: "Поддержка", values: ["чат", "приоритет", "выделенная"] },
@@ -118,7 +118,7 @@ const FAQ = [
   {
     q: "Что входит во внедрение?",
     a:
-      "Подключение данных, настройка Context Engine, роли команды, первый Morning Brief, проверка цифр и подбор модулей под конкретный ресторан или сеть.",
+      "Подключение данных, настройка памяти заведения, роли команды, первый утренний бриф, проверка цифр и подбор модулей под конкретный ресторан или сеть.",
   },
   {
     q: "Как подключается iiko Marketplace?",
@@ -158,7 +158,7 @@ export default function PricingPage() {
                 Тарифы
               </p>
               <h1 className="mt-6 text-balance text-5xl font-medium leading-none sm:text-6xl lg:text-7xl">
-                Receptor Restaurant OS.
+                Receptor.
               </h1>
               <p className="mt-8 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
                 Операционная система управления рестораном: данные из iiko,
@@ -289,7 +289,7 @@ export default function PricingPage() {
               </h2>
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
                 Подключаем одну точку или группу, собираем контекст, включаем
-                Morning Brief и фиксируем набор модулей, который реально нужен
+                утренний бриф и фиксируем набор модулей, который реально нужен
                 команде. Setup помогает быстрее запустить подписку и передать
                 команде рабочий кабинет.
               </p>
@@ -317,7 +317,7 @@ export default function PricingPage() {
                 {[
                   "iiko live/demo контур",
                   "контекстная анкета заведения",
-                  "первый Morning Brief",
+                  "первый утренний бриф",
                   "модульный план подписки",
                 ].map((item) => (
                   <div key={item} className="flex gap-3 text-sm">

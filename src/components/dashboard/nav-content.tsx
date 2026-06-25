@@ -27,19 +27,19 @@ export function getDashboardNav(venueId = "dev-venue"): NavItem[] {
       href: dashboardHref,
       matchHref: dashboardHref,
       icon: LayoutDashboard,
-      label: "Owner Cockpit",
+      label: "Панель владельца",
     },
     {
       href: `${dashboardHref}?chat=1`,
       matchHref: "/copilot",
       icon: MessageSquare,
-      label: "Copilot",
+      label: "AI-помощник",
     },
     {
       href: `/team?role=owner&venueId=${encodeURIComponent(venueId)}`,
       matchHref: "/team",
       icon: UsersRound,
-      label: "Team OS",
+      label: "Команда",
     },
     { href: "/tools", matchHref: "/tools", icon: Wrench, label: "Инструменты" },
     {
@@ -61,7 +61,7 @@ export function NavContent({
   activeHref,
   venueId = "dev-venue",
   venueName = "Рабочий кабинет",
-  venueMeta = "Restaurant OS",
+  venueMeta = "Receptor",
   onNavigate,
 }: {
   activeHref?: string;

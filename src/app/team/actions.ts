@@ -186,7 +186,7 @@ async function writeTeamAuditEvent(
   });
 
   if (error && !missingTeamTables(error.message)) {
-    console.warn("Failed to write Team OS audit event:", error.message);
+    console.warn("Failed to write team audit event:", error.message);
   }
 }
 
@@ -277,7 +277,7 @@ export async function inviteTeamMemberAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет Team OS таблиц. Примените миграцию 0004_team_os.sql.",
+        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -340,7 +340,7 @@ export async function updateTeamMemberStatusAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет Team OS таблиц. Примените миграцию 0004_team_os.sql.",
+        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -487,7 +487,7 @@ export async function createTeamTaskAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет Team OS таблиц. Примените миграцию 0004_team_os.sql.",
+        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -543,7 +543,7 @@ export async function updateTeamTaskStatusAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет Team OS таблиц. Примените миграцию 0004_team_os.sql.",
+        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -609,7 +609,7 @@ export async function addTaskCommentAction(
       return {
         ok: false,
         error:
-          "В базе нет Team OS communication таблиц. Примените миграцию 0005_team_communication.sql.",
+          "В базе нет таблиц коммуникации команды. Примените миграцию 0005_team_communication.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -667,7 +667,7 @@ export async function createTeamAnnouncementAction(
       return {
         ok: false,
         error:
-          "В базе нет Team OS communication таблиц. Примените миграцию 0005_team_communication.sql.",
+          "В базе нет таблиц коммуникации команды. Примените миграцию 0005_team_communication.sql.",
       };
     }
     return { ok: false, error: error.message };

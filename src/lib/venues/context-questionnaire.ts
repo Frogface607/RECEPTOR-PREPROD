@@ -171,7 +171,7 @@ export const VENUE_CONTEXT_QUESTIONNAIRE: ContextSection[] = [
   {
     id: "ai_policy",
     title: "AI и данные",
-    description: "Ограничения по данным, модели и тону ответа Copilot.",
+    description: "Ограничения по данным, модели и тону ответа AI-помощника.",
     questions: [
       {
         id: "ai_provider_policy",
@@ -183,8 +183,8 @@ export const VENUE_CONTEXT_QUESTIONNAIRE: ContextSection[] = [
       },
       {
         id: "copilot_tone",
-        label: "Тон Copilot",
-        prompt: "Как Copilot должен говорить с владельцем и командой?",
+        label: "Тон AI-помощника",
+        prompt: "Как AI-помощник должен говорить с владельцем и командой?",
         type: "textarea",
         required: false,
       },

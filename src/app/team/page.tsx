@@ -30,9 +30,9 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 
 export const metadata: Metadata = {
-  title: "Team OS — RECEPTOR",
+  title: "Команда — RECEPTOR",
   description:
-    "Роли, права, сотрудники, задачи, обучение и смены внутри Receptor Restaurant OS.",
+    "Роли, права, сотрудники, задачи, обучение и смены внутри Receptor.",
 };
 
 const ROLE_PARAM_VALUES = new Set<TeamRoleId>(TEAM_ROLES.map((role) => role.id));
@@ -113,7 +113,7 @@ export default async function TeamPage({
           <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.72fr_1.28fr]">
             <div className="flex flex-col justify-between gap-5">
               <Badge variant="outline" className="border-brand/30 text-brand">
-                Team OS
+                Команда
               </Badge>
               <h1 className="max-w-2xl text-balance text-[clamp(2rem,4vw,3.25rem)] font-medium leading-[1.04]">
                 Команда, роли и задачи.
@@ -126,7 +126,7 @@ export default async function TeamPage({
                   href={`/dashboard/${encodeURIComponent(workspace.venueId)}`}
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Owner Cockpit
+                  Панель владельца
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton

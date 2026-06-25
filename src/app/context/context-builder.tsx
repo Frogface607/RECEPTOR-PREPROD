@@ -124,15 +124,15 @@ export function ContextBuilder({
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="lg:sticky lg:top-24 lg:self-start">
           <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-            Context Engine
+            Память заведения
           </p>
           <h1 className="mt-4 text-balance text-[clamp(2rem,4vw,3.3rem)] font-medium leading-[1.04]">
-            Анкета, которая делает Copilot ресторанным.
+            Анкета, которая делает AI-помощника ресторанным.
           </h1>
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
             Receptor должен знать формат, экономику, команду, системы и красные
             линии клиента до того, как начинает советовать. Анкета и ресерч
-            становятся памятью заведения для Copilot, брифов и задач.
+            становятся памятью заведения для AI-помощника, брифов и задач.
           </p>
 
           <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-4">
@@ -265,13 +265,13 @@ export function ContextBuilder({
             </div>
           ) : (
             <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-4 text-xs leading-relaxed text-foreground/85">
-              Базовый контекст готов для Copilot, Daily Brief и задач команды.
+              Базовый контекст готов для AI-помощника, ежедневного брифа и задач команды.
             </div>
           )}
 
           <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-4">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-              <Sparkles className="size-4 text-brand" /> Память для Copilot
+              <Sparkles className="size-4 text-brand" /> Память для AI-помощника
             </div>
             <pre className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-md bg-background/60 p-3 text-xs leading-relaxed text-muted-foreground">
               {prompt || "Заполните анкету, чтобы собрать контекст."}

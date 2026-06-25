@@ -28,12 +28,12 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "RECEPTOR — чувствует кухню",
   description:
-    "AI-копайлот владельца ресторана. Подключение к iiko, живая аналитика выручки, чат с цифрами в одно касание.",
+    "AI-помощник владельца ресторана. Подключение к iiko, живая аналитика выручки, чат с цифрами в одно касание.",
   metadataBase: new URL("https://www.receptorai.pro"),
   openGraph: {
     title: "RECEPTOR — чувствует кухню",
     description:
-      "AI-копайлот владельца ресторана. Подключение к iiko, живая аналитика выручки, чат с цифрами в одно касание.",
+      "AI-помощник владельца ресторана. Подключение к iiko, живая аналитика выручки, чат с цифрами в одно касание.",
     url: "https://www.receptorai.pro",
     siteName: "RECEPTOR",
     locale: "ru_RU",

@@ -114,8 +114,8 @@ export type RoleHome = {
 export const TEAM_PERMISSIONS: TeamPermission[] = [
   {
     id: "view_owner_cockpit",
-    title: "Owner Cockpit",
-    description: "Видит выручку, риски, Morning Brief и стратегические выводы.",
+    title: "Панель владельца",
+    description: "Видит выручку, риски, утренний бриф и стратегические выводы.",
   },
   {
     id: "manage_venue",
@@ -175,7 +175,7 @@ export const TEAM_ROLES: TeamRole[] = [
     title: "Владелец",
     shortTitle: "Owner",
     description: "Видит всю систему, деньги, команду, модули и стратегию.",
-    homeSections: ["Owner Cockpit", "Все задачи", "Команда", "Модули"],
+    homeSections: ["Панель владельца", "Все задачи", "Команда", "Модули"],
   },
   {
     id: "operations_manager",

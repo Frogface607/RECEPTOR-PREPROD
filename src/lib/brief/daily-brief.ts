@@ -246,7 +246,7 @@ export function renderDailyBriefText(
   }).format(generatedAt);
 
   return [
-    `Receptor Daily Brief: ${options.venueName}`,
+    `Ежедневный бриф Receptor: ${options.venueName}`,
     `${PERIOD_LABELS_RU[brief.period]} · ${date}`,
     "",
     brief.headline,

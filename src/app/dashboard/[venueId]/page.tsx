@@ -131,7 +131,7 @@ export default async function DashboardPage({
         <div key={periodLabel} className="contents">
           <div className="reveal reveal-1 mb-7">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-              Owner Cockpit · {periodLabel}
+              Панель владельца · {periodLabel}
             </p>
             <h2 className="mt-2 text-balance text-2xl font-medium leading-tight tracking-[-0.02em] sm:text-3xl">
               Утренний управленческий экран

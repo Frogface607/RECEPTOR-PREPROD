@@ -8,7 +8,7 @@ export function AppShell({
   children,
   venueId = "dev-venue",
   venueName = "Рабочий кабинет",
-  venueMeta = "Restaurant OS",
+  venueMeta = "Receptor",
   chat = true,
 }: {
   activeHref?: string;

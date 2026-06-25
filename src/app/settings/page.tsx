@@ -178,8 +178,8 @@ export default async function SettingsPage() {
       venueMeta={
         activeVenue
           ? [activeVenue.city, activeVenue.type].filter(Boolean).join(" · ") ||
-            "Restaurant OS"
-          : "Restaurant OS"
+            "Receptor"
+          : "Receptor"
       }
     >
       <main className="flex-1">
@@ -196,7 +196,7 @@ export default async function SettingsPage() {
                 href={firstVenueHref}
                 className="inline-flex h-9 items-center rounded-lg border border-border/60 bg-card/55 px-3 text-sm text-foreground transition-colors hover:bg-card"
               >
-                Открыть cockpit
+                Открыть панель
               </Link>
               <Link
                 href="/onboarding?new=1"
@@ -289,7 +289,7 @@ export default async function SettingsPage() {
           </div>
 
           <div className="space-y-6">
-          <Section icon={Brain} title="Context Engine">
+          <Section icon={Brain} title="Память заведения">
             <div className="space-y-3">
               <p className="text-[13px] leading-relaxed text-muted-foreground">
                 Анкета заведения дает AI постоянный контекст: формат,

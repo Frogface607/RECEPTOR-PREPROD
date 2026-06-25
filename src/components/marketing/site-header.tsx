@@ -37,7 +37,7 @@ export function SiteHeader() {
             href="/team"
             className="hidden transition-colors hover:text-foreground lg:inline"
           >
-            Team OS
+            Команда
           </Link>
           <Link
             href="/context"

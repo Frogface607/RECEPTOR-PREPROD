@@ -342,12 +342,12 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-[13px] font-medium text-foreground">
-                    Профиль заведения для Copilot
+                    Профиль заведения для AI-помощника
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
                     Receptor исследует публичный контекст, отзывы и
                     позиционирование, а затем соберёт профиль: концепцию,
-                    сильные стороны, риски и правила для Copilot.
+                    сильные стороны, риски и правила для AI-помощника.
                   </p>
                 </div>
                 {researchProviderLabel(researchProvider, intelligenceProfile) ? (
@@ -667,7 +667,7 @@ function ResearchProfilePreview({
             </h3>
           </div>
           <span className="rounded-md border border-brand/30 bg-brand/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-brand">
-            Готово для Copilot
+            Готово для AI-помощника
           </span>
         </div>
         <p className="mt-3 text-[14px] leading-relaxed text-foreground/85">
@@ -696,7 +696,7 @@ function ResearchProfilePreview({
         />
         <ProfileList
           icon={<Target className="size-4 text-[color:var(--ai)]" />}
-          title="Фокус Copilot"
+          title="Фокус AI-помощника"
           items={[
             ...profile.ownerGoals.slice(0, 2),
             ...profile.recommendedFocus.slice(0, 2),
