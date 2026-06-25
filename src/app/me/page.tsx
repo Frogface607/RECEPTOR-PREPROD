@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  Bell,
   CheckCircle2,
-  ClipboardList,
+  Clock3,
+  Flame,
   GraduationCap,
+  Inbox,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   UserRound,
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/app-shell";
@@ -40,6 +42,44 @@ function priorityClass(priority: TeamTask["priority"]): string {
     return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
   }
   return "border-border bg-muted/40 text-muted-foreground";
+}
+
+function priorityLabel(priority: TeamTask["priority"]): string {
+  if (priority === "high") return "важно";
+  if (priority === "medium") return "средне";
+  return "низко";
+}
+
+function statusClass(status: TeamTask["status"]): string {
+  if (status === "in_progress") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "new") return "border-amber-400/30 bg-amber-400/10 text-amber-200";
+  if (status === "accepted") return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  return "border-border bg-muted/40 text-muted-foreground";
+}
+
+const TASK_STATUS_ORDER: Record<TeamTask["status"], number> = {
+  in_progress: 0,
+  new: 1,
+  accepted: 2,
+  done: 3,
+  verified: 4,
+};
+
+const TASK_PRIORITY_ORDER: Record<TeamTask["priority"], number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
+
+function sortTasks(tasks: TeamTask[]): TeamTask[] {
+  return [...tasks].sort((a, b) => {
+    const byStatus = TASK_STATUS_ORDER[a.status] - TASK_STATUS_ORDER[b.status];
+    if (byStatus !== 0) return byStatus;
+    const byPriority =
+      TASK_PRIORITY_ORDER[a.priority] - TASK_PRIORITY_ORDER[b.priority];
+    if (byPriority !== 0) return byPriority;
+    return a.title.localeCompare(b.title, "ru");
+  });
 }
 
 async function getFirstOwnedVenueId(): Promise<string | null> {
@@ -110,6 +150,29 @@ export default async function MyCabinetPage() {
   const completedTasks = workspace.tasks.filter(
     (task) => task.status === "done" || task.status === "verified",
   );
+  const sortedOpenTasks = sortTasks(openTasks);
+  const nextTask = sortedOpenTasks[0];
+  const urgentTasks = openTasks.filter((task) => task.priority === "high");
+  const taskGroups = [
+    {
+      id: "in_progress" as const,
+      title: "В работе",
+      hint: "То, что уже принято в смену.",
+      tasks: sortedOpenTasks.filter((task) => task.status === "in_progress"),
+    },
+    {
+      id: "new" as const,
+      title: "Новые",
+      hint: "Нужно принять или быстро отклонить через управляющего.",
+      tasks: sortedOpenTasks.filter((task) => task.status === "new"),
+    },
+    {
+      id: "accepted" as const,
+      title: "Принятые",
+      hint: "Следующий шаг — взять в работу.",
+      tasks: sortedOpenTasks.filter((task) => task.status === "accepted"),
+    },
+  ].filter((group) => group.tasks.length > 0);
 
   return (
     <AppShell
@@ -120,19 +183,19 @@ export default async function MyCabinetPage() {
     >
       <main className="flex-1">
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.86fr_1.14fr]">
             <div>
               <Badge variant="outline" className="border-brand/30 text-brand">
                 Мой кабинет
               </Badge>
-              <h1 className="mt-6 max-w-3xl text-balance text-[clamp(2.2rem,4.6vw,4rem)] font-medium leading-[1.03]">
-                {workspace.member.name}
+              <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2rem,4.2vw,3.4rem)] font-medium leading-[1.03]">
+                Сегодня: {role.title.toLowerCase()}
               </h1>
               <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                {workspace.venueName} · {role.title.toLowerCase()}. Здесь только
-                ваши задачи, объявления и рабочий контур на смену.
+                {workspace.member.name} · {workspace.venueName}. Только задачи,
+                объявления и рабочий контур на смену.
               </p>
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href={`/team?role=${role.id}&venueId=${encodeURIComponent(workspace.venueId)}`}
                   className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
@@ -151,70 +214,129 @@ export default async function MyCabinetPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-card/60 p-5">
-              <div className="flex items-start gap-3">
-                <UserRound className="mt-1 size-5 shrink-0 text-brand" />
-                <div>
+            <div className="rounded-lg border border-brand/35 bg-card/65 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Роль и доступ
+                    Следующее действие
                   </p>
-                  <h2 className="mt-3 text-2xl font-medium">{role.title}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {role.description}
-                  </p>
+                  {nextTask ? (
+                    <>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={priorityClass(nextTask.priority)}
+                        >
+                          {priorityLabel(nextTask.priority)}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={statusClass(nextTask.status)}
+                        >
+                          {statusLabel(nextTask.status)}
+                        </Badge>
+                        {nextTask.dueLabel ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <Clock3 className="size-3.5" />
+                            {nextTask.dueLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <h2 className="mt-4 text-xl font-medium leading-tight">
+                        {nextTask.title}
+                      </h2>
+                      <TaskStatusButtons task={nextTask} />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="mt-3 text-xl font-medium">
+                        Активных задач нет
+                      </h2>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        Проверь объявления и подготовь смену по стандартам роли.
+                      </p>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <Metric label="активные задачи" value={openTasks.length} />
-                <Metric label="объявления" value={workspace.announcements.length} />
-                <Metric label="разделы" value={role.homeSections.length} />
-              </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {role.homeSections.map((section) => (
-                  <span
-                    key={section}
-                    className="rounded-md border border-border/50 bg-background/45 px-2.5 py-1 text-[12px] text-muted-foreground"
-                  >
-                    {section}
-                  </span>
-                ))}
+                <Inbox className="size-5 shrink-0 text-brand" />
               </div>
             </div>
+          </div>
+
+          <div className="mx-auto grid max-w-7xl gap-3 px-6 pb-8 sm:grid-cols-2 lg:grid-cols-4">
+            <Metric label="активные" value={openTasks.length} />
+            <Metric label="важные" value={urgentTasks.length} />
+            <Metric label="объявления" value={workspace.announcements.length} />
+            <Metric label="закрыто" value={completedTasks.length} />
           </div>
         </section>
 
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-14 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-[1.12fr_0.88fr]">
             <div>
               <div className="flex items-center gap-3">
-                <ClipboardList className="size-5 text-brand" />
-                <h2 className="text-2xl font-medium">Мои задачи</h2>
+                <Flame className="size-5 text-brand" />
+                <h2 className="text-2xl font-medium">Рабочая лента</h2>
               </div>
-              <div className="mt-5 grid gap-3">
-                {openTasks.length ? (
-                  openTasks.map((task) => <TaskCard key={task.id} task={task} />)
+              <div className="mt-5 grid gap-5">
+                {taskGroups.length ? (
+                  taskGroups.map((group) => (
+                    <TaskGroup
+                      key={group.id}
+                      title={group.title}
+                      hint={group.hint}
+                      tasks={group.tasks}
+                    />
+                  ))
                 ) : (
                   <EmptyState text="Активных задач нет." />
                 )}
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-3">
-                <Bell className="size-5 text-brand" />
-                <h2 className="text-2xl font-medium">Объявления</h2>
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center gap-3">
+                  <Megaphone className="size-5 text-brand" />
+                  <h2 className="text-2xl font-medium">Объявления</h2>
+                </div>
+                <div className="mt-5 grid gap-3">
+                  {workspace.announcements.length ? (
+                    workspace.announcements.map((announcement) => (
+                      <AnnouncementCard
+                        key={announcement.id}
+                        announcement={announcement}
+                      />
+                    ))
+                  ) : (
+                    <EmptyState text="Новых объявлений нет." />
+                  )}
+                </div>
               </div>
-              <div className="mt-5 grid gap-3">
-                {workspace.announcements.length ? (
-                  workspace.announcements.map((announcement) => (
-                    <AnnouncementCard
-                      key={announcement.id}
-                      announcement={announcement}
-                    />
-                  ))
-                ) : (
-                  <EmptyState text="Новых объявлений нет." />
-                )}
+
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex items-start gap-3">
+                  <UserRound className="mt-1 size-5 shrink-0 text-brand" />
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Роль и доступ
+                    </p>
+                    <h2 className="mt-3 text-xl font-medium">{role.title}</h2>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {role.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {role.homeSections.map((section) => (
+                    <span
+                      key={section}
+                      className="rounded-md border border-border/50 bg-background/45 px-2.5 py-1 text-[12px] text-muted-foreground"
+                    >
+                      {section}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -272,16 +394,50 @@ function Metric({ label, value }: { label: string; value: number }) {
   );
 }
 
+function TaskGroup({
+  title,
+  hint,
+  tasks,
+}: {
+  title: string;
+  hint: string;
+  tasks: TeamTask[];
+}) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-card/45 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-medium text-foreground">{title}</h3>
+          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+            {hint}
+          </p>
+        </div>
+        <span className="rounded-md border border-border/50 bg-background/45 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+          {tasks.length}
+        </span>
+      </div>
+      <div className="mt-4 grid gap-3">
+        {tasks.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TaskCard({ task }: { task: TeamTask }) {
   return (
     <article className="rounded-lg border border-border/60 bg-card/50 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className={priorityClass(task.priority)}>
-          {task.priority}
+          {priorityLabel(task.priority)}
         </Badge>
-        <Badge variant="outline">{statusLabel(task.status)}</Badge>
+        <Badge variant="outline" className={statusClass(task.status)}>
+          {statusLabel(task.status)}
+        </Badge>
         {task.dueLabel ? (
-          <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            <Clock3 className="size-3.5" />
             {task.dueLabel}
           </span>
         ) : null}

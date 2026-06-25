@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, Play } from "lucide-react";
 import {
   updateOwnTaskStatusAction,
@@ -21,6 +22,7 @@ function resultText(result: OwnTaskStatusResult): string {
 }
 
 export function TaskStatusButtons({ task }: { task: TeamTask }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const nextAction = NEXT_ACTIONS[task.status];
@@ -40,6 +42,7 @@ export function TaskStatusButtons({ task }: { task: TeamTask }) {
               status: nextAction.status,
             });
             setMessage(resultText(result));
+            if (result.ok) router.refresh();
           });
         }}
         className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/40 disabled:opacity-50"
