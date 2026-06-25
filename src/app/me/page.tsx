@@ -245,7 +245,10 @@ export default async function MyCabinetPage() {
                       <h2 className="mt-4 text-xl font-medium leading-tight">
                         {nextTask.title}
                       </h2>
-                      <TaskStatusButtons task={nextTask} />
+                      <TaskStatusButtons
+                        key={`${nextTask.id}-${nextTask.status}`}
+                        task={nextTask}
+                      />
                     </>
                   ) : (
                     <>
@@ -445,7 +448,7 @@ function TaskCard({ task }: { task: TeamTask }) {
       <p className="mt-3 text-sm leading-relaxed text-foreground/90">
         {task.title}
       </p>
-      <TaskStatusButtons task={task} />
+      <TaskStatusButtons key={`${task.id}-${task.status}`} task={task} />
     </article>
   );
 }
