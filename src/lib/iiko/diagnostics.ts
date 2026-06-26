@@ -220,6 +220,10 @@ export async function runIikoDiagnostics(
       const priceFields = Object.entries(costProbe.priceFieldCounts)
         .map(([field, count]) => `${field}: ${count}`)
         .join(", ");
+      const rawFields = Object.entries(costProbe.rawFieldCounts)
+        .slice(0, 12)
+        .map(([field, count]) => `${field}: ${count}`)
+        .join(", ");
 
       if (costProbe.error) {
         checks.push(
@@ -235,7 +239,7 @@ export async function runIikoDiagnostics(
           ok(
             "costs",
             "Себестоимость / цены RMS",
-            `Найдено ${costProbe.productsWithTechCardPrice} позиций с ценой для техкарт из ${costProbe.normalizedProducts}. Endpoint: ${costProbe.endpoint}. Поля: ${priceFields || "нет price-полей"}.`,
+            `Найдено ${costProbe.productsWithTechCardPrice} позиций с ценой для техкарт из ${costProbe.normalizedProducts}. Endpoint: ${costProbe.endpoint}. Поля цен: ${priceFields || "нет price-полей"}. Доступные поля: ${rawFields || "не определены"}.`,
           ),
         );
       } else {
@@ -243,7 +247,7 @@ export async function runIikoDiagnostics(
           warn(
             "costs",
             "Себестоимость / цены RMS",
-            `RMS вернул ${costProbe.normalizedProducts} товаров, но без полей себестоимости. Endpoint: ${costProbe.endpoint}. Поля: ${priceFields || "price-поля не найдены"}.`,
+            `RMS вернул ${costProbe.normalizedProducts} товаров, но без полей себестоимости. Endpoint: ${costProbe.endpoint}. Поля цен: ${priceFields || "price-поля не найдены"}. Доступные поля: ${rawFields || "не определены"}.`,
             "Нужен endpoint/права RMS, которые отдают закупочные цены или состав техкарт.",
           ),
         );

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  BookOpenCheck,
+  CalendarClock,
   CheckCircle2,
+  ClipboardCheck,
   Clock3,
   Flame,
   GraduationCap,
@@ -17,6 +20,12 @@ import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
+import {
+  getRoleDayFocus,
+  listLearningItemsForRole,
+  listShiftChecklistForRole,
+  type TeamLearningItem,
+} from "@/lib/team/team-learning";
 import { getTeamRole, type TeamAnnouncement, type TeamTask } from "@/lib/team/team-os";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { TaskStatusButtons } from "./task-status-buttons";
@@ -48,6 +57,22 @@ function priorityLabel(priority: TeamTask["priority"]): string {
   if (priority === "high") return "важно";
   if (priority === "medium") return "средне";
   return "низко";
+}
+
+function learningStatusLabel(status: TeamLearningItem["status"]): string {
+  if (status === "required") return "обязательно";
+  if (status === "ready") return "готово";
+  return "скоро";
+}
+
+function learningStatusClass(status: TeamLearningItem["status"]): string {
+  if (status === "required") {
+    return "border-brand/30 bg-brand/10 text-brand";
+  }
+  if (status === "ready") {
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  }
+  return "border-border bg-muted/40 text-muted-foreground";
 }
 
 function statusClass(status: TeamTask["status"]): string {
@@ -144,6 +169,10 @@ export default async function MyCabinetPage() {
   }
 
   const role = getTeamRole(workspace.member.roleId);
+  const roleFocus = getRoleDayFocus(workspace.member.roleId);
+  const shiftChecklist = listShiftChecklistForRole(workspace.member.roleId);
+  const learningItems = listLearningItemsForRole(workspace.member.roleId);
+  const shiftLabel = workspace.member.shiftLabel?.trim() || "Смена не указана";
   const openTasks = workspace.tasks.filter(
     (task) => task.status !== "done" && task.status !== "verified",
   );
@@ -192,8 +221,8 @@ export default async function MyCabinetPage() {
                 Сегодня: {role.title.toLowerCase()}
               </h1>
               <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                {workspace.member.name} · {workspace.venueName}. Только задачи,
-                объявления и рабочий контур на смену.
+                {workspace.member.name} · {workspace.venueName}. {shiftLabel}.{" "}
+                {roleFocus.summary}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
@@ -346,37 +375,75 @@ export default async function MyCabinetPage() {
         </section>
 
         <section>
-          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-14 lg:grid-cols-2">
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <GraduationCap className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Обучение и стандарты</h2>
+          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-14 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="space-y-6">
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex items-center gap-3">
+                  <CalendarClock className="size-5 text-brand" />
+                  <h2 className="text-xl font-medium">Смена сегодня</h2>
+                </div>
+                <div className="mt-4 rounded-lg border border-brand/25 bg-brand/10 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+                    {shiftLabel}
+                  </p>
+                  <h3 className="mt-3 text-lg font-medium">{roleFocus.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {roleFocus.summary}
+                  </p>
+                </div>
+                <div className="mt-5 grid gap-2">
+                  {shiftChecklist.map((item) => (
+                    <div
+                      key={item}
+                      className="flex gap-3 rounded-lg border border-border/45 bg-background/35 p-3 text-sm leading-relaxed text-foreground/85"
+                    >
+                      <ClipboardCheck className="mt-0.5 size-4 shrink-0 text-brand" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Здесь будет база знаний, чек-листы смены и короткие тесты по
-                роли. Сейчас этот блок фиксирует место для следующего слоя Team
-                команды.
-              </p>
+
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="size-5 text-brand" />
+                  <h2 className="text-xl font-medium">Завершено</h2>
+                </div>
+                <div className="mt-4 grid gap-3">
+                  {completedTasks.length ? (
+                    completedTasks.slice(0, 4).map((task) => (
+                      <div
+                        key={task.id}
+                        className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm text-muted-foreground"
+                      >
+                        {task.title}
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState text="Пока нет закрытых задач." />
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Закрытые задачи</h2>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="size-5 text-brand" />
+                    <h2 className="text-xl font-medium">Обучение по роли</h2>
+                  </div>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    Короткие материалы, которые привязаны к должности и задачам
+                    на смену. Позже сюда добавим тесты и прогресс как в Edison.
+                  </p>
+                </div>
+                <BookOpenCheck className="size-5 shrink-0 text-brand" />
               </div>
-              <div className="mt-4 grid gap-3">
-                {completedTasks.length ? (
-                  completedTasks.slice(0, 4).map((task) => (
-                    <div
-                      key={task.id}
-                      className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm text-muted-foreground"
-                    >
-                      {task.title}
-                    </div>
-                  ))
-                ) : (
-                  <EmptyState text="Пока нет закрытых задач." />
-                )}
+              <div className="mt-5 grid gap-3">
+                {learningItems.map((item) => (
+                  <LearningCard key={item.id} item={item} />
+                ))}
               </div>
             </div>
           </div>
@@ -480,6 +547,25 @@ function AnnouncementCard({
       <h3 className="mt-3 text-sm font-medium">{announcement.title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {announcement.body}
+      </p>
+    </article>
+  );
+}
+
+function LearningCard({ item }: { item: TeamLearningItem }) {
+  return (
+    <article className="rounded-lg border border-border/60 bg-background/35 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline" className={learningStatusClass(item.status)}>
+          {learningStatusLabel(item.status)}
+        </Badge>
+        <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+          {item.timeLabel}
+        </span>
+      </div>
+      <h3 className="mt-3 text-sm font-medium">{item.title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {item.description}
       </p>
     </article>
   );

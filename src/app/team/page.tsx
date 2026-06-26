@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowRight,
+  BookOpenCheck,
+  CalendarDays,
   CheckCircle2,
+  ClipboardCheck,
   ClipboardList,
   GraduationCap,
   KeyRound,
@@ -25,6 +29,14 @@ import {
   type TeamRoleId,
   type TeamTask,
 } from "@/lib/team/team-os";
+import {
+  listLearningItemsForRole,
+  listShiftChecklistForRole,
+} from "@/lib/team/team-learning";
+import {
+  buildShiftOverview,
+  type ShiftRoleCoverage,
+} from "@/lib/team/team-shift-planner";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
@@ -83,6 +95,7 @@ export default async function TeamPage({
 
   const workspace = await getTeamWorkspace(venueId);
   const home = buildRoleHome(roleId, workspace.tasks);
+  const shiftOverview = buildShiftOverview(workspace.staff, workspace.tasks);
   const visibleStaff = workspace.staff.filter((member) =>
     roleId === "owner" ||
     roleId === "operations_manager" ||
@@ -99,6 +112,12 @@ export default async function TeamPage({
         workspace.staff,
         workspace.tasks,
       )
+    : [];
+  const memberLearning = representativeMember
+    ? listLearningItemsForRole(representativeMember.roleId).slice(0, 3)
+    : [];
+  const memberChecklist = representativeMember
+    ? listShiftChecklistForRole(representativeMember.roleId).slice(0, 3)
     : [];
 
   return (
@@ -212,6 +231,71 @@ export default async function TeamPage({
           </div>
         </section>
 
+        <section className="border-b border-border/40">
+          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.82fr_1.18fr]">
+            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                    Смена сегодня
+                  </p>
+                  <h2 className="mt-3 text-2xl font-medium">Состав и риски</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Короткая проверка перед посадкой: кто активен, где нет
+                    человека и сколько важных задач висит на смене.
+                  </p>
+                </div>
+                <CalendarDays className="size-6 shrink-0 text-brand" />
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Metric label="Активны" value={shiftOverview.activeStaff} />
+                <Metric label="Важных задач" value={shiftOverview.importantTasks} />
+                <Metric label="Ролей закрыто" value={shiftOverview.coveredRoles} />
+                <Metric label="Без человека" value={shiftOverview.uncoveredRoles.length} />
+              </div>
+
+              {shiftOverview.uncoveredRoles.length > 0 ? (
+                <div className="mt-5 rounded-lg border border-amber-400/25 bg-amber-400/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-200" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-100">
+                        Проверить покрытие ролей
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {shiftOverview.uncoveredRoles
+                          .slice(0, 4)
+                          .map((item) => item.title)
+                          .join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                    Покрытие
+                  </p>
+                  <h2 className="mt-2 text-xl font-medium">Роли и задачи</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {shiftOverview.openTasks} открытых задач
+                </p>
+              </div>
+              <div className="mt-5 grid gap-3">
+                {shiftOverview.coverage.map((coverage) => (
+                  <ShiftCoverageRow key={coverage.roleId} coverage={coverage} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <TeamActionsPanel
           venueId={workspace.venueId}
           staff={workspace.staff}
@@ -288,7 +372,48 @@ export default async function TeamPage({
                     Пример кабинета: {representativeMember.name},{" "}
                     {getTeamRole(representativeMember.roleId).title.toLowerCase()}.
                   </p>
-                  <div className="mt-5 grid gap-3">
+                  <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-3">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                      Смена
+                    </p>
+                    <p className="mt-2 text-sm font-medium">
+                      {representativeMember.shiftLabel || "Смена не указана"}
+                    </p>
+                  </div>
+                  <div className="mt-5 grid gap-2">
+                    {memberChecklist.map((item) => (
+                      <div
+                        key={item}
+                        className="flex gap-3 rounded-lg border border-border/45 bg-background/35 p-3 text-[13px] leading-relaxed text-foreground/85"
+                      >
+                        <ClipboardCheck className="mt-0.5 size-4 shrink-0 text-brand" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 border-t border-border/50 pt-5">
+                    <div className="flex items-center gap-2">
+                      <BookOpenCheck className="size-4 text-brand" />
+                      <p className="text-sm font-medium">Обучение роли</p>
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {memberLearning.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-lg border border-border/45 bg-background/35 p-3"
+                        >
+                          <p className="text-[13px] font-medium">{item.title}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            {item.timeLabel} · {item.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <p className="text-sm font-medium">Задачи сотрудника</p>
+                  </div>
+                  <div className="mt-3 grid gap-3">
                     {memberTasks.map((task) => (
                       <TaskRow key={task.id} task={task} compact />
                     ))}
@@ -333,6 +458,57 @@ function Metric({ label, value }: { label: string; value: number }) {
       <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
         {label}
       </p>
+    </div>
+  );
+}
+
+function coverageStatusLabel(status: ShiftRoleCoverage["status"]): string {
+  if (status === "covered") return "закрыто";
+  if (status === "invited") return "ждет входа";
+  return "нет человека";
+}
+
+function coverageStatusClass(status: ShiftRoleCoverage["status"]): string {
+  if (status === "covered") {
+    return "border-brand/35 bg-brand/10 text-brand";
+  }
+  if (status === "invited") {
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  }
+  return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+}
+
+function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
+  const names = coverage.staff.map((member) => member.name).join(", ");
+  const shift = coverage.shiftLabels.join(", ");
+
+  return (
+    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-medium">{coverage.title}</p>
+          <Badge
+            variant="outline"
+            className={coverageStatusClass(coverage.status)}
+          >
+            {coverageStatusLabel(coverage.status)}
+          </Badge>
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          {names || "Сотрудник не назначен"}
+          {shift ? ` · ${shift}` : ""}
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:justify-end">
+        <span className="rounded-md border border-border/50 bg-card/45 px-2 py-1">
+          задач {coverage.openTasks}
+        </span>
+        {coverage.importantTasks > 0 ? (
+          <span className="rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-destructive">
+            важно {coverage.importantTasks}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
