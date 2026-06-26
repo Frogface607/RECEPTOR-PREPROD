@@ -65,6 +65,8 @@ export function MarginMappingWorkspace({
     [readiness.items, filter, query],
   );
   const visibleItems = filteredItems.slice(0, limit);
+  const hasLinkedItemsWithoutCost =
+    readiness.matchedDishes > 0 && readiness.costedDishes === 0;
 
   return (
     <div className="mt-5 overflow-hidden rounded-lg border border-border/45 bg-background/25">
@@ -89,6 +91,14 @@ export function MarginMappingWorkspace({
 
         <AutoMappingAction venueId={venueId} items={autoItems} />
       </div>
+
+      {hasLinkedItemsWithoutCost ? (
+        <div className="border-b border-border/40 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+          Связи с iiko сохранены. Закупочные цены пока не пришли из RMS, поэтому
+          маржа не считается: нужно проверить права/endpoint себестоимости в
+          диагностике iiko.
+        </div>
+      ) : null}
 
       <div className="grid gap-2 border-b border-border/40 p-2 xl:grid-cols-[1fr_auto] xl:items-center">
         <label className="relative block">
@@ -339,6 +349,11 @@ function CandidateSummary({
   match: MenuMarginItem["match"];
 }) {
   const shownProduct = product ?? currentProduct;
+  const costText = cost
+    ? ` · себ. ${formatRubles(cost)}`
+    : shownProduct
+      ? " · закупочная цена не пришла"
+      : " · цены нет";
 
   return (
     <div className="min-w-0 text-[12px] text-muted-foreground">
@@ -352,7 +367,7 @@ function CandidateSummary({
       </div>
       <p className="mt-1 truncate">
         {matchLabel(match)}
-        {cost ? ` · себ. ${formatRubles(cost)}` : " · цены нет"}
+        {costText}
         {markup !== null ? ` · маржа ${markup}%` : ""}
       </p>
     </div>
@@ -374,6 +389,7 @@ function CandidateMappingForm({
     saveMenuItemMappingStateAction,
     INITIAL_STATE,
   );
+  const isCurrentProduct = item.product?.id === product.id;
 
   return (
     <form
@@ -398,18 +414,20 @@ function CandidateMappingForm({
         ) : null}
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || isCurrentProduct}
           className={cn(
             "inline-flex h-8 shrink-0 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors disabled:cursor-wait disabled:opacity-55",
-            compact
+            isCurrentProduct
+              ? "border border-brand/35 bg-brand/10 text-brand"
+              : compact
               ? "w-full border border-brand/45 bg-brand/10 text-brand hover:bg-brand/15"
               : "bg-brand text-primary-foreground hover:bg-brand-hover",
           )}
         >
-          {pending ? "..." : "Связать"}
+          {pending ? "..." : isCurrentProduct ? "Связано" : "Связать"}
         </button>
       </div>
-      {state.message ? (
+      {state.message && !isCurrentProduct ? (
         <div className="mt-2">
           <ActionStateText state={state} />
         </div>
