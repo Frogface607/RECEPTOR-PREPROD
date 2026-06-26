@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  ArrowRight,
   BookOpenCheck,
   CalendarClock,
   CheckCircle2,
@@ -435,7 +436,7 @@ export default async function MyCabinetPage() {
                   </div>
                   <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                     Короткие материалы, которые привязаны к должности и задачам
-                    на смену. Позже сюда добавим тесты и прогресс как в Edison.
+                    на смену. Внутри — стандарт, проверка и личный прогресс.
                   </p>
                 </div>
                 <BookOpenCheck className="size-5 shrink-0 text-brand" />
@@ -554,7 +555,10 @@ function AnnouncementCard({
 
 function LearningCard({ item }: { item: TeamLearningItem }) {
   return (
-    <article className="rounded-lg border border-border/60 bg-background/35 p-4">
+    <Link
+      href={`/me/learning?module=${encodeURIComponent(item.id)}`}
+      className="block rounded-lg border border-border/60 bg-background/35 p-4 transition-colors hover:border-brand/40 hover:bg-card/70"
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className={learningStatusClass(item.status)}>
           {learningStatusLabel(item.status)}
@@ -567,7 +571,11 @@ function LearningCard({ item }: { item: TeamLearningItem }) {
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {item.description}
       </p>
-    </article>
+      <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand">
+        Открыть урок
+        <ArrowRight className="size-4" />
+      </span>
+    </Link>
   );
 }
 
