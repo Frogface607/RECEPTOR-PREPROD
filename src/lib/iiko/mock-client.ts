@@ -121,6 +121,10 @@ export class MockIikoClient implements IikoClient {
     });
   }
 
+  async fetchNomenclature(): Promise<Product[]> {
+    return SANDBOX_PRODUCTS;
+  }
+
   async searchNomenclature(query: string): Promise<Product[]> {
     const q = query.trim().toLowerCase();
     if (!q) return [];

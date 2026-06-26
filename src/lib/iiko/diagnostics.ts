@@ -10,7 +10,7 @@ import type { ResolvedVenue } from "@/lib/venues/get-venue";
 export type IikoDiagnosticStatus = "ok" | "warn" | "fail";
 
 export type IikoDiagnosticCheck = {
-  id: "credentials" | "organization" | "olap" | "dishes";
+  id: "credentials" | "organization" | "olap" | "dishes" | "costs";
   title: string;
   status: IikoDiagnosticStatus;
   detail: string;
@@ -210,6 +210,61 @@ export async function runIikoDiagnostics(
         "Блюда в продажах",
         error,
         "Проверьте права OLAP на блюда и группы блюд.",
+      ),
+    );
+  }
+
+  if (probe instanceof RmsIikoClient) {
+    try {
+      const costProbe = await probe.probeCostFields();
+      const priceFields = Object.entries(costProbe.priceFieldCounts)
+        .map(([field, count]) => `${field}: ${count}`)
+        .join(", ");
+
+      if (costProbe.error) {
+        checks.push(
+          warn(
+            "costs",
+            "Себестоимость / цены RMS",
+            `RMS ответил, но номенклатура для цен не прочиталась: ${costProbe.error}.`,
+            "Проверить права RMS на чтение номенклатуры и endpoint продуктов.",
+          ),
+        );
+      } else if (costProbe.productsWithTechCardPrice > 0) {
+        checks.push(
+          ok(
+            "costs",
+            "Себестоимость / цены RMS",
+            `Найдено ${costProbe.productsWithTechCardPrice} позиций с ценой для техкарт из ${costProbe.normalizedProducts}. Endpoint: ${costProbe.endpoint}. Поля: ${priceFields || "нет price-полей"}.`,
+          ),
+        );
+      } else {
+        checks.push(
+          warn(
+            "costs",
+            "Себестоимость / цены RMS",
+            `RMS вернул ${costProbe.normalizedProducts} товаров, но без полей себестоимости. Endpoint: ${costProbe.endpoint}. Поля: ${priceFields || "price-поля не найдены"}.`,
+            "Нужен endpoint/права RMS, которые отдают закупочные цены или состав техкарт.",
+          ),
+        );
+      }
+    } catch (error) {
+      checks.push(
+        fail(
+          "costs",
+          "Себестоимость / цены RMS",
+          error,
+          "Проверить доступ RMS к номенклатуре, ценам и техкартам.",
+        ),
+      );
+    }
+  } else if (config.channel === "cloud") {
+    checks.push(
+      warn(
+        "costs",
+        "Себестоимость / цены",
+        "Подключен Cloud API. Для детальных цен и техкарт обычно нужен RMS Server или отдельный экспорт.",
+        "Подключить RMS Server для себестоимости и состава техкарт.",
       ),
     );
   }

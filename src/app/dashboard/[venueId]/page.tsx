@@ -10,6 +10,7 @@ import { DataSourcePanel } from "@/components/dashboard/data-source-panel";
 import { OwnerReviewCard } from "@/components/dashboard/owner-review-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
+import { MarginReadinessCard } from "@/components/dashboard/margin-readiness-card";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -24,6 +25,8 @@ import { buildRevenueDataQuality } from "@/lib/iiko/data-quality";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
+import { listMenuItemMappings } from "@/lib/menu-item-mapping-store";
+import { buildMenuMarginReadiness } from "@/lib/menu-margin-readiness";
 import { buildOwnerReview } from "@/lib/owner-review";
 import type { IikoClient } from "@/lib/iiko/types";
 import type {
@@ -31,7 +34,9 @@ import type {
   DishStat,
   RevenueSummary,
   ShiftStat,
+  Product,
 } from "@/lib/iiko/models";
+import type { MenuItemMapping } from "@/lib/menu-item-mapping";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 
 type DashboardData = {
@@ -40,21 +45,53 @@ type DashboardData = {
   categories: CategoryStat[];
   shifts: ShiftStat[];
   brief: DailyBrief;
+  nomenclature: Product[];
+  nomenclatureError: string | null;
+  mappings: MenuItemMapping[];
 };
 
 async function loadDashboardData(
   client: IikoClient,
   period: Parameters<IikoClient["getRevenueSummary"]>[0],
+  venueId: string,
 ): Promise<DashboardData> {
-  const [summary, dishes, categories, shifts, brief] = await Promise.all([
-    client.getRevenueSummary(period),
-    client.getDishStatistics(period, 10),
-    client.getCategoryStatistics(period),
-    client.getShifts(period),
-    buildDailyBrief(client, period),
-  ]);
+  const [
+    summary,
+    dishes,
+    categories,
+    shifts,
+    brief,
+    nomenclatureResult,
+    mappings,
+  ] =
+    await Promise.all([
+      client.getRevenueSummary(period),
+      client.getDishStatistics(period, 10),
+      client.getCategoryStatistics(period),
+      client.getShifts(period),
+      buildDailyBrief(client, period),
+      client.fetchNomenclature
+        ? client
+            .fetchNomenclature()
+            .then((products) => ({ products, error: null }))
+            .catch((error) => ({
+              products: [] as Product[],
+              error: error instanceof Error ? error.message : String(error),
+            }))
+        : Promise.resolve({ products: [] as Product[], error: null }),
+      listMenuItemMappings(venueId),
+    ]);
 
-  return { summary, dishes, categories, shifts, brief };
+  return {
+    summary,
+    dishes,
+    categories,
+    shifts,
+    brief,
+    nomenclature: nomenclatureResult.products,
+    nomenclatureError: nomenclatureResult.error,
+    mappings,
+  };
 }
 
 function dashboardDataErrorMessage(error: unknown): string {
@@ -102,7 +139,11 @@ export default async function DashboardPage({
   let dashboardData: DashboardData;
 
   try {
-    dashboardData = await loadDashboardData(getDashboardClient(venue), period);
+    dashboardData = await loadDashboardData(
+      getDashboardClient(venue),
+      period,
+      venueId,
+    );
   } catch (error) {
     if (intendedDataMode !== "live") throw error;
 
@@ -111,10 +152,20 @@ export default async function DashboardPage({
     dashboardData = await loadDashboardData(
       new MockIikoClient({ today: DEMO_ANCHOR }),
       period,
+      venueId,
     );
   }
 
-  const { summary, dishes, categories, shifts, brief } = dashboardData;
+  const {
+    summary,
+    dishes,
+    categories,
+    shifts,
+    brief,
+    nomenclature,
+    nomenclatureError,
+    mappings,
+  } = dashboardData;
   const periodLabel = formatPeriodLabel(period);
   const chatParams = new URLSearchParams(periodToSearchParams(period));
   chatParams.set("chat", "1");
@@ -131,6 +182,11 @@ export default async function DashboardPage({
     brief,
     dataQuality: quality,
     dataMode,
+  });
+  const marginReadiness = buildMenuMarginReadiness({
+    dishes,
+    products: nomenclature,
+    mappings,
   });
 
   return (
@@ -198,6 +254,15 @@ export default async function DashboardPage({
 
           <div className="reveal reveal-4 mt-6">
             <MenuEngineeringCard dishes={dishes} />
+          </div>
+
+          <div className="reveal reveal-4 mt-6">
+            <MarginReadinessCard
+              venueId={venueId}
+              readiness={marginReadiness}
+              error={nomenclatureError}
+              products={nomenclature}
+            />
           </div>
 
           <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">

@@ -60,6 +60,17 @@ export const ProductSchema = z.object({
   name: z.string().min(1),
   parentGroupId: z.string().optional(),
   sizePrices: z.array(ProductSizePriceSchema).default([]),
+  article: z.string().optional(),
+  quickDialCode: z.string().optional(),
+  unit: z.enum(["g", "ml", "pcs"]).optional(),
+  originalUnit: z.string().optional(),
+  price: NonNegative.optional(),
+  purchasePrice: NonNegative.optional(),
+  pricePerUnit: NonNegative.optional(),
+  purchasePricePerUnit: NonNegative.optional(),
+  pricePerKg: NonNegative.optional(),
+  active: z.boolean().optional(),
+  type: z.string().optional(),
 });
 export type Product = z.infer<typeof ProductSchema>;
 

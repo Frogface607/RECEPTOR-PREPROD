@@ -23,6 +23,7 @@ import {
   RevenueSummarySchema,
   ShiftStatSchema,
 } from "./models";
+import { normalizeIikoProducts, searchIikoProducts } from "./nomenclature";
 
 export interface RmsIikoClientOptions {
   host: string;
@@ -38,10 +39,51 @@ export type RmsOrganization = {
 };
 
 type RmsOlapRow = Record<string, unknown>;
+type RmsRawRow = Record<string, unknown>;
+
+export type RmsCostFieldProbe = {
+  endpoint: string | null;
+  rawRows: number;
+  normalizedProducts: number;
+  activeProducts: number;
+  productsWithPurchasePrice: number;
+  productsWithMenuPrice: number;
+  productsWithTechCardPrice: number;
+  priceFieldCounts: Record<string, number>;
+  rawFieldCounts: Record<string, number>;
+  error?: string;
+};
 
 const SESSION_TTL_MS = 115 * 60 * 1000;
 const RMS_REVENUE_FIELD = "DishDiscountSumInt";
 const RMS_ORDER_COUNT_FIELD = "UniqOrderId";
+const RMS_NOMENCLATURE_ENDPOINTS = [
+  "/resto/api/v2/entities/products/list",
+  "/resto/api/products/list",
+  "/resto/api/menu/list",
+  "/resto/api/nomenclature/list",
+] as const;
+const RMS_PRICE_FIELD_ALIASES = [
+  "purchasePrice",
+  "purchase_price",
+  "purchasePricePerUnit",
+  "purchase_price_per_unit",
+  "cost",
+  "costPrice",
+  "costPerKg",
+  "cost_per_kg",
+  "price",
+  "currentPrice",
+  "pricePerUnit",
+  "price_per_unit",
+  "pricePerKg",
+  "price_per_kg",
+  "sizePrices",
+  "vat",
+  "vatRate",
+  "tax",
+  "taxRate",
+] as const;
 
 function normalizeHost(host: string): string {
   return host
@@ -183,8 +225,110 @@ export class RmsIikoClient implements IikoClient {
     });
   }
 
-  async searchNomenclature(): Promise<Product[]> {
-    return [];
+  async fetchNomenclature(): Promise<Product[]> {
+    const key = await this.getSessionKey();
+
+    const errors: string[] = [];
+    for (const endpoint of RMS_NOMENCLATURE_ENDPOINTS) {
+      const res = await this.fetchImpl(this.url(endpoint, { key }), {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Receptor-iiko-RMS-Client/2.0",
+        },
+      });
+
+      const text = await readResponseText(res);
+      if (!res.ok) {
+        errors.push(`${endpoint}: HTTP ${res.status}`);
+        continue;
+      }
+
+      try {
+        const payload = JSON.parse(text) as unknown;
+        const products = normalizeIikoProducts(payload).filter(
+          (product) => product.active !== false,
+        );
+        if (products.length > 0) return products;
+      } catch {
+        errors.push(`${endpoint}: invalid JSON`);
+      }
+    }
+
+    throw new Error(
+      `iiko RMS nomenclature failed: ${errors.join("; ") || "no products returned"}`,
+    );
+  }
+
+  async probeCostFields(): Promise<RmsCostFieldProbe> {
+    const key = await this.getSessionKey();
+    const errors: string[] = [];
+
+    for (const endpoint of RMS_NOMENCLATURE_ENDPOINTS) {
+      const res = await this.fetchImpl(this.url(endpoint, { key }), {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Receptor-iiko-RMS-Client/2.0",
+        },
+      });
+      const text = await readResponseText(res);
+      if (!res.ok) {
+        errors.push(`${endpoint}: HTTP ${res.status}`);
+        continue;
+      }
+
+      try {
+        const payload = JSON.parse(text) as unknown;
+        const rows = extractRmsRows(payload);
+        if (rows.length === 0) {
+          errors.push(`${endpoint}: no product rows`);
+          continue;
+        }
+
+        const products = normalizeIikoProducts(payload);
+        return {
+          endpoint,
+          rawRows: rows.length,
+          normalizedProducts: products.length,
+          activeProducts: products.filter((product) => product.active !== false).length,
+          productsWithPurchasePrice: products.filter((product) =>
+            Boolean(product.purchasePrice || product.purchasePricePerUnit),
+          ).length,
+          productsWithMenuPrice: products.filter((product) =>
+            Boolean(product.price || product.pricePerUnit),
+          ).length,
+          productsWithTechCardPrice: products.filter((product) =>
+            Boolean(product.pricePerKg),
+          ).length,
+          priceFieldCounts: countFields(rows, RMS_PRICE_FIELD_ALIASES),
+          rawFieldCounts: topFieldCounts(rows, 30),
+        };
+      } catch {
+        errors.push(`${endpoint}: invalid JSON`);
+      }
+    }
+
+    return {
+      endpoint: null,
+      rawRows: 0,
+      normalizedProducts: 0,
+      activeProducts: 0,
+      productsWithPurchasePrice: 0,
+      productsWithMenuPrice: 0,
+      productsWithTechCardPrice: 0,
+      priceFieldCounts: {},
+      rawFieldCounts: {},
+      error: errors.join("; ") || "no RMS nomenclature response",
+    };
+  }
+
+  async searchNomenclature(query: string): Promise<Product[]> {
+    try {
+      return searchIikoProducts(await this.fetchNomenclature(), query);
+    } catch {
+      return [];
+    }
   }
 
   async listOrganizations(): Promise<RmsOrganization[]> {
@@ -320,4 +464,55 @@ export class RmsIikoClient implements IikoClient {
     const search = new URLSearchParams(query);
     return `https://${this.host}${path}?${search.toString()}`;
   }
+}
+
+function extractRmsRows(payload: unknown): RmsRawRow[] {
+  if (Array.isArray(payload)) return payload.filter(isRecord);
+  if (!isRecord(payload)) return [];
+
+  for (const key of ["items", "products", "nomenclature", "data"]) {
+    const value = payload[key];
+    if (Array.isArray(value)) return value.filter(isRecord);
+  }
+
+  return [];
+}
+
+function countFields(
+  rows: RmsRawRow[],
+  fields: readonly string[],
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const field of fields) {
+    const count = rows.filter((row) => hasMeaningfulValue(row[field])).length;
+    if (count > 0) counts[field] = count;
+  }
+  return counts;
+}
+
+function topFieldCounts(rows: RmsRawRow[], limit: number): Record<string, number> {
+  const counts = new Map<string, number>();
+  rows.forEach((row) => {
+    Object.keys(row).forEach((field) => {
+      if (!hasMeaningfulValue(row[field])) return;
+      counts.set(field, (counts.get(field) ?? 0) + 1);
+    });
+  });
+
+  return Object.fromEntries(
+    [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, limit),
+  );
+}
+
+function hasMeaningfulValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
+}
+
+function isRecord(value: unknown): value is RmsRawRow {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

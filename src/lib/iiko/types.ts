@@ -31,6 +31,9 @@ export interface IikoClient {
   /** Cashier-shift breakdown for a period (1+ shifts per day). */
   getShifts(period: Period): Promise<ShiftStat[]>;
 
+  /** Full venue nomenclature when the current iiko channel exposes it. */
+  fetchNomenclature?(): Promise<Product[]>;
+
   /** Case-insensitive substring search across the venue's nomenclature. */
   searchNomenclature(query: string): Promise<Product[]>;
 }

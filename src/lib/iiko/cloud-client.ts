@@ -22,6 +22,7 @@ import {
   CategoryStatSchema,
   ShiftStatSchema,
 } from "./models";
+import { normalizeIikoProducts, searchIikoProducts } from "./nomenclature";
 import type { IikoClient } from "./types";
 import type {
   Period,
@@ -199,12 +200,36 @@ export class CloudIikoClient implements IikoClient {
     });
   }
 
-  async searchNomenclature(_query: string): Promise<Product[]> {
+  async fetchNomenclature(): Promise<Product[]> {
+    const token = await this.getToken();
+    const res = await this.fetchImpl(`${this.baseUrl}/api/1/nomenclature`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ organizationId: this.organizationId }),
+    });
+
+    if (!res.ok) {
+      throw new Error(
+        `iiko Cloud nomenclature failed: HTTP ${res.status}${await readIikoError(res)}`,
+      );
+    }
+
+    return normalizeIikoProducts(await res.json());
+  }
+
+  async searchNomenclature(query: string): Promise<Product[]> {
     // Nomenclature lives behind a separate (non-OLAP) endpoint with a complex
     // normalization step in v1. Deferred to first real-key session — degrade
     // gracefully (empty list) instead of throwing so a live dashboard never
     // 500s. The chat's "найди в меню" simply reports nothing found.
-    return [];
+    try {
+      return searchIikoProducts(await this.fetchNomenclature(), query);
+    } catch {
+      return [];
+    }
   }
 
   /**
