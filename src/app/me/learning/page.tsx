@@ -11,6 +11,7 @@ import {
   getLearningItem,
   listLearningItemsForRole,
 } from "@/lib/team/team-learning";
+import { progressToSnapshotMap } from "@/lib/team/team-learning-progress";
 import { getTeamRole } from "@/lib/team/team-os";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { LearningWorkspace } from "./learning-workspace";
@@ -153,8 +154,10 @@ export default async function EmployeeLearningPage({
         <LearningWorkspace
           items={learningItems}
           initialModuleId={initialModule?.id ?? learningItems[0]?.id ?? ""}
+          initialProgress={progressToSnapshotMap(workspace.learningProgress)}
           memberName={workspace.member.name}
           roleTitle={role.title}
+          venueId={workspace.venueId}
           venueName={workspace.venueName}
         />
       </main>

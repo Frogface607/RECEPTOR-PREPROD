@@ -11,7 +11,9 @@ import {
   ClipboardList,
   GraduationCap,
   KeyRound,
+  ListChecks,
   ShieldCheck,
+  Trophy,
   UserRoundCog,
   UsersRound,
 } from "lucide-react";
@@ -37,6 +39,11 @@ import {
   buildShiftOverview,
   type ShiftRoleCoverage,
 } from "@/lib/team/team-shift-planner";
+import {
+  buildTeamLearningSummaries,
+  summarizeTeamLearning,
+  type TeamLearningMemberSummary,
+} from "@/lib/team/team-learning-progress";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
@@ -96,6 +103,11 @@ export default async function TeamPage({
   const workspace = await getTeamWorkspace(venueId);
   const home = buildRoleHome(roleId, workspace.tasks);
   const shiftOverview = buildShiftOverview(workspace.staff, workspace.tasks);
+  const learningSummaries = buildTeamLearningSummaries(
+    workspace.staff,
+    workspace.learningProgress,
+  );
+  const learningOverview = summarizeTeamLearning(learningSummaries);
   const visibleStaff = workspace.staff.filter((member) =>
     roleId === "owner" ||
     roleId === "operations_manager" ||
@@ -290,6 +302,55 @@ export default async function TeamPage({
               <div className="mt-5 grid gap-3">
                 {shiftOverview.coverage.map((coverage) => (
                   <ShiftCoverageRow key={coverage.roleId} coverage={coverage} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-border/40">
+          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.78fr_1.22fr]">
+            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                    Обучение команды
+                  </p>
+                  <h2 className="mt-3 text-2xl font-medium">
+                    Стандарты под контролем
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Видно, кто прошел обязательные материалы, кто начал и где
+                    нужен короткий управленческий пинок.
+                  </p>
+                </div>
+                <GraduationCap className="size-6 shrink-0 text-brand" />
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Metric label="Сдали роль" value={learningOverview.completedMembers} />
+                <Metric label="Нужен фокус" value={learningOverview.attentionMembers} />
+                <Metric label="Не начали" value={learningOverview.notStartedMembers} />
+                <Metric label="Средний %" value={learningOverview.averageBest} />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                    Допуск
+                  </p>
+                  <h2 className="mt-2 text-xl font-medium">
+                    Прогресс по сотрудникам
+                  </h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {workspace.learningProgress.length} попыток сохранено
+                </p>
+              </div>
+              <div className="mt-5 grid gap-3">
+                {learningSummaries.map((summary) => (
+                  <LearningSummaryRow key={summary.member.id} summary={summary} />
                 ))}
               </div>
             </div>
@@ -508,6 +569,90 @@ function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
             важно {coverage.importantTasks}
           </span>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+function learningSummaryStatusLabel(
+  status: TeamLearningMemberSummary["status"],
+): string {
+  if (status === "complete") return "сдано";
+  if (status === "attention") return "в работе";
+  return "не начал";
+}
+
+function learningSummaryStatusClass(
+  status: TeamLearningMemberSummary["status"],
+): string {
+  if (status === "complete") {
+    return "border-brand/35 bg-brand/10 text-brand";
+  }
+  if (status === "attention") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-border bg-muted/40 text-muted-foreground";
+}
+
+function formatLearningDate(value: string): string {
+  if (!value) return "нет попыток";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "нет попыток";
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function LearningSummaryRow({
+  summary,
+}: {
+  summary: TeamLearningMemberSummary;
+}) {
+  const role = getTeamRole(summary.member.roleId);
+
+  return (
+    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 lg:grid-cols-[1.05fr_0.95fr_auto] lg:items-center">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="truncate text-sm font-medium">{summary.member.name}</p>
+          <Badge variant="outline">{role.title}</Badge>
+          <Badge
+            variant="outline"
+            className={learningSummaryStatusClass(summary.status)}
+          >
+            {learningSummaryStatusLabel(summary.status)}
+          </Badge>
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          Обязательные: {summary.requiredCompleted}/{summary.requiredCount || 0} ·
+          всего: {summary.completedCount}/{summary.totalCount}
+        </p>
+      </div>
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <ListChecks className="size-3.5 text-brand" />
+          <span className="truncate">
+            {summary.nextItem
+              ? `Дальше: ${summary.nextItem.title}`
+              : "Все материалы роли закрыты"}
+          </span>
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <Trophy className="size-3.5 text-brand" />
+          <span>Последняя попытка: {formatLearningDate(summary.lastCompletedAt)}</span>
+        </div>
+      </div>
+      <div className="rounded-lg border border-border/50 bg-card/45 px-3 py-2 text-left lg:text-right">
+        <p className="numeric text-xl font-medium text-foreground">
+          {summary.averageBest}%
+        </p>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          средний
+        </p>
       </div>
     </div>
   );

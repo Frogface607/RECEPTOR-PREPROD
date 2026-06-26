@@ -19,6 +19,7 @@ import {
   type TeamRoleId,
   type TeamTask,
 } from "./team-os";
+import type { TeamLearningProgress } from "./team-learning-progress";
 
 type DbMembership = {
   id: string;
@@ -74,6 +75,21 @@ type DbAuditEvent = {
   created_at: string | null;
 };
 
+type DbLearningProgress = {
+  venue_id: string;
+  membership_id: string;
+  user_id: string | null;
+  module_id: string;
+  best_percentage: number | null;
+  last_percentage: number | null;
+  correct_count: number | null;
+  total_questions: number | null;
+  passed: boolean | null;
+  answers: unknown;
+  completed_at: string | null;
+  updated_at: string | null;
+};
+
 type DbMembershipWithVenue = DbMembership & {
   venues?: { name: string | null; city: string | null } | null;
 };
@@ -88,6 +104,7 @@ export type TeamWorkspace = {
   comments: TeamTaskComment[];
   announcements: TeamAnnouncement[];
   auditEvents: TeamAuditEvent[];
+  learningProgress: TeamLearningProgress[];
 };
 
 export type PersonalTeamWorkspace =
@@ -100,6 +117,7 @@ export type PersonalTeamWorkspace =
       tasks: TeamTask[];
       comments: TeamTaskComment[];
       announcements: TeamAnnouncement[];
+      learningProgress: TeamLearningProgress[];
     }
   | { ok: false; reason: "unauthenticated" | "no_membership" };
 
@@ -124,7 +142,7 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
 ]);
 
 function isMissingTeamTable(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|relation .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_progress|relation .* does not exist/i.test(
     message,
   );
 }
@@ -259,6 +277,99 @@ export function mapAuditEventRow(row: DbAuditEvent): TeamAuditEvent {
   };
 }
 
+function normalizeAnswers(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "number" ? item : Number(item)))
+    .filter((item) => Number.isInteger(item));
+}
+
+function normalizePercent(value: number | null | undefined): number {
+  if (typeof value !== "number" || Number.isNaN(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+export function mapLearningProgressRow(
+  row: DbLearningProgress,
+): TeamLearningProgress {
+  const completedAt = row.completed_at ?? "";
+  const updatedAt = row.updated_at ?? completedAt;
+
+  return {
+    venueId: row.venue_id,
+    membershipId: row.membership_id,
+    userId: row.user_id,
+    moduleId: row.module_id,
+    bestPercentage: normalizePercent(row.best_percentage),
+    lastPercentage: normalizePercent(row.last_percentage),
+    correct: Math.max(0, Math.round(row.correct_count ?? 0)),
+    total: Math.max(0, Math.round(row.total_questions ?? 0)),
+    passed: Boolean(row.passed),
+    answers: normalizeAnswers(row.answers),
+    completedAt,
+    updatedAt,
+  };
+}
+
+const DEMO_LEARNING_PROGRESS: TeamLearningProgress[] = [
+  {
+    venueId: "dev-venue",
+    membershipId: "staff-manager",
+    userId: "demo-manager",
+    moduleId: "shift-brief",
+    bestPercentage: 100,
+    lastPercentage: 100,
+    correct: 3,
+    total: 3,
+    passed: true,
+    answers: [0, 1, 1],
+    completedAt: "2026-06-26T08:30:00.000Z",
+    updatedAt: "2026-06-26T08:30:00.000Z",
+  },
+  {
+    venueId: "dev-venue",
+    membershipId: "staff-chef",
+    userId: "demo-chef",
+    moduleId: "kitchen-stop-list",
+    bestPercentage: 100,
+    lastPercentage: 100,
+    correct: 3,
+    total: 3,
+    passed: true,
+    answers: [0, 1, 1],
+    completedAt: "2026-06-26T09:05:00.000Z",
+    updatedAt: "2026-06-26T09:05:00.000Z",
+  },
+  {
+    venueId: "dev-venue",
+    membershipId: "staff-cook",
+    userId: "demo-cook",
+    moduleId: "tech-card-discipline",
+    bestPercentage: 67,
+    lastPercentage: 67,
+    correct: 2,
+    total: 3,
+    passed: false,
+    answers: [0, 1, 1],
+    completedAt: "2026-06-26T09:30:00.000Z",
+    updatedAt: "2026-06-26T09:30:00.000Z",
+  },
+  {
+    venueId: "dev-venue",
+    membershipId: "staff-service",
+    userId: "demo-service",
+    moduleId: "service-recommendation",
+    bestPercentage: 100,
+    lastPercentage: 100,
+    correct: 3,
+    total: 3,
+    passed: true,
+    answers: [1, 0, 2],
+    completedAt: "2026-06-26T10:15:00.000Z",
+    updatedAt: "2026-06-26T10:15:00.000Z",
+  },
+];
+
 export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
   return {
     mode: "sandbox",
@@ -275,6 +386,9 @@ export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
     ),
     auditEvents: DEMO_TEAM_AUDIT_EVENTS.filter(
       (event) => event.venueId === "dev-venue",
+    ),
+    learningProgress: DEMO_LEARNING_PROGRESS.filter(
+      (progress) => progress.venueId === "dev-venue",
     ),
   };
 }
@@ -309,6 +423,7 @@ export async function getTeamWorkspace(
       comments: [],
       announcements: [],
       auditEvents: [],
+      learningProgress: [],
     };
   }
 
@@ -336,6 +451,7 @@ export async function getTeamWorkspace(
       comments: [],
       announcements: [],
       auditEvents: [],
+      learningProgress: [],
     };
   }
 
@@ -397,6 +513,22 @@ export async function getTeamWorkspace(
           mapAuditEventRow,
         );
 
+  const learningProgressResult = await supabase
+    .from("team_learning_progress")
+    .select(
+      "venue_id,membership_id,user_id,module_id,best_percentage,last_percentage,correct_count,total_questions,passed,answers,completed_at,updated_at",
+    )
+    .eq("venue_id", venueId)
+    .order("completed_at", { ascending: false });
+
+  const learningProgress =
+    learningProgressResult.error &&
+    isMissingTeamTable(learningProgressResult.error.message)
+      ? []
+      : ((learningProgressResult.data ?? []) as DbLearningProgress[]).map(
+          mapLearningProgressRow,
+        );
+
   return {
     mode: "saved",
     venueId,
@@ -407,6 +539,7 @@ export async function getTeamWorkspace(
     comments,
     announcements,
     auditEvents,
+    learningProgress,
   };
 }
 
@@ -423,6 +556,9 @@ function getDemoPersonalWorkspace(): PersonalTeamWorkspace {
     tasks: listTasksForMember(member.id),
     comments: DEMO_TASK_COMMENTS,
     announcements: listAnnouncementsForRole(member.roleId),
+    learningProgress: DEMO_LEARNING_PROGRESS.filter(
+      (progress) => progress.membershipId === member.id,
+    ),
   };
 }
 
@@ -526,6 +662,23 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
           ),
         );
 
+  const learningProgressResult = await supabase
+    .from("team_learning_progress")
+    .select(
+      "venue_id,membership_id,user_id,module_id,best_percentage,last_percentage,correct_count,total_questions,passed,answers,completed_at,updated_at",
+    )
+    .eq("venue_id", venueId)
+    .eq("membership_id", member.id)
+    .order("completed_at", { ascending: false });
+
+  const learningProgress =
+    learningProgressResult.error &&
+    !isMissingTeamTable(learningProgressResult.error.message)
+      ? []
+      : ((learningProgressResult.data ?? []) as DbLearningProgress[]).map(
+          mapLearningProgressRow,
+        );
+
   getTeamRole(member.roleId);
 
   return {
@@ -537,5 +690,6 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
     tasks: visibleTasks,
     comments,
     announcements,
+    learningProgress,
   };
 }

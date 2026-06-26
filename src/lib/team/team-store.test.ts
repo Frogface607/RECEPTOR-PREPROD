@@ -3,6 +3,7 @@ import {
   mapAnnouncementRow,
   mapAuditEventRow,
   mapCommentRow,
+  mapLearningProgressRow,
   mapMembershipRow,
   mapTaskRow,
   normalizeTeamRoleId,
@@ -151,5 +152,34 @@ describe("Team OS store mapping", () => {
       summary: "Пароль сотрудника обновлен.",
     });
     expect(event.createdAtLabel).not.toBe("");
+  });
+
+  test("maps learning progress rows", () => {
+    const progress = mapLearningProgressRow({
+      venue_id: "venue-1",
+      membership_id: "member-1",
+      user_id: "user-1",
+      module_id: "service-recommendation",
+      best_percentage: 100,
+      last_percentage: 67,
+      correct_count: 2,
+      total_questions: 3,
+      passed: true,
+      answers: [1, "0", 2],
+      completed_at: "2026-06-26T10:00:00.000Z",
+      updated_at: null,
+    });
+
+    expect(progress).toMatchObject({
+      venueId: "venue-1",
+      membershipId: "member-1",
+      moduleId: "service-recommendation",
+      bestPercentage: 100,
+      lastPercentage: 67,
+      correct: 2,
+      total: 3,
+      passed: true,
+      answers: [1, 0, 2],
+    });
   });
 });

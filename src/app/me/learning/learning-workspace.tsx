@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   ArrowRight,
   BookOpenCheck,
@@ -17,16 +17,10 @@ import {
   type TeamLearningItem,
   type TeamLearningScore,
 } from "@/lib/team/team-learning";
+import type { TeamLearningProgressSnapshot } from "@/lib/team/team-learning-progress";
+import { saveLearningProgressAction } from "./actions";
 
-type StoredProgress = {
-  bestPercentage: number;
-  lastPercentage: number;
-  correct: number;
-  total: number;
-  passed: boolean;
-  answers: number[];
-  completedAt: string;
-};
+type StoredProgress = TeamLearningProgressSnapshot;
 
 type ProgressMap = Record<string, StoredProgress>;
 
@@ -51,6 +45,19 @@ function saveProgress(progress: ProgressMap) {
   } catch {
     // Local progress is helpful, but the lesson must remain usable without it.
   }
+}
+
+function mergeProgress(primary: ProgressMap, secondary: ProgressMap): ProgressMap {
+  const merged: ProgressMap = { ...secondary };
+
+  for (const [moduleId, progress] of Object.entries(primary)) {
+    const current = merged[moduleId];
+    if (!current || progress.bestPercentage >= current.bestPercentage) {
+      merged[moduleId] = progress;
+    }
+  }
+
+  return merged;
 }
 
 function formatProgressDate(value: string): string {
@@ -82,25 +89,31 @@ function progressClass(item: TeamLearningItem, progress?: StoredProgress): strin
 export function LearningWorkspace({
   items,
   initialModuleId,
+  initialProgress,
   memberName,
   roleTitle,
+  venueId,
   venueName,
 }: {
   items: TeamLearningItem[];
   initialModuleId: string;
+  initialProgress: ProgressMap;
   memberName: string;
   roleTitle: string;
+  venueId: string;
   venueName: string;
 }) {
+  const [pending, startTransition] = useTransition();
   const [activeItemId, setActiveItemId] = useState(initialModuleId);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submittedScore, setSubmittedScore] =
     useState<TeamLearningScore | null>(null);
-  const [progress, setProgress] = useState<ProgressMap>({});
+  const [progress, setProgress] = useState<ProgressMap>(initialProgress);
+  const [saveMessage, setSaveMessage] = useState<string>("");
 
   useEffect(() => {
-    setProgress(loadProgress());
-  }, []);
+    setProgress(mergeProgress(initialProgress, loadProgress()));
+  }, [initialProgress]);
 
   const activeItem = useMemo(
     () => items.find((item) => item.id === activeItemId) ?? items[0],
@@ -168,11 +181,34 @@ export function LearningWorkspace({
     setSubmittedScore(score);
     setProgress(nextProgress);
     saveProgress(nextProgress);
+    setSaveMessage("");
+
+    startTransition(async () => {
+      const result = await saveLearningProgressAction({
+        venueId,
+        moduleId: activeItem.id,
+        answers: selectedAnswers,
+      });
+
+      if (!result.ok) {
+        setSaveMessage(`Локально сохранено. Сервер: ${result.error}`);
+        return;
+      }
+
+      const serverProgress: ProgressMap = {
+        ...nextProgress,
+        [activeItem.id]: result.progress,
+      };
+      setProgress(serverProgress);
+      saveProgress(serverProgress);
+      setSaveMessage(result.message);
+    });
   }
 
   function resetQuiz() {
     setAnswers({});
     setSubmittedScore(null);
+    setSaveMessage("");
   }
 
   if (!activeItem) {
@@ -426,6 +462,11 @@ export function LearningWorkspace({
                         )}.`
                       : ""}
                   </p>
+                  {saveMessage ? (
+                    <p className="mt-1 text-[12px] text-muted-foreground">
+                      {saveMessage}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             ) : (
@@ -451,7 +492,7 @@ export function LearningWorkspace({
                 disabled={!allAnswered || submittedScore !== null}
                 className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover disabled:pointer-events-none disabled:opacity-50"
               >
-                Завершить проверку
+                {pending ? "Сохраняем" : "Завершить проверку"}
                 <ArrowRight className="size-4" />
               </button>
             </div>
