@@ -7,11 +7,9 @@ import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DataQualityStrip } from "@/components/dashboard/data-quality-strip";
 import { DataSourcePanel } from "@/components/dashboard/data-source-panel";
-import { DailyBriefCard } from "@/components/dashboard/daily-brief-card";
-import { OwnerCockpitCard } from "@/components/dashboard/owner-cockpit-card";
+import { OwnerReviewCard } from "@/components/dashboard/owner-review-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
-import { SurvivalBriefCard } from "@/components/dashboard/survival-brief-card";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -26,6 +24,7 @@ import { buildRevenueDataQuality } from "@/lib/iiko/data-quality";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
+import { buildOwnerReview } from "@/lib/owner-review";
 import type { IikoClient } from "@/lib/iiko/types";
 import type {
   CategoryStat,
@@ -124,6 +123,15 @@ export default async function DashboardPage({
     today: dataMode === "mock" ? DEMO_ANCHOR : runtimeToday,
     dataMode,
   });
+  const ownerReview = buildOwnerReview({
+    summary,
+    dishes,
+    categories,
+    shifts,
+    brief,
+    dataQuality: quality,
+    dataMode,
+  });
 
   return (
     <>
@@ -159,12 +167,7 @@ export default async function DashboardPage({
           </div>
 
           <div className="reveal reveal-2">
-            <OwnerCockpitCard
-              venue={venue}
-              brief={brief}
-              periodLabel={periodLabel}
-              dataMode={dataMode}
-            />
+            <OwnerReviewCard venueId={venueId} review={ownerReview} />
           </div>
 
           <div className="reveal reveal-2 mt-6">
@@ -184,20 +187,6 @@ export default async function DashboardPage({
 
           <div className="reveal reveal-2 mt-6">
             <DataQualityStrip quality={quality} />
-          </div>
-
-          <div className="reveal reveal-3 mt-6">
-            <DailyBriefCard brief={brief} venueId={venueId} />
-          </div>
-
-          <div className="reveal reveal-3 mt-6">
-            <SurvivalBriefCard
-              venueId={venueId}
-              brief={brief}
-              dishes={dishes}
-              categories={categories}
-              dataQuality={quality}
-            />
           </div>
 
           <div className="reveal reveal-3 mt-6">

@@ -1,0 +1,191 @@
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  HelpCircle,
+  MessageSquareText,
+  SearchCheck,
+  ShieldCheck,
+} from "lucide-react";
+import type {
+  OwnerReview,
+  OwnerReviewConfidence,
+  OwnerReviewRole,
+  OwnerReviewTone,
+} from "@/lib/owner-review";
+import { SurvivalTaskActions } from "./survival-task-actions";
+
+const TONE_CLASS: Record<OwnerReviewTone, string> = {
+  risk: "border-destructive/35 bg-destructive/8 text-destructive",
+  watch: "border-amber-500/35 bg-amber-500/10 text-amber-300",
+  good: "border-brand/35 bg-brand/10 text-brand",
+};
+
+const ROLE_LABEL: Record<OwnerReviewRole, string> = {
+  owner: "владелец",
+  manager: "управляющий",
+  chef: "шеф",
+  service: "зал",
+};
+
+const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
+  high: "высокая уверенность",
+  medium: "средняя уверенность",
+  low: "низкая уверенность",
+};
+
+function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
+  if (tone === "risk") return <AlertTriangle className="size-4" />;
+  if (tone === "watch") return <SearchCheck className="size-4" />;
+  return <CheckCircle2 className="size-4" />;
+}
+
+export function OwnerReviewCard({
+  venueId,
+  review,
+}: {
+  venueId: string;
+  review: OwnerReview;
+}) {
+  return (
+    <section className="rounded-xl border border-brand/25 bg-card/70 p-5 sm:p-6">
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand/35 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-brand">
+              <ShieldCheck className="size-3.5" />
+              Разбор владельца
+            </span>
+            <span className="rounded-full border border-border/55 bg-background/45 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              {CONFIDENCE_LABEL[review.confidence]}
+            </span>
+          </div>
+
+          <h2 className="mt-4 max-w-4xl text-balance text-2xl font-medium leading-tight tracking-[-0.02em] text-foreground sm:text-3xl">
+            {review.verdict}
+          </h2>
+          <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-muted-foreground">
+            {review.summary}
+          </p>
+
+          <div className="mt-5 rounded-lg border border-border/45 bg-background/35 p-3">
+            <div className="flex items-start gap-2">
+              <HelpCircle className="mt-0.5 size-4 shrink-0 text-brand" />
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                Уверенность:{" "}
+                <span className="text-foreground/85">
+                  {review.confidenceReason}
+                </span>
+                . Каждый вывод ниже — гипотеза для проверки, а не магическое
+                утверждение.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {review.evidence.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-lg border border-border/45 bg-background/35 p-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {item.label}
+                  </p>
+                  <span
+                    className={
+                      "inline-flex size-6 items-center justify-center rounded-md border " +
+                      TONE_CLASS[item.tone]
+                    }
+                  >
+                    <ToneIcon tone={item.tone} />
+                  </span>
+                </div>
+                <p className="mt-3 truncate text-xl font-medium text-foreground">
+                  {item.value}
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                  {item.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border/55 bg-background/35 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                Что проверить
+              </p>
+              <h3 className="mt-2 text-lg font-medium">
+                Гипотезы вместо очевидных советов
+              </h3>
+            </div>
+            <MessageSquareText className="size-5 text-brand" />
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {review.hypotheses.map((hypothesis) => (
+              <div
+                key={`${hypothesis.role}-${hypothesis.title}`}
+                className="rounded-lg border border-border/45 bg-card/45 p-3"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={
+                      "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                      TONE_CLASS[hypothesis.tone]
+                    }
+                  >
+                    <ToneIcon tone={hypothesis.tone} />
+                    {ROLE_LABEL[hypothesis.role]}
+                  </span>
+                  <p className="text-[13px] font-medium text-foreground">
+                    {hypothesis.title}
+                  </p>
+                </div>
+                <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                  {hypothesis.why}
+                </p>
+                <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
+                  {hypothesis.check}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+        <div>
+          <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <HelpCircle className="size-3.5 text-brand" />
+            Вопросы команде
+          </div>
+          <div className="space-y-2">
+            {review.questions.map((question) => (
+              <div
+                key={`${question.role}-${question.text}`}
+                className="rounded-lg bg-background/35 px-3 py-2 text-[13px] leading-relaxed text-foreground/85"
+              >
+                <span className="mr-2 font-mono text-[10px] uppercase tracking-[0.14em] text-brand">
+                  {ROLE_LABEL[question.role]}
+                </span>
+                {question.text}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <ClipboardList className="size-3.5 text-brand" />
+            Сразу в задачи
+          </div>
+          <SurvivalTaskActions venueId={venueId} drafts={review.tasks} />
+        </div>
+      </div>
+    </section>
+  );
+}
