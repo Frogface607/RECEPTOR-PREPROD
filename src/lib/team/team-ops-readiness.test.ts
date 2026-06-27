@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { buildLaborBi } from "./labor-bi";
 import { buildTeamLearningSummaries } from "./team-learning-progress";
 import { buildTeamLaborReadiness } from "./team-labor-readiness";
 import { buildTeamOpsReadiness } from "./team-ops-readiness";
@@ -141,5 +142,42 @@ describe("buildTeamOpsReadiness", () => {
     expect(readiness.actions).toEqual([
       expect.objectContaining({ id: "ready", tone: "good" }),
     ]);
+  });
+
+  test("prioritizes real iiko staff blockers over internal rate checklist", () => {
+    const staff: StaffMember[] = [
+      {
+        ...baseMember,
+        id: "service-1",
+        name: "Мария",
+        hourlyRate: 350,
+      },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T18:00:00",
+          closeTime: "2026-06-27T02:00:00",
+          revenue: 90000,
+          items: 210,
+          employee: "Петр",
+        },
+      ],
+    });
+    const readiness = buildTeamOpsReadiness({
+      shiftOverview: buildShiftOverview(staff, []),
+      laborReadiness: buildTeamLaborReadiness(staff, labor),
+      learningSummaries: buildTeamLearningSummaries(staff, []),
+      tasks: [],
+    });
+
+    expect(readiness.actions[0]).toMatchObject({
+      id: "iiko-labor-member",
+      title: "Добавить сотрудника из iiko",
+      href: "#team-actions",
+    });
+    expect(readiness.actions[0].detail).toContain("Петр");
   });
 });

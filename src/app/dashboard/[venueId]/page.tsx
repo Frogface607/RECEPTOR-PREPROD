@@ -174,7 +174,12 @@ export default async function DashboardPage({
   const chatParams = new URLSearchParams(periodToSearchParams(period));
   chatParams.set("chat", "1");
   const chatHref = `/dashboard/${encodeURIComponent(venueId)}?${chatParams.toString()}`;
-  const laborRatesHref = `/team?role=venue_manager&venueId=${encodeURIComponent(venueId)}#labor-rates`;
+  const teamLaborParams = new URLSearchParams({
+    role: "venue_manager",
+    venueId,
+    ...periodToSearchParams(period),
+  });
+  const laborRatesHref = `/team?${teamLaborParams.toString()}#labor-rates`;
   const quality = buildRevenueDataQuality(period, summary, {
     today: dataMode === "mock" ? DEMO_ANCHOR : runtimeToday,
     dataMode,

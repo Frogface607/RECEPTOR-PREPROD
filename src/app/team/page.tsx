@@ -22,6 +22,10 @@ import { LinkButton } from "@/components/ui/link-button";
 import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
 import {
+  parsePeriodSearchParams,
+  periodToSearchParams,
+} from "@/lib/venues/period";
+import {
   buildRoleHome,
   getTeamRole,
   listTasksForMember,
@@ -50,9 +54,17 @@ import {
   type TeamOpsActionTone,
   type TeamOpsReadinessStatus,
 } from "@/lib/team/team-ops-readiness";
+import { buildLaborBi, type LaborBiSummary } from "@/lib/team/labor-bi";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getVenueAccess } from "@/lib/auth/venue-access";
 import { isSupabaseConfigured } from "@/lib/db/env";
+import {
+  DEMO_ANCHOR,
+  getDashboardClient,
+} from "@/lib/iiko/config";
+import { MockIikoClient } from "@/lib/iiko/mock-client";
+import type { Period } from "@/lib/iiko/models";
 
 export const metadata: Metadata = {
   title: "Команда — RECEPTOR",
@@ -77,6 +89,46 @@ function parseVenueId(value: string | string[] | undefined): string {
 function parseOptionalText(value: string | string[] | undefined): string {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw?.trim() ?? "";
+}
+
+function teamHref(
+  venueId: string,
+  roleId: TeamRoleId,
+  period: Period,
+): string {
+  const params = new URLSearchParams({
+    role: roleId,
+    venueId,
+    ...periodToSearchParams(period),
+  });
+  return `/team?${params.toString()}`;
+}
+
+async function loadTeamLaborBi(input: {
+  venueId: string;
+  staff: StaffMember[];
+  period: Period;
+}): Promise<LaborBiSummary | null> {
+  if (input.venueId === "dev-venue") {
+    const shifts = await new MockIikoClient({ today: DEMO_ANCHOR }).getShifts(
+      input.period,
+    );
+    return buildLaborBi({ shifts, staff: input.staff });
+  }
+
+  const access = await getVenueAccess(input.venueId);
+  if (!access.ok) return null;
+
+  try {
+    const shifts = await getDashboardClient(access.venue).getShifts(input.period);
+    return buildLaborBi({ shifts, staff: input.staff });
+  } catch (error) {
+    console.error("[team] Failed to load iiko labor shifts", {
+      venueId: input.venueId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
 }
 
 function priorityClass(priority: TeamTask["priority"]): string {
@@ -109,11 +161,16 @@ export default async function TeamPage({
   const sp = await searchParams;
   const roleId = parseRole(sp.role);
   const venueId = parseVenueId(sp.venueId);
+  const period = parsePeriodSearchParams(sp);
   const focusMemberId = parseOptionalText(sp.focusMemberId);
   const prefillMemberName = parseOptionalText(sp.prefillMemberName);
   const user = await getCurrentUser();
   if (isSupabaseConfigured() && !user && venueId !== "dev-venue") {
-    const nextParams = new URLSearchParams({ role: roleId, venueId });
+    const nextParams = new URLSearchParams({
+      role: roleId,
+      venueId,
+      ...periodToSearchParams(period),
+    });
     if (focusMemberId) nextParams.set("focusMemberId", focusMemberId);
     if (prefillMemberName) nextParams.set("prefillMemberName", prefillMemberName);
     const nextPath = `/team?${nextParams.toString()}`;
@@ -128,7 +185,12 @@ export default async function TeamPage({
     workspace.learningProgress,
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
-  const laborReadiness = buildTeamLaborReadiness(workspace.staff);
+  const laborBi = await loadTeamLaborBi({
+    venueId,
+    staff: workspace.staff,
+    period,
+  });
+  const laborReadiness = buildTeamLaborReadiness(workspace.staff, laborBi);
   const opsReadiness = buildTeamOpsReadiness({
     shiftOverview,
     laborReadiness,
@@ -188,7 +250,7 @@ export default async function TeamPage({
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton
-                  href={`/team?role=service&venueId=${encodeURIComponent(workspace.venueId)}`}
+                  href={teamHref(workspace.venueId, "service", period)}
                   variant="outline"
                 >
                   Вид официанта
@@ -271,7 +333,7 @@ export default async function TeamPage({
                 return (
                   <Link
                     key={role.id}
-                    href={`/team?role=${role.id}&venueId=${encodeURIComponent(workspace.venueId)}`}
+                    href={teamHref(workspace.venueId, role.id, period)}
                     className={
                       "rounded-lg border px-3 py-2 transition-colors " +
                       (active
@@ -414,6 +476,7 @@ export default async function TeamPage({
           auditEvents={workspace.auditEvents}
           focusMemberId={focusMemberId}
           prefillMemberName={prefillMemberName}
+          laborBi={laborBi}
         />
 
         <TeamCommunicationPanel

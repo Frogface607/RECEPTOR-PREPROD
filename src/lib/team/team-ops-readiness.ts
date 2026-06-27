@@ -95,9 +95,36 @@ export function buildTeamOpsReadiness(input: {
     laborCoveragePct * 0.4 + roleCoveragePct * 0.35 + learningAveragePct * 0.25,
   );
   const actions: TeamOpsAction[] = [];
+  const firstIikoBlocker = laborReadiness.iikoBlockers[0];
   const firstMissingRate = laborReadiness.missingStaff[0];
 
-  if (firstMissingRate) {
+  if (firstIikoBlocker) {
+    const extraMissing = laborReadiness.iikoBlockers.length - 1;
+    actions.push({
+      id:
+        firstIikoBlocker.action === "add-member"
+          ? "iiko-labor-member"
+          : "iiko-labor-rate",
+      tone: laborReadiness.status === "blocked" ? "risk" : "setup",
+      title:
+        firstIikoBlocker.action === "add-member"
+          ? "Добавить сотрудника из iiko"
+          : "Заполнить ставку из смен",
+      detail: `${firstIikoBlocker.name}${extraMissing > 0 ? ` и еще ${extraMissing}` : ""}: ${Math.round(firstIikoBlocker.sales).toLocaleString("ru-RU")} ₽ выручки без точного ФОТ.`,
+      href:
+        firstIikoBlocker.action === "add-member"
+          ? "#team-actions"
+          : "#labor-rates",
+    });
+  } else if (laborReadiness.iikoStatus === "blocked" && laborReadiness.iikoStaffShifts === 0) {
+    actions.push({
+      id: "iiko-shifts",
+      tone: "watch",
+      title: "Проверить смены iiko",
+      detail: "Team OS не видит сотрудников в сменах за выбранный период.",
+      href: "#shift-coverage",
+    });
+  } else if (firstMissingRate) {
     const extraMissing = laborReadiness.missingStaff.length - 1;
     actions.push({
       id: "labor-rate",

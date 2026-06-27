@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { buildLaborBi } from "./labor-bi";
 import { buildTeamLaborReadiness, hasLaborRate } from "./team-labor-readiness";
 import type { StaffMember } from "./team-os";
 
@@ -32,6 +33,8 @@ describe("buildTeamLaborReadiness", () => {
       activeStaff: 2,
       readyStaff: 1,
       coveragePct: 50,
+      source: "team",
+      iikoBlockers: [],
     });
     expect(buildTeamLaborReadiness(staff).missingStaff.map((item) => item.id)).toEqual([
       "missing",
@@ -44,6 +47,48 @@ describe("buildTeamLaborReadiness", () => {
       activeStaff: 1,
       readyStaff: 0,
       coveragePct: 0,
+    });
+  });
+
+  test("uses real iiko shift coverage when labor BI is available", () => {
+    const staff: StaffMember[] = [
+      {
+        ...baseMember,
+        id: "waiter",
+        name: "Илья",
+        hourlyRate: 350,
+      },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-1",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 100000,
+          items: 180,
+          employee: "Смена",
+          workers: [
+            { memberId: "waiter", name: "Илья", hours: 8, sales: 65000 },
+            { name: "Петр", hours: 8, sales: 35000 },
+          ],
+        },
+      ],
+    });
+
+    expect(buildTeamLaborReadiness(staff, labor)).toMatchObject({
+      status: "partial",
+      coveragePct: 65,
+      source: "iiko",
+      iikoRevenueCoveragePct: 65,
+      iikoUnpricedRevenue: 35000,
+      iikoBlockers: [
+        expect.objectContaining({
+          name: "Петр",
+          action: "add-member",
+        }),
+      ],
     });
   });
 });

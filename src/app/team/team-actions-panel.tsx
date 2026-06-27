@@ -16,6 +16,8 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatInteger, formatRubles } from "@/lib/format";
+import type { LaborBiSummary } from "@/lib/team/labor-bi";
 import {
   TEAM_ROLES,
   type StaffMember,
@@ -26,6 +28,7 @@ import {
 import {
   buildTeamLaborReadiness,
   hasLaborRate,
+  type TeamLaborIikoBlocker,
   type TeamLaborReadinessStatus,
 } from "@/lib/team/team-labor-readiness";
 import {
@@ -71,6 +74,22 @@ function generateTemporaryPassword(): string {
   window.crypto.getRandomValues(bytes);
   const chars = Array.from(bytes, (value) => alphabet[value % alphabet.length]);
   return `Rcp-${chars.slice(0, 4).join("")}-${chars.slice(4, 8).join("")}-${chars.slice(8).join("")}`;
+}
+
+function formatHours(value: number): string {
+  return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })} ч`;
+}
+
+function iikoBlockerActionLabel(blocker: TeamLaborIikoBlocker): string {
+  return blocker.action === "add-member"
+    ? "Создать карточку"
+    : "Открыть ставку";
+}
+
+function iikoBlockerReasonLabel(blocker: TeamLaborIikoBlocker): string {
+  return blocker.action === "add-member"
+    ? "нет карточки Team OS"
+    : "нет ставки";
 }
 
 function resultToMessage(result: TeamActionResult): Message {
@@ -122,6 +141,7 @@ export function TeamActionsPanel({
   auditEvents,
   focusMemberId = "",
   prefillMemberName = "",
+  laborBi = null,
 }: {
   venueId: string;
   staff: StaffMember[];
@@ -129,6 +149,7 @@ export function TeamActionsPanel({
   auditEvents: TeamAuditEvent[];
   focusMemberId?: string;
   prefillMemberName?: string;
+  laborBi?: LaborBiSummary | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
@@ -168,10 +189,11 @@ export function TeamActionsPanel({
     [staff],
   );
   const laborReadiness = useMemo(
-    () => buildTeamLaborReadiness(staff),
-    [staff],
+    () => buildTeamLaborReadiness(staff, laborBi),
+    [staff, laborBi],
   );
   const laborCopy = laborReadinessCopy(laborReadiness.status);
+  const iikoBlockers = laborReadiness.iikoBlockers.slice(0, 4);
   const focusedMember = focusMemberId
     ? staff.find((member) => member.id === focusMemberId)
     : undefined;
@@ -179,6 +201,16 @@ export function TeamActionsPanel({
     .slice(0, 4)
     .map((member) => member.name)
     .join(", ");
+  const laborCoverageLabel =
+    laborReadiness.source === "iiko" ? "точность ФОТ" : "ставок";
+  const laborCoverageDetail =
+    laborReadiness.source === "iiko"
+      ? laborReadiness.iikoUnpricedStaffShifts > 0
+        ? `${formatInteger(laborReadiness.iikoUnpricedStaffShifts)} записей · ${formatRubles(laborReadiness.iikoUnpricedRevenue)} под вопросом`
+        : "вся сменная выручка покрыта"
+      : missingRateNames
+        ? missingRateNames
+        : "ставки заведены";
 
   function runAction(action: () => Promise<TeamActionResult>) {
     setMessage(null);
@@ -207,6 +239,17 @@ export function TeamActionsPanel({
         [field]: value,
       },
     }));
+  }
+
+  function prefillMemberFromIiko(blocker: TeamLaborIikoBlocker) {
+    setMemberName(blocker.name);
+    if (blocker.roleId) setMemberRole(blocker.roleId);
+    setMemberShift(
+      `${formatInteger(blocker.shifts)} смен · ${formatHours(blocker.hours)}`,
+    );
+    document
+      .getElementById("add-team-member")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return (
@@ -239,6 +282,7 @@ export function TeamActionsPanel({
 
         <div className="mt-6 grid gap-4 xl:grid-cols-3">
           <form
+            id="add-team-member"
             className={
               "rounded-lg border bg-card/50 p-5 " +
               (prefillMemberName
@@ -606,7 +650,7 @@ export function TeamActionsPanel({
                   ) : (
                     <AlertTriangle className="size-3.5" />
                   )}
-                  {laborReadiness.coveragePct}% ставок
+                  {laborReadiness.coveragePct}% {laborCoverageLabel}
                 </span>
                 <h4 className="mt-3 text-base font-medium text-foreground">
                   {laborCopy.title}
@@ -628,17 +672,91 @@ export function TeamActionsPanel({
                   detail="участвуют в ФОТ"
                 />
                 <TeamMetric
-                  label="Без ставки"
-                  value={`${laborReadiness.missingStaff.length}`}
-                  detail={
-                    missingRateNames
-                      ? missingRateNames
-                      : "ставки заведены"
+                  label={
+                    laborReadiness.source === "iiko"
+                      ? "В iiko без ФОТ"
+                      : "Без ставки"
                   }
+                  value={`${
+                    laborReadiness.source === "iiko"
+                      ? laborReadiness.iikoUnpricedStaffShifts
+                      : laborReadiness.missingStaff.length
+                  }`}
+                  detail={laborCoverageDetail}
                 />
               </div>
             </div>
           </div>
+
+          {iikoBlockers.length > 0 ? (
+            <div className="mt-5 rounded-lg border border-brand/25 bg-background/30 p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-brand">
+                    Из смен iiko
+                  </p>
+                  <h4 className="mt-1 text-base font-medium text-foreground">
+                    Закрыть реальных сотрудников в ФОТ
+                  </h4>
+                </div>
+                <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+                  Очередь собрана из смен выбранного периода: сначала те, кто
+                  сильнее всего искажает стоимость команды.
+                </p>
+              </div>
+
+              <div className="mt-3 grid gap-2 lg:grid-cols-2">
+                {iikoBlockers.map((blocker) => (
+                  <div
+                    key={`${blocker.name}-${blocker.reason}`}
+                    className="rounded-lg border border-border/45 bg-card/45 p-3"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {blocker.name}
+                        </p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          {formatInteger(blocker.shifts)} смен · {formatHours(blocker.hours)}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-md border border-amber-400/35 bg-amber-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                        {iikoBlockerReasonLabel(blocker)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                      <div>
+                        <p className="numeric text-lg font-medium text-foreground">
+                          {formatRubles(blocker.sales)}
+                        </p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          выручки без точного ФОТ
+                        </p>
+                      </div>
+
+                      {blocker.action === "add-member" ? (
+                        <button
+                          type="button"
+                          onClick={() => prefillMemberFromIiko(blocker)}
+                          className="inline-flex items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition-colors hover:bg-brand/15"
+                        >
+                          {iikoBlockerActionLabel(blocker)}
+                        </button>
+                      ) : blocker.memberId ? (
+                        <a
+                          href={`#labor-member-${encodeURIComponent(blocker.memberId)}`}
+                          className="inline-flex items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition-colors hover:bg-brand/15"
+                        >
+                          {iikoBlockerActionLabel(blocker)}
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[1080px] text-left text-sm">
