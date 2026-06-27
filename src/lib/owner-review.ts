@@ -53,7 +53,8 @@ export type OwnerReviewActionTarget =
   | "shift-coverage"
   | "shift-diagnostics"
   | "margin-diagnostics"
-  | "margin-mapping";
+  | "margin-mapping"
+  | "margin-risk";
 
 export type OwnerReviewAction = {
   title: string;
@@ -144,7 +145,8 @@ function actionSourceLabel(action: OwnerReviewAction): string {
   }
   if (
     action.target === "margin-diagnostics" ||
-    action.target === "margin-mapping"
+    action.target === "margin-mapping" ||
+    action.target === "margin-risk"
   ) {
     return "Маржа и техкарты";
   }
@@ -206,10 +208,9 @@ function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
       : `${input.revenueCoveragePct.toLocaleString("ru-RU", {
           maximumFractionDigits: 1,
         })}% выручки с точным ФОТ`;
-  const detail =
-    blocker
-      ? `${blocker.name}: ${formatRubles(blocker.sales)} без точного ФОТ, ${coverage}`
-      : input.missingRates > 0
+  const detail = blocker
+    ? `${blocker.name}: ${formatRubles(blocker.sales)} без точного ФОТ, ${coverage}`
+    : input.missingRates > 0
       ? `${input.missingRates} ставок не заведено, ${coverage}`
       : `${formatRubles(input.laborCost)} за период`;
 
@@ -224,18 +225,27 @@ function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
 function marginEvidence(input: MenuMarginReadiness): OwnerReviewEvidence {
   const nextAction = buildMenuMarginNextAction(input);
   const blocker = nextAction.blocker;
+  const primaryRisk = input.topMarginRisks[0] ?? null;
   const detail = blocker
     ? blocker.reason === "missing-cost"
       ? `${blocker.dishName}: ${formatRubles(blocker.revenue)} без закупочной цены`
       : `${blocker.dishName}: ${formatRubles(blocker.revenue)} без связи с iiko`
     : `${input.costedDishes}/${input.totalDishes} блюд с себестоимостью`;
 
+  const detailWithRisk =
+    !blocker && primaryRisk
+      ? `${primaryRisk.dishName}: валовая маржа ${primaryRisk.grossMarginPct}% при цене ${formatRubles(primaryRisk.salePrice)}`
+      : detail;
+
   return {
     label: "Маржа",
     value: `${input.revenueCoveragePct}%`,
-    detail,
-    tone:
-      input.status === "ready"
+    detail: detailWithRisk,
+    tone: primaryRisk
+      ? primaryRisk.grossMarginPct < 45
+        ? "risk"
+        : "watch"
+      : input.status === "ready"
         ? "good"
         : input.status === "blocked"
           ? "risk"
@@ -261,8 +271,9 @@ function unitEconomicsEvidence(input: {
   const marginIncomplete = Boolean(margin) && margin?.status !== "ready";
   const laborPct = labor?.laborCostPct ?? null;
   const laborCoverage = formatCoverage(labor?.revenueCoveragePct ?? null);
-  const marginCoverage =
-    margin ? `${margin.revenueCoveragePct}%` : "нет данных";
+  const marginCoverage = margin
+    ? `${margin.revenueCoveragePct}%`
+    : "нет данных";
 
   if (laborIncomplete && marginIncomplete) {
     return {
@@ -373,10 +384,25 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   return null;
 }
 
-function ownerActionFromMargin(input: MenuMarginReadiness): OwnerReviewAction | null {
+function ownerActionFromMargin(
+  input: MenuMarginReadiness,
+): OwnerReviewAction | null {
   const nextAction = buildMenuMarginNextAction(input);
+  const primaryRisk = input.topMarginRisks[0] ?? null;
 
-  if (nextAction.kind === "ready") return null;
+  if (nextAction.kind === "ready") {
+    if (!primaryRisk) return null;
+    const source =
+      primaryRisk.costSource === "tech-card" ? "по техкарте" : "по товару iiko";
+
+    return {
+      title: `Разобрать маржу: ${primaryRisk.dishName}`,
+      detail: `Валовая маржа ${primaryRisk.grossMarginPct}%: цена ${formatRubles(primaryRisk.salePrice)}, себестоимость ${formatRubles(primaryRisk.costReference)} ${source}. Проверьте цену, порцию, списания и состав техкарты.`,
+      role: "chef",
+      tone: primaryRisk.grossMarginPct < 45 ? "risk" : "watch",
+      target: "margin-risk",
+    };
+  }
 
   return {
     title: nextAction.title,
@@ -397,7 +423,8 @@ function laborMarginHypothesis(input: {
   if (!input.margin || input.margin.status === "ready") return null;
   const nextAction = buildMenuMarginNextAction(input.margin);
   const laborPct = input.labor?.laborCostPct;
-  const laborIsHigh = laborPct !== null && laborPct !== undefined && laborPct >= 25;
+  const laborIsHigh =
+    laborPct !== null && laborPct !== undefined && laborPct >= 25;
   const topBlocker = nextAction.blocker;
   const blockerText = topBlocker
     ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки): ${nextAction.title}.`
@@ -489,7 +516,8 @@ function buildVerdict(input: {
 }) {
   if (input.dataMode === "mock") {
     return {
-      verdict: "Пока это демо-разбор. Подключите iiko, чтобы советы стали управленческими.",
+      verdict:
+        "Пока это демо-разбор. Подключите iiko, чтобы советы стали управленческими.",
       summary:
         "Интерфейс показывает логику работы, но не должен использоваться для решений по сменам, меню и деньгам.",
     };
@@ -508,6 +536,7 @@ function buildVerdict(input: {
   const marginIncomplete =
     Boolean(input.margin) && input.margin?.status !== "ready";
   const laborPct = input.labor?.laborCostPct;
+  const primaryMarginRisk = input.margin?.topMarginRisks[0] ?? null;
 
   if (laborIncomplete && marginIncomplete) {
     return {
@@ -546,12 +575,21 @@ function buildVerdict(input: {
     };
   }
 
+  if (primaryMarginRisk) {
+    return {
+      verdict: `У блюда «${primaryMarginRisk.dishName}» доказанная слабая маржа: ${primaryMarginRisk.grossMarginPct}%.`,
+      summary:
+        "Это уже не гипотеза без данных: цена продажи и себестоимость связаны. Проверьте порцию, состав техкарты, списания и цену, пока оборот не превращается в дорогую занятость кухни.",
+    };
+  }
+
   if (
     input.brief.revenue.comparisonAvailable &&
     input.brief.revenue.deltaPct <= -15
   ) {
     return {
-      verdict: "Главная задача — найти причину просадки, а не просто смотреть график.",
+      verdict:
+        "Главная задача — найти причину просадки, а не просто смотреть график.",
       summary:
         "Сравните слабые дни, смены, стоп-лист и структуру продаж. Обычно деньги теряются в одном из этих мест.",
     };
@@ -586,7 +624,8 @@ function buildVerdict(input: {
     input.brief.revenue.deltaPct >= 10
   ) {
     return {
-      verdict: "Период выглядит сильнее базы. Важно зафиксировать, что сработало.",
+      verdict:
+        "Период выглядит сильнее базы. Важно зафиксировать, что сработало.",
       summary:
         "Рост надо превратить в повторяемый сценарий: смена, промо, посадка, погода, команда, меню.",
     };
@@ -611,7 +650,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     ? pct(topCategory.dishSumInt, categoryTotal)
     : 0;
   const topDish = input.dishes[0];
-  const topDishShare = topDish ? pct(topDish.dishSumInt, input.summary.revenue) : 0;
+  const topDishShare = topDish
+    ? pct(topDish.dishSumInt, input.summary.revenue)
+    : 0;
   const weakestDay = topByRevenue(input.summary.points, "min");
   const strongestDay = topByRevenue(input.summary.points, "max");
   const weakestShift = [...input.shifts]
@@ -621,7 +662,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   const { confidence, reason } = confidenceFor(input);
   const laborInsights = input.labor ? buildLaborInsights(input.labor) : [];
   const primaryLaborInsight =
-    laborInsights.find((insight) => insight.tone !== "good") ?? laborInsights[0];
+    laborInsights.find((insight) => insight.tone !== "good") ??
+    laborInsights[0];
   const marginHypothesis = laborMarginHypothesis({
     labor: input.labor,
     margin: input.margin,
@@ -645,7 +687,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       value: formatRubles(input.summary.revenue),
       detail: `динамика: ${deltaText(input.brief)}`,
       tone:
-        input.brief.revenue.comparisonAvailable && input.brief.revenue.deltaPct < 0
+        input.brief.revenue.comparisonAvailable &&
+        input.brief.revenue.deltaPct < 0
           ? "risk"
           : "good",
     },
@@ -670,7 +713,12 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       detail: topCategory
         ? `категория «${topCategory.categoryName}»`
         : "категории не пришли из BI",
-      tone: topCategoryShare >= 42 ? "risk" : topCategoryShare >= 30 ? "watch" : "good",
+      tone:
+        topCategoryShare >= 42
+          ? "risk"
+          : topCategoryShare >= 30
+            ? "watch"
+            : "good",
     },
     {
       label: "Хит",
@@ -709,7 +757,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         input.dataMode === "mock"
           ? "Сейчас включен демо-контур, поэтому выводы одинаковые по смыслу."
           : "В выбранном периоде не хватает продаж или дней с данными.",
-      check: "Откройте проверку iiko и убедитесь, что ключ, организация и OLAP работают.",
+      check:
+        "Откройте проверку iiko и убедитесь, что ключ, организация и OLAP работают.",
       role: "owner",
       tone: "risk",
     });
@@ -740,7 +789,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           ? `Самая слабая смена: ${formatRubles(weakestShift.revenue)}.`
           : "Смены не дали явного ответа."
       }`,
-      check: "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
+      check:
+        "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
       role: "manager",
       tone: "risk",
     });
@@ -750,7 +800,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     hypotheses.push({
       title: "Категория может держать оборот, но не прибыль",
       why: `«${topCategory.categoryName}» дает ${topCategoryShare}% выручки периода.`,
-      check: "Проверить маржу, наличие, скорость отдачи и альтернативы для апсейла.",
+      check:
+        "Проверить маржу, наличие, скорость отдачи и альтернативы для апсейла.",
       role: "chef",
       tone: topCategoryShare >= 42 ? "risk" : "watch",
     });
@@ -760,7 +811,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     hypotheses.push({
       title: "Хит продаж нужно защищать как операционный актив",
       why: `«${topDish.dishName}» дает ${topDishShare}% выручки и ${formatInteger(topDish.dishAmountInt)} порций.`,
-      check: "Проверить стоп-лист, заготовки, качество отдачи и что официанты предлагают рядом.",
+      check:
+        "Проверить стоп-лист, заготовки, качество отдачи и что официанты предлагают рядом.",
       role: "service",
       tone: topDishShare >= 18 ? "watch" : "good",
     });
@@ -780,7 +832,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     hypotheses.push({
       title: "Слабый день нужно объяснить событием",
       why: `${weakestDay.date}: ${formatRubles(weakestDay.revenue)} против ${strongestDay.date}: ${formatRubles(strongestDay.revenue)}.`,
-      check: "Зафиксировать причину: погода, банкет, команда, промо, трафик, стоп-лист.",
+      check:
+        "Зафиксировать причину: погода, банкет, команда, промо, трафик, стоп-лист.",
       role: "manager",
       tone: "watch",
     });

@@ -11,11 +11,15 @@ export type MenuMarginItem = {
   dishGroup: string;
   revenue: number;
   amount: number;
+  salePrice: number | null;
   product: Product | null;
   match: "manual" | "auto" | "exact" | "similar" | "missing";
   hasCost: boolean;
   costReference: number | null;
   costSource: "product" | "tech-card" | null;
+  grossProfitPerItem: number | null;
+  grossProfit: number | null;
+  grossMarginPct: number | null;
   techCard: MenuMarginTechCardMatch | null;
   hasUsableTechCard: boolean;
   status: MenuMarginStatus;
@@ -42,6 +46,19 @@ export type MenuMarginNextAction = {
   blocker: MenuMarginBlocker | null;
 };
 
+export type MenuMarginRisk = {
+  dishName: string;
+  dishGroup: string;
+  revenue: number;
+  amount: number;
+  salePrice: number;
+  costReference: number;
+  grossProfit: number;
+  grossProfitPerItem: number;
+  grossMarginPct: number;
+  costSource: "product" | "tech-card";
+};
+
 export type MenuMarginReadiness = {
   status: MenuMarginStatus;
   totalDishes: number;
@@ -51,6 +68,8 @@ export type MenuMarginReadiness = {
   usableTechCardDishes: number;
   revenueWithCost: number;
   revenueWithTechCards: number;
+  grossProfit: number;
+  averageGrossMarginPct: number | null;
   blockedRevenue: number;
   missingLinkRevenue: number;
   missingCostRevenue: number;
@@ -61,6 +80,7 @@ export type MenuMarginReadiness = {
   techCardCoveragePct: number;
   usableTechCardCoveragePct: number;
   topBlockers: MenuMarginBlocker[];
+  topMarginRisks: MenuMarginRisk[];
   items: MenuMarginItem[];
 };
 
@@ -102,7 +122,10 @@ export function buildMenuMarginReadiness(input: {
   const products = input.products.filter((product) => product.active !== false);
   const mappings = input.mappings ?? [];
   const techCards = input.techCards ?? [];
-  const totalRevenue = input.dishes.reduce((sum, dish) => sum + dish.dishSumInt, 0);
+  const totalRevenue = input.dishes.reduce(
+    (sum, dish) => sum + dish.dishSumInt,
+    0,
+  );
   const items = input.dishes.map((dish) => {
     const mapped = findMappedProduct({
       dishName: dish.dishName,
@@ -126,19 +149,38 @@ export function buildMenuMarginReadiness(input: {
     const costSource =
       productCostReference !== null
         ? ("product" as const)
-        : techCard?.costReference !== null && techCard?.costReference !== undefined
+        : techCard?.costReference !== null &&
+            techCard?.costReference !== undefined
           ? ("tech-card" as const)
           : null;
+    const salePrice =
+      dish.dishAmountInt > 0 ? dish.dishSumInt / dish.dishAmountInt : null;
+    const grossProfitPerItem =
+      salePrice !== null && costReference !== null
+        ? roundMoney(salePrice - costReference)
+        : null;
+    const grossProfit =
+      grossProfitPerItem !== null
+        ? roundMoney(grossProfitPerItem * dish.dishAmountInt)
+        : null;
+    const grossMarginPct =
+      salePrice !== null && salePrice > 0 && grossProfitPerItem !== null
+        ? pct(grossProfitPerItem, salePrice)
+        : null;
     return {
       dishName: dish.dishName,
       dishGroup: dish.dishGroup,
       revenue: dish.dishSumInt,
       amount: dish.dishAmountInt,
+      salePrice,
       product: match.product,
       match: match.kind,
       hasCost,
       costReference,
       costSource,
+      grossProfitPerItem,
+      grossProfit,
+      grossMarginPct,
       techCard,
       hasUsableTechCard: Boolean(techCard?.usable),
       status: !match.product ? "blocked" : hasCost ? "ready" : "partial",
@@ -157,6 +199,9 @@ export function buildMenuMarginReadiness(input: {
   const revenueWithTechCards = items
     .filter((item) => item.hasUsableTechCard)
     .reduce((sum, item) => sum + item.revenue, 0);
+  const grossProfit = roundMoney(
+    items.reduce((sum, item) => sum + (item.grossProfit ?? 0), 0),
+  );
   const missingLinkRevenue = items
     .filter((item) => !item.product)
     .reduce((sum, item) => sum + item.revenue, 0);
@@ -168,6 +213,8 @@ export function buildMenuMarginReadiness(input: {
   const blockedRevenuePct = pct(blockedRevenue, totalRevenue);
   const matchCoveragePct = pct(matchedDishes, input.dishes.length);
   const costCoveragePct = pct(costedDishes, input.dishes.length);
+  const averageGrossMarginPct =
+    revenueWithCost > 0 ? pct(grossProfit, revenueWithCost) : null;
   const topBlockers: MenuMarginBlocker[] = items
     .filter((item) => !item.hasCost)
     .map((item) => ({
@@ -186,6 +233,34 @@ export function buildMenuMarginReadiness(input: {
     }))
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
+  const topMarginRisks: MenuMarginRisk[] = items
+    .filter(
+      (item) =>
+        item.hasCost &&
+        item.costReference !== null &&
+        item.costSource !== null &&
+        item.salePrice !== null &&
+        item.grossProfit !== null &&
+        item.grossProfitPerItem !== null &&
+        item.grossMarginPct !== null &&
+        item.grossMarginPct < 60,
+    )
+    .map((item) => ({
+      dishName: item.dishName,
+      dishGroup: item.dishGroup,
+      revenue: item.revenue,
+      amount: item.amount,
+      salePrice: item.salePrice ?? 0,
+      costReference: item.costReference ?? 0,
+      grossProfit: item.grossProfit ?? 0,
+      grossProfitPerItem: item.grossProfitPerItem ?? 0,
+      grossMarginPct: item.grossMarginPct ?? 0,
+      costSource: item.costSource ?? "product",
+    }))
+    .sort(
+      (a, b) => a.grossMarginPct - b.grossMarginPct || b.revenue - a.revenue,
+    )
+    .slice(0, 5);
 
   return {
     status:
@@ -201,6 +276,8 @@ export function buildMenuMarginReadiness(input: {
     usableTechCardDishes,
     revenueWithCost,
     revenueWithTechCards,
+    grossProfit,
+    averageGrossMarginPct,
     blockedRevenue,
     missingLinkRevenue,
     missingCostRevenue,
@@ -211,6 +288,7 @@ export function buildMenuMarginReadiness(input: {
     techCardCoveragePct: pct(techCardDishes, input.dishes.length),
     usableTechCardCoveragePct: pct(usableTechCardDishes, input.dishes.length),
     topBlockers,
+    topMarginRisks,
     items,
   };
 }
@@ -248,8 +326,8 @@ function findTechCardMatch(
   const linkedIngredientRows = chart.items.filter((item) =>
     Boolean(item.productId),
   ).length;
-  const ingredientRowsWithAmount = chart.items.filter((item) =>
-    item.amount !== undefined,
+  const ingredientRowsWithAmount = chart.items.filter(
+    (item) => item.amount !== undefined,
   ).length;
   const pricedRows = chart.items
     .map((item) => calculateIngredientCost(item, products))
@@ -300,7 +378,9 @@ function findIngredientProduct(
   products: Product[],
 ): Product | null {
   if (ingredient.productId) {
-    const byId = products.find((product) => product.id === ingredient.productId);
+    const byId = products.find(
+      (product) => product.id === ingredient.productId,
+    );
     if (byId) return byId;
   }
 
@@ -354,7 +434,9 @@ function findProductMatch(
   products: Product[],
 ): { product: Product | null; kind: MenuMarginItem["match"] } {
   const normalizedDish = normalize(dishName);
-  const exact = products.find((product) => normalize(product.name) === normalizedDish);
+  const exact = products.find(
+    (product) => normalize(product.name) === normalizedDish,
+  );
   if (exact) return { product: exact, kind: "exact" };
 
   const dishTokens = tokenSet(normalizedDish);
@@ -397,7 +479,9 @@ function pct(part: number, total: number): number {
   return Math.round((part / total) * 1000) / 10;
 }
 
-export function getProductCostReference(product: Product | null): number | null {
+export function getProductCostReference(
+  product: Product | null,
+): number | null {
   if (!product) return null;
   const pricePerKg = positive(product.pricePerKg);
   if (pricePerKg !== null) return pricePerKg;
@@ -407,7 +491,9 @@ export function getProductCostReference(product: Product | null): number | null 
 
   const purchasePricePerUnit = positive(product.purchasePricePerUnit);
   if (purchasePricePerUnit === null) return null;
-  return product.unit === "pcs" ? purchasePricePerUnit : purchasePricePerUnit * 1000;
+  return product.unit === "pcs"
+    ? purchasePricePerUnit
+    : purchasePricePerUnit * 1000;
 }
 
 export function buildMenuMarginNextAction(

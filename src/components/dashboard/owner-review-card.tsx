@@ -74,10 +74,15 @@ function actionHref(action: OwnerReviewAction, venueId: string): string {
     return `/settings#iiko-diagnostics-${encodedVenueId}`;
   }
 
+  if (action.target === "margin-risk") {
+    return "#margin-mapping-workspace";
+  }
+
   return "#margin-mapping-workspace";
 }
 
 function actionCta(action: OwnerReviewAction): string {
+  if (action.target === "margin-risk") return "Разобрать маржу";
   if (action.target === "iiko-settings") return "Открыть iiko";
   if (action.target === "labor-member") return "Добавить";
   if (action.target === "labor-rate") return "Открыть ставку";

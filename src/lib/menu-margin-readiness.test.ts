@@ -347,6 +347,8 @@ describe("buildMenuMarginReadiness", () => {
       hasCost: true,
       costSource: "tech-card",
       costReference: 36,
+      grossMarginPct: 98.8,
+      grossProfit: 29640,
       techCard: expect.objectContaining({
         pricedIngredientRows: 2,
         costReference: 36,
@@ -356,6 +358,71 @@ describe("buildMenuMarginReadiness", () => {
     expect(buildMenuMarginNextAction(readiness)).toMatchObject({
       kind: "ready",
     });
+  });
+
+  test("surfaces low proven margin as an owner risk", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Cheap pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 1000,
+        },
+        {
+          dishName: "Healthy steak",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 10000,
+        },
+        {
+          dishName: "Unknown dessert",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 2000,
+        },
+      ],
+      products: [
+        {
+          id: "cheap-pasta",
+          name: "Cheap pasta",
+          purchasePrice: 55,
+          sizePrices: [],
+        },
+        {
+          id: "healthy-steak",
+          name: "Healthy steak",
+          purchasePrice: 250,
+          sizePrices: [],
+        },
+        {
+          id: "unknown-dessert",
+          name: "Unknown dessert",
+          sizePrices: [],
+        },
+      ],
+    });
+
+    expect(readiness).toMatchObject({
+      costedDishes: 2,
+      grossProfit: 7950,
+      averageGrossMarginPct: 72.3,
+    });
+    expect(readiness.topMarginRisks).toEqual([
+      expect.objectContaining({
+        dishName: "Cheap pasta",
+        grossMarginPct: 45,
+        costReference: 55,
+        salePrice: 100,
+        grossProfit: 450,
+        costSource: "product",
+      }),
+    ]);
+    expect(readiness.topMarginRisks).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ dishName: "Unknown dessert" }),
+      ]),
+    );
   });
 
   test("does not prove food cost from partially priced tech-card ingredients", () => {

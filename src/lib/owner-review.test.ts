@@ -394,4 +394,76 @@ describe("buildOwnerReview", () => {
       ]),
     );
   });
+
+  test("turns proven low margin into an owner review action", () => {
+    const lowMarginDishes: DishStat[] = [
+      {
+        dishName: "Cheap pasta",
+        dishGroup: "Kitchen",
+        dishAmountInt: 10,
+        dishSumInt: 1000,
+      },
+      {
+        dishName: "Healthy steak",
+        dishGroup: "Kitchen",
+        dishAmountInt: 10,
+        dishSumInt: 10000,
+      },
+    ];
+    const margin = buildMenuMarginReadiness({
+      dishes: lowMarginDishes,
+      products: [
+        {
+          id: "cheap-pasta",
+          name: "Cheap pasta",
+          purchasePrice: 55,
+          sizePrices: [],
+        },
+        {
+          id: "healthy-steak",
+          name: "Healthy steak",
+          purchasePrice: 250,
+          sizePrices: [],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes: lowMarginDishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      margin,
+    });
+
+    expect(review.verdict).toContain("Cheap pasta");
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          value: "100%",
+          detail: expect.stringContaining("Cheap pasta"),
+          tone: "watch",
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: "margin-risk",
+          role: "chef",
+          tone: "watch",
+          title: expect.stringContaining("Cheap pasta"),
+          detail: expect.stringContaining("45%"),
+        }),
+      ]),
+    );
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("Cheap pasta"),
+      roleId: "chef",
+      priority: "medium",
+    });
+  });
 });
