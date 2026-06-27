@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ClipboardList,
+  ArrowRight,
   HelpCircle,
   MessageSquareText,
   SearchCheck,
@@ -9,11 +10,13 @@ import {
 } from "lucide-react";
 import type {
   OwnerReview,
+  OwnerReviewAction,
   OwnerReviewConfidence,
   OwnerReviewRole,
   OwnerReviewTone,
 } from "@/lib/owner-review";
 import { SurvivalTaskActions } from "./survival-task-actions";
+import { LinkButton } from "@/components/ui/link-button";
 
 const TONE_CLASS: Record<OwnerReviewTone, string> = {
   risk: "border-destructive/35 bg-destructive/8 text-destructive",
@@ -38,6 +41,45 @@ function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
   if (tone === "risk") return <AlertTriangle className="size-4" />;
   if (tone === "watch") return <SearchCheck className="size-4" />;
   return <CheckCircle2 className="size-4" />;
+}
+
+function actionHref(action: OwnerReviewAction, venueId: string): string {
+  const encodedVenueId = encodeURIComponent(venueId);
+
+  if (action.target === "iiko-settings") {
+    return `/settings#iiko`;
+  }
+
+  if (action.target === "labor-member" && action.memberName) {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&prefillMemberName=${encodeURIComponent(action.memberName)}#team-actions`;
+  }
+
+  if (action.target === "labor-rate" && action.memberId) {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusMemberId=${encodeURIComponent(action.memberId)}#labor-member-${encodeURIComponent(action.memberId)}`;
+  }
+
+  if (action.target === "labor-rate") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#labor-rates`;
+  }
+
+  if (action.target === "shift-coverage") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-coverage`;
+  }
+
+  if (action.target === "margin-diagnostics") {
+    return `/settings#iiko-diagnostics-${encodedVenueId}`;
+  }
+
+  return "#margin-mapping-workspace";
+}
+
+function actionCta(action: OwnerReviewAction): string {
+  if (action.target === "iiko-settings") return "Открыть iiko";
+  if (action.target === "labor-member") return "Добавить";
+  if (action.target === "labor-rate") return "Открыть ставку";
+  if (action.target === "shift-coverage") return "Открыть смены";
+  if (action.target === "margin-diagnostics") return "Проверить RMS";
+  return "Связать блюдо";
 }
 
 export function OwnerReviewCard({
@@ -113,6 +155,58 @@ export function OwnerReviewCard({
         </div>
 
         <div className="rounded-lg border border-border/55 bg-background/35 p-4">
+          {review.actions.length > 0 ? (
+            <div className="mb-5 border-b border-border/45 pb-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Что сделать первым
+                  </p>
+                  <h3 className="mt-2 text-lg font-medium">
+                    Очередь владельца
+                  </h3>
+                </div>
+                <ClipboardList className="size-5 text-brand" />
+              </div>
+              <div className="mt-3 space-y-2.5">
+                {review.actions.map((action) => (
+                  <div
+                    key={`${action.target}-${action.title}`}
+                    className="grid gap-3 rounded-lg border border-border/45 bg-card/45 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={
+                            "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                            TONE_CLASS[action.tone]
+                          }
+                        >
+                          <ToneIcon tone={action.tone} />
+                          {ROLE_LABEL[action.role]}
+                        </span>
+                        <p className="text-[13px] font-medium text-foreground">
+                          {action.title}
+                        </p>
+                      </div>
+                      <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                        {action.detail}
+                      </p>
+                    </div>
+                    <LinkButton
+                      href={actionHref(action, venueId)}
+                      variant="outline"
+                      className="h-8 shrink-0 px-3 text-[12px]"
+                    >
+                      {actionCta(action)}
+                      <ArrowRight className="size-3.5" />
+                    </LinkButton>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">

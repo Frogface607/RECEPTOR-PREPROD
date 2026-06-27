@@ -126,6 +126,21 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разобрать дорогую смену",
+          target: "shift-coverage",
+          role: "manager",
+          tone: "risk",
+        }),
+        expect.objectContaining({
+          title: "Блюдо не связано с iiko",
+          target: "margin-mapping",
+          role: "chef",
+        }),
+      ]),
+    );
     expect(review.hypotheses[0]).toMatchObject({
       title: "ФОТ выше целевой нормы",
       tone: "risk",
@@ -178,6 +193,15 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           label: "ФОТ",
           detail: expect.stringContaining("Кассир"),
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Добавить сотрудника из iiko",
+          target: "labor-member",
+          memberName: "Кассир",
         }),
       ]),
     );
@@ -235,6 +259,15 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           label: "Маржа",
           detail: expect.stringContaining("без закупочной цены"),
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "RMS не отдает закупочную цену",
+          target: "margin-diagnostics",
+          role: "owner",
         }),
       ]),
     );

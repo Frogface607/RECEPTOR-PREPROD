@@ -8,6 +8,7 @@ import {
 } from "@/lib/menu-margin-readiness";
 import {
   buildLaborInsights,
+  buildLaborNextAction,
   type LaborBiSummary,
   type LaborInsightTone,
 } from "@/lib/team/labor-bi";
@@ -44,12 +45,31 @@ export type OwnerReviewQuestion = {
   text: string;
 };
 
+export type OwnerReviewActionTarget =
+  | "iiko-settings"
+  | "labor-member"
+  | "labor-rate"
+  | "shift-coverage"
+  | "margin-diagnostics"
+  | "margin-mapping";
+
+export type OwnerReviewAction = {
+  title: string;
+  detail: string;
+  role: OwnerReviewRole;
+  tone: OwnerReviewTone;
+  target: OwnerReviewActionTarget;
+  memberId?: string;
+  memberName?: string;
+};
+
 export type OwnerReview = {
   verdict: string;
   summary: string;
   confidence: OwnerReviewConfidence;
   confidenceReason: string;
   evidence: OwnerReviewEvidence[];
+  actions: OwnerReviewAction[];
   hypotheses: OwnerReviewHypothesis[];
   questions: OwnerReviewQuestion[];
   tasks: SurvivalTaskDraft[];
@@ -154,6 +174,74 @@ function marginEvidence(input: MenuMarginReadiness): OwnerReviewEvidence {
         : input.status === "blocked"
           ? "risk"
           : "watch",
+  };
+}
+
+function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
+  const nextAction = buildLaborNextAction(input);
+
+  if (nextAction.kind === "ready") return null;
+
+  if (nextAction.kind === "missing-shifts") {
+    return {
+      title: nextAction.title,
+      detail: nextAction.detail,
+      role: "owner",
+      tone: "watch",
+      target: "iiko-settings",
+    };
+  }
+
+  if (nextAction.kind === "missing-member" && nextAction.blocker) {
+    return {
+      title: nextAction.title,
+      detail: nextAction.detail,
+      role: "manager",
+      tone: "watch",
+      target: "labor-member",
+      memberName: nextAction.blocker.name,
+    };
+  }
+
+  if (nextAction.kind === "missing-rate" && nextAction.blocker) {
+    return {
+      title: nextAction.title,
+      detail: nextAction.detail,
+      role: "manager",
+      tone: "watch",
+      target: "labor-rate",
+      memberId: nextAction.blocker.memberId,
+      memberName: nextAction.blocker.name,
+    };
+  }
+
+  if (nextAction.kind === "expensive-labor") {
+    return {
+      title: nextAction.title,
+      detail: nextAction.detail,
+      role: "manager",
+      tone: "risk",
+      target: "shift-coverage",
+    };
+  }
+
+  return null;
+}
+
+function ownerActionFromMargin(input: MenuMarginReadiness): OwnerReviewAction | null {
+  const nextAction = buildMenuMarginNextAction(input);
+
+  if (nextAction.kind === "ready") return null;
+
+  return {
+    title: nextAction.title,
+    detail: nextAction.detail,
+    role: nextAction.kind === "missing-cost" ? "owner" : "chef",
+    tone: input.status === "blocked" ? "risk" : "watch",
+    target:
+      nextAction.kind === "missing-cost"
+        ? "margin-diagnostics"
+        : "margin-mapping",
   };
 }
 
@@ -380,6 +468,24 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       tone: topDishShare >= 18 ? "watch" : "good",
     },
   ];
+  const actions = [
+    input.dataQuality.status === "risk" || input.dataMode === "mock"
+      ? ({
+          title: "Проверить источник данных",
+          detail:
+            input.dataMode === "mock"
+              ? "Сейчас открыт демо-контур. Для решений нужен live iiko."
+              : input.dataQuality.summary,
+          role: "owner",
+          tone: "risk",
+          target: "iiko-settings",
+        } satisfies OwnerReviewAction)
+      : null,
+    input.labor ? ownerActionFromLabor(input.labor) : null,
+    input.margin ? ownerActionFromMargin(input.margin) : null,
+  ]
+    .filter((item): item is OwnerReviewAction => item !== null)
+    .slice(0, 3);
 
   const hypotheses: OwnerReviewHypothesis[] = [];
 
@@ -485,6 +591,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     confidence,
     confidenceReason: reason,
     evidence,
+    actions,
     hypotheses: visibleHypotheses,
     questions,
     tasks,
