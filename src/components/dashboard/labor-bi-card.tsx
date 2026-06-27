@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  ArrowRight,
   Banknote,
   CheckCircle2,
   Clock3,
@@ -9,6 +10,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { LinkButton } from "@/components/ui/link-button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import {
   buildLaborInsights,
@@ -29,7 +31,13 @@ function formatRatio(value: number | null): string {
   return value === null ? "—" : formatRubles(value);
 }
 
-export function LaborBiCard({ labor }: { labor: LaborBiSummary }) {
+export function LaborBiCard({
+  labor,
+  ratesHref,
+}: {
+  labor: LaborBiSummary;
+  ratesHref?: string;
+}) {
   const hasRates = labor.missingRates === 0 && labor.staffShifts > 0;
   const insights = buildLaborInsights(labor);
   const statusCopy = hasRates
@@ -77,6 +85,23 @@ export function LaborBiCard({ labor }: { labor: LaborBiSummary }) {
           {statusCopy.label}
         </span>
       </div>
+
+      {!hasRates && ratesHref ? (
+        <div className="mt-4 flex flex-col gap-3 rounded-lg border border-amber-400/25 bg-amber-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-2xl text-[13px] leading-relaxed text-amber-100/85">
+            Чтобы ФОТ стал точным, откройте Team OS и заполните ставки для
+            сотрудников, которых iiko видит в сменах.
+          </p>
+          <LinkButton
+            href={ratesHref}
+            variant="outline"
+            className="w-full border-amber-400/35 bg-background/45 text-amber-100 hover:border-amber-300 sm:w-auto"
+          >
+            Заполнить ставки
+            <ArrowRight className="size-4" />
+          </LinkButton>
+        </div>
+      ) : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric

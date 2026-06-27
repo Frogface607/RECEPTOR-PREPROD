@@ -174,6 +174,7 @@ export default async function DashboardPage({
   const chatParams = new URLSearchParams(periodToSearchParams(period));
   chatParams.set("chat", "1");
   const chatHref = `/dashboard/${encodeURIComponent(venueId)}?${chatParams.toString()}`;
+  const laborRatesHref = `/team?role=venue_manager&venueId=${encodeURIComponent(venueId)}#labor-rates`;
   const quality = buildRevenueDataQuality(period, summary, {
     today: dataMode === "mock" ? DEMO_ANCHOR : runtimeToday,
     dataMode,
@@ -272,7 +273,7 @@ export default async function DashboardPage({
           </div>
 
           <div className="reveal reveal-4 mt-6">
-            <LaborBiCard labor={laborBi} />
+            <LaborBiCard labor={laborBi} ratesHref={laborRatesHref} />
           </div>
 
           <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">
