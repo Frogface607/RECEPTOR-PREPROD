@@ -9,6 +9,7 @@ import {
 import {
   buildLaborInsights,
   buildLaborNextAction,
+  buildLaborShiftDiagnostics,
   type LaborBiSummary,
   type LaborInsightTone,
 } from "@/lib/team/labor-bi";
@@ -50,6 +51,7 @@ export type OwnerReviewActionTarget =
   | "labor-member"
   | "labor-rate"
   | "shift-coverage"
+  | "shift-diagnostics"
   | "margin-diagnostics"
   | "margin-mapping";
 
@@ -135,7 +137,8 @@ function actionSourceLabel(action: OwnerReviewAction): string {
   if (
     action.target === "labor-member" ||
     action.target === "labor-rate" ||
-    action.target === "shift-coverage"
+    action.target === "shift-coverage" ||
+    action.target === "shift-diagnostics"
   ) {
     return "ФОТ и смены";
   }
@@ -308,7 +311,21 @@ function unitEconomicsEvidence(input: {
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
 
-  if (nextAction.kind === "ready") return null;
+  if (nextAction.kind === "ready") {
+    const firstShiftIssue = buildLaborShiftDiagnostics(input).find(
+      (shift) => shift.kind !== "healthy",
+    );
+
+    if (!firstShiftIssue) return null;
+
+    return {
+      title: firstShiftIssue.title,
+      detail: firstShiftIssue.detail,
+      role: "manager",
+      tone: ownerToneFromLabor(firstShiftIssue.tone),
+      target: "shift-diagnostics",
+    };
+  }
 
   if (nextAction.kind === "missing-shifts") {
     return {
@@ -349,7 +366,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       detail: nextAction.detail,
       role: "manager",
       tone: "risk",
-      target: "shift-coverage",
+      target: "shift-diagnostics",
     };
   }
 

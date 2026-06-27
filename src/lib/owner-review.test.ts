@@ -136,7 +136,7 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: "Разобрать дорогую смену",
-          target: "shift-coverage",
+          target: "shift-diagnostics",
           role: "manager",
           tone: "risk",
         }),
@@ -169,6 +169,57 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+  });
+
+  test("turns low shift productivity into owner action even when FOT is priced", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-low-productivity",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 30000,
+          items: 60,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Команда зала",
+              hours: 10,
+              shiftPay: 3000,
+              sales: 30000,
+            },
+          ],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+    });
+
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Низкая выручка на человеко-час",
+          target: "shift-diagnostics",
+          role: "manager",
+          tone: "watch",
+        }),
+      ]),
+    );
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("Низкая выручка на человеко-час"),
+      priority: "medium",
+      roleId: "venue_manager",
+      sourceLabel: "ФОТ и смены",
+    });
   });
 
   test("names first labor blocker in owner evidence", () => {

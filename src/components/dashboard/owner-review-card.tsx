@@ -66,6 +66,10 @@ function actionHref(action: OwnerReviewAction, venueId: string): string {
     return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-coverage`;
   }
 
+  if (action.target === "shift-diagnostics") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#iiko-shift-diagnostics`;
+  }
+
   if (action.target === "margin-diagnostics") {
     return `/settings#iiko-diagnostics-${encodedVenueId}`;
   }
@@ -78,6 +82,7 @@ function actionCta(action: OwnerReviewAction): string {
   if (action.target === "labor-member") return "Добавить";
   if (action.target === "labor-rate") return "Открыть ставку";
   if (action.target === "shift-coverage") return "Открыть смены";
+  if (action.target === "shift-diagnostics") return "Разобрать смену";
   if (action.target === "margin-diagnostics") return "Проверить RMS";
   return "Связать блюдо";
 }
