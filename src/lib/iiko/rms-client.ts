@@ -91,6 +91,22 @@ const RMS_PRICE_FIELD_ALIASES = [
   "tax",
   "taxRate",
 ] as const;
+const RMS_SHIFT_FIELD_SETS = [
+  ["Session.Id", "SessionOpenDate.Typed", "SessionCloseDate.Typed", "CashierName"],
+  ["Session.Id", "SessionOpenDate.Typed", "SessionCloseDate.Typed", "WaiterName"],
+  ["Session.Id", "SessionOpenDate.Typed", "SessionCloseDate.Typed"],
+  ["CashSessionOpenDate.Typed", "CashSessionCloseDate.Typed", "CashierName"],
+  ["SessionDate.Typed", "CashierName"],
+  ["OpenDate.Typed"],
+] as const;
+const RMS_SHIFT_EMPLOYEE_FIELDS = [
+  "CashierName",
+  "WaiterName",
+  "UserName",
+  "EmployeeName",
+  "User.Name",
+  "AuthUserName",
+] as const;
 
 function normalizeHost(host: string): string {
   return host
@@ -113,6 +129,42 @@ function readText(row: RmsOlapRow, key: string, fallback = "—"): string {
   return String(value);
 }
 
+function readFirstText(
+  row: RmsOlapRow,
+  keys: readonly string[],
+  fallback = "—",
+): string {
+  for (const key of keys) {
+    const value = readText(row, key, "");
+    if (value) return value;
+  }
+  return fallback;
+}
+
+function toIsoDateTime(value: string, fallbackTime: string): string {
+  const text = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(text)) return text;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return `${text}T${fallbackTime}`;
+  return `${text.slice(0, 10)}T${fallbackTime}`;
+}
+
+function readOptionalShiftCloseTime(
+  row: RmsOlapRow,
+  fields: readonly string[],
+): string | undefined {
+  const shouldReadClose =
+    fields.includes("SessionCloseDate.Typed") ||
+    fields.includes("CashSessionCloseDate.Typed");
+  if (!shouldReadClose) return undefined;
+
+  const closeTime = readFirstText(
+    row,
+    ["SessionCloseDate.Typed", "CashSessionCloseDate.Typed"],
+    "",
+  );
+  return closeTime ? toIsoDateTime(closeTime, "23:59:59") : undefined;
+}
+
 function periodToRange(period: Period, today: string): { from: string; to: string } {
   const dates = resolvePeriodToDates(period, today);
   if (dates.length === 0) return { from: today, to: today };
@@ -125,6 +177,10 @@ async function readResponseText(res: Response): Promise<string> {
   } catch {
     return "";
   }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export class RmsIikoClient implements IikoClient {
@@ -215,19 +271,24 @@ export class RmsIikoClient implements IikoClient {
   }
 
   async getShifts(period: Period): Promise<ShiftStat[]> {
-    const rows = await this.runOlap(period, {
-      groupByRowFields: ["OpenDate.Typed"],
-      aggregateFields: ["DishAmountInt", RMS_REVENUE_FIELD],
-    });
+    const { rows, fields } = await this.runShiftOlap(period);
 
-    return rows.map((row) => {
-      const date = readText(row, "OpenDate.Typed", this.today);
+    return rows.map((row, index) => {
+      const date = readFirstText(row, [
+        "SessionOpenDate.Typed",
+        "CashSessionOpenDate.Typed",
+        "SessionDate.Typed",
+        "OpenDate.Typed",
+      ], this.today);
+      const sessionId = readFirstText(row, ["Session.Id"], "");
+      const employee = readFirstText(row, RMS_SHIFT_EMPLOYEE_FIELDS, "Смена");
       return ShiftStatSchema.parse({
-        shiftId: `rms-shift-${date}`,
-        openTime: `${date}T00:00:00`,
+        shiftId: sessionId ? `rms-shift-${sessionId}` : `rms-shift-${date}-${index}`,
+        openTime: toIsoDateTime(date, "00:00:00"),
+        closeTime: readOptionalShiftCloseTime(row, fields),
         revenue: readNumber(row, RMS_REVENUE_FIELD),
         items: Math.round(readNumber(row, "DishAmountInt")),
-        employee: "Смена",
+        employee,
       });
     });
   }
@@ -439,6 +500,31 @@ export class RmsIikoClient implements IikoClient {
         readText(row, "DishName", "").trim().length > 0 &&
         readNumber(row, RMS_REVENUE_FIELD) > 0,
     ).length;
+  }
+
+  private async runShiftOlap(
+    period: Period,
+  ): Promise<{ rows: RmsOlapRow[]; fields: readonly string[] }> {
+    const errors: string[] = [];
+
+    for (const fields of RMS_SHIFT_FIELD_SETS) {
+      const groupByRowFields: readonly string[] = fields;
+      try {
+        const rows = await this.runOlap(period, {
+          groupByRowFields: [...groupByRowFields],
+          aggregateFields: ["DishAmountInt", RMS_REVENUE_FIELD],
+        });
+        if (rows.length > 0 || groupByRowFields.includes("OpenDate.Typed")) {
+          return { rows, fields: groupByRowFields };
+        }
+      } catch (error) {
+        errors.push(`${groupByRowFields.join("+")}: ${errorMessage(error)}`);
+      }
+    }
+
+    throw new Error(
+      `iiko RMS shifts failed: ${errors.join("; ") || "no shift rows returned"}`,
+    );
   }
 
   private async runOlap(

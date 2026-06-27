@@ -124,6 +124,87 @@ describe("RmsIikoClient", () => {
     });
   });
 
+  test("uses RMS session fields for cashier shift breakdown", async () => {
+    const { fetchImpl, calls } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      {
+        body: {
+          data: [
+            {
+              "Session.Id": "session-1",
+              "SessionOpenDate.Typed": "2026-05-30T12:00:00",
+              "SessionCloseDate.Typed": "2026-05-30T23:00:00",
+              CashierName: "Мария",
+              DishAmountInt: 310,
+              DishDiscountSumInt: 145000,
+            },
+          ],
+        },
+      },
+    ]);
+
+    const shifts = await client(fetchImpl).getShifts({
+      type: "CUSTOM",
+      from: "2026-05-30",
+      to: "2026-05-30",
+    });
+
+    expect(shifts).toEqual([
+      {
+        shiftId: "rms-shift-session-1",
+        openTime: "2026-05-30T12:00:00",
+        closeTime: "2026-05-30T23:00:00",
+        revenue: 145000,
+        items: 310,
+        employee: "Мария",
+      },
+    ]);
+    const body = JSON.parse(calls[1].init?.body as string);
+    expect(body.groupByRowFields).toEqual([
+      "Session.Id",
+      "SessionOpenDate.Typed",
+      "SessionCloseDate.Typed",
+      "CashierName",
+    ]);
+  });
+
+  test("falls back to OpenDate shift rows when session fields fail", async () => {
+    const { fetchImpl, calls } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      { status: 400, body: { error: "Unknown field Session.Id" } },
+      { status: 400, body: { error: "Unknown field Session.Id" } },
+      { status: 400, body: { error: "Unknown field Session.Id" } },
+      { status: 400, body: { error: "Unknown field CashSessionOpenDate.Typed" } },
+      { status: 400, body: { error: "Unknown field SessionDate.Typed" } },
+      {
+        body: {
+          data: [
+            {
+              "OpenDate.Typed": "2026-05-30",
+              DishAmountInt: 310,
+              DishDiscountSumInt: 145000,
+            },
+          ],
+        },
+      },
+    ]);
+
+    const shifts = await client(fetchImpl).getShifts({
+      type: "CUSTOM",
+      from: "2026-05-30",
+      to: "2026-05-30",
+    });
+
+    expect(shifts[0]).toMatchObject({
+      shiftId: "rms-shift-2026-05-30-0",
+      openTime: "2026-05-30T00:00:00",
+      revenue: 145000,
+      employee: "Смена",
+    });
+    const fallbackBody = JSON.parse(calls.at(-1)?.init?.body as string);
+    expect(fallbackBody.groupByRowFields).toEqual(["OpenDate.Typed"]);
+  });
+
   test("falls back to default organization when RMS org endpoints are unavailable", async () => {
     const { fetchImpl } = mockFetch([
       { body: SESSION, contentType: "text/plain" },
