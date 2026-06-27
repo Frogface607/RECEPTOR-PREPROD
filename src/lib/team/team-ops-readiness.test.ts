@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { buildLaborBi } from "./labor-bi";
+import { listLearningItemsForRole } from "./team-learning";
 import { buildTeamLearningSummaries } from "./team-learning-progress";
 import { buildTeamLaborReadiness } from "./team-labor-readiness";
 import { buildTeamOpsReadiness } from "./team-ops-readiness";
@@ -70,7 +71,13 @@ describe("buildTeamOpsReadiness", () => {
 
   test("returns a ready action when operational basics are closed", () => {
     const staff: StaffMember[] = [
-      { ...baseMember, id: "owner", roleId: "owner", name: "Сергей", shiftPay: 1 },
+      {
+        ...baseMember,
+        id: "owner",
+        roleId: "owner",
+        name: "Сергей",
+        shiftPay: 1,
+      },
       {
         ...baseMember,
         id: "ops",
@@ -142,6 +149,69 @@ describe("buildTeamOpsReadiness", () => {
     expect(readiness.actions).toEqual([
       expect.objectContaining({ id: "ready", tone: "good" }),
     ]);
+  });
+
+  test("uses required learning as shift admission instead of blocking on optional modules", () => {
+    const staff: StaffMember[] = [
+      {
+        ...baseMember,
+        id: "service",
+        roleId: "service",
+        name: "Мария",
+        hourlyRate: 350,
+      },
+      {
+        ...baseMember,
+        id: "chef",
+        roleId: "chef",
+        name: "Роман",
+        shiftPay: 5000,
+      },
+      {
+        ...baseMember,
+        id: "manager",
+        roleId: "venue_manager",
+        name: "Алина",
+        shiftPay: 4500,
+      },
+      {
+        ...baseMember,
+        id: "cook",
+        roleId: "line_cook",
+        name: "Илья",
+        hourlyRate: 380,
+      },
+    ];
+    const progress = staff.flatMap((member) =>
+      listLearningItemsForRole(member.roleId)
+        .filter((item) => item.status === "required")
+        .map((item) => ({
+          venueId: "venue-1",
+          membershipId: member.id,
+          userId: null,
+          moduleId: item.id,
+          bestPercentage: item.passPercentage,
+          lastPercentage: item.passPercentage,
+          correct: 1,
+          total: 1,
+          passed: true,
+          answers: [0],
+          completedAt: "2026-06-27T10:00:00.000Z",
+          updatedAt: "2026-06-27T10:00:00.000Z",
+        })),
+    );
+
+    const readiness = buildTeamOpsReadiness({
+      shiftOverview: buildShiftOverview(staff, []),
+      laborReadiness: buildTeamLaborReadiness(staff),
+      learningSummaries: buildTeamLearningSummaries(staff, progress),
+      tasks: [],
+    });
+
+    expect(readiness.learningAdmissionPct).toBe(100);
+    expect(readiness.actions).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "learning" })]),
+    );
   });
 
   test("prioritizes real iiko staff blockers over internal rate checklist", () => {

@@ -20,6 +20,7 @@ export type TeamOpsReadiness = {
   status: TeamOpsReadinessStatus;
   roleCoveragePct: number;
   laborCoveragePct: number;
+  learningAdmissionPct: number;
   learningAveragePct: number;
   actions: TeamOpsAction[];
 };
@@ -49,12 +50,14 @@ function activeLearningBlocker(
 ): TeamLearningMemberSummary | undefined {
   return summaries
     .filter(
-      (summary) =>
-        summary.member.status !== "paused" && summary.status !== "complete",
+      (summary) => summary.member.status !== "paused" && !summary.canWorkShift,
     )
     .sort((a, b) => {
-      if (a.status !== b.status) {
-        return a.status === "not_started" ? -1 : 1;
+      if (a.admissionStatus !== b.admissionStatus) {
+        return a.admissionStatus === "not_started" ? -1 : 1;
+      }
+      if (a.requiredMissing !== b.requiredMissing) {
+        return b.requiredMissing - a.requiredMissing;
       }
       return a.averageBest - b.averageBest;
     })[0];
@@ -90,9 +93,19 @@ export function buildTeamOpsReadiness(input: {
           ) / activeLearning.length,
         )
       : 0;
+  const learningAdmissionPct =
+    activeLearning.length > 0
+      ? Math.round(
+          (activeLearning.filter((summary) => summary.canWorkShift).length /
+            activeLearning.length) *
+            100,
+        )
+      : 0;
   const laborCoveragePct = laborReadiness.coveragePct;
   const score = Math.round(
-    laborCoveragePct * 0.4 + roleCoveragePct * 0.35 + learningAveragePct * 0.25,
+    laborCoveragePct * 0.4 +
+      roleCoveragePct * 0.35 +
+      learningAdmissionPct * 0.25,
   );
   const actions: TeamOpsAction[] = [];
   const firstIikoBlocker = laborReadiness.iikoBlockers[0];
@@ -116,7 +129,10 @@ export function buildTeamOpsReadiness(input: {
           ? "#team-actions"
           : "#labor-rates",
     });
-  } else if (laborReadiness.iikoStatus === "blocked" && laborReadiness.iikoStaffShifts === 0) {
+  } else if (
+    laborReadiness.iikoStatus === "blocked" &&
+    laborReadiness.iikoStaffShifts === 0
+  ) {
     actions.push({
       id: "iiko-shifts",
       tone: "watch",
@@ -181,7 +197,8 @@ export function buildTeamOpsReadiness(input: {
             id: "ready",
             tone: "good" as const,
             title: "Команда готова",
-            detail: "Роли, ставки и обучение выглядят закрытыми для текущей смены.",
+            detail:
+              "Роли, ставки и обучение выглядят закрытыми для текущей смены.",
             href: "#team-actions",
           },
         ];
@@ -197,6 +214,7 @@ export function buildTeamOpsReadiness(input: {
     status,
     roleCoveragePct,
     laborCoveragePct,
+    learningAdmissionPct,
     learningAveragePct,
     actions: finalActions,
   };

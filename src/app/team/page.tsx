@@ -70,10 +70,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { formatInteger, formatRubles } from "@/lib/format";
-import {
-  DEMO_ANCHOR,
-  getDashboardClient,
-} from "@/lib/iiko/config";
+import { DEMO_ANCHOR, getDashboardClient } from "@/lib/iiko/config";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import type { Period } from "@/lib/iiko/models";
 
@@ -83,7 +80,9 @@ export const metadata: Metadata = {
     "Роли, права, сотрудники, задачи, обучение и смены внутри Receptor.",
 };
 
-const ROLE_PARAM_VALUES = new Set<TeamRoleId>(TEAM_ROLES.map((role) => role.id));
+const ROLE_PARAM_VALUES = new Set<TeamRoleId>(
+  TEAM_ROLES.map((role) => role.id),
+);
 
 function parseRole(value: string | string[] | undefined): TeamRoleId {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -102,11 +101,7 @@ function parseOptionalText(value: string | string[] | undefined): string {
   return raw?.trim() ?? "";
 }
 
-function teamHref(
-  venueId: string,
-  roleId: TeamRoleId,
-  period: Period,
-): string {
+function teamHref(venueId: string, roleId: TeamRoleId, period: Period): string {
   const params = new URLSearchParams({
     role: roleId,
     venueId,
@@ -163,7 +158,9 @@ async function loadTeamLabor(input: {
   }
 
   try {
-    const shifts = await getDashboardClient(access.venue).getShifts(input.period);
+    const shifts = await getDashboardClient(access.venue).getShifts(
+      input.period,
+    );
     return {
       laborBi: buildLaborBi({ shifts, staff: input.staff }),
       source: "live",
@@ -223,7 +220,8 @@ export default async function TeamPage({
       ...periodToSearchParams(period),
     });
     if (focusMemberId) nextParams.set("focusMemberId", focusMemberId);
-    if (prefillMemberName) nextParams.set("prefillMemberName", prefillMemberName);
+    if (prefillMemberName)
+      nextParams.set("prefillMemberName", prefillMemberName);
     const nextPath = `/team?${nextParams.toString()}`;
     redirect(`/auth?next=${encodeURIComponent(nextPath)}`);
   }
@@ -352,8 +350,8 @@ export default async function TeamPage({
                       value={`${opsReadiness.laborCoveragePct}%`}
                     />
                     <ReadinessMetric
-                      label="Обучение"
-                      value={`${opsReadiness.learningAveragePct}%`}
+                      label="Допуск"
+                      value={`${opsReadiness.learningAdmissionPct}%`}
                     />
                   </div>
                 </div>
@@ -378,35 +376,37 @@ export default async function TeamPage({
           </div>
         </section>
 
-        <section id="shift-coverage" className="scroll-mt-24 border-b border-border/40">
+        <section className="border-b border-border/40">
           <div className="mx-auto max-w-7xl px-6 py-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground lg:w-36">
                 Кабинет
               </p>
               <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-7">
-              {TEAM_ROLES.map((role) => {
-                const active = role.id === roleId;
-                return (
-                  <Link
-                    key={role.id}
-                    href={teamHref(workspace.venueId, role.id, period)}
-                    className={
-                      "rounded-lg border px-3 py-2 transition-colors " +
-                      (active
-                        ? "border-brand/50 bg-card"
-                        : "border-border/60 bg-card/45 hover:bg-card/75")
-                    }
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-medium">{role.title}</p>
-                      <span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                        {role.shortTitle}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
+                {TEAM_ROLES.map((role) => {
+                  const active = role.id === roleId;
+                  return (
+                    <Link
+                      key={role.id}
+                      href={teamHref(workspace.venueId, role.id, period)}
+                      className={
+                        "rounded-lg border px-3 py-2 transition-colors " +
+                        (active
+                          ? "border-brand/50 bg-card"
+                          : "border-border/60 bg-card/45 hover:bg-card/75")
+                      }
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-medium">
+                          {role.title}
+                        </p>
+                        <span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                          {role.shortTitle}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -469,7 +469,8 @@ export default async function TeamPage({
                   </h2>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  точность ФОТ: {formatPct(laborLoad.laborBi?.revenueCoveragePct ?? null)}
+                  точность ФОТ:{" "}
+                  {formatPct(laborLoad.laborBi?.revenueCoveragePct ?? null)}
                 </p>
               </div>
 
@@ -494,7 +495,10 @@ export default async function TeamPage({
           </div>
         </section>
 
-        <section id="learning-progress" className="scroll-mt-24 border-b border-border/40">
+        <section
+          id="shift-coverage"
+          className="scroll-mt-24 border-b border-border/40"
+        >
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.82fr_1.18fr]">
             <div className="rounded-lg border border-border/60 bg-card/50 p-5">
               <div className="flex items-start justify-between gap-4">
@@ -513,9 +517,18 @@ export default async function TeamPage({
 
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <Metric label="Активны" value={shiftOverview.activeStaff} />
-                <Metric label="Важных задач" value={shiftOverview.importantTasks} />
-                <Metric label="Ролей закрыто" value={shiftOverview.coveredRoles} />
-                <Metric label="Без человека" value={shiftOverview.uncoveredRoles.length} />
+                <Metric
+                  label="Важных задач"
+                  value={shiftOverview.importantTasks}
+                />
+                <Metric
+                  label="Ролей закрыто"
+                  value={shiftOverview.coveredRoles}
+                />
+                <Metric
+                  label="Без человека"
+                  value={shiftOverview.uncoveredRoles.length}
+                />
               </div>
 
               {shiftOverview.uncoveredRoles.length > 0 ? (
@@ -559,7 +572,10 @@ export default async function TeamPage({
           </div>
         </section>
 
-        <section className="border-b border-border/40">
+        <section
+          id="learning-progress"
+          className="scroll-mt-24 border-b border-border/40"
+        >
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.78fr_1.22fr]">
             <div className="rounded-lg border border-border/60 bg-card/50 p-5">
               <div className="flex items-start justify-between gap-4">
@@ -571,17 +587,29 @@ export default async function TeamPage({
                     Стандарты под контролем
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Видно, кто прошел обязательные материалы, кто начал и где
-                    нужен короткий управленческий пинок.
+                    Допуск к смене считается по обязательным материалам.
+                    Остальное — развитие и точки роста.
                   </p>
                 </div>
                 <GraduationCap className="size-6 shrink-0 text-brand" />
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <Metric label="Сдали роль" value={learningOverview.completedMembers} />
-                <Metric label="Нужен фокус" value={learningOverview.attentionMembers} />
-                <Metric label="Не начали" value={learningOverview.notStartedMembers} />
-                <Metric label="Средний %" value={learningOverview.averageBest} />
+                <Metric
+                  label="Допущены"
+                  value={learningOverview.admittedMembers}
+                />
+                <Metric
+                  label="Нет допуска"
+                  value={learningOverview.blockedMembers}
+                />
+                <Metric
+                  label="Нужен фокус"
+                  value={learningOverview.attentionMembers}
+                />
+                <Metric
+                  label="Средний %"
+                  value={learningOverview.averageBest}
+                />
               </div>
             </div>
 
@@ -601,7 +629,10 @@ export default async function TeamPage({
               </div>
               <div className="mt-5 grid gap-3">
                 {learningSummaries.map((summary) => (
-                  <LearningSummaryRow key={summary.member.id} summary={summary} />
+                  <LearningSummaryRow
+                    key={summary.member.id}
+                    summary={summary}
+                  />
                 ))}
               </div>
             </div>
@@ -690,7 +721,10 @@ export default async function TeamPage({
                 <>
                   <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                     Пример кабинета: {representativeMember.name},{" "}
-                    {getTeamRole(representativeMember.roleId).title.toLowerCase()}.
+                    {getTeamRole(
+                      representativeMember.roleId,
+                    ).title.toLowerCase()}
+                    .
                   </p>
                   <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-3">
                     <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
@@ -722,7 +756,9 @@ export default async function TeamPage({
                           key={item.id}
                           className="rounded-lg border border-border/45 bg-background/35 p-3"
                         >
-                          <p className="text-[13px] font-medium">{item.title}</p>
+                          <p className="text-[13px] font-medium">
+                            {item.title}
+                          </p>
                           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                             {item.timeLabel} · {item.description}
                           </p>
@@ -754,9 +790,7 @@ export default async function TeamPage({
               <div className="flex items-start gap-3">
                 <KeyRound className="mt-1 size-5 shrink-0 text-brand" />
                 <div>
-                  <h2 className="text-xl font-medium">
-                    Далее: сменный чат.
-                  </h2>
+                  <h2 className="text-xl font-medium">Далее: сменный чат.</h2>
                   <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
                     Сейчас фиксируем задачи, объявления и комментарии. Чат
                     добавим поверх этой структуры.
@@ -864,15 +898,20 @@ function ShiftMetric({
           {label}
         </span>
       </div>
-      <p className="numeric mt-3 text-lg font-medium text-foreground">{value}</p>
+      <p className="numeric mt-3 text-lg font-medium text-foreground">
+        {value}
+      </p>
     </div>
   );
 }
 
 function shiftDiagnosticToneClass(tone: LaborShiftDiagnostic["tone"]): string {
-  if (tone === "risk") return "border-destructive/30 bg-destructive/10 text-destructive";
-  if (tone === "setup") return "border-amber-400/30 bg-amber-400/10 text-amber-100";
-  if (tone === "watch") return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  if (tone === "risk")
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (tone === "setup")
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  if (tone === "watch")
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
   return "border-brand/30 bg-brand/10 text-brand";
 }
 
@@ -911,7 +950,10 @@ function ShiftDiagnosticRow({ shift }: { shift: LaborShiftDiagnostic }) {
         <ShiftValue label="выручка" value={formatRubles(shift.revenue)} />
         <ShiftValue label="ФОТ" value={formatPct(shift.laborCostPct)} />
         <ShiftValue label="часы" value={formatHours(shift.hours)} />
-        <ShiftValue label="без ставок" value={formatInteger(shift.missingRates)} />
+        <ShiftValue
+          label="без ставок"
+          value={formatInteger(shift.missingRates)}
+        />
       </div>
     </Link>
   );
@@ -1025,6 +1067,26 @@ function learningSummaryStatusClass(
   return "border-border bg-muted/40 text-muted-foreground";
 }
 
+function learningAdmissionLabel(
+  status: TeamLearningMemberSummary["admissionStatus"],
+): string {
+  if (status === "admitted") return "допуск";
+  if (status === "needs_training") return "дожать";
+  return "нет допуска";
+}
+
+function learningAdmissionClass(
+  status: TeamLearningMemberSummary["admissionStatus"],
+): string {
+  if (status === "admitted") {
+    return "border-brand/35 bg-brand/10 text-brand";
+  }
+  if (status === "needs_training") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-destructive/30 bg-destructive/10 text-destructive";
+}
+
 function formatLearningDate(value: string): string {
   if (!value) return "нет попыток";
   const date = new Date(value);
@@ -1057,10 +1119,16 @@ function LearningSummaryRow({
           >
             {learningSummaryStatusLabel(summary.status)}
           </Badge>
+          <Badge
+            variant="outline"
+            className={learningAdmissionClass(summary.admissionStatus)}
+          >
+            {learningAdmissionLabel(summary.admissionStatus)}
+          </Badge>
         </div>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Обязательные: {summary.requiredCompleted}/{summary.requiredCount || 0} ·
-          всего: {summary.completedCount}/{summary.totalCount}
+          Обязательные: {summary.requiredCompleted}/{summary.requiredCount || 0}{" "}
+          · всего: {summary.completedCount}/{summary.totalCount}
         </p>
       </div>
       <div className="min-w-0">
@@ -1074,7 +1142,9 @@ function LearningSummaryRow({
         </div>
         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Trophy className="size-3.5 text-brand" />
-          <span>Последняя попытка: {formatLearningDate(summary.lastCompletedAt)}</span>
+          <span>
+            Последняя попытка: {formatLearningDate(summary.lastCompletedAt)}
+          </span>
         </div>
       </div>
       <div className="rounded-lg border border-border/50 bg-card/45 px-3 py-2 text-left lg:text-right">
@@ -1139,7 +1209,9 @@ function StaffRow({ member }: { member: StaffMember }) {
           <p className="text-sm font-medium">{member.name}</p>
           <Badge variant="outline">{role.title}</Badge>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">{member.shiftLabel}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {member.shiftLabel}
+        </p>
       </div>
       <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
         <CheckCircle2 className="size-4 text-brand" />

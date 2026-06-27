@@ -34,10 +34,13 @@ export type TeamLearningMemberSummary = {
   items: TeamLearningItem[];
   totalCount: number;
   requiredCount: number;
+  requiredMissing: number;
   completedCount: number;
   requiredCompleted: number;
   averageBest: number;
   status: "complete" | "attention" | "not_started";
+  admissionStatus: "admitted" | "needs_training" | "not_started";
+  canWorkShift: boolean;
   nextItem: TeamLearningItem | null;
   lastCompletedAt: string;
 };
@@ -96,6 +99,10 @@ export function buildTeamLearningSummaries(
       const saved = progressByMemberAndModule.get(keyFor(member.id, item.id));
       return (saved?.bestPercentage ?? 0) >= item.passPercentage;
     }).length;
+    const requiredMissing = Math.max(
+      requiredItems.length - requiredCompleted,
+      0,
+    );
     const averageBest =
       items.length > 0
         ? Math.round(
@@ -117,7 +124,9 @@ export function buildTeamLearningSummaries(
         return (saved?.bestPercentage ?? 0) < item.passPercentage;
       }) ??
       null;
-    const memberProgress = progress.filter((item) => item.membershipId === member.id);
+    const memberProgress = progress.filter(
+      (item) => item.membershipId === member.id,
+    );
     const status =
       completedItems.length === 0
         ? "not_started"
@@ -126,16 +135,26 @@ export function buildTeamLearningSummaries(
           : completedItems.length < items.length
             ? "attention"
             : "complete";
+    const canWorkShift =
+      requiredItems.length === 0 || requiredCompleted >= requiredItems.length;
+    const admissionStatus = canWorkShift
+      ? "admitted"
+      : completedItems.length === 0
+        ? "not_started"
+        : "needs_training";
 
     return {
       member,
       items,
       totalCount: items.length,
       requiredCount: requiredItems.length,
+      requiredMissing,
       completedCount: completedItems.length,
       requiredCompleted,
       averageBest,
       status,
+      admissionStatus,
+      canWorkShift,
       nextItem,
       lastCompletedAt: latestTimestamp(
         memberProgress.map((item) => item.completedAt),
@@ -144,12 +163,13 @@ export function buildTeamLearningSummaries(
   });
 }
 
-export function summarizeTeamLearning(
-  summaries: TeamLearningMemberSummary[],
-): {
+export function summarizeTeamLearning(summaries: TeamLearningMemberSummary[]): {
   completedMembers: number;
   attentionMembers: number;
   notStartedMembers: number;
+  admittedMembers: number;
+  blockedMembers: number;
+  admissionPct: number;
   averageBest: number;
 } {
   const activeSummaries = summaries.filter(
@@ -158,9 +178,19 @@ export function summarizeTeamLearning(
   const averageBest =
     activeSummaries.length > 0
       ? Math.round(
-          activeSummaries.reduce((sum, summary) => sum + summary.averageBest, 0) /
-            activeSummaries.length,
+          activeSummaries.reduce(
+            (sum, summary) => sum + summary.averageBest,
+            0,
+          ) / activeSummaries.length,
         )
+      : 0;
+  const admittedMembers = activeSummaries.filter(
+    (summary) => summary.canWorkShift,
+  ).length;
+  const blockedMembers = Math.max(activeSummaries.length - admittedMembers, 0);
+  const admissionPct =
+    activeSummaries.length > 0
+      ? Math.round((admittedMembers / activeSummaries.length) * 100)
       : 0;
 
   return {
@@ -173,6 +203,9 @@ export function summarizeTeamLearning(
     notStartedMembers: activeSummaries.filter(
       (summary) => summary.status === "not_started",
     ).length,
+    admittedMembers,
+    blockedMembers,
+    admissionPct,
     averageBest,
   };
 }

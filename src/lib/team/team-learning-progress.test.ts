@@ -59,19 +59,27 @@ const progress: TeamLearningProgress[] = [
 describe("team learning progress", () => {
   test("builds member learning summaries", () => {
     const summaries = buildTeamLearningSummaries(staff, progress);
-    const service = summaries.find((summary) => summary.member.id === "service-1");
+    const service = summaries.find(
+      (summary) => summary.member.id === "service-1",
+    );
     const chef = summaries.find((summary) => summary.member.id === "chef-1");
 
     expect(service).toMatchObject({
       completedCount: 1,
       requiredCompleted: 1,
+      requiredMissing: 0,
       status: "attention",
+      admissionStatus: "admitted",
+      canWorkShift: true,
     });
     expect(service?.nextItem?.id).toBe("guest-feedback");
     expect(chef).toMatchObject({
       completedCount: 0,
       requiredCompleted: 0,
+      requiredMissing: 1,
       status: "not_started",
+      admissionStatus: "not_started",
+      canWorkShift: false,
     });
     expect(chef?.nextItem?.id).toBe("kitchen-stop-list");
   });
@@ -84,6 +92,9 @@ describe("team learning progress", () => {
       completedMembers: 0,
       attentionMembers: 1,
       notStartedMembers: 1,
+      admittedMembers: 1,
+      blockedMembers: 1,
+      admissionPct: 50,
       averageBest: 42,
     });
   });
