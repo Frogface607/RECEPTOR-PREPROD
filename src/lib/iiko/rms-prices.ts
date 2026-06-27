@@ -51,6 +51,47 @@ const COST_PER_KG_FIELDS = [
   "cost_per_kg",
 ] as const;
 
+const NESTED_NORMALIZED_COST_FIELDS = [
+  ...NORMALIZED_COST_FIELDS,
+  "pricePerUnit",
+] as const;
+
+const COST_CONTAINER_FIELDS = [
+  "purchase",
+  "purchaseCost",
+  "purchase_cost",
+  "purchasePrice",
+  "purchase_price",
+  "cost",
+  "costPrice",
+  "cost_price",
+  "primeCost",
+  "prime_cost",
+  "lastPurchasePrice",
+  "last_purchase_price",
+  "averageCost",
+  "average_cost",
+  "weightedAverageCost",
+  "weighted_average_cost",
+] as const;
+
+const EXPLICIT_COST_CONTAINER_FIELDS = [
+  ...COST_CONTAINER_FIELDS,
+  "prices",
+  "priceInfo",
+  "price_info",
+  "costs",
+  "purchasePrices",
+  "purchase_prices",
+] as const;
+
+const NESTED_BULK_COST_FIELDS = [
+  ...BULK_COST_FIELDS,
+  "price",
+  "value",
+  "amount",
+] as const;
+
 const UNIT_ALIASES: Record<string, ProductUnit> = {
   kg: "g",
   kilogram: "g",
@@ -149,7 +190,13 @@ function readCost(
   originalUnit: string | undefined,
   unit: ProductUnit,
 ): { pricePerUnit: number; pricePerKg: number; rawField: string } | null {
-  const normalized = readNumberWithField(raw, NORMALIZED_COST_FIELDS);
+  const normalized =
+    readNumberWithField(raw, NORMALIZED_COST_FIELDS) ??
+    readNestedNumberWithField(
+      raw,
+      EXPLICIT_COST_CONTAINER_FIELDS,
+      NESTED_NORMALIZED_COST_FIELDS,
+    );
   if (normalized) {
     return {
       pricePerUnit: normalized.value,
@@ -158,7 +205,13 @@ function readCost(
     };
   }
 
-  const perKg = readNumberWithField(raw, COST_PER_KG_FIELDS);
+  const perKg =
+    readNumberWithField(raw, COST_PER_KG_FIELDS) ??
+    readNestedNumberWithField(
+      raw,
+      EXPLICIT_COST_CONTAINER_FIELDS,
+      COST_PER_KG_FIELDS,
+    );
   if (perKg) {
     return {
       pricePerUnit: unit === "pcs" ? perKg.value : perKg.value / 1000,
@@ -167,7 +220,18 @@ function readCost(
     };
   }
 
-  const bulk = readNumberWithField(raw, BULK_COST_FIELDS);
+  const bulk =
+    readNumberWithField(raw, BULK_COST_FIELDS) ??
+    readNestedNumberWithField(
+      raw,
+      COST_CONTAINER_FIELDS,
+      NESTED_BULK_COST_FIELDS,
+    ) ??
+    readNestedNumberWithField(
+      raw,
+      EXPLICIT_COST_CONTAINER_FIELDS,
+      BULK_COST_FIELDS,
+    );
   if (!bulk) return null;
 
   return {
@@ -215,6 +279,27 @@ function readNumberWithField(
     const value = toNumber(raw[key]);
     if (value !== undefined && value > 0) return { field: key, value };
   }
+  return undefined;
+}
+
+function readNestedNumberWithField(
+  raw: RawRmsPrice,
+  containers: readonly string[],
+  keys: readonly string[],
+): { field: string; value: number } | undefined {
+  for (const container of containers) {
+    const value = raw[container];
+    if (!isRecord(value)) continue;
+
+    const nested = readNumberWithField(value, keys);
+    if (nested) {
+      return {
+        field: `${container}.${nested.field}`,
+        value: nested.value,
+      };
+    }
+  }
+
   return undefined;
 }
 

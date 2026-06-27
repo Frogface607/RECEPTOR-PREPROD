@@ -73,7 +73,7 @@ const RMS_NOMENCLATURE_ENDPOINTS = [
   "/resto/api/menu/list",
   "/resto/api/nomenclature/list",
 ] as const;
-const RMS_COST_FIELD_ALIASES = [
+const RMS_TOP_LEVEL_COST_FIELD_ALIASES = [
   "purchasePrice",
   "purchase_price",
   "purchasePricePerUnit",
@@ -90,11 +90,69 @@ const RMS_COST_FIELD_ALIASES = [
   "pricePerKg",
   "price_per_kg",
 ] as const;
+const RMS_NESTED_COST_FIELD_ALIASES = [
+  "purchase.pricePerUnit",
+  "purchase.price_per_unit",
+  "purchase.purchasePricePerUnit",
+  "purchase.purchase_price_per_unit",
+  "purchase.pricePerKg",
+  "purchase.price_per_kg",
+  "purchase.price",
+  "purchase.value",
+  "purchase.amount",
+  "purchasePrice.price",
+  "purchasePrice.value",
+  "purchase_price.price",
+  "purchase_price.value",
+  "purchaseCost.price",
+  "purchaseCost.value",
+  "cost.pricePerUnit",
+  "cost.price_per_unit",
+  "cost.costPricePerUnit",
+  "cost.cost_price_per_unit",
+  "cost.pricePerKg",
+  "cost.price_per_kg",
+  "cost.price",
+  "cost.value",
+  "cost.amount",
+  "costPrice.price",
+  "costPrice.value",
+  "cost_price.price",
+  "cost_price.value",
+  "primeCost.price",
+  "primeCost.value",
+  "averageCost.price",
+  "averageCost.value",
+  "lastPurchasePrice.price",
+  "lastPurchasePrice.value",
+  "prices.purchasePrice",
+  "prices.purchase_price",
+  "prices.purchasePricePerUnit",
+  "prices.purchase_price_per_unit",
+  "prices.costPrice",
+  "prices.cost_price",
+  "prices.costPerUnit",
+  "prices.cost_per_unit",
+  "prices.pricePerKg",
+  "prices.price_per_kg",
+  "priceInfo.purchasePrice",
+  "priceInfo.costPrice",
+  "costs.purchasePrice",
+  "costs.costPrice",
+  "purchasePrices.purchasePrice",
+  "purchasePrices.costPrice",
+] as const;
+const RMS_COST_FIELD_ALIASES = [
+  ...RMS_TOP_LEVEL_COST_FIELD_ALIASES,
+  ...RMS_NESTED_COST_FIELD_ALIASES,
+] as const;
 const RMS_MENU_PRICE_FIELD_ALIASES = [
   "price",
   "currentPrice",
   "pricePerUnit",
   "sizePrices",
+  "prices.price",
+  "prices.currentPrice",
 ] as const;
 const RMS_PRICE_FIELD_ALIASES = [
   ...RMS_COST_FIELD_ALIASES,
@@ -649,10 +707,21 @@ function countFields(
 ): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const field of fields) {
-    const count = rows.filter((row) => hasMeaningfulValue(row[field])).length;
+    const count = rows.filter((row) => hasMeaningfulValue(readPath(row, field))).length;
     if (count > 0) counts[field] = count;
   }
   return counts;
+}
+
+function readPath(row: RmsRawRow, path: string): unknown {
+  if (!path.includes(".")) return row[path];
+
+  let current: unknown = row;
+  for (const part of path.split(".")) {
+    if (!isRecord(current)) return undefined;
+    current = current[part];
+  }
+  return current;
 }
 
 function topFieldCounts(rows: RmsRawRow[], limit: number): Record<string, number> {

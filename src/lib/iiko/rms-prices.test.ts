@@ -44,6 +44,42 @@ describe("normalizeRmsPrice", () => {
     });
   });
 
+  test("reads nested RMS purchase cost fields", () => {
+    const price = normalizeRmsPrice({
+      id: "nested-1",
+      name: "Nested tomato",
+      unit: "kg",
+      purchase: {
+        pricePerUnit: 0.52,
+      },
+    });
+
+    expect(price).toMatchObject({
+      skuId: "nested-1",
+      pricePerUnit: 0.52,
+      pricePerKg: 520,
+      rawField: "purchase.pricePerUnit",
+    });
+  });
+
+  test("reads explicit nested cost fields under RMS price containers", () => {
+    const price = normalizeRmsPrice({
+      id: "nested-2",
+      name: "Nested flour",
+      unit: "kg",
+      prices: {
+        purchasePrice: 92,
+      },
+    });
+
+    expect(price).toMatchObject({
+      skuId: "nested-2",
+      pricePerUnit: 0.092,
+      pricePerKg: 92,
+      rawField: "prices.purchasePrice",
+    });
+  });
+
   test("does not treat menu selling price as cost", () => {
     expect(
       normalizeRmsPrice({
@@ -52,6 +88,21 @@ describe("normalizeRmsPrice", () => {
         unit: "pcs",
         price: 390,
         currentPrice: 390,
+      }),
+    ).toBeNull();
+  });
+
+  test("does not treat nested menu selling prices as cost", () => {
+    expect(
+      normalizeRmsPrice({
+        id: "beer-nested",
+        name: "Beer nested",
+        unit: "pcs",
+        prices: {
+          price: 390,
+          currentPrice: 390,
+        },
+        sizePrices: [{ price: { currentPrice: 390 } }],
       }),
     ).toBeNull();
   });

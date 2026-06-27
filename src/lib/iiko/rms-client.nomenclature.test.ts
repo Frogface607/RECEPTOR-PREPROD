@@ -86,6 +86,39 @@ describe("RmsIikoClient nomenclature", () => {
     expect(JSON.stringify(probe)).not.toContain("Tomato");
   });
 
+  test("probes nested RMS cost fields", async () => {
+    const { fetchImpl } = mockFetchPayload({
+      products: [
+        {
+          id: "r-2",
+          name: "Flour",
+          unit: "kg",
+          purchase: {
+            pricePerUnit: 0.09,
+          },
+        },
+      ],
+    });
+    const client = new RmsIikoClient({
+      host: "sandbox.iiko.local",
+      login: "Sergey",
+      password: "secret",
+      today: "2026-05-29",
+      fetchImpl,
+    });
+
+    const probe = await client.probeCostFields();
+
+    expect(probe).toMatchObject({
+      costStatus: "ready",
+      normalizedPriceRows: 1,
+      productsWithCachedCost: 1,
+      productsWithTechCardPrice: 1,
+    });
+    expect(probe.costFieldCounts["purchase.pricePerUnit"]).toBe(1);
+    expect(probe.priceFieldCounts["purchase.pricePerUnit"]).toBe(1);
+  });
+
   test("distinguishes menu prices from purchasing costs in RMS probe", async () => {
     const { fetchImpl } = mockFetchPayload({
       products: [
