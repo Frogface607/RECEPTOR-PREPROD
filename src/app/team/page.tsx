@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   ArrowRight,
   Banknote,
-  BookOpenCheck,
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
@@ -42,6 +41,7 @@ import {
 import {
   listLearningItemsForRole,
   listShiftChecklistForRole,
+  type TeamLearningItem,
 } from "@/lib/team/team-learning";
 import {
   buildShiftOverview,
@@ -275,6 +275,11 @@ export default async function TeamPage({
   const memberChecklist = representativeMember
     ? listShiftChecklistForRole(representativeMember.roleId).slice(0, 3)
     : [];
+  const representativeLearning = representativeMember
+    ? (learningSummaries.find(
+        (summary) => summary.member.id === representativeMember.id,
+      ) ?? null)
+    : null;
 
   return (
     <AppShell
@@ -411,6 +416,14 @@ export default async function TeamPage({
             </div>
           </div>
         </section>
+
+        <RolePersonalBrief
+          member={representativeMember}
+          tasks={memberTasks}
+          checklist={memberChecklist}
+          learning={representativeLearning}
+          learningFallback={memberLearning}
+        />
 
         <section
           id="iiko-shift-diagnostics"
@@ -699,87 +712,17 @@ export default async function TeamPage({
         </section>
 
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-14 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="mx-auto max-w-7xl px-6 py-14">
             <div className="rounded-lg border border-border/60 bg-card/50 p-5">
               <div className="flex items-center gap-3">
                 <UsersRound className="size-5 text-brand" />
                 <h2 className="text-xl font-medium">Сотрудники</h2>
               </div>
-              <div className="mt-5 grid gap-3">
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 {visibleStaff.map((member) => (
                   <StaffRow key={member.id} member={member} />
                 ))}
               </div>
-            </div>
-
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <GraduationCap className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Что видит сотрудник</h2>
-              </div>
-              {representativeMember ? (
-                <>
-                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                    Пример кабинета: {representativeMember.name},{" "}
-                    {getTeamRole(
-                      representativeMember.roleId,
-                    ).title.toLowerCase()}
-                    .
-                  </p>
-                  <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-3">
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-                      Смена
-                    </p>
-                    <p className="mt-2 text-sm font-medium">
-                      {representativeMember.shiftLabel || "Смена не указана"}
-                    </p>
-                  </div>
-                  <div className="mt-5 grid gap-2">
-                    {memberChecklist.map((item) => (
-                      <div
-                        key={item}
-                        className="flex gap-3 rounded-lg border border-border/45 bg-background/35 p-3 text-[13px] leading-relaxed text-foreground/85"
-                      >
-                        <ClipboardCheck className="mt-0.5 size-4 shrink-0 text-brand" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-5 border-t border-border/50 pt-5">
-                    <div className="flex items-center gap-2">
-                      <BookOpenCheck className="size-4 text-brand" />
-                      <p className="text-sm font-medium">Обучение роли</p>
-                    </div>
-                    <div className="mt-3 grid gap-2">
-                      {memberLearning.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-lg border border-border/45 bg-background/35 p-3"
-                        >
-                          <p className="text-[13px] font-medium">
-                            {item.title}
-                          </p>
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                            {item.timeLabel} · {item.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mt-5">
-                    <p className="text-sm font-medium">Задачи сотрудника</p>
-                  </div>
-                  <div className="mt-3 grid gap-3">
-                    {memberTasks.map((task) => (
-                      <TaskRow key={task.id} task={task} compact />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="mt-4 text-sm text-muted-foreground">
-                  Для этой роли пока нет демо-сотрудника.
-                </p>
-              )}
             </div>
           </div>
         </section>
@@ -850,6 +793,187 @@ function ReadinessMetric({ label, value }: { label: string; value: string }) {
       <span className="numeric text-sm font-medium text-foreground">
         {value}
       </span>
+    </div>
+  );
+}
+
+function isOpenTask(task: TeamTask): boolean {
+  return task.status !== "done" && task.status !== "verified";
+}
+
+function RolePersonalBrief({
+  member,
+  tasks,
+  checklist,
+  learning,
+  learningFallback,
+}: {
+  member: StaffMember | undefined;
+  tasks: TeamTask[];
+  checklist: string[];
+  learning: TeamLearningMemberSummary | null;
+  learningFallback: TeamLearningItem[];
+}) {
+  if (!member) {
+    return (
+      <section className="border-b border-border/40">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+            <p className="text-sm text-muted-foreground">
+              Для этой роли пока нет сотрудника. Добавьте его в Team OS, чтобы
+              появился личный кабинет.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const role = getTeamRole(member.roleId);
+  const openTasks = tasks.filter(isOpenTask);
+  const urgentTasks = openTasks.filter((task) => task.priority === "high");
+  const nextLearning = learning?.nextItem ?? learningFallback[0] ?? null;
+  const learningPct = learning ? `${learning.averageBest}%` : "0%";
+  const admissionStatus = learning?.admissionStatus ?? "not_started";
+
+  return (
+    <section className="border-b border-border/40">
+      <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.78fr_1.22fr]">
+        <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                Личный кабинет
+              </p>
+              <h2 className="mt-3 text-2xl font-medium">{member.name}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {role.title} · {member.shiftLabel || "смена не назначена"}
+              </p>
+            </div>
+            <Badge
+              variant="outline"
+              className={learningAdmissionClass(admissionStatus)}
+            >
+              {learningAdmissionLabel(admissionStatus)}
+            </Badge>
+          </div>
+
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            <PersonalMetric
+              label="Открыто"
+              value={formatInteger(openTasks.length)}
+              detail="задач"
+            />
+            <PersonalMetric
+              label="Срочно"
+              value={formatInteger(urgentTasks.length)}
+              detail="в фокусе"
+            />
+            <PersonalMetric
+              label="Обучение"
+              value={learningPct}
+              detail="средний"
+            />
+          </div>
+
+          <div className="mt-5 grid gap-2">
+            <LinkButton
+              href="#learning-progress"
+              variant="outline"
+              className="justify-between"
+            >
+              Открыть обучение
+              <ArrowRight className="size-4" />
+            </LinkButton>
+            <LinkButton
+              href="#shift-coverage"
+              variant="outline"
+              className="justify-between"
+            >
+              Состав смены
+              <ArrowRight className="size-4" />
+            </LinkButton>
+          </div>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+            <div className="flex items-center gap-3">
+              <ClipboardCheck className="size-5 text-brand" />
+              <h3 className="text-lg font-medium">На смену</h3>
+            </div>
+            <div className="mt-4 grid gap-2">
+              {checklist.map((item) => (
+                <div
+                  key={item}
+                  className="rounded-lg border border-border/45 bg-background/35 p-3 text-[13px] leading-relaxed text-foreground/85"
+                >
+                  {item}
+                </div>
+              ))}
+              {nextLearning ? (
+                <Link
+                  href="#learning-progress"
+                  className="rounded-lg border border-brand/25 bg-brand/10 p-3 transition-colors hover:border-brand/45"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                    Следующий урок
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {nextLearning.title}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {nextLearning.timeLabel}
+                  </p>
+                </Link>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <ClipboardList className="size-5 text-brand" />
+                <h3 className="text-lg font-medium">Мои задачи</h3>
+              </div>
+              <Badge variant="outline">{openTasks.length}</Badge>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {openTasks.slice(0, 3).map((task) => (
+                <TaskRow key={task.id} task={task} compact />
+              ))}
+              {openTasks.length === 0 ? (
+                <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+                  <p className="text-sm font-medium">Задач нет</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Можно принимать смену без незакрытой очереди.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PersonalMetric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+      <p className="numeric text-xl font-medium text-foreground">{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{detail}</p>
     </div>
   );
 }
