@@ -74,7 +74,7 @@ export function MarginMappingWorkspace({
       className="mt-5 scroll-mt-24 overflow-hidden rounded-lg border border-border/45 bg-background/25"
     >
       <div className="grid gap-2 border-b border-border/40 p-2 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           <Metric
             label="Связано"
             value={`${readiness.matchedDishes}/${readiness.totalDishes}`}
@@ -90,12 +90,25 @@ export function MarginMappingWorkspace({
             value={`${readiness.revenueCoveragePct}%`}
             detail={formatRubles(readiness.revenueWithCost)}
           />
+          <Metric
+            label="Техкарты"
+            value={`${readiness.usableTechCardDishes}/${readiness.totalDishes}`}
+            detail={`${readiness.usableTechCardCoveragePct}% состава`}
+          />
         </div>
 
         <AutoMappingAction venueId={venueId} items={autoItems} />
       </div>
 
-      {hasLinkedItemsWithoutCost ? (
+      {hasLinkedItemsWithoutCost && readiness.usableTechCardDishes > 0 ? (
+        <div className="border-b border-border/40 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+          Техкарты найдены для {readiness.usableTechCardDishes} позиций.
+          Закупочные цены ингредиентов пока не пришли из RMS, поэтому маржа еще
+          не считается.
+        </div>
+      ) : null}
+
+      {hasLinkedItemsWithoutCost && readiness.usableTechCardDishes === 0 ? (
         <div className="border-b border-border/40 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
           Связи с iiko сохранены. Закупочные цены пока не пришли из RMS, поэтому
           маржа не считается: нужно проверить права/endpoint себестоимости в
@@ -285,6 +298,7 @@ function MappingRow({
           cost={cost}
           markup={markup}
           match={item.match}
+          hasUsableTechCard={item.hasUsableTechCard}
         />
 
         {topCandidate ? (
@@ -344,12 +358,14 @@ function CandidateSummary({
   cost,
   markup,
   match,
+  hasUsableTechCard,
 }: {
   product: Product | null;
   currentProduct: Product | null;
   cost: number | null;
   markup: number | null;
   match: MenuMarginItem["match"];
+  hasUsableTechCard: boolean;
 }) {
   const shownProduct = product ?? currentProduct;
   const costText = cost
@@ -371,6 +387,7 @@ function CandidateSummary({
       <p className="mt-1 truncate">
         {matchLabel(match)}
         {costText}
+        {!cost && shownProduct && hasUsableTechCard ? " · техкарта есть" : ""}
         {markup !== null ? ` · маржа ${markup}%` : ""}
       </p>
     </div>
@@ -445,6 +462,15 @@ function StatusBadge({ item }: { item: MenuMarginItem }) {
       <span className="inline-flex items-center gap-1.5 rounded-full border border-destructive/35 bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
         <TriangleAlert className="size-3.5" />
         нет связи
+      </span>
+    );
+  }
+
+  if (!item.hasCost && item.hasUsableTechCard) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/35 bg-amber-400/10 px-2 py-1 text-[11px] text-amber-200">
+        <CircleDollarSign className="size-3.5" />
+        техкарта есть
       </span>
     );
   }

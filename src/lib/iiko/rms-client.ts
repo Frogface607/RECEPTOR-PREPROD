@@ -768,6 +768,44 @@ export class RmsIikoClient implements IikoClient {
     }
   }
 
+  async fetchAssemblyCharts(): Promise<RmsAssemblyChart[]> {
+    const endpoint = "/resto/api/v2/assemblyCharts/getAll";
+    const key = await this.getSessionKey();
+    const dateFrom = addDays(this.today, -365);
+    const dateTo = addDays(this.today, 365);
+
+    const res = await this.fetchImpl(
+      this.url(endpoint, {
+        key,
+        dateFrom,
+        dateTo,
+        includeDeletedProducts: "true",
+        includePreparedCharts: "false",
+      }),
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Receptor-iiko-RMS-Client/2.0",
+        },
+      },
+    );
+
+    const text = await readResponseText(res);
+    if (!res.ok) {
+      throw new Error(
+        `iiko RMS assembly charts failed: HTTP ${res.status}: ${text.slice(0, 500)}`,
+      );
+    }
+
+    try {
+      const payload = JSON.parse(text) as unknown;
+      return extractAssemblyCharts(payload).map(normalizeAssemblyChart);
+    } catch {
+      throw new Error("iiko RMS assembly charts failed: invalid JSON");
+    }
+  }
+
   async searchNomenclature(query: string): Promise<Product[]> {
     try {
       return searchIikoProducts(await this.fetchNomenclature(), query);

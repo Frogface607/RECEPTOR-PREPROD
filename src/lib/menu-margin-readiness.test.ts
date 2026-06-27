@@ -221,6 +221,68 @@ describe("buildMenuMarginReadiness", () => {
     expect(nextAction.action).toContain("RMS-права");
   });
 
+  test("uses readable tech-card composition as the next margin step", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 30000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta",
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-pasta",
+          productId: "pasta-base",
+          productName: "Pasta",
+          items: [
+            {
+              productId: "flour",
+              productName: "Flour",
+              amount: 0.12,
+              unit: "kg",
+            },
+            {
+              productId: "egg",
+              productName: "Egg",
+              amount: 1,
+              unit: "pcs",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(readiness).toMatchObject({
+      techCardDishes: 1,
+      usableTechCardDishes: 1,
+      revenueWithTechCards: 30000,
+      usableTechCardCoveragePct: 100,
+    });
+    expect(readiness.items[0]).toMatchObject({
+      hasCost: false,
+      hasUsableTechCard: true,
+    });
+    expect(readiness.topBlockers[0]).toMatchObject({
+      reason: "missing-cost",
+      hasTechCard: true,
+      techCardIngredientRows: 2,
+      techCardLinkedIngredientRows: 2,
+    });
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "missing-cost",
+      title: "Техкарта есть, не хватает цен ингредиентов",
+    });
+  });
+
   test("marks margin as ready when all key dishes have proven cost", () => {
     const readiness = buildMenuMarginReadiness({
       dishes: [

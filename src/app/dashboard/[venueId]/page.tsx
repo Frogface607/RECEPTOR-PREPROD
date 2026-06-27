@@ -32,6 +32,7 @@ import { buildOwnerReview } from "@/lib/owner-review";
 import { buildLaborBi } from "@/lib/team/labor-bi";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import type { IikoClient } from "@/lib/iiko/types";
+import type { RmsAssemblyChart } from "@/lib/iiko/rms-client";
 import type {
   CategoryStat,
   DishStat,
@@ -50,8 +51,32 @@ type DashboardData = {
   brief: DailyBrief;
   nomenclature: Product[];
   nomenclatureError: string | null;
+  assemblyCharts: RmsAssemblyChart[];
+  assemblyChartsError: string | null;
   mappings: MenuItemMapping[];
 };
+
+type TechCardAwareIikoClient = IikoClient & {
+  fetchAssemblyCharts?: () => Promise<RmsAssemblyChart[]>;
+};
+
+function loadAssemblyCharts(client: IikoClient): Promise<{
+  charts: RmsAssemblyChart[];
+  error: string | null;
+}> {
+  const techCardClient = client as TechCardAwareIikoClient;
+  if (!techCardClient.fetchAssemblyCharts) {
+    return Promise.resolve({ charts: [], error: null });
+  }
+
+  return techCardClient
+    .fetchAssemblyCharts()
+    .then((charts) => ({ charts, error: null }))
+    .catch((error) => ({
+      charts: [] as RmsAssemblyChart[],
+      error: error instanceof Error ? error.message : String(error),
+    }));
+}
 
 async function loadDashboardData(
   client: IikoClient,
@@ -65,6 +90,7 @@ async function loadDashboardData(
     shifts,
     brief,
     nomenclatureResult,
+    assemblyChartsResult,
     mappings,
   ] =
     await Promise.all([
@@ -82,6 +108,7 @@ async function loadDashboardData(
               error: error instanceof Error ? error.message : String(error),
             }))
         : Promise.resolve({ products: [] as Product[], error: null }),
+      loadAssemblyCharts(client),
       listMenuItemMappings(venueId),
     ]);
 
@@ -93,6 +120,8 @@ async function loadDashboardData(
     brief,
     nomenclature: nomenclatureResult.products,
     nomenclatureError: nomenclatureResult.error,
+    assemblyCharts: assemblyChartsResult.charts,
+    assemblyChartsError: assemblyChartsResult.error,
     mappings,
   };
 }
@@ -168,6 +197,8 @@ export default async function DashboardPage({
     brief,
     nomenclature,
     nomenclatureError,
+    assemblyCharts,
+    assemblyChartsError,
     mappings,
   } = dashboardData;
   const periodLabel = formatPeriodLabel(period);
@@ -189,6 +220,7 @@ export default async function DashboardPage({
     dishes,
     products: nomenclature,
     mappings,
+    techCards: assemblyCharts,
   });
   const ownerReview = buildOwnerReview({
     summary,
@@ -273,7 +305,7 @@ export default async function DashboardPage({
             <MarginReadinessCard
               venueId={venueId}
               readiness={marginReadiness}
-              error={nomenclatureError}
+              error={nomenclatureError ?? assemblyChartsError}
               products={nomenclature}
             />
           </div>

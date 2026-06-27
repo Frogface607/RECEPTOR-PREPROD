@@ -15,6 +15,8 @@ export type MenuMarginItem = {
   match: "manual" | "auto" | "exact" | "similar" | "missing";
   hasCost: boolean;
   costReference: number | null;
+  techCard: MenuMarginTechCardMatch | null;
+  hasUsableTechCard: boolean;
   status: MenuMarginStatus;
 };
 
@@ -25,6 +27,9 @@ export type MenuMarginBlocker = {
   amount: number;
   reason: "missing-link" | "missing-cost";
   productName: string | null;
+  hasTechCard: boolean;
+  techCardIngredientRows: number;
+  techCardLinkedIngredientRows: number;
 };
 
 export type MenuMarginNextAction = {
@@ -40,7 +45,10 @@ export type MenuMarginReadiness = {
   totalDishes: number;
   matchedDishes: number;
   costedDishes: number;
+  techCardDishes: number;
+  usableTechCardDishes: number;
   revenueWithCost: number;
+  revenueWithTechCards: number;
   blockedRevenue: number;
   missingLinkRevenue: number;
   missingCostRevenue: number;
@@ -48,17 +56,47 @@ export type MenuMarginReadiness = {
   blockedRevenuePct: number;
   matchCoveragePct: number;
   costCoveragePct: number;
+  techCardCoveragePct: number;
+  usableTechCardCoveragePct: number;
   topBlockers: MenuMarginBlocker[];
   items: MenuMarginItem[];
+};
+
+export type MenuMarginTechCardIngredient = {
+  productId?: string;
+  productName?: string;
+  article?: string;
+  amount?: number;
+  unit?: string;
+};
+
+export type MenuMarginTechCard = {
+  id?: string;
+  productId?: string;
+  productName?: string;
+  name?: string;
+  items: MenuMarginTechCardIngredient[];
+};
+
+export type MenuMarginTechCardMatch = {
+  id?: string;
+  productId?: string;
+  productName?: string;
+  ingredientRows: number;
+  linkedIngredientRows: number;
+  ingredientRowsWithAmount: number;
+  usable: boolean;
 };
 
 export function buildMenuMarginReadiness(input: {
   dishes: DishStat[];
   products: Product[];
   mappings?: MenuItemMapping[];
+  techCards?: MenuMarginTechCard[];
 }): MenuMarginReadiness {
   const products = input.products.filter((product) => product.active !== false);
   const mappings = input.mappings ?? [];
+  const techCards = input.techCards ?? [];
   const totalRevenue = input.dishes.reduce((sum, dish) => sum + dish.dishSumInt, 0);
   const items = input.dishes.map((dish) => {
     const mapped = findMappedProduct({
@@ -72,6 +110,7 @@ export function buildMenuMarginReadiness(input: {
         : findProductMatch(dish.dishName, products);
     const costReference = getProductCostReference(match.product);
     const hasCost = costReference !== null;
+    const techCard = findTechCardMatch(dish.dishName, match.product, techCards);
     return {
       dishName: dish.dishName,
       dishGroup: dish.dishGroup,
@@ -81,14 +120,23 @@ export function buildMenuMarginReadiness(input: {
       match: match.kind,
       hasCost,
       costReference,
+      techCard,
+      hasUsableTechCard: Boolean(techCard?.usable),
       status: !match.product ? "blocked" : hasCost ? "ready" : "partial",
     } satisfies MenuMarginItem;
   });
 
   const matchedDishes = items.filter((item) => item.product).length;
   const costedDishes = items.filter((item) => item.hasCost).length;
+  const techCardDishes = items.filter((item) => item.techCard).length;
+  const usableTechCardDishes = items.filter(
+    (item) => item.hasUsableTechCard,
+  ).length;
   const revenueWithCost = items
     .filter((item) => item.hasCost)
+    .reduce((sum, item) => sum + item.revenue, 0);
+  const revenueWithTechCards = items
+    .filter((item) => item.hasUsableTechCard)
     .reduce((sum, item) => sum + item.revenue, 0);
   const missingLinkRevenue = items
     .filter((item) => !item.product)
@@ -112,6 +160,9 @@ export function buildMenuMarginReadiness(input: {
         ? ("missing-cost" as const)
         : ("missing-link" as const),
       productName: item.product?.name ?? null,
+      hasTechCard: item.hasUsableTechCard,
+      techCardIngredientRows: item.techCard?.ingredientRows ?? 0,
+      techCardLinkedIngredientRows: item.techCard?.linkedIngredientRows ?? 0,
     }))
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
@@ -126,7 +177,10 @@ export function buildMenuMarginReadiness(input: {
     totalDishes: input.dishes.length,
     matchedDishes,
     costedDishes,
+    techCardDishes,
+    usableTechCardDishes,
     revenueWithCost,
+    revenueWithTechCards,
     blockedRevenue,
     missingLinkRevenue,
     missingCostRevenue,
@@ -134,8 +188,57 @@ export function buildMenuMarginReadiness(input: {
     blockedRevenuePct,
     matchCoveragePct,
     costCoveragePct,
+    techCardCoveragePct: pct(techCardDishes, input.dishes.length),
+    usableTechCardCoveragePct: pct(usableTechCardDishes, input.dishes.length),
     topBlockers,
     items,
+  };
+}
+
+function findTechCardMatch(
+  dishName: string,
+  product: Product | null,
+  techCards: MenuMarginTechCard[],
+): MenuMarginTechCardMatch | null {
+  if (techCards.length === 0) return null;
+
+  const normalizedDish = normalize(dishName);
+  const normalizedProduct = product ? normalize(product.name) : "";
+  const productId = product?.id;
+
+  const chart = techCards.find((item) => {
+    if (productId && item.productId === productId) return true;
+
+    const chartName = normalize(item.productName ?? item.name ?? "");
+    if (!chartName) return false;
+    if (normalizedProduct && chartName === normalizedProduct) return true;
+    if (chartName === normalizedDish) return true;
+
+    const dishScore = tokenScore(tokenSet(normalizedDish), tokenSet(chartName));
+    const productScore = normalizedProduct
+      ? tokenScore(tokenSet(normalizedProduct), tokenSet(chartName))
+      : 0;
+    return Math.max(dishScore, productScore) >= 0.75;
+  });
+
+  if (!chart) return null;
+
+  const ingredientRows = chart.items.length;
+  const linkedIngredientRows = chart.items.filter((item) =>
+    Boolean(item.productId),
+  ).length;
+  const ingredientRowsWithAmount = chart.items.filter((item) =>
+    item.amount !== undefined,
+  ).length;
+
+  return {
+    id: chart.id,
+    productId: chart.productId,
+    productName: chart.productName ?? chart.name,
+    ingredientRows,
+    linkedIngredientRows,
+    ingredientRowsWithAmount,
+    usable: linkedIngredientRows > 0 && ingredientRowsWithAmount > 0,
   };
 }
 
@@ -204,6 +307,18 @@ export function buildMenuMarginNextAction(
   readiness: MenuMarginReadiness,
 ): MenuMarginNextAction {
   const blocker = readiness.topBlockers[0] ?? null;
+
+  if (blocker?.reason === "missing-cost" && blocker.hasTechCard) {
+    const linkedProduct = blocker.productName ?? "выбранным товаром iiko";
+    return {
+      kind: "missing-cost",
+      title: "Техкарта есть, не хватает цен ингредиентов",
+      detail: `«${blocker.dishName}» связано с ${linkedProduct}. RMS отдал состав: ${blocker.techCardIngredientRows} строк, ${blocker.techCardLinkedIngredientRows} связаны с товарами.`,
+      action:
+        "Проверьте закупочные цены ингредиентов в RMS. После этого Receptor сможет считать food cost по составу техкарты.",
+      blocker,
+    };
+  }
 
   if (!blocker) {
     return {

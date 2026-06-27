@@ -323,6 +323,50 @@ describe("RmsIikoClient", () => {
     });
   });
 
+  test("fetches normalized RMS assembly charts for BI", async () => {
+    const { fetchImpl } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      {
+        body: {
+          assemblyCharts: [
+            {
+              assemblyChartId: "chart-4",
+              productId: "dish-pasta",
+              productName: "Pasta",
+              ingredients: [
+                {
+                  productId: "flour",
+                  productName: "Flour",
+                  amount: 0.12,
+                  unit: "kg",
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ]);
+
+    await expect(client(fetchImpl).fetchAssemblyCharts()).resolves.toEqual([
+      {
+        id: "chart-4",
+        productId: "dish-pasta",
+        productName: "Pasta",
+        name: "Pasta",
+        items: [
+          {
+            productId: "flour",
+            productName: "Flour",
+            article: undefined,
+            amount: 0.12,
+            unit: "kg",
+            rawField: "ingredients",
+          },
+        ],
+      },
+    ]);
+  });
+
   test("reports forbidden RMS assembly charts access without throwing", async () => {
     const { fetchImpl } = mockFetch([
       { body: SESSION, contentType: "text/plain" },
