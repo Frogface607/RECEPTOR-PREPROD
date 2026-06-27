@@ -14,7 +14,6 @@ import {
   ListChecks,
   ShieldCheck,
   Trophy,
-  UserRoundCog,
   UsersRound,
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/app-shell";
@@ -44,6 +43,13 @@ import {
   summarizeTeamLearning,
   type TeamLearningMemberSummary,
 } from "@/lib/team/team-learning-progress";
+import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
+import {
+  buildTeamOpsReadiness,
+  type TeamOpsAction,
+  type TeamOpsActionTone,
+  type TeamOpsReadinessStatus,
+} from "@/lib/team/team-ops-readiness";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
@@ -108,6 +114,13 @@ export default async function TeamPage({
     workspace.learningProgress,
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
+  const laborReadiness = buildTeamLaborReadiness(workspace.staff);
+  const opsReadiness = buildTeamOpsReadiness({
+    shiftOverview,
+    laborReadiness,
+    learningSummaries,
+    tasks: workspace.tasks,
+  });
   const visibleStaff = workspace.staff.filter((member) =>
     roleId === "owner" ||
     roleId === "operations_manager" ||
@@ -141,18 +154,18 @@ export default async function TeamPage({
     >
       <main className="flex-1">
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.72fr_1.28fr]">
-            <div className="flex flex-col justify-between gap-5">
+          <div className="mx-auto grid max-w-7xl gap-5 px-6 py-7 lg:grid-cols-[0.7fr_1.3fr]">
+            <div>
               <Badge variant="outline" className="border-brand/30 text-brand">
                 Команда
               </Badge>
-              <h1 className="max-w-2xl text-balance text-[clamp(2rem,4vw,3.25rem)] font-medium leading-[1.04]">
-                Команда, роли и задачи.
+              <h1 className="mt-4 max-w-xl text-balance text-[clamp(1.9rem,3.2vw,2.75rem)] font-medium leading-[1.04]">
+                Штаб смены и команды.
               </h1>
-              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Один рабочий экран для доступа, задач и сменной коммуникации.
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Доступы, ставки, обучение и задачи в одном рабочем контуре.
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <LinkButton
                   href={`/dashboard/${encodeURIComponent(workspace.venueId)}`}
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
@@ -170,46 +183,69 @@ export default async function TeamPage({
             </div>
 
             <div className="rounded-lg border border-border/60 bg-card/60 p-5">
-              <div className="flex items-start justify-between gap-4">
+              <div className="grid gap-5 xl:grid-cols-[0.55fr_1fr]">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Текущий кабинет
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                        Готовность команды
+                      </p>
+                      <div className="mt-3 flex items-end gap-3">
+                        <p className="numeric text-5xl font-medium leading-none">
+                          {opsReadiness.score}%
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className={opsStatusClass(opsReadiness.status)}
+                        >
+                          {opsStatusLabel(opsReadiness.status)}
+                        </Badge>
+                      </div>
+                    </div>
+                    <CheckCircle2 className="size-5 shrink-0 text-brand" />
+                  </div>
+
+                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                    {home.role.title}: {home.role.description}
                   </p>
-                  <h2 className="mt-3 text-2xl font-medium">
-                    {home.role.title}
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {home.role.description}
-                  </p>
+
+                  <div className="mt-4 grid gap-2">
+                    <ReadinessMetric
+                      label="Роли"
+                      value={`${opsReadiness.roleCoveragePct}%`}
+                    />
+                    <ReadinessMetric
+                      label="ФОТ"
+                      value={`${opsReadiness.laborCoveragePct}%`}
+                    />
+                    <ReadinessMetric
+                      label="Обучение"
+                      value={`${opsReadiness.learningAveragePct}%`}
+                    />
+                  </div>
                 </div>
-                <UserRoundCog className="size-6 shrink-0 text-brand" />
-              </div>
 
-              <div className="mt-4 inline-flex rounded-md border border-border/50 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                {workspace.venueName}
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <Metric label="Разделов" value={home.sections.length} />
-                <Metric label="Прав" value={home.permissions.length} />
-                <Metric label="Задач видно" value={home.visibleTasks.length} />
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                {home.sections.map((section) => (
-                  <span
-                    key={section}
-                    className="rounded-md border border-border/50 bg-background/45 px-2.5 py-1 text-[12px] text-muted-foreground"
-                  >
-                    {section}
-                  </span>
-                ))}
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                      Что закрыть первым
+                    </p>
+                    <span className="rounded-md border border-border/50 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {workspace.venueName}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-2">
+                    {opsReadiness.actions.map((action) => (
+                      <TeamOpsActionRow key={action.id} action={action} />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="border-b border-border/40">
+        <section id="shift-coverage" className="scroll-mt-24 border-b border-border/40">
           <div className="mx-auto max-w-7xl px-6 py-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground lg:w-36">
@@ -243,7 +279,7 @@ export default async function TeamPage({
           </div>
         </section>
 
-        <section className="border-b border-border/40">
+        <section id="learning-progress" className="scroll-mt-24 border-b border-border/40">
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.82fr_1.18fr]">
             <div className="rounded-lg border border-border/60 bg-card/50 p-5">
               <div className="flex items-start justify-between gap-4">
@@ -520,6 +556,68 @@ function Metric({ label, value }: { label: string; value: number }) {
         {label}
       </p>
     </div>
+  );
+}
+
+function opsStatusLabel(status: TeamOpsReadinessStatus): string {
+  if (status === "ready") return "готово";
+  if (status === "attention") return "внимание";
+  return "блокер";
+}
+
+function opsStatusClass(status: TeamOpsReadinessStatus): string {
+  if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "attention") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-destructive/30 bg-destructive/10 text-destructive";
+}
+
+function opsActionToneClass(tone: TeamOpsActionTone): string {
+  if (tone === "good") return "border-brand/35 bg-brand/10 text-brand";
+  if (tone === "risk") {
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  }
+  if (tone === "setup") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-border/60 bg-background/45 text-muted-foreground";
+}
+
+function ReadinessMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-border/45 bg-background/35 px-3 py-2">
+      <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="numeric text-sm font-medium text-foreground">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function TeamOpsActionRow({ action }: { action: TeamOpsAction }) {
+  return (
+    <Link
+      href={action.href}
+      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+    >
+      <span
+        className={
+          "size-2 rounded-full border " + opsActionToneClass(action.tone)
+        }
+      />
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-foreground">
+          {action.title}
+        </span>
+        <span className="mt-1 block truncate text-xs text-muted-foreground">
+          {action.detail}
+        </span>
+      </span>
+      <ArrowRight className="size-4 text-muted-foreground" />
+    </Link>
   );
 }
 

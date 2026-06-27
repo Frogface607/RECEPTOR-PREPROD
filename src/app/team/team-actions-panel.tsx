@@ -203,7 +203,7 @@ export function TeamActionsPanel({
   }
 
   return (
-    <section className="border-b border-border/40">
+    <section id="team-actions" className="scroll-mt-24 border-b border-border/40">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
