@@ -97,6 +97,10 @@ function statusLabel(status: TeamTask["status"]): string {
   return "проверено";
 }
 
+function sourceBadgeLabel(source: TeamTask["source"]): string | null {
+  return source === "copilot" ? "Receptor" : null;
+}
+
 export default async function TeamPage({
   searchParams,
 }: {
@@ -775,6 +779,8 @@ function TaskRow({
   task: TeamTask;
   compact?: boolean;
 }) {
+  const sourceLabel = sourceBadgeLabel(task.source);
+
   return (
     <div className="rounded-lg border border-border/45 bg-background/35 p-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -782,6 +788,14 @@ function TaskRow({
           {task.priority}
         </Badge>
         <Badge variant="outline">{statusLabel(task.status)}</Badge>
+        {sourceLabel ? (
+          <Badge
+            variant="outline"
+            className="border-brand/30 bg-brand/10 text-brand"
+          >
+            {sourceLabel}
+          </Badge>
+        ) : null}
         <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           {task.dueLabel}
         </span>

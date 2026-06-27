@@ -42,6 +42,7 @@ export function SurvivalTaskActions({
       const result = await createTeamTaskAction({
         venueId,
         title: draft.title,
+        source: "copilot",
         priority: draft.priority,
         audienceType: "role",
         audienceRole: draft.roleId,
@@ -79,6 +80,11 @@ export function SurvivalTaskActions({
                   <span className="text-[11px] text-muted-foreground">
                     {PRIORITY_LABEL[draft.priority]} · {draft.dueLabel}
                   </span>
+                  {draft.sourceLabel ? (
+                    <span className="rounded-md border border-border/45 bg-background/45 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {draft.sourceLabel}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {draft.title}

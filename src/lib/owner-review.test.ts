@@ -147,10 +147,12 @@ describe("buildOwnerReview", () => {
       role: "manager",
     });
     expect(review.tasks[0]).toMatchObject({
-      title: "Проверьте состав смены, часы и фактическую загрузку зала.",
+      title: expect.stringContaining("Разобрать дорогую смену"),
       priority: "high",
       roleId: "venue_manager",
+      sourceLabel: "ФОТ и смены",
     });
+    expect(review.tasks[0].title).toContain("ФОТ");
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -205,6 +207,11 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("Добавить сотрудника из iiko"),
+      roleId: "venue_manager",
+      sourceLabel: "ФОТ и смены",
+    });
   });
 
   test("asks to check RMS prices when linked items have no cost", () => {
@@ -271,6 +278,11 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("RMS не отдает закупочную цену"),
+      roleId: "operations_manager",
+      sourceLabel: "Маржа и техкарты",
+    });
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

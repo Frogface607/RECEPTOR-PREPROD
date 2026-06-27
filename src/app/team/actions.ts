@@ -24,6 +24,7 @@ const TaskStatusSchema = z.enum([
   "done",
   "verified",
 ]);
+const TaskSourceSchema = z.enum(["owner", "copilot", "manager", "chef"]);
 const TaskAudienceTypeSchema = z.enum(["member", "role", "venue"]);
 const AnnouncementAudienceTypeSchema = z.enum(["role", "venue"]);
 const AnnouncementPrioritySchema = z.enum(["normal", "important"]);
@@ -48,6 +49,7 @@ const CreateTeamTaskInput = z
   .object({
     venueId: z.string().min(1),
     title: z.string().trim().min(3).max(240),
+    source: TaskSourceSchema.default("manager"),
     priority: TaskPrioritySchema.default("medium"),
     audienceType: TaskAudienceTypeSchema,
     audienceMemberId: z.string().trim().optional().or(z.literal("")),
@@ -549,7 +551,7 @@ export async function createTeamTaskAction(
   const insert = {
     venue_id: parsed.data.venueId,
     title: parsed.data.title,
-    source: "manager" satisfies TeamTask["source"],
+    source: parsed.data.source satisfies TeamTask["source"],
     priority: parsed.data.priority,
     status: "new" satisfies TeamTask["status"],
     audience_type: audienceType,
@@ -583,6 +585,7 @@ export async function createTeamTaskAction(
     targetId: task?.id ?? null,
     summary: `Создана задача: ${parsed.data.title}.`,
     metadata: {
+      source: parsed.data.source,
       priority: parsed.data.priority,
       audienceType,
       audienceMemberId:

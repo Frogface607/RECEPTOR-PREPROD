@@ -60,6 +60,10 @@ function priorityLabel(priority: TeamTask["priority"]): string {
   return "низко";
 }
 
+function sourceBadgeLabel(source: TeamTask["source"]): string | null {
+  return source === "copilot" ? "Receptor" : null;
+}
+
 function learningStatusLabel(status: TeamLearningItem["status"]): string {
   if (status === "required") return "обязательно";
   if (status === "ready") return "готово";
@@ -182,6 +186,7 @@ export default async function MyCabinetPage() {
   );
   const sortedOpenTasks = sortTasks(openTasks);
   const nextTask = sortedOpenTasks[0];
+  const nextTaskSourceLabel = nextTask ? sourceBadgeLabel(nextTask.source) : null;
   const urgentTasks = openTasks.filter((task) => task.priority === "high");
   const taskGroups = [
     {
@@ -265,6 +270,14 @@ export default async function MyCabinetPage() {
                         >
                           {statusLabel(nextTask.status)}
                         </Badge>
+                        {nextTaskSourceLabel ? (
+                          <Badge
+                            variant="outline"
+                            className="border-brand/30 bg-brand/10 text-brand"
+                          >
+                            {nextTaskSourceLabel}
+                          </Badge>
+                        ) : null}
                         {nextTask.dueLabel ? (
                           <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                             <Clock3 className="size-3.5" />
@@ -497,6 +510,8 @@ function TaskGroup({
 }
 
 function TaskCard({ task }: { task: TeamTask }) {
+  const sourceLabel = sourceBadgeLabel(task.source);
+
   return (
     <article className="rounded-lg border border-border/60 bg-card/50 p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -506,6 +521,14 @@ function TaskCard({ task }: { task: TeamTask }) {
         <Badge variant="outline" className={statusClass(task.status)}>
           {statusLabel(task.status)}
         </Badge>
+        {sourceLabel ? (
+          <Badge
+            variant="outline"
+            className="border-brand/30 bg-brand/10 text-brand"
+          >
+            {sourceLabel}
+          </Badge>
+        ) : null}
         {task.dueLabel ? (
           <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <Clock3 className="size-3.5" />

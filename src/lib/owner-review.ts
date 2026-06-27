@@ -125,6 +125,63 @@ function roleDue(role: OwnerReviewRole): string {
   return "сегодня";
 }
 
+function trimTaskTitle(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 220) return normalized;
+  return `${normalized.slice(0, 217).trim()}...`;
+}
+
+function actionSourceLabel(action: OwnerReviewAction): string {
+  if (
+    action.target === "labor-member" ||
+    action.target === "labor-rate" ||
+    action.target === "shift-coverage"
+  ) {
+    return "ФОТ и смены";
+  }
+  if (
+    action.target === "margin-diagnostics" ||
+    action.target === "margin-mapping"
+  ) {
+    return "Маржа и техкарты";
+  }
+  return "Данные iiko";
+}
+
+function actionTaskTitle(action: OwnerReviewAction): string {
+  return trimTaskTitle(`${action.title}: ${action.detail}`);
+}
+
+function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
+  return {
+    title: actionTaskTitle(action),
+    priority: rolePriority(action.tone),
+    roleId: roleTask(action.role),
+    dueLabel: roleDue(action.role),
+    sourceLabel: actionSourceLabel(action),
+  };
+}
+
+function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
+  return {
+    title: trimTaskTitle(item.check),
+    priority: rolePriority(item.tone),
+    roleId: roleTask(item.role),
+    dueLabel: roleDue(item.role),
+    sourceLabel: "Гипотеза",
+  };
+}
+
+function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
+  const seen = new Set<string>();
+  return drafts.filter((draft) => {
+    const key = `${draft.roleId}:${draft.title.toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function ownerToneFromLabor(tone: LaborInsightTone): OwnerReviewTone {
   if (tone === "risk") return "risk";
   if (tone === "good") return "good";
@@ -578,12 +635,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     role: item.role,
     text: item.check,
   }));
-  const tasks = visibleHypotheses.slice(0, 3).map((item) => ({
-    title: item.check,
-    priority: rolePriority(item.tone),
-    roleId: roleTask(item.role),
-    dueLabel: roleDue(item.role),
-  }));
+  const tasks = uniqueTaskDrafts([
+    ...actions.map(taskFromOwnerAction),
+    ...visibleHypotheses.map(taskFromHypothesis),
+  ]).slice(0, 3);
 
   return {
     verdict,
