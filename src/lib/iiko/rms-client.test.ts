@@ -227,8 +227,24 @@ describe("RmsIikoClient", () => {
           assemblyCharts: [
             {
               id: "chart-1",
-              name: "Burger",
-              items: [{ productId: "beef", amount: 120 }],
+              product: { id: "dish-burger", name: "Burger" },
+              items: [
+                {
+                  product: {
+                    id: "beef",
+                    name: "Beef",
+                    num: "B-10",
+                    unit: "kg",
+                  },
+                  amount: 120,
+                },
+                {
+                  ingredientId: "bun",
+                  ingredientName: "Bun",
+                  quantity: 1,
+                  measureUnit: { name: "pcs" },
+                },
+              ],
             },
             {
               id: "chart-2",
@@ -251,14 +267,60 @@ describe("RmsIikoClient", () => {
       assemblyCharts: 2,
       preparedCharts: 1,
       chartsWithItems: 1,
-      totalItems: 1,
+      totalItems: 2,
+      normalizedCharts: 2,
+      chartsWithDishLink: 1,
+      ingredientRows: 2,
+      ingredientRowsWithProductLink: 2,
+      ingredientRowsWithAmount: 2,
+      ingredientRowsWithUnit: 2,
     });
     expect(probe.rawFieldCounts.id).toBe(2);
     expect(probe.rawFieldCounts.items).toBe(1);
+    expect(probe.ingredientFieldCounts.product).toBe(1);
+    expect(probe.ingredientFieldCounts.quantity).toBe(1);
     expect(calls[1].url).toContain("/resto/api/v2/assemblyCharts/getAll");
     expect(calls[1].url).toContain("dateFrom=2025-05-31");
     expect(calls[1].url).toContain("dateTo=2027-05-31");
     expect(calls[1].url).toContain("includePreparedCharts=false");
+  });
+
+  test("normalizes alternate RMS assembly chart row shapes", async () => {
+    const { fetchImpl } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      {
+        body: [
+          {
+            chartId: "chart-3",
+            dishId: "dish-salad",
+            dishName: "Salad",
+            rows: [
+              {
+                nomenclature: {
+                  id: "tomato",
+                  name: "Tomato",
+                  article: "T-1",
+                  unit: "kg",
+                },
+                netto: "0,2",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    await expect(client(fetchImpl).probeAssemblyCharts()).resolves.toMatchObject({
+      status: "ready",
+      assemblyCharts: 1,
+      normalizedCharts: 1,
+      chartsWithDishLink: 1,
+      chartsWithItems: 1,
+      ingredientRows: 1,
+      ingredientRowsWithProductLink: 1,
+      ingredientRowsWithAmount: 1,
+      ingredientRowsWithUnit: 1,
+    });
   });
 
   test("reports forbidden RMS assembly charts access without throwing", async () => {

@@ -71,10 +71,34 @@ export type RmsAssemblyChartsProbe = {
   dateTo: string;
   assemblyCharts: number;
   preparedCharts: number;
+  normalizedCharts: number;
+  chartsWithDishLink: number;
   chartsWithItems: number;
   totalItems: number;
+  ingredientRows: number;
+  ingredientRowsWithProductLink: number;
+  ingredientRowsWithAmount: number;
+  ingredientRowsWithUnit: number;
   rawFieldCounts: Record<string, number>;
+  ingredientFieldCounts: Record<string, number>;
   error?: string;
+};
+
+export type RmsAssemblyChartIngredient = {
+  productId?: string;
+  productName?: string;
+  article?: string;
+  amount?: number;
+  unit?: string;
+  rawField: string;
+};
+
+export type RmsAssemblyChart = {
+  id?: string;
+  productId?: string;
+  productName?: string;
+  name?: string;
+  items: RmsAssemblyChartIngredient[];
 };
 
 const SESSION_TTL_MS = 115 * 60 * 1000;
@@ -190,6 +214,103 @@ const RMS_SHIFT_EMPLOYEE_FIELDS = [
   "EmployeeName",
   "User.Name",
   "AuthUserName",
+] as const;
+const RMS_ASSEMBLY_CHART_ITEM_ARRAY_PATHS = [
+  "items",
+  "ingredients",
+  "components",
+  "products",
+  "rows",
+  "recipeItems",
+  "ingredientRows",
+  "composition",
+  "composition.items",
+  "recipe.items",
+  "technologicalCardItems",
+] as const;
+const RMS_ASSEMBLY_CHART_ID_PATHS = [
+  "id",
+  "assemblyChartId",
+  "chartId",
+  "_id",
+] as const;
+const RMS_ASSEMBLY_CHART_PRODUCT_ID_PATHS = [
+  "productId",
+  "product.id",
+  "dishId",
+  "dish.id",
+  "itemId",
+  "nomenclatureId",
+  "nomenclature.id",
+] as const;
+const RMS_ASSEMBLY_CHART_NAME_PATHS = [
+  "productName",
+  "product.name",
+  "dishName",
+  "dish.name",
+  "name",
+  "title",
+] as const;
+const RMS_ASSEMBLY_INGREDIENT_PRODUCT_ID_PATHS = [
+  "productId",
+  "product.id",
+  "ingredientId",
+  "ingredient.id",
+  "nomenclatureId",
+  "nomenclature.id",
+  "skuId",
+  "itemId",
+  "item.id",
+  "goodsId",
+  "id",
+] as const;
+const RMS_ASSEMBLY_INGREDIENT_NAME_PATHS = [
+  "productName",
+  "product.name",
+  "ingredientName",
+  "ingredient.name",
+  "nomenclatureName",
+  "nomenclature.name",
+  "itemName",
+  "item.name",
+  "name",
+  "title",
+] as const;
+const RMS_ASSEMBLY_INGREDIENT_ARTICLE_PATHS = [
+  "article",
+  "num",
+  "code",
+  "product.article",
+  "product.num",
+  "product.code",
+  "ingredient.article",
+  "ingredient.num",
+  "nomenclature.article",
+  "nomenclature.num",
+  "nomenclatureCode",
+  "productCode",
+] as const;
+const RMS_ASSEMBLY_INGREDIENT_AMOUNT_PATHS = [
+  "amount",
+  "quantity",
+  "qty",
+  "netto",
+  "nettoQty",
+  "weight",
+  "value",
+  "amountIn",
+] as const;
+const RMS_ASSEMBLY_INGREDIENT_UNIT_PATHS = [
+  "unit",
+  "unit.name",
+  "measureUnit",
+  "measureUnit.name",
+  "amountUnit",
+  "amountUnit.name",
+  "product.unit",
+  "product.unit.name",
+  "ingredient.unit",
+  "nomenclature.unit",
 ] as const;
 
 function normalizeHost(host: string): string {
@@ -573,9 +694,16 @@ export class RmsIikoClient implements IikoClient {
         dateTo,
         assemblyCharts: 0,
         preparedCharts: 0,
+        normalizedCharts: 0,
+        chartsWithDishLink: 0,
         chartsWithItems: 0,
         totalItems: 0,
+        ingredientRows: 0,
+        ingredientRowsWithProductLink: 0,
+        ingredientRowsWithAmount: 0,
+        ingredientRowsWithUnit: 0,
         rawFieldCounts: {},
+        ingredientFieldCounts: {},
         error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
       };
     }
@@ -584,9 +712,10 @@ export class RmsIikoClient implements IikoClient {
       const payload = JSON.parse(text) as unknown;
       const assemblyCharts = extractAssemblyCharts(payload);
       const preparedCharts = extractPreparedCharts(payload);
-      const totalItems = assemblyCharts.reduce(
-        (sum, chart) => sum + countAssemblyChartItems(chart),
-        0,
+      const normalizedCharts = assemblyCharts.map(normalizeAssemblyChart);
+      const ingredientRows = normalizedCharts.flatMap((chart) => chart.items);
+      const rawIngredientRows = assemblyCharts.flatMap((chart) =>
+        extractAssemblyChartItemRows(chart).map(({ row }) => row),
       );
 
       return {
@@ -596,11 +725,25 @@ export class RmsIikoClient implements IikoClient {
         dateTo,
         assemblyCharts: assemblyCharts.length,
         preparedCharts: preparedCharts.length,
-        chartsWithItems: assemblyCharts.filter(
-          (chart) => countAssemblyChartItems(chart) > 0,
+        normalizedCharts: normalizedCharts.length,
+        chartsWithDishLink: normalizedCharts.filter((chart) =>
+          Boolean(chart.productId),
         ).length,
-        totalItems,
+        chartsWithItems: normalizedCharts.filter((chart) => chart.items.length > 0)
+          .length,
+        totalItems: ingredientRows.length,
+        ingredientRows: ingredientRows.length,
+        ingredientRowsWithProductLink: ingredientRows.filter((item) =>
+          Boolean(item.productId),
+        ).length,
+        ingredientRowsWithAmount: ingredientRows.filter((item) =>
+          item.amount !== undefined,
+        ).length,
+        ingredientRowsWithUnit: ingredientRows.filter((item) =>
+          Boolean(item.unit),
+        ).length,
         rawFieldCounts: topFieldCounts(assemblyCharts, 30),
+        ingredientFieldCounts: topFieldCounts(rawIngredientRows, 30),
       };
     } catch {
       return {
@@ -610,9 +753,16 @@ export class RmsIikoClient implements IikoClient {
         dateTo,
         assemblyCharts: 0,
         preparedCharts: 0,
+        normalizedCharts: 0,
+        chartsWithDishLink: 0,
         chartsWithItems: 0,
         totalItems: 0,
+        ingredientRows: 0,
+        ingredientRowsWithProductLink: 0,
+        ingredientRowsWithAmount: 0,
+        ingredientRowsWithUnit: 0,
         rawFieldCounts: {},
+        ingredientFieldCounts: {},
         error: "invalid JSON",
       };
     }
@@ -816,13 +966,95 @@ function extractPreparedCharts(payload: unknown): RmsRawRow[] {
   return Array.isArray(value) ? value.filter(isRecord) : [];
 }
 
-function countAssemblyChartItems(chart: RmsRawRow): number {
-  for (const key of ["items", "ingredients", "components", "products"]) {
-    const value = chart[key];
-    if (Array.isArray(value)) return value.length;
+function normalizeAssemblyChart(chart: RmsRawRow): RmsAssemblyChart {
+  const productId = readFirstStringPath(chart, RMS_ASSEMBLY_CHART_PRODUCT_ID_PATHS);
+  const productName = readFirstStringPath(chart, RMS_ASSEMBLY_CHART_NAME_PATHS);
+
+  return {
+    id: readFirstStringPath(chart, RMS_ASSEMBLY_CHART_ID_PATHS),
+    productId,
+    productName,
+    name: productName,
+    items: extractAssemblyChartItemRows(chart)
+      .map(({ row, field }) => normalizeAssemblyChartIngredient(row, field))
+      .filter((item): item is RmsAssemblyChartIngredient => item !== null),
+  };
+}
+
+function extractAssemblyChartItemRows(
+  chart: RmsRawRow,
+): Array<{ row: RmsRawRow; field: string }> {
+  for (const path of RMS_ASSEMBLY_CHART_ITEM_ARRAY_PATHS) {
+    const value = readPath(chart, path);
+    if (!Array.isArray(value)) continue;
+
+    const rows = value.filter(isRecord);
+    if (rows.length === 0) continue;
+    return rows.map((row) => ({ row, field: path }));
   }
 
-  return 0;
+  return [];
+}
+
+function normalizeAssemblyChartIngredient(
+  row: RmsRawRow,
+  rawField: string,
+): RmsAssemblyChartIngredient | null {
+  const productId = readFirstStringPath(
+    row,
+    RMS_ASSEMBLY_INGREDIENT_PRODUCT_ID_PATHS,
+  );
+  const productName = readFirstStringPath(row, RMS_ASSEMBLY_INGREDIENT_NAME_PATHS);
+  const article = readFirstStringPath(row, RMS_ASSEMBLY_INGREDIENT_ARTICLE_PATHS);
+  const amount = readFirstPositiveNumberPath(
+    row,
+    RMS_ASSEMBLY_INGREDIENT_AMOUNT_PATHS,
+  );
+  const unit = readFirstStringPath(row, RMS_ASSEMBLY_INGREDIENT_UNIT_PATHS);
+
+  if (!productId && !productName && !article && amount === undefined && !unit) {
+    return null;
+  }
+
+  return {
+    productId,
+    productName,
+    article,
+    amount,
+    unit,
+    rawField,
+  };
+}
+
+function readFirstStringPath(
+  row: RmsRawRow,
+  paths: readonly string[],
+): string | undefined {
+  for (const path of paths) {
+    const value = readPath(row, path);
+    if (!hasMeaningfulValue(value)) continue;
+    if (typeof value === "object") continue;
+
+    const text = String(value).trim();
+    if (text) return text;
+  }
+
+  return undefined;
+}
+
+function readFirstPositiveNumberPath(
+  row: RmsRawRow,
+  paths: readonly string[],
+): number | undefined {
+  for (const path of paths) {
+    const value = readPath(row, path);
+    if (!hasMeaningfulValue(value)) continue;
+
+    const parsed = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+
+  return undefined;
 }
 
 function countFields(

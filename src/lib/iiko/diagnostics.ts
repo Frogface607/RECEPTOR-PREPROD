@@ -281,13 +281,30 @@ export async function runIikoDiagnostics(
         .slice(0, 8)
         .map(([field, count]) => `${field}: ${count}`)
         .join(", ");
+      const ingredientFields = Object.entries(techCardProbe.ingredientFieldCounts)
+        .slice(0, 8)
+        .map(([field, count]) => `${field}: ${count}`)
+        .join(", ");
+      const techCardDetail = `RMS вернул ${techCardProbe.assemblyCharts} техкарт: ${techCardProbe.chartsWithItems} с составом, ${techCardProbe.ingredientRows} строк ингредиентов, ${techCardProbe.ingredientRowsWithProductLink} строк связаны с товарами, ${techCardProbe.ingredientRowsWithAmount} с количеством, ${techCardProbe.ingredientRowsWithUnit} с единицей. Окно ${techCardProbe.dateFrom} — ${techCardProbe.dateTo}. Поля техкарт: ${fields || "не определены"}. Поля строк: ${ingredientFields || "не определены"}.`;
+      const hasUsableTechCards =
+        techCardProbe.ingredientRowsWithProductLink > 0 &&
+        techCardProbe.ingredientRowsWithAmount > 0;
 
-      if (techCardProbe.status === "ready") {
+      if (techCardProbe.status === "ready" && hasUsableTechCards) {
         checks.push(
           ok(
             "techcards",
-            "РўРµС…РєР°СЂС‚С‹ RMS",
-            `RMS РІРµСЂРЅСѓР» ${techCardProbe.assemblyCharts} С‚РµС…РєР°СЂС‚, ${techCardProbe.chartsWithItems} СЃ СЃРѕСЃС‚Р°РІРѕРј, ${techCardProbe.totalItems} СЃС‚СЂРѕРє РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ. РћРєРЅРѕ ${techCardProbe.dateFrom} вЂ” ${techCardProbe.dateTo}. РџРѕР»СЏ: ${fields || "РЅРµ РѕРїСЂРµРґРµР»РµРЅС‹"}.`,
+            "Техкарты RMS",
+            techCardDetail,
+          ),
+        );
+      } else if (techCardProbe.status === "ready") {
+        checks.push(
+          warn(
+            "techcards",
+            "Техкарты RMS",
+            techCardDetail,
+            "RMS отдал техкарты, но состав пока не пригоден для food cost: нужны строки ингредиентов с товарной связью и количеством.",
           ),
         );
       } else if (techCardProbe.status === "empty") {
