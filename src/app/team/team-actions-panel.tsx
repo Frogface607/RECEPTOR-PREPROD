@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
 import {
+  AlertTriangle,
+  CheckCircle2,
   Copy,
   History,
   KeyRound,
@@ -21,6 +23,11 @@ import {
   type TeamRoleId,
   type TeamTask,
 } from "@/lib/team/team-os";
+import {
+  buildTeamLaborReadiness,
+  hasLaborRate,
+  type TeamLaborReadinessStatus,
+} from "@/lib/team/team-labor-readiness";
 import {
   createTeamTaskAction,
   inviteTeamMemberAction,
@@ -82,6 +89,32 @@ function auditTypeLabel(type: TeamAuditEvent["type"]): string {
   return "объявление";
 }
 
+function laborReadinessCopy(status: TeamLaborReadinessStatus): {
+  title: string;
+  detail: string;
+  className: string;
+} {
+  if (status === "ready") {
+    return {
+      title: "ФОТ готов к расчету",
+      detail: "У активной команды заведены ставки. Owner Dashboard может считать ФОТ точнее.",
+      className: "border-brand/35 bg-brand/10 text-brand",
+    };
+  }
+  if (status === "partial") {
+    return {
+      title: "ФОТ считается частично",
+      detail: "Часть активной команды без ставки. Их смены будут занижать ФОТ в BI.",
+      className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
+    };
+  }
+  return {
+    title: "ФОТ заблокирован",
+    detail: "Нет активных ставок. Смены видны, но стоимость команды пока не считается.",
+    className: "border-destructive/35 bg-destructive/10 text-destructive",
+  };
+}
+
 export function TeamActionsPanel({
   venueId,
   staff,
@@ -130,6 +163,15 @@ export function TeamActionsPanel({
     () => staff.filter((member) => member.status !== "paused"),
     [staff],
   );
+  const laborReadiness = useMemo(
+    () => buildTeamLaborReadiness(staff),
+    [staff],
+  );
+  const laborCopy = laborReadinessCopy(laborReadiness.status);
+  const missingRateNames = laborReadiness.missingStaff
+    .slice(0, 4)
+    .map((member) => member.name)
+    .join(", ");
 
   function runAction(action: () => Promise<TeamActionResult>) {
     setMessage(null);
@@ -528,6 +570,54 @@ export function TeamActionsPanel({
             </p>
           </div>
 
+          <div className="mt-5 border-y border-border/45 py-4">
+            <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+              <div>
+                <span
+                  className={
+                    "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.14em] " +
+                    laborCopy.className
+                  }
+                >
+                  {laborReadiness.status === "ready" ? (
+                    <CheckCircle2 className="size-3.5" />
+                  ) : (
+                    <AlertTriangle className="size-3.5" />
+                  )}
+                  {laborReadiness.coveragePct}% ставок
+                </span>
+                <h4 className="mt-3 text-base font-medium text-foreground">
+                  {laborCopy.title}
+                </h4>
+                <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground">
+                  {laborCopy.detail}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <TeamMetric
+                  label="Активная команда"
+                  value={`${laborReadiness.activeStaff}`}
+                  detail={`всего: ${laborReadiness.totalStaff}`}
+                />
+                <TeamMetric
+                  label="Со ставкой"
+                  value={`${laborReadiness.readyStaff}`}
+                  detail="участвуют в ФОТ"
+                />
+                <TeamMetric
+                  label="Без ставки"
+                  value={`${laborReadiness.missingStaff.length}`}
+                  detail={
+                    missingRateNames
+                      ? missingRateNames
+                      : "ставки заведены"
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[1080px] text-left text-sm">
               <thead>
@@ -549,12 +639,25 @@ export function TeamActionsPanel({
                   const resetPassword = resetPasswords[member.id] ?? "";
                   const draft = rateDrafts[member.id] ?? rateDraft(member);
                   const canReset = Boolean(member.userId);
+                  const memberHasLaborRate = hasLaborRate(member);
                   return (
                     <tr key={member.id} className="align-top">
                       <td className="px-3 py-4">
                         <p className="font-medium text-foreground">{member.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {member.shiftLabel || "смена не указана"}
+                        </p>
+                        <p
+                          className={
+                            "mt-2 text-[11px] " +
+                            (memberHasLaborRate
+                              ? "text-brand"
+                              : "text-amber-200")
+                          }
+                        >
+                          {memberHasLaborRate
+                            ? "ставка заведена"
+                            : "ставка не заведена"}
                         </p>
                       </td>
                       <td className="px-3 py-4 text-muted-foreground">
@@ -809,6 +912,26 @@ function FieldLabel({
       </span>
       {children}
     </label>
+  );
+}
+
+function TeamMetric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-2xl text-foreground">{value}</p>
+      <p className="mt-1 truncate text-xs text-muted-foreground">{detail}</p>
+    </div>
   );
 }
 
