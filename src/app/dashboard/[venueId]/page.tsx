@@ -11,6 +11,7 @@ import { OwnerReviewCard } from "@/components/dashboard/owner-review-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
 import { MarginReadinessCard } from "@/components/dashboard/margin-readiness-card";
+import { LaborBiCard } from "@/components/dashboard/labor-bi-card";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -28,6 +29,7 @@ import { buildDailyBrief } from "@/lib/brief/daily-brief";
 import { listMenuItemMappings } from "@/lib/menu-item-mapping-store";
 import { buildMenuMarginReadiness } from "@/lib/menu-margin-readiness";
 import { buildOwnerReview } from "@/lib/owner-review";
+import { buildLaborBi } from "@/lib/team/labor-bi";
 import type { IikoClient } from "@/lib/iiko/types";
 import type {
   CategoryStat,
@@ -188,6 +190,7 @@ export default async function DashboardPage({
     products: nomenclature,
     mappings,
   });
+  const laborBi = buildLaborBi({ shifts });
 
   return (
     <>
@@ -263,6 +266,10 @@ export default async function DashboardPage({
               error={nomenclatureError}
               products={nomenclature}
             />
+          </div>
+
+          <div className="reveal reveal-4 mt-6">
+            <LaborBiCard labor={laborBi} />
           </div>
 
           <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">
