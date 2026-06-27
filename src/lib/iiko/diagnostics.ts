@@ -10,7 +10,7 @@ import type { ResolvedVenue } from "@/lib/venues/get-venue";
 export type IikoDiagnosticStatus = "ok" | "warn" | "fail";
 
 export type IikoDiagnosticCheck = {
-  id: "credentials" | "organization" | "olap" | "dishes" | "costs";
+  id: "credentials" | "organization" | "olap" | "dishes" | "costs" | "techcards";
   title: string;
   status: IikoDiagnosticStatus;
   detail: string;
@@ -271,6 +271,53 @@ export async function runIikoDiagnostics(
           "Себестоимость / цены RMS",
           error,
           "Проверить доступ RMS к номенклатуре, ценам и техкартам.",
+        ),
+      );
+    }
+
+    try {
+      const techCardProbe = await probe.probeAssemblyCharts();
+      const fields = Object.entries(techCardProbe.rawFieldCounts)
+        .slice(0, 8)
+        .map(([field, count]) => `${field}: ${count}`)
+        .join(", ");
+
+      if (techCardProbe.status === "ready") {
+        checks.push(
+          ok(
+            "techcards",
+            "РўРµС…РєР°СЂС‚С‹ RMS",
+            `RMS РІРµСЂРЅСѓР» ${techCardProbe.assemblyCharts} С‚РµС…РєР°СЂС‚, ${techCardProbe.chartsWithItems} СЃ СЃРѕСЃС‚Р°РІРѕРј, ${techCardProbe.totalItems} СЃС‚СЂРѕРє РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ. РћРєРЅРѕ ${techCardProbe.dateFrom} вЂ” ${techCardProbe.dateTo}. РџРѕР»СЏ: ${fields || "РЅРµ РѕРїСЂРµРґРµР»РµРЅС‹"}.`,
+          ),
+        );
+      } else if (techCardProbe.status === "empty") {
+        checks.push(
+          warn(
+            "techcards",
+            "РўРµС…РєР°СЂС‚С‹ RMS",
+            `Endpoint assemblyCharts/getAll РѕС‚РІРµС‚РёР», РЅРѕ Р·Р° РѕРєРЅРѕ ${techCardProbe.dateFrom} вЂ” ${techCardProbe.dateTo} С‚РµС…РєР°СЂС‚ РЅРµ РІРµСЂРЅСѓР».`,
+            "РџСЂРѕРІРµСЂСЊС‚Рµ, РµСЃС‚СЊ Р»Рё РІ iiko RMS С‚РµС…РєР°СЂС‚С‹ Рё РІРєР»СЋС‡РµРЅС‹ Р»Рё РїСЂР°РІР° РЅР° РёС… С‡С‚РµРЅРёРµ.",
+          ),
+        );
+      } else {
+        checks.push(
+          warn(
+            "techcards",
+            "РўРµС…РєР°СЂС‚С‹ RMS",
+            techCardProbe.status === "forbidden"
+              ? "RMS РЅРµ РґР°Р» РґРѕСЃС‚СѓРї Рє assemblyCharts/getAll."
+              : `RMS РЅРµ РґР°Р» РїСЂРѕС‡РёС‚Р°С‚СЊ С‚РµС…РєР°СЂС‚С‹: ${techCardProbe.error ?? "РѕС‚РІРµС‚ РЅРµ СЂР°СЃРїРѕР·РЅР°РЅ"}.`,
+            "РџРѕРїСЂРѕСЃРёС‚Рµ РїСЂР°РІР° RMS РЅР° С‡С‚РµРЅРёРµ С‚РµС…РєР°СЂС‚ / assembly charts.",
+          ),
+        );
+      }
+    } catch (error) {
+      checks.push(
+        fail(
+          "techcards",
+          "РўРµС…РєР°СЂС‚С‹ RMS",
+          error,
+          "РџСЂРѕРІРµСЂСЊС‚Рµ РґРѕСЃС‚СѓРї RMS Рє assemblyCharts/getAll.",
         ),
       );
     }

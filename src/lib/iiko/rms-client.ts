@@ -64,6 +64,19 @@ export type RmsCostFieldProbe = {
   error?: string;
 };
 
+export type RmsAssemblyChartsProbe = {
+  endpoint: string | null;
+  status: "ready" | "empty" | "forbidden" | "unreadable";
+  dateFrom: string;
+  dateTo: string;
+  assemblyCharts: number;
+  preparedCharts: number;
+  chartsWithItems: number;
+  totalItems: number;
+  rawFieldCounts: Record<string, number>;
+  error?: string;
+};
+
 const SESSION_TTL_MS = 115 * 60 * 1000;
 const RMS_REVENUE_FIELD = "DishDiscountSumInt";
 const RMS_ORDER_COUNT_FIELD = "UniqOrderId";
@@ -240,6 +253,13 @@ function periodToRange(period: Period, today: string): { from: string; to: strin
   const dates = resolvePeriodToDates(period, today);
   if (dates.length === 0) return { from: today, to: today };
   return { from: dates[0], to: dates[dates.length - 1] };
+}
+
+function addDays(date: string, days: number): string {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  parsed.setUTCDate(parsed.getUTCDate() + days);
+  return parsed.toISOString().slice(0, 10);
 }
 
 async function readResponseText(res: Response): Promise<string> {
@@ -521,6 +541,83 @@ export class RmsIikoClient implements IikoClient {
     };
   }
 
+  async probeAssemblyCharts(): Promise<RmsAssemblyChartsProbe> {
+    const endpoint = "/resto/api/v2/assemblyCharts/getAll";
+    const key = await this.getSessionKey();
+    const dateFrom = addDays(this.today, -365);
+    const dateTo = addDays(this.today, 365);
+
+    const res = await this.fetchImpl(
+      this.url(endpoint, {
+        key,
+        dateFrom,
+        dateTo,
+        includeDeletedProducts: "true",
+        includePreparedCharts: "false",
+      }),
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Receptor-iiko-RMS-Client/2.0",
+        },
+      },
+    );
+
+    const text = await readResponseText(res);
+    if (!res.ok) {
+      return {
+        endpoint,
+        status: res.status === 403 ? "forbidden" : "unreadable",
+        dateFrom,
+        dateTo,
+        assemblyCharts: 0,
+        preparedCharts: 0,
+        chartsWithItems: 0,
+        totalItems: 0,
+        rawFieldCounts: {},
+        error: `HTTP ${res.status}: ${text.slice(0, 300)}`,
+      };
+    }
+
+    try {
+      const payload = JSON.parse(text) as unknown;
+      const assemblyCharts = extractAssemblyCharts(payload);
+      const preparedCharts = extractPreparedCharts(payload);
+      const totalItems = assemblyCharts.reduce(
+        (sum, chart) => sum + countAssemblyChartItems(chart),
+        0,
+      );
+
+      return {
+        endpoint,
+        status: assemblyCharts.length > 0 ? "ready" : "empty",
+        dateFrom,
+        dateTo,
+        assemblyCharts: assemblyCharts.length,
+        preparedCharts: preparedCharts.length,
+        chartsWithItems: assemblyCharts.filter(
+          (chart) => countAssemblyChartItems(chart) > 0,
+        ).length,
+        totalItems,
+        rawFieldCounts: topFieldCounts(assemblyCharts, 30),
+      };
+    } catch {
+      return {
+        endpoint,
+        status: "unreadable",
+        dateFrom,
+        dateTo,
+        assemblyCharts: 0,
+        preparedCharts: 0,
+        chartsWithItems: 0,
+        totalItems: 0,
+        rawFieldCounts: {},
+        error: "invalid JSON",
+      };
+    }
+  }
+
   async searchNomenclature(query: string): Promise<Product[]> {
     try {
       return searchIikoProducts(await this.fetchNomenclature(), query);
@@ -699,6 +796,33 @@ function extractRmsRows(payload: unknown): RmsRawRow[] {
   }
 
   return [];
+}
+
+function extractAssemblyCharts(payload: unknown): RmsRawRow[] {
+  if (Array.isArray(payload)) return payload.filter(isRecord);
+  if (!isRecord(payload)) return [];
+
+  for (const key of ["assemblyCharts", "charts", "items", "data"]) {
+    const value = payload[key];
+    if (Array.isArray(value)) return value.filter(isRecord);
+  }
+
+  return [];
+}
+
+function extractPreparedCharts(payload: unknown): RmsRawRow[] {
+  if (!isRecord(payload)) return [];
+  const value = payload.preparedCharts;
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function countAssemblyChartItems(chart: RmsRawRow): number {
+  for (const key of ["items", "ingredients", "components", "products"]) {
+    const value = chart[key];
+    if (Array.isArray(value)) return value.length;
+  }
+
+  return 0;
 }
 
 function countFields(

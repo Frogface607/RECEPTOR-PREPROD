@@ -218,4 +218,60 @@ describe("RmsIikoClient", () => {
       { id: "default", name: HOST },
     ]);
   });
+
+  test("probes RMS assembly charts for tech-card diagnostics", async () => {
+    const { fetchImpl, calls } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      {
+        body: {
+          assemblyCharts: [
+            {
+              id: "chart-1",
+              name: "Burger",
+              items: [{ productId: "beef", amount: 120 }],
+            },
+            {
+              id: "chart-2",
+              name: "Sauce",
+              items: [],
+            },
+          ],
+          preparedCharts: [{ id: "prep-1" }],
+        },
+      },
+    ]);
+
+    const probe = await client(fetchImpl).probeAssemblyCharts();
+
+    expect(probe).toMatchObject({
+      endpoint: "/resto/api/v2/assemblyCharts/getAll",
+      status: "ready",
+      dateFrom: "2025-05-31",
+      dateTo: "2027-05-31",
+      assemblyCharts: 2,
+      preparedCharts: 1,
+      chartsWithItems: 1,
+      totalItems: 1,
+    });
+    expect(probe.rawFieldCounts.id).toBe(2);
+    expect(probe.rawFieldCounts.items).toBe(1);
+    expect(calls[1].url).toContain("/resto/api/v2/assemblyCharts/getAll");
+    expect(calls[1].url).toContain("dateFrom=2025-05-31");
+    expect(calls[1].url).toContain("dateTo=2027-05-31");
+    expect(calls[1].url).toContain("includePreparedCharts=false");
+  });
+
+  test("reports forbidden RMS assembly charts access without throwing", async () => {
+    const { fetchImpl } = mockFetch([
+      { body: SESSION, contentType: "text/plain" },
+      { status: 403, body: "forbidden", contentType: "text/plain" },
+    ]);
+
+    await expect(client(fetchImpl).probeAssemblyCharts()).resolves.toMatchObject({
+      endpoint: "/resto/api/v2/assemblyCharts/getAll",
+      status: "forbidden",
+      assemblyCharts: 0,
+      error: "HTTP 403: forbidden",
+    });
+  });
 });
