@@ -1,7 +1,20 @@
-import { Banknote, Clock3, Percent, UsersRound } from "lucide-react";
+import {
+  AlertTriangle,
+  Banknote,
+  CheckCircle2,
+  Clock3,
+  Percent,
+  SearchCheck,
+  Settings2,
+  UsersRound,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { formatInteger, formatRubles } from "@/lib/format";
-import type { LaborBiSummary } from "@/lib/team/labor-bi";
+import {
+  buildLaborInsights,
+  type LaborBiSummary,
+  type LaborInsightTone,
+} from "@/lib/team/labor-bi";
 
 function formatPct(value: number | null): string {
   if (value === null) return "—";
@@ -18,6 +31,7 @@ function formatRatio(value: number | null): string {
 
 export function LaborBiCard({ labor }: { labor: LaborBiSummary }) {
   const hasRates = labor.missingRates === 0 && labor.staffShifts > 0;
+  const insights = buildLaborInsights(labor);
   const statusCopy = hasRates
     ? {
         label: "ФОТ считается",
@@ -91,6 +105,18 @@ export function LaborBiCard({ labor }: { labor: LaborBiSummary }) {
         />
       </div>
 
+      <div className="mt-5 grid gap-3 lg:grid-cols-3">
+        {insights.map((insight) => (
+          <InsightCard
+            key={`${insight.tone}-${insight.title}`}
+            tone={insight.tone}
+            title={insight.title}
+            detail={insight.detail}
+            action={insight.action}
+          />
+        ))}
+      </div>
+
       {topEmployees.length > 0 ? (
         <div className="mt-5 overflow-x-auto rounded-lg border border-border/45 bg-background/25">
           <table className="w-full text-left text-[13px]">
@@ -124,6 +150,55 @@ export function LaborBiCard({ labor }: { labor: LaborBiSummary }) {
         </div>
       ) : null}
     </section>
+  );
+}
+
+function InsightIcon({ tone }: { tone: LaborInsightTone }) {
+  if (tone === "risk") return <AlertTriangle className="size-4" />;
+  if (tone === "watch") return <SearchCheck className="size-4" />;
+  if (tone === "setup") return <Settings2 className="size-4" />;
+  return <CheckCircle2 className="size-4" />;
+}
+
+function insightClass(tone: LaborInsightTone): string {
+  if (tone === "risk") return "border-destructive/35 bg-destructive/10 text-destructive";
+  if (tone === "watch") return "border-amber-400/35 bg-amber-400/10 text-amber-200";
+  if (tone === "setup") return "border-border/60 bg-background/45 text-muted-foreground";
+  return "border-brand/35 bg-brand/10 text-brand";
+}
+
+function InsightCard({
+  tone,
+  title,
+  detail,
+  action,
+}: {
+  tone: LaborInsightTone;
+  title: string;
+  detail: string;
+  action: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/30 p-3">
+      <div className="flex items-start gap-3">
+        <span
+          className={`inline-flex size-8 shrink-0 items-center justify-center rounded-lg border ${insightClass(tone)}`}
+        >
+          <InsightIcon tone={tone} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium leading-snug text-foreground">
+            {title}
+          </p>
+          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+            {detail}
+          </p>
+          <p className="mt-2 text-[12px] leading-relaxed text-foreground/85">
+            {action}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildLaborBi } from "./labor-bi";
+import { buildLaborBi, buildLaborInsights } from "./labor-bi";
 import type { StaffMember } from "./team-os";
 
 const staff: StaffMember[] = [
@@ -138,6 +138,64 @@ describe("buildLaborBi", () => {
       memberId: "waiter",
       laborCost: 2800,
       hours: 8,
+    });
+  });
+
+  test("creates actionable insights for expensive labor", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-expensive",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 50000,
+          items: 120,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Мария",
+              hours: 10,
+              shiftPay: 18000,
+              sales: 50000,
+            },
+          ],
+        },
+      ],
+    });
+
+    const insights = buildLaborInsights(labor, {
+      targetLaborCostPct: 25,
+      minimumRevenuePerLaborHour: 6000,
+    });
+
+    expect(insights.map((item) => item.title)).toContain(
+      "ФОТ выше целевой нормы",
+    );
+    expect(insights.some((item) => item.title.startsWith("Дорогая смена"))).toBe(
+      true,
+    );
+    expect(insights.some((item) => item.title.includes("человеко-час"))).toBe(
+      true,
+    );
+  });
+
+  test("creates setup insight when rates are missing", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-missing-rate",
+          openTime: "2026-06-26T18:00:00",
+          closeTime: "2026-06-27T02:00:00",
+          revenue: 80000,
+          items: 180,
+          employee: "Кассир",
+        },
+      ],
+    });
+
+    expect(buildLaborInsights(labor)[0]).toMatchObject({
+      tone: "setup",
+      title: "Не все ставки заведены",
     });
   });
 });
