@@ -70,11 +70,33 @@ describe("RmsIikoClient nomenclature", () => {
       endpoint: "/resto/api/v2/entities/products/list",
       rawRows: 1,
       normalizedProducts: 1,
+      normalizedPriceRows: 1,
+      productsWithCachedCost: 1,
       productsWithPurchasePrice: 1,
       productsWithTechCardPrice: 1,
     });
     expect(probe.priceFieldCounts.purchasePrice).toBe(1);
     expect(probe.rawFieldCounts.name).toBe(1);
     expect(JSON.stringify(probe)).not.toContain("Tomato");
+  });
+
+  test("fetches normalized RMS prices separately from nomenclature", async () => {
+    const { fetchImpl } = mockFetch();
+    const client = new RmsIikoClient({
+      host: "sandbox.iiko.local",
+      login: "Sergey",
+      password: "secret",
+      today: "2026-05-29",
+      fetchImpl,
+    });
+
+    await expect(client.fetchPrices()).resolves.toMatchObject([
+      {
+        skuId: "r-1",
+        pricePerUnit: 0.32,
+        pricePerKg: 320,
+        rawField: "purchasePrice",
+      },
+    ]);
   });
 });

@@ -43,15 +43,16 @@ export function normalizeIikoProduct(raw: RawProduct): Product | null {
     "cost",
     "costPrice",
   ]);
-  const directPricePerUnit = readNumber(raw, ["pricePerUnit", "price_per_unit"]);
+  const menuPricePerUnit = readNumber(raw, ["pricePerUnit"]);
+  const legacyCostPricePerUnit = readNumber(raw, ["price_per_unit"]);
+  const directPricePerUnit = menuPricePerUnit ?? legacyCostPricePerUnit;
   const directPurchasePricePerUnit = readNumber(raw, [
     "purchasePricePerUnit",
     "purchase_price_per_unit",
   ]);
   const menuPrice =
     readNumber(raw, ["price", "currentPrice"]) ??
-    readFirstSizePrice(raw) ??
-    purchasePrice;
+    readFirstSizePrice(raw);
   const pricePerUnit =
     directPricePerUnit ?? toPricePerUnit(menuPrice, originalUnit, unit);
   const purchasePricePerUnit =
@@ -64,7 +65,7 @@ export function normalizeIikoProduct(raw: RawProduct): Product | null {
     "cost_per_kg",
   ]);
   const directNormalizedPrice =
-    directPurchasePricePerUnit ?? directPricePerUnit;
+    directPurchasePricePerUnit ?? legacyCostPricePerUnit;
   const techCardPricePerKg =
     directTechCardPrice ??
     toTechCardPriceFromNormalizedUnit(directNormalizedPrice, unit) ??

@@ -24,6 +24,11 @@ import {
   ShiftStatSchema,
 } from "./models";
 import { normalizeIikoProducts, searchIikoProducts } from "./nomenclature";
+import {
+  mergeProductsWithRmsPrices,
+  normalizeRmsPrices,
+  type RmsPrice,
+} from "./rms-prices";
 
 export interface RmsIikoClientOptions {
   host: string;
@@ -46,6 +51,8 @@ export type RmsCostFieldProbe = {
   rawRows: number;
   normalizedProducts: number;
   activeProducts: number;
+  normalizedPriceRows: number;
+  productsWithCachedCost: number;
   productsWithPurchasePrice: number;
   productsWithMenuPrice: number;
   productsWithTechCardPrice: number;
@@ -246,7 +253,11 @@ export class RmsIikoClient implements IikoClient {
 
       try {
         const payload = JSON.parse(text) as unknown;
-        const products = normalizeIikoProducts(payload).filter(
+        const prices = normalizeRmsPrices(payload);
+        const products = mergeProductsWithRmsPrices(
+          normalizeIikoProducts(payload),
+          prices,
+        ).filter(
           (product) => product.active !== false,
         );
         if (products.length > 0) return products;
@@ -257,6 +268,39 @@ export class RmsIikoClient implements IikoClient {
 
     throw new Error(
       `iiko RMS nomenclature failed: ${errors.join("; ") || "no products returned"}`,
+    );
+  }
+
+  async fetchPrices(): Promise<RmsPrice[]> {
+    const key = await this.getSessionKey();
+    const errors: string[] = [];
+
+    for (const endpoint of RMS_NOMENCLATURE_ENDPOINTS) {
+      const res = await this.fetchImpl(this.url(endpoint, { key }), {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Receptor-iiko-RMS-Client/2.0",
+        },
+      });
+
+      const text = await readResponseText(res);
+      if (!res.ok) {
+        errors.push(`${endpoint}: HTTP ${res.status}`);
+        continue;
+      }
+
+      try {
+        const prices = normalizeRmsPrices(JSON.parse(text) as unknown);
+        if (prices.length > 0) return prices;
+        errors.push(`${endpoint}: no cost fields`);
+      } catch {
+        errors.push(`${endpoint}: invalid JSON`);
+      }
+    }
+
+    throw new Error(
+      `iiko RMS prices failed: ${errors.join("; ") || "no prices returned"}`,
     );
   }
 
@@ -286,12 +330,20 @@ export class RmsIikoClient implements IikoClient {
           continue;
         }
 
-        const products = normalizeIikoProducts(payload);
+        const prices = normalizeRmsPrices(payload);
+        const products = mergeProductsWithRmsPrices(
+          normalizeIikoProducts(payload),
+          prices,
+        );
         return {
           endpoint,
           rawRows: rows.length,
           normalizedProducts: products.length,
           activeProducts: products.filter((product) => product.active !== false).length,
+          normalizedPriceRows: prices.length,
+          productsWithCachedCost: products.filter((product) =>
+            Boolean(product.pricePerKg || product.purchasePricePerUnit),
+          ).length,
           productsWithPurchasePrice: products.filter((product) =>
             Boolean(product.purchasePrice || product.purchasePricePerUnit),
           ).length,
@@ -314,6 +366,8 @@ export class RmsIikoClient implements IikoClient {
       rawRows: 0,
       normalizedProducts: 0,
       activeProducts: 0,
+      normalizedPriceRows: 0,
+      productsWithCachedCost: 0,
       productsWithPurchasePrice: 0,
       productsWithMenuPrice: 0,
       productsWithTechCardPrice: 0,

@@ -239,7 +239,7 @@ export async function runIikoDiagnostics(
           ok(
             "costs",
             "Себестоимость / цены RMS",
-            `Найдено ${costProbe.productsWithTechCardPrice} позиций с ценой для техкарт из ${costProbe.normalizedProducts}. Endpoint: ${costProbe.endpoint}. Поля цен: ${priceFields || "нет price-полей"}. Доступные поля: ${rawFields || "не определены"}.`,
+            `Найдено ${costProbe.productsWithTechCardPrice} позиций с себестоимостью из ${costProbe.normalizedProducts}; нормализовано price rows: ${costProbe.normalizedPriceRows}. Endpoint: ${costProbe.endpoint}. Поля цен: ${priceFields || "нет price-полей"}. Доступные поля: ${rawFields || "не определены"}.`,
           ),
         );
       } else {
