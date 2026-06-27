@@ -120,16 +120,20 @@ export function TeamActionsPanel({
   staff,
   tasks,
   auditEvents,
+  focusMemberId = "",
+  prefillMemberName = "",
 }: {
   venueId: string;
   staff: StaffMember[];
   tasks: TeamTask[];
   auditEvents: TeamAuditEvent[];
+  focusMemberId?: string;
+  prefillMemberName?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
 
-  const [memberName, setMemberName] = useState("");
+  const [memberName, setMemberName] = useState(prefillMemberName);
   const [memberEmail, setMemberEmail] = useState("");
   const [memberLogin, setMemberLogin] = useState("");
   const [memberPassword, setMemberPassword] = useState("");
@@ -168,6 +172,9 @@ export function TeamActionsPanel({
     [staff],
   );
   const laborCopy = laborReadinessCopy(laborReadiness.status);
+  const focusedMember = focusMemberId
+    ? staff.find((member) => member.id === focusMemberId)
+    : undefined;
   const missingRateNames = laborReadiness.missingStaff
     .slice(0, 4)
     .map((member) => member.name)
@@ -232,7 +239,12 @@ export function TeamActionsPanel({
 
         <div className="mt-6 grid gap-4 xl:grid-cols-3">
           <form
-            className="rounded-lg border border-border/60 bg-card/50 p-5"
+            className={
+              "rounded-lg border bg-card/50 p-5 " +
+              (prefillMemberName
+                ? "border-brand/45 ring-1 ring-brand/25"
+                : "border-border/60")
+            }
             onSubmit={(event) => {
               event.preventDefault();
               runAction(async () => {
@@ -266,6 +278,11 @@ export function TeamActionsPanel({
               <UserPlus className="size-5 text-brand" />
               <h3 className="text-lg font-medium">Добавить сотрудника</h3>
             </div>
+            {prefillMemberName ? (
+              <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
+                Из BI: добавьте «{prefillMemberName}», чтобы смены считались с точным ФОТ.
+              </p>
+            ) : null}
             <div className="mt-5 space-y-3">
               <FieldLabel label="Имя">
                 <input
@@ -569,6 +586,11 @@ export function TeamActionsPanel({
               Логины, роли, статусы, пароли и ставки для ФОТ.
             </p>
           </div>
+          {focusedMember ? (
+            <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
+              Фокус из BI: заполните ставку для «{focusedMember.name}».
+            </p>
+          ) : null}
 
           <div className="mt-5 border-y border-border/45 py-4">
             <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
@@ -640,13 +662,26 @@ export function TeamActionsPanel({
                   const draft = rateDrafts[member.id] ?? rateDraft(member);
                   const canReset = Boolean(member.userId);
                   const memberHasLaborRate = hasLaborRate(member);
+                  const isFocused = focusMemberId === member.id;
                   return (
-                    <tr key={member.id} className="align-top">
+                    <tr
+                      id={`labor-member-${member.id}`}
+                      key={member.id}
+                      className={
+                        "scroll-mt-24 align-top " +
+                        (isFocused ? "bg-brand/10" : "")
+                      }
+                    >
                       <td className="px-3 py-4">
                         <p className="font-medium text-foreground">{member.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {member.shiftLabel || "смена не указана"}
                         </p>
+                        {isFocused ? (
+                          <p className="mt-2 text-[11px] text-brand">
+                            Фокус из BI: заполнить ставку
+                          </p>
+                        ) : null}
                         <p
                           className={
                             "mt-2 text-[11px] " +

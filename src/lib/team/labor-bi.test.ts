@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildLaborBi, buildLaborInsights } from "./labor-bi";
+import { buildLaborBi, buildLaborInsights, buildLaborNextAction } from "./labor-bi";
 import type { StaffMember } from "./team-os";
 
 const staff: StaffMember[] = [
@@ -190,6 +190,14 @@ describe("buildLaborBi", () => {
       title: "Не все ставки заведены",
       action: "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko.",
     });
+    expect(buildLaborNextAction(labor)).toMatchObject({
+      kind: "missing-member",
+      title: "Добавить сотрудника из iiko",
+      blocker: expect.objectContaining({
+        name: "Петр",
+        reason: "missing-member",
+      }),
+    });
   });
 
   test("creates actionable insights for expensive labor", () => {
@@ -228,6 +236,13 @@ describe("buildLaborBi", () => {
     expect(insights.some((item) => item.title.includes("человеко-час"))).toBe(
       true,
     );
+    expect(buildLaborNextAction(labor)).toMatchObject({
+      kind: "expensive-labor",
+      title: "Разобрать дорогую смену",
+      shift: expect.objectContaining({
+        shiftId: "shift-expensive",
+      }),
+    });
   });
 
   test("creates setup insight when rates are missing", () => {
@@ -247,6 +262,35 @@ describe("buildLaborBi", () => {
     expect(buildLaborInsights(labor)[0]).toMatchObject({
       tone: "setup",
       title: "Не все ставки заведены",
+    });
+    expect(buildLaborNextAction(labor)).toMatchObject({
+      kind: "missing-member",
+      action: expect.stringContaining("Team OS"),
+    });
+  });
+
+  test("focuses known Team OS member when only labor rate is missing", () => {
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-known-member",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 60000,
+          items: 120,
+          employee: "Илья",
+        },
+      ],
+    });
+
+    expect(buildLaborNextAction(labor)).toMatchObject({
+      kind: "missing-rate",
+      title: "Заполнить ставку ФОТ",
+      blocker: expect.objectContaining({
+        memberId: "waiter",
+        name: "Илья",
+      }),
     });
   });
 });

@@ -13,10 +13,12 @@ import type { ReactNode } from "react";
 import { LinkButton } from "@/components/ui/link-button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import {
+  buildLaborNextAction,
   buildLaborInsights,
   type LaborBlocker,
   type LaborBiSummary,
   type LaborInsightTone,
+  type LaborNextAction,
 } from "@/lib/team/labor-bi";
 
 function formatPct(value: number | null): string {
@@ -41,7 +43,25 @@ export function LaborBiCard({
 }) {
   const hasRates = labor.missingRates === 0 && labor.staffShifts > 0;
   const insights = buildLaborInsights(labor);
-  const statusCopy = hasRates
+  const nextAction = buildLaborNextAction(labor);
+  const nextActionHref = buildLaborActionHref(ratesHref, nextAction);
+  const statusCopy = nextAction.kind === "missing-shifts"
+    ? {
+        label: "Нет смен",
+        title: "iiko пока не вернула смены",
+        detail:
+          "Для ФОТ нужны сотрудники и часы из смен. Проверьте период, права OLAP и доступ к сменам.",
+        className: "border-border/60 bg-background/45 text-muted-foreground",
+      }
+    : nextAction.kind === "expensive-labor"
+      ? {
+          label: "ФОТ выше нормы",
+          title: "Ставки есть, но смена дорогая",
+          detail:
+            "Стоимость команды считается, теперь можно разбирать расписание, роли, часы и загрузку зала.",
+          className: "border-destructive/35 bg-destructive/10 text-destructive",
+        }
+      : hasRates
     ? {
         label: "ФОТ считается",
         title: "Стоимость смен под контролем",
@@ -88,21 +108,8 @@ export function LaborBiCard({
         </span>
       </div>
 
-      {!hasRates && ratesHref ? (
-        <div className="mt-4 flex flex-col gap-3 rounded-lg border border-amber-400/25 bg-amber-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-2xl text-[13px] leading-relaxed text-amber-100/85">
-            Чтобы ФОТ стал точным, откройте Team OS и заполните ставки для
-            сотрудников, которых iiko видит в сменах.
-          </p>
-          <LinkButton
-            href={ratesHref}
-            variant="outline"
-            className="w-full border-amber-400/35 bg-background/45 text-amber-100 hover:border-amber-300 sm:w-auto"
-          >
-            Заполнить ставки
-            <ArrowRight className="size-4" />
-          </LinkButton>
-        </div>
+      {nextAction.kind !== "ready" ? (
+        <LaborNextActionCard action={nextAction} href={nextActionHref} />
       ) : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -204,6 +211,95 @@ export function LaborBiCard({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function buildLaborActionHref(
+  ratesHref: string | undefined,
+  action: LaborNextAction,
+): string | null {
+  if (!ratesHref) return null;
+  const [path] = ratesHref.split("#");
+
+  if (action.kind === "missing-member" && action.blocker) {
+    return addQueryAndHash(
+      path,
+      "prefillMemberName",
+      action.blocker.name,
+      "team-actions",
+    );
+  }
+
+  if (action.kind === "missing-rate" && action.blocker?.memberId) {
+    return addQueryAndHash(
+      path,
+      "focusMemberId",
+      action.blocker.memberId,
+      `labor-member-${action.blocker.memberId}`,
+    );
+  }
+
+  if (action.kind === "expensive-labor") {
+    return `${path}#shift-coverage`;
+  }
+
+  if (action.kind === "missing-shifts") {
+    return null;
+  }
+
+  return ratesHref;
+}
+
+function addQueryAndHash(
+  path: string,
+  key: string,
+  value: string,
+  hash: string,
+): string {
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}${key}=${encodeURIComponent(value)}#${hash}`;
+}
+
+function LaborNextActionCard({
+  action,
+  href,
+}: {
+  action: LaborNextAction;
+  href: string | null;
+}) {
+  const buttonLabel =
+    action.kind === "missing-member"
+      ? "Добавить в Team OS"
+      : action.kind === "missing-rate"
+        ? "Открыть ставку"
+        : action.kind === "expensive-labor"
+          ? "Открыть смены"
+          : "Открыть Team OS";
+
+  return (
+    <div className="mt-4 grid gap-3 rounded-lg border border-border/45 bg-background/30 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          Следующее действие
+        </p>
+        <p className="mt-1 text-[13px] font-medium text-foreground">
+          {action.title}
+        </p>
+        <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+          {action.detail}
+        </p>
+      </div>
+      {href ? (
+        <LinkButton
+          href={href}
+          variant="outline"
+          className="w-full border-brand/45 bg-brand/10 text-brand hover:bg-brand/15 sm:w-auto"
+        >
+          {buttonLabel}
+          <ArrowRight className="size-4" />
+        </LinkButton>
+      ) : null}
+    </div>
   );
 }
 

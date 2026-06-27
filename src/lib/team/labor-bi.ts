@@ -90,6 +90,22 @@ export type LaborInsight = {
   action: string;
 };
 
+export type LaborNextActionKind =
+  | "ready"
+  | "missing-shifts"
+  | "missing-member"
+  | "missing-rate"
+  | "expensive-labor";
+
+export type LaborNextAction = {
+  kind: LaborNextActionKind;
+  title: string;
+  detail: string;
+  action: string;
+  blocker: LaborBlocker | null;
+  shift: LaborShiftSummary | null;
+};
+
 export type LaborInsightOptions = {
   targetLaborCostPct?: number;
   minimumRevenuePerLaborHour?: number;
@@ -256,6 +272,76 @@ export function buildLaborInsights(
   }
 
   return insights.slice(0, 3);
+}
+
+export function buildLaborNextAction(
+  labor: LaborBiSummary,
+  options: LaborInsightOptions = {},
+): LaborNextAction {
+  const targetLaborCostPct = options.targetLaborCostPct ?? 25;
+
+  if (labor.staffShifts === 0) {
+    return {
+      kind: "missing-shifts",
+      title: "Смены не найдены",
+      detail: "iiko не вернула сотрудников за выбранный период.",
+      action: "Проверьте период и права на OLAP смены.",
+      blocker: null,
+      shift: null,
+    };
+  }
+
+  const blocker = labor.topBlockers[0] ?? null;
+  if (blocker?.reason === "missing-member") {
+    return {
+      kind: "missing-member",
+      title: "Добавить сотрудника из iiko",
+      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без карточки Team OS.`,
+      action:
+        "Откройте Team OS, добавьте сотрудника с таким же именем и задайте ставку ФОТ.",
+      blocker,
+      shift: null,
+    };
+  }
+
+  if (blocker?.reason === "missing-rate") {
+    return {
+      kind: "missing-rate",
+      title: "Заполнить ставку ФОТ",
+      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без точной стоимости.`,
+      action:
+        "Откройте строку сотрудника в Team OS и заполните почасовую ставку, фикс за смену или процент.",
+      blocker,
+      shift: null,
+    };
+  }
+
+  const expensiveShift = labor.shiftsBreakdown
+    .filter(
+      (shift) =>
+        shift.laborCostPct !== null && shift.laborCostPct > targetLaborCostPct,
+    )
+    .sort((a, b) => (b.laborCostPct ?? 0) - (a.laborCostPct ?? 0))[0];
+
+  if (expensiveShift) {
+    return {
+      kind: "expensive-labor",
+      title: "Разобрать дорогую смену",
+      detail: `${formatShiftDate(expensiveShift.openTime)}: ФОТ ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}.`,
+      action: "Сверьте расписание, роли, часы и загрузку зала на этой смене.",
+      blocker: null,
+      shift: expensiveShift,
+    };
+  }
+
+  return {
+    kind: "ready",
+    title: "ФОТ можно анализировать",
+    detail: `Ставки закрыты, ФОТ ${formatPct(labor.laborCostPct)} от выручки периода.`,
+    action: "Сравните ФОТ с маржей блюд и загрузкой смен.",
+    blocker: null,
+    shift: null,
+  };
 }
 
 type MutableEmployeeSummary = {

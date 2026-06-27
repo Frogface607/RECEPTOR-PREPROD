@@ -74,6 +74,11 @@ function parseVenueId(value: string | string[] | undefined): string {
   return raw?.trim() || "dev-venue";
 }
 
+function parseOptionalText(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw?.trim() ?? "";
+}
+
 function priorityClass(priority: TeamTask["priority"]): string {
   if (priority === "high") {
     return "border-destructive/30 bg-destructive/10 text-destructive";
@@ -100,9 +105,14 @@ export default async function TeamPage({
   const sp = await searchParams;
   const roleId = parseRole(sp.role);
   const venueId = parseVenueId(sp.venueId);
+  const focusMemberId = parseOptionalText(sp.focusMemberId);
+  const prefillMemberName = parseOptionalText(sp.prefillMemberName);
   const user = await getCurrentUser();
   if (isSupabaseConfigured() && !user && venueId !== "dev-venue") {
-    const nextPath = `/team?role=${roleId}&venueId=${encodeURIComponent(venueId)}`;
+    const nextParams = new URLSearchParams({ role: roleId, venueId });
+    if (focusMemberId) nextParams.set("focusMemberId", focusMemberId);
+    if (prefillMemberName) nextParams.set("prefillMemberName", prefillMemberName);
+    const nextPath = `/team?${nextParams.toString()}`;
     redirect(`/auth?next=${encodeURIComponent(nextPath)}`);
   }
 
@@ -398,6 +408,8 @@ export default async function TeamPage({
           staff={workspace.staff}
           tasks={workspace.tasks}
           auditEvents={workspace.auditEvents}
+          focusMemberId={focusMemberId}
+          prefillMemberName={prefillMemberName}
         />
 
         <TeamCommunicationPanel
