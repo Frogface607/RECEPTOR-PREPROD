@@ -240,6 +240,71 @@ function marginEvidence(input: MenuMarginReadiness): OwnerReviewEvidence {
   };
 }
 
+function formatCoverage(value: number | null): string {
+  if (value === null) return "нет данных";
+  return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%`;
+}
+
+function unitEconomicsEvidence(input: {
+  labor?: LaborBiSummary;
+  margin?: MenuMarginReadiness;
+}): OwnerReviewEvidence | null {
+  if (!input.labor && !input.margin) return null;
+
+  const labor = input.labor;
+  const margin = input.margin;
+  const laborIncomplete =
+    Boolean(labor) && labor?.laborReadinessStatus !== "ready";
+  const marginIncomplete = Boolean(margin) && margin?.status !== "ready";
+  const laborPct = labor?.laborCostPct ?? null;
+  const laborCoverage = formatCoverage(labor?.revenueCoveragePct ?? null);
+  const marginCoverage =
+    margin ? `${margin.revenueCoveragePct}%` : "нет данных";
+
+  if (laborIncomplete && marginIncomplete) {
+    return {
+      label: "Экономика",
+      value: "не доказана",
+      detail: `ФОТ покрыт на ${laborCoverage}, маржа на ${marginCoverage} выручки.`,
+      tone: "risk",
+    };
+  }
+
+  if (laborIncomplete && labor) {
+    return {
+      label: "Экономика",
+      value: "ФОТ не доказан",
+      detail: `${formatRubles(labor.unpricedRevenue)} сменной выручки без точного ФОТ.`,
+      tone: labor.laborReadinessStatus === "blocked" ? "risk" : "watch",
+    };
+  }
+
+  if (marginIncomplete && margin) {
+    return {
+      label: "Экономика",
+      value: "маржа не доказана",
+      detail: `${formatRubles(margin.blockedRevenue)} выручки без себестоимости.`,
+      tone: margin.status === "blocked" ? "risk" : "watch",
+    };
+  }
+
+  if (laborPct !== null && laborPct >= 25) {
+    return {
+      label: "Экономика",
+      value: "ФОТ давит",
+      detail: `ФОТ ${formatCoverage(laborPct)} от выручки, маржа покрыта на ${marginCoverage}.`,
+      tone: "risk",
+    };
+  }
+
+  return {
+    label: "Экономика",
+    value: "можно считать",
+    detail: `ФОТ ${formatCoverage(laborPct)}, маржа покрыта на ${marginCoverage}.`,
+    tone: "good",
+  };
+}
+
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
 
@@ -397,6 +462,8 @@ function buildVerdict(input: {
   brief: DailyBrief;
   quality: RevenueDataQuality;
   dataMode: "live" | "mock";
+  labor?: LaborBiSummary;
+  margin?: MenuMarginReadiness;
   topCategory?: CategoryStat;
   topCategoryShare: number;
   topDish?: DishStat;
@@ -416,6 +483,49 @@ function buildVerdict(input: {
       verdict: "Сначала нужно проверить данные, иначе выводы будут шумными.",
       summary:
         "В периоде не хватает продаж или покрытия дней. До решений по команде и меню лучше открыть проверку iiko.",
+    };
+  }
+
+  const laborIncomplete =
+    Boolean(input.labor) && input.labor?.laborReadinessStatus !== "ready";
+  const marginIncomplete =
+    Boolean(input.margin) && input.margin?.status !== "ready";
+  const laborPct = input.labor?.laborCostPct;
+
+  if (laborIncomplete && marginIncomplete) {
+    return {
+      verdict: "Сначала нужно доказать экономику смены: ФОТ и маржа неполные.",
+      summary:
+        "Решения про прибыль, расписание и меню будут шумными, пока часть смен без точного ФОТ, а часть выручки без себестоимости.",
+    };
+  }
+
+  if (
+    laborPct !== null &&
+    laborPct !== undefined &&
+    laborPct >= 25 &&
+    marginIncomplete
+  ) {
+    return {
+      verdict: "ФОТ давит, а маржа пока не доказана.",
+      summary:
+        "Сначала закрыть себестоимость топ-позиций, затем решать: менять расписание, цену, порции или продажи в смене.",
+    };
+  }
+
+  if (marginIncomplete) {
+    return {
+      verdict: "Прибыль периода пока не доказана: не хватает себестоимости.",
+      summary:
+        "Выручка есть, но без связки блюд с техкартами и закупочными ценами нельзя честно понять, что ресторан заработал.",
+    };
+  }
+
+  if (laborIncomplete) {
+    return {
+      verdict: "ФОТ периода пока не доказан: часть смен без ставок.",
+      summary:
+        "Сначала закройте сотрудников и ставки в Team OS, иначе стоимость команды будет занижена.",
     };
   }
 
@@ -503,6 +613,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     brief: input.brief,
     quality: input.dataQuality,
     dataMode: input.dataMode,
+    labor: input.labor,
+    margin: input.margin,
     topCategory,
     topCategoryShare,
     topDish,
@@ -522,6 +634,13 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     },
     ...(input.labor ? [laborEvidence(input.labor)] : []),
     ...(input.margin ? [marginEvidence(input.margin)] : []),
+    ...(() => {
+      const evidence = unitEconomicsEvidence({
+        labor: input.labor,
+        margin: input.margin,
+      });
+      return evidence ? [evidence] : [];
+    })(),
     {
       label: "Покрытие",
       value: `${input.dataQuality.activeDays}/${input.dataQuality.requestedDays}`,

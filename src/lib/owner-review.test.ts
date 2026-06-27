@@ -124,8 +124,14 @@ describe("buildOwnerReview", () => {
           value: "0%",
           tone: "risk",
         }),
+        expect.objectContaining({
+          label: "Экономика",
+          value: "маржа не доказана",
+          tone: "risk",
+        }),
       ]),
     );
+    expect(review.verdict).toBe("ФОТ давит, а маржа пока не доказана.");
     expect(review.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -212,6 +218,51 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",
     });
+  });
+
+  test("prioritizes unproven shift economics when labor and margin are incomplete", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T18:00:00",
+          closeTime: "2026-06-27T02:00:00",
+          revenue: 90000,
+          items: 180,
+          employee: "Петр",
+        },
+      ],
+    });
+    const margin = buildMenuMarginReadiness({
+      dishes,
+      products: [],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin,
+    });
+
+    expect(review.verdict).toBe(
+      "Сначала нужно доказать экономику смены: ФОТ и маржа неполные.",
+    );
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Экономика",
+          value: "не доказана",
+          detail: expect.stringContaining("ФОТ покрыт"),
+          tone: "risk",
+        }),
+      ]),
+    );
   });
 
   test("asks to check RMS prices when linked items have no cost", () => {
