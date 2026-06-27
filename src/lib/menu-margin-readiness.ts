@@ -15,6 +15,7 @@ export type MenuMarginItem = {
   match: "manual" | "auto" | "exact" | "similar" | "missing";
   hasCost: boolean;
   costReference: number | null;
+  costSource: "product" | "tech-card" | null;
   techCard: MenuMarginTechCardMatch | null;
   hasUsableTechCard: boolean;
   status: MenuMarginStatus;
@@ -30,6 +31,7 @@ export type MenuMarginBlocker = {
   hasTechCard: boolean;
   techCardIngredientRows: number;
   techCardLinkedIngredientRows: number;
+  techCardPricedIngredientRows: number;
 };
 
 export type MenuMarginNextAction = {
@@ -85,7 +87,10 @@ export type MenuMarginTechCardMatch = {
   ingredientRows: number;
   linkedIngredientRows: number;
   ingredientRowsWithAmount: number;
+  pricedIngredientRows: number;
+  costReference: number | null;
   usable: boolean;
+  fullyCosted: boolean;
 };
 
 export function buildMenuMarginReadiness(input: {
@@ -108,9 +113,22 @@ export function buildMenuMarginReadiness(input: {
       mapped.product !== null
         ? { product: mapped.product, kind: mapped.source }
         : findProductMatch(dish.dishName, products);
-    const costReference = getProductCostReference(match.product);
+    const productCostReference = getProductCostReference(match.product);
+    const techCard = findTechCardMatch(
+      dish.dishName,
+      match.product,
+      techCards,
+      products,
+    );
+    const costReference =
+      productCostReference ?? techCard?.costReference ?? null;
     const hasCost = costReference !== null;
-    const techCard = findTechCardMatch(dish.dishName, match.product, techCards);
+    const costSource =
+      productCostReference !== null
+        ? ("product" as const)
+        : techCard?.costReference !== null && techCard?.costReference !== undefined
+          ? ("tech-card" as const)
+          : null;
     return {
       dishName: dish.dishName,
       dishGroup: dish.dishGroup,
@@ -120,6 +138,7 @@ export function buildMenuMarginReadiness(input: {
       match: match.kind,
       hasCost,
       costReference,
+      costSource,
       techCard,
       hasUsableTechCard: Boolean(techCard?.usable),
       status: !match.product ? "blocked" : hasCost ? "ready" : "partial",
@@ -163,6 +182,7 @@ export function buildMenuMarginReadiness(input: {
       hasTechCard: item.hasUsableTechCard,
       techCardIngredientRows: item.techCard?.ingredientRows ?? 0,
       techCardLinkedIngredientRows: item.techCard?.linkedIngredientRows ?? 0,
+      techCardPricedIngredientRows: item.techCard?.pricedIngredientRows ?? 0,
     }))
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
@@ -199,6 +219,7 @@ function findTechCardMatch(
   dishName: string,
   product: Product | null,
   techCards: MenuMarginTechCard[],
+  products: Product[],
 ): MenuMarginTechCardMatch | null {
   if (techCards.length === 0) return null;
 
@@ -230,6 +251,14 @@ function findTechCardMatch(
   const ingredientRowsWithAmount = chart.items.filter((item) =>
     item.amount !== undefined,
   ).length;
+  const pricedRows = chart.items
+    .map((item) => calculateIngredientCost(item, products))
+    .filter((cost): cost is number => cost !== null);
+  const costReference =
+    ingredientRowsWithAmount > 0 &&
+    pricedRows.length === ingredientRowsWithAmount
+      ? roundMoney(pricedRows.reduce((sum, cost) => sum + cost, 0))
+      : null;
 
   return {
     id: chart.id,
@@ -238,8 +267,86 @@ function findTechCardMatch(
     ingredientRows,
     linkedIngredientRows,
     ingredientRowsWithAmount,
+    pricedIngredientRows: pricedRows.length,
+    costReference,
     usable: linkedIngredientRows > 0 && ingredientRowsWithAmount > 0,
+    fullyCosted: costReference !== null,
   };
+}
+
+function calculateIngredientCost(
+  ingredient: MenuMarginTechCardIngredient,
+  products: Product[],
+): number | null {
+  const amount = positive(ingredient.amount);
+  if (amount === null) return null;
+
+  const product = findIngredientProduct(ingredient, products);
+  if (!product) return null;
+
+  const costReference = getProductCostReference(product);
+  if (costReference === null) return null;
+
+  const unit = normalizeIngredientUnit(ingredient.unit);
+  if (unit === "pcs" || product.unit === "pcs") return amount * costReference;
+  if (unit === "kg" || unit === "l") return amount * costReference;
+  if (unit === "g" || unit === "ml") return (amount / 1000) * costReference;
+
+  return null;
+}
+
+function findIngredientProduct(
+  ingredient: MenuMarginTechCardIngredient,
+  products: Product[],
+): Product | null {
+  if (ingredient.productId) {
+    const byId = products.find((product) => product.id === ingredient.productId);
+    if (byId) return byId;
+  }
+
+  if (ingredient.article) {
+    const article = normalize(ingredient.article);
+    const byArticle = products.find(
+      (product) => normalize(product.article ?? "") === article,
+    );
+    if (byArticle) return byArticle;
+  }
+
+  if (!ingredient.productName) return null;
+
+  const name = normalize(ingredient.productName);
+  const exact = products.find((product) => normalize(product.name) === name);
+  if (exact) return exact;
+
+  const nameTokens = tokenSet(name);
+  return (
+    products
+      .map((product) => ({
+        product,
+        score: tokenScore(nameTokens, tokenSet(normalize(product.name))),
+      }))
+      .filter((item) => item.score >= 0.8)
+      .sort((a, b) => b.score - a.score)[0]?.product ?? null
+  );
+}
+
+function normalizeIngredientUnit(
+  value: string | undefined,
+): "g" | "kg" | "ml" | "l" | "pcs" | null {
+  const unit = value?.trim().toLowerCase();
+  if (!unit) return null;
+
+  if (["kg", "kilogram", "килограмм", "кг"].includes(unit)) return "kg";
+  if (["g", "gram", "гр", "г"].includes(unit)) return "g";
+  if (["l", "liter", "litre", "литр", "л"].includes(unit)) return "l";
+  if (["ml", "milliliter", "мл"].includes(unit)) return "ml";
+  if (["pcs", "piece", "pieces", "шт", "штука"].includes(unit)) return "pcs";
+
+  return null;
+}
+
+function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function findProductMatch(

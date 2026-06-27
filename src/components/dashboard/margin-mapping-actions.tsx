@@ -299,6 +299,7 @@ function MappingRow({
           markup={markup}
           match={item.match}
           hasUsableTechCard={item.hasUsableTechCard}
+          costSource={item.costSource}
         />
 
         {topCandidate ? (
@@ -359,6 +360,7 @@ function CandidateSummary({
   markup,
   match,
   hasUsableTechCard,
+  costSource,
 }: {
   product: Product | null;
   currentProduct: Product | null;
@@ -366,6 +368,7 @@ function CandidateSummary({
   markup: number | null;
   match: MenuMarginItem["match"];
   hasUsableTechCard: boolean;
+  costSource: MenuMarginItem["costSource"];
 }) {
   const shownProduct = product ?? currentProduct;
   const costText = cost
@@ -387,6 +390,7 @@ function CandidateSummary({
       <p className="mt-1 truncate">
         {matchLabel(match)}
         {costText}
+        {cost && costSource === "tech-card" ? " · по техкарте" : ""}
         {!cost && shownProduct && hasUsableTechCard ? " · техкарта есть" : ""}
         {markup !== null ? ` · маржа ${markup}%` : ""}
       </p>

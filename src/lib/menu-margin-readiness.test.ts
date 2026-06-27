@@ -283,6 +283,151 @@ describe("buildMenuMarginReadiness", () => {
     });
   });
 
+  test("calculates proven food cost from priced tech-card ingredients", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 30000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta",
+          sizePrices: [],
+        },
+        {
+          id: "flour",
+          name: "Flour",
+          unit: "g",
+          pricePerKg: 100,
+          sizePrices: [],
+        },
+        {
+          id: "egg",
+          name: "Egg",
+          unit: "pcs",
+          purchasePricePerUnit: 12,
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-pasta",
+          productId: "pasta-base",
+          productName: "Pasta",
+          items: [
+            {
+              productId: "flour",
+              productName: "Flour",
+              amount: 0.12,
+              unit: "kg",
+            },
+            {
+              productId: "egg",
+              productName: "Egg",
+              amount: 2,
+              unit: "pcs",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(readiness).toMatchObject({
+      status: "ready",
+      costedDishes: 1,
+      revenueWithCost: 30000,
+      revenueCoveragePct: 100,
+    });
+    expect(readiness.items[0]).toMatchObject({
+      hasCost: true,
+      costSource: "tech-card",
+      costReference: 36,
+      techCard: expect.objectContaining({
+        pricedIngredientRows: 2,
+        costReference: 36,
+        fullyCosted: true,
+      }),
+    });
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "ready",
+    });
+  });
+
+  test("does not prove food cost from partially priced tech-card ingredients", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 30000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta",
+          sizePrices: [],
+        },
+        {
+          id: "flour",
+          name: "Flour",
+          unit: "g",
+          pricePerKg: 100,
+          sizePrices: [],
+        },
+        {
+          id: "egg",
+          name: "Egg",
+          unit: "pcs",
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-pasta",
+          productId: "pasta-base",
+          productName: "Pasta",
+          items: [
+            {
+              productId: "flour",
+              productName: "Flour",
+              amount: 0.12,
+              unit: "kg",
+            },
+            {
+              productId: "egg",
+              productName: "Egg",
+              amount: 2,
+              unit: "pcs",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(readiness.items[0]).toMatchObject({
+      hasCost: false,
+      costSource: null,
+      costReference: null,
+      hasUsableTechCard: true,
+      techCard: expect.objectContaining({
+        pricedIngredientRows: 1,
+        costReference: null,
+        fullyCosted: false,
+      }),
+    });
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "missing-cost",
+      title: "Техкарта есть, не хватает цен ингредиентов",
+    });
+  });
+
   test("marks margin as ready when all key dishes have proven cost", () => {
     const readiness = buildMenuMarginReadiness({
       dishes: [
