@@ -50,6 +50,13 @@ type RateDraft = {
   shiftPay: string;
   revenueBonusPct: string;
 };
+type LaborSourceStatus = "live" | "demo" | "unavailable";
+
+type LaborSource = {
+  status: LaborSourceStatus;
+  periodLabel: string;
+  error: string | null;
+};
 
 const TASK_STATUSES: Array<{ value: TeamTask["status"]; label: string }> = [
   { value: "new", label: "новая" },
@@ -90,6 +97,34 @@ function iikoBlockerReasonLabel(blocker: TeamLaborIikoBlocker): string {
   return blocker.action === "add-member"
     ? "нет карточки Team OS"
     : "нет ставки";
+}
+
+function laborSourceCopy(source: LaborSource): {
+  label: string;
+  detail: string;
+  className: string;
+} {
+  if (source.status === "live") {
+    return {
+      label: "live iiko",
+      detail: `Смены загружены за период: ${source.periodLabel}.`,
+      className: "border-brand/30 bg-brand/10 text-brand",
+    };
+  }
+  if (source.status === "demo") {
+    return {
+      label: "demo iiko",
+      detail: `Показываем пример смен за период: ${source.periodLabel}.`,
+      className: "border-border/60 bg-background/45 text-muted-foreground",
+    };
+  }
+  return {
+    label: "iiko недоступна",
+    detail:
+      source.error ??
+      `Смены за период ${source.periodLabel} не загрузились. Показываем ставки Team OS.`,
+    className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
+  };
 }
 
 function resultToMessage(result: TeamActionResult): Message {
@@ -142,6 +177,7 @@ export function TeamActionsPanel({
   focusMemberId = "",
   prefillMemberName = "",
   laborBi = null,
+  laborSource,
 }: {
   venueId: string;
   staff: StaffMember[];
@@ -150,6 +186,7 @@ export function TeamActionsPanel({
   focusMemberId?: string;
   prefillMemberName?: string;
   laborBi?: LaborBiSummary | null;
+  laborSource: LaborSource;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
@@ -193,6 +230,7 @@ export function TeamActionsPanel({
     [staff, laborBi],
   );
   const laborCopy = laborReadinessCopy(laborReadiness.status);
+  const sourceCopy = laborSourceCopy(laborSource);
   const iikoBlockers = laborReadiness.iikoBlockers.slice(0, 4);
   const focusedMember = focusMemberId
     ? staff.find((member) => member.id === focusMemberId)
@@ -628,6 +666,19 @@ export function TeamActionsPanel({
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
               Логины, роли, статусы, пароли и ставки для ФОТ.
+            </p>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span
+              className={
+                "inline-flex items-center rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.14em] " +
+                sourceCopy.className
+              }
+            >
+              {sourceCopy.label}
+            </span>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {sourceCopy.detail}
             </p>
           </div>
           {focusedMember ? (

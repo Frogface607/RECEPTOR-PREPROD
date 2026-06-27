@@ -22,6 +22,7 @@ import { LinkButton } from "@/components/ui/link-button";
 import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
 import {
+  formatPeriodLabel,
   parsePeriodSearchParams,
   periodToSearchParams,
 } from "@/lib/venues/period";
@@ -104,30 +105,70 @@ function teamHref(
   return `/team?${params.toString()}`;
 }
 
-async function loadTeamLaborBi(input: {
+function dashboardHref(venueId: string, period: Period): string {
+  const params = new URLSearchParams(periodToSearchParams(period));
+  return `/dashboard/${encodeURIComponent(venueId)}?${params.toString()}`;
+}
+
+type TeamLaborLoadResult = {
+  laborBi: LaborBiSummary | null;
+  source: "live" | "demo" | "unavailable";
+  error: string | null;
+};
+
+function laborLoadErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/401|auth|unauthorized/i.test(message)) {
+    return "iiko не дала доступ к сменам. Проверьте права интеграции.";
+  }
+  if (/OLAP|reports|shifts|смен/i.test(message)) {
+    return "iiko не вернула смены за выбранный период. Проверьте период и права OLAP.";
+  }
+  return "Смены iiko временно недоступны. Показываем только ставки Team OS.";
+}
+
+async function loadTeamLabor(input: {
   venueId: string;
   staff: StaffMember[];
   period: Period;
-}): Promise<LaborBiSummary | null> {
+}): Promise<TeamLaborLoadResult> {
   if (input.venueId === "dev-venue") {
     const shifts = await new MockIikoClient({ today: DEMO_ANCHOR }).getShifts(
       input.period,
     );
-    return buildLaborBi({ shifts, staff: input.staff });
+    return {
+      laborBi: buildLaborBi({ shifts, staff: input.staff }),
+      source: "demo",
+      error: null,
+    };
   }
 
   const access = await getVenueAccess(input.venueId);
-  if (!access.ok) return null;
+  if (!access.ok) {
+    return {
+      laborBi: null,
+      source: "unavailable",
+      error: "Нет доступа к заведению для загрузки смен iiko.",
+    };
+  }
 
   try {
     const shifts = await getDashboardClient(access.venue).getShifts(input.period);
-    return buildLaborBi({ shifts, staff: input.staff });
+    return {
+      laborBi: buildLaborBi({ shifts, staff: input.staff }),
+      source: "live",
+      error: null,
+    };
   } catch (error) {
     console.error("[team] Failed to load iiko labor shifts", {
       venueId: input.venueId,
       error: error instanceof Error ? error.message : String(error),
     });
-    return null;
+    return {
+      laborBi: null,
+      source: "unavailable",
+      error: laborLoadErrorMessage(error),
+    };
   }
 }
 
@@ -185,12 +226,15 @@ export default async function TeamPage({
     workspace.learningProgress,
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
-  const laborBi = await loadTeamLaborBi({
+  const laborLoad = await loadTeamLabor({
     venueId,
     staff: workspace.staff,
     period,
   });
-  const laborReadiness = buildTeamLaborReadiness(workspace.staff, laborBi);
+  const laborReadiness = buildTeamLaborReadiness(
+    workspace.staff,
+    laborLoad.laborBi,
+  );
   const opsReadiness = buildTeamOpsReadiness({
     shiftOverview,
     laborReadiness,
@@ -243,7 +287,7 @@ export default async function TeamPage({
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <LinkButton
-                  href={`/dashboard/${encodeURIComponent(workspace.venueId)}`}
+                  href={dashboardHref(workspace.venueId, period)}
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
                   Панель владельца
@@ -476,7 +520,12 @@ export default async function TeamPage({
           auditEvents={workspace.auditEvents}
           focusMemberId={focusMemberId}
           prefillMemberName={prefillMemberName}
-          laborBi={laborBi}
+          laborBi={laborLoad.laborBi}
+          laborSource={{
+            status: laborLoad.source,
+            periodLabel: formatPeriodLabel(period),
+            error: laborLoad.error,
+          }}
         />
 
         <TeamCommunicationPanel
