@@ -108,25 +108,22 @@ export function LearningWorkspace({
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submittedScore, setSubmittedScore] =
     useState<TeamLearningScore | null>(null);
-  const [progress, setProgress] = useState<ProgressMap>(initialProgress);
+  const [progress, setProgress] = useState<ProgressMap>(() =>
+    mergeProgress(initialProgress, loadProgress()),
+  );
   const [saveMessage, setSaveMessage] = useState<string>("");
-
-  useEffect(() => {
-    setProgress(mergeProgress(initialProgress, loadProgress()));
-  }, [initialProgress]);
 
   const activeItem = useMemo(
     () => items.find((item) => item.id === activeItemId) ?? items[0],
     [activeItemId, items],
   );
+  const activeItemUrlId = activeItem?.id;
 
   useEffect(() => {
-    if (!activeItem) return;
-    const nextUrl = `/me/learning?module=${encodeURIComponent(activeItem.id)}`;
+    if (!activeItemUrlId) return;
+    const nextUrl = `/me/learning?module=${encodeURIComponent(activeItemUrlId)}`;
     window.history.replaceState(null, "", nextUrl);
-    setAnswers({});
-    setSubmittedScore(null);
-  }, [activeItem?.id, activeItem]);
+  }, [activeItemUrlId]);
 
   const answeredCount = activeItem
     ? activeItem.quiz.filter((_, index) => answers[index] !== undefined).length
@@ -153,6 +150,13 @@ export function LearningWorkspace({
       ...current,
       [questionIndex]: answerIndex,
     }));
+  }
+
+  function selectModule(moduleId: string) {
+    setActiveItemId(moduleId);
+    setAnswers({});
+    setSubmittedScore(null);
+    setSaveMessage("");
   }
 
   function submitQuiz() {
@@ -254,7 +258,7 @@ export function LearningWorkspace({
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveItemId(item.id)}
+                  onClick={() => selectModule(item.id)}
                   className={cn(
                     "rounded-lg border p-3 text-left transition-colors",
                     active

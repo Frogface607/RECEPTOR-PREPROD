@@ -119,6 +119,20 @@ export type LaborInsightOptions = {
   minimumRevenuePerLaborHour?: number;
 };
 
+export type LaborShiftDiagnosticKind =
+  | "missing-rates"
+  | "expensive-labor"
+  | "low-productivity"
+  | "healthy";
+
+export type LaborShiftDiagnostic = LaborShiftSummary & {
+  kind: LaborShiftDiagnosticKind;
+  tone: LaborInsightTone;
+  title: string;
+  detail: string;
+  action: string;
+};
+
 export function buildLaborBi(input: {
   shifts: LaborShiftInput[];
   staff?: StaffMember[];
@@ -380,6 +394,33 @@ export function buildLaborNextAction(
   };
 }
 
+export function buildLaborShiftDiagnostics(
+  labor: LaborBiSummary,
+  options: LaborInsightOptions = {},
+): LaborShiftDiagnostic[] {
+  const targetLaborCostPct = options.targetLaborCostPct ?? 25;
+  const minimumRevenuePerLaborHour = options.minimumRevenuePerLaborHour ?? 6000;
+
+  return labor.shiftsBreakdown
+    .map((shift) =>
+      decorateShiftDiagnostic(shift, {
+        targetLaborCostPct,
+        minimumRevenuePerLaborHour,
+      }),
+    )
+    .sort(
+      (a, b) =>
+        shiftRiskScore(b, {
+          targetLaborCostPct,
+          minimumRevenuePerLaborHour,
+        }) -
+          shiftRiskScore(a, {
+            targetLaborCostPct,
+            minimumRevenuePerLaborHour,
+          }) || b.revenue - a.revenue,
+    );
+}
+
 type MutableEmployeeSummary = {
   memberId?: string;
   name: string;
@@ -563,6 +604,82 @@ function buildRevenueCoveragePct(input: {
   if (assignedRevenue > 0) return pct(input.pricedRevenue, assignedRevenue);
 
   return input.unpricedStaffShifts === 0 ? 100 : 0;
+}
+
+function decorateShiftDiagnostic(
+  shift: LaborShiftSummary,
+  options: Required<LaborInsightOptions>,
+): LaborShiftDiagnostic {
+  if (shift.missingRates > 0) {
+    return {
+      ...shift,
+      kind: "missing-rates",
+      tone: "setup",
+      title: "ФОТ смены не доказан",
+      detail: `${shift.missingRates} ${plural(shift.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки или карточки Team OS.`,
+      action: "Сначала закройте ставку, потом сравнивайте смену по прибыли.",
+    };
+  }
+
+  if (
+    shift.laborCostPct !== null &&
+    shift.laborCostPct > options.targetLaborCostPct
+  ) {
+    return {
+      ...shift,
+      kind: "expensive-labor",
+      tone: "risk",
+      title: "Смена дорогая по ФОТ",
+      detail: `ФОТ ${formatPct(shift.laborCostPct)} при выручке ${formatMoney(shift.revenue)}.`,
+      action: "Разберите расписание, роли и загрузку зала в этой смене.",
+    };
+  }
+
+  if (
+    shift.revenuePerHour !== null &&
+    shift.revenuePerHour < options.minimumRevenuePerLaborHour
+  ) {
+    return {
+      ...shift,
+      kind: "low-productivity",
+      tone: "watch",
+      title: "Низкая выручка на человеко-час",
+      detail: `${formatMoney(shift.revenuePerHour)} на час при ориентире ${formatMoney(options.minimumRevenuePerLaborHour)}.`,
+      action: "Проверьте лишние руки, слабые часы и задачи на продажи.",
+    };
+  }
+
+  return {
+    ...shift,
+    kind: "healthy",
+    tone: "good",
+    title: "Смена выглядит управляемо",
+    detail: `ФОТ ${formatPct(shift.laborCostPct)}, ${formatMoney(shift.revenuePerHour)} на человеко-час.`,
+    action: "Сравните с маржой блюд и закрепите этот состав как ориентир.",
+  };
+}
+
+function shiftRiskScore(
+  shift: LaborShiftSummary,
+  options: Required<LaborInsightOptions>,
+): number {
+  if (shift.missingRates > 0) return 30_000 + shift.missingRates * 100;
+
+  if (
+    shift.laborCostPct !== null &&
+    shift.laborCostPct > options.targetLaborCostPct
+  ) {
+    return 20_000 + (shift.laborCostPct - options.targetLaborCostPct) * 100;
+  }
+
+  if (
+    shift.revenuePerHour !== null &&
+    shift.revenuePerHour < options.minimumRevenuePerLaborHour
+  ) {
+    return 10_000 + (options.minimumRevenuePerLaborHour - shift.revenuePerHour);
+  }
+
+  return 0;
 }
 
 function splitRevenue(revenue: number, workerCount: number): number {

@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { PeriodTypeSchema as BasePeriodTypeSchema } from "@/lib/iiko/models";
 import type { IikoClient } from "@/lib/iiko/types";
 

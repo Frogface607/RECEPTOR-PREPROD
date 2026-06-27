@@ -251,7 +251,7 @@ function buildLaborActionHref(
   }
 
   if (action.kind === "expensive-labor") {
-    return `${path}#shift-coverage`;
+    return `${path}#iiko-shift-diagnostics`;
   }
 
   if (action.kind === "missing-shifts") {

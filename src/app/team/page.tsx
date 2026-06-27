@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowRight,
+  Banknote,
   BookOpenCheck,
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
   ClipboardList,
+  Clock3,
   GraduationCap,
   KeyRound,
   ListChecks,
+  SearchCheck,
   ShieldCheck,
   Trophy,
   UsersRound,
@@ -55,11 +59,17 @@ import {
   type TeamOpsActionTone,
   type TeamOpsReadinessStatus,
 } from "@/lib/team/team-ops-readiness";
-import { buildLaborBi, type LaborBiSummary } from "@/lib/team/labor-bi";
+import {
+  buildLaborBi,
+  buildLaborShiftDiagnostics,
+  type LaborBiSummary,
+  type LaborShiftDiagnostic,
+} from "@/lib/team/labor-bi";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getVenueAccess } from "@/lib/auth/venue-access";
 import { isSupabaseConfigured } from "@/lib/db/env";
+import { formatInteger, formatRubles } from "@/lib/format";
 import {
   DEMO_ANCHOR,
   getDashboardClient,
@@ -241,6 +251,9 @@ export default async function TeamPage({
     learningSummaries,
     tasks: workspace.tasks,
   });
+  const shiftDiagnostics = laborLoad.laborBi
+    ? buildLaborShiftDiagnostics(laborLoad.laborBi).slice(0, 5)
+    : [];
   const visibleStaff = workspace.staff.filter((member) =>
     roleId === "owner" ||
     roleId === "operations_manager" ||
@@ -394,6 +407,88 @@ export default async function TeamPage({
                   </Link>
                 );
               })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="iiko-shift-diagnostics"
+          className="scroll-mt-24 border-b border-border/40"
+        >
+          <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.72fr_1.28fr]">
+            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                    Смены из iiko
+                  </p>
+                  <h2 className="mt-3 text-2xl font-medium">
+                    Какая смена требует разбора
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Сначала проверяем, можно ли верить ФОТ, потом ищем дорогие и
+                    слабые смены.
+                  </p>
+                </div>
+                <SearchCheck className="size-6 shrink-0 text-brand" />
+              </div>
+
+              <div className="mt-5 grid grid-cols-3 gap-3">
+                <ShiftMetric
+                  icon={<CalendarDays className="size-4" />}
+                  label="Смен"
+                  value={formatInteger(laborLoad.laborBi?.shifts ?? 0)}
+                />
+                <ShiftMetric
+                  icon={<Banknote className="size-4" />}
+                  label="ФОТ"
+                  value={formatRubles(laborLoad.laborBi?.laborCost ?? 0)}
+                />
+                <ShiftMetric
+                  icon={<Clock3 className="size-4" />}
+                  label="Часы"
+                  value={formatHours(laborLoad.laborBi?.staffHours ?? 0)}
+                />
+              </div>
+
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                Источник: {laborSourceLabel(laborLoad.source)} за{" "}
+                {formatPeriodLabel(period)}.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                    Очередь разбора
+                  </p>
+                  <h2 className="mt-2 text-xl font-medium">
+                    ФОТ, выручка и человеко-часы
+                  </h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  точность ФОТ: {formatPct(laborLoad.laborBi?.revenueCoveragePct ?? null)}
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-3">
+                {shiftDiagnostics.length > 0 ? (
+                  shiftDiagnostics.map((shift) => (
+                    <ShiftDiagnosticRow key={shift.shiftId} shift={shift} />
+                  ))
+                ) : (
+                  <div className="rounded-lg border border-border/45 bg-background/35 p-4">
+                    <p className="text-sm font-medium">
+                      Смены за период не загружены
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {laborLoad.error ??
+                        "Проверьте период, права интеграции и доступ к сменам iiko."}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -722,6 +817,116 @@ function ReadinessMetric({ label, value }: { label: string; value: string }) {
         {value}
       </span>
     </div>
+  );
+}
+
+function formatPct(value: number | null): string {
+  if (value === null) return "—";
+  return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%`;
+}
+
+function formatHours(value: number): string {
+  return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })} ч`;
+}
+
+function formatShiftDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(0, 10);
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function laborSourceLabel(source: TeamLaborLoadResult["source"]): string {
+  if (source === "live") return "живые смены iiko";
+  if (source === "demo") return "демо-смены";
+  return "смены недоступны";
+}
+
+function ShiftMetric({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+      <div className="flex items-center justify-between gap-2 text-brand">
+        <span className="text-muted-foreground">{icon}</span>
+        <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          {label}
+        </span>
+      </div>
+      <p className="numeric mt-3 text-lg font-medium text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function shiftDiagnosticToneClass(tone: LaborShiftDiagnostic["tone"]): string {
+  if (tone === "risk") return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (tone === "setup") return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  if (tone === "watch") return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  return "border-brand/30 bg-brand/10 text-brand";
+}
+
+function shiftDiagnosticHref(shift: LaborShiftDiagnostic): string {
+  if (shift.kind === "missing-rates") return "#labor-rates";
+  return "#shift-coverage";
+}
+
+function ShiftDiagnosticRow({ shift }: { shift: LaborShiftDiagnostic }) {
+  return (
+    <Link
+      href={shiftDiagnosticHref(shift)}
+      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center"
+    >
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={
+              "rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+              shiftDiagnosticToneClass(shift.tone)
+            }
+          >
+            {formatShiftDate(shift.openTime)}
+          </span>
+          <p className="text-sm font-medium text-foreground">{shift.title}</p>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          {shift.detail}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-foreground/85">
+          {shift.action}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground sm:grid-cols-4 xl:min-w-[420px]">
+        <ShiftValue label="выручка" value={formatRubles(shift.revenue)} />
+        <ShiftValue label="ФОТ" value={formatPct(shift.laborCostPct)} />
+        <ShiftValue label="часы" value={formatHours(shift.hours)} />
+        <ShiftValue label="без ставок" value={formatInteger(shift.missingRates)} />
+      </div>
+    </Link>
+  );
+}
+
+function ShiftValue({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1.5">
+      <span className="block text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="numeric mt-1 block font-mono text-[12px] text-foreground">
+        {value}
+      </span>
+    </span>
   );
 }
 

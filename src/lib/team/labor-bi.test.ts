@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { buildLaborBi, buildLaborInsights, buildLaborNextAction } from "./labor-bi";
+import {
+  buildLaborBi,
+  buildLaborInsights,
+  buildLaborNextAction,
+  buildLaborShiftDiagnostics,
+} from "./labor-bi";
 import type { StaffMember } from "./team-os";
 
 const staff: StaffMember[] = [
@@ -353,5 +358,58 @@ describe("buildLaborBi", () => {
         name: "Илья",
       }),
     });
+  });
+
+  test("orders shift diagnostics by labor risk", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "healthy",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 120000,
+          items: 260,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Мария",
+              hours: 10,
+              shiftPay: 4000,
+              sales: 120000,
+            },
+          ],
+        },
+        {
+          shiftId: "expensive",
+          openTime: "2026-06-27T12:00:00",
+          closeTime: "2026-06-27T22:00:00",
+          revenue: 50000,
+          items: 110,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Илья",
+              hours: 10,
+              shiftPay: 18000,
+              sales: 50000,
+            },
+          ],
+        },
+        {
+          shiftId: "missing",
+          openTime: "2026-06-28T12:00:00",
+          closeTime: "2026-06-28T22:00:00",
+          revenue: 40000,
+          items: 90,
+          employee: "Петр",
+        },
+      ],
+    });
+
+    expect(buildLaborShiftDiagnostics(labor).map((item) => item.kind)).toEqual([
+      "missing-rates",
+      "expensive-labor",
+      "healthy",
+    ]);
   });
 });

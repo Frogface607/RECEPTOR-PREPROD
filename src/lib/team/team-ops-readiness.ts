@@ -122,7 +122,7 @@ export function buildTeamOpsReadiness(input: {
       tone: "watch",
       title: "Проверить смены iiko",
       detail: "Team OS не видит сотрудников в сменах за выбранный период.",
-      href: "#shift-coverage",
+      href: "#iiko-shift-diagnostics",
     });
   } else if (firstMissingRate) {
     const extraMissing = laborReadiness.missingStaff.length - 1;
