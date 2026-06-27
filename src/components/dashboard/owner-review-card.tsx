@@ -55,7 +55,8 @@ function actionHref(action: OwnerReviewAction, venueId: string): string {
   }
 
   if (action.target === "labor-rate" && action.memberId) {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusMemberId=${encodeURIComponent(action.memberId)}#labor-member-${encodeURIComponent(action.memberId)}`;
+    const encodedMemberId = encodeURIComponent(action.memberId);
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;
   }
 
   if (action.target === "labor-rate") {

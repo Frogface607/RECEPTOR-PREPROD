@@ -101,12 +101,18 @@ function parseOptionalText(value: string | string[] | undefined): string {
   return raw?.trim() ?? "";
 }
 
-function teamHref(venueId: string, roleId: TeamRoleId, period: Period): string {
+function teamHref(
+  venueId: string,
+  roleId: TeamRoleId,
+  period: Period,
+  memberId = "",
+): string {
   const params = new URLSearchParams({
     role: roleId,
     venueId,
     ...periodToSearchParams(period),
   });
+  if (memberId) params.set("memberId", memberId);
   return `/team?${params.toString()}`;
 }
 
@@ -210,6 +216,7 @@ export default async function TeamPage({
   const roleId = parseRole(sp.role);
   const venueId = parseVenueId(sp.venueId);
   const period = parsePeriodSearchParams(sp);
+  const memberId = parseOptionalText(sp.memberId);
   const focusMemberId = parseOptionalText(sp.focusMemberId);
   const prefillMemberName = parseOptionalText(sp.prefillMemberName);
   const user = await getCurrentUser();
@@ -219,6 +226,7 @@ export default async function TeamPage({
       venueId,
       ...periodToSearchParams(period),
     });
+    if (memberId) nextParams.set("memberId", memberId);
     if (focusMemberId) nextParams.set("focusMemberId", focusMemberId);
     if (prefillMemberName)
       nextParams.set("prefillMemberName", prefillMemberName);
@@ -252,14 +260,24 @@ export default async function TeamPage({
   const shiftDiagnostics = laborLoad.laborBi
     ? buildLaborShiftDiagnostics(laborLoad.laborBi).slice(0, 5)
     : [];
-  const visibleStaff = workspace.staff.filter((member) =>
+  const selectedMemberId = memberId || focusMemberId;
+  const selectedMember = selectedMemberId
+    ? (workspace.staff.find((member) => member.id === selectedMemberId) ?? null)
+    : null;
+  const visibleStaffBase = workspace.staff.filter((member) =>
     roleId === "owner" ||
     roleId === "operations_manager" ||
     roleId === "venue_manager"
       ? true
       : member.roleId === roleId,
   );
+  const visibleStaff =
+    selectedMember &&
+    !visibleStaffBase.some((member) => member.id === selectedMember.id)
+      ? [selectedMember, ...visibleStaffBase]
+      : visibleStaffBase;
   const representativeMember =
+    selectedMember ??
     workspace.staff.find((member) => member.roleId === roleId) ??
     workspace.staff[0];
   const memberTasks = representativeMember
@@ -720,7 +738,17 @@ export default async function TeamPage({
               </div>
               <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 {visibleStaff.map((member) => (
-                  <StaffRow key={member.id} member={member} />
+                  <StaffRow
+                    key={member.id}
+                    member={member}
+                    href={teamHref(
+                      workspace.venueId,
+                      member.roleId,
+                      period,
+                      member.id,
+                    )}
+                    selected={representativeMember?.id === member.id}
+                  />
                 ))}
               </div>
             </div>
@@ -1323,24 +1351,50 @@ function TaskRow({
   );
 }
 
-function StaffRow({ member }: { member: StaffMember }) {
+function StaffRow({
+  member,
+  href,
+  selected,
+}: {
+  member: StaffMember;
+  href: string;
+  selected: boolean;
+}) {
   const role = getTeamRole(member.roleId);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+    <Link
+      href={href}
+      className={
+        "grid gap-3 rounded-lg border p-3 transition-colors sm:grid-cols-[1fr_auto] sm:items-center " +
+        (selected
+          ? "border-brand/45 bg-brand/10"
+          : "border-border/45 bg-background/35 hover:border-brand/35 hover:bg-background/55")
+      }
+    >
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-medium">{member.name}</p>
           <Badge variant="outline">{role.title}</Badge>
+          {selected ? (
+            <Badge variant="outline" className="border-brand/30 text-brand">
+              открыт
+            </Badge>
+          ) : null}
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           {member.shiftLabel}
         </p>
       </div>
-      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-        <CheckCircle2 className="size-4 text-brand" />
-        {member.status === "active" ? "активен" : member.status}
+      <div className="flex items-center gap-2 text-[12px] text-muted-foreground sm:justify-end">
+        {member.status === "active" ? (
+          <CheckCircle2 className="size-4 text-brand" />
+        ) : (
+          <Clock3 className="size-4 text-amber-100" />
+        )}
+        <span>{member.status === "active" ? "активен" : member.status}</span>
+        <ArrowRight className="size-4" />
       </div>
-    </div>
+    </Link>
   );
 }
