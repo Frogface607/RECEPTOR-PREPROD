@@ -41,10 +41,14 @@ export function LaborBiCard({
   labor: LaborBiSummary;
   ratesHref?: string;
 }) {
-  const hasRates = labor.missingRates === 0 && labor.staffShifts > 0;
   const insights = buildLaborInsights(labor);
   const nextAction = buildLaborNextAction(labor);
   const nextActionHref = buildLaborActionHref(ratesHref, nextAction);
+  const coverageLabel = formatPct(labor.revenueCoveragePct);
+  const unpricedDetail =
+    labor.unpricedStaffShifts > 0
+      ? `${formatInteger(labor.unpricedStaffShifts)} записей · ${formatRubles(labor.unpricedRevenue)} под вопросом`
+      : "вся выручка смен покрыта";
   const statusCopy = nextAction.kind === "missing-shifts"
     ? {
         label: "Нет смен",
@@ -61,19 +65,26 @@ export function LaborBiCard({
             "Стоимость команды считается, теперь можно разбирать расписание, роли, часы и загрузку зала.",
           className: "border-destructive/35 bg-destructive/10 text-destructive",
         }
-      : hasRates
+      : labor.laborReadinessStatus === "ready"
     ? {
         label: "ФОТ считается",
         title: "Стоимость смен под контролем",
         detail:
-          "Ставки заведены. Можно сравнивать выручку, человеко-часы и нагрузку команды.",
+          `Ставки заведены, точность ФОТ ${coverageLabel}. Можно сравнивать выручку, человеко-часы и нагрузку команды.`,
         className: "border-brand/35 bg-brand/10 text-brand",
       }
+    : labor.laborReadinessStatus === "partial"
+      ? {
+          label: "ФОТ частичный",
+          title: "ФОТ считается не по всем сменам",
+          detail: `Точная часть покрывает ${coverageLabel} сменной выручки. ${formatRubles(labor.unpricedRevenue)} пока без ставки или карточки сотрудника.`,
+          className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
+        }
     : {
-        label: "Нужны ставки",
-        title: "Смены видны, ФОТ требует ставок",
+        label: "ФОТ не доказан",
+        title: "Смены видны, но ФОТ еще нельзя считать",
         detail:
-          "Receptor уже видит смены и часы. Добавьте ставки сотрудников или ролей в Team OS, чтобы считать ФОТ к выручке.",
+          "Receptor видит смены и часы, но не нашел ни одной точной ставки. Сначала свяжите сотрудников и задайте правила ФОТ в Team OS.",
         className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
       };
 
@@ -133,9 +144,9 @@ export function LaborBiCard({
         />
         <Metric
           icon={<Percent className="size-4" />}
-          label="Ставки не заведены"
-          value={formatInteger(labor.missingRates)}
-          detail={labor.missingRates > 0 ? "мешают посчитать ФОТ" : "данные готовы"}
+          label="Точность ФОТ"
+          value={coverageLabel}
+          detail={labor.revenueCoveragePct === null ? "нет сменных данных" : unpricedDetail}
         />
       </div>
 

@@ -197,11 +197,17 @@ function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
       : `${input.laborCostPct.toLocaleString("ru-RU", {
           maximumFractionDigits: 1,
         })}%`;
+  const coverage =
+    input.revenueCoveragePct === null
+      ? "покрытие неизвестно"
+      : `${input.revenueCoveragePct.toLocaleString("ru-RU", {
+          maximumFractionDigits: 1,
+        })}% выручки с точным ФОТ`;
   const detail =
     blocker
-      ? `${blocker.name}: ${formatRubles(blocker.sales)} без точного ФОТ`
+      ? `${blocker.name}: ${formatRubles(blocker.sales)} без точного ФОТ, ${coverage}`
       : input.missingRates > 0
-      ? `${input.missingRates} ставок не заведено`
+      ? `${input.missingRates} ставок не заведено, ${coverage}`
       : `${formatRubles(input.laborCost)} за период`;
 
   return {
@@ -353,10 +359,24 @@ function confidenceFor(input: BuildOwnerReviewInput): {
     };
   }
 
+  if (input.labor?.laborReadinessStatus === "blocked") {
+    return {
+      confidence: "low",
+      reason: "ФОТ по сменам не доказан: не закрыты сотрудники или ставки",
+    };
+  }
+
   if (!input.brief.revenue.comparisonAvailable) {
     return {
       confidence: "medium",
       reason: "есть live-данные, но пока нет честной базы сравнения",
+    };
+  }
+
+  if (input.labor?.laborReadinessStatus === "partial") {
+    return {
+      confidence: "medium",
+      reason: "ФОТ считается частично: часть сменной выручки без точных ставок",
     };
   }
 

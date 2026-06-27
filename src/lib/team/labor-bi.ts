@@ -51,6 +51,8 @@ export type LaborBlocker = {
   reason: LaborBlockerReason;
 };
 
+export type LaborReadinessStatus = "ready" | "partial" | "blocked";
+
 export type LaborShiftSummary = {
   shiftId: string;
   openTime: string;
@@ -76,6 +78,12 @@ export type LaborBiSummary = {
   revenuePerLaborHour: number | null;
   averageStaffPerShift: number;
   missingRates: number;
+  pricedStaffShifts: number;
+  unpricedStaffShifts: number;
+  pricedRevenue: number;
+  unpricedRevenue: number;
+  revenueCoveragePct: number | null;
+  laborReadinessStatus: LaborReadinessStatus;
   shiftsBreakdown: LaborShiftSummary[];
   employees: LaborEmployeeSummary[];
   topBlockers: LaborBlocker[];
@@ -118,6 +126,10 @@ export function buildLaborBi(input: {
 }): LaborBiSummary {
   const staffById = new Map((input.staff ?? []).map((member) => [member.id, member]));
   const employeeTotals = new Map<string, MutableEmployeeSummary>();
+  let pricedStaffShifts = 0;
+  let unpricedStaffShifts = 0;
+  let pricedRevenue = 0;
+  let unpricedRevenue = 0;
 
   const shiftsBreakdown = input.shifts.map((shift) => {
     const workers = normalizeWorkers(shift, staffById);
@@ -135,6 +147,13 @@ export function buildLaborBi(input: {
       shiftHours += hours;
       shiftLaborCost += cost;
       if (missingRate) missingRates += 1;
+      if (missingRate) {
+        unpricedStaffShifts += 1;
+        unpricedRevenue += sales;
+      } else {
+        pricedStaffShifts += 1;
+        pricedRevenue += sales;
+      }
 
       upsertEmployee(employeeTotals, worker, {
         hours,
@@ -168,6 +187,8 @@ export function buildLaborBi(input: {
     .map(finalizeEmployee)
     .sort((a, b) => b.laborCost - a.laborCost || b.sales - a.sales);
   const topBlockers = buildLaborBlockers(employees);
+  const roundedPricedRevenue = roundMoney(pricedRevenue);
+  const roundedUnpricedRevenue = roundMoney(unpricedRevenue);
 
   return {
     revenue,
@@ -180,6 +201,21 @@ export function buildLaborBi(input: {
     revenuePerLaborHour: ratio(revenue, staffHours),
     averageStaffPerShift: round(ratio(staffShifts, input.shifts.length) ?? 0),
     missingRates: shiftsBreakdown.reduce((total, shift) => total + shift.missingRates, 0),
+    pricedStaffShifts,
+    unpricedStaffShifts,
+    pricedRevenue: roundedPricedRevenue,
+    unpricedRevenue: roundedUnpricedRevenue,
+    revenueCoveragePct: buildRevenueCoveragePct({
+      staffShifts,
+      unpricedStaffShifts,
+      pricedRevenue: roundedPricedRevenue,
+      unpricedRevenue: roundedUnpricedRevenue,
+    }),
+    laborReadinessStatus: resolveLaborReadinessStatus({
+      staffShifts,
+      pricedStaffShifts,
+      unpricedStaffShifts,
+    }),
     shiftsBreakdown,
     employees,
     topBlockers,
@@ -503,6 +539,30 @@ function buildLaborBlockers(employees: LaborEmployeeSummary[]): LaborBlocker[] {
     }))
     .sort((a, b) => b.sales - a.sales || b.hours - a.hours || b.shifts - a.shifts)
     .slice(0, 5);
+}
+
+function resolveLaborReadinessStatus(input: {
+  staffShifts: number;
+  pricedStaffShifts: number;
+  unpricedStaffShifts: number;
+}): LaborReadinessStatus {
+  if (input.staffShifts === 0 || input.pricedStaffShifts === 0) return "blocked";
+  if (input.unpricedStaffShifts > 0) return "partial";
+  return "ready";
+}
+
+function buildRevenueCoveragePct(input: {
+  staffShifts: number;
+  unpricedStaffShifts: number;
+  pricedRevenue: number;
+  unpricedRevenue: number;
+}): number | null {
+  if (input.staffShifts === 0) return null;
+
+  const assignedRevenue = input.pricedRevenue + input.unpricedRevenue;
+  if (assignedRevenue > 0) return pct(input.pricedRevenue, assignedRevenue);
+
+  return input.unpricedStaffShifts === 0 ? 100 : 0;
 }
 
 function splitRevenue(revenue: number, workerCount: number): number {

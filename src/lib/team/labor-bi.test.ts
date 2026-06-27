@@ -67,6 +67,12 @@ describe("buildLaborBi", () => {
       revenuePerLaborHour: 6316,
       averageStaffPerShift: 2,
       missingRates: 0,
+      pricedStaffShifts: 2,
+      unpricedStaffShifts: 0,
+      pricedRevenue: 120000,
+      unpricedRevenue: 0,
+      revenueCoveragePct: 100,
+      laborReadinessStatus: "ready",
     });
     expect(labor.employees[0]).toMatchObject({
       name: "Илья",
@@ -100,10 +106,65 @@ describe("buildLaborBi", () => {
       laborCostPct: 0,
       revenuePerLaborHour: 10000,
       missingRates: 1,
+      pricedStaffShifts: 0,
+      unpricedStaffShifts: 1,
+      pricedRevenue: 0,
+      unpricedRevenue: 80000,
+      revenueCoveragePct: 0,
+      laborReadinessStatus: "blocked",
     });
     expect(labor.employees[0]).toMatchObject({
       name: "Кассир",
       missingRate: true,
+    });
+  });
+
+  test("shows partial FOT readiness by covered revenue", () => {
+    const labor = buildLaborBi({
+      staff: [
+        {
+          id: "waiter",
+          name: "Илья",
+          roleId: "service",
+          venueId: "venue-1",
+          status: "active",
+          shiftLabel: "16:00-00:00",
+          hourlyRate: 350,
+        },
+      ],
+      shifts: [
+        {
+          shiftId: "shift-partial",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 100000,
+          items: 220,
+          employee: "Смена",
+          workers: [
+            {
+              memberId: "waiter",
+              name: "Илья",
+              hours: 8,
+              sales: 60000,
+            },
+            {
+              name: "Петр",
+              hours: 8,
+              sales: 40000,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(labor).toMatchObject({
+      laborReadinessStatus: "partial",
+      pricedStaffShifts: 1,
+      unpricedStaffShifts: 1,
+      pricedRevenue: 60000,
+      unpricedRevenue: 40000,
+      revenueCoveragePct: 60,
+      missingRates: 1,
     });
   });
 
