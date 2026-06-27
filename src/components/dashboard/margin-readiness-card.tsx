@@ -1,7 +1,11 @@
 import { AlertTriangle, CheckCircle2, ReceiptText } from "lucide-react";
 import { MarginMappingWorkspace } from "./margin-mapping-actions";
 import type { Product } from "@/lib/iiko/models";
-import type { MenuMarginReadiness } from "@/lib/menu-margin-readiness";
+import { formatInteger, formatRubles } from "@/lib/format";
+import type {
+  MenuMarginBlocker,
+  MenuMarginReadiness,
+} from "@/lib/menu-margin-readiness";
 
 const STATUS_COPY = {
   ready: {
@@ -33,6 +37,7 @@ export function MarginReadinessCard({
   products?: Product[];
 }) {
   const copy = STATUS_COPY[readiness.status];
+  const topBlockers = readiness.topBlockers.slice(0, 3);
 
   return (
     <section className="rounded-xl border border-border/60 bg-card/50 p-5 sm:p-6">
@@ -66,11 +71,69 @@ export function MarginReadinessCard({
         </span>
       </div>
 
+      {topBlockers.length > 0 ? (
+        <div className="mt-5 border-y border-border/45 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                Сначала закрыть
+              </p>
+              <h3 className="mt-1 text-base font-medium text-foreground">
+                Топ-позиции без доказанной себестоимости
+              </h3>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+              Эти блюда сильнее всего искажают прибыльность периода.
+            </p>
+          </div>
+
+          <div className="mt-3 grid gap-2 lg:grid-cols-3">
+            {topBlockers.map((item) => (
+              <MarginBlockerCard
+                key={`${item.dishGroup}-${item.dishName}`}
+                item={item}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <MarginMappingWorkspace
         venueId={venueId}
         readiness={readiness}
         products={products}
       />
     </section>
+  );
+}
+
+function reasonLabel(reason: MenuMarginBlocker["reason"]): string {
+  if (reason === "missing-cost") return "нет закупочной цены";
+  return "нужна связь с iiko";
+}
+
+function MarginBlockerCard({ item }: { item: MenuMarginBlocker }) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/30 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-medium text-foreground">
+            {item.dishName}
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {item.dishGroup} · {formatInteger(item.amount)} порц.
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-amber-400/35 bg-amber-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+          {reasonLabel(item.reason)}
+        </span>
+      </div>
+      <p className="numeric mt-3 text-lg font-medium text-foreground">
+        {formatRubles(item.revenue)}
+      </p>
+      <p className="mt-1 truncate text-[11px] text-muted-foreground">
+        {item.productName ?? "товар не выбран"}
+      </p>
+    </div>
   );
 }

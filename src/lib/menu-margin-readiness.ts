@@ -18,6 +18,15 @@ export type MenuMarginItem = {
   status: MenuMarginStatus;
 };
 
+export type MenuMarginBlocker = {
+  dishName: string;
+  dishGroup: string;
+  revenue: number;
+  amount: number;
+  reason: "missing-link" | "missing-cost";
+  productName: string | null;
+};
+
 export type MenuMarginReadiness = {
   status: MenuMarginStatus;
   totalDishes: number;
@@ -27,6 +36,7 @@ export type MenuMarginReadiness = {
   revenueCoveragePct: number;
   matchCoveragePct: number;
   costCoveragePct: number;
+  topBlockers: MenuMarginBlocker[];
   items: MenuMarginItem[];
 };
 
@@ -71,6 +81,20 @@ export function buildMenuMarginReadiness(input: {
   const revenueCoveragePct = pct(revenueWithCost, totalRevenue);
   const matchCoveragePct = pct(matchedDishes, input.dishes.length);
   const costCoveragePct = pct(costedDishes, input.dishes.length);
+  const topBlockers: MenuMarginBlocker[] = items
+    .filter((item) => !item.hasCost)
+    .map((item) => ({
+      dishName: item.dishName,
+      dishGroup: item.dishGroup,
+      revenue: item.revenue,
+      amount: item.amount,
+      reason: item.product
+        ? ("missing-cost" as const)
+        : ("missing-link" as const),
+      productName: item.product?.name ?? null,
+    }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5);
 
   return {
     status:
@@ -86,6 +110,7 @@ export function buildMenuMarginReadiness(input: {
     revenueCoveragePct,
     matchCoveragePct,
     costCoveragePct,
+    topBlockers,
     items,
   };
 }

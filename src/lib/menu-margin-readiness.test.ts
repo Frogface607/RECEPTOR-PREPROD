@@ -91,4 +91,66 @@ describe("buildMenuMarginReadiness", () => {
       }),
     ).toBe(320);
   });
+
+  test("prioritizes missing margin blockers by revenue", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Low revenue dish",
+          dishGroup: "Kitchen",
+          dishAmountInt: 4,
+          dishSumInt: 4000,
+        },
+        {
+          dishName: "High revenue dish",
+          dishGroup: "Kitchen",
+          dishAmountInt: 20,
+          dishSumInt: 50000,
+        },
+        {
+          dishName: "Mapped without cost",
+          dishGroup: "Bar",
+          dishAmountInt: 10,
+          dishSumInt: 20000,
+        },
+      ],
+      products: [
+        {
+          id: "mapped-no-cost",
+          name: "Mapped product",
+          sizePrices: [],
+        },
+      ],
+      mappings: [
+        {
+          id: "m-1",
+          venueId: "venue-1",
+          dishKey: "mapped without cost",
+          dishName: "Mapped without cost",
+          dishGroup: "Bar",
+          iikoProductId: "mapped-no-cost",
+          iikoProductName: "Mapped product",
+          iikoArticle: "",
+          mappingType: "manual",
+          status: "active",
+          confidence: 1,
+          note: "",
+        },
+      ],
+    });
+
+    expect(readiness.topBlockers.map((item) => item.dishName)).toEqual([
+      "High revenue dish",
+      "Mapped without cost",
+      "Low revenue dish",
+    ]);
+    expect(readiness.topBlockers[0]).toMatchObject({
+      reason: "missing-link",
+      revenue: 50000,
+    });
+    expect(readiness.topBlockers[1]).toMatchObject({
+      reason: "missing-cost",
+      productName: "Mapped product",
+    });
+  });
 });

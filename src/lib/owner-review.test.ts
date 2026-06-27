@@ -140,6 +140,7 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: "ФОТ давит, а маржа не доказана",
+          why: expect.stringContaining("Паста"),
           tone: "risk",
           role: "owner",
         }),
