@@ -67,10 +67,13 @@ import {
   type LaborShiftDiagnostic,
 } from "@/lib/team/labor-bi";
 import {
+  buildMemberOperationPlan,
   buildMemberLaborProfile,
   buildMemberShiftSchedule,
   type MemberLaborProfile,
   type MemberLaborProfileStatus,
+  type MemberOperationPlanItem,
+  type MemberOperationPlanTone,
   type MemberShiftScheduleItem,
 } from "@/lib/team/member-shift-schedule";
 import { getTeamWorkspace } from "@/lib/team/team-store";
@@ -900,6 +903,14 @@ function RolePersonalBrief({
   const nextLearning = learning?.nextItem ?? learningFallback[0] ?? null;
   const learningPct = learning ? `${learning.averageBest}%` : "0%";
   const admissionStatus = learning?.admissionStatus ?? "not_started";
+  const operationPlan = buildMemberOperationPlan({
+    member,
+    tasks,
+    schedule,
+    laborProfile,
+    learning,
+    nextLearning,
+  });
 
   return (
     <section className="border-b border-border/40">
@@ -965,6 +976,8 @@ function RolePersonalBrief({
         </div>
 
         <div className="grid gap-5">
+          <MemberOperationPlanCard items={operationPlan} />
+
           <div className="rounded-lg border border-border/60 bg-card/50 p-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
@@ -1057,6 +1070,81 @@ function RolePersonalBrief({
       </div>
     </section>
   );
+}
+
+function MemberOperationPlanCard({
+  items,
+}: {
+  items: MemberOperationPlanItem[];
+}) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-center gap-3">
+          <ListChecks className="size-5 text-brand" />
+          <div>
+            <h3 className="text-lg font-medium">Что сделать сейчас</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              План собран из смен, ФОТ, обучения и задач.
+            </p>
+          </div>
+        </div>
+        <Badge variant="outline">{items.length}</Badge>
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        {items.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+          >
+            <span
+              className={
+                "size-2 rounded-full border " +
+                memberOperationPlanToneDotClass(item.tone)
+              }
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-foreground">
+                {item.title}
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground sm:truncate">
+                {item.detail}
+              </span>
+            </span>
+            <span
+              className={
+                "rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                memberOperationPlanToneClass(item.tone)
+              }
+            >
+              {item.badge}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function memberOperationPlanToneDotClass(
+  tone: MemberOperationPlanTone,
+): string {
+  if (tone === "risk") return "border-destructive bg-destructive";
+  if (tone === "setup") return "border-amber-200 bg-amber-200";
+  if (tone === "work") return "border-[color:var(--pro)] bg-[color:var(--pro)]";
+  return "border-brand bg-brand";
+}
+
+function memberOperationPlanToneClass(tone: MemberOperationPlanTone): string {
+  if (tone === "risk")
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (tone === "setup")
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  if (tone === "work")
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  return "border-brand/30 bg-brand/10 text-brand";
 }
 
 function MemberLaborProfileCard({ profile }: { profile: MemberLaborProfile }) {

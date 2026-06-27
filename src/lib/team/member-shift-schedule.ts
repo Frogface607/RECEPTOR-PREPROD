@@ -3,7 +3,8 @@ import type {
   LaborShiftInput,
   LaborShiftWorker,
 } from "./labor-bi";
-import type { StaffMember } from "./team-os";
+import type { TeamLearningMemberSummary } from "./team-learning-progress";
+import type { StaffMember, TeamTask } from "./team-os";
 
 export type MemberShiftScheduleItem = {
   shiftId: string;
@@ -26,6 +27,17 @@ export type MemberLaborProfile = {
   revenuePerHour: number | null;
   laborCostPct: number | null;
   missingRate: boolean;
+};
+
+export type MemberOperationPlanTone = "risk" | "setup" | "work" | "ready";
+
+export type MemberOperationPlanItem = {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  tone: MemberOperationPlanTone;
+  badge: string;
 };
 
 export function buildMemberShiftSchedule(input: {
@@ -88,6 +100,108 @@ export function buildMemberLaborProfile(input: {
     laborCostPct: employee.laborCostPct,
     missingRate: employee.missingRate,
   };
+}
+
+export function buildMemberOperationPlan(input: {
+  member: StaffMember;
+  tasks: TeamTask[];
+  schedule: MemberShiftScheduleItem[];
+  laborProfile: MemberLaborProfile | null;
+  learning: TeamLearningMemberSummary | null;
+  nextLearning?: { title: string; timeLabel: string } | null;
+}): MemberOperationPlanItem[] {
+  const items: MemberOperationPlanItem[] = [];
+
+  if (input.laborProfile?.status === "missing_rate") {
+    items.push({
+      id: "labor-rate",
+      title: "Заполнить ставку ФОТ",
+      detail: `${formatCount(input.laborProfile.shifts, "смена", "смены", "смен")} есть, но стоимость сотрудника не участвует в экономике.`,
+      href: `#labor-member-${encodeURIComponent(input.member.id)}`,
+      tone: "risk",
+      badge: "ФОТ",
+    });
+  } else if (
+    input.laborProfile?.status === "no_shifts" &&
+    input.schedule.length === 0
+  ) {
+    items.push({
+      id: "shift-match",
+      title: "Проверить смены в iiko",
+      detail:
+        "В выбранном периоде система не нашла смен этого сотрудника. Проверьте период или совпадение имени.",
+      href: "#iiko-shift-diagnostics",
+      tone: "setup",
+      badge: "смены",
+    });
+  }
+
+  if (input.learning && !input.learning.canWorkShift) {
+    const next = input.nextLearning ?? input.learning.nextItem;
+    items.push({
+      id: "learning-admission",
+      title: "Закрыть допуск к смене",
+      detail: next
+        ? `${next.title} · ${next.timeLabel}`
+        : `Осталось обязательных модулей: ${input.learning.requiredMissing}.`,
+      href: "#learning-progress",
+      tone: input.learning.admissionStatus === "not_started" ? "risk" : "setup",
+      badge: "допуск",
+    });
+  }
+
+  const openTasks = input.tasks.filter(isOpenTask);
+  const urgentTask = openTasks.find((task) => task.priority === "high");
+  const nextTask = urgentTask ?? openTasks[0] ?? null;
+  if (nextTask) {
+    items.push({
+      id: `task-${nextTask.id}`,
+      title:
+        nextTask.priority === "high"
+          ? "Закрыть срочную задачу"
+          : "Продвинуть задачу",
+      detail: nextTask.title,
+      href: "#team-actions",
+      tone: nextTask.priority === "high" ? "risk" : "work",
+      badge: nextTask.dueLabel || "задача",
+    });
+  }
+
+  const nextShift = input.schedule[0] ?? null;
+  if (items.length < 3 && nextShift) {
+    items.push({
+      id: `shift-${nextShift.shiftId}`,
+      title: "Проверить смену периода",
+      detail: `${nextShift.dayLabel} · ${nextShift.timeLabel} · ${formatMoney(nextShift.revenue)}`,
+      href: "#shift-coverage",
+      tone: "ready",
+      badge: "смена",
+    });
+  }
+
+  if (items.length === 0 && input.nextLearning) {
+    items.push({
+      id: "next-learning",
+      title: "Продолжить обучение",
+      detail: `${input.nextLearning.title} · ${input.nextLearning.timeLabel}`,
+      href: "#learning-progress",
+      tone: "work",
+      badge: "урок",
+    });
+  }
+
+  if (items.length === 0) {
+    items.push({
+      id: "ready",
+      title: "Смена без блокеров",
+      detail: "ФОТ, допуск и очередь задач не требуют срочного действия.",
+      href: "#shift-coverage",
+      tone: "ready",
+      badge: "готово",
+    });
+  }
+
+  return items.slice(0, 4);
 }
 
 function matchShiftWorker(
@@ -175,4 +289,31 @@ function normalizeName(value: string): string {
 
 function roundHours(value: number): number {
   return Math.round(value * 10) / 10;
+}
+
+function isOpenTask(task: TeamTask): boolean {
+  return task.status !== "done" && task.status !== "verified";
+}
+
+function formatCount(
+  value: number,
+  one: string,
+  few: string,
+  many: string,
+): string {
+  const rounded = Math.abs(Math.trunc(value));
+  const mod10 = rounded % 10;
+  const mod100 = rounded % 100;
+  const word =
+    mod10 === 1 && mod100 !== 11
+      ? one
+      : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
+        ? few
+        : many;
+
+  return `${value.toLocaleString("ru-RU")} ${word}`;
+}
+
+function formatMoney(value: number): string {
+  return `${Math.round(value).toLocaleString("ru-RU")} ₽`;
 }
