@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AlertTriangle, CheckCircle2, ReceiptText } from "lucide-react";
 import { MarginMappingWorkspace } from "./margin-mapping-actions";
 import type { Product } from "@/lib/iiko/models";
@@ -38,6 +39,7 @@ export function MarginReadinessCard({
 }) {
   const copy = STATUS_COPY[readiness.status];
   const topBlockers = readiness.topBlockers.slice(0, 3);
+  const diagnosticsHref = `/settings#iiko-diagnostics-${encodeURIComponent(venueId)}`;
 
   return (
     <section className="rounded-xl border border-border/60 bg-card/50 p-5 sm:p-6">
@@ -104,6 +106,21 @@ export function MarginReadinessCard({
               detail="проверить закупочные цены"
             />
           </div>
+
+          {readiness.missingCostRevenue > 0 ? (
+            <div className="mt-3 flex flex-col gap-3 rounded-lg border border-amber-400/25 bg-amber-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[12px] leading-relaxed text-amber-100/85">
+                Есть связанные позиции без закупочной цены. Проверьте RMS-права
+                и поля себестоимости в диагностике iiko.
+              </p>
+              <Link
+                href={diagnosticsHref}
+                className="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-amber-400/35 bg-background/45 px-3 text-[13px] font-medium text-amber-100 transition-colors hover:border-amber-300"
+              >
+                Проверить RMS
+              </Link>
+            </div>
+          ) : null}
 
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
             {topBlockers.map((item) => (

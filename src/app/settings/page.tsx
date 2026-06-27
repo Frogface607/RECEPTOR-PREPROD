@@ -623,10 +623,15 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                   }
                 />
               </div>
-              <IikoDiagnosticsPanel
-                venueId={venue.id}
-                connected={venue.iikoConnected}
-              />
+              <div
+                id={`iiko-diagnostics-${venue.id}`}
+                className="scroll-mt-24"
+              >
+                <IikoDiagnosticsPanel
+                  venueId={venue.id}
+                  connected={venue.iikoConnected}
+                />
+              </div>
             </div>
           ))}
         </div>
