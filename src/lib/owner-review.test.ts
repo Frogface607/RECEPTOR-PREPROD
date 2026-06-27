@@ -147,4 +147,53 @@ describe("buildOwnerReview", () => {
       ]),
     );
   });
+
+  test("asks to check RMS prices when linked items have no cost", () => {
+    const margin = buildMenuMarginReadiness({
+      dishes,
+      products: [
+        {
+          id: "pasta-product",
+          name: "Паста полуфабрикат",
+          sizePrices: [],
+        },
+      ],
+      mappings: [
+        {
+          id: "mapping-pasta",
+          venueId: "venue-1",
+          dishKey: "паста",
+          dishName: "Паста",
+          dishGroup: "Кухня",
+          iikoProductId: "pasta-product",
+          iikoProductName: "Паста полуфабрикат",
+          iikoArticle: "",
+          mappingType: "manual",
+          status: "active",
+          confidence: 1,
+          note: "",
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      margin,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Маржа пока не доказана",
+          check: expect.stringContaining("RMS-права"),
+        }),
+      ]),
+    );
+  });
 });

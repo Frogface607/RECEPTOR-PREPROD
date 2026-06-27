@@ -144,6 +144,13 @@ describe("buildMenuMarginReadiness", () => {
       "Mapped without cost",
       "Low revenue dish",
     ]);
+    expect(readiness).toMatchObject({
+      blockedRevenue: 74000,
+      blockedRevenuePct: 100,
+      missingLinkRevenue: 54000,
+      missingCostRevenue: 20000,
+      revenueWithCost: 0,
+    });
     expect(readiness.topBlockers[0]).toMatchObject({
       reason: "missing-link",
       revenue: 50000,

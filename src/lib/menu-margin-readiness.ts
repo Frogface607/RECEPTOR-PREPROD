@@ -33,7 +33,11 @@ export type MenuMarginReadiness = {
   matchedDishes: number;
   costedDishes: number;
   revenueWithCost: number;
+  blockedRevenue: number;
+  missingLinkRevenue: number;
+  missingCostRevenue: number;
   revenueCoveragePct: number;
+  blockedRevenuePct: number;
   matchCoveragePct: number;
   costCoveragePct: number;
   topBlockers: MenuMarginBlocker[];
@@ -78,7 +82,15 @@ export function buildMenuMarginReadiness(input: {
   const revenueWithCost = items
     .filter((item) => item.hasCost)
     .reduce((sum, item) => sum + item.revenue, 0);
+  const missingLinkRevenue = items
+    .filter((item) => !item.product)
+    .reduce((sum, item) => sum + item.revenue, 0);
+  const missingCostRevenue = items
+    .filter((item) => item.product && !item.hasCost)
+    .reduce((sum, item) => sum + item.revenue, 0);
+  const blockedRevenue = missingLinkRevenue + missingCostRevenue;
   const revenueCoveragePct = pct(revenueWithCost, totalRevenue);
+  const blockedRevenuePct = pct(blockedRevenue, totalRevenue);
   const matchCoveragePct = pct(matchedDishes, input.dishes.length);
   const costCoveragePct = pct(costedDishes, input.dishes.length);
   const topBlockers: MenuMarginBlocker[] = items
@@ -107,7 +119,11 @@ export function buildMenuMarginReadiness(input: {
     matchedDishes,
     costedDishes,
     revenueWithCost,
+    blockedRevenue,
+    missingLinkRevenue,
+    missingCostRevenue,
     revenueCoveragePct,
+    blockedRevenuePct,
     matchCoveragePct,
     costCoveragePct,
     topBlockers,

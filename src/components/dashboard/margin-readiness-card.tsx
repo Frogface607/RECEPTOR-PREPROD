@@ -87,6 +87,24 @@ export function MarginReadinessCard({
             </p>
           </div>
 
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <MarginDebtMetric
+              label="Не покрыто выручки"
+              value={`${readiness.blockedRevenuePct}%`}
+              detail={formatRubles(readiness.blockedRevenue)}
+            />
+            <MarginDebtMetric
+              label="Нет связи"
+              value={formatRubles(readiness.missingLinkRevenue)}
+              detail="связать блюда с iiko"
+            />
+            <MarginDebtMetric
+              label="Нет цены RMS"
+              value={formatRubles(readiness.missingCostRevenue)}
+              detail="проверить закупочные цены"
+            />
+          </div>
+
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
             {topBlockers.map((item) => (
               <MarginBlockerCard
@@ -104,6 +122,26 @@ export function MarginReadinessCard({
         products={products}
       />
     </section>
+  );
+}
+
+function MarginDebtMetric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/40 bg-card/25 px-3 py-2">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="numeric mt-1 text-base font-medium text-foreground">{value}</p>
+      <p className="mt-1 truncate text-[11px] text-muted-foreground">{detail}</p>
+    </div>
   );
 }
 

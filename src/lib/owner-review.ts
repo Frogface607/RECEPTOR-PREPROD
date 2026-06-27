@@ -154,12 +154,18 @@ function laborMarginHypothesis(input: {
   const blockerText = topBlocker
     ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки).`
     : "Начните с топ-позиций без себестоимости.";
+  const costDebtDominates =
+    input.margin.missingCostRevenue >= input.margin.missingLinkRevenue &&
+    input.margin.missingCostRevenue > 0;
+  const marginAction = costDebtDominates
+    ? "Проверить RMS-права и endpoint закупочных цен, затем обновить себестоимость связанных позиций."
+    : "Связать топ-блюда с iiko-номенклатурой и проверить позиции без закупочной цены.";
 
   if (!laborIsHigh) {
     return {
       title: "Маржа пока не доказана",
       why: `Себестоимость покрывает ${input.margin.revenueCoveragePct}% выручки периода. ${blockerText}`,
-      check: "Закрыть связи блюд с iiko и проверить позиции без закупочной цены.",
+      check: marginAction,
       role: "chef",
       tone: input.margin.status === "blocked" ? "risk" : "watch",
     };
@@ -168,7 +174,7 @@ function laborMarginHypothesis(input: {
   return {
     title: "ФОТ давит, а маржа не доказана",
     why: `ФОТ ${laborPct}% от выручки, при этом себестоимость покрывает только ${input.margin.revenueCoveragePct}% выручки. ${blockerText}`,
-    check: "Сначала закрыть себестоимость топ-позиций, потом решать: резать часы, менять расписание или править меню.",
+    check: `${marginAction} После этого решать: резать часы, менять расписание или править меню.`,
     role: "owner",
     tone: "risk",
   };
