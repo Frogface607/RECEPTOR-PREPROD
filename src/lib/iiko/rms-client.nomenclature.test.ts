@@ -2,6 +2,21 @@ import { describe, expect, test, vi } from "vitest";
 import { RmsIikoClient } from "./rms-client";
 
 function mockFetch() {
+  return mockFetchPayload({
+    products: [
+      {
+        id: "r-1",
+        name: "Tomato",
+        num: "T-10",
+        code: "99",
+        unit: "kg",
+        purchasePrice: 320,
+      },
+    ],
+  });
+}
+
+function mockFetchPayload(payload: unknown) {
   const calls: string[] = [];
   const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
     const url = input.toString();
@@ -11,18 +26,7 @@ function mockFetch() {
     }
 
     return new Response(
-      JSON.stringify({
-        products: [
-          {
-            id: "r-1",
-            name: "Tomato",
-            num: "T-10",
-            code: "99",
-            unit: "kg",
-            purchasePrice: 320,
-          },
-        ],
-      }),
+      JSON.stringify(payload),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   });
@@ -68,6 +72,7 @@ describe("RmsIikoClient nomenclature", () => {
 
     expect(probe).toMatchObject({
       endpoint: "/resto/api/v2/entities/products/list",
+      costStatus: "ready",
       rawRows: 1,
       normalizedProducts: 1,
       normalizedPriceRows: 1,
@@ -75,9 +80,42 @@ describe("RmsIikoClient nomenclature", () => {
       productsWithPurchasePrice: 1,
       productsWithTechCardPrice: 1,
     });
+    expect(probe.costFieldCounts.purchasePrice).toBe(1);
     expect(probe.priceFieldCounts.purchasePrice).toBe(1);
     expect(probe.rawFieldCounts.name).toBe(1);
     expect(JSON.stringify(probe)).not.toContain("Tomato");
+  });
+
+  test("distinguishes menu prices from purchasing costs in RMS probe", async () => {
+    const { fetchImpl } = mockFetchPayload({
+      products: [
+        {
+          id: "menu-price-only",
+          name: "Beer 0.5",
+          unit: "pcs",
+          price: 390,
+          sizePrices: [{ price: { currentPrice: 390 } }],
+        },
+      ],
+    });
+    const client = new RmsIikoClient({
+      host: "sandbox.iiko.local",
+      login: "Sergey",
+      password: "secret",
+      today: "2026-05-29",
+      fetchImpl,
+    });
+
+    const probe = await client.probeCostFields();
+
+    expect(probe).toMatchObject({
+      costStatus: "menu-prices-only",
+      normalizedPriceRows: 0,
+      productsWithTechCardPrice: 0,
+    });
+    expect(probe.costFieldCounts).toEqual({});
+    expect(probe.menuPriceFieldCounts.price).toBe(1);
+    expect(probe.menuPriceFieldCounts.sizePrices).toBe(1);
   });
 
   test("fetches normalized RMS prices separately from nomenclature", async () => {

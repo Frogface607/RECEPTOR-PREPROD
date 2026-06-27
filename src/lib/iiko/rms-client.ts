@@ -48,6 +48,7 @@ type RmsRawRow = Record<string, unknown>;
 
 export type RmsCostFieldProbe = {
   endpoint: string | null;
+  costStatus: "ready" | "menu-prices-only" | "missing-cost-fields" | "unreadable";
   rawRows: number;
   normalizedProducts: number;
   activeProducts: number;
@@ -56,6 +57,8 @@ export type RmsCostFieldProbe = {
   productsWithPurchasePrice: number;
   productsWithMenuPrice: number;
   productsWithTechCardPrice: number;
+  costFieldCounts: Record<string, number>;
+  menuPriceFieldCounts: Record<string, number>;
   priceFieldCounts: Record<string, number>;
   rawFieldCounts: Record<string, number>;
   error?: string;
@@ -70,22 +73,32 @@ const RMS_NOMENCLATURE_ENDPOINTS = [
   "/resto/api/menu/list",
   "/resto/api/nomenclature/list",
 ] as const;
-const RMS_PRICE_FIELD_ALIASES = [
+const RMS_COST_FIELD_ALIASES = [
   "purchasePrice",
   "purchase_price",
   "purchasePricePerUnit",
   "purchase_price_per_unit",
+  "cost_price_per_unit",
+  "costPricePerUnit",
+  "cost_per_unit",
+  "costPerUnit",
   "cost",
   "costPrice",
   "costPerKg",
   "cost_per_kg",
-  "price",
-  "currentPrice",
-  "pricePerUnit",
   "price_per_unit",
   "pricePerKg",
   "price_per_kg",
+] as const;
+const RMS_MENU_PRICE_FIELD_ALIASES = [
+  "price",
+  "currentPrice",
+  "pricePerUnit",
   "sizePrices",
+] as const;
+const RMS_PRICE_FIELD_ALIASES = [
+  ...RMS_COST_FIELD_ALIASES,
+  ...RMS_MENU_PRICE_FIELD_ALIASES,
   "vat",
   "vatRate",
   "tax",
@@ -392,12 +405,21 @@ export class RmsIikoClient implements IikoClient {
         }
 
         const prices = normalizeRmsPrices(payload);
+        const costFieldCounts = countFields(rows, RMS_COST_FIELD_ALIASES);
+        const menuPriceFieldCounts = countFields(rows, RMS_MENU_PRICE_FIELD_ALIASES);
+        const costStatus =
+          prices.length > 0
+            ? ("ready" as const)
+            : Object.keys(menuPriceFieldCounts).length > 0
+              ? ("menu-prices-only" as const)
+              : ("missing-cost-fields" as const);
         const products = mergeProductsWithRmsPrices(
           normalizeIikoProducts(payload),
           prices,
         );
         return {
           endpoint,
+          costStatus,
           rawRows: rows.length,
           normalizedProducts: products.length,
           activeProducts: products.filter((product) => product.active !== false).length,
@@ -411,9 +433,9 @@ export class RmsIikoClient implements IikoClient {
           productsWithMenuPrice: products.filter((product) =>
             Boolean(product.price || product.pricePerUnit),
           ).length,
-          productsWithTechCardPrice: products.filter((product) =>
-            Boolean(product.pricePerKg),
-          ).length,
+          productsWithTechCardPrice: prices.length,
+          costFieldCounts,
+          menuPriceFieldCounts,
           priceFieldCounts: countFields(rows, RMS_PRICE_FIELD_ALIASES),
           rawFieldCounts: topFieldCounts(rows, 30),
         };
@@ -424,6 +446,7 @@ export class RmsIikoClient implements IikoClient {
 
     return {
       endpoint: null,
+      costStatus: "unreadable",
       rawRows: 0,
       normalizedProducts: 0,
       activeProducts: 0,
@@ -432,6 +455,8 @@ export class RmsIikoClient implements IikoClient {
       productsWithPurchasePrice: 0,
       productsWithMenuPrice: 0,
       productsWithTechCardPrice: 0,
+      costFieldCounts: {},
+      menuPriceFieldCounts: {},
       priceFieldCounts: {},
       rawFieldCounts: {},
       error: errors.join("; ") || "no RMS nomenclature response",

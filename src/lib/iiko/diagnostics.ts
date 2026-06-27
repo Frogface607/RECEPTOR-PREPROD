@@ -217,7 +217,10 @@ export async function runIikoDiagnostics(
   if (probe instanceof RmsIikoClient) {
     try {
       const costProbe = await probe.probeCostFields();
-      const priceFields = Object.entries(costProbe.priceFieldCounts)
+      const costFields = Object.entries(costProbe.costFieldCounts)
+        .map(([field, count]) => `${field}: ${count}`)
+        .join(", ");
+      const menuPriceFields = Object.entries(costProbe.menuPriceFieldCounts)
         .map(([field, count]) => `${field}: ${count}`)
         .join(", ");
       const rawFields = Object.entries(costProbe.rawFieldCounts)
@@ -239,7 +242,16 @@ export async function runIikoDiagnostics(
           ok(
             "costs",
             "Себестоимость / цены RMS",
-            `Найдено ${costProbe.productsWithTechCardPrice} позиций с себестоимостью из ${costProbe.normalizedProducts}; нормализовано price rows: ${costProbe.normalizedPriceRows}. Endpoint: ${costProbe.endpoint}. Поля цен: ${priceFields || "нет price-полей"}. Доступные поля: ${rawFields || "не определены"}.`,
+            `Найдено ${costProbe.productsWithTechCardPrice} позиций с закупочной ценой из ${costProbe.normalizedProducts}. Endpoint: ${costProbe.endpoint}. Cost-поля: ${costFields || "не определены"}.`,
+          ),
+        );
+      } else if (costProbe.costStatus === "menu-prices-only") {
+        checks.push(
+          warn(
+            "costs",
+            "Себестоимость / цены RMS",
+            `RMS вернул ${costProbe.normalizedProducts} товаров, но видны только продажные цены меню: ${menuPriceFields}. Закупочные cost/purchase поля не пришли. Endpoint: ${costProbe.endpoint}.`,
+            "Попросите iiko/RMS доступ к закупочным ценам, складу или техкартам; продажную цену нельзя использовать как себестоимость.",
           ),
         );
       } else {
@@ -247,7 +259,7 @@ export async function runIikoDiagnostics(
           warn(
             "costs",
             "Себестоимость / цены RMS",
-            `RMS вернул ${costProbe.normalizedProducts} товаров, но без полей себестоимости. Endpoint: ${costProbe.endpoint}. Поля цен: ${priceFields || "price-поля не найдены"}. Доступные поля: ${rawFields || "не определены"}.`,
+            `RMS вернул ${costProbe.normalizedProducts} товаров, но без полей себестоимости. Endpoint: ${costProbe.endpoint}. Доступные поля: ${rawFields || "не определены"}.`,
             "Нужен endpoint/права RMS, которые отдают закупочные цены или состав техкарт.",
           ),
         );
