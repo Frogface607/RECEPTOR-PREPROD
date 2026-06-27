@@ -14,6 +14,10 @@ import {
   type LaborInsightTone,
 } from "@/lib/team/labor-bi";
 import type {
+  TeamOpsActionTone,
+  TeamOpsReadiness,
+} from "@/lib/team/team-ops-readiness";
+import type {
   CategoryStat,
   DishStat,
   RevenuePoint,
@@ -54,7 +58,9 @@ export type OwnerReviewActionTarget =
   | "shift-diagnostics"
   | "margin-diagnostics"
   | "margin-mapping"
-  | "margin-risk";
+  | "margin-risk"
+  | "team-actions"
+  | "team-learning";
 
 export type OwnerReviewAction = {
   title: string;
@@ -88,6 +94,7 @@ type BuildOwnerReviewInput = {
   dataMode: "live" | "mock";
   labor?: LaborBiSummary;
   margin?: MenuMarginReadiness;
+  team?: TeamOpsReadiness;
 };
 
 function pct(part: number, total: number): number {
@@ -150,6 +157,9 @@ function actionSourceLabel(action: OwnerReviewAction): string {
   ) {
     return "Маржа и техкарты";
   }
+  if (action.target === "team-actions" || action.target === "team-learning") {
+    return "Команда";
+  }
   return "Данные iiko";
 }
 
@@ -188,6 +198,12 @@ function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
 }
 
 function ownerToneFromLabor(tone: LaborInsightTone): OwnerReviewTone {
+  if (tone === "risk") return "risk";
+  if (tone === "good") return "good";
+  return "watch";
+}
+
+function ownerToneFromTeam(tone: TeamOpsActionTone): OwnerReviewTone {
   if (tone === "risk") return "risk";
   if (tone === "good") return "good";
   return "watch";
@@ -319,6 +335,25 @@ function unitEconomicsEvidence(input: {
   };
 }
 
+function teamEvidence(input: TeamOpsReadiness): OwnerReviewEvidence {
+  const firstAction = input.actions.find((action) => action.id !== "ready");
+  const detail = firstAction
+    ? `${firstAction.title}: ${firstAction.detail}`
+    : `Допуск ${input.learningAdmissionPct}%, роли ${input.roleCoveragePct}%, ФОТ ${input.laborCoveragePct}%.`;
+
+  return {
+    label: "Команда",
+    value: `${input.score}%`,
+    detail,
+    tone:
+      input.status === "blocked"
+        ? "risk"
+        : input.status === "ready"
+          ? "good"
+          : "watch",
+  };
+}
+
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
 
@@ -416,6 +451,28 @@ function ownerActionFromMargin(
   };
 }
 
+function teamActionTarget(href: string): OwnerReviewActionTarget {
+  if (href === "#learning-progress") return "team-learning";
+  if (href === "#team-actions") return "team-actions";
+  if (href === "#shift-coverage") return "shift-coverage";
+  if (href === "#labor-rates") return "labor-rate";
+  if (href === "#iiko-shift-diagnostics") return "shift-diagnostics";
+  return "team-actions";
+}
+
+function ownerActionFromTeam(input: TeamOpsReadiness): OwnerReviewAction | null {
+  const action = input.actions.find((item) => item.id !== "ready");
+  if (!action) return null;
+
+  return {
+    title: action.title,
+    detail: action.detail,
+    role: "manager",
+    tone: ownerToneFromTeam(action.tone),
+    target: teamActionTarget(action.href),
+  };
+}
+
 function laborMarginHypothesis(input: {
   labor?: LaborBiSummary;
   margin?: MenuMarginReadiness;
@@ -508,6 +565,7 @@ function buildVerdict(input: {
   dataMode: "live" | "mock";
   labor?: LaborBiSummary;
   margin?: MenuMarginReadiness;
+  team?: TeamOpsReadiness;
   topCategory?: CategoryStat;
   topCategoryShare: number;
   topDish?: DishStat;
@@ -537,6 +595,7 @@ function buildVerdict(input: {
     Boolean(input.margin) && input.margin?.status !== "ready";
   const laborPct = input.labor?.laborCostPct;
   const primaryMarginRisk = input.margin?.topMarginRisks[0] ?? null;
+  const teamBlocked = input.team?.status === "blocked";
 
   if (laborIncomplete && marginIncomplete) {
     return {
@@ -572,6 +631,14 @@ function buildVerdict(input: {
       verdict: "ФОТ периода пока не доказан: часть смен без ставок.",
       summary:
         "Сначала закройте сотрудников и ставки в Team OS, иначе стоимость команды будет занижена.",
+    };
+  }
+
+  if (teamBlocked) {
+    return {
+      verdict: "Смена не готова в Team OS: есть операционный блокер по команде.",
+      summary:
+        "Деньги можно смотреть, но смену нельзя считать управляемой, пока роли, допуски, ставки или срочные задачи не закрыты в Team OS.",
     };
   }
 
@@ -674,6 +741,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     dataMode: input.dataMode,
     labor: input.labor,
     margin: input.margin,
+    team: input.team,
     topCategory,
     topCategoryShare,
     topDish,
@@ -694,6 +762,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     },
     ...(input.labor ? [laborEvidence(input.labor)] : []),
     ...(input.margin ? [marginEvidence(input.margin)] : []),
+    ...(input.team ? [teamEvidence(input.team)] : []),
     ...(() => {
       const evidence = unitEconomicsEvidence({
         labor: input.labor,
@@ -744,6 +813,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       : null,
     input.labor ? ownerActionFromLabor(input.labor) : null,
     input.margin ? ownerActionFromMargin(input.margin) : null,
+    input.team ? ownerActionFromTeam(input.team) : null,
   ]
     .filter((item): item is OwnerReviewAction => item !== null)
     .slice(0, 3);

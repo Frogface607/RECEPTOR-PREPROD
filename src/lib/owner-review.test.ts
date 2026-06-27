@@ -10,6 +10,7 @@ import type {
 import { buildMenuMarginReadiness } from "./menu-margin-readiness";
 import { buildOwnerReview } from "./owner-review";
 import { buildLaborBi } from "./team/labor-bi";
+import type { TeamOpsReadiness } from "./team/team-ops-readiness";
 
 const summary: RevenueSummary = {
   revenue: 100000,
@@ -464,6 +465,61 @@ describe("buildOwnerReview", () => {
       title: expect.stringContaining("Cheap pasta"),
       roleId: "chef",
       priority: "medium",
+    });
+  });
+
+  test("surfaces Team OS readiness as owner evidence and action", () => {
+    const team = {
+      score: 72,
+      status: "attention",
+      roleCoveragePct: 100,
+      laborCoveragePct: 100,
+      learningAdmissionPct: 50,
+      learningAveragePct: 42,
+      actions: [
+        {
+          id: "learning",
+          tone: "setup",
+          title: "Дожать обучение",
+          detail: "Маша: закрыть обязательный модуль роли.",
+          href: "#learning-progress",
+        },
+      ],
+    } satisfies TeamOpsReadiness;
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      team,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Команда",
+          value: "72%",
+          detail: expect.stringContaining("Маша"),
+          tone: "watch",
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: "team-learning",
+          role: "manager",
+          title: "Дожать обучение",
+        }),
+      ]),
+    );
+    expect(review.tasks[0]).toMatchObject({
+      roleId: "venue_manager",
+      sourceLabel: "Команда",
     });
   });
 });

@@ -30,6 +30,10 @@ import { listMenuItemMappings } from "@/lib/menu-item-mapping-store";
 import { buildMenuMarginReadiness } from "@/lib/menu-margin-readiness";
 import { buildOwnerReview } from "@/lib/owner-review";
 import { buildLaborBi } from "@/lib/team/labor-bi";
+import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
+import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
+import { buildTeamOpsReadiness } from "@/lib/team/team-ops-readiness";
+import { buildShiftOverview } from "@/lib/team/team-shift-planner";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import type { IikoClient } from "@/lib/iiko/types";
 import type { RmsAssemblyChart } from "@/lib/iiko/rms-client";
@@ -216,6 +220,16 @@ export default async function DashboardPage({
     dataMode,
   });
   const laborBi = buildLaborBi({ shifts, staff: teamWorkspace.staff });
+  const teamLearningSummaries = buildTeamLearningSummaries(
+    teamWorkspace.staff,
+    teamWorkspace.learningProgress,
+  );
+  const teamReadiness = buildTeamOpsReadiness({
+    shiftOverview: buildShiftOverview(teamWorkspace.staff, teamWorkspace.tasks),
+    laborReadiness: buildTeamLaborReadiness(teamWorkspace.staff, laborBi),
+    learningSummaries: teamLearningSummaries,
+    tasks: teamWorkspace.tasks,
+  });
   const marginReadiness = buildMenuMarginReadiness({
     dishes,
     products: nomenclature,
@@ -232,6 +246,7 @@ export default async function DashboardPage({
     dataMode,
     labor: laborBi,
     margin: marginReadiness,
+    team: teamReadiness,
   });
 
   return (
