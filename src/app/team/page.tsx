@@ -48,6 +48,13 @@ import {
   type ShiftRoleCoverage,
 } from "@/lib/team/team-shift-planner";
 import {
+  buildTeamShiftRoster,
+  type TeamShiftRoster,
+  type TeamShiftRosterCell,
+  type TeamShiftRosterCellStatus,
+  type TeamShiftRosterRowStatus,
+} from "@/lib/team/team-shift-roster";
+import {
   buildTeamLearningSummaries,
   summarizeTeamLearning,
   type TeamLearningMemberSummary,
@@ -276,6 +283,11 @@ export default async function TeamPage({
   const shiftDiagnostics = laborLoad.laborBi
     ? buildLaborShiftDiagnostics(laborLoad.laborBi).slice(0, 5)
     : [];
+  const shiftRoster = buildTeamShiftRoster({
+    staff: workspace.staff,
+    shifts: laborLoad.shifts,
+    labor: laborLoad.laborBi,
+  });
   const selectedMemberId = memberId || focusMemberId;
   const selectedMember = selectedMemberId
     ? (workspace.staff.find((member) => member.id === selectedMemberId) ?? null)
@@ -473,6 +485,13 @@ export default async function TeamPage({
           laborSource={laborLoad.source}
           periodLabel={formatPeriodLabel(period)}
           laborProfile={memberLaborProfile}
+        />
+
+        <TeamShiftRosterSection
+          roster={shiftRoster}
+          laborSource={laborLoad.source}
+          periodLabel={formatPeriodLabel(period)}
+          error={laborLoad.error}
         />
 
         <section
@@ -808,7 +827,7 @@ export default async function TeamPage({
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-lg border border-border/50 bg-background/35 p-3">
       <p className="numeric text-2xl font-medium text-foreground">{value}</p>
@@ -859,6 +878,221 @@ function ReadinessMetric({ label, value }: { label: string; value: string }) {
 
 function isOpenTask(task: TeamTask): boolean {
   return task.status !== "done" && task.status !== "verified";
+}
+
+function TeamShiftRosterSection({
+  roster,
+  laborSource,
+  periodLabel,
+  error,
+}: {
+  roster: TeamShiftRoster;
+  laborSource: TeamLaborLoadResult["source"];
+  periodLabel: string;
+  error: string | null;
+}) {
+  return (
+    <section
+      id="shift-roster"
+      className="scroll-mt-24 border-b border-border/40"
+    >
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+          <div className="grid gap-5 xl:grid-cols-[0.46fr_1.54fr]">
+            <div>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                    Сменная сетка
+                  </p>
+                  <h2 className="mt-3 text-2xl font-medium">
+                    Кто работал и сколько стоила смена
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Фактические смены из iiko связаны с сотрудниками Team OS и
+                    ставками ФОТ.
+                  </p>
+                </div>
+                <UsersRound className="size-6 shrink-0 text-brand" />
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Metric label="В сменах" value={roster.rowsWithShifts} />
+                <Metric label="Смен" value={roster.totalShifts} />
+                <Metric label="Часов" value={formatHours(roster.totalHours)} />
+                <Metric label="Без ставки" value={roster.rowsMissingRates} />
+              </div>
+
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                Источник: {laborSourceLabel(laborSource)} за {periodLabel}.
+              </p>
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                    Сетка периода
+                  </p>
+                  <h3 className="mt-2 text-xl font-medium">
+                    Сотрудники, дни, ФОТ
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-right sm:min-w-[260px]">
+                  <RosterTotal
+                    label="Выручка"
+                    value={formatRubles(roster.totalRevenue)}
+                  />
+                  <RosterTotal
+                    label="ФОТ"
+                    value={formatRubles(roster.totalLaborCost)}
+                  />
+                </div>
+              </div>
+
+              {roster.days.length > 0 ? (
+                <div className="mt-5 overflow-x-auto">
+                  <table className="w-full min-w-[960px] border-separate border-spacing-0 text-left">
+                    <thead>
+                      <tr className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        <th className="sticky left-0 z-10 w-[230px] bg-card/95 px-3 py-2 font-normal">
+                          Сотрудник
+                        </th>
+                        {roster.days.map((day) => (
+                          <th
+                            key={day.dateKey}
+                            className="w-[116px] px-2 py-2 text-center font-normal"
+                          >
+                            {day.label}
+                          </th>
+                        ))}
+                        <th className="w-[168px] px-3 py-2 text-right font-normal">
+                          Итог
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roster.rows.map((row) => (
+                        <tr key={row.member.id} className="align-top">
+                          <td className="sticky left-0 z-10 border-t border-border/35 bg-card/95 px-3 py-3">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="truncate text-sm font-medium">
+                                  {row.member.name}
+                                </p>
+                                <Badge
+                                  variant="outline"
+                                  className={rosterRowStatusClass(row.status)}
+                                >
+                                  {rosterRowStatusLabel(row.status)}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {row.roleTitle}
+                              </p>
+                            </div>
+                          </td>
+                          {row.cells.map((cell) => (
+                            <td
+                              key={`${row.member.id}-${cell.dateKey}`}
+                              className="border-t border-border/35 px-2 py-3"
+                            >
+                              <RosterCell cell={cell} />
+                            </td>
+                          ))}
+                          <td className="border-t border-border/35 px-3 py-3 text-right">
+                            <p className="numeric text-sm font-medium text-foreground">
+                              {formatRubles(row.revenue)}
+                            </p>
+                            <p className="mt-1 text-[11px] text-muted-foreground">
+                              {formatHours(row.hours)} · ФОТ{" "}
+                              {formatPct(row.laborCostPct)}
+                            </p>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="mt-5 rounded-lg border border-border/45 bg-background/35 p-4">
+                  <p className="text-sm font-medium">Смены не загрузились</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {error ??
+                      "Для сменной сетки нужны права iiko на смены за выбранный период."}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RosterTotal({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 px-3 py-2">
+      <p className="numeric text-sm font-medium text-foreground">{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function RosterCell({ cell }: { cell: TeamShiftRosterCell }) {
+  if (cell.status === "no_shift") {
+    return (
+      <div className="h-[72px] rounded-lg border border-border/30 bg-background/20 px-2 py-2 text-center text-[11px] text-muted-foreground">
+        —
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={
+        "min-h-[72px] rounded-lg border px-2 py-2 " +
+        rosterCellStatusClass(cell.status)
+      }
+    >
+      <p className="numeric text-sm font-medium text-foreground">
+        {formatRubles(cell.revenue)}
+      </p>
+      <p className="mt-1 truncate text-[11px] text-muted-foreground">
+        {cell.timeLabels.join(", ")}
+      </p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        {formatHours(cell.hours)} · {formatInteger(cell.items)} поз.
+      </p>
+    </div>
+  );
+}
+
+function rosterCellStatusClass(status: TeamShiftRosterCellStatus): string {
+  if (status === "missing_rate") {
+    return "border-amber-400/30 bg-amber-400/10";
+  }
+  if (status === "ready") {
+    return "border-brand/25 bg-brand/10";
+  }
+  return "border-border/30 bg-background/20";
+}
+
+function rosterRowStatusLabel(status: TeamShiftRosterRowStatus): string {
+  if (status === "ready") return "ФОТ есть";
+  if (status === "missing_rate") return "нет ставки";
+  return "нет смен";
+}
+
+function rosterRowStatusClass(status: TeamShiftRosterRowStatus): string {
+  if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "missing_rate") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-border bg-muted/40 text-muted-foreground";
 }
 
 function RolePersonalBrief({
