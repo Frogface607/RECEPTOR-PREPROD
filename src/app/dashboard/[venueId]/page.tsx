@@ -178,6 +178,7 @@ export default async function DashboardPage({
     today: dataMode === "mock" ? DEMO_ANCHOR : runtimeToday,
     dataMode,
   });
+  const laborBi = buildLaborBi({ shifts, staff: teamWorkspace.staff });
   const ownerReview = buildOwnerReview({
     summary,
     dishes,
@@ -186,13 +187,13 @@ export default async function DashboardPage({
     brief,
     dataQuality: quality,
     dataMode,
+    labor: laborBi,
   });
   const marginReadiness = buildMenuMarginReadiness({
     dishes,
     products: nomenclature,
     mappings,
   });
-  const laborBi = buildLaborBi({ shifts, staff: teamWorkspace.staff });
 
   return (
     <>

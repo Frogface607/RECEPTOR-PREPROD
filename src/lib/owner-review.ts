@@ -2,6 +2,11 @@ import { formatInteger, formatRubles } from "@/lib/format";
 import { buildMenuEngineering } from "@/lib/menu-engineering";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 import type { RevenueDataQuality } from "@/lib/iiko/data-quality";
+import {
+  buildLaborInsights,
+  type LaborBiSummary,
+  type LaborInsightTone,
+} from "@/lib/team/labor-bi";
 import type {
   CategoryStat,
   DishStat,
@@ -54,6 +59,7 @@ type BuildOwnerReviewInput = {
   brief: DailyBrief;
   dataQuality: RevenueDataQuality;
   dataMode: "live" | "mock";
+  labor?: LaborBiSummary;
 };
 
 function pct(part: number, total: number): number {
@@ -92,6 +98,33 @@ function roleDue(role: OwnerReviewRole): string {
   if (role === "service") return "до вечерней смены";
   if (role === "chef") return "до 17:00";
   return "сегодня";
+}
+
+function ownerToneFromLabor(tone: LaborInsightTone): OwnerReviewTone {
+  if (tone === "risk") return "risk";
+  if (tone === "good") return "good";
+  return "watch";
+}
+
+function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
+  const primaryInsight = buildLaborInsights(input)[0];
+  const pct =
+    input.laborCostPct === null
+      ? "нет данных"
+      : `${input.laborCostPct.toLocaleString("ru-RU", {
+          maximumFractionDigits: 1,
+        })}%`;
+  const detail =
+    input.missingRates > 0
+      ? `${input.missingRates} ставок не заведено`
+      : `${formatRubles(input.laborCost)} за период`;
+
+  return {
+    label: "ФОТ",
+    value: pct,
+    detail,
+    tone: primaryInsight ? ownerToneFromLabor(primaryInsight.tone) : "watch",
+  };
 }
 
 function confidenceFor(input: BuildOwnerReviewInput): {
@@ -231,6 +264,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     .sort((a, b) => a.revenue - b.revenue)[0];
   const menu = buildMenuEngineering(input.dishes);
   const { confidence, reason } = confidenceFor(input);
+  const laborInsights = input.labor ? buildLaborInsights(input.labor) : [];
+  const primaryLaborInsight =
+    laborInsights.find((insight) => insight.tone !== "good") ?? laborInsights[0];
   const { verdict, summary } = buildVerdict({
     brief: input.brief,
     quality: input.dataQuality,
@@ -252,6 +288,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           ? "risk"
           : "good",
     },
+    ...(input.labor ? [laborEvidence(input.labor)] : []),
     {
       label: "Покрытие",
       value: `${input.dataQuality.activeDays}/${input.dataQuality.requestedDays}`,
@@ -288,6 +325,16 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       check: "Откройте проверку iiko и убедитесь, что ключ, организация и OLAP работают.",
       role: "owner",
       tone: "risk",
+    });
+  }
+
+  if (primaryLaborInsight && primaryLaborInsight.tone !== "good") {
+    hypotheses.push({
+      title: primaryLaborInsight.title,
+      why: primaryLaborInsight.detail,
+      check: primaryLaborInsight.action,
+      role: primaryLaborInsight.tone === "setup" ? "owner" : "manager",
+      tone: ownerToneFromLabor(primaryLaborInsight.tone),
     });
   }
 
