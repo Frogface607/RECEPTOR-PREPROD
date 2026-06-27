@@ -2,6 +2,7 @@ import { formatInteger, formatRubles } from "@/lib/format";
 import { buildMenuEngineering } from "@/lib/menu-engineering";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 import type { RevenueDataQuality } from "@/lib/iiko/data-quality";
+import type { MenuMarginReadiness } from "@/lib/menu-margin-readiness";
 import {
   buildLaborInsights,
   type LaborBiSummary,
@@ -60,6 +61,7 @@ type BuildOwnerReviewInput = {
   dataQuality: RevenueDataQuality;
   dataMode: "live" | "mock";
   labor?: LaborBiSummary;
+  margin?: MenuMarginReadiness;
 };
 
 function pct(part: number, total: number): number {
@@ -124,6 +126,47 @@ function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
     value: pct,
     detail,
     tone: primaryInsight ? ownerToneFromLabor(primaryInsight.tone) : "watch",
+  };
+}
+
+function marginEvidence(input: MenuMarginReadiness): OwnerReviewEvidence {
+  return {
+    label: "Маржа",
+    value: `${input.revenueCoveragePct}%`,
+    detail: `${input.costedDishes}/${input.totalDishes} блюд с себестоимостью`,
+    tone:
+      input.status === "ready"
+        ? "good"
+        : input.status === "blocked"
+          ? "risk"
+          : "watch",
+  };
+}
+
+function laborMarginHypothesis(input: {
+  labor?: LaborBiSummary;
+  margin?: MenuMarginReadiness;
+}): OwnerReviewHypothesis | null {
+  if (!input.margin || input.margin.status === "ready") return null;
+  const laborPct = input.labor?.laborCostPct;
+  const laborIsHigh = laborPct !== null && laborPct !== undefined && laborPct >= 25;
+
+  if (!laborIsHigh) {
+    return {
+      title: "Маржа пока не доказана",
+      why: `Себестоимость покрывает ${input.margin.revenueCoveragePct}% выручки периода.`,
+      check: "Закрыть связи блюд с iiko и проверить позиции без закупочной цены.",
+      role: "chef",
+      tone: input.margin.status === "blocked" ? "risk" : "watch",
+    };
+  }
+
+  return {
+    title: "ФОТ давит, а маржа не доказана",
+    why: `ФОТ ${laborPct}% от выручки, при этом себестоимость покрывает только ${input.margin.revenueCoveragePct}% выручки.`,
+    check: "Сначала закрыть себестоимость топ-позиций, потом решать: резать часы, менять расписание или править меню.",
+    role: "owner",
+    tone: "risk",
   };
 }
 
@@ -267,6 +310,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   const laborInsights = input.labor ? buildLaborInsights(input.labor) : [];
   const primaryLaborInsight =
     laborInsights.find((insight) => insight.tone !== "good") ?? laborInsights[0];
+  const marginHypothesis = laborMarginHypothesis({
+    labor: input.labor,
+    margin: input.margin,
+  });
   const { verdict, summary } = buildVerdict({
     brief: input.brief,
     quality: input.dataQuality,
@@ -289,6 +336,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           : "good",
     },
     ...(input.labor ? [laborEvidence(input.labor)] : []),
+    ...(input.margin ? [marginEvidence(input.margin)] : []),
     {
       label: "Покрытие",
       value: `${input.dataQuality.activeDays}/${input.dataQuality.requestedDays}`,
@@ -336,6 +384,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       role: primaryLaborInsight.tone === "setup" ? "owner" : "manager",
       tone: ownerToneFromLabor(primaryLaborInsight.tone),
     });
+  }
+
+  if (marginHypothesis) {
+    hypotheses.push(marginHypothesis);
   }
 
   if (

@@ -7,6 +7,7 @@ import type {
   RevenueSummary,
   ShiftStat,
 } from "./iiko/models";
+import { buildMenuMarginReadiness } from "./menu-margin-readiness";
 import { buildOwnerReview } from "./owner-review";
 import { buildLaborBi } from "./team/labor-bi";
 
@@ -94,6 +95,10 @@ describe("buildOwnerReview", () => {
         },
       ],
     });
+    const margin = buildMenuMarginReadiness({
+      dishes,
+      products: [],
+    });
 
     const review = buildOwnerReview({
       summary,
@@ -104,6 +109,7 @@ describe("buildOwnerReview", () => {
       dataQuality: quality,
       dataMode: "live",
       labor,
+      margin,
     });
 
     expect(review.evidence).toEqual(
@@ -111,6 +117,11 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           label: "ФОТ",
           value: "35%",
+          tone: "risk",
+        }),
+        expect.objectContaining({
+          label: "Маржа",
+          value: "0%",
           tone: "risk",
         }),
       ]),
@@ -125,5 +136,14 @@ describe("buildOwnerReview", () => {
       priority: "high",
       roleId: "venue_manager",
     });
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "ФОТ давит, а маржа не доказана",
+          tone: "risk",
+          role: "owner",
+        }),
+      ]),
+    );
   });
 });
