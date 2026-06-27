@@ -67,7 +67,10 @@ import {
   type LaborShiftDiagnostic,
 } from "@/lib/team/labor-bi";
 import {
+  buildMemberLaborProfile,
   buildMemberShiftSchedule,
+  type MemberLaborProfile,
+  type MemberLaborProfileStatus,
   type MemberShiftScheduleItem,
 } from "@/lib/team/member-shift-schedule";
 import { getTeamWorkspace } from "@/lib/team/team-store";
@@ -314,6 +317,12 @@ export default async function TeamPage({
         shifts: laborLoad.shifts,
       }).slice(0, 7)
     : [];
+  const memberLaborProfile = representativeMember
+    ? buildMemberLaborProfile({
+        member: representativeMember,
+        labor: laborLoad.laborBi,
+      })
+    : null;
 
   return (
     <AppShell
@@ -460,6 +469,7 @@ export default async function TeamPage({
           schedule={memberSchedule}
           laborSource={laborLoad.source}
           periodLabel={formatPeriodLabel(period)}
+          laborProfile={memberLaborProfile}
         />
 
         <section
@@ -857,6 +867,7 @@ function RolePersonalBrief({
   schedule,
   laborSource,
   periodLabel,
+  laborProfile,
 }: {
   member: StaffMember | undefined;
   tasks: TeamTask[];
@@ -866,6 +877,7 @@ function RolePersonalBrief({
   schedule: MemberShiftScheduleItem[];
   laborSource: TeamLaborLoadResult["source"];
   periodLabel: string;
+  laborProfile: MemberLaborProfile | null;
 }) {
   if (!member) {
     return (
@@ -930,6 +942,9 @@ function RolePersonalBrief({
           </div>
 
           <div className="mt-5 grid gap-2">
+            {laborProfile ? (
+              <MemberLaborProfileCard profile={laborProfile} />
+            ) : null}
             <LinkButton
               href="#learning-progress"
               variant="outline"
@@ -1042,6 +1057,64 @@ function RolePersonalBrief({
       </div>
     </section>
   );
+}
+
+function MemberLaborProfileCard({ profile }: { profile: MemberLaborProfile }) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+          Экономика сотрудника
+        </p>
+        <Badge
+          variant="outline"
+          className={memberLaborStatusClass(profile.status)}
+        >
+          {memberLaborStatusLabel(profile.status)}
+        </Badge>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <PersonalMetric
+          label="Выручка"
+          value={formatRubles(profile.sales)}
+          detail={`${formatInteger(profile.shifts)} смен`}
+        />
+        <PersonalMetric
+          label="ФОТ"
+          value={formatRubles(profile.laborCost)}
+          detail={formatPct(profile.laborCostPct)}
+        />
+        <PersonalMetric
+          label="₽ / час"
+          value={
+            profile.revenuePerHour ? formatRubles(profile.revenuePerHour) : "—"
+          }
+          detail={formatHours(profile.hours)}
+        />
+      </div>
+      {profile.status !== "ready" ? (
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          {profile.status === "missing_rate"
+            ? "Ставка не закрыта: ФОТ и прибыль по этому сотруднику пока нельзя считать точными."
+            : "В выбранном периоде нет смен этого сотрудника из iiko."}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function memberLaborStatusLabel(status: MemberLaborProfileStatus): string {
+  if (status === "ready") return "считается";
+  if (status === "missing_rate") return "нет ставки";
+  return "нет смен";
+}
+
+function memberLaborStatusClass(status: MemberLaborProfileStatus): string {
+  if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "missing_rate") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-border bg-muted/40 text-muted-foreground";
 }
 
 function MemberShiftRow({ shift }: { shift: MemberShiftScheduleItem }) {

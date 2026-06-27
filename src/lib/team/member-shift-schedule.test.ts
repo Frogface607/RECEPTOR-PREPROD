@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { buildMemberShiftSchedule } from "./member-shift-schedule";
+import { buildLaborBi } from "./labor-bi";
+import {
+  buildMemberLaborProfile,
+  buildMemberShiftSchedule,
+} from "./member-shift-schedule";
 import type { StaffMember } from "./team-os";
 
 const member: StaffMember = {
@@ -108,5 +112,72 @@ describe("buildMemberShiftSchedule", () => {
     });
 
     expect(schedule.map((item) => item.shiftId)).toEqual(["early", "late"]);
+  });
+
+  test("builds member labor profile from labor BI", () => {
+    const labor = buildLaborBi({
+      staff: [member],
+      shifts: [
+        {
+          shiftId: "shift-1",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 90000,
+          items: 160,
+          employee: "Маша",
+        },
+      ],
+    });
+
+    expect(buildMemberLaborProfile({ member, labor })).toMatchObject({
+      status: "ready",
+      shifts: 1,
+      hours: 8,
+      sales: 90000,
+      laborCost: 2800,
+      revenuePerHour: 11250,
+      laborCostPct: 3.1,
+      missingRate: false,
+    });
+  });
+
+  test("marks member labor profile when rate is missing", () => {
+    const noRateMember: StaffMember = {
+      ...member,
+      hourlyRate: undefined,
+    };
+    const labor = buildLaborBi({
+      staff: [noRateMember],
+      shifts: [
+        {
+          shiftId: "shift-1",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 90000,
+          items: 160,
+          employee: "Маша",
+        },
+      ],
+    });
+
+    expect(
+      buildMemberLaborProfile({ member: noRateMember, labor }),
+    ).toMatchObject({
+      status: "missing_rate",
+      shifts: 1,
+      laborCost: 0,
+      missingRate: true,
+    });
+  });
+
+  test("returns an empty labor profile when employee has no shifts", () => {
+    expect(buildMemberLaborProfile({ member, labor: null })).toMatchObject({
+      status: "no_shifts",
+      shifts: 0,
+      sales: 0,
+      laborCost: 0,
+      revenuePerHour: null,
+      laborCostPct: null,
+    });
   });
 });

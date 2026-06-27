@@ -1,4 +1,8 @@
-import type { LaborShiftInput, LaborShiftWorker } from "./labor-bi";
+import type {
+  LaborBiSummary,
+  LaborShiftInput,
+  LaborShiftWorker,
+} from "./labor-bi";
 import type { StaffMember } from "./team-os";
 
 export type MemberShiftScheduleItem = {
@@ -9,6 +13,19 @@ export type MemberShiftScheduleItem = {
   revenue: number;
   items: number;
   hours: number;
+};
+
+export type MemberLaborProfileStatus = "ready" | "missing_rate" | "no_shifts";
+
+export type MemberLaborProfile = {
+  status: MemberLaborProfileStatus;
+  shifts: number;
+  hours: number;
+  sales: number;
+  laborCost: number;
+  revenuePerHour: number | null;
+  laborCostPct: number | null;
+  missingRate: boolean;
 };
 
 export function buildMemberShiftSchedule(input: {
@@ -36,6 +53,41 @@ export function buildMemberShiftSchedule(input: {
     })
     .filter((item): item is MemberShiftScheduleItem => item !== null)
     .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+}
+
+export function buildMemberLaborProfile(input: {
+  member: StaffMember;
+  labor: LaborBiSummary | null;
+}): MemberLaborProfile {
+  const employee = input.labor?.employees.find(
+    (item) =>
+      item.memberId === input.member.id ||
+      normalizeName(item.name) === normalizeName(input.member.name),
+  );
+
+  if (!employee) {
+    return {
+      status: "no_shifts",
+      shifts: 0,
+      hours: 0,
+      sales: 0,
+      laborCost: 0,
+      revenuePerHour: null,
+      laborCostPct: null,
+      missingRate: false,
+    };
+  }
+
+  return {
+    status: employee.missingRate ? "missing_rate" : "ready",
+    shifts: employee.shifts,
+    hours: employee.hours,
+    sales: employee.sales,
+    laborCost: employee.laborCost,
+    revenuePerHour: employee.revenuePerHour,
+    laborCostPct: employee.laborCostPct,
+    missingRate: employee.missingRate,
+  };
 }
 
 function matchShiftWorker(
