@@ -39,6 +39,18 @@ export type LaborEmployeeSummary = {
   missingRate: boolean;
 };
 
+export type LaborBlockerReason = "missing-member" | "missing-rate";
+
+export type LaborBlocker = {
+  memberId?: string;
+  name: string;
+  roleId?: TeamRoleId;
+  shifts: number;
+  hours: number;
+  sales: number;
+  reason: LaborBlockerReason;
+};
+
 export type LaborShiftSummary = {
   shiftId: string;
   openTime: string;
@@ -66,6 +78,7 @@ export type LaborBiSummary = {
   missingRates: number;
   shiftsBreakdown: LaborShiftSummary[];
   employees: LaborEmployeeSummary[];
+  topBlockers: LaborBlocker[];
 };
 
 export type LaborInsightTone = "risk" | "watch" | "good" | "setup";
@@ -138,6 +151,7 @@ export function buildLaborBi(input: {
   const employees = [...employeeTotals.values()]
     .map(finalizeEmployee)
     .sort((a, b) => b.laborCost - a.laborCost || b.sales - a.sales);
+  const topBlockers = buildLaborBlockers(employees);
 
   return {
     revenue,
@@ -152,6 +166,7 @@ export function buildLaborBi(input: {
     missingRates: shiftsBreakdown.reduce((total, shift) => total + shift.missingRates, 0),
     shiftsBreakdown,
     employees,
+    topBlockers,
   };
 }
 
@@ -175,11 +190,17 @@ export function buildLaborInsights(
   }
 
   if (labor.missingRates > 0) {
+    const blocker = labor.topBlockers[0];
     insights.push({
       tone: "setup",
       title: "Не все ставки заведены",
-      detail: `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать ФОТ.`,
-      action: "Заполните ставки в Team OS и вернитесь к этому периоду.",
+      detail: blocker
+        ? `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки. Первым закрыть: ${blocker.name}, ${formatMoney(blocker.sales)} выручки в сменах.`
+        : `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать ФОТ.`,
+      action:
+        blocker?.reason === "missing-member"
+          ? "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko."
+          : "Заполните ставку сотрудника в Team OS и вернитесь к периоду.",
     });
   }
 
@@ -378,6 +399,24 @@ function finalizeEmployee(employee: MutableEmployeeSummary): LaborEmployeeSummar
     revenuePerHour: ratio(employee.sales, employee.hours),
     laborCostPct: pct(employee.laborCost, employee.sales),
   };
+}
+
+function buildLaborBlockers(employees: LaborEmployeeSummary[]): LaborBlocker[] {
+  return employees
+    .filter((employee) => employee.missingRate)
+    .map((employee) => ({
+      memberId: employee.memberId,
+      name: employee.name,
+      roleId: employee.roleId,
+      shifts: employee.shifts,
+      hours: employee.hours,
+      sales: employee.sales,
+      reason: employee.memberId
+        ? ("missing-rate" as const)
+        : ("missing-member" as const),
+    }))
+    .sort((a, b) => b.sales - a.sales || b.hours - a.hours || b.shifts - a.shifts)
+    .slice(0, 5);
 }
 
 function splitRevenue(revenue: number, workerCount: number): number {

@@ -141,6 +141,57 @@ describe("buildLaborBi", () => {
     });
   });
 
+  test("prioritizes missing labor blockers from real shift employees", () => {
+    const labor = buildLaborBi({
+      staff: [
+        {
+          id: "ivan",
+          name: "Иван",
+          roleId: "service",
+          venueId: "venue-1",
+          status: "active",
+          shiftLabel: "12:00-22:00",
+        },
+      ],
+      shifts: [
+        {
+          shiftId: "shift-ivan",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T20:00:00",
+          revenue: 30000,
+          items: 80,
+          employee: "Иван",
+        },
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T18:00:00",
+          closeTime: "2026-06-27T02:00:00",
+          revenue: 90000,
+          items: 210,
+          employee: "Петр",
+        },
+      ],
+    });
+
+    expect(labor.topBlockers).toEqual([
+      expect.objectContaining({
+        name: "Петр",
+        reason: "missing-member",
+        sales: 90000,
+      }),
+      expect.objectContaining({
+        name: "Иван",
+        reason: "missing-rate",
+        memberId: "ivan",
+        sales: 30000,
+      }),
+    ]);
+    expect(buildLaborInsights(labor)[0]).toMatchObject({
+      title: "Не все ставки заведены",
+      action: "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko.",
+    });
+  });
+
   test("creates actionable insights for expensive labor", () => {
     const labor = buildLaborBi({
       shifts: [

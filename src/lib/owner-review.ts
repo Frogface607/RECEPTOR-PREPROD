@@ -110,6 +110,7 @@ function ownerToneFromLabor(tone: LaborInsightTone): OwnerReviewTone {
 
 function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
   const primaryInsight = buildLaborInsights(input)[0];
+  const blocker = input.topBlockers[0];
   const pct =
     input.laborCostPct === null
       ? "нет данных"
@@ -117,7 +118,9 @@ function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
           maximumFractionDigits: 1,
         })}%`;
   const detail =
-    input.missingRates > 0
+    blocker
+      ? `${blocker.name}: ${formatRubles(blocker.sales)} без точного ФОТ`
+      : input.missingRates > 0
       ? `${input.missingRates} ставок не заведено`
       : `${formatRubles(input.laborCost)} за период`;
 

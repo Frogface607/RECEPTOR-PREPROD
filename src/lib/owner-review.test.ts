@@ -148,6 +148,41 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("names first labor blocker in owner evidence", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-cashier",
+          openTime: "2026-06-26T18:00:00",
+          closeTime: "2026-06-27T02:00:00",
+          revenue: 80000,
+          items: 180,
+          employee: "Кассир",
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "ФОТ",
+          detail: expect.stringContaining("Кассир"),
+        }),
+      ]),
+    );
+  });
+
   test("asks to check RMS prices when linked items have no cost", () => {
     const margin = buildMenuMarginReadiness({
       dishes,

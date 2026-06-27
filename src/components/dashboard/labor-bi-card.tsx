@@ -14,6 +14,7 @@ import { LinkButton } from "@/components/ui/link-button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import {
   buildLaborInsights,
+  type LaborBlocker,
   type LaborBiSummary,
   type LaborInsightTone,
 } from "@/lib/team/labor-bi";
@@ -57,6 +58,7 @@ export function LaborBiCard({
       };
 
   const topEmployees = labor.employees.slice(0, 4);
+  const topBlockers = labor.topBlockers.slice(0, 3);
 
   return (
     <section className="rounded-xl border border-border/60 bg-card/50 p-5 sm:p-6">
@@ -130,6 +132,33 @@ export function LaborBiCard({
         />
       </div>
 
+      {topBlockers.length > 0 ? (
+        <div className="mt-5 border-y border-border/45 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                Сначала закрыть
+              </p>
+              <h3 className="mt-1 text-base font-medium text-foreground">
+                Сменные сотрудники без точного ФОТ
+              </h3>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+              Эти имена из iiko сильнее всего искажают стоимость команды.
+            </p>
+          </div>
+
+          <div className="mt-3 grid gap-2 lg:grid-cols-3">
+            {topBlockers.map((blocker) => (
+              <LaborBlockerCard
+                key={`${blocker.name}-${blocker.reason}`}
+                blocker={blocker}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="mt-5 grid gap-3 lg:grid-cols-3">
         {insights.map((insight) => (
           <InsightCard
@@ -175,6 +204,37 @@ export function LaborBiCard({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function blockerReasonLabel(reason: LaborBlocker["reason"]): string {
+  if (reason === "missing-member") return "нет в Team OS";
+  return "нет ставки";
+}
+
+function LaborBlockerCard({ blocker }: { blocker: LaborBlocker }) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/30 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-medium text-foreground">
+            {blocker.name}
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {blocker.shifts} смен · {formatHours(blocker.hours)}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-amber-400/35 bg-amber-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+          {blockerReasonLabel(blocker.reason)}
+        </span>
+      </div>
+      <p className="numeric mt-3 text-lg font-medium text-foreground">
+        {formatRubles(blocker.sales)}
+      </p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        выручки без точного ФОТ
+      </p>
+    </div>
   );
 }
 
