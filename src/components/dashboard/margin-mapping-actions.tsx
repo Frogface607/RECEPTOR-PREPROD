@@ -69,7 +69,10 @@ export function MarginMappingWorkspace({
     readiness.matchedDishes > 0 && readiness.costedDishes === 0;
 
   return (
-    <div className="mt-5 overflow-hidden rounded-lg border border-border/45 bg-background/25">
+    <div
+      id="margin-mapping-workspace"
+      className="mt-5 scroll-mt-24 overflow-hidden rounded-lg border border-border/45 bg-background/25"
+    >
       <div className="grid gap-2 border-b border-border/40 p-2 lg:grid-cols-[1fr_auto] lg:items-center">
         <div className="grid gap-2 sm:grid-cols-3">
           <Metric

@@ -27,6 +27,14 @@ export type MenuMarginBlocker = {
   productName: string | null;
 };
 
+export type MenuMarginNextAction = {
+  kind: "ready" | "missing-link" | "missing-cost";
+  title: string;
+  detail: string;
+  action: string;
+  blocker: MenuMarginBlocker | null;
+};
+
 export type MenuMarginReadiness = {
   status: MenuMarginStatus;
   totalDishes: number;
@@ -190,6 +198,45 @@ export function getProductCostReference(product: Product | null): number | null 
   const purchasePricePerUnit = positive(product.purchasePricePerUnit);
   if (purchasePricePerUnit === null) return null;
   return product.unit === "pcs" ? purchasePricePerUnit : purchasePricePerUnit * 1000;
+}
+
+export function buildMenuMarginNextAction(
+  readiness: MenuMarginReadiness,
+): MenuMarginNextAction {
+  const blocker = readiness.topBlockers[0] ?? null;
+
+  if (!blocker) {
+    return {
+      kind: "ready",
+      title: "Маржу можно разбирать",
+      detail: "Ключевые блюда связаны с iiko и имеют доказанную себестоимость.",
+      action: "Ищите слабую маржу, хвост меню и позиции с высоким оборотом.",
+      blocker: null,
+    };
+  }
+
+  if (blocker.reason === "missing-cost") {
+    const product = blocker.productName
+      ? `«${blocker.productName}»`
+      : "выбранным товаром iiko";
+    return {
+      kind: "missing-cost",
+      title: "RMS не отдает закупочную цену",
+      detail: `«${blocker.dishName}» связано с ${product}, но у товара нет purchasePrice, cost или price_per_unit.`,
+      action:
+        "Откройте диагностику iiko и проверьте RMS-права на номенклатуру, закупочные цены или техкарты.",
+      blocker,
+    };
+  }
+
+  return {
+    kind: "missing-link",
+    title: "Блюдо не связано с iiko",
+    detail: `«${blocker.dishName}» продается в BI, но не связано с товаром номенклатуры.`,
+    action:
+      "Свяжите блюдо с правильным товаром iiko, затем проверьте, пришла ли закупочная цена.",
+    blocker,
+  };
 }
 
 function positive(value: number | undefined): number | null {

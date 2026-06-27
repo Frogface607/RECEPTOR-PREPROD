@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   buildMenuMarginReadiness,
+  buildMenuMarginNextAction,
   getProductCostReference,
 } from "./menu-margin-readiness";
 
@@ -158,6 +159,92 @@ describe("buildMenuMarginReadiness", () => {
     expect(readiness.topBlockers[1]).toMatchObject({
       reason: "missing-cost",
       productName: "Mapped product",
+    });
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "missing-link",
+      title: "Блюдо не связано с iiko",
+      blocker: expect.objectContaining({
+        dishName: "High revenue dish",
+        reason: "missing-link",
+      }),
+    });
+  });
+
+  test("explains linked product without RMS cost as the next action", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 30000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta semi-finished",
+          sizePrices: [],
+        },
+      ],
+      mappings: [
+        {
+          id: "m-1",
+          venueId: "venue-1",
+          dishKey: "pasta",
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          iikoProductId: "pasta-base",
+          iikoProductName: "Pasta semi-finished",
+          iikoArticle: "",
+          mappingType: "manual",
+          status: "active",
+          confidence: 1,
+          note: "",
+        },
+      ],
+    });
+
+    const nextAction = buildMenuMarginNextAction(readiness);
+
+    expect(nextAction).toMatchObject({
+      kind: "missing-cost",
+      title: "RMS не отдает закупочную цену",
+      blocker: expect.objectContaining({
+        dishName: "Pasta",
+        productName: "Pasta semi-finished",
+      }),
+    });
+    expect(nextAction.detail).toContain("Pasta");
+    expect(nextAction.detail).toContain("Pasta semi-finished");
+    expect(nextAction.detail).toContain("purchasePrice");
+    expect(nextAction.action).toContain("RMS-права");
+  });
+
+  test("marks margin as ready when all key dishes have proven cost", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Chef steak",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 10000,
+        },
+      ],
+      products: [
+        {
+          id: "steak",
+          name: "Chef steak",
+          purchasePrice: 700,
+          sizePrices: [],
+        },
+      ],
+    });
+
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "ready",
+      title: "Маржу можно разбирать",
+      blocker: null,
     });
   });
 });

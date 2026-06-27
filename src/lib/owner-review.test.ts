@@ -222,6 +222,22 @@ describe("buildOwnerReview", () => {
       margin,
     });
 
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Маржа",
+          detail: expect.stringContaining("Паста"),
+        }),
+      ]),
+    );
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Маржа",
+          detail: expect.stringContaining("без закупочной цены"),
+        }),
+      ]),
+    );
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

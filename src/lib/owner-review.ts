@@ -2,7 +2,10 @@ import { formatInteger, formatRubles } from "@/lib/format";
 import { buildMenuEngineering } from "@/lib/menu-engineering";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 import type { RevenueDataQuality } from "@/lib/iiko/data-quality";
-import type { MenuMarginReadiness } from "@/lib/menu-margin-readiness";
+import {
+  buildMenuMarginNextAction,
+  type MenuMarginReadiness,
+} from "@/lib/menu-margin-readiness";
 import {
   buildLaborInsights,
   type LaborBiSummary,
@@ -133,10 +136,18 @@ function laborEvidence(input: LaborBiSummary): OwnerReviewEvidence {
 }
 
 function marginEvidence(input: MenuMarginReadiness): OwnerReviewEvidence {
+  const nextAction = buildMenuMarginNextAction(input);
+  const blocker = nextAction.blocker;
+  const detail = blocker
+    ? blocker.reason === "missing-cost"
+      ? `${blocker.dishName}: ${formatRubles(blocker.revenue)} без закупочной цены`
+      : `${blocker.dishName}: ${formatRubles(blocker.revenue)} без связи с iiko`
+    : `${input.costedDishes}/${input.totalDishes} блюд с себестоимостью`;
+
   return {
     label: "Маржа",
     value: `${input.revenueCoveragePct}%`,
-    detail: `${input.costedDishes}/${input.totalDishes} блюд с себестоимостью`,
+    detail,
     tone:
       input.status === "ready"
         ? "good"
@@ -151,18 +162,14 @@ function laborMarginHypothesis(input: {
   margin?: MenuMarginReadiness;
 }): OwnerReviewHypothesis | null {
   if (!input.margin || input.margin.status === "ready") return null;
+  const nextAction = buildMenuMarginNextAction(input.margin);
   const laborPct = input.labor?.laborCostPct;
   const laborIsHigh = laborPct !== null && laborPct !== undefined && laborPct >= 25;
-  const topBlocker = input.margin.topBlockers[0];
+  const topBlocker = nextAction.blocker;
   const blockerText = topBlocker
-    ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки).`
+    ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки): ${nextAction.title}.`
     : "Начните с топ-позиций без себестоимости.";
-  const costDebtDominates =
-    input.margin.missingCostRevenue >= input.margin.missingLinkRevenue &&
-    input.margin.missingCostRevenue > 0;
-  const marginAction = costDebtDominates
-    ? "Проверить RMS-права и endpoint закупочных цен, затем обновить себестоимость связанных позиций."
-    : "Связать топ-блюда с iiko-номенклатурой и проверить позиции без закупочной цены.";
+  const marginAction = nextAction.action;
 
   if (!laborIsHigh) {
     return {

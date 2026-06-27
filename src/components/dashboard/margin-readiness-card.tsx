@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, ReceiptText } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, ReceiptText } from "lucide-react";
 import { MarginMappingWorkspace } from "./margin-mapping-actions";
 import type { Product } from "@/lib/iiko/models";
 import { formatInteger, formatRubles } from "@/lib/format";
-import type {
-  MenuMarginBlocker,
-  MenuMarginReadiness,
+import {
+  buildMenuMarginNextAction,
+  type MenuMarginNextAction,
+  type MenuMarginBlocker,
+  type MenuMarginReadiness,
 } from "@/lib/menu-margin-readiness";
 
 const STATUS_COPY = {
@@ -39,6 +41,7 @@ export function MarginReadinessCard({
 }) {
   const copy = STATUS_COPY[readiness.status];
   const topBlockers = readiness.topBlockers.slice(0, 3);
+  const nextAction = buildMenuMarginNextAction(readiness);
   const diagnosticsHref = `/settings#iiko-diagnostics-${encodeURIComponent(venueId)}`;
 
   return (
@@ -107,20 +110,10 @@ export function MarginReadinessCard({
             />
           </div>
 
-          {readiness.missingCostRevenue > 0 ? (
-            <div className="mt-3 flex flex-col gap-3 rounded-lg border border-amber-400/25 bg-amber-400/5 p-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[12px] leading-relaxed text-amber-100/85">
-                Есть связанные позиции без закупочной цены. Проверьте RMS-права
-                и поля себестоимости в диагностике iiko.
-              </p>
-              <Link
-                href={diagnosticsHref}
-                className="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-amber-400/35 bg-background/45 px-3 text-[13px] font-medium text-amber-100 transition-colors hover:border-amber-300"
-              >
-                Проверить RMS
-              </Link>
-            </div>
-          ) : null}
+          <MarginNextActionCard
+            nextAction={nextAction}
+            diagnosticsHref={diagnosticsHref}
+          />
 
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
             {topBlockers.map((item) => (
@@ -139,6 +132,52 @@ export function MarginReadinessCard({
         products={products}
       />
     </section>
+  );
+}
+
+function MarginNextActionCard({
+  nextAction,
+  diagnosticsHref,
+}: {
+  nextAction: MenuMarginNextAction;
+  diagnosticsHref: string;
+}) {
+  const href =
+    nextAction.kind === "missing-cost"
+      ? diagnosticsHref
+      : nextAction.kind === "missing-link"
+        ? "#margin-mapping-workspace"
+        : null;
+  const label =
+    nextAction.kind === "missing-cost"
+      ? "Проверить RMS"
+      : nextAction.kind === "missing-link"
+        ? "Связать блюдо"
+        : null;
+
+  return (
+    <div className="mt-3 grid gap-3 rounded-lg border border-border/45 bg-background/30 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          Следующее действие
+        </p>
+        <p className="mt-1 text-[13px] font-medium text-foreground">
+          {nextAction.title}
+        </p>
+        <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+          {nextAction.detail}
+        </p>
+      </div>
+      {href && label ? (
+        <Link
+          href={href}
+          className="inline-flex h-8 shrink-0 items-center justify-center gap-2 rounded-lg border border-brand/45 bg-brand/10 px-3 text-[13px] font-medium text-brand transition-colors hover:bg-brand/15"
+        >
+          {label}
+          <ArrowRight className="size-3.5" />
+        </Link>
+      ) : null}
+    </div>
   );
 }
 
