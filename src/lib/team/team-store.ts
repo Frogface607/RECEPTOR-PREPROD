@@ -30,6 +30,9 @@ type DbMembership = {
   role: string;
   status: string;
   shift_label: string | null;
+  hourly_rate?: number | string | null;
+  shift_pay?: number | string | null;
+  revenue_bonus_pct?: number | string | null;
 };
 
 type DbTask = {
@@ -142,7 +145,7 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
 ]);
 
 function isMissingTeamTable(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_progress|relation .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_progress|hourly_rate|shift_pay|revenue_bonus_pct|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
 }
@@ -177,7 +180,21 @@ export function mapMembershipRow(row: DbMembership): StaffMember {
         ? row.status
         : "invited",
     shiftLabel: row.shift_label ?? "",
+    hourlyRate: normalizeMoney(row.hourly_rate),
+    shiftPay: normalizeMoney(row.shift_pay),
+    revenueBonusPct: normalizeMoney(row.revenue_bonus_pct),
   };
+}
+
+function normalizeMoney(value: number | string | null | undefined): number {
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value.replace(",", "."));
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  }
+  return 0;
 }
 
 export function mapTaskRow(row: DbTask): TeamTask {
@@ -249,6 +266,7 @@ function normalizeAuditEventType(value: string): TeamAuditEventType {
     "member_invited",
     "member_status_updated",
     "member_password_reset",
+    "member_labor_rate_updated",
     "task_created",
     "task_status_updated",
     "comment_added",
@@ -405,7 +423,7 @@ export async function getTeamWorkspace(
 
   const membershipsResult = await supabase
     .from("venue_memberships")
-    .select("id,venue_id,user_id,full_name,email,role,status,shift_label")
+    .select("id,venue_id,user_id,full_name,email,role,status,shift_label,hourly_rate,shift_pay,revenue_bonus_pct")
     .eq("venue_id", venueId)
     .order("created_at", { ascending: true });
 
@@ -576,7 +594,7 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
 
   const membershipResult = await supabase
     .from("venue_memberships")
-    .select("id,venue_id,user_id,full_name,email,role,status,shift_label,venues(name,city)")
+    .select("id,venue_id,user_id,full_name,email,role,status,shift_label,hourly_rate,shift_pay,revenue_bonus_pct,venues(name,city)")
     .eq("user_id", user.id)
     .neq("status", "paused")
     .order("created_at", { ascending: true })
@@ -601,7 +619,7 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
 
   const staffResult = await supabase
     .from("venue_memberships")
-    .select("id,venue_id,user_id,full_name,email,role,status,shift_label")
+    .select("id,venue_id,user_id,full_name,email,role,status,shift_label,hourly_rate,shift_pay,revenue_bonus_pct")
     .eq("venue_id", venueId)
     .order("created_at", { ascending: true });
 

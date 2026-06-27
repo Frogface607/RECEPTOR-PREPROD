@@ -30,6 +30,7 @@ import { listMenuItemMappings } from "@/lib/menu-item-mapping-store";
 import { buildMenuMarginReadiness } from "@/lib/menu-margin-readiness";
 import { buildOwnerReview } from "@/lib/owner-review";
 import { buildLaborBi } from "@/lib/team/labor-bi";
+import { getTeamWorkspace } from "@/lib/team/team-store";
 import type { IikoClient } from "@/lib/iiko/types";
 import type {
   CategoryStat,
@@ -139,6 +140,7 @@ export default async function DashboardPage({
   let dataMode: "live" | "mock" = intendedDataMode;
   let dataError: string | null = null;
   let dashboardData: DashboardData;
+  const teamWorkspace = await getTeamWorkspace(venueId);
 
   try {
     dashboardData = await loadDashboardData(
@@ -190,7 +192,7 @@ export default async function DashboardPage({
     products: nomenclature,
     mappings,
   });
-  const laborBi = buildLaborBi({ shifts });
+  const laborBi = buildLaborBi({ shifts, staff: teamWorkspace.staff });
 
   return (
     <>

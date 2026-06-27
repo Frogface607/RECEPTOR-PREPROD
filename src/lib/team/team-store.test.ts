@@ -25,9 +25,12 @@ describe("Team OS store mapping", () => {
       role: "venue_manager",
       status: "active",
       shift_label: "12:00-23:00",
+      hourly_rate: 450,
+      shift_pay: "1200.50",
+      revenue_bonus_pct: "1.5",
     });
 
-    expect(member).toEqual({
+    expect(member).toMatchObject({
       id: "member-1",
       userId: "user-1",
       name: "Алина",
@@ -36,6 +39,9 @@ describe("Team OS store mapping", () => {
       venueId: "venue-1",
       status: "active",
       shiftLabel: "12:00-23:00",
+      hourlyRate: 450,
+      shiftPay: 1200.5,
+      revenueBonusPct: 1.5,
     });
   });
 
@@ -152,6 +158,20 @@ describe("Team OS store mapping", () => {
       summary: "Пароль сотрудника обновлен.",
     });
     expect(event.createdAtLabel).not.toBe("");
+  });
+
+  test("keeps labor rate audit events", () => {
+    const event = mapAuditEventRow({
+      id: "audit-labor",
+      venue_id: "venue-1",
+      event_type: "member_labor_rate_updated",
+      target_type: "member",
+      target_id: "member-1",
+      summary: "Ставки ФОТ обновлены.",
+      created_at: null,
+    });
+
+    expect(event.type).toBe("member_labor_rate_updated");
   });
 
   test("maps learning progress rows", () => {

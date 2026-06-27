@@ -8,6 +8,7 @@ import {
   PauseCircle,
   PlayCircle,
   Plus,
+  Save,
   Send,
   UserPlus,
   WandSparkles,
@@ -24,6 +25,7 @@ import {
   createTeamTaskAction,
   inviteTeamMemberAction,
   resetTeamMemberPasswordAction,
+  updateTeamMemberLaborRateAction,
   updateTeamMemberStatusAction,
   updateTeamTaskStatusAction,
   type TeamActionResult,
@@ -32,6 +34,11 @@ import {
 type Message = {
   tone: "success" | "error";
   text: string;
+};
+type RateDraft = {
+  hourlyRate: string;
+  shiftPay: string;
+  revenueBonusPct: string;
 };
 
 const TASK_STATUSES: Array<{ value: TeamTask["status"]; label: string }> = [
@@ -68,6 +75,7 @@ function auditTypeLabel(type: TeamAuditEvent["type"]): string {
   if (type === "member_invited") return "доступ";
   if (type === "member_status_updated") return "статус";
   if (type === "member_password_reset") return "пароль";
+  if (type === "member_labor_rate_updated") return "ФОТ";
   if (type === "task_created") return "задача";
   if (type === "task_status_updated") return "статус задачи";
   if (type === "comment_added") return "комментарий";
@@ -94,9 +102,15 @@ export function TeamActionsPanel({
   const [memberPassword, setMemberPassword] = useState("");
   const [memberRole, setMemberRole] = useState<TeamRoleId>("service");
   const [memberShift, setMemberShift] = useState("");
+  const [memberHourlyRate, setMemberHourlyRate] = useState("");
+  const [memberShiftPay, setMemberShiftPay] = useState("");
+  const [memberRevenueBonusPct, setMemberRevenueBonusPct] = useState("");
   const [resetPasswords, setResetPasswords] = useState<
     Record<string, string>
   >({});
+  const [rateDrafts, setRateDrafts] = useState<Record<string, RateDraft>>(() =>
+    Object.fromEntries(staff.map((member) => [member.id, rateDraft(member)])),
+  );
   const [copiedMemberId, setCopiedMemberId] = useState<string | null>(null);
 
   const [taskTitle, setTaskTitle] = useState("");
@@ -130,6 +144,20 @@ export function TeamActionsPanel({
     await navigator.clipboard.writeText(member.email);
     setCopiedMemberId(member.id);
     window.setTimeout(() => setCopiedMemberId(null), 1600);
+  }
+
+  function updateRateDraft(
+    memberId: string,
+    field: keyof RateDraft,
+    value: string,
+  ) {
+    setRateDrafts((current) => ({
+      ...current,
+      [memberId]: {
+        ...(current[memberId] ?? { hourlyRate: "", shiftPay: "", revenueBonusPct: "" }),
+        [field]: value,
+      },
+    }));
   }
 
   return (
@@ -174,6 +202,9 @@ export function TeamActionsPanel({
                   password: memberPassword,
                   role: memberRole,
                   shiftLabel: memberShift,
+                  hourlyRate: memberHourlyRate,
+                  shiftPay: memberShiftPay,
+                  revenueBonusPct: memberRevenueBonusPct,
                 });
                 if (result.ok) {
                   setMemberName("");
@@ -181,6 +212,9 @@ export function TeamActionsPanel({
                   setMemberLogin("");
                   setMemberPassword("");
                   setMemberShift("");
+                  setMemberHourlyRate("");
+                  setMemberShiftPay("");
+                  setMemberRevenueBonusPct("");
                 }
                 return result;
               });
@@ -264,6 +298,37 @@ export function TeamActionsPanel({
                   placeholder="сегодня 16:00-00:00"
                 />
               </FieldLabel>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <FieldLabel label="₽ / час">
+                  <input
+                    value={memberHourlyRate}
+                    onChange={(event) => setMemberHourlyRate(event.target.value)}
+                    className={FIELD_CLASS}
+                    inputMode="decimal"
+                    placeholder="350"
+                  />
+                </FieldLabel>
+                <FieldLabel label="₽ / смена">
+                  <input
+                    value={memberShiftPay}
+                    onChange={(event) => setMemberShiftPay(event.target.value)}
+                    className={FIELD_CLASS}
+                    inputMode="decimal"
+                    placeholder="4000"
+                  />
+                </FieldLabel>
+                <FieldLabel label="% продаж">
+                  <input
+                    value={memberRevenueBonusPct}
+                    onChange={(event) =>
+                      setMemberRevenueBonusPct(event.target.value)
+                    }
+                    className={FIELD_CLASS}
+                    inputMode="decimal"
+                    placeholder="1"
+                  />
+                </FieldLabel>
+              </div>
             </div>
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
               Формат входа: login@staff.receptorai.pro.
@@ -456,16 +521,17 @@ export function TeamActionsPanel({
               <h3 className="mt-2 text-xl font-medium">Команда</h3>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Логины, роли, статусы и пароли.
+              Логины, роли, статусы, пароли и ставки для ФОТ.
             </p>
           </div>
 
           <div className="mt-5 overflow-x-auto">
-            <table className="w-full min-w-[860px] text-left text-sm">
+            <table className="w-full min-w-[1080px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border/50 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                   <th className="px-3 py-3 font-normal">Сотрудник</th>
                   <th className="px-3 py-3 font-normal">Роль</th>
+                  <th className="px-3 py-3 font-normal">ФОТ</th>
                   <th className="px-3 py-3 font-normal">Логин</th>
                   <th className="px-3 py-3 font-normal">Статус</th>
                   <th className="px-3 py-3 font-normal">Пароль</th>
@@ -478,6 +544,7 @@ export function TeamActionsPanel({
                     (item) => item.id === member.roleId,
                   );
                   const resetPassword = resetPasswords[member.id] ?? "";
+                  const draft = rateDrafts[member.id] ?? rateDraft(member);
                   const canReset = Boolean(member.userId);
                   return (
                     <tr key={member.id} className="align-top">
@@ -489,6 +556,71 @@ export function TeamActionsPanel({
                       </td>
                       <td className="px-3 py-4 text-muted-foreground">
                         {role?.title ?? member.roleId}
+                      </td>
+                      <td className="px-3 py-4">
+                        <div className="grid min-w-[280px] gap-2 sm:grid-cols-[1fr_1fr_0.85fr_auto]">
+                          <input
+                            value={draft.hourlyRate}
+                            onChange={(event) =>
+                              updateRateDraft(
+                                member.id,
+                                "hourlyRate",
+                                event.target.value,
+                              )
+                            }
+                            className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
+                            inputMode="decimal"
+                            placeholder="₽/час"
+                            aria-label="Почасовая ставка"
+                          />
+                          <input
+                            value={draft.shiftPay}
+                            onChange={(event) =>
+                              updateRateDraft(
+                                member.id,
+                                "shiftPay",
+                                event.target.value,
+                              )
+                            }
+                            className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
+                            inputMode="decimal"
+                            placeholder="₽/смена"
+                            aria-label="Фикс за смену"
+                          />
+                          <input
+                            value={draft.revenueBonusPct}
+                            onChange={(event) =>
+                              updateRateDraft(
+                                member.id,
+                                "revenueBonusPct",
+                                event.target.value,
+                              )
+                            }
+                            className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
+                            inputMode="decimal"
+                            placeholder="%"
+                            aria-label="Процент от продаж"
+                          />
+                          <button
+                            type="button"
+                            disabled={pending}
+                            onClick={() =>
+                              runAction(() =>
+                                updateTeamMemberLaborRateAction({
+                                  venueId,
+                                  memberId: member.id,
+                                  hourlyRate: draft.hourlyRate,
+                                  shiftPay: draft.shiftPay,
+                                  revenueBonusPct: draft.revenueBonusPct,
+                                }),
+                              )
+                            }
+                            className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground transition-colors hover:border-brand/40 disabled:opacity-50"
+                            title="Сохранить ставки"
+                          >
+                            <Save className="size-4 text-brand" />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-3 py-4">
                         {member.email ? (
@@ -675,4 +807,12 @@ function FieldLabel({
       {children}
     </label>
   );
+}
+
+function rateDraft(member: StaffMember): RateDraft {
+  return {
+    hourlyRate: member.hourlyRate ? String(member.hourlyRate) : "",
+    shiftPay: member.shiftPay ? String(member.shiftPay) : "",
+    revenueBonusPct: member.revenueBonusPct ? String(member.revenueBonusPct) : "",
+  };
 }

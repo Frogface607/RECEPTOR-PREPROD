@@ -43,6 +43,9 @@ export type StaffMember = {
   venueId: string;
   status: "active" | "invited" | "paused";
   shiftLabel: string;
+  hourlyRate?: number;
+  shiftPay?: number;
+  revenueBonusPct?: number;
 };
 
 export type TeamTaskAudience =
@@ -89,6 +92,7 @@ export type TeamAuditEventType =
   | "member_invited"
   | "member_status_updated"
   | "member_password_reset"
+  | "member_labor_rate_updated"
   | "task_created"
   | "task_status_updated"
   | "comment_added"
@@ -280,6 +284,7 @@ export const DEMO_STAFF: StaffMember[] = [
     venueId: "dev-venue",
     status: "active",
     shiftLabel: "владелец",
+    shiftPay: 0,
   },
   {
     id: "staff-manager",
@@ -288,6 +293,7 @@ export const DEMO_STAFF: StaffMember[] = [
     venueId: "dev-venue",
     status: "active",
     shiftLabel: "сегодня 12:00-23:00",
+    shiftPay: 4500,
   },
   {
     id: "staff-chef",
@@ -296,6 +302,7 @@ export const DEMO_STAFF: StaffMember[] = [
     venueId: "dev-venue",
     status: "active",
     shiftLabel: "кухня 10:00-22:00",
+    shiftPay: 5000,
   },
   {
     id: "staff-cook",
@@ -304,6 +311,7 @@ export const DEMO_STAFF: StaffMember[] = [
     venueId: "dev-venue",
     status: "active",
     shiftLabel: "горячий цех 14:00-23:00",
+    hourlyRate: 380,
   },
   {
     id: "staff-service",
@@ -312,6 +320,8 @@ export const DEMO_STAFF: StaffMember[] = [
     venueId: "dev-venue",
     status: "active",
     shiftLabel: "зал 16:00-00:00",
+    hourlyRate: 350,
+    revenueBonusPct: 1,
   },
   {
     id: "staff-marketing",
@@ -320,6 +330,7 @@ export const DEMO_STAFF: StaffMember[] = [
     venueId: "dev-venue",
     status: "invited",
     shiftLabel: "удаленно",
+    shiftPay: 0,
   },
 ];
 

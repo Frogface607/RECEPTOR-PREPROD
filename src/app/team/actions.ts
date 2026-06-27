@@ -28,6 +28,7 @@ const TaskAudienceTypeSchema = z.enum(["member", "role", "venue"]);
 const AnnouncementAudienceTypeSchema = z.enum(["role", "venue"]);
 const AnnouncementPrioritySchema = z.enum(["normal", "important"]);
 const MemberStatusSchema = z.enum(["active", "paused"]);
+const NonNegativeMoneySchema = z.coerce.number().min(0).max(1_000_000).default(0);
 
 const InviteMemberInput = z.object({
   venueId: z.string().min(1),
@@ -38,6 +39,9 @@ const InviteMemberInput = z.object({
   password: z.string().min(6).max(72).optional().or(z.literal("")),
   role: TeamRoleIdSchema,
   shiftLabel: z.string().trim().max(120).optional().or(z.literal("")),
+  hourlyRate: NonNegativeMoneySchema,
+  shiftPay: NonNegativeMoneySchema,
+  revenueBonusPct: z.coerce.number().min(0).max(100).default(0),
 });
 
 const CreateTeamTaskInput = z
@@ -85,6 +89,14 @@ const ResetTeamMemberPasswordInput = z.object({
   password: z.string().min(6).max(72),
 });
 
+const UpdateTeamMemberLaborRateInput = z.object({
+  venueId: z.string().min(1),
+  memberId: z.string().min(1),
+  hourlyRate: NonNegativeMoneySchema,
+  shiftPay: NonNegativeMoneySchema,
+  revenueBonusPct: z.coerce.number().min(0).max(100).default(0),
+});
+
 const AddTaskCommentInput = z.object({
   venueId: z.string().min(1),
   taskId: z.string().min(1),
@@ -125,6 +137,7 @@ type TeamAuditEventInput = {
     | "member_invited"
     | "member_status_updated"
     | "member_password_reset"
+    | "member_labor_rate_updated"
     | "task_created"
     | "task_status_updated"
     | "comment_added"
@@ -136,7 +149,7 @@ type TeamAuditEventInput = {
 };
 
 function missingTeamTables(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|relation .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|hourly_rate|shift_pay|revenue_bonus_pct|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
 }
@@ -265,6 +278,9 @@ export async function inviteTeamMemberAction(
       role: parsed.data.role,
       status: createdUserId || !parsed.data.email ? "active" : "invited",
       shift_label: parsed.data.shiftLabel || "",
+      hourly_rate: parsed.data.hourlyRate,
+      shift_pay: parsed.data.shiftPay,
+      revenue_bonus_pct: parsed.data.revenueBonusPct,
       created_by: ctx.userId,
     })
     .select("id")
@@ -293,6 +309,9 @@ export async function inviteTeamMemberAction(
       role: parsed.data.role,
       hasLogin: Boolean(createdUserId),
       email: loginEmail || parsed.data.email || null,
+      hourlyRate: parsed.data.hourlyRate,
+      shiftPay: parsed.data.shiftPay,
+      revenueBonusPct: parsed.data.revenueBonusPct,
     },
   });
 
@@ -304,6 +323,70 @@ export async function inviteTeamMemberAction(
       ? `Сотрудник добавлен. Логин: ${loginEmail}.`
       : "Сотрудник добавлен.",
   };
+}
+
+export async function updateTeamMemberLaborRateAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = UpdateTeamMemberLaborRateInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "Проверьте ставки сотрудника." };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  if (ctx.mode === "sandbox" || !ctx.supabase) {
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: "Sandbox: ставки сотрудника обновлены.",
+    };
+  }
+
+  const { data, error } = await ctx.supabase
+    .from("venue_memberships")
+    .update({
+      hourly_rate: parsed.data.hourlyRate,
+      shift_pay: parsed.data.shiftPay,
+      revenue_bonus_pct: parsed.data.revenueBonusPct,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", parsed.data.memberId)
+    .eq("venue_id", parsed.data.venueId)
+    .select("id,full_name")
+    .maybeSingle<{ id: string; full_name: string }>();
+
+  if (error) {
+    if (missingTeamTables(error.message)) {
+      return {
+        ok: false,
+        error: "В базе нет полей ставок команды. Примените миграцию 0009_team_labor_rates.sql.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  if (!data) {
+    return { ok: false, error: "Сотрудник не найден или нет доступа." };
+  }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "member_labor_rate_updated",
+    targetType: "member",
+    targetId: parsed.data.memberId,
+    summary: `Ставки ФОТ обновлены: ${data.full_name}.`,
+    metadata: {
+      hourlyRate: parsed.data.hourlyRate,
+      shiftPay: parsed.data.shiftPay,
+      revenueBonusPct: parsed.data.revenueBonusPct,
+    },
+  });
+
+  revalidatePath("/team");
+  revalidatePath(`/dashboard/${parsed.data.venueId}`);
+  return { ok: true, mode: "saved", message: "Ставки сотрудника обновлены." };
 }
 
 export async function updateTeamMemberStatusAction(

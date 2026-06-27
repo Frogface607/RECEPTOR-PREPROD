@@ -106,4 +106,38 @@ describe("buildLaborBi", () => {
       missingRate: true,
     });
   });
+
+  test("matches iiko shift employee name to Team OS labor rate", () => {
+    const labor = buildLaborBi({
+      staff: [
+        {
+          id: "waiter",
+          name: "Илья",
+          roleId: "service",
+          venueId: "venue-1",
+          status: "active",
+          shiftLabel: "16:00-00:00",
+          hourlyRate: 350,
+        },
+      ],
+      shifts: [
+        {
+          shiftId: "shift-ilya",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 90000,
+          items: 210,
+          employee: "Илья",
+        },
+      ],
+    });
+
+    expect(labor.laborCost).toBe(2800);
+    expect(labor.missingRates).toBe(0);
+    expect(labor.employees[0]).toMatchObject({
+      memberId: "waiter",
+      laborCost: 2800,
+      hours: 8,
+    });
+  });
 });

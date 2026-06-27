@@ -163,17 +163,41 @@ function normalizeWorkers(
         ...worker,
         name: member?.name ?? worker.name,
         roleId: worker.roleId ?? member?.roleId,
+        hourlyRate: worker.hourlyRate ?? member?.hourlyRate,
+        shiftPay: worker.shiftPay ?? member?.shiftPay,
+        revenueBonusPct: worker.revenueBonusPct ?? member?.revenueBonusPct,
       };
     });
   }
 
+  const member = findStaffByName(staffById, shift.employee);
   return [
     {
+      memberId: member?.id,
       name: shift.employee,
+      roleId: member?.roleId,
       startedAt: shift.openTime,
       endedAt: shift.closeTime,
+      hourlyRate: member?.hourlyRate,
+      shiftPay: member?.shiftPay,
+      revenueBonusPct: member?.revenueBonusPct,
     },
   ];
+}
+
+function findStaffByName(
+  staffById: Map<string, StaffMember>,
+  name: string,
+): StaffMember | undefined {
+  const normalizedName = normalizeName(name);
+  if (!normalizedName || normalizedName === "смена") return undefined;
+  return [...staffById.values()].find(
+    (member) => normalizeName(member.name) === normalizedName,
+  );
+}
+
+function normalizeName(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function resolveRate(worker: LaborShiftWorker, rates: LaborRate[]): LaborRate | null {
