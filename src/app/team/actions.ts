@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { normalizeStaffLoginToEmail } from "@/lib/auth/staff-login";
 import { getSupabaseAdmin } from "@/lib/db/admin";
 import { getServerSupabase } from "@/lib/db/server";
+import { normalizeIikoStaffName } from "@/lib/team/team-iiko-staff-import";
 import { listLearningItemsForRole } from "@/lib/team/team-learning";
 import type { TeamLearningStandardStatus } from "@/lib/team/team-learning-standards";
 import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
@@ -53,6 +54,20 @@ const InviteMemberInput = z.object({
   hourlyRate: NonNegativeMoneySchema,
   shiftPay: NonNegativeMoneySchema,
   revenueBonusPct: z.coerce.number().min(0).max(100).default(0),
+});
+
+const ImportIikoMembersInput = z.object({
+  venueId: z.string().min(1),
+  members: z
+    .array(
+      z.object({
+        fullName: z.string().trim().min(2).max(120),
+        role: TeamRoleIdSchema.default("service"),
+        shiftLabel: z.string().trim().max(120).optional().or(z.literal("")),
+      }),
+    )
+    .min(1)
+    .max(20),
 });
 
 const CreateTeamTaskInput = z
@@ -172,6 +187,7 @@ type WritableTeamContext = Extract<
 >;
 
 type CreateTeamTaskData = z.output<typeof CreateTeamTaskInput>;
+type ImportIikoMembersData = z.output<typeof ImportIikoMembersInput>;
 type SaveTeamLearningStandardData = z.output<
   typeof SaveTeamLearningStandardInput
 >;
@@ -296,6 +312,19 @@ function parseActionInput(raw: unknown): Record<string, unknown> {
   return typeof raw === "object" && raw !== null
     ? (raw as Record<string, unknown>)
     : {};
+}
+
+function uniqueIikoImportMembers(
+  members: ImportIikoMembersData["members"],
+): ImportIikoMembersData["members"] {
+  const seen = new Set<string>();
+
+  return members.flatMap((member) => {
+    const key = normalizeIikoStaffName(member.fullName);
+    if (!key || seen.has(key)) return [];
+    seen.add(key);
+    return [{ ...member, fullName: member.fullName.trim() }];
+  });
 }
 
 function learningStandardStatusLabel(
@@ -426,6 +455,120 @@ export async function inviteTeamMemberAction(
     message: createdUserId
       ? `Сотрудник добавлен. Логин: ${loginEmail}.`
       : "Сотрудник добавлен.",
+  };
+}
+
+export async function importIikoTeamMembersAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = ImportIikoMembersInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "Проверьте сотрудников из iiko для импорта." };
+  }
+
+  const members = uniqueIikoImportMembers(parsed.data.members);
+  if (members.length === 0) {
+    return { ok: false, error: "Нет сотрудников iiko для импорта." };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  if (ctx.mode === "sandbox" || !ctx.supabase) {
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: `Sandbox: подготовлен импорт из iiko (${members.length}).`,
+    };
+  }
+
+  const { data: existingMembers, error: existingError } = await ctx.supabase
+    .from("venue_memberships")
+    .select("full_name")
+    .eq("venue_id", parsed.data.venueId);
+
+  if (existingError) {
+    if (missingTeamTables(existingError.message)) {
+      return {
+        ok: false,
+        error:
+          "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
+      };
+    }
+    return { ok: false, error: existingError.message };
+  }
+
+  const existingNames = new Set(
+    (existingMembers ?? []).map((member) =>
+      normalizeIikoStaffName(String(member.full_name ?? "")),
+    ),
+  );
+  const rows = members
+    .filter(
+      (member) => !existingNames.has(normalizeIikoStaffName(member.fullName)),
+    )
+    .map((member) => ({
+      venue_id: parsed.data.venueId,
+      user_id: null,
+      full_name: member.fullName,
+      email: null,
+      phone: null,
+      role: member.role,
+      status: "active",
+      shift_label: member.shiftLabel || "из смен iiko",
+      hourly_rate: 0,
+      shift_pay: 0,
+      revenue_bonus_pct: 0,
+      created_by: ctx.userId,
+    }));
+
+  if (rows.length === 0) {
+    return {
+      ok: true,
+      mode: "saved",
+      message: "Сотрудники из iiko уже есть в Team OS.",
+    };
+  }
+
+  const { data: createdMembers, error } = await ctx.supabase
+    .from("venue_memberships")
+    .insert(rows)
+    .select("id,full_name");
+
+  if (error) {
+    if (missingTeamTables(error.message)) {
+      return {
+        ok: false,
+        error:
+          "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  const names = (createdMembers ?? rows)
+    .map((member) => String(member.full_name ?? ""))
+    .filter(Boolean);
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "member_invited",
+    targetType: "member",
+    targetId: createdMembers?.[0]?.id ?? null,
+    summary: `Импортированы сотрудники из iiko: ${names.join(", ")}.`,
+    metadata: {
+      source: "iiko",
+      count: rows.length,
+      names,
+    },
+  });
+
+  revalidatePath("/team");
+  revalidatePath(`/dashboard/${parsed.data.venueId}`);
+  return {
+    ok: true,
+    mode: "saved",
+    message: `Добавлены сотрудники из iiko: ${names.join(", ")}. Теперь заполните ставки ФОТ.`,
   };
 }
 

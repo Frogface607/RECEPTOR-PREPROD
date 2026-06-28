@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -18,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import type { LaborBiSummary } from "@/lib/team/labor-bi";
+import { buildIikoStaffImportCandidates } from "@/lib/team/team-iiko-staff-import";
 import {
   TEAM_ROLES,
   type StaffMember,
@@ -33,6 +35,7 @@ import {
 } from "@/lib/team/team-labor-readiness";
 import {
   createTeamTaskAction,
+  importIikoTeamMembersAction,
   inviteTeamMemberAction,
   resetTeamMemberPasswordAction,
   updateTeamMemberLaborRateAction,
@@ -152,20 +155,23 @@ function laborReadinessCopy(status: TeamLaborReadinessStatus): {
   if (status === "ready") {
     return {
       title: "ФОТ готов к расчету",
-      detail: "У активной команды заведены ставки. Owner Dashboard может считать ФОТ точнее.",
+      detail:
+        "У активной команды заведены ставки. Owner Dashboard может считать ФОТ точнее.",
       className: "border-brand/35 bg-brand/10 text-brand",
     };
   }
   if (status === "partial") {
     return {
       title: "ФОТ считается частично",
-      detail: "Часть активной команды без ставки. Их смены будут занижать ФОТ в BI.",
+      detail:
+        "Часть активной команды без ставки. Их смены будут занижать ФОТ в BI.",
       className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
     };
   }
   return {
     title: "ФОТ заблокирован",
-    detail: "Нет активных ставок. Смены видны, но стоимость команды пока не считается.",
+    detail:
+      "Нет активных ставок. Смены видны, но стоимость команды пока не считается.",
     className: "border-destructive/35 bg-destructive/10 text-destructive",
   };
 }
@@ -189,6 +195,7 @@ export function TeamActionsPanel({
   laborBi?: LaborBiSummary | null;
   laborSource: LaborSource;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
 
@@ -201,9 +208,9 @@ export function TeamActionsPanel({
   const [memberHourlyRate, setMemberHourlyRate] = useState("");
   const [memberShiftPay, setMemberShiftPay] = useState("");
   const [memberRevenueBonusPct, setMemberRevenueBonusPct] = useState("");
-  const [resetPasswords, setResetPasswords] = useState<
-    Record<string, string>
-  >({});
+  const [resetPasswords, setResetPasswords] = useState<Record<string, string>>(
+    {},
+  );
   const [rateDrafts, setRateDrafts] = useState<Record<string, RateDraft>>(() =>
     Object.fromEntries(staff.map((member) => [member.id, rateDraft(member)])),
   );
@@ -229,6 +236,10 @@ export function TeamActionsPanel({
   const laborReadiness = useMemo(
     () => buildTeamLaborReadiness(staff, laborBi),
     [staff, laborBi],
+  );
+  const iikoImportCandidates = useMemo(
+    () => buildIikoStaffImportCandidates(laborReadiness.iikoBlockers),
+    [laborReadiness.iikoBlockers],
   );
   const laborCopy = laborReadinessCopy(laborReadiness.status);
   const sourceCopy = laborSourceCopy(laborSource);
@@ -256,6 +267,7 @@ export function TeamActionsPanel({
     startTransition(async () => {
       const result = await action();
       setMessage(resultToMessage(result));
+      if (result.ok) router.refresh();
     });
   }
 
@@ -274,7 +286,11 @@ export function TeamActionsPanel({
     setRateDrafts((current) => ({
       ...current,
       [memberId]: {
-        ...(current[memberId] ?? { hourlyRate: "", shiftPay: "", revenueBonusPct: "" }),
+        ...(current[memberId] ?? {
+          hourlyRate: "",
+          shiftPay: "",
+          revenueBonusPct: "",
+        }),
         [field]: value,
       },
     }));
@@ -291,8 +307,25 @@ export function TeamActionsPanel({
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function importIikoMembersFromShifts() {
+    if (iikoImportCandidates.length === 0) return;
+    runAction(() =>
+      importIikoTeamMembersAction({
+        venueId,
+        members: iikoImportCandidates.map((candidate) => ({
+          fullName: candidate.name,
+          role: candidate.roleId,
+          shiftLabel: candidate.shiftLabel,
+        })),
+      }),
+    );
+  }
+
   return (
-    <section id="team-actions" className="scroll-mt-24 border-b border-border/40">
+    <section
+      id="team-actions"
+      className="scroll-mt-24 border-b border-border/40"
+    >
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -363,7 +396,8 @@ export function TeamActionsPanel({
             </div>
             {prefillMemberName ? (
               <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
-                Из BI: добавьте «{prefillMemberName}», чтобы смены считались с точным ФОТ.
+                Из BI: добавьте «{prefillMemberName}», чтобы смены считались с
+                точным ФОТ.
               </p>
             ) : null}
             <div className="mt-5 space-y-3">
@@ -399,7 +433,9 @@ export function TeamActionsPanel({
                   <div className="flex gap-2">
                     <input
                       value={memberPassword}
-                      onChange={(event) => setMemberPassword(event.target.value)}
+                      onChange={(event) =>
+                        setMemberPassword(event.target.value)
+                      }
                       className={FIELD_CLASS}
                       placeholder="временный пароль"
                       autoComplete="new-password"
@@ -444,7 +480,9 @@ export function TeamActionsPanel({
                 <FieldLabel label="₽ / час">
                   <input
                     value={memberHourlyRate}
-                    onChange={(event) => setMemberHourlyRate(event.target.value)}
+                    onChange={(event) =>
+                      setMemberHourlyRate(event.target.value)
+                    }
                     className={FIELD_CLASS}
                     inputMode="decimal"
                     placeholder="350"
@@ -521,7 +559,9 @@ export function TeamActionsPanel({
                   <select
                     value={taskPriority}
                     onChange={(event) =>
-                      setTaskPriority(event.target.value as TeamTask["priority"])
+                      setTaskPriority(
+                        event.target.value as TeamTask["priority"],
+                      )
                     }
                     className={FIELD_CLASS}
                   >
@@ -577,7 +617,9 @@ export function TeamActionsPanel({
                 <FieldLabel label="Сотрудник">
                   <select
                     value={audienceMemberId}
-                    onChange={(event) => setAudienceMemberId(event.target.value)}
+                    onChange={(event) =>
+                      setAudienceMemberId(event.target.value)
+                    }
                     className={FIELD_CLASS}
                     required
                   >
@@ -755,6 +797,19 @@ export function TeamActionsPanel({
                   Очередь собрана из смен выбранного периода: сначала те, кто
                   сильнее всего искажает стоимость команды.
                 </p>
+                {iikoImportCandidates.length > 0 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={importIikoMembersFromShifts}
+                    disabled={pending}
+                    className="self-start sm:self-auto"
+                  >
+                    <UserPlus className="size-3.5" />
+                    Импортировать {iikoImportCandidates.length}
+                  </Button>
+                ) : null}
               </div>
 
               <div className="mt-3 grid gap-2 lg:grid-cols-2">
@@ -769,7 +824,8 @@ export function TeamActionsPanel({
                           {blocker.name}
                         </p>
                         <p className="mt-1 text-[11px] text-muted-foreground">
-                          {formatInteger(blocker.shifts)} смен · {formatHours(blocker.hours)}
+                          {formatInteger(blocker.shifts)} смен ·{" "}
+                          {formatHours(blocker.hours)}
                         </p>
                       </div>
                       <span className="shrink-0 rounded-md border border-amber-400/35 bg-amber-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
@@ -843,7 +899,9 @@ export function TeamActionsPanel({
                       }
                     >
                       <td className="px-3 py-4">
-                        <p className="font-medium text-foreground">{member.name}</p>
+                        <p className="font-medium text-foreground">
+                          {member.name}
+                        </p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {member.shiftLabel || "смена не указана"}
                         </p>
@@ -1000,14 +1058,17 @@ export function TeamActionsPanel({
                           </button>
                           <button
                             type="button"
-                            disabled={!canReset || pending || resetPassword.length < 6}
+                            disabled={
+                              !canReset || pending || resetPassword.length < 6
+                            }
                             onClick={() =>
                               runAction(async () => {
-                                const result = await resetTeamMemberPasswordAction({
-                                  venueId,
-                                  memberId: member.id,
-                                  password: resetPassword,
-                                });
+                                const result =
+                                  await resetTeamMemberPasswordAction({
+                                    venueId,
+                                    memberId: member.id,
+                                    password: resetPassword,
+                                  });
                                 if (result.ok) {
                                   setResetPasswords((current) => ({
                                     ...current,
@@ -1034,7 +1095,9 @@ export function TeamActionsPanel({
                                 venueId,
                                 memberId: member.id,
                                 status:
-                                  member.status === "paused" ? "active" : "paused",
+                                  member.status === "paused"
+                                    ? "active"
+                                    : "paused",
                               }),
                             )
                           }
@@ -1144,6 +1207,8 @@ function rateDraft(member: StaffMember): RateDraft {
   return {
     hourlyRate: member.hourlyRate ? String(member.hourlyRate) : "",
     shiftPay: member.shiftPay ? String(member.shiftPay) : "",
-    revenueBonusPct: member.revenueBonusPct ? String(member.revenueBonusPct) : "",
+    revenueBonusPct: member.revenueBonusPct
+      ? String(member.revenueBonusPct)
+      : "",
   };
 }
