@@ -1,7 +1,9 @@
+import type { TeamLearningItem } from "./team-learning";
 import {
-  listLearningItemsForRole,
-  type TeamLearningItem,
-} from "./team-learning";
+  countCustomLearningStandards,
+  listLearningItemsForRoleWithStandards,
+  type TeamLearningStandardOverride,
+} from "./team-learning-standards";
 import {
   getTeamRole,
   TEAM_ROLES,
@@ -24,6 +26,8 @@ export type TeamLearningRolePlan = {
   requiredItems: number;
   readyItems: number;
   soonItems: number;
+  customStandards: number;
+  items: TeamLearningItem[];
   requiredProgressPct: number;
   admissionPct: number;
   blockedMembers: TeamLearningRoleBlocker[];
@@ -43,13 +47,14 @@ export type TeamLearningAdmissionTaskDraft = {
 
 export function buildTeamLearningRolePlans(
   summaries: TeamLearningMemberSummary[],
+  standards: TeamLearningStandardOverride[] = [],
 ): TeamLearningRolePlan[] {
   const activeSummaries = summaries.filter(
     (summary) => summary.member.status !== "paused",
   );
 
   return TEAM_ROLES.map((role) =>
-    buildRolePlan(role.id, activeSummaries),
+    buildRolePlan(role.id, activeSummaries, standards),
   ).filter((plan) => plan.members > 0 || plan.totalItems > 0);
 }
 
@@ -103,11 +108,14 @@ function normalizeLearningTaskTitle(value: string): string {
 function buildRolePlan(
   roleId: TeamRoleId,
   summaries: TeamLearningMemberSummary[],
+  standards: TeamLearningStandardOverride[],
 ): TeamLearningRolePlan {
   const roleSummaries = summaries.filter(
     (summary) => summary.member.roleId === roleId,
   );
-  const items = listLearningItemsForRole(roleId);
+  const items =
+    roleSummaries[0]?.items ??
+    listLearningItemsForRoleWithStandards(roleId, standards);
   const requiredItems = items.filter((item) => item.status === "required");
   const requiredSlots = requiredItems.length * roleSummaries.length;
   const requiredCompleted = roleSummaries.reduce(
@@ -133,6 +141,8 @@ function buildRolePlan(
     requiredItems: requiredItems.length,
     readyItems: items.filter((item) => item.status === "ready").length,
     soonItems: items.filter((item) => item.status === "soon").length,
+    customStandards: countCustomLearningStandards(roleId, standards),
+    items,
     requiredProgressPct:
       requiredSlots > 0
         ? Math.round((requiredCompleted / requiredSlots) * 100)

@@ -7,8 +7,12 @@ import { getServerSupabase } from "@/lib/db/server";
 import {
   calculateLearningScore,
   getLearningItem,
-  listLearningItemsForRole,
 } from "@/lib/team/team-learning";
+import {
+  listLearningItemsForRoleWithStandards,
+  normalizeLearningStandardStatus,
+  type TeamLearningStandardOverride,
+} from "@/lib/team/team-learning-standards";
 import type { TeamRoleId } from "@/lib/team/team-os";
 import type { TeamLearningProgressSnapshot } from "@/lib/team/team-learning-progress";
 
@@ -29,6 +33,14 @@ type ExistingProgressRow = {
   best_percentage: number | null;
 };
 
+type DbLearningStandard = {
+  venue_id: string;
+  role: string;
+  module_id: string;
+  status: string | null;
+  updated_at: string | null;
+};
+
 export type SaveLearningProgressResult =
   | {
       ok: true;
@@ -39,9 +51,21 @@ export type SaveLearningProgressResult =
   | { ok: false; error: string };
 
 function missingLearningTable(message: string): boolean {
-  return /team_learning_progress|venue_memberships|relation .* does not exist/i.test(
+  return /team_learning_progress|team_learning_standards|venue_memberships|relation .* does not exist/i.test(
     message,
   );
+}
+
+function mapLearningStandard(
+  row: DbLearningStandard,
+): TeamLearningStandardOverride {
+  return {
+    venueId: row.venue_id,
+    roleId: row.role as TeamRoleId,
+    moduleId: row.module_id,
+    status: normalizeLearningStandardStatus(row.status),
+    updatedAt: row.updated_at ?? "",
+  };
 }
 
 function snapshotFromScore(input: {
@@ -135,7 +159,22 @@ export async function saveLearningProgressAction(
     return { ok: false, error: "Нет активной роли в этом заведении." };
   }
 
-  const roleItems = listLearningItemsForRole(membership.role as TeamRoleId);
+  const standardsResult = await supabase
+    .from("team_learning_standards")
+    .select("venue_id,role,module_id,status,updated_at")
+    .eq("venue_id", membership.venue_id);
+
+  const standards =
+    standardsResult.error && missingLearningTable(standardsResult.error.message)
+      ? []
+      : ((standardsResult.data ?? []) as DbLearningStandard[]).map(
+          mapLearningStandard,
+        );
+
+  const roleItems = listLearningItemsForRoleWithStandards(
+    membership.role as TeamRoleId,
+    standards,
+  );
   if (!roleItems.some((roleItem) => roleItem.id === item.id)) {
     return { ok: false, error: "Этот материал недоступен для вашей роли." };
   }
@@ -148,7 +187,10 @@ export async function saveLearningProgressAction(
     .eq("module_id", item.id)
     .maybeSingle<ExistingProgressRow>();
 
-  if (existingResult.error && missingLearningTable(existingResult.error.message)) {
+  if (
+    existingResult.error &&
+    missingLearningTable(existingResult.error.message)
+  ) {
     return {
       ok: true,
       mode: "local",

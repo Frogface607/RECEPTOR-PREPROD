@@ -74,8 +74,7 @@ export type TeamTaskComment = {
 };
 
 export type TeamAnnouncementAudience =
-  | { type: "role"; roleId: TeamRoleId }
-  | { type: "venue"; venueId: string };
+  { type: "role"; roleId: TeamRoleId } | { type: "venue"; venueId: string };
 
 export type TeamAnnouncement = {
   id: string;
@@ -97,13 +96,20 @@ export type TeamAuditEventType =
   | "task_status_updated"
   | "comment_added"
   | "announcement_created"
-  | "shift_plan_updated";
+  | "shift_plan_updated"
+  | "learning_standard_updated";
 
 export type TeamAuditEvent = {
   id: string;
   venueId: string;
   type: TeamAuditEventType;
-  targetType: "member" | "task" | "comment" | "announcement" | "shift_plan";
+  targetType:
+    | "member"
+    | "task"
+    | "comment"
+    | "announcement"
+    | "shift_plan"
+    | "learning_standard";
   targetId: string | null;
   summary: string;
   createdAtLabel: string;
@@ -160,7 +166,8 @@ export const TEAM_PERMISSIONS: TeamPermission[] = [
   {
     id: "manage_menu",
     title: "Меню",
-    description: "Работает с техкартами, стоп-листом, food cost и фокусом продаж.",
+    description:
+      "Работает с техкартами, стоп-листом, food cost и фокусом продаж.",
   },
   {
     id: "manage_marketing",
@@ -266,7 +273,12 @@ export const ROLE_PERMISSIONS: Record<TeamRoleId, TeamPermissionId[]> = {
     "view_shifts",
     "manage_menu",
   ],
-  line_cook: ["complete_own_tasks", "manage_learning", "view_shifts", "manage_menu"],
+  line_cook: [
+    "complete_own_tasks",
+    "manage_learning",
+    "view_shifts",
+    "manage_menu",
+  ],
   service: ["complete_own_tasks", "manage_learning", "view_shifts"],
   marketing: [
     "complete_own_tasks",

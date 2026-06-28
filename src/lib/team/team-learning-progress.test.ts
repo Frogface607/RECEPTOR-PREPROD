@@ -5,6 +5,7 @@ import {
   summarizeTeamLearning,
   type TeamLearningProgress,
 } from "./team-learning-progress";
+import type { TeamLearningStandardOverride } from "./team-learning-standards";
 
 const staff: StaffMember[] = [
   {
@@ -97,5 +98,30 @@ describe("team learning progress", () => {
       admissionPct: 50,
       averageBest: 42,
     });
+  });
+
+  test("uses venue learning standards for shift admission", () => {
+    const standards: TeamLearningStandardOverride[] = [
+      {
+        venueId: "venue-1",
+        roleId: "service",
+        moduleId: "guest-feedback",
+        status: "required",
+        updatedAt: "2026-06-28T00:00:00.000Z",
+      },
+    ];
+    const summaries = buildTeamLearningSummaries(staff, progress, standards);
+    const service = summaries.find(
+      (summary) => summary.member.id === "service-1",
+    );
+
+    expect(service).toMatchObject({
+      requiredCount: 2,
+      requiredCompleted: 1,
+      requiredMissing: 1,
+      admissionStatus: "needs_training",
+      canWorkShift: false,
+    });
+    expect(service?.nextItem?.id).toBe("guest-feedback");
   });
 });

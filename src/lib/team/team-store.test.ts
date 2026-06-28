@@ -3,6 +3,7 @@ import {
   mapAnnouncementRow,
   mapAuditEventRow,
   mapCommentRow,
+  mapLearningStandardRow,
   mapLearningProgressRow,
   mapMembershipRow,
   mapShiftPlanRow,
@@ -175,6 +176,21 @@ describe("Team OS store mapping", () => {
     expect(event.type).toBe("member_labor_rate_updated");
   });
 
+  test("maps learning standard audit events", () => {
+    const event = mapAuditEventRow({
+      id: "audit-learning",
+      venue_id: "venue-1",
+      event_type: "learning_standard_updated",
+      target_type: "learning_standard",
+      target_id: null,
+      summary: "Стандарт обучения обновлен.",
+      created_at: null,
+    });
+
+    expect(event.type).toBe("learning_standard_updated");
+    expect(event.targetType).toBe("learning_standard");
+  });
+
   test("maps learning progress rows", () => {
     const progress = mapLearningProgressRow({
       venue_id: "venue-1",
@@ -201,6 +217,24 @@ describe("Team OS store mapping", () => {
       total: 3,
       passed: true,
       answers: [1, 0, 2],
+    });
+  });
+
+  test("maps learning standard rows", () => {
+    const standard = mapLearningStandardRow({
+      venue_id: "venue-1",
+      role: "service",
+      module_id: "guest-feedback",
+      status: "required",
+      updated_at: "2026-06-28T08:00:00.000Z",
+    });
+
+    expect(standard).toEqual({
+      venueId: "venue-1",
+      roleId: "service",
+      moduleId: "guest-feedback",
+      status: "required",
+      updatedAt: "2026-06-28T08:00:00.000Z",
     });
   });
 

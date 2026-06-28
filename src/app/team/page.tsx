@@ -26,6 +26,7 @@ import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
 import { LearningAdmissionTaskButton } from "./learning-admission-task-button";
 import { TeamShiftPlanPanel } from "./team-shift-plan-panel";
+import { saveTeamLearningStandardAction } from "./actions";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -41,10 +42,10 @@ import {
   type TeamTask,
 } from "@/lib/team/team-os";
 import {
-  listLearningItemsForRole,
   listShiftChecklistForRole,
   type TeamLearningItem,
 } from "@/lib/team/team-learning";
+import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
 import {
   buildShiftOverview,
   type ShiftRoleCoverage,
@@ -113,6 +114,14 @@ export const metadata: Metadata = {
   description:
     "Роли, права, сотрудники, задачи, обучение и смены внутри Receptor.",
 };
+
+async function saveTeamLearningStandardFormAction(
+  formData: FormData,
+): Promise<void> {
+  "use server";
+
+  await saveTeamLearningStandardAction(formData);
+}
 
 const ROLE_PARAM_VALUES = new Set<TeamRoleId>(
   TEAM_ROLES.map((role) => role.id),
@@ -279,9 +288,13 @@ export default async function TeamPage({
   const learningSummaries = buildTeamLearningSummaries(
     workspace.staff,
     workspace.learningProgress,
+    workspace.learningStandards,
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
-  const learningRolePlans = buildTeamLearningRolePlans(learningSummaries);
+  const learningRolePlans = buildTeamLearningRolePlans(
+    learningSummaries,
+    workspace.learningStandards,
+  );
   const laborLoad = await loadTeamLabor({
     venueId,
     staff: workspace.staff,
@@ -341,7 +354,10 @@ export default async function TeamPage({
       )
     : [];
   const memberLearning = representativeMember
-    ? listLearningItemsForRole(representativeMember.roleId).slice(0, 3)
+    ? listLearningItemsForRoleWithStandards(
+        representativeMember.roleId,
+        workspace.learningStandards,
+      ).slice(0, 3)
     : [];
   const memberChecklist = representativeMember
     ? listShiftChecklistForRole(representativeMember.roleId).slice(0, 3)
@@ -1987,6 +2003,9 @@ function LearningRolePlanCard({
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {formatInteger(plan.totalItems)} материалов · обязательных{" "}
             {formatInteger(plan.requiredItems)}
+            {plan.customStandards > 0
+              ? ` · настроено ${formatInteger(plan.customStandards)}`
+              : ""}
           </p>
         </div>
         <Badge
@@ -2020,6 +2039,72 @@ function LearningRolePlanCard({
         </p>
       </div>
 
+      <details className="group mt-3 border-t border-border/35 pt-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <span>Настройка стандарта роли</span>
+          <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1 text-[10px] uppercase tracking-[0.14em]">
+            {plan.customStandards > 0
+              ? `${formatInteger(plan.customStandards)} измен.`
+              : "база"}
+          </span>
+        </summary>
+        <div className="mt-3 grid gap-2">
+          {plan.items.map((item) => (
+            <div
+              key={item.id}
+              className="grid gap-2 border-t border-border/25 py-2 first:border-t-0 first:pt-0 sm:grid-cols-[1fr_auto] sm:items-center"
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-xs font-medium text-foreground">
+                    {item.title}
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className={learningStandardStatusClass(item.status)}
+                  >
+                    {learningItemStatusLabel(item.status)}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  {item.timeLabel} · проходной {item.passPercentage}%
+                </p>
+              </div>
+              <form
+                action={saveTeamLearningStandardFormAction}
+                className="flex flex-wrap gap-1 sm:justify-end"
+              >
+                <input type="hidden" name="venueId" value={venueId} />
+                <input type="hidden" name="roleId" value={plan.roleId} />
+                <input type="hidden" name="moduleId" value={item.id} />
+                <button
+                  type="submit"
+                  name="status"
+                  value="required"
+                  disabled={item.status === "required"}
+                  className={learningStandardButtonClass(
+                    item.status === "required",
+                  )}
+                >
+                  Допуск
+                </button>
+                <button
+                  type="submit"
+                  name="status"
+                  value="ready"
+                  disabled={item.status === "ready"}
+                  className={learningStandardButtonClass(
+                    item.status === "ready",
+                  )}
+                >
+                  Развитие
+                </button>
+              </form>
+            </div>
+          ))}
+        </div>
+      </details>
+
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs leading-relaxed text-muted-foreground">
           Не допущены:{" "}
@@ -2048,6 +2133,25 @@ function learningItemStatusLabel(status: TeamLearningItem["status"]): string {
   if (status === "required") return "обязательно";
   if (status === "ready") return "готово";
   return "скоро";
+}
+
+function learningStandardStatusClass(
+  status: TeamLearningItem["status"],
+): string {
+  if (status === "required") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "ready") {
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  }
+  return "border-border bg-muted/40 text-muted-foreground";
+}
+
+function learningStandardButtonClass(active: boolean): string {
+  return (
+    "h-7 rounded-md border px-2.5 text-[11px] font-medium transition " +
+    (active
+      ? "border-brand/35 bg-brand/10 text-brand disabled:opacity-100"
+      : "border-border/60 bg-background/40 text-muted-foreground hover:border-brand/35 hover:text-foreground")
+  );
 }
 
 function rolePlanAdmissionClass(value: number): string {

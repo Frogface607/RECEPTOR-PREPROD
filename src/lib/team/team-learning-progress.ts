@@ -1,7 +1,8 @@
+import type { TeamLearningItem } from "./team-learning";
 import {
-  listLearningItemsForRole,
-  type TeamLearningItem,
-} from "./team-learning";
+  listLearningItemsForRoleWithStandards,
+  type TeamLearningStandardOverride,
+} from "./team-learning-standards";
 import type { StaffMember } from "./team-os";
 
 export type TeamLearningProgress = {
@@ -83,13 +84,17 @@ export function progressToSnapshotMap(
 export function buildTeamLearningSummaries(
   staff: StaffMember[],
   progress: TeamLearningProgress[],
+  standards: TeamLearningStandardOverride[] = [],
 ): TeamLearningMemberSummary[] {
   const progressByMemberAndModule = new Map(
     progress.map((item) => [keyFor(item.membershipId, item.moduleId), item]),
   );
 
   return staff.map((member) => {
-    const items = listLearningItemsForRole(member.roleId);
+    const items = listLearningItemsForRoleWithStandards(
+      member.roleId,
+      standards,
+    );
     const requiredItems = items.filter((item) => item.status === "required");
     const completedItems = items.filter((item) => {
       const saved = progressByMemberAndModule.get(keyFor(member.id, item.id));

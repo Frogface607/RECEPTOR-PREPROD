@@ -6,6 +6,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { normalizeStaffLoginToEmail } from "@/lib/auth/staff-login";
 import { getSupabaseAdmin } from "@/lib/db/admin";
 import { getServerSupabase } from "@/lib/db/server";
+import { listLearningItemsForRole } from "@/lib/team/team-learning";
+import type { TeamLearningStandardStatus } from "@/lib/team/team-learning-standards";
 import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
 
 const TeamRoleIdSchema = z.enum(
@@ -27,6 +29,7 @@ const OPEN_TASK_STATUSES = [
 ] satisfies TeamTask["status"][];
 const TaskSourceSchema = z.enum(["owner", "copilot", "manager", "chef"]);
 const TaskAudienceTypeSchema = z.enum(["member", "role", "venue"]);
+const LearningStandardStatusSchema = z.enum(["required", "ready", "hidden"]);
 const AnnouncementAudienceTypeSchema = z.enum(["role", "venue"]);
 const AnnouncementPrioritySchema = z.enum(["normal", "important"]);
 const MemberStatusSchema = z.enum(["active", "paused"]);
@@ -85,6 +88,13 @@ const UpdateTaskStatusInput = z.object({
   venueId: z.string().min(1),
   taskId: z.string().min(1),
   status: TaskStatusSchema,
+});
+
+const SaveTeamLearningStandardInput = z.object({
+  venueId: z.string().min(1),
+  roleId: TeamRoleIdSchema,
+  moduleId: z.string().trim().min(1),
+  status: LearningStandardStatusSchema,
 });
 
 const UpdateTeamMemberStatusInput = z.object({
@@ -162,6 +172,9 @@ type WritableTeamContext = Extract<
 >;
 
 type CreateTeamTaskData = z.output<typeof CreateTeamTaskInput>;
+type SaveTeamLearningStandardData = z.output<
+  typeof SaveTeamLearningStandardInput
+>;
 
 type TeamAuditEventInput = {
   venueId: string;
@@ -174,15 +187,22 @@ type TeamAuditEventInput = {
     | "task_status_updated"
     | "comment_added"
     | "announcement_created"
-    | "shift_plan_updated";
-  targetType: "member" | "task" | "comment" | "announcement" | "shift_plan";
+    | "shift_plan_updated"
+    | "learning_standard_updated";
+  targetType:
+    | "member"
+    | "task"
+    | "comment"
+    | "announcement"
+    | "shift_plan"
+    | "learning_standard";
   targetId?: string | null;
   summary: string;
   metadata?: Record<string, unknown>;
 };
 
 function missingTeamTables(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_standards|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
 }
@@ -267,6 +287,23 @@ async function findExistingOpenTask(
   }
 
   return data ?? null;
+}
+
+function parseActionInput(raw: unknown): Record<string, unknown> {
+  if (raw instanceof FormData) {
+    return Object.fromEntries(raw.entries());
+  }
+  return typeof raw === "object" && raw !== null
+    ? (raw as Record<string, unknown>)
+    : {};
+}
+
+function learningStandardStatusLabel(
+  status: TeamLearningStandardStatus,
+): string {
+  if (status === "required") return "обязательный допуск";
+  if (status === "hidden") return "скрыт";
+  return "развитие";
 }
 
 export async function inviteTeamMemberAction(
@@ -552,6 +589,91 @@ export async function saveTeamShiftPlanAction(
   revalidatePath("/me");
   revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return { ok: true, mode: "saved", message: "План смены сохранен." };
+}
+
+export async function saveTeamLearningStandardAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = SaveTeamLearningStandardInput.safeParse(parseActionInput(raw));
+  if (!parsed.success) {
+    return { ok: false, error: "Проверьте стандарт обучения." };
+  }
+
+  const item = listLearningItemsForRole(parsed.data.roleId).find(
+    (learningItem) => learningItem.id === parsed.data.moduleId,
+  );
+  if (!item) {
+    return {
+      ok: false,
+      error: "Материал не входит в эту роль.",
+    };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  if (
+    parsed.data.venueId === "dev-venue" ||
+    ctx.mode === "sandbox" ||
+    !ctx.supabase
+  ) {
+    revalidatePath("/team");
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: "Sandbox: стандарт роли обновлен.",
+    };
+  }
+
+  const payload = learningStandardPayload(parsed.data, ctx.userId);
+  const { error } = await ctx.supabase
+    .from("team_learning_standards")
+    .upsert(payload, {
+      onConflict: "venue_id,role,module_id",
+    });
+
+  if (error) {
+    if (missingTeamTables(error.message)) {
+      return {
+        ok: false,
+        error:
+          "В базе нет таблицы стандартов обучения. Примените миграцию 0011_team_learning_standards.sql.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "learning_standard_updated",
+    targetType: "learning_standard",
+    targetId: null,
+    summary: `Стандарт обучения обновлен: ${parsed.data.roleId} / ${item.title} -> ${learningStandardStatusLabel(parsed.data.status)}.`,
+    metadata: {
+      roleId: parsed.data.roleId,
+      moduleId: parsed.data.moduleId,
+      status: parsed.data.status,
+    },
+  });
+
+  revalidatePath("/team");
+  revalidatePath("/me");
+  revalidatePath("/me/learning");
+  return { ok: true, mode: "saved", message: "Стандарт роли обновлен." };
+}
+
+function learningStandardPayload(
+  data: SaveTeamLearningStandardData,
+  userId: string,
+) {
+  return {
+    venue_id: data.venueId,
+    role: data.roleId,
+    module_id: data.moduleId,
+    status: data.status,
+    updated_by: userId,
+    updated_at: new Date().toISOString(),
+  };
 }
 
 export async function updateTeamMemberStatusAction(

@@ -23,11 +23,15 @@ import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
 import {
   getRoleDayFocus,
-  listLearningItemsForRole,
   listShiftChecklistForRole,
   type TeamLearningItem,
 } from "@/lib/team/team-learning";
-import { getTeamRole, type TeamAnnouncement, type TeamTask } from "@/lib/team/team-os";
+import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
+import {
+  getTeamRole,
+  type TeamAnnouncement,
+  type TeamTask,
+} from "@/lib/team/team-os";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { TaskStatusButtons } from "./task-status-buttons";
 
@@ -82,8 +86,10 @@ function learningStatusClass(status: TeamLearningItem["status"]): string {
 
 function statusClass(status: TeamTask["status"]): string {
   if (status === "in_progress") return "border-brand/35 bg-brand/10 text-brand";
-  if (status === "new") return "border-amber-400/30 bg-amber-400/10 text-amber-200";
-  if (status === "accepted") return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  if (status === "new")
+    return "border-amber-400/30 bg-amber-400/10 text-amber-200";
+  if (status === "accepted")
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
   return "border-border bg-muted/40 text-muted-foreground";
 }
 
@@ -176,7 +182,10 @@ export default async function MyCabinetPage() {
   const role = getTeamRole(workspace.member.roleId);
   const roleFocus = getRoleDayFocus(workspace.member.roleId);
   const shiftChecklist = listShiftChecklistForRole(workspace.member.roleId);
-  const learningItems = listLearningItemsForRole(workspace.member.roleId);
+  const learningItems = listLearningItemsForRoleWithStandards(
+    workspace.member.roleId,
+    workspace.learningStandards,
+  );
   const shiftLabel = workspace.member.shiftLabel?.trim() || "Смена не указана";
   const openTasks = workspace.tasks.filter(
     (task) => task.status !== "done" && task.status !== "verified",
@@ -186,7 +195,9 @@ export default async function MyCabinetPage() {
   );
   const sortedOpenTasks = sortTasks(openTasks);
   const nextTask = sortedOpenTasks[0];
-  const nextTaskSourceLabel = nextTask ? sourceBadgeLabel(nextTask.source) : null;
+  const nextTaskSourceLabel = nextTask
+    ? sourceBadgeLabel(nextTask.source)
+    : null;
   const urgentTasks = openTasks.filter((task) => task.priority === "high");
   const taskGroups = [
     {
@@ -400,7 +411,9 @@ export default async function MyCabinetPage() {
                   <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
                     {shiftLabel}
                   </p>
-                  <h3 className="mt-3 text-lg font-medium">{roleFocus.title}</h3>
+                  <h3 className="mt-3 text-lg font-medium">
+                    {roleFocus.title}
+                  </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {roleFocus.summary}
                   </p>

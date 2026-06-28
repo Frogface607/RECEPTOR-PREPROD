@@ -7,10 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
-import {
-  getLearningItem,
-  listLearningItemsForRole,
-} from "@/lib/team/team-learning";
+import { getLearningItem } from "@/lib/team/team-learning";
+import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
 import { progressToSnapshotMap } from "@/lib/team/team-learning-progress";
 import { getTeamRole } from "@/lib/team/team-os";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
@@ -94,7 +92,10 @@ export default async function EmployeeLearningPage({
   }
 
   const role = getTeamRole(workspace.member.roleId);
-  const learningItems = listLearningItemsForRole(workspace.member.roleId);
+  const learningItems = listLearningItemsForRoleWithStandards(
+    workspace.member.roleId,
+    workspace.learningStandards,
+  );
   const requestedModule = parseParam(sp.module);
   const initialModule =
     learningItems.find((item) => item.id === requestedModule) ??
@@ -121,7 +122,10 @@ export default async function EmployeeLearningPage({
                   Мой кабинет
                 </Link>
                 <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <Badge variant="outline" className="border-brand/30 text-brand">
+                  <Badge
+                    variant="outline"
+                    className="border-brand/30 text-brand"
+                  >
                     Обучение
                   </Badge>
                   <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
