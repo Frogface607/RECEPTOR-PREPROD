@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { buildLaborBi } from "./labor-bi";
-import { buildTeamLaborReadiness, hasLaborRate } from "./team-labor-readiness";
+import {
+  buildBulkLaborRateTargets,
+  buildTeamLaborReadiness,
+  hasLaborRate,
+} from "./team-labor-readiness";
 import type { StaffMember } from "./team-os";
 
 const baseMember: StaffMember = {
@@ -36,9 +40,9 @@ describe("buildTeamLaborReadiness", () => {
       source: "team",
       iikoBlockers: [],
     });
-    expect(buildTeamLaborReadiness(staff).missingStaff.map((item) => item.id)).toEqual([
-      "missing",
-    ]);
+    expect(
+      buildTeamLaborReadiness(staff).missingStaff.map((item) => item.id),
+    ).toEqual(["missing"]);
   });
 
   test("marks labor readiness as blocked when no active rate exists", () => {
@@ -90,5 +94,25 @@ describe("buildTeamLaborReadiness", () => {
         }),
       ],
     });
+  });
+
+  test("builds bulk labor rate targets only from active missing-rate staff", () => {
+    const targets = buildBulkLaborRateTargets(
+      [
+        { ...baseMember, id: "priced", name: "Мария", hourlyRate: 400 },
+        { ...baseMember, id: "missing-b", name: "Борис" },
+        { ...baseMember, id: "missing-a", name: "Анна", shiftLabel: "iiko" },
+        { ...baseMember, id: "paused", name: "Пауза", status: "paused" },
+      ],
+      { limit: 1 },
+    );
+
+    expect(targets).toEqual([
+      expect.objectContaining({
+        id: "missing-a",
+        name: "Анна",
+        shiftLabel: "iiko",
+      }),
+    ]);
   });
 });

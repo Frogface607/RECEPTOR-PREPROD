@@ -28,12 +28,14 @@ import {
   type TeamTask,
 } from "@/lib/team/team-os";
 import {
+  buildBulkLaborRateTargets,
   buildTeamLaborReadiness,
   hasLaborRate,
   type TeamLaborIikoBlocker,
   type TeamLaborReadinessStatus,
 } from "@/lib/team/team-labor-readiness";
 import {
+  bulkUpdateTeamMemberLaborRatesAction,
   createTeamTaskAction,
   importIikoTeamMembersAction,
   inviteTeamMemberAction,
@@ -214,6 +216,9 @@ export function TeamActionsPanel({
   const [rateDrafts, setRateDrafts] = useState<Record<string, RateDraft>>(() =>
     Object.fromEntries(staff.map((member) => [member.id, rateDraft(member)])),
   );
+  const [bulkHourlyRate, setBulkHourlyRate] = useState("");
+  const [bulkShiftPay, setBulkShiftPay] = useState("");
+  const [bulkRevenueBonusPct, setBulkRevenueBonusPct] = useState("");
   const [copiedMemberId, setCopiedMemberId] = useState<string | null>(null);
 
   const [taskTitle, setTaskTitle] = useState("");
@@ -237,9 +242,16 @@ export function TeamActionsPanel({
     () => buildTeamLaborReadiness(staff, laborBi),
     [staff, laborBi],
   );
+  const bulkRateTargets = useMemo(
+    () => buildBulkLaborRateTargets(staff),
+    [staff],
+  );
   const iikoImportCandidates = useMemo(
     () => buildIikoStaffImportCandidates(laborReadiness.iikoBlockers),
     [laborReadiness.iikoBlockers],
+  );
+  const hasBulkRateValue = Boolean(
+    bulkHourlyRate.trim() || bulkShiftPay.trim() || bulkRevenueBonusPct.trim(),
   );
   const laborCopy = laborReadinessCopy(laborReadiness.status);
   const sourceCopy = laborSourceCopy(laborSource);
@@ -319,6 +331,27 @@ export function TeamActionsPanel({
         })),
       }),
     );
+  }
+
+  function applyBulkLaborRate() {
+    if (bulkRateTargets.length === 0) return;
+    runAction(async () => {
+      const result = await bulkUpdateTeamMemberLaborRatesAction({
+        venueId,
+        memberIds: bulkRateTargets.map((target) => target.id),
+        hourlyRate: bulkHourlyRate,
+        shiftPay: bulkShiftPay,
+        revenueBonusPct: bulkRevenueBonusPct,
+      });
+
+      if (result.ok) {
+        setBulkHourlyRate("");
+        setBulkShiftPay("");
+        setBulkRevenueBonusPct("");
+      }
+
+      return result;
+    });
   }
 
   return (
@@ -781,6 +814,72 @@ export function TeamActionsPanel({
               </div>
             </div>
           </div>
+
+          {bulkRateTargets.length > 0 ? (
+            <div className="mt-5 rounded-lg border border-amber-400/25 bg-amber-400/10 p-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200">
+                    быстро закрыть ФОТ
+                  </p>
+                  <h4 className="mt-1 text-base font-medium text-foreground">
+                    Применить ставку к {bulkRateTargets.length} без ФОТ
+                  </h4>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Только сотрудники без ставки. Заполненные ставки не
+                    перезаписываем.
+                  </p>
+                </div>
+                <div className="grid w-full gap-2 sm:grid-cols-[1fr_1fr_0.8fr_auto] lg:max-w-2xl">
+                  <input
+                    value={bulkHourlyRate}
+                    onChange={(event) => setBulkHourlyRate(event.target.value)}
+                    className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
+                    inputMode="decimal"
+                    placeholder="руб/час"
+                    aria-label="Массовая почасовая ставка"
+                  />
+                  <input
+                    value={bulkShiftPay}
+                    onChange={(event) => setBulkShiftPay(event.target.value)}
+                    className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
+                    inputMode="decimal"
+                    placeholder="руб/смена"
+                    aria-label="Массовый фикс за смену"
+                  />
+                  <input
+                    value={bulkRevenueBonusPct}
+                    onChange={(event) =>
+                      setBulkRevenueBonusPct(event.target.value)
+                    }
+                    className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
+                    inputMode="decimal"
+                    placeholder="% продаж"
+                    aria-label="Массовый процент от продаж"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={applyBulkLaborRate}
+                    disabled={pending || !hasBulkRateValue}
+                  >
+                    Применить
+                  </Button>
+                </div>
+              </div>
+              <p className="mt-2 truncate text-[11px] text-muted-foreground">
+                В очереди:{" "}
+                {bulkRateTargets
+                  .slice(0, 4)
+                  .map((target) => target.name)
+                  .join(", ")}
+                {bulkRateTargets.length > 4
+                  ? ` и еще ${bulkRateTargets.length - 4}`
+                  : ""}
+              </p>
+            </div>
+          ) : null}
 
           {iikoBlockers.length > 0 ? (
             <div className="mt-5 rounded-lg border border-brand/25 bg-background/30 p-4">

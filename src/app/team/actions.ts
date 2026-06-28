@@ -132,6 +132,22 @@ const UpdateTeamMemberLaborRateInput = z.object({
   revenueBonusPct: z.coerce.number().min(0).max(100).default(0),
 });
 
+const BulkUpdateTeamMemberLaborRatesInput = z
+  .object({
+    venueId: z.string().min(1),
+    memberIds: z.array(z.string().min(1)).min(1).max(100),
+    hourlyRate: NonNegativeMoneySchema,
+    shiftPay: NonNegativeMoneySchema,
+    revenueBonusPct: z.coerce.number().min(0).max(100).default(0),
+  })
+  .refine(
+    (value) =>
+      value.hourlyRate > 0 || value.shiftPay > 0 || value.revenueBonusPct > 0,
+    {
+      message: "Укажите хотя бы один тип ставки.",
+    },
+  );
+
 const SaveTeamShiftPlanInput = z
   .object({
     venueId: z.string().min(1),
@@ -191,6 +207,14 @@ type ImportIikoMembersData = z.output<typeof ImportIikoMembersInput>;
 type SaveTeamLearningStandardData = z.output<
   typeof SaveTeamLearningStandardInput
 >;
+
+type LaborRateRow = {
+  id: string;
+  full_name: string;
+  hourly_rate: number | string | null;
+  shift_pay: number | string | null;
+  revenue_bonus_pct: number | string | null;
+};
 
 type TeamAuditEventInput = {
   venueId: string;
@@ -325,6 +349,14 @@ function uniqueIikoImportMembers(
     seen.add(key);
     return [{ ...member, fullName: member.fullName.trim() }];
   });
+}
+
+function hasSavedLaborRate(row: LaborRateRow): boolean {
+  return Boolean(
+    Number(row.hourly_rate ?? 0) ||
+    Number(row.shift_pay ?? 0) ||
+    Number(row.revenue_bonus_pct ?? 0),
+  );
 }
 
 function learningStandardStatusLabel(
@@ -639,6 +671,106 @@ export async function updateTeamMemberLaborRateAction(
   revalidatePath("/team");
   revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return { ok: true, mode: "saved", message: "Ставки сотрудника обновлены." };
+}
+
+export async function bulkUpdateTeamMemberLaborRatesAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = BulkUpdateTeamMemberLaborRatesInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "Проверьте массовую ставку ФОТ." };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  const memberIds = [...new Set(parsed.data.memberIds)];
+
+  if (
+    parsed.data.venueId === "dev-venue" ||
+    ctx.mode === "sandbox" ||
+    !ctx.supabase
+  ) {
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: `Sandbox: массовая ставка ФОТ применена к ${memberIds.length}.`,
+    };
+  }
+
+  const { data: members, error: membersError } = await ctx.supabase
+    .from("venue_memberships")
+    .select("id,full_name,hourly_rate,shift_pay,revenue_bonus_pct")
+    .eq("venue_id", parsed.data.venueId)
+    .in("id", memberIds);
+
+  if (membersError) {
+    if (missingTeamTables(membersError.message)) {
+      return {
+        ok: false,
+        error:
+          "В базе нет полей ставок команды. Примените миграцию 0009_team_labor_rates.sql.",
+      };
+    }
+    return { ok: false, error: membersError.message };
+  }
+
+  const targetMembers = ((members ?? []) as LaborRateRow[]).filter(
+    (member) => !hasSavedLaborRate(member),
+  );
+  if (targetMembers.length === 0) {
+    return {
+      ok: true,
+      mode: "saved",
+      message: "Ставки уже заполнены, массовое обновление не потребовалось.",
+    };
+  }
+
+  const targetIds = targetMembers.map((member) => member.id);
+  const { error } = await ctx.supabase
+    .from("venue_memberships")
+    .update({
+      hourly_rate: parsed.data.hourlyRate,
+      shift_pay: parsed.data.shiftPay,
+      revenue_bonus_pct: parsed.data.revenueBonusPct,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("venue_id", parsed.data.venueId)
+    .in("id", targetIds);
+
+  if (error) {
+    if (missingTeamTables(error.message)) {
+      return {
+        ok: false,
+        error:
+          "В базе нет полей ставок команды. Примените миграцию 0009_team_labor_rates.sql.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "member_labor_rate_updated",
+    targetType: "member",
+    targetId: targetIds[0] ?? null,
+    summary: `Массово обновлены ставки ФОТ: ${targetMembers.length}.`,
+    metadata: {
+      memberIds: targetIds,
+      names: targetMembers.map((member) => member.full_name),
+      hourlyRate: parsed.data.hourlyRate,
+      shiftPay: parsed.data.shiftPay,
+      revenueBonusPct: parsed.data.revenueBonusPct,
+    },
+  });
+
+  revalidatePath("/team");
+  revalidatePath(`/dashboard/${parsed.data.venueId}`);
+  return {
+    ok: true,
+    mode: "saved",
+    message: `Ставки ФОТ применены к ${targetMembers.length} сотрудникам без ставки.`,
+  };
 }
 
 export async function saveTeamShiftPlanAction(

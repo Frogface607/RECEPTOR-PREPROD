@@ -27,8 +27,35 @@ export type TeamLaborReadiness = {
   iikoBlockers: TeamLaborIikoBlocker[];
 };
 
+export type TeamBulkLaborRateTarget = {
+  id: string;
+  name: string;
+  roleId: StaffMember["roleId"];
+  shiftLabel: string;
+};
+
 export function hasLaborRate(member: StaffMember): boolean {
-  return Boolean(member.hourlyRate || member.shiftPay || member.revenueBonusPct);
+  return Boolean(
+    member.hourlyRate || member.shiftPay || member.revenueBonusPct,
+  );
+}
+
+export function buildBulkLaborRateTargets(
+  staff: StaffMember[],
+  options: { limit?: number } = {},
+): TeamBulkLaborRateTarget[] {
+  const limit = Math.max(options.limit ?? 50, 1);
+
+  return staff
+    .filter((member) => member.status !== "paused" && !hasLaborRate(member))
+    .sort((a, b) => a.name.localeCompare(b.name, "ru-RU"))
+    .slice(0, limit)
+    .map((member) => ({
+      id: member.id,
+      name: member.name,
+      roleId: member.roleId,
+      shiftLabel: member.shiftLabel,
+    }));
 }
 
 export function buildTeamLaborReadiness(
