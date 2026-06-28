@@ -79,10 +79,15 @@ import {
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
 import {
   buildTeamOpsReadiness,
-  type TeamOpsAction,
-  type TeamOpsActionTone,
   type TeamOpsReadinessStatus,
 } from "@/lib/team/team-ops-readiness";
+import {
+  buildTeamManagerFollowUp,
+  type TeamManagerFollowUp,
+  type TeamManagerFollowUpItem,
+  type TeamManagerFollowUpStatus,
+  type TeamManagerFollowUpTone,
+} from "@/lib/team/team-manager-followup";
 import {
   buildLaborBi,
   buildLaborShiftDiagnostics,
@@ -326,6 +331,12 @@ export default async function TeamPage({
     plan: shiftPlanSummary,
     roster: shiftRoster,
   });
+  const managerFollowUp = buildTeamManagerFollowUp({
+    tasks: workspace.tasks,
+    laborReadiness,
+    learningSummaries,
+    shiftPlanVariance,
+  });
   const selectedMemberId = memberId || focusMemberId;
   const selectedMember = selectedMemberId
     ? (workspace.staff.find((member) => member.id === selectedMemberId) ?? null)
@@ -460,21 +471,7 @@ export default async function TeamPage({
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                      Что закрыть первым
-                    </p>
-                    <span className="rounded-md border border-border/50 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                      {workspace.venueName}
-                    </span>
-                  </div>
-                  <div className="mt-3 grid gap-2">
-                    {opsReadiness.actions.map((action) => (
-                      <TeamOpsActionRow key={action.id} action={action} />
-                    ))}
-                  </div>
-                </div>
+                <TeamManagerFollowUpCard followUp={managerFollowUp} />
               </div>
             </div>
           </div>
@@ -913,15 +910,26 @@ function opsStatusClass(status: TeamOpsReadinessStatus): string {
   return "border-destructive/30 bg-destructive/10 text-destructive";
 }
 
-function opsActionToneClass(tone: TeamOpsActionTone): string {
+function managerFollowUpStatusClass(status: TeamManagerFollowUpStatus): string {
+  if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "attention") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-destructive/30 bg-destructive/10 text-destructive";
+}
+
+function managerFollowUpToneClass(tone: TeamManagerFollowUpTone): string {
   if (tone === "good") return "border-brand/35 bg-brand/10 text-brand";
   if (tone === "risk") {
     return "border-destructive/30 bg-destructive/10 text-destructive";
   }
-  if (tone === "setup") {
-    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
-  }
-  return "border-border/60 bg-background/45 text-muted-foreground";
+  return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+}
+
+function managerFollowUpStatusLabel(status: TeamManagerFollowUpStatus): string {
+  if (status === "ready") return "готово";
+  if (status === "attention") return "внимание";
+  return "блокер";
 }
 
 function ReadinessMetric({ label, value }: { label: string; value: string }) {
@@ -934,6 +942,91 @@ function ReadinessMetric({ label, value }: { label: string; value: string }) {
         {value}
       </span>
     </div>
+  );
+}
+
+function TeamManagerFollowUpCard({
+  followUp,
+}: {
+  followUp: TeamManagerFollowUp;
+}) {
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            Контроль смены
+          </p>
+          <h2 className="mt-2 text-lg font-medium">{followUp.title}</h2>
+        </div>
+        <Badge
+          variant="outline"
+          className={managerFollowUpStatusClass(followUp.status)}
+        >
+          {managerFollowUpStatusLabel(followUp.status)}
+        </Badge>
+      </div>
+
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {followUp.detail}
+      </p>
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <FollowUpMetric
+          label="Срочно"
+          value={formatInteger(followUp.urgentTasks)}
+        />
+        <FollowUpMetric
+          label="Допуск"
+          value={formatInteger(followUp.blockedAdmissions)}
+        />
+        <FollowUpMetric label="ФОТ" value={`${followUp.laborCoveragePct}%`} />
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {followUp.items.map((item) => (
+          <TeamManagerFollowUpRow key={item.id} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FollowUpMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 px-3 py-2">
+      <p className="numeric text-sm font-medium text-foreground">{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function TeamManagerFollowUpRow({ item }: { item: TeamManagerFollowUpItem }) {
+  return (
+    <Link
+      href={item.href}
+      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+    >
+      <span
+        className={
+          "size-2 rounded-full border " + managerFollowUpToneClass(item.tone)
+        }
+      />
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-foreground">
+          {item.title}
+        </span>
+        <span className="mt-1 block truncate text-xs text-muted-foreground">
+          {item.detail}
+        </span>
+      </span>
+      <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+        {item.metric}
+        <ArrowRight className="size-4" />
+      </span>
+    </Link>
   );
 }
 
@@ -1848,30 +1941,6 @@ function ShiftValue({ label, value }: { label: string; value: string }) {
         {value}
       </span>
     </span>
-  );
-}
-
-function TeamOpsActionRow({ action }: { action: TeamOpsAction }) {
-  return (
-    <Link
-      href={action.href}
-      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_1fr_auto] sm:items-center"
-    >
-      <span
-        className={
-          "size-2 rounded-full border " + opsActionToneClass(action.tone)
-        }
-      />
-      <span className="min-w-0">
-        <span className="block text-sm font-medium text-foreground">
-          {action.title}
-        </span>
-        <span className="mt-1 block truncate text-xs text-muted-foreground">
-          {action.detail}
-        </span>
-      </span>
-      <ArrowRight className="size-4 text-muted-foreground" />
-    </Link>
   );
 }
 
