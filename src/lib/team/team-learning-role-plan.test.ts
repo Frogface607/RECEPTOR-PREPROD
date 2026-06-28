@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { StaffMember } from "./team-os";
+import type { StaffMember, TeamTask } from "./team-os";
 import {
   buildTeamLearningSummaries,
   type TeamLearningProgress,
@@ -7,6 +7,7 @@ import {
 import {
   buildLearningAdmissionTaskDraft,
   buildTeamLearningRolePlans,
+  findOpenLearningAdmissionTask,
 } from "./team-learning-role-plan";
 
 const staff: StaffMember[] = [
@@ -96,6 +97,66 @@ describe("buildTeamLearningRolePlans", () => {
       roleTitle: "Официант",
       dueLabel: "до смены",
     });
+  });
+
+  test("finds an existing open task for the same blocked admission", () => {
+    const summaries = buildTeamLearningSummaries(staff, progress);
+    const service = buildTeamLearningRolePlans(summaries).find(
+      (plan) => plan.roleId === "service",
+    );
+    const draft = buildLearningAdmissionTaskDraft(service!);
+    expect(draft).toBeDefined();
+
+    const tasks: TeamTask[] = [
+      {
+        id: "task-other",
+        venueId: "venue-1",
+        title: draft!.title,
+        source: "manager",
+        priority: "medium",
+        status: "new",
+        audience: { type: "member", memberId: "service-1" },
+        dueLabel: "today",
+      },
+      {
+        id: "task-existing",
+        venueId: "venue-1",
+        title: `  ${draft!.title}  `,
+        source: "manager",
+        priority: "medium",
+        status: "accepted",
+        audience: { type: "member", memberId: "service-2" },
+        dueLabel: "today",
+      },
+    ];
+
+    expect(findOpenLearningAdmissionTask(tasks, draft!)?.id).toBe(
+      "task-existing",
+    );
+  });
+
+  test("ignores completed learning admission tasks", () => {
+    const summaries = buildTeamLearningSummaries(staff, progress);
+    const service = buildTeamLearningRolePlans(summaries).find(
+      (plan) => plan.roleId === "service",
+    );
+    const draft = buildLearningAdmissionTaskDraft(service!);
+    expect(draft).toBeDefined();
+
+    const tasks: TeamTask[] = [
+      {
+        id: "task-closed",
+        venueId: "venue-1",
+        title: draft!.title,
+        source: "manager",
+        priority: "medium",
+        status: "verified",
+        audience: { type: "member", memberId: "service-2" },
+        dueLabel: "today",
+      },
+    ];
+
+    expect(findOpenLearningAdmissionTask(tasks, draft!)).toBeNull();
   });
 
   test("keeps role lesson catalog visible even before staff is created", () => {

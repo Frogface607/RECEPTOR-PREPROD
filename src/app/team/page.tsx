@@ -72,6 +72,7 @@ import {
 import {
   buildLearningAdmissionTaskDraft,
   buildTeamLearningRolePlans,
+  findOpenLearningAdmissionTask,
   type TeamLearningRolePlan,
 } from "@/lib/team/team-learning-role-plan";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
@@ -466,6 +467,7 @@ export default async function TeamPage({
             <LearningRolePlanGrid
               venueId={workspace.venueId}
               plans={learningRolePlans}
+              tasks={workspace.tasks}
             />
           </div>
         </section>
@@ -1911,9 +1913,11 @@ function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
 function LearningRolePlanGrid({
   venueId,
   plans,
+  tasks,
 }: {
   venueId: string;
   plans: TeamLearningRolePlan[];
+  tasks: TeamTask[];
 }) {
   const visiblePlans = plans.filter(
     (plan) => plan.members > 0 || plan.totalItems > 0,
@@ -1941,6 +1945,7 @@ function LearningRolePlanGrid({
             key={plan.roleId}
             venueId={venueId}
             plan={plan}
+            tasks={tasks}
           />
         ))}
       </div>
@@ -1951,11 +1956,16 @@ function LearningRolePlanGrid({
 function LearningRolePlanCard({
   venueId,
   plan,
+  tasks,
 }: {
   venueId: string;
   plan: TeamLearningRolePlan;
+  tasks: TeamTask[];
 }) {
   const taskDraft = buildLearningAdmissionTaskDraft(plan);
+  const existingTask = taskDraft
+    ? findOpenLearningAdmissionTask(tasks, taskDraft)
+    : null;
   const blockedLabel =
     plan.blockedMembers.length > 0
       ? plan.blockedMembers
@@ -2015,7 +2025,18 @@ function LearningRolePlanCard({
           Не допущены:{" "}
           <span className="text-foreground/85">{blockedLabel}</span>
         </p>
-        {taskDraft ? (
+        {existingTask ? (
+          <Link
+            href="#team-actions"
+            className="inline-flex items-center gap-2 rounded-md border border-brand/25 bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition hover:border-brand/45 hover:bg-brand/15"
+          >
+            <CheckCircle2 className="size-3.5" />
+            <span>Задача уже есть</span>
+            <span className="text-muted-foreground">
+              {statusLabel(existingTask.status)}
+            </span>
+          </Link>
+        ) : taskDraft ? (
           <LearningAdmissionTaskButton venueId={venueId} draft={taskDraft} />
         ) : null}
       </div>

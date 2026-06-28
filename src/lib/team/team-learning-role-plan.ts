@@ -2,7 +2,12 @@ import {
   listLearningItemsForRole,
   type TeamLearningItem,
 } from "./team-learning";
-import { getTeamRole, TEAM_ROLES, type TeamRoleId } from "./team-os";
+import {
+  getTeamRole,
+  TEAM_ROLES,
+  type TeamRoleId,
+  type TeamTask,
+} from "./team-os";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
 
 export type TeamLearningRoleBlocker = {
@@ -66,6 +71,33 @@ export function buildLearningAdmissionTaskDraft(
     roleTitle: plan.roleTitle,
     dueLabel: "до смены",
   };
+}
+
+const OPEN_TASK_STATUSES = new Set<TeamTask["status"]>([
+  "new",
+  "accepted",
+  "in_progress",
+]);
+
+export function findOpenLearningAdmissionTask(
+  tasks: TeamTask[],
+  draft: TeamLearningAdmissionTaskDraft,
+): TeamTask | null {
+  const draftTitle = normalizeLearningTaskTitle(draft.title);
+
+  return (
+    tasks.find(
+      (task) =>
+        OPEN_TASK_STATUSES.has(task.status) &&
+        task.audience.type === "member" &&
+        task.audience.memberId === draft.audienceMemberId &&
+        normalizeLearningTaskTitle(task.title) === draftTitle,
+    ) ?? null
+  );
+}
+
+function normalizeLearningTaskTitle(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
 }
 
 function buildRolePlan(
