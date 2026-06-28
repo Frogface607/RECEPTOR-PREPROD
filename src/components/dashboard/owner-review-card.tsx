@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   ClipboardList,
   ArrowRight,
+  GaugeCircle,
   HelpCircle,
   MessageSquareText,
   SearchCheck,
@@ -148,6 +149,36 @@ export function OwnerReviewCard({
                 утверждение.
               </p>
             </div>
+          </div>
+
+          <div className="mt-3 rounded-lg border border-border/45 bg-background/35 p-3">
+            <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+              <span
+                className={
+                  "inline-flex size-9 items-center justify-center rounded-md border " +
+                  TONE_CLASS[review.readiness.tone]
+                }
+              >
+                <GaugeCircle className="size-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Достоверность прибыли
+                </p>
+                <p className="mt-1 text-[14px] font-medium text-foreground">
+                  {review.readiness.title}
+                </p>
+              </div>
+              <div className="sm:text-right">
+                <p className="text-xl font-medium text-foreground">
+                  {review.readiness.score}%
+                </p>
+                <p className="text-[11px] text-muted-foreground">готовность</p>
+              </div>
+            </div>
+            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+              {review.readiness.detail}
+            </p>
           </div>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">

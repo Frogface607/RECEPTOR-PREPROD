@@ -85,6 +85,58 @@ const quality: RevenueDataQuality = {
   warnings: [],
 };
 
+function buildReadyLabor() {
+  return buildLaborBi({
+    shifts: [
+      {
+        ...shifts[0],
+        workers: [
+          {
+            name: "Смена",
+            hours: 8,
+            shiftPay: 8000,
+            sales: 100000,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+function buildReadyMargin() {
+  return buildMenuMarginReadiness({
+    dishes,
+    products: [
+      {
+        id: "pasta-product",
+        name: "Паста",
+        purchasePrice: 300,
+        sizePrices: [],
+      },
+    ],
+  });
+}
+
+function buildReadyTeam(): TeamOpsReadiness {
+  return {
+    score: 100,
+    status: "ready",
+    roleCoveragePct: 100,
+    laborCoveragePct: 100,
+    learningAdmissionPct: 100,
+    learningAveragePct: 100,
+    actions: [
+      {
+        id: "ready",
+        tone: "good",
+        title: "Команда готова",
+        detail: "Роли, ставки и обучение закрыты.",
+        href: "#team-actions",
+      },
+    ],
+  };
+}
+
 describe("buildOwnerReview", () => {
   test("adds labor evidence and a task when payroll is expensive", () => {
     const labor = buildLaborBi({
@@ -672,6 +724,90 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+  });
+
+  test("blocks profit readiness until FOT and margin are proven", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+    });
+
+    expect(review.readiness).toMatchObject({
+      status: "blocked",
+      title: "Прибыль не доказана",
+      tone: "risk",
+    });
+    expect(review.readiness.detail).toContain("ФОТ");
+    expect(review.readiness.detail).toContain("себестоимость");
+  });
+
+  test("keeps profit readiness partial while Team OS has an open loop", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-open-loop",
+        venueId: "venue-1",
+        title: "Проверить апсейл в вечерней смене",
+        source: "copilot",
+        priority: "medium",
+        status: "accepted",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks,
+      teamAuditEvents: [],
+    });
+
+    expect(review.readiness).toMatchObject({
+      status: "partial",
+      title: "Прибыль требует проверки",
+      score: 95,
+      tone: "watch",
+    });
+    expect(review.readiness.detail).toContain("1 открытая задача Team OS");
+  });
+
+  test("marks profit readiness ready when data, economics and loops are closed", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.readiness).toEqual({
+      status: "ready",
+      score: 100,
+      title: "Можно считать прибыль",
+      detail: "Live-данные, ФОТ, себестоимость и Team OS контуры закрыты.",
+      missing: [],
+      tone: "good",
+    });
   });
 
   test("does not propose creating a task that is already open in Team OS", () => {
