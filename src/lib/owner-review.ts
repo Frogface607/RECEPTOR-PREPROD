@@ -225,6 +225,22 @@ function taskFromLaborSetupProgress(
     };
   }
 
+  const firstRateTarget = progress.bulkRateTargets[0];
+  if (firstRateTarget) {
+    const extraTargets = progress.bulkRateTargets.length - 1;
+    return {
+      title: trimTaskTitle(
+        `Заполнить ставку ФОТ: ${firstRateTarget.name}${extraTargets > 0 ? ` и еще ${extraTargets}` : ""}. ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+      ),
+      priority: progress.tone === "risk" ? "high" : "medium",
+      roleId: firstRateTarget.roleId,
+      audienceMemberId: firstRateTarget.id,
+      audienceMemberName: firstRateTarget.name,
+      dueLabel: "сегодня",
+      sourceLabel: "ФОТ setup",
+    };
+  }
+
   return {
     title: trimTaskTitle(
       `Заполнить ставки ФОТ в Team OS: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
@@ -239,7 +255,8 @@ function taskFromLaborSetupProgress(
 function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
   const seen = new Set<string>();
   return drafts.filter((draft) => {
-    const key = `${draft.roleId}:${draft.title.toLowerCase()}`;
+    const audienceKey = draft.audienceMemberId ?? draft.roleId;
+    const key = `${audienceKey}:${draft.title.toLowerCase()}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

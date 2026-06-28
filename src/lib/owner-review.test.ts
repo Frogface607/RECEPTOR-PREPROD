@@ -656,8 +656,10 @@ describe("buildOwnerReview", () => {
     });
 
     expect(review.tasks[0]).toMatchObject({
-      title: expect.stringContaining("Заполнить ставки ФОТ"),
-      roleId: "venue_manager",
+      title: expect.stringContaining("Заполнить ставку ФОТ"),
+      roleId: "service",
+      audienceMemberId: "petr",
+      audienceMemberName: "Петр",
       priority: "high",
       sourceLabel: "ФОТ setup",
     });

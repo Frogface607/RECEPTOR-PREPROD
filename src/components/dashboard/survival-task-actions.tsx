@@ -39,13 +39,15 @@ export function SurvivalTaskActions({
   function createTask(draft: SurvivalTaskDraft, index: number) {
     setMessage("");
     startTransition(async () => {
+      const audienceType = draft.audienceMemberId ? "member" : "role";
       const result = await createTeamTaskAction({
         venueId,
         title: draft.title,
         source: "copilot",
         priority: draft.priority,
-        audienceType: "role",
-        audienceRole: draft.roleId,
+        audienceType,
+        audienceRole: audienceType === "role" ? draft.roleId : undefined,
+        audienceMemberId: draft.audienceMemberId,
         dueLabel: draft.dueLabel,
         dedupeOpenTask: true,
       });
@@ -76,7 +78,7 @@ export function SurvivalTaskActions({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-md border border-brand/35 bg-brand/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-brand">
-                    {ROLE_LABEL[draft.roleId]}
+                    {draft.audienceMemberName ?? ROLE_LABEL[draft.roleId]}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
                     {PRIORITY_LABEL[draft.priority]} · {draft.dueLabel}
