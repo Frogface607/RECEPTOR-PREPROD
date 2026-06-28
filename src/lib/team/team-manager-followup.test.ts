@@ -138,6 +138,12 @@ describe("buildTeamManagerFollowUp", () => {
       title: "Заполнить ставку ФОТ",
       href: "#labor-rates",
       metric: "55% ФОТ",
+      taskDraft: {
+        title: "Заполнить ставку ФОТ: Илья",
+        roleId: "service",
+        priority: "medium",
+        sourceLabel: "ФОТ и смены",
+      },
     });
   });
 
@@ -207,12 +213,20 @@ describe("buildTeamManagerFollowUp", () => {
           id: "learning-admission",
           title: "Дать допуск к смене",
           href: "#learning-progress",
+          taskDraft: expect.objectContaining({
+            audienceMemberId: "waiter-1",
+            title: expect.stringContaining("Закрыть допуск к смене"),
+          }),
         }),
         expect.objectContaining({
           id: "plan-fact",
           title: "Разобрать план/факт",
           href: "#shift-plan-variance",
           tone: "risk",
+          taskDraft: expect.objectContaining({
+            priority: "high",
+            sourceLabel: "План/факт",
+          }),
         }),
       ]),
     );
@@ -238,6 +252,7 @@ describe("buildTeamManagerFollowUp", () => {
     expect(followUp.items[0]).toMatchObject({
       id: "ready",
       tone: "good",
+      taskDraft: null,
     });
   });
 });

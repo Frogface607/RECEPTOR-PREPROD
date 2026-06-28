@@ -2,6 +2,7 @@ import type { TeamLaborReadiness } from "./team-labor-readiness";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
 import type { TeamShiftPlanVarianceSummary } from "./team-shift-plan-variance";
 import type { TeamTask } from "./team-os";
+import type { SurvivalTaskDraft } from "@/lib/survival-score";
 
 export type TeamManagerFollowUpStatus = "ready" | "attention" | "blocked";
 export type TeamManagerFollowUpTone = "risk" | "watch" | "good";
@@ -13,6 +14,7 @@ export type TeamManagerFollowUpItem = {
   tone: TeamManagerFollowUpTone;
   href: string;
   metric: string;
+  taskDraft: SurvivalTaskDraft | null;
 };
 
 export type TeamManagerFollowUp = {
@@ -33,6 +35,21 @@ function isOpenTask(task: TeamTask): boolean {
 
 function rubles(value: number): string {
   return `${Math.round(value).toLocaleString("ru-RU")} ₽`;
+}
+
+function managerTaskDraft(input: {
+  title: string;
+  priority: TeamTask["priority"];
+  dueLabel?: string;
+  sourceLabel: string;
+}): SurvivalTaskDraft {
+  return {
+    title: input.title,
+    priority: input.priority,
+    roleId: "venue_manager",
+    dueLabel: input.dueLabel ?? "сегодня",
+    sourceLabel: input.sourceLabel,
+  };
 }
 
 function topBlockedAdmission(
@@ -94,6 +111,12 @@ export function buildTeamManagerFollowUp(input: {
       tone: "risk",
       href: "#team-actions",
       metric: `${urgentTasks.length} срочно`,
+      taskDraft: managerTaskDraft({
+        title: `Разобрать срочную задачу: ${firstTask.title}`,
+        priority: "high",
+        dueLabel: firstTask.dueLabel,
+        sourceLabel: "Контроль смены",
+      }),
     });
   }
 
@@ -110,8 +133,17 @@ export function buildTeamManagerFollowUp(input: {
       tone: "risk",
       href: "#iiko-shift-diagnostics",
       metric: "нет смен",
+      taskDraft: managerTaskDraft({
+        title: "Проверить выгрузку смен iiko для расчета ФОТ",
+        priority: "high",
+        sourceLabel: "ФОТ и смены",
+      }),
     });
   } else if (iikoBlocker) {
+    const taskTitle =
+      iikoBlocker.action === "add-member"
+        ? `Создать карточку Team OS из iiko: ${iikoBlocker.name}`
+        : `Заполнить ставку ФОТ: ${iikoBlocker.name}`;
     items.push({
       id: "labor-iiko",
       title:
@@ -123,6 +155,19 @@ export function buildTeamManagerFollowUp(input: {
       href:
         iikoBlocker.action === "add-member" ? "#team-actions" : "#labor-rates",
       metric: `${input.laborReadiness.coveragePct}% ФОТ`,
+      taskDraft: {
+        ...managerTaskDraft({
+          title: taskTitle,
+          priority:
+            input.laborReadiness.status === "blocked" ? "high" : "medium",
+          sourceLabel: "ФОТ и смены",
+        }),
+        roleId: iikoBlocker.roleId ?? "venue_manager",
+        audienceMemberId:
+          iikoBlocker.action === "set-rate" ? iikoBlocker.memberId : undefined,
+        audienceMemberName:
+          iikoBlocker.action === "set-rate" ? iikoBlocker.name : undefined,
+      },
     });
   } else if (firstMissingRate) {
     items.push({
@@ -132,6 +177,17 @@ export function buildTeamManagerFollowUp(input: {
       tone: input.laborReadiness.status === "blocked" ? "risk" : "watch",
       href: "#labor-rates",
       metric: `${input.laborReadiness.coveragePct}% ФОТ`,
+      taskDraft: {
+        ...managerTaskDraft({
+          title: `Заполнить ставку ФОТ: ${firstMissingRate.name}`,
+          priority:
+            input.laborReadiness.status === "blocked" ? "high" : "medium",
+          sourceLabel: "ФОТ и смены",
+        }),
+        roleId: firstMissingRate.roleId,
+        audienceMemberId: firstMissingRate.id,
+        audienceMemberName: firstMissingRate.name,
+      },
     });
   }
 
@@ -145,6 +201,21 @@ export function buildTeamManagerFollowUp(input: {
         learningBlocker.admissionStatus === "not_started" ? "watch" : "risk",
       href: "#learning-progress",
       metric: `${blockedAdmissions.length} без допуска`,
+      taskDraft: {
+        ...managerTaskDraft({
+          title: `Закрыть допуск к смене: ${learningBlocker.member.name} — ${
+            learningBlocker.nextItem?.title ?? "обязательные материалы"
+          }`,
+          priority:
+            learningBlocker.admissionStatus === "not_started"
+              ? "medium"
+              : "high",
+          sourceLabel: "Обучение",
+        }),
+        roleId: learningBlocker.member.roleId,
+        audienceMemberId: learningBlocker.member.id,
+        audienceMemberName: learningBlocker.member.name,
+      },
     });
   }
 
@@ -158,6 +229,14 @@ export function buildTeamManagerFollowUp(input: {
         input.shiftPlanVariance.issues[0]?.tone === "risk" ? "risk" : "watch",
       href: "#shift-plan-variance",
       metric: `${input.shiftPlanVariance.planCoveragePct}% план`,
+      taskDraft: managerTaskDraft({
+        title: `Разобрать план/факт: ${varianceDetail}`,
+        priority:
+          input.shiftPlanVariance.issues[0]?.tone === "risk"
+            ? "high"
+            : "medium",
+        sourceLabel: "План/факт",
+      }),
     });
   }
 
@@ -170,6 +249,12 @@ export function buildTeamManagerFollowUp(input: {
       tone: "watch",
       href: "#team-actions",
       metric: `${openTasks.length} открыто`,
+      taskDraft: managerTaskDraft({
+        title: `Дожать открытую задачу: ${firstTask.title}`,
+        priority: firstTask.priority,
+        dueLabel: firstTask.dueLabel,
+        sourceLabel: "Контроль смены",
+      }),
     });
   }
 
@@ -195,6 +280,7 @@ export function buildTeamManagerFollowUp(input: {
           tone: "good",
           href: "#shift-coverage",
           metric: "готово",
+          taskDraft: null,
         },
       ],
     };

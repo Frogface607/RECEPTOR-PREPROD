@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/link-button";
 import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
+import { TeamFollowUpTaskButton } from "./team-followup-task-button";
 import { LearningAdmissionTaskButton } from "./learning-admission-task-button";
 import { TeamShiftPlanPanel } from "./team-shift-plan-panel";
 import { saveTeamLearningStandardAction } from "./actions";
@@ -471,7 +472,10 @@ export default async function TeamPage({
                   </div>
                 </div>
 
-                <TeamManagerFollowUpCard followUp={managerFollowUp} />
+                <TeamManagerFollowUpCard
+                  venueId={workspace.venueId}
+                  followUp={managerFollowUp}
+                />
               </div>
             </div>
           </div>
@@ -946,8 +950,10 @@ function ReadinessMetric({ label, value }: { label: string; value: string }) {
 }
 
 function TeamManagerFollowUpCard({
+  venueId,
   followUp,
 }: {
+  venueId: string;
   followUp: TeamManagerFollowUp;
 }) {
   return (
@@ -985,7 +991,7 @@ function TeamManagerFollowUpCard({
 
       <div className="mt-3 grid gap-2">
         {followUp.items.map((item) => (
-          <TeamManagerFollowUpRow key={item.id} item={item} />
+          <TeamManagerFollowUpRow key={item.id} venueId={venueId} item={item} />
         ))}
       </div>
     </div>
@@ -1003,30 +1009,41 @@ function FollowUpMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TeamManagerFollowUpRow({ item }: { item: TeamManagerFollowUpItem }) {
+function TeamManagerFollowUpRow({
+  venueId,
+  item,
+}: {
+  venueId: string;
+  item: TeamManagerFollowUpItem;
+}) {
   return (
-    <Link
-      href={item.href}
-      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_1fr_auto] sm:items-center"
-    >
-      <span
-        className={
-          "size-2 rounded-full border " + managerFollowUpToneClass(item.tone)
-        }
-      />
-      <span className="min-w-0">
-        <span className="block text-sm font-medium text-foreground">
-          {item.title}
+    <div className="grid gap-2 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <Link
+        href={item.href}
+        className="grid min-w-0 gap-3 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+      >
+        <span
+          className={
+            "size-2 rounded-full border " + managerFollowUpToneClass(item.tone)
+          }
+        />
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-foreground">
+            {item.title}
+          </span>
+          <span className="mt-1 block truncate text-xs text-muted-foreground">
+            {item.detail}
+          </span>
         </span>
-        <span className="mt-1 block truncate text-xs text-muted-foreground">
-          {item.detail}
+        <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+          {item.metric}
+          <ArrowRight className="size-4" />
         </span>
-      </span>
-      <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-        {item.metric}
-        <ArrowRight className="size-4" />
-      </span>
-    </Link>
+      </Link>
+      {item.taskDraft ? (
+        <TeamFollowUpTaskButton venueId={venueId} draft={item.taskDraft} />
+      ) : null}
+    </div>
   );
 }
 
