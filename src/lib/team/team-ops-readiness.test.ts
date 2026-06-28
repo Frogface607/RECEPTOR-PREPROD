@@ -6,6 +6,7 @@ import { buildTeamLaborReadiness } from "./team-labor-readiness";
 import { buildTeamOpsReadiness } from "./team-ops-readiness";
 import { buildShiftOverview } from "./team-shift-planner";
 import type { StaffMember, TeamTask } from "./team-os";
+import type { TeamLearningStandardOverride } from "./team-learning-standards";
 
 const baseMember: StaffMember = {
   id: "service-1",
@@ -210,6 +211,59 @@ describe("buildTeamOpsReadiness", () => {
 
     expect(readiness.learningAdmissionPct).toBe(100);
     expect(readiness.actions).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "learning" })]),
+    );
+  });
+
+  test("uses venue learning standards for owner-facing team readiness", () => {
+    const staff: StaffMember[] = [
+      {
+        ...baseMember,
+        id: "service",
+        roleId: "service",
+        name: "Maria",
+        hourlyRate: 350,
+      },
+    ];
+    const progress = listLearningItemsForRole("service")
+      .filter((item) => item.status === "required")
+      .map((item) => ({
+        venueId: "venue-1",
+        membershipId: "service",
+        userId: null,
+        moduleId: item.id,
+        bestPercentage: item.passPercentage,
+        lastPercentage: item.passPercentage,
+        correct: 1,
+        total: 1,
+        passed: true,
+        answers: [0],
+        completedAt: "2026-06-27T10:00:00.000Z",
+        updatedAt: "2026-06-27T10:00:00.000Z",
+      }));
+    const standards: TeamLearningStandardOverride[] = [
+      {
+        venueId: "venue-1",
+        roleId: "service",
+        moduleId: "guest-feedback",
+        status: "required",
+        updatedAt: "2026-06-27T10:00:00.000Z",
+      },
+    ];
+
+    const readiness = buildTeamOpsReadiness({
+      shiftOverview: buildShiftOverview(staff, []),
+      laborReadiness: buildTeamLaborReadiness(staff),
+      learningSummaries: buildTeamLearningSummaries(
+        staff,
+        progress,
+        standards,
+      ),
+      tasks: [],
+    });
+
+    expect(readiness.learningAdmissionPct).toBe(0);
+    expect(readiness.actions).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: "learning" })]),
     );
   });

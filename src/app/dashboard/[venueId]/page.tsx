@@ -234,6 +234,7 @@ export default async function DashboardPage({
   const teamLearningSummaries = buildTeamLearningSummaries(
     teamWorkspace.staff,
     teamWorkspace.learningProgress,
+    teamWorkspace.learningStandards,
   );
   const teamReadiness = buildTeamOpsReadiness({
     shiftOverview: buildShiftOverview(teamWorkspace.staff, teamWorkspace.tasks),
