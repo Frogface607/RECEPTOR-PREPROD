@@ -22,6 +22,7 @@ import type {
   TeamOpsActionTone,
   TeamOpsReadiness,
 } from "@/lib/team/team-ops-readiness";
+import type { TeamAuditEvent, TeamTask } from "@/lib/team/team-os";
 import type { TeamLaborSetupProgress } from "@/lib/team/team-labor-readiness";
 import type {
   CategoryStat,
@@ -91,6 +92,13 @@ export type OwnerReview = {
   tasks: SurvivalTaskDraft[];
 };
 
+export type OwnerOperationalProof = {
+  openTasks: number;
+  urgentOpenTasks: number;
+  closedLoops: number;
+  lastClosedLoop: string | null;
+};
+
 type BuildOwnerReviewInput = {
   summary: RevenueSummary;
   dishes: DishStat[];
@@ -103,6 +111,8 @@ type BuildOwnerReviewInput = {
   laborSetupProgress?: TeamLaborSetupProgress;
   margin?: MenuMarginReadiness;
   team?: TeamOpsReadiness;
+  teamTasks?: TeamTask[];
+  teamAuditEvents?: TeamAuditEvent[];
   shiftPlanVariance?: TeamShiftPlanVarianceSummary;
 };
 
@@ -148,6 +158,12 @@ function trimTaskTitle(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (normalized.length <= 220) return normalized;
   return `${normalized.slice(0, 217).trim()}...`;
+}
+
+function trimEvidenceDetail(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 120) return normalized;
+  return `${normalized.slice(0, 117).trim()}...`;
 }
 
 function actionSourceLabel(action: OwnerReviewAction): string {
@@ -250,6 +266,104 @@ function taskFromLaborSetupProgress(
     dueLabel: "сегодня",
     sourceLabel: "ФОТ setup",
   };
+}
+
+function isOpenTeamTask(task: TeamTask): boolean {
+  return task.status !== "done" && task.status !== "verified";
+}
+
+function normalizeTaskTitle(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+}
+
+function isClosedLoopEvent(event: TeamAuditEvent): boolean {
+  if (event.type !== "task_status_updated" || event.targetType !== "task") {
+    return false;
+  }
+
+  const summary = event.summary.toLocaleLowerCase("ru-RU");
+  return (
+    summary.includes("закрыт") ||
+    summary.includes("done") ||
+    summary.includes("verified") ||
+    summary.includes("сдачи модуля") ||
+    summary.includes("обновления ставок")
+  );
+}
+
+function buildOperationalProof(
+  tasks: TeamTask[] | undefined,
+  auditEvents: TeamAuditEvent[] | undefined,
+): OwnerOperationalProof | null {
+  if (!tasks && !auditEvents) return null;
+
+  const openTasks = (tasks ?? []).filter(isOpenTeamTask);
+  const closedLoopEvents = (auditEvents ?? []).filter(isClosedLoopEvent);
+
+  return {
+    openTasks: openTasks.length,
+    urgentOpenTasks: openTasks.filter((task) => task.priority === "high")
+      .length,
+    closedLoops: closedLoopEvents.length,
+    lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
+  };
+}
+
+function operationalProofEvidence(
+  proof: OwnerOperationalProof,
+): OwnerReviewEvidence {
+  const detail =
+    proof.closedLoops > 0
+      ? `${proof.closedLoops} закрыто недавно. Последнее: ${trimEvidenceDetail(
+          proof.lastClosedLoop ?? "задача закрыта в Team OS",
+        )}`
+      : proof.openTasks > 0
+        ? `${proof.urgentOpenTasks} срочных. Закрытые контуры появятся после выполнения задач в Team OS.`
+        : "Открытых задач нет; новых закрытий в последних событиях не было.";
+
+  return {
+    label: "Контуры",
+    value: `${proof.openTasks} открыто`,
+    detail,
+    tone:
+      proof.urgentOpenTasks > 0
+        ? "risk"
+        : proof.openTasks > 0
+          ? "watch"
+          : "good",
+  };
+}
+
+function draftMatchesOpenTeamTask(
+  draft: SurvivalTaskDraft,
+  task: TeamTask,
+): boolean {
+  if (!isOpenTeamTask(task)) return false;
+  if (normalizeTaskTitle(task.title) !== normalizeTaskTitle(draft.title)) {
+    return false;
+  }
+
+  if (draft.audienceMemberId) {
+    return (
+      task.audience.type === "member" &&
+      task.audience.memberId === draft.audienceMemberId
+    );
+  }
+
+  return task.audience.type === "role" && task.audience.roleId === draft.roleId;
+}
+
+function withoutAlreadyOpenTeamTasks(
+  drafts: SurvivalTaskDraft[],
+  tasks: TeamTask[] | undefined,
+): SurvivalTaskDraft[] {
+  if (!tasks?.length) return drafts;
+  const openTasks = tasks.filter(isOpenTeamTask);
+  if (openTasks.length === 0) return drafts;
+
+  return drafts.filter(
+    (draft) => !openTasks.some((task) => draftMatchesOpenTeamTask(draft, task)),
+  );
 }
 
 function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
@@ -903,6 +1017,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     labor: input.labor,
     margin: input.margin,
   });
+  const operationalProof = buildOperationalProof(
+    input.teamTasks,
+    input.teamAuditEvents,
+  );
   const { verdict, summary } = buildVerdict({
     brief: input.brief,
     quality: input.dataQuality,
@@ -931,6 +1049,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     ...(input.labor ? [laborEvidence(input.labor)] : []),
     ...(input.margin ? [marginEvidence(input.margin)] : []),
     ...(input.team ? [teamEvidence(input.team)] : []),
+    ...(operationalProof ? [operationalProofEvidence(operationalProof)] : []),
     ...(() => {
       const evidence = input.shiftPlanVariance
         ? shiftPlanVarianceEvidence(input.shiftPlanVariance)
@@ -1098,14 +1217,17 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     role: item.role,
     text: item.check,
   }));
-  const tasks = uniqueTaskDrafts([
-    ...(() => {
-      const task = taskFromLaborSetupProgress(input.laborSetupProgress);
-      return task ? [task] : [];
-    })(),
-    ...actions.map(taskFromOwnerAction),
-    ...visibleHypotheses.map(taskFromHypothesis),
-  ]).slice(0, 3);
+  const tasks = withoutAlreadyOpenTeamTasks(
+    uniqueTaskDrafts([
+      ...(() => {
+        const task = taskFromLaborSetupProgress(input.laborSetupProgress);
+        return task ? [task] : [];
+      })(),
+      ...actions.map(taskFromOwnerAction),
+      ...visibleHypotheses.map(taskFromHypothesis),
+    ]),
+    input.teamTasks,
+  ).slice(0, 3);
 
   return {
     verdict,

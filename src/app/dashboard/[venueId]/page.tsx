@@ -268,6 +268,8 @@ export default async function DashboardPage({
     laborSetupProgress,
     margin: marginReadiness,
     team: teamReadiness,
+    teamTasks: teamWorkspace.tasks,
+    teamAuditEvents: teamWorkspace.auditEvents,
     shiftPlanVariance,
   });
 

@@ -16,6 +16,7 @@ import {
 } from "./team/team-labor-readiness";
 import type { TeamShiftPlanVarianceSummary } from "./team/team-shift-plan-variance";
 import type { TeamOpsReadiness } from "./team/team-ops-readiness";
+import type { TeamAuditEvent, TeamTask } from "./team/team-os";
 
 const summary: RevenueSummary = {
   revenue: 100000,
@@ -611,6 +612,122 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       sourceLabel: "Команда",
     });
+  });
+
+  test("shows operational proof from open tasks and recently closed loops", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-open",
+        venueId: "venue-1",
+        title: "Разобрать дорогую смену",
+        source: "copilot",
+        priority: "high",
+        status: "new",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+      {
+        id: "task-closed",
+        venueId: "venue-1",
+        title: "Пройти обучение",
+        source: "manager",
+        priority: "medium",
+        status: "done",
+        audience: { type: "member", memberId: "service-1" },
+        dueLabel: "до смены",
+      },
+    ];
+    const teamAuditEvents: TeamAuditEvent[] = [
+      {
+        id: "audit-learning-closed",
+        venueId: "venue-1",
+        type: "task_status_updated",
+        targetType: "task",
+        targetId: "task-closed",
+        summary:
+          "Автоматически закрыта задача обучения после сдачи модуля: Как рекомендовать блюдо без давления.",
+        createdAtLabel: "12:10",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamAuditEvents,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Контуры",
+          value: "1 открыто",
+          detail: expect.stringContaining("1 закрыто недавно"),
+          tone: "risk",
+        }),
+      ]),
+    );
+  });
+
+  test("does not propose creating a task that is already open in Team OS", () => {
+    const team = {
+      score: 72,
+      status: "attention",
+      roleCoveragePct: 100,
+      laborCoveragePct: 100,
+      learningAdmissionPct: 50,
+      learningAveragePct: 42,
+      actions: [
+        {
+          id: "learning",
+          tone: "setup",
+          title: "Дожать обучение",
+          detail: "Маша: закрыть обязательный модуль роли.",
+          href: "#learning-progress",
+        },
+      ],
+    } satisfies TeamOpsReadiness;
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-learning-open",
+        venueId: "venue-1",
+        title: "Дожать обучение: Маша: закрыть обязательный модуль роли.",
+        source: "copilot",
+        priority: "medium",
+        status: "accepted",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      team,
+      teamTasks,
+    });
+
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Дожать обучение",
+          target: "team-learning",
+        }),
+      ]),
+    );
+    expect(
+      review.tasks.some((task) => task.title.startsWith("Дожать обучение")),
+    ).toBe(false);
   });
 
   test("adds a first task from FOT setup progress", () => {
