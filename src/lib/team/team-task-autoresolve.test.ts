@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { selectLaborRateTasksToClose } from "./team-task-autoresolve";
+import {
+  selectLaborRateTasksToClose,
+  selectLearningAdmissionTasksToClose,
+} from "./team-task-autoresolve";
 import type { TeamTask } from "./team-os";
 
 function task(
@@ -44,5 +47,36 @@ describe("team task autoresolve", () => {
       ];
 
     expect(selectLaborRateTasksToClose(tasks, ["petr"])).toEqual([]);
+  });
+
+  test("selects only the open admission task for the passed module", () => {
+    const tasks: Array<Pick<TeamTask, "id" | "title" | "status" | "audience">> =
+      [
+        task(
+          "admission",
+          "  Пройти обучение: Как рекомендовать блюдо без давления  ",
+          "petr",
+          "accepted",
+        ),
+        task("other-module", "Пройти обучение: Работа со стоп-листом", "petr"),
+        task(
+          "other-member",
+          "Пройти обучение: Как рекомендовать блюдо без давления",
+          "anna",
+        ),
+        task(
+          "closed",
+          "Пройти обучение: Как рекомендовать блюдо без давления",
+          "petr",
+          "verified",
+        ),
+      ];
+
+    expect(
+      selectLearningAdmissionTasksToClose(tasks, {
+        memberId: "petr",
+        moduleTitle: "Как рекомендовать блюдо без давления",
+      }),
+    ).toEqual([tasks[0]]);
   });
 });

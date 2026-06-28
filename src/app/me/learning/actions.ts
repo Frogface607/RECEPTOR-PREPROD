@@ -15,6 +15,7 @@ import {
 } from "@/lib/team/team-learning-standards";
 import type { TeamRoleId } from "@/lib/team/team-os";
 import type { TeamLearningProgressSnapshot } from "@/lib/team/team-learning-progress";
+import { selectLearningAdmissionTasksToClose } from "@/lib/team/team-task-autoresolve";
 
 const SaveLearningProgressInput = z.object({
   venueId: z.string().min(1),
@@ -31,6 +32,13 @@ type MembershipRow = {
 
 type ExistingProgressRow = {
   best_percentage: number | null;
+};
+
+type LearningTaskRow = {
+  id: string;
+  title: string;
+  status: "new" | "accepted" | "in_progress" | "done" | "verified";
+  audience_member_id: string | null;
 };
 
 type DbLearningStandard = {
@@ -51,10 +59,12 @@ export type SaveLearningProgressResult =
   | { ok: false; error: string };
 
 function missingLearningTable(message: string): boolean {
-  return /team_learning_progress|team_learning_standards|venue_memberships|relation .* does not exist/i.test(
+  return /team_learning_progress|team_learning_standards|venue_memberships|team_tasks|team_audit_events|relation .* does not exist/i.test(
     message,
   );
 }
+
+const OPEN_TASK_STATUSES = ["new", "accepted", "in_progress"] as const;
 
 function mapLearningStandard(
   row: DbLearningStandard,
@@ -86,6 +96,73 @@ function snapshotFromScore(input: {
     answers: input.answers,
     completedAt: input.completedAt,
   };
+}
+
+async function closeLearningAdmissionTasks(input: {
+  supabase: NonNullable<Awaited<ReturnType<typeof getServerSupabase>>>;
+  venueId: string;
+  memberId: string;
+  moduleTitle: string;
+  userId: string;
+}): Promise<string[]> {
+  const { supabase, venueId, memberId, moduleTitle, userId } = input;
+
+  const { data, error } = await supabase
+    .from("team_tasks")
+    .select("id,title,status,audience_member_id")
+    .eq("venue_id", venueId)
+    .eq("audience_type", "member")
+    .eq("audience_member_id", memberId)
+    .in("status", OPEN_TASK_STATUSES);
+
+  if (error) {
+    if (missingLearningTable(error.message)) return [];
+    throw new Error(error.message);
+  }
+
+  const taskIds = selectLearningAdmissionTasksToClose(
+    ((data ?? []) as LearningTaskRow[]).map((task) => ({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      audience: { type: "member", memberId: task.audience_member_id ?? "" },
+    })),
+    { memberId, moduleTitle },
+  ).map((task) => task.id);
+
+  if (taskIds.length === 0) return [];
+
+  const updatedAt = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("team_tasks")
+    .update({ status: "done", updated_at: updatedAt })
+    .eq("venue_id", venueId)
+    .in("id", taskIds);
+
+  if (updateError) {
+    if (missingLearningTable(updateError.message)) return [];
+    throw new Error(updateError.message);
+  }
+
+  const auditResult = await supabase.from("team_audit_events").insert({
+    venue_id: venueId,
+    actor_user_id: userId,
+    actor_membership_id: memberId,
+    event_type: "task_status_updated",
+    target_type: "task",
+    target_id: taskIds[0] ?? null,
+    summary: `Автоматически закрыта задача обучения после сдачи модуля: ${moduleTitle}.`,
+    metadata: { taskIds, memberId, moduleTitle, status: "done" },
+  });
+
+  if (auditResult.error && !missingLearningTable(auditResult.error.message)) {
+    console.warn(
+      "Failed to write learning admission task audit:",
+      auditResult.error.message,
+    );
+  }
+
+  return taskIds;
 }
 
 export async function saveLearningProgressAction(
@@ -246,15 +323,38 @@ export async function saveLearningProgressAction(
     return { ok: false, error: upsertResult.error.message };
   }
 
+  let closedTaskIds: string[] = [];
+  let taskCloseWarning = false;
+  if (savedProgress.passed) {
+    try {
+      closedTaskIds = await closeLearningAdmissionTasks({
+        supabase,
+        venueId: membership.venue_id,
+        memberId: membership.id,
+        moduleTitle: item.title,
+        userId: user.id,
+      });
+    } catch (error) {
+      taskCloseWarning = true;
+      console.warn("Failed to auto-close learning admission task:", error);
+    }
+  }
+
   revalidatePath("/me");
   revalidatePath("/me/learning");
   revalidatePath("/team");
   revalidatePath(`/team?venueId=${encodeURIComponent(membership.venue_id)}`);
+  revalidatePath(`/dashboard/${membership.venue_id}`);
 
   return {
     ok: true,
     mode: "saved",
-    message: "Прогресс сохранен.",
+    message:
+      closedTaskIds.length > 0
+        ? "Прогресс сохранен, задача обучения закрыта."
+        : taskCloseWarning
+          ? "Прогресс сохранен. Задача обучения не закрылась автоматически."
+          : "Прогресс сохранен.",
     progress: savedProgress,
   };
 }

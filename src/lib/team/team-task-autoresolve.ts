@@ -29,3 +29,26 @@ export function selectLaborRateTasksToClose(
       isLaborRateSetupTaskTitle(task.title),
   );
 }
+
+export function selectLearningAdmissionTasksToClose(
+  tasks: AutoClosableTask[],
+  input: { memberId: string; moduleTitle: string },
+): AutoClosableTask[] {
+  const memberId = input.memberId.trim();
+  const moduleTitle = input.moduleTitle.trim();
+  if (!memberId || !moduleTitle) return [];
+
+  const expectedTitle = normalizeTaskTitle(`Пройти обучение: ${moduleTitle}`);
+
+  return tasks.filter(
+    (task) =>
+      !CLOSED_STATUSES.has(task.status) &&
+      task.audience.type === "member" &&
+      task.audience.memberId === memberId &&
+      normalizeTaskTitle(task.title) === expectedTitle,
+  );
+}
+
+function normalizeTaskTitle(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+}
