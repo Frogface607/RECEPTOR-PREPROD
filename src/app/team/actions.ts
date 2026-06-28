@@ -6,11 +6,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { normalizeStaffLoginToEmail } from "@/lib/auth/staff-login";
 import { getSupabaseAdmin } from "@/lib/db/admin";
 import { getServerSupabase } from "@/lib/db/server";
-import {
-  TEAM_ROLES,
-  type TeamRoleId,
-  type TeamTask,
-} from "@/lib/team/team-os";
+import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
 
 const TeamRoleIdSchema = z.enum(
   TEAM_ROLES.map((role) => role.id) as [TeamRoleId, ...TeamRoleId[]],
@@ -24,12 +20,21 @@ const TaskStatusSchema = z.enum([
   "done",
   "verified",
 ]);
+const OPEN_TASK_STATUSES = [
+  "new",
+  "accepted",
+  "in_progress",
+] satisfies TeamTask["status"][];
 const TaskSourceSchema = z.enum(["owner", "copilot", "manager", "chef"]);
 const TaskAudienceTypeSchema = z.enum(["member", "role", "venue"]);
 const AnnouncementAudienceTypeSchema = z.enum(["role", "venue"]);
 const AnnouncementPrioritySchema = z.enum(["normal", "important"]);
 const MemberStatusSchema = z.enum(["active", "paused"]);
-const NonNegativeMoneySchema = z.coerce.number().min(0).max(1_000_000).default(0);
+const NonNegativeMoneySchema = z.coerce
+  .number()
+  .min(0)
+  .max(1_000_000)
+  .default(0);
 const ShiftDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const ShiftTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
@@ -57,6 +62,7 @@ const CreateTeamTaskInput = z
     audienceMemberId: z.string().trim().optional().or(z.literal("")),
     audienceRole: TeamRoleIdSchema.optional(),
     dueLabel: z.string().trim().max(120).optional().or(z.literal("")),
+    dedupeOpenTask: z.boolean().optional().default(false),
   })
   .superRefine((value, ctx) => {
     if (value.audienceType === "member" && !value.audienceMemberId) {
@@ -155,6 +161,8 @@ type WritableTeamContext = Extract<
   { ok: true }
 >;
 
+type CreateTeamTaskData = z.output<typeof CreateTeamTaskInput>;
+
 type TeamAuditEventInput = {
   venueId: string;
   type:
@@ -189,7 +197,8 @@ async function getWritableTeamContext(): Promise<
   | { ok: false; error: string }
 > {
   const user = await getCurrentUser();
-  if (!user) return { ok: false, error: "Нужно войти, чтобы работать с командой." };
+  if (!user)
+    return { ok: false, error: "Нужно войти, чтобы работать с командой." };
 
   const supabase = await getServerSupabase();
   if (!supabase || user.isDemo) {
@@ -226,6 +235,38 @@ async function writeTeamAuditEvent(
   if (error && !missingTeamTables(error.message)) {
     console.warn("Failed to write team audit event:", error.message);
   }
+}
+
+async function findExistingOpenTask(
+  ctx: WritableTeamContext,
+  task: CreateTeamTaskData,
+): Promise<{ id: string } | null> {
+  if (ctx.mode === "sandbox" || !ctx.supabase) return null;
+
+  let query = ctx.supabase
+    .from("team_tasks")
+    .select("id")
+    .eq("venue_id", task.venueId)
+    .eq("title", task.title)
+    .eq("audience_type", task.audienceType)
+    .in("status", OPEN_TASK_STATUSES)
+    .limit(1);
+
+  if (task.audienceType === "member") {
+    query = query.eq("audience_member_id", task.audienceMemberId);
+  } else if (task.audienceType === "role") {
+    query = query.eq("audience_role", task.audienceRole);
+  } else {
+    query = query.is("audience_member_id", null).is("audience_role", null);
+  }
+
+  const { data, error } = await query.maybeSingle<{ id: string }>();
+  if (error) {
+    if (missingTeamTables(error.message)) return null;
+    throw new Error(error.message);
+  }
+
+  return data ?? null;
 }
 
 export async function inviteTeamMemberAction(
@@ -318,7 +359,8 @@ export async function inviteTeamMemberAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
+        error:
+          "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -361,7 +403,11 @@ export async function updateTeamMemberLaborRateAction(
   const ctx = await getWritableTeamContext();
   if (!ctx.ok) return ctx;
 
-  if (parsed.data.venueId === "dev-venue" || ctx.mode === "sandbox" || !ctx.supabase) {
+  if (
+    parsed.data.venueId === "dev-venue" ||
+    ctx.mode === "sandbox" ||
+    !ctx.supabase
+  ) {
     return {
       ok: true,
       mode: "sandbox",
@@ -386,7 +432,8 @@ export async function updateTeamMemberLaborRateAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет полей ставок команды. Примените миграцию 0009_team_labor_rates.sql.",
+        error:
+          "В базе нет полей ставок команды. Примените миграцию 0009_team_labor_rates.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -477,7 +524,8 @@ export async function saveTeamShiftPlanAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет таблицы планов смен. Примените миграцию 0010_team_shift_plans.sql.",
+        error:
+          "В базе нет таблицы планов смен. Примените миграцию 0010_team_shift_plans.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -540,7 +588,8 @@ export async function updateTeamMemberStatusAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
+        error:
+          "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -598,7 +647,11 @@ export async function resetTeamMemberPasswordAction(
     .select("id,user_id,email")
     .eq("id", parsed.data.memberId)
     .eq("venue_id", parsed.data.venueId)
-    .maybeSingle<{ id: string; user_id: string | null; email: string | null }>();
+    .maybeSingle<{
+      id: string;
+      user_id: string | null;
+      email: string | null;
+    }>();
 
   if (memberError) return { ok: false, error: memberError.message };
   if (!member) {
@@ -663,6 +716,29 @@ export async function createTeamTaskAction(
   }
 
   const audienceType = parsed.data.audienceType;
+
+  if (parsed.data.dedupeOpenTask) {
+    try {
+      const existingTask = await findExistingOpenTask(ctx, parsed.data);
+      if (existingTask) {
+        revalidatePath("/team");
+        return {
+          ok: true,
+          mode: "saved",
+          message: "Задача уже есть.",
+        };
+      }
+    } catch (error) {
+      return {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Не удалось проверить дубли задач.",
+      };
+    }
+  }
+
   const insert = {
     venue_id: parsed.data.venueId,
     title: parsed.data.title,
@@ -687,7 +763,8 @@ export async function createTeamTaskAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
+        error:
+          "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };
@@ -734,7 +811,10 @@ export async function updateTeamTaskStatusAction(
 
   const { data, error } = await ctx.supabase
     .from("team_tasks")
-    .update({ status: parsed.data.status, updated_at: new Date().toISOString() })
+    .update({
+      status: parsed.data.status,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", parsed.data.taskId)
     .eq("venue_id", parsed.data.venueId)
     .select("id")
@@ -744,7 +824,8 @@ export async function updateTeamTaskStatusAction(
     if (missingTeamTables(error.message)) {
       return {
         ok: false,
-        error: "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
+        error:
+          "В базе нет таблиц команды. Примените миграцию 0004_team_os.sql.",
       };
     }
     return { ok: false, error: error.message };

@@ -37,6 +37,7 @@ export function LearningAdmissionTaskButton({
               audienceType: draft.audienceType,
               audienceMemberId: draft.audienceMemberId,
               dueLabel: draft.dueLabel,
+              dedupeOpenTask: true,
             });
 
             setTone(result.ok ? "success" : "error");
