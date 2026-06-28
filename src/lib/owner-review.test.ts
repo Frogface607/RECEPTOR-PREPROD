@@ -724,6 +724,81 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.operationalPulse).toMatchObject({
+      title: "Есть срочные действия команды",
+      tone: "risk",
+      openTasks: 1,
+      urgentOpenTasks: 1,
+      closedLoops: 1,
+      recentEvents: [
+        expect.objectContaining({
+          label: "Закрыто",
+          summary: expect.stringContaining("Автоматически закрыта задача"),
+          timeLabel: "12:10",
+          tone: "good",
+        }),
+      ],
+      action: {
+        label: "Открыть Team OS",
+        target: "team-actions",
+      },
+    });
+  });
+
+  test("shows FOT and shift plan fixes in the owner operational pulse", () => {
+    const teamAuditEvents: TeamAuditEvent[] = [
+      {
+        id: "audit-labor-rate",
+        venueId: "venue-1",
+        type: "member_labor_rate_updated",
+        targetType: "member",
+        targetId: "service-1",
+        summary: "Ставка ФОТ обновлена: Маша.",
+        createdAtLabel: "13:20",
+      },
+      {
+        id: "audit-shift-plan",
+        venueId: "venue-1",
+        type: "shift_plan_updated",
+        targetType: "shift_plan",
+        targetId: "plan-1",
+        summary: "План смены обновлен: Маша, 2026-06-26 16:00-00:00.",
+        createdAtLabel: "13:25",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks: [],
+      teamAuditEvents,
+    });
+
+    expect(review.operationalPulse).toMatchObject({
+      title: "Открытых задач нет",
+      tone: "good",
+      openTasks: 0,
+      closedLoops: 0,
+      recentEvents: [
+        {
+          label: "ФОТ",
+          summary: "Ставка ФОТ обновлена: Маша.",
+          timeLabel: "13:20",
+          tone: "good",
+        },
+        {
+          label: "План",
+          summary: "План смены обновлен: Маша, 2026-06-26 16:00-00:00.",
+          timeLabel: "13:25",
+          tone: "good",
+        },
+      ],
+    });
   });
 
   test("blocks profit readiness until FOT and margin are proven", () => {

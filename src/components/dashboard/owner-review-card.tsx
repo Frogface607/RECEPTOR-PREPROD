@@ -5,6 +5,7 @@ import {
   ArrowRight,
   GaugeCircle,
   HelpCircle,
+  ListChecks,
   MessageSquareText,
   SearchCheck,
   ShieldCheck,
@@ -209,6 +210,87 @@ export function OwnerReviewCard({
               </LinkButton>
             ) : null}
           </div>
+
+          {review.operationalPulse ? (
+            <div className="mt-3 rounded-lg border border-border/45 bg-background/35 p-3">
+              <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+                <span
+                  className={
+                    "inline-flex size-9 items-center justify-center rounded-md border " +
+                    TONE_CLASS[review.operationalPulse.tone]
+                  }
+                >
+                  <ListChecks className="size-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Контур управления
+                  </p>
+                  <p className="mt-1 text-[14px] font-medium text-foreground">
+                    {review.operationalPulse.title}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:text-right">
+                  <div>
+                    <p className="text-lg font-medium text-foreground">
+                      {review.operationalPulse.openTasks}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      открыто
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-foreground">
+                      {review.operationalPulse.closedLoops}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      закрыто
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+                {review.operationalPulse.detail}
+              </p>
+
+              {review.operationalPulse.recentEvents.length > 0 ? (
+                <div className="mt-3 divide-y divide-border/35 overflow-hidden rounded-md border border-border/35">
+                  {review.operationalPulse.recentEvents.map((event) => (
+                    <div
+                      key={`${event.label}-${event.timeLabel}-${event.summary}`}
+                      className="grid gap-2 px-3 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+                    >
+                      <span
+                        className={
+                          "w-fit rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                          TONE_CLASS[event.tone]
+                        }
+                      >
+                        {event.label}
+                      </span>
+                      <p className="min-w-0 text-[12px] leading-relaxed text-foreground/80">
+                        {event.summary}
+                      </p>
+                      {event.timeLabel ? (
+                        <span className="text-[11px] text-muted-foreground">
+                          {event.timeLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              <LinkButton
+                href={readinessHref(review.operationalPulse.action, venueId)}
+                variant="outline"
+                className="mt-3 h-8 px-3 text-[12px]"
+              >
+                {review.operationalPulse.action.label}
+                <ArrowRight className="size-3.5" />
+              </LinkButton>
+            </div>
+          ) : null}
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {review.evidence.map((item) => (

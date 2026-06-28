@@ -103,6 +103,7 @@ export type OwnerReview = {
   confidence: OwnerReviewConfidence;
   confidenceReason: string;
   readiness: OwnerProfitReadiness;
+  operationalPulse: OwnerOperationalPulse | null;
   evidence: OwnerReviewEvidence[];
   actions: OwnerReviewAction[];
   hypotheses: OwnerReviewHypothesis[];
@@ -110,11 +111,30 @@ export type OwnerReview = {
   tasks: SurvivalTaskDraft[];
 };
 
+export type OwnerOperationalPulseEvent = {
+  label: string;
+  summary: string;
+  timeLabel: string;
+  tone: OwnerReviewTone;
+};
+
+export type OwnerOperationalPulse = {
+  title: string;
+  detail: string;
+  tone: OwnerReviewTone;
+  openTasks: number;
+  urgentOpenTasks: number;
+  closedLoops: number;
+  recentEvents: OwnerOperationalPulseEvent[];
+  action: OwnerProfitReadinessAction;
+};
+
 export type OwnerOperationalProof = {
   openTasks: number;
   urgentOpenTasks: number;
   closedLoops: number;
   lastClosedLoop: string | null;
+  recentEvents: OwnerOperationalPulseEvent[];
 };
 
 type BuildOwnerReviewInput = {
@@ -309,6 +329,48 @@ function isClosedLoopEvent(event: TeamAuditEvent): boolean {
   );
 }
 
+function auditEventLabel(event: TeamAuditEvent): string {
+  if (event.type === "member_labor_rate_updated") return "ФОТ";
+  if (event.type === "shift_plan_updated") return "План";
+  if (event.type === "learning_standard_updated") return "Обучение";
+  if (event.type === "member_invited") return "Доступ";
+  if (event.type === "member_status_updated") return "Доступ";
+  if (event.type === "member_password_reset") return "Логин";
+  if (event.type === "task_created") return "Задача";
+  if (event.type === "comment_added") return "Комментарий";
+  if (event.type === "announcement_created") return "Объявление";
+  if (event.type === "task_status_updated") {
+    return isClosedLoopEvent(event) ? "Закрыто" : "Статус";
+  }
+  return "Team OS";
+}
+
+function auditEventTone(event: TeamAuditEvent): OwnerReviewTone {
+  if (isClosedLoopEvent(event)) return "good";
+  if (
+    event.type === "member_labor_rate_updated" ||
+    event.type === "shift_plan_updated" ||
+    event.type === "learning_standard_updated" ||
+    event.type === "member_invited" ||
+    event.type === "member_status_updated" ||
+    event.type === "member_password_reset"
+  ) {
+    return "good";
+  }
+  return "watch";
+}
+
+function operationalPulseEvent(
+  event: TeamAuditEvent,
+): OwnerOperationalPulseEvent {
+  return {
+    label: auditEventLabel(event),
+    summary: trimEvidenceDetail(event.summary),
+    timeLabel: event.createdAtLabel,
+    tone: auditEventTone(event),
+  };
+}
+
 function buildOperationalProof(
   tasks: TeamTask[] | undefined,
   auditEvents: TeamAuditEvent[] | undefined,
@@ -317,6 +379,9 @@ function buildOperationalProof(
 
   const openTasks = (tasks ?? []).filter(isOpenTeamTask);
   const closedLoopEvents = (auditEvents ?? []).filter(isClosedLoopEvent);
+  const recentEvents = (auditEvents ?? [])
+    .slice(0, 3)
+    .map(operationalPulseEvent);
 
   return {
     openTasks: openTasks.length,
@@ -324,6 +389,64 @@ function buildOperationalProof(
       .length,
     closedLoops: closedLoopEvents.length,
     lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
+    recentEvents,
+  };
+}
+
+function operationalPulse(
+  proof: OwnerOperationalProof | null,
+): OwnerOperationalPulse | null {
+  if (!proof) return null;
+
+  if (proof.urgentOpenTasks > 0) {
+    return {
+      title: "Есть срочные действия команды",
+      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым. Закройте их в Team OS, чтобы выводы владельца стали доказанными.`,
+      tone: "risk",
+      openTasks: proof.openTasks,
+      urgentOpenTasks: proof.urgentOpenTasks,
+      closedLoops: proof.closedLoops,
+      recentEvents: proof.recentEvents,
+      action: { label: "Открыть Team OS", target: "team-actions" },
+    };
+  }
+
+  if (proof.openTasks > 0) {
+    return {
+      title: "Контур в работе",
+      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения. После закрытия задач владелец увидит это как управленческий результат.`,
+      tone: "watch",
+      openTasks: proof.openTasks,
+      urgentOpenTasks: proof.urgentOpenTasks,
+      closedLoops: proof.closedLoops,
+      recentEvents: proof.recentEvents,
+      action: { label: "Открыть задачи", target: "team-actions" },
+    };
+  }
+
+  if (proof.closedLoops > 0) {
+    return {
+      title: "Команда закрывает действия",
+      detail: `${proof.closedLoops} закрыто недавно. Экран владельца учитывает эти действия в готовности прибыли и операционном контуре.`,
+      tone: "good",
+      openTasks: proof.openTasks,
+      urgentOpenTasks: proof.urgentOpenTasks,
+      closedLoops: proof.closedLoops,
+      recentEvents: proof.recentEvents,
+      action: { label: "Открыть журнал", target: "team-actions" },
+    };
+  }
+
+  return {
+    title: "Открытых задач нет",
+    detail:
+      "Новых закрытий в последних событиях не было. Если появится риск по ФОТ, марже или смене, он пойдет в Team OS.",
+    tone: "good",
+    openTasks: proof.openTasks,
+    urgentOpenTasks: proof.urgentOpenTasks,
+    closedLoops: proof.closedLoops,
+    recentEvents: proof.recentEvents,
+    action: { label: "Открыть Team OS", target: "team-actions" },
   };
 }
 
@@ -1220,6 +1343,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     input.teamTasks,
     input.teamAuditEvents,
   );
+  const operational = operationalPulse(operationalProof);
   const readiness = buildProfitReadiness({
     dataMode: input.dataMode,
     dataQuality: input.dataQuality,
@@ -1442,6 +1566,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     confidence,
     confidenceReason: reason,
     readiness,
+    operationalPulse: operational,
     evidence,
     actions,
     hypotheses: visibleHypotheses,
