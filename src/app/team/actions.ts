@@ -10,6 +10,7 @@ import { normalizeIikoStaffName } from "@/lib/team/team-iiko-staff-import";
 import { listLearningItemsForRole } from "@/lib/team/team-learning";
 import type { TeamLearningStandardStatus } from "@/lib/team/team-learning-standards";
 import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
+import { selectLaborRateTasksToClose } from "@/lib/team/team-task-autoresolve";
 
 const TeamRoleIdSchema = z.enum(
   TEAM_ROLES.map((role) => role.id) as [TeamRoleId, ...TeamRoleId[]],
@@ -216,6 +217,13 @@ type LaborRateRow = {
   revenue_bonus_pct: number | string | null;
 };
 
+type AutoCloseTaskRow = {
+  id: string;
+  title: string;
+  status: TeamTask["status"];
+  audience_member_id: string | null;
+};
+
 type TeamAuditEventInput = {
   venueId: string;
   type:
@@ -327,6 +335,72 @@ async function findExistingOpenTask(
   }
 
   return data ?? null;
+}
+
+async function closeLaborRateTasksForMembers(
+  ctx: WritableTeamContext,
+  venueId: string,
+  memberIds: string[],
+): Promise<string[]> {
+  if (ctx.mode === "sandbox" || !ctx.supabase || memberIds.length === 0) {
+    return [];
+  }
+
+  const uniqueMemberIds = [...new Set(memberIds.filter(Boolean))];
+  if (uniqueMemberIds.length === 0) return [];
+
+  const { data, error } = await ctx.supabase
+    .from("team_tasks")
+    .select("id,title,status,audience_member_id")
+    .eq("venue_id", venueId)
+    .eq("audience_type", "member")
+    .in("audience_member_id", uniqueMemberIds)
+    .in("status", OPEN_TASK_STATUSES);
+
+  if (error) {
+    if (missingTeamTables(error.message)) return [];
+    throw new Error(error.message);
+  }
+
+  const taskIds = selectLaborRateTasksToClose(
+    ((data ?? []) as AutoCloseTaskRow[]).map((task) => ({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      audience: {
+        type: "member",
+        memberId: task.audience_member_id ?? "",
+      },
+    })),
+    uniqueMemberIds,
+  ).map((task) => task.id);
+
+  if (taskIds.length === 0) return [];
+
+  const { error: updateError } = await ctx.supabase
+    .from("team_tasks")
+    .update({
+      status: "done" satisfies TeamTask["status"],
+      updated_at: new Date().toISOString(),
+    })
+    .eq("venue_id", venueId)
+    .in("id", taskIds);
+
+  if (updateError) {
+    if (missingTeamTables(updateError.message)) return [];
+    throw new Error(updateError.message);
+  }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId,
+    type: "task_status_updated",
+    targetType: "task",
+    targetId: taskIds[0] ?? null,
+    summary: `Автоматически закрыты задачи ФОТ после обновления ставок: ${taskIds.length}.`,
+    metadata: { memberIds: uniqueMemberIds, taskIds, status: "done" },
+  });
+
+  return taskIds;
 }
 
 function parseActionInput(raw: unknown): Record<string, unknown> {
@@ -668,9 +742,32 @@ export async function updateTeamMemberLaborRateAction(
     },
   });
 
+  let closedTaskIds: string[] = [];
+  let taskCloseWarning = false;
+  try {
+    closedTaskIds = await closeLaborRateTasksForMembers(
+      ctx,
+      parsed.data.venueId,
+      [parsed.data.memberId],
+    );
+  } catch (error) {
+    taskCloseWarning = true;
+    console.warn("Failed to auto-close labor rate task:", error);
+  }
+
   revalidatePath("/team");
+  revalidatePath("/me");
   revalidatePath(`/dashboard/${parsed.data.venueId}`);
-  return { ok: true, mode: "saved", message: "Ставки сотрудника обновлены." };
+  return {
+    ok: true,
+    mode: "saved",
+    message:
+      closedTaskIds.length > 0
+        ? "Ставки сотрудника обновлены, задача ФОТ закрыта."
+        : taskCloseWarning
+          ? "Ставки сотрудника обновлены. Задача ФОТ не закрылась автоматически."
+          : "Ставки сотрудника обновлены.",
+  };
 }
 
 export async function bulkUpdateTeamMemberLaborRatesAction(
@@ -764,12 +861,32 @@ export async function bulkUpdateTeamMemberLaborRatesAction(
     },
   });
 
+  let closedTaskIds: string[] = [];
+  let taskCloseWarning = false;
+  try {
+    closedTaskIds = await closeLaborRateTasksForMembers(
+      ctx,
+      parsed.data.venueId,
+      targetIds,
+    );
+  } catch (error) {
+    taskCloseWarning = true;
+    console.warn("Failed to auto-close labor rate tasks:", error);
+  }
+
   revalidatePath("/team");
+  revalidatePath("/me");
   revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return {
     ok: true,
     mode: "saved",
-    message: `Ставки ФОТ применены к ${targetMembers.length} сотрудникам без ставки.`,
+    message:
+      `Ставки ФОТ применены к ${targetMembers.length} сотрудникам без ставки.` +
+      (closedTaskIds.length > 0
+        ? ` Закрыто задач ФОТ: ${closedTaskIds.length}.`
+        : taskCloseWarning
+          ? " Задачи ФОТ не закрылись автоматически."
+          : ""),
   };
 }
 
