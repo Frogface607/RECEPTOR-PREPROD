@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/link-button";
 import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
+import { LearningAdmissionTaskButton } from "./learning-admission-task-button";
 import { TeamShiftPlanPanel } from "./team-shift-plan-panel";
 import {
   formatPeriodLabel,
@@ -69,6 +70,7 @@ import {
   type TeamLearningMemberSummary,
 } from "@/lib/team/team-learning-progress";
 import {
+  buildLearningAdmissionTaskDraft,
   buildTeamLearningRolePlans,
   type TeamLearningRolePlan,
 } from "@/lib/team/team-learning-role-plan";
@@ -461,7 +463,10 @@ export default async function TeamPage({
           </div>
 
           <div className="mx-auto max-w-7xl px-6 pb-8">
-            <LearningRolePlanGrid plans={learningRolePlans} />
+            <LearningRolePlanGrid
+              venueId={workspace.venueId}
+              plans={learningRolePlans}
+            />
           </div>
         </section>
 
@@ -1903,7 +1908,13 @@ function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
   );
 }
 
-function LearningRolePlanGrid({ plans }: { plans: TeamLearningRolePlan[] }) {
+function LearningRolePlanGrid({
+  venueId,
+  plans,
+}: {
+  venueId: string;
+  plans: TeamLearningRolePlan[];
+}) {
   const visiblePlans = plans.filter(
     (plan) => plan.members > 0 || plan.totalItems > 0,
   );
@@ -1926,14 +1937,25 @@ function LearningRolePlanGrid({ plans }: { plans: TeamLearningRolePlan[] }) {
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {visiblePlans.map((plan) => (
-          <LearningRolePlanCard key={plan.roleId} plan={plan} />
+          <LearningRolePlanCard
+            key={plan.roleId}
+            venueId={venueId}
+            plan={plan}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function LearningRolePlanCard({ plan }: { plan: TeamLearningRolePlan }) {
+function LearningRolePlanCard({
+  venueId,
+  plan,
+}: {
+  venueId: string;
+  plan: TeamLearningRolePlan;
+}) {
+  const taskDraft = buildLearningAdmissionTaskDraft(plan);
   const blockedLabel =
     plan.blockedMembers.length > 0
       ? plan.blockedMembers
@@ -1993,15 +2015,8 @@ function LearningRolePlanCard({ plan }: { plan: TeamLearningRolePlan }) {
           Не допущены:{" "}
           <span className="text-foreground/85">{blockedLabel}</span>
         </p>
-        {plan.blockedMembers.length > 0 ? (
-          <LinkButton
-            href="#team-actions"
-            variant="outline"
-            className="h-8 px-3 text-xs"
-          >
-            Поставить задачу
-            <ArrowRight className="size-3.5" />
-          </LinkButton>
+        {taskDraft ? (
+          <LearningAdmissionTaskButton venueId={venueId} draft={taskDraft} />
         ) : null}
       </div>
     </div>

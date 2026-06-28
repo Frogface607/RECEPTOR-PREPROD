@@ -25,6 +25,17 @@ export type TeamLearningRolePlan = {
   nextItem: TeamLearningItem | null;
 };
 
+export type TeamLearningAdmissionTaskDraft = {
+  title: string;
+  priority: "high" | "medium";
+  audienceType: "member";
+  audienceMemberId: string;
+  memberName: string;
+  moduleTitle: string;
+  roleTitle: string;
+  dueLabel: string;
+};
+
 export function buildTeamLearningRolePlans(
   summaries: TeamLearningMemberSummary[],
 ): TeamLearningRolePlan[] {
@@ -35,6 +46,26 @@ export function buildTeamLearningRolePlans(
   return TEAM_ROLES.map((role) =>
     buildRolePlan(role.id, activeSummaries),
   ).filter((plan) => plan.members > 0 || plan.totalItems > 0);
+}
+
+export function buildLearningAdmissionTaskDraft(
+  plan: TeamLearningRolePlan,
+): TeamLearningAdmissionTaskDraft | null {
+  const blocker = plan.blockedMembers[0] ?? null;
+  if (!blocker) return null;
+
+  const moduleTitle = plan.nextItem?.title ?? blocker.nextItemTitle;
+
+  return {
+    title: `Пройти обучение: ${moduleTitle}`,
+    priority: plan.admissionPct < 50 ? "high" : "medium",
+    audienceType: "member",
+    audienceMemberId: blocker.memberId,
+    memberName: blocker.memberName,
+    moduleTitle,
+    roleTitle: plan.roleTitle,
+    dueLabel: "до смены",
+  };
 }
 
 function buildRolePlan(

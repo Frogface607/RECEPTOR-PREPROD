@@ -4,7 +4,10 @@ import {
   buildTeamLearningSummaries,
   type TeamLearningProgress,
 } from "./team-learning-progress";
-import { buildTeamLearningRolePlans } from "./team-learning-role-plan";
+import {
+  buildLearningAdmissionTaskDraft,
+  buildTeamLearningRolePlans,
+} from "./team-learning-role-plan";
 
 const staff: StaffMember[] = [
   {
@@ -72,6 +75,27 @@ describe("buildTeamLearningRolePlans", () => {
       },
     ]);
     expect(service?.nextItem?.id).toBe("service-recommendation");
+  });
+
+  test("creates a task draft for the first blocked admission", () => {
+    const summaries = buildTeamLearningSummaries(staff, progress);
+    const service = buildTeamLearningRolePlans(summaries).find(
+      (plan) => plan.roleId === "service",
+    );
+
+    expect(service).toBeDefined();
+    const draft = buildLearningAdmissionTaskDraft(service!);
+
+    expect(draft).toEqual({
+      title: "Пройти обучение: Как рекомендовать блюдо без давления",
+      priority: "medium",
+      audienceType: "member",
+      audienceMemberId: "service-2",
+      memberName: "Петр",
+      moduleTitle: "Как рекомендовать блюдо без давления",
+      roleTitle: "Официант",
+      dueLabel: "до смены",
+    });
   });
 
   test("keeps role lesson catalog visible even before staff is created", () => {
