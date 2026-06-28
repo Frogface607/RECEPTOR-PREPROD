@@ -34,6 +34,26 @@ export type TeamBulkLaborRateTarget = {
   shiftLabel: string;
 };
 
+export type TeamLaborSetupProgressStatus =
+  "ready" | "needs-shifts" | "needs-members" | "needs-rates";
+
+export type TeamLaborSetupProgress = {
+  status: TeamLaborSetupProgressStatus;
+  tone: "good" | "watch" | "risk";
+  title: string;
+  detail: string;
+  ctaLabel: string | null;
+  target: "labor-rates" | null;
+  coveragePct: number;
+  activeStaff: number;
+  readyStaff: number;
+  missingStaffCards: number;
+  missingRateCards: number;
+  bulkRateTargets: TeamBulkLaborRateTarget[];
+  unpricedShifts: number;
+  unpricedRevenue: number;
+};
+
 export function hasLaborRate(member: StaffMember): boolean {
   return Boolean(
     member.hourlyRate || member.shiftPay || member.revenueBonusPct,
@@ -56,6 +76,96 @@ export function buildBulkLaborRateTargets(
       roleId: member.roleId,
       shiftLabel: member.shiftLabel,
     }));
+}
+
+export function buildTeamLaborSetupProgress(
+  staff: StaffMember[],
+  readiness: TeamLaborReadiness,
+): TeamLaborSetupProgress {
+  const bulkRateTargets = buildBulkLaborRateTargets(staff);
+  const missingStaffCards = readiness.iikoBlockers.filter(
+    (blocker) => blocker.reason === "missing-member",
+  ).length;
+  const missingRateBlockers = readiness.iikoBlockers.filter(
+    (blocker) => blocker.reason === "missing-rate",
+  ).length;
+  const missingRateCards = Math.max(
+    bulkRateTargets.length,
+    missingRateBlockers,
+  );
+  const base = {
+    coveragePct: readiness.coveragePct,
+    activeStaff: readiness.activeStaff,
+    readyStaff: readiness.readyStaff,
+    missingStaffCards,
+    missingRateCards,
+    bulkRateTargets,
+    unpricedShifts: readiness.iikoUnpricedStaffShifts,
+    unpricedRevenue: readiness.iikoUnpricedRevenue,
+  };
+
+  if (readiness.iikoStatus === "blocked" && readiness.iikoStaffShifts === 0) {
+    return {
+      ...base,
+      status: "needs-shifts",
+      tone: "risk",
+      title: "Сначала нужны смены iiko",
+      detail:
+        "ФОТ нельзя доказать без сотрудников и часов из смен. Проверьте период, права OLAP и выгрузку смен.",
+      ctaLabel: null,
+      target: null,
+    };
+  }
+
+  if (missingStaffCards > 0) {
+    return {
+      ...base,
+      status: "needs-members",
+      tone: "watch",
+      title: `Создать карточки из iiko: ${missingStaffCards}`,
+      detail:
+        "Смены уже видны, но часть имен еще не связана с Team OS. После импорта ставки можно закрыть пачкой.",
+      ctaLabel: "Открыть импорт",
+      target: "labor-rates",
+    };
+  }
+
+  if (missingRateCards > 0) {
+    return {
+      ...base,
+      status: "needs-rates",
+      tone: readiness.status === "blocked" ? "risk" : "watch",
+      title: `Закрыть ставки ФОТ: ${missingRateCards}`,
+      detail:
+        "Карточки сотрудников есть. Заполните типовую ставку пачкой, а потом поправьте исключения вручную.",
+      ctaLabel: "Закрыть ставки",
+      target: "labor-rates",
+    };
+  }
+
+  if (readiness.status !== "ready") {
+    return {
+      ...base,
+      status: "needs-rates",
+      tone: readiness.status === "blocked" ? "risk" : "watch",
+      title: "Проверить ставки ФОТ",
+      detail:
+        "Часть сменной выручки пока без точного ФОТ. Откройте Team OS и проверьте связку сотрудников со сменами.",
+      ctaLabel: "Открыть Team OS",
+      target: "labor-rates",
+    };
+  }
+
+  return {
+    ...base,
+    status: "ready",
+    tone: "good",
+    title: "ФОТ готов к управленческим выводам",
+    detail:
+      "Ставки заведены, смены связаны с Team OS. Можно смотреть стоимость команды, график и производительность смен.",
+    ctaLabel: null,
+    target: null,
+  };
 }
 
 export function buildTeamLaborReadiness(

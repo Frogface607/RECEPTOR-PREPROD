@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { buildLaborBi } from "./labor-bi";
 import {
   buildBulkLaborRateTargets,
+  buildTeamLaborSetupProgress,
   buildTeamLaborReadiness,
   hasLaborRate,
 } from "./team-labor-readiness";
@@ -114,5 +115,92 @@ describe("buildTeamLaborReadiness", () => {
         shiftLabel: "iiko",
       }),
     ]);
+  });
+
+  test("prioritizes importing missing iiko staff in setup progress", () => {
+    const staff: StaffMember[] = [
+      { ...baseMember, id: "ready", name: "Илья", hourlyRate: 350 },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 100000,
+          items: 200,
+          employee: "Петр",
+        },
+      ],
+    });
+    const readiness = buildTeamLaborReadiness(staff, labor);
+
+    expect(buildTeamLaborSetupProgress(staff, readiness)).toMatchObject({
+      status: "needs-members",
+      tone: "watch",
+      missingStaffCards: 1,
+      target: "labor-rates",
+    });
+  });
+
+  test("moves setup progress to bulk rates after staff cards exist", () => {
+    const staff: StaffMember[] = [
+      { ...baseMember, id: "petr", name: "Петр" },
+      { ...baseMember, id: "anna", name: "Анна", hourlyRate: 400 },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 80000,
+          items: 160,
+          employee: "Петр",
+        },
+      ],
+    });
+    const readiness = buildTeamLaborReadiness(staff, labor);
+    const progress = buildTeamLaborSetupProgress(staff, readiness);
+
+    expect(progress).toMatchObject({
+      status: "needs-rates",
+      missingStaffCards: 0,
+      missingRateCards: 1,
+      ctaLabel: "Закрыть ставки",
+    });
+    expect(progress.bulkRateTargets).toEqual([
+      expect.objectContaining({ id: "petr" }),
+    ]);
+  });
+
+  test("marks setup progress ready when labor is fully priced", () => {
+    const staff: StaffMember[] = [
+      { ...baseMember, id: "petr", name: "Петр", hourlyRate: 350 },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 90000,
+          items: 180,
+          employee: "Петр",
+        },
+      ],
+    });
+    const readiness = buildTeamLaborReadiness(staff, labor);
+
+    expect(buildTeamLaborSetupProgress(staff, readiness)).toMatchObject({
+      status: "ready",
+      tone: "good",
+      coveragePct: 100,
+      missingRateCards: 0,
+      target: null,
+    });
   });
 });

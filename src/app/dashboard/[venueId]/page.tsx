@@ -30,7 +30,10 @@ import { listMenuItemMappings } from "@/lib/menu-item-mapping-store";
 import { buildMenuMarginReadiness } from "@/lib/menu-margin-readiness";
 import { buildOwnerReview } from "@/lib/owner-review";
 import { buildLaborBi } from "@/lib/team/labor-bi";
-import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
+import {
+  buildTeamLaborReadiness,
+  buildTeamLaborSetupProgress,
+} from "@/lib/team/team-labor-readiness";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import { buildTeamOpsReadiness } from "@/lib/team/team-ops-readiness";
 import { buildTeamShiftPlanSummary } from "@/lib/team/team-shift-plan";
@@ -236,9 +239,14 @@ export default async function DashboardPage({
     teamWorkspace.learningProgress,
     teamWorkspace.learningStandards,
   );
+  const laborReadiness = buildTeamLaborReadiness(teamWorkspace.staff, laborBi);
+  const laborSetupProgress = buildTeamLaborSetupProgress(
+    teamWorkspace.staff,
+    laborReadiness,
+  );
   const teamReadiness = buildTeamOpsReadiness({
     shiftOverview: buildShiftOverview(teamWorkspace.staff, teamWorkspace.tasks),
-    laborReadiness: buildTeamLaborReadiness(teamWorkspace.staff, laborBi),
+    laborReadiness,
     learningSummaries: teamLearningSummaries,
     tasks: teamWorkspace.tasks,
   });
@@ -339,7 +347,11 @@ export default async function DashboardPage({
           </div>
 
           <div className="reveal reveal-4 mt-6">
-            <LaborBiCard labor={laborBi} ratesHref={laborRatesHref} />
+            <LaborBiCard
+              labor={laborBi}
+              ratesHref={laborRatesHref}
+              setupProgress={laborSetupProgress}
+            />
           </div>
 
           <div className="reveal reveal-4 mt-10 grid gap-6 lg:grid-cols-5">
