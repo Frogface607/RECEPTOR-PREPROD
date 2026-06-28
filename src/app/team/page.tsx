@@ -68,6 +68,10 @@ import {
   summarizeTeamLearning,
   type TeamLearningMemberSummary,
 } from "@/lib/team/team-learning-progress";
+import {
+  buildTeamLearningRolePlans,
+  type TeamLearningRolePlan,
+} from "@/lib/team/team-learning-role-plan";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
 import {
   buildTeamOpsReadiness,
@@ -274,6 +278,7 @@ export default async function TeamPage({
     workspace.learningProgress,
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
+  const learningRolePlans = buildTeamLearningRolePlans(learningSummaries);
   const laborLoad = await loadTeamLabor({
     venueId,
     staff: workspace.staff,
@@ -453,6 +458,10 @@ export default async function TeamPage({
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="mx-auto max-w-7xl px-6 pb-8">
+            <LearningRolePlanGrid plans={learningRolePlans} />
           </div>
         </section>
 
@@ -1892,6 +1901,123 @@ function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
       </div>
     </div>
   );
+}
+
+function LearningRolePlanGrid({ plans }: { plans: TeamLearningRolePlan[] }) {
+  const visiblePlans = plans.filter(
+    (plan) => plan.members > 0 || plan.totalItems > 0,
+  );
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            Учебный план
+          </p>
+          <h2 className="mt-2 text-xl font-medium">Материалы по ролям</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Управляющий видит, какие стандарты нужны каждой роли и кто не
+            допущен к смене по обязательным материалам.
+          </p>
+        </div>
+        <Badge variant="outline">{visiblePlans.length} ролей</Badge>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        {visiblePlans.map((plan) => (
+          <LearningRolePlanCard key={plan.roleId} plan={plan} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LearningRolePlanCard({ plan }: { plan: TeamLearningRolePlan }) {
+  const blockedLabel =
+    plan.blockedMembers.length > 0
+      ? plan.blockedMembers
+          .slice(0, 3)
+          .map((member) => member.memberName)
+          .join(", ")
+      : "обязательные закрыты";
+
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground">
+              {plan.roleTitle}
+            </h3>
+            <Badge variant="outline">{formatInteger(plan.members)} чел.</Badge>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {formatInteger(plan.totalItems)} материалов · обязательных{" "}
+            {formatInteger(plan.requiredItems)}
+          </p>
+        </div>
+        <Badge
+          variant="outline"
+          className={rolePlanAdmissionClass(plan.admissionPct)}
+        >
+          допуск {plan.admissionPct}%
+        </Badge>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <ReadinessMetric label="обяз." value={`${plan.requiredProgressPct}%`} />
+        <ReadinessMetric
+          label="готово"
+          value={formatInteger(plan.readyItems)}
+        />
+        <ReadinessMetric label="скоро" value={formatInteger(plan.soonItems)} />
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border/40 bg-card/40 p-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          Следующий фокус
+        </p>
+        <p className="mt-1 text-sm font-medium text-foreground">
+          {plan.nextItem ? plan.nextItem.title : "Роль закрыта по материалам"}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          {plan.nextItem
+            ? `${learningItemStatusLabel(plan.nextItem.status)} · ${plan.nextItem.timeLabel} · проходной ${plan.nextItem.passPercentage}%`
+            : "Новые материалы можно добавить позже под стандарты заведения."}
+        </p>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Не допущены:{" "}
+          <span className="text-foreground/85">{blockedLabel}</span>
+        </p>
+        {plan.blockedMembers.length > 0 ? (
+          <LinkButton
+            href="#team-actions"
+            variant="outline"
+            className="h-8 px-3 text-xs"
+          >
+            Поставить задачу
+            <ArrowRight className="size-3.5" />
+          </LinkButton>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function learningItemStatusLabel(status: TeamLearningItem["status"]): string {
+  if (status === "required") return "обязательно";
+  if (status === "ready") return "готово";
+  return "скоро";
+}
+
+function rolePlanAdmissionClass(value: number): string {
+  if (value >= 90) return "border-brand/35 bg-brand/10 text-brand";
+  if (value >= 50) return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  return "border-destructive/30 bg-destructive/10 text-destructive";
 }
 
 function learningSummaryStatusLabel(
