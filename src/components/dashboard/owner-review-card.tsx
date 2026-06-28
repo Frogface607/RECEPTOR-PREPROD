@@ -13,8 +13,10 @@ import type {
   OwnerReview,
   OwnerReviewAction,
   OwnerReviewConfidence,
+  OwnerProfitReadinessAction,
   OwnerReviewRole,
   OwnerReviewTone,
+  OwnerReviewActionTarget,
 } from "@/lib/owner-review";
 import { SurvivalTaskActions } from "./survival-task-actions";
 import { LinkButton } from "@/components/ui/link-button";
@@ -44,12 +46,54 @@ function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
   return <CheckCircle2 className="size-4" />;
 }
 
-function actionHref(action: OwnerReviewAction, venueId: string): string {
+function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
   const encodedVenueId = encodeURIComponent(venueId);
 
-  if (action.target === "iiko-settings") {
+  if (target === "iiko-settings") {
     return `/settings#iiko`;
   }
+
+  if (target === "labor-member") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+  }
+
+  if (target === "labor-rate") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#labor-rates`;
+  }
+
+  if (target === "shift-coverage") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-coverage`;
+  }
+
+  if (target === "shift-diagnostics") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#iiko-shift-diagnostics`;
+  }
+
+  if (target === "shift-plan-variance") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan-variance`;
+  }
+
+  if (target === "team-learning") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#learning-progress`;
+  }
+
+  if (target === "team-actions") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+  }
+
+  if (target === "margin-diagnostics") {
+    return `/settings#iiko-diagnostics-${encodedVenueId}`;
+  }
+
+  if (target === "margin-risk") {
+    return "#margin-mapping-workspace";
+  }
+
+  return "#margin-mapping-workspace";
+}
+
+function actionHref(action: OwnerReviewAction, venueId: string): string {
+  const encodedVenueId = encodeURIComponent(venueId);
 
   if (action.target === "labor-member" && action.memberName) {
     return `/team?role=venue_manager&venueId=${encodedVenueId}&prefillMemberName=${encodeURIComponent(action.memberName)}#team-actions`;
@@ -60,39 +104,14 @@ function actionHref(action: OwnerReviewAction, venueId: string): string {
     return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;
   }
 
-  if (action.target === "labor-rate") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#labor-rates`;
-  }
+  return targetHref(action.target, venueId);
+}
 
-  if (action.target === "shift-coverage") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-coverage`;
-  }
-
-  if (action.target === "shift-diagnostics") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#iiko-shift-diagnostics`;
-  }
-
-  if (action.target === "shift-plan-variance") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan-variance`;
-  }
-
-  if (action.target === "team-learning") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#learning-progress`;
-  }
-
-  if (action.target === "team-actions") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
-  }
-
-  if (action.target === "margin-diagnostics") {
-    return `/settings#iiko-diagnostics-${encodedVenueId}`;
-  }
-
-  if (action.target === "margin-risk") {
-    return "#margin-mapping-workspace";
-  }
-
-  return "#margin-mapping-workspace";
+function readinessHref(
+  action: OwnerProfitReadinessAction,
+  venueId: string,
+): string {
+  return targetHref(action.target, venueId);
 }
 
 function actionCta(action: OwnerReviewAction): string {
@@ -179,6 +198,16 @@ export function OwnerReviewCard({
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
               {review.readiness.detail}
             </p>
+            {review.readiness.action ? (
+              <LinkButton
+                href={readinessHref(review.readiness.action, venueId)}
+                variant="outline"
+                className="mt-3 h-8 px-3 text-[12px]"
+              >
+                {review.readiness.action.label}
+                <ArrowRight className="size-3.5" />
+              </LinkButton>
+            ) : null}
           </div>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">

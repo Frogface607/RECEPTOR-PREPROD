@@ -741,6 +741,10 @@ describe("buildOwnerReview", () => {
       status: "blocked",
       title: "Прибыль не доказана",
       tone: "risk",
+      action: {
+        label: "Проверить смены",
+        target: "shift-coverage",
+      },
     });
     expect(review.readiness.detail).toContain("ФОТ");
     expect(review.readiness.detail).toContain("себестоимость");
@@ -780,6 +784,10 @@ describe("buildOwnerReview", () => {
       title: "Прибыль требует проверки",
       score: 95,
       tone: "watch",
+      action: {
+        label: "Открыть задачи",
+        target: "team-actions",
+      },
     });
     expect(review.readiness.detail).toContain("1 открытая задача Team OS");
   });
@@ -806,6 +814,7 @@ describe("buildOwnerReview", () => {
       title: "Можно считать прибыль",
       detail: "Live-данные, ФОТ, себестоимость и Team OS контуры закрыты.",
       missing: [],
+      action: null,
       tone: "good",
     });
   });

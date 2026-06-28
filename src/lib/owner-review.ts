@@ -88,7 +88,13 @@ export type OwnerProfitReadiness = {
   title: string;
   detail: string;
   missing: string[];
+  action: OwnerProfitReadinessAction | null;
   tone: OwnerReviewTone;
+};
+
+export type OwnerProfitReadinessAction = {
+  label: string;
+  target: OwnerReviewActionTarget;
 };
 
 export type OwnerReview = {
@@ -382,59 +388,91 @@ function buildProfitReadiness(input: {
   operationalProof: OwnerOperationalProof | null;
 }): OwnerProfitReadiness {
   const missing: string[] = [];
+  let action: OwnerProfitReadinessAction | null = null;
   let score = 0;
+  const setAction = (next: OwnerProfitReadinessAction) => {
+    action ??= next;
+  };
 
   if (input.dataMode === "mock") {
     missing.push("live iiko");
+    setAction({ label: "Проверить iiko", target: "iiko-settings" });
   } else if (input.dataQuality.status === "risk") {
     missing.push("полное покрытие периода");
+    setAction({ label: "Проверить iiko", target: "iiko-settings" });
   } else {
     score += input.dataQuality.status === "ok" ? 20 : 14;
     if (input.dataQuality.status === "watch") {
       missing.push("проверка покрытия периода");
+      setAction({ label: "Проверить iiko", target: "iiko-settings" });
     }
   }
 
   if (!input.labor) {
     missing.push("ФОТ по сменам");
+    setAction({ label: "Проверить смены", target: "shift-coverage" });
   } else if (input.labor.laborReadinessStatus === "ready") {
     score += 25;
   } else if (input.labor.laborReadinessStatus === "partial") {
     score += 14;
     missing.push("точные ставки ФОТ");
+    setAction({ label: "Заполнить ФОТ", target: "labor-rate" });
   } else {
     missing.push("сотрудники и ставки ФОТ");
+    setAction({
+      label:
+        input.labor.staffShifts === 0 ? "Проверить смены" : "Заполнить ФОТ",
+      target: input.labor.staffShifts === 0 ? "shift-coverage" : "labor-rate",
+    });
   }
 
   if (!input.margin) {
     missing.push("себестоимость блюд");
+    setAction({ label: "Связать блюда", target: "margin-mapping" });
   } else if (input.margin.status === "ready") {
     score += 35;
   } else if (input.margin.status === "partial") {
     score += 18;
     missing.push("закупочные цены и техкарты");
+    setAction({
+      label:
+        input.margin.missingCostRevenue >= input.margin.missingLinkRevenue
+          ? "Проверить RMS"
+          : "Связать блюда",
+      target:
+        input.margin.missingCostRevenue >= input.margin.missingLinkRevenue
+          ? "margin-diagnostics"
+          : "margin-mapping",
+    });
   } else {
     missing.push("связи блюд с iiko и закупочные цены");
+    setAction({ label: "Связать блюда", target: "margin-mapping" });
   }
 
   if (!input.team) {
     missing.push("Team OS");
+    setAction({ label: "Открыть Team OS", target: "team-actions" });
   } else if (input.team.status === "ready") {
     score += 10;
   } else if (input.team.status === "attention") {
     score += 6;
     missing.push("готовность команды");
+    setAction({ label: "Открыть Team OS", target: "team-actions" });
   } else {
     missing.push("блокеры Team OS");
+    setAction({ label: "Открыть Team OS", target: "team-actions" });
   }
 
   if (!input.operationalProof) {
     missing.push("закрытые контуры задач");
+    setAction({ label: "Открыть задачи", target: "team-actions" });
   } else if (input.operationalProof.urgentOpenTasks > 0) {
     missing.push(urgentTasksLabel(input.operationalProof.urgentOpenTasks));
+    setAction({ label: "Открыть задачи", target: "team-actions" });
   } else if (input.operationalProof.openTasks > 0) {
     score += 5;
     missing.push(openTasksLabel(input.operationalProof.openTasks));
+    setAction({ label: "Открыть задачи", target: "team-actions" });
   } else {
     score += 10;
   }
@@ -467,6 +505,7 @@ function buildProfitReadiness(input: {
       title: "Можно считать прибыль",
       detail: "Live-данные, ФОТ, себестоимость и Team OS контуры закрыты.",
       missing: [],
+      action: null,
       tone: "good",
     };
   }
@@ -478,6 +517,7 @@ function buildProfitReadiness(input: {
       title: "Прибыль требует проверки",
       detail: `Проверить: ${compactMissing(missing)}. После закрытия контуров выводы можно превращать в задачи.`,
       missing,
+      action,
       tone: "watch",
     };
   }
@@ -488,6 +528,7 @@ function buildProfitReadiness(input: {
     title: "Прибыль не доказана",
     detail: `Не хватает: ${compactMissing(missing)}. До этого решения по прибыли лучше держать как гипотезы.`,
     missing,
+    action,
     tone: "risk",
   };
 }
