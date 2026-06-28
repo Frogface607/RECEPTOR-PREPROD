@@ -33,7 +33,10 @@ import { buildLaborBi } from "@/lib/team/labor-bi";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import { buildTeamOpsReadiness } from "@/lib/team/team-ops-readiness";
+import { buildTeamShiftPlanSummary } from "@/lib/team/team-shift-plan";
+import { buildTeamShiftPlanVariance } from "@/lib/team/team-shift-plan-variance";
 import { buildShiftOverview } from "@/lib/team/team-shift-planner";
+import { buildTeamShiftRoster } from "@/lib/team/team-shift-roster";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import type { IikoClient } from "@/lib/iiko/types";
 import type { RmsAssemblyChart } from "@/lib/iiko/rms-client";
@@ -96,25 +99,24 @@ async function loadDashboardData(
     nomenclatureResult,
     assemblyChartsResult,
     mappings,
-  ] =
-    await Promise.all([
-      client.getRevenueSummary(period),
-      client.getDishStatistics(period, 10),
-      client.getCategoryStatistics(period),
-      client.getShifts(period),
-      buildDailyBrief(client, period),
-      client.fetchNomenclature
-        ? client
-            .fetchNomenclature()
-            .then((products) => ({ products, error: null }))
-            .catch((error) => ({
-              products: [] as Product[],
-              error: error instanceof Error ? error.message : String(error),
-            }))
-        : Promise.resolve({ products: [] as Product[], error: null }),
-      loadAssemblyCharts(client),
-      listMenuItemMappings(venueId),
-    ]);
+  ] = await Promise.all([
+    client.getRevenueSummary(period),
+    client.getDishStatistics(period, 10),
+    client.getCategoryStatistics(period),
+    client.getShifts(period),
+    buildDailyBrief(client, period),
+    client.fetchNomenclature
+      ? client
+          .fetchNomenclature()
+          .then((products) => ({ products, error: null }))
+          .catch((error) => ({
+            products: [] as Product[],
+            error: error instanceof Error ? error.message : String(error),
+          }))
+      : Promise.resolve({ products: [] as Product[], error: null }),
+    loadAssemblyCharts(client),
+    listMenuItemMappings(venueId),
+  ]);
 
   return {
     summary,
@@ -164,11 +166,7 @@ export default async function DashboardPage({
   const period = parsePeriodSearchParams(sp);
 
   const runtimeToday = new Date().toISOString().slice(0, 10);
-  const iikoConfig = resolveIikoClientConfig(
-    venue,
-    process.env,
-    runtimeToday,
-  );
+  const iikoConfig = resolveIikoClientConfig(venue, process.env, runtimeToday);
   const intendedDataMode = iikoConfig.mode === "real" ? "live" : "mock";
   let dataMode: "live" | "mock" = intendedDataMode;
   let dataError: string | null = null;
@@ -220,6 +218,19 @@ export default async function DashboardPage({
     dataMode,
   });
   const laborBi = buildLaborBi({ shifts, staff: teamWorkspace.staff });
+  const shiftRoster = buildTeamShiftRoster({
+    staff: teamWorkspace.staff,
+    shifts,
+    labor: laborBi,
+  });
+  const shiftPlanSummary = buildTeamShiftPlanSummary({
+    staff: teamWorkspace.staff,
+    plans: teamWorkspace.shiftPlans,
+  });
+  const shiftPlanVariance = buildTeamShiftPlanVariance({
+    plan: shiftPlanSummary,
+    roster: shiftRoster,
+  });
   const teamLearningSummaries = buildTeamLearningSummaries(
     teamWorkspace.staff,
     teamWorkspace.learningProgress,
@@ -247,6 +258,7 @@ export default async function DashboardPage({
     labor: laborBi,
     margin: marginReadiness,
     team: teamReadiness,
+    shiftPlanVariance,
   });
 
   return (
@@ -346,7 +358,6 @@ export default async function DashboardPage({
             <ShiftsTable shifts={shifts} />
           </div>
         </div>
-
       </main>
     </>
   );

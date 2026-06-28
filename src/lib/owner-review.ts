@@ -14,6 +14,11 @@ import {
   type LaborInsightTone,
 } from "@/lib/team/labor-bi";
 import type {
+  TeamShiftPlanVarianceIssue,
+  TeamShiftPlanVarianceSummary,
+  TeamShiftPlanVarianceTone,
+} from "@/lib/team/team-shift-plan-variance";
+import type {
   TeamOpsActionTone,
   TeamOpsReadiness,
 } from "@/lib/team/team-ops-readiness";
@@ -56,6 +61,7 @@ export type OwnerReviewActionTarget =
   | "labor-rate"
   | "shift-coverage"
   | "shift-diagnostics"
+  | "shift-plan-variance"
   | "margin-diagnostics"
   | "margin-mapping"
   | "margin-risk"
@@ -95,6 +101,7 @@ type BuildOwnerReviewInput = {
   labor?: LaborBiSummary;
   margin?: MenuMarginReadiness;
   team?: TeamOpsReadiness;
+  shiftPlanVariance?: TeamShiftPlanVarianceSummary;
 };
 
 function pct(part: number, total: number): number {
@@ -146,7 +153,8 @@ function actionSourceLabel(action: OwnerReviewAction): string {
     action.target === "labor-member" ||
     action.target === "labor-rate" ||
     action.target === "shift-coverage" ||
-    action.target === "shift-diagnostics"
+    action.target === "shift-diagnostics" ||
+    action.target === "shift-plan-variance"
   ) {
     return "ФОТ и смены";
   }
@@ -206,6 +214,14 @@ function ownerToneFromLabor(tone: LaborInsightTone): OwnerReviewTone {
 function ownerToneFromTeam(tone: TeamOpsActionTone): OwnerReviewTone {
   if (tone === "risk") return "risk";
   if (tone === "good") return "good";
+  return "watch";
+}
+
+function ownerToneFromShiftPlanVariance(
+  tone: TeamShiftPlanVarianceTone,
+): OwnerReviewTone {
+  if (tone === "risk") return "risk";
+  if (tone === "ready") return "good";
   return "watch";
 }
 
@@ -354,6 +370,97 @@ function teamEvidence(input: TeamOpsReadiness): OwnerReviewEvidence {
   };
 }
 
+function shiftPlanVarianceEvidence(
+  input: TeamShiftPlanVarianceSummary,
+): OwnerReviewEvidence | null {
+  if (input.plannedShifts === 0 && input.actualShifts === 0) return null;
+
+  const primaryIssue = input.issues[0] ?? null;
+  const detail = primaryIssue
+    ? `${primaryIssue.member.name}: ${shiftPlanVarianceIssueDetail(primaryIssue)}`
+    : `План закрывает ${input.coveredActualShifts}/${input.actualShifts} фактических смен.`;
+
+  return {
+    label: "План/факт",
+    value: `${input.planCoveragePct}%`,
+    detail,
+    tone: primaryIssue
+      ? ownerToneFromShiftPlanVariance(primaryIssue.tone)
+      : input.planCoveragePct >= 90
+        ? "good"
+        : "watch",
+  };
+}
+
+function ownerActionFromShiftPlanVariance(
+  input: TeamShiftPlanVarianceSummary,
+): OwnerReviewAction | null {
+  const primaryIssue = input.issues[0] ?? null;
+  if (!primaryIssue) return null;
+
+  return {
+    title: shiftPlanVarianceActionTitle(primaryIssue),
+    detail: `${primaryIssue.member.name}: ${shiftPlanVarianceIssueDetail(primaryIssue)}`,
+    role: "manager",
+    tone: ownerToneFromShiftPlanVariance(primaryIssue.tone),
+    target: "shift-plan-variance",
+  };
+}
+
+function shiftPlanVarianceHypothesis(
+  input: TeamShiftPlanVarianceSummary,
+): OwnerReviewHypothesis | null {
+  const primaryIssue = input.issues[0] ?? null;
+  if (!primaryIssue) return null;
+
+  return {
+    title: shiftPlanVarianceActionTitle(primaryIssue),
+    why: `${primaryIssue.member.name}: ${shiftPlanVarianceIssueDetail(primaryIssue)}. План покрывает ${input.planCoveragePct}% фактических смен.`,
+    check:
+      "Сверить график с фактическими сменами, отметить исключения и обновить ставку/план на следующую неделю.",
+    role: "manager",
+    tone: ownerToneFromShiftPlanVariance(primaryIssue.tone),
+  };
+}
+
+function shiftPlanVarianceActionTitle(
+  issue: TeamShiftPlanVarianceIssue,
+): string {
+  if (issue.status === "day_off_worked") return "Разобрать выход в выходной";
+  if (issue.status === "missed_plan") return "Разобрать невыход по графику";
+  if (issue.status === "unplanned_actual") return "Закрыть смену без плана";
+  if (issue.status === "missing_rate") return "Завести ставку для ФОТ";
+  if (issue.status === "over_hours") return "Проверить переработку";
+  return "Проверить недоработку часов";
+}
+
+function shiftPlanVarianceIssueDetail(
+  issue: TeamShiftPlanVarianceIssue,
+): string {
+  const hoursDelta =
+    issue.hoursDelta === 0
+      ? "часы совпали"
+      : `${issue.hoursDelta > 0 ? "+" : ""}${issue.hoursDelta} ч`;
+  const laborDelta =
+    issue.laborDelta === 0
+      ? "ФОТ без отклонения"
+      : `${issue.laborDelta > 0 ? "+" : ""}${formatRubles(issue.laborDelta)}`;
+
+  if (issue.status === "day_off_worked") {
+    return `${issue.dateLabel}: был выходной, но есть ${issue.actualShifts} факт. смен.`;
+  }
+  if (issue.status === "missed_plan") {
+    return `${issue.dateLabel}: в плане была смена, факта нет.`;
+  }
+  if (issue.status === "unplanned_actual") {
+    return `${issue.dateLabel}: факт есть, в графике смены нет.`;
+  }
+  if (issue.status === "missing_rate") {
+    return `${issue.dateLabel}: смена есть, ставка не заведена.`;
+  }
+  return `${issue.dateLabel}: ${hoursDelta}, ${laborDelta}.`;
+}
+
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
 
@@ -460,7 +567,9 @@ function teamActionTarget(href: string): OwnerReviewActionTarget {
   return "team-actions";
 }
 
-function ownerActionFromTeam(input: TeamOpsReadiness): OwnerReviewAction | null {
+function ownerActionFromTeam(
+  input: TeamOpsReadiness,
+): OwnerReviewAction | null {
   const action = input.actions.find((item) => item.id !== "ready");
   if (!action) return null;
 
@@ -636,7 +745,8 @@ function buildVerdict(input: {
 
   if (teamBlocked) {
     return {
-      verdict: "Смена не готова в Team OS: есть операционный блокер по команде.",
+      verdict:
+        "Смена не готова в Team OS: есть операционный блокер по команде.",
       summary:
         "Деньги можно смотреть, но смену нельзя считать управляемой, пока роли, допуски, ставки или срочные задачи не закрыты в Team OS.",
     };
@@ -764,6 +874,12 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     ...(input.margin ? [marginEvidence(input.margin)] : []),
     ...(input.team ? [teamEvidence(input.team)] : []),
     ...(() => {
+      const evidence = input.shiftPlanVariance
+        ? shiftPlanVarianceEvidence(input.shiftPlanVariance)
+        : null;
+      return evidence ? [evidence] : [];
+    })(),
+    ...(() => {
       const evidence = unitEconomicsEvidence({
         labor: input.labor,
         margin: input.margin,
@@ -811,6 +927,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           target: "iiko-settings",
         } satisfies OwnerReviewAction)
       : null,
+    input.shiftPlanVariance
+      ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
+      : null,
     input.labor ? ownerActionFromLabor(input.labor) : null,
     input.margin ? ownerActionFromMargin(input.margin) : null,
     input.team ? ownerActionFromTeam(input.team) : null,
@@ -846,6 +965,13 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
 
   if (marginHypothesis) {
     hypotheses.push(marginHypothesis);
+  }
+
+  const planVarianceHypothesis = input.shiftPlanVariance
+    ? shiftPlanVarianceHypothesis(input.shiftPlanVariance)
+    : null;
+  if (planVarianceHypothesis) {
+    hypotheses.push(planVarianceHypothesis);
   }
 
   if (

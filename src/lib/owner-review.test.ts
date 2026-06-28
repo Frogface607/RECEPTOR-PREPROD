@@ -10,6 +10,7 @@ import type {
 import { buildMenuMarginReadiness } from "./menu-margin-readiness";
 import { buildOwnerReview } from "./owner-review";
 import { buildLaborBi } from "./team/labor-bi";
+import type { TeamShiftPlanVarianceSummary } from "./team/team-shift-plan-variance";
 import type { TeamOpsReadiness } from "./team/team-ops-readiness";
 
 const summary: RevenueSummary = {
@@ -465,6 +466,91 @@ describe("buildOwnerReview", () => {
       title: expect.stringContaining("Cheap pasta"),
       roleId: "chef",
       priority: "medium",
+    });
+  });
+
+  test("surfaces shift plan variance as owner evidence and action", () => {
+    const shiftPlanVariance = {
+      plannedShifts: 2,
+      actualShifts: 2,
+      coveredActualShifts: 1,
+      planCoveragePct: 50,
+      plannedHours: 16,
+      actualHours: 18,
+      hoursDelta: 2,
+      plannedLaborCost: 8000,
+      actualLaborCost: 9500,
+      laborDelta: 1500,
+      unplannedActualShifts: 0,
+      missedPlanShifts: 0,
+      dayOffWorkedShifts: 1,
+      hourVarianceShifts: 0,
+      missingRateShifts: 0,
+      issues: [
+        {
+          id: "member-1-2026-06-26-day-off",
+          member: {
+            id: "member-1",
+            name: "Маша",
+            roleId: "service",
+            venueId: "venue-1",
+            status: "active",
+            shiftLabel: "зал",
+            hourlyRate: 500,
+          },
+          roleTitle: "Зал",
+          dateKey: "2026-06-26",
+          dateLabel: "пт, 26.06",
+          status: "day_off_worked",
+          tone: "risk",
+          plannedShifts: 0,
+          actualShifts: 1,
+          plannedHours: 0,
+          actualHours: 8,
+          hoursDelta: 8,
+          plannedLaborCost: 0,
+          actualLaborCost: 4000,
+          laborDelta: 4000,
+          revenue: 50000,
+        },
+      ],
+    } satisfies TeamShiftPlanVarianceSummary;
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      shiftPlanVariance,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "План/факт",
+          value: "50%",
+          detail: expect.stringContaining("Маша"),
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: "shift-plan-variance",
+          role: "manager",
+          title: "Разобрать выход в выходной",
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.tasks[0]).toMatchObject({
+      roleId: "venue_manager",
+      priority: "high",
+      sourceLabel: "ФОТ и смены",
     });
   });
 

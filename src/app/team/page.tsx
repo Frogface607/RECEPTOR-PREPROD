@@ -55,6 +55,14 @@ import {
   type TeamShiftRosterCellStatus,
   type TeamShiftRosterRowStatus,
 } from "@/lib/team/team-shift-roster";
+import { buildTeamShiftPlanSummary } from "@/lib/team/team-shift-plan";
+import {
+  buildTeamShiftPlanVariance,
+  type TeamShiftPlanVarianceIssue,
+  type TeamShiftPlanVarianceStatus,
+  type TeamShiftPlanVarianceSummary,
+  type TeamShiftPlanVarianceTone,
+} from "@/lib/team/team-shift-plan-variance";
 import {
   buildTeamLearningSummaries,
   summarizeTeamLearning,
@@ -289,6 +297,14 @@ export default async function TeamPage({
     shifts: laborLoad.shifts,
     labor: laborLoad.laborBi,
   });
+  const shiftPlanSummary = buildTeamShiftPlanSummary({
+    staff: workspace.staff,
+    plans: workspace.shiftPlans,
+  });
+  const shiftPlanVariance = buildTeamShiftPlanVariance({
+    plan: shiftPlanSummary,
+    roster: shiftRoster,
+  });
   const selectedMemberId = memberId || focusMemberId;
   const selectedMember = selectedMemberId
     ? (workspace.staff.find((member) => member.id === selectedMemberId) ?? null)
@@ -499,6 +515,12 @@ export default async function TeamPage({
           venueId={workspace.venueId}
           staff={workspace.staff}
           plans={workspace.shiftPlans}
+        />
+
+        <TeamShiftPlanVarianceSection
+          variance={shiftPlanVariance}
+          laborSource={laborLoad.source}
+          periodLabel={formatPeriodLabel(period)}
         />
 
         <section
@@ -1038,6 +1060,190 @@ function TeamShiftRosterSection({
   );
 }
 
+function TeamShiftPlanVarianceSection({
+  variance,
+  laborSource,
+  periodLabel,
+}: {
+  variance: TeamShiftPlanVarianceSummary;
+  laborSource: TeamLaborLoadResult["source"];
+  periodLabel: string;
+}) {
+  return (
+    <section
+      id="shift-plan-variance"
+      className="scroll-mt-24 border-b border-border/40"
+    >
+      <div className="mx-auto grid max-w-7xl gap-5 px-6 py-8 lg:grid-cols-[0.56fr_1.44fr]">
+        <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                План vs факт
+              </p>
+              <h2 className="mt-3 text-2xl font-medium">
+                Где график разошелся с реальностью
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Сверяем план Team OS с фактическими сменами iiko: кто вышел без
+                плана, кто не вышел и где ФОТ уехал по часам.
+              </p>
+            </div>
+            <ClipboardCheck className="size-6 shrink-0 text-brand" />
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <VarianceMetric
+              label="Покрытие"
+              value={`${variance.planCoveragePct}%`}
+            />
+            <VarianceMetric
+              label="Вне графика"
+              value={formatInteger(
+                variance.unplannedActualShifts + variance.dayOffWorkedShifts,
+              )}
+            />
+            <VarianceMetric
+              label="Δ часы"
+              value={formatSignedHours(variance.hoursDelta)}
+            />
+            <VarianceMetric
+              label="Δ ФОТ"
+              value={formatSignedRubles(variance.laborDelta)}
+            />
+          </div>
+
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+            Источник факта: {laborSourceLabel(laborSource)} за {periodLabel}.
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                Отклонения
+              </p>
+              <h3 className="mt-2 text-xl font-medium">
+                Что разобрать с управляющим
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              план {variance.plannedShifts} · факт {variance.actualShifts}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            {variance.issues.length > 0 ? (
+              variance.issues.map((issue) => (
+                <ShiftPlanVarianceIssueRow key={issue.id} issue={issue} />
+              ))
+            ) : (
+              <div className="rounded-lg border border-brand/25 bg-brand/10 p-4">
+                <p className="text-sm font-medium text-foreground">
+                  План и факт без критичных расхождений
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Если смены уже закрыты в iiko, можно переходить к разбору
+                  выручки, ФОТ и маржи по сменам.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VarianceMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+      <p className="numeric text-lg font-medium text-foreground">{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function ShiftPlanVarianceIssueRow({
+  issue,
+}: {
+  issue: TeamShiftPlanVarianceIssue;
+}) {
+  return (
+    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className={varianceToneClass(issue.tone)}>
+            {varianceStatusLabel(issue.status)}
+          </Badge>
+          <p className="text-sm font-medium text-foreground">
+            {issue.member.name}
+          </p>
+          <span className="text-xs text-muted-foreground">
+            {issue.roleTitle}
+          </span>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          {varianceIssueDetail(issue)}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground sm:min-w-[340px]">
+        <ShiftValue label="часы" value={formatSignedHours(issue.hoursDelta)} />
+        <ShiftValue label="ФОТ" value={formatSignedRubles(issue.laborDelta)} />
+        <ShiftValue label="выручка" value={formatRubles(issue.revenue)} />
+      </div>
+    </div>
+  );
+}
+
+function varianceStatusLabel(
+  status: Exclude<TeamShiftPlanVarianceStatus, "matched">,
+): string {
+  if (status === "day_off_worked") return "вышел в выходной";
+  if (status === "unplanned_actual") return "без плана";
+  if (status === "missed_plan") return "не вышел";
+  if (status === "over_hours") return "сверх часов";
+  if (status === "under_hours") return "меньше часов";
+  return "нет ставки";
+}
+
+function varianceIssueDetail(issue: TeamShiftPlanVarianceIssue): string {
+  const plan = `${issue.plannedShifts} план · ${formatHours(
+    issue.plannedHours,
+  )}`;
+  const fact = `${issue.actualShifts} факт · ${formatHours(issue.actualHours)}`;
+
+  if (issue.status === "day_off_worked") {
+    return `${issue.dateLabel}: был выходной, но есть фактическая смена. ${fact}.`;
+  }
+  if (issue.status === "unplanned_actual") {
+    return `${issue.dateLabel}: фактическая смена есть, в плане ее не было. ${fact}.`;
+  }
+  if (issue.status === "missed_plan") {
+    return `${issue.dateLabel}: смена была в плане, но в iiko факта нет. ${plan}.`;
+  }
+  if (issue.status === "missing_rate") {
+    return `${issue.dateLabel}: смена есть, но ФОТ не считается без ставки. ${plan} / ${fact}.`;
+  }
+  return `${issue.dateLabel}: ${plan} / ${fact}. Проверьте причину расхождения.`;
+}
+
+function varianceToneClass(tone: TeamShiftPlanVarianceTone): string {
+  if (tone === "risk")
+    return "border-destructive/35 bg-destructive/10 text-destructive";
+  if (tone === "setup") {
+    return "border-amber-400/35 bg-amber-400/10 text-amber-100";
+  }
+  if (tone === "watch") {
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  }
+  return "border-brand/35 bg-brand/10 text-brand";
+}
+
 function RosterTotal({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border/45 bg-background/35 px-3 py-2">
@@ -1492,6 +1698,16 @@ function formatPct(value: number | null): string {
 
 function formatHours(value: number): string {
   return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })} ч`;
+}
+
+function formatSignedHours(value: number): string {
+  if (value === 0) return formatHours(0);
+  return `${value > 0 ? "+" : "-"}${formatHours(Math.abs(value))}`;
+}
+
+function formatSignedRubles(value: number): string {
+  if (value === 0) return formatRubles(0);
+  return `${value > 0 ? "+" : "-"}${formatRubles(Math.abs(value))}`;
 }
 
 function formatShiftDate(value: string): string {
