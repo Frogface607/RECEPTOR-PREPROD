@@ -47,6 +47,7 @@ export function SurvivalTaskActions({
         audienceType: "role",
         audienceRole: draft.roleId,
         dueLabel: draft.dueLabel,
+        dedupeOpenTask: true,
       });
 
       if (result.ok) {

@@ -22,6 +22,7 @@ import type {
   TeamOpsActionTone,
   TeamOpsReadiness,
 } from "@/lib/team/team-ops-readiness";
+import type { TeamLaborSetupProgress } from "@/lib/team/team-labor-readiness";
 import type {
   CategoryStat,
   DishStat,
@@ -99,6 +100,7 @@ type BuildOwnerReviewInput = {
   dataQuality: RevenueDataQuality;
   dataMode: "live" | "mock";
   labor?: LaborBiSummary;
+  laborSetupProgress?: TeamLaborSetupProgress;
   margin?: MenuMarginReadiness;
   team?: TeamOpsReadiness;
   shiftPlanVariance?: TeamShiftPlanVarianceSummary;
@@ -192,6 +194,45 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
     sourceLabel: "Гипотеза",
+  };
+}
+
+function taskFromLaborSetupProgress(
+  progress: TeamLaborSetupProgress | undefined,
+): SurvivalTaskDraft | null {
+  if (!progress || progress.status === "ready") return null;
+
+  if (progress.status === "needs-shifts") {
+    return {
+      title:
+        "Проверить выгрузку смен iiko для расчета ФОТ: без смен Receptor не видит сотрудников, часы и стоимость периода.",
+      priority: "high",
+      roleId: "operations_manager",
+      dueLabel: "сегодня",
+      sourceLabel: "ФОТ setup",
+    };
+  }
+
+  if (progress.status === "needs-members") {
+    return {
+      title: trimTaskTitle(
+        `Импортировать сотрудников из iiko в Team OS: ${progress.missingStaffCards} карточек не связано, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.`,
+      ),
+      priority: "medium",
+      roleId: "venue_manager",
+      dueLabel: "сегодня",
+      sourceLabel: "ФОТ setup",
+    };
+  }
+
+  return {
+    title: trimTaskTitle(
+      `Заполнить ставки ФОТ в Team OS: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+    ),
+    priority: progress.tone === "risk" ? "high" : "medium",
+    roleId: "venue_manager",
+    dueLabel: "сегодня",
+    sourceLabel: "ФОТ setup",
   };
 }
 
@@ -1041,6 +1082,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     text: item.check,
   }));
   const tasks = uniqueTaskDrafts([
+    ...(() => {
+      const task = taskFromLaborSetupProgress(input.laborSetupProgress);
+      return task ? [task] : [];
+    })(),
     ...actions.map(taskFromOwnerAction),
     ...visibleHypotheses.map(taskFromHypothesis),
   ]).slice(0, 3);

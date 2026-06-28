@@ -265,6 +265,7 @@ export default async function DashboardPage({
     dataQuality: quality,
     dataMode,
     labor: laborBi,
+    laborSetupProgress,
     margin: marginReadiness,
     team: teamReadiness,
     shiftPlanVariance,

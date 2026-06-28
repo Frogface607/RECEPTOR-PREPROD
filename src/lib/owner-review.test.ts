@@ -10,6 +10,10 @@ import type {
 import { buildMenuMarginReadiness } from "./menu-margin-readiness";
 import { buildOwnerReview } from "./owner-review";
 import { buildLaborBi } from "./team/labor-bi";
+import {
+  buildTeamLaborReadiness,
+  buildTeamLaborSetupProgress,
+} from "./team/team-labor-readiness";
 import type { TeamShiftPlanVarianceSummary } from "./team/team-shift-plan-variance";
 import type { TeamOpsReadiness } from "./team/team-ops-readiness";
 
@@ -606,6 +610,56 @@ describe("buildOwnerReview", () => {
     expect(review.tasks[0]).toMatchObject({
       roleId: "venue_manager",
       sourceLabel: "Команда",
+    });
+  });
+
+  test("adds a first task from FOT setup progress", () => {
+    const staff = [
+      {
+        id: "petr",
+        name: "Петр",
+        roleId: "service" as const,
+        venueId: "venue-1",
+        status: "active" as const,
+        shiftLabel: "iiko",
+      },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 80000,
+          items: 160,
+          employee: "Петр",
+        },
+      ],
+    });
+    const laborReadiness = buildTeamLaborReadiness(staff, labor);
+    const laborSetupProgress = buildTeamLaborSetupProgress(
+      staff,
+      laborReadiness,
+    );
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      laborSetupProgress,
+    });
+
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("Заполнить ставки ФОТ"),
+      roleId: "venue_manager",
+      priority: "high",
+      sourceLabel: "ФОТ setup",
     });
   });
 });
