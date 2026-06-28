@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { encryptSecret } from "@/lib/db/encryption";
 import { CloudIikoClient } from "@/lib/iiko/cloud-client";
 import { RmsIikoClient } from "@/lib/iiko/rms-client";
+import { buildTeamOnboardingSeed } from "@/lib/team/team-onboarding-seed";
 import { normalizeVenueProfile } from "@/lib/venues/intelligence";
 import { normalizeContextAnswers } from "@/lib/venues/context-questionnaire";
 
@@ -45,6 +46,82 @@ const ProbeRmsInput = z.object({
   login: z.string().trim().min(1, "Логин iiko RMS обязателен"),
   password: z.string().min(1, "Пароль iiko RMS обязателен"),
 });
+
+type ServerSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof getServerSupabase>>
+>;
+
+function isMissingTeamOnboardingTable(message: string): boolean {
+  return /venue_memberships|team_tasks|team_announcements|team_learning_standards|relation .* does not exist|column .* does not exist/i.test(
+    message,
+  );
+}
+
+async function insertOptionalTeamRows(
+  supabase: ServerSupabaseClient,
+  table: string,
+  rows: object | object[],
+): Promise<string | null> {
+  const { error } = await supabase.from(table).insert(rows);
+  if (error && !isMissingTeamOnboardingTable(error.message)) {
+    return error.message;
+  }
+  return null;
+}
+
+async function seedOnboardingTeamWorkspace(
+  supabase: ServerSupabaseClient,
+  input: {
+    venueId: string;
+    venueName: string;
+    venueType: z.infer<typeof VenueInput>["type"];
+    ownerUserId: string;
+    ownerEmail: string | null;
+  },
+): Promise<string | null> {
+  const seed = buildTeamOnboardingSeed({
+    venueId: input.venueId,
+    venueName: input.venueName,
+    venueType: input.venueType,
+    ownerUserId: input.ownerUserId,
+    ownerEmail: input.ownerEmail,
+    createdAt: new Date().toISOString(),
+  });
+
+  const ownerError = await insertOptionalTeamRows(
+    supabase,
+    "venue_memberships",
+    seed.ownerMembership,
+  );
+  if (ownerError) return ownerError;
+
+  const taskError = await insertOptionalTeamRows(
+    supabase,
+    "team_tasks",
+    seed.tasks,
+  );
+  if (taskError) return taskError;
+
+  const announcementError = await insertOptionalTeamRows(
+    supabase,
+    "team_announcements",
+    seed.announcement,
+  );
+  if (announcementError) return announcementError;
+
+  if (seed.learningStandards.length > 0) {
+    const { error } = await supabase
+      .from("team_learning_standards")
+      .upsert(seed.learningStandards, {
+        onConflict: "venue_id,role,module_id",
+      });
+    if (error && !isMissingTeamOnboardingTable(error.message)) {
+      return error.message;
+    }
+  }
+
+  return null;
+}
 
 export async function probeIikoOrganizationsAction(
   raw: unknown,
@@ -96,7 +173,8 @@ export async function probeRmsOrganizationsAction(
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "Не удалось проверить iiko RMS.",
+      error:
+        err instanceof Error ? err.message : "Не удалось проверить iiko RMS.",
     };
   }
 }
@@ -144,7 +222,11 @@ export async function createVenueAction(
     if (!parsed.data.organizationId) {
       return { ok: false, error: "Выберите организацию iiko." };
     }
-  } else if (!parsed.data.rmsHost || !parsed.data.rmsLogin || !parsed.data.rmsPassword) {
+  } else if (
+    !parsed.data.rmsHost ||
+    !parsed.data.rmsLogin ||
+    !parsed.data.rmsPassword
+  ) {
     return { ok: false, error: "Введите host, логин и пароль iiko RMS." };
   }
 
@@ -157,10 +239,14 @@ export async function createVenueAction(
       });
       if (!probe.ok) return probe;
       organization =
-        probe.organizations.find((org) => org.id === parsed.data.organizationId) ??
-        null;
+        probe.organizations.find(
+          (org) => org.id === parsed.data.organizationId,
+        ) ?? null;
       if (!organization) {
-        return { ok: false, error: "Выбранная организация iiko недоступна для этого apiLogin." };
+        return {
+          ok: false,
+          error: "Выбранная организация iiko недоступна для этого apiLogin.",
+        };
       }
     } else {
       const probe = await probeRmsOrganizationsAction({
@@ -244,27 +330,14 @@ export async function createVenueAction(
       };
     }
 
-    const { error: membershipError } = await supabase
-      .from("venue_memberships")
-      .insert({
-        venue_id: data.id,
-        user_id: user.id,
-        full_name: user.email || "Owner",
-        email: user.email || null,
-        role: "owner",
-        status: "active",
-        shift_label: "owner",
-        created_by: user.id,
-      });
-
-    if (
-      membershipError &&
-      !/venue_memberships|relation .* does not exist/i.test(
-        membershipError.message,
-      )
-    ) {
-      return { ok: false, error: membershipError.message };
-    }
+    const teamSeedError = await seedOnboardingTeamWorkspace(supabase, {
+      venueId: data.id as string,
+      venueName: parsed.data.name,
+      venueType: parsed.data.type,
+      ownerUserId: user.id,
+      ownerEmail: user.email || null,
+    });
+    if (teamSeedError) return { ok: false, error: teamSeedError };
 
     return { ok: true, mode: "saved", venueId: data.id as string };
   } catch (err) {
