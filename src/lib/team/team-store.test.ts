@@ -5,6 +5,7 @@ import {
   mapCommentRow,
   mapLearningProgressRow,
   mapMembershipRow,
+  mapShiftPlanRow,
   mapTaskRow,
   normalizeTeamRoleId,
 } from "./team-store";
@@ -200,6 +201,32 @@ describe("Team OS store mapping", () => {
       total: 3,
       passed: true,
       answers: [1, 0, 2],
+    });
+  });
+
+  test("maps shift plan rows", () => {
+    const plan = mapShiftPlanRow({
+      id: "plan-1",
+      venue_id: "venue-1",
+      membership_id: "member-1",
+      shift_date: "2026-06-29",
+      shift_start: "12:00:00",
+      shift_end: "23:30:00",
+      is_day_off: false,
+      note: "зал",
+      updated_at: "2026-06-27T10:00:00.000Z",
+    });
+
+    expect(plan).toEqual({
+      id: "plan-1",
+      venueId: "venue-1",
+      memberId: "member-1",
+      shiftDate: "2026-06-29",
+      shiftStart: "12:00",
+      shiftEnd: "23:30",
+      isDayOff: false,
+      note: "зал",
+      updatedAt: "2026-06-27T10:00:00.000Z",
     });
   });
 });

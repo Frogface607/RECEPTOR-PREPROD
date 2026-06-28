@@ -140,6 +140,7 @@ function auditTypeLabel(type: TeamAuditEvent["type"]): string {
   if (type === "task_created") return "задача";
   if (type === "task_status_updated") return "статус задачи";
   if (type === "comment_added") return "комментарий";
+  if (type === "shift_plan_updated") return "график";
   return "объявление";
 }
 

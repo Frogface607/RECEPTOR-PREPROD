@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/link-button";
 import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
+import { TeamShiftPlanPanel } from "./team-shift-plan-panel";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -492,6 +493,12 @@ export default async function TeamPage({
           laborSource={laborLoad.source}
           periodLabel={formatPeriodLabel(period)}
           error={laborLoad.error}
+        />
+
+        <TeamShiftPlanPanel
+          venueId={workspace.venueId}
+          staff={workspace.staff}
+          plans={workspace.shiftPlans}
         />
 
         <section

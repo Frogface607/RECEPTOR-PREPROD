@@ -30,6 +30,8 @@ const AnnouncementAudienceTypeSchema = z.enum(["role", "venue"]);
 const AnnouncementPrioritySchema = z.enum(["normal", "important"]);
 const MemberStatusSchema = z.enum(["active", "paused"]);
 const NonNegativeMoneySchema = z.coerce.number().min(0).max(1_000_000).default(0);
+const ShiftDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const ShiftTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
 const InviteMemberInput = z.object({
   venueId: z.string().min(1),
@@ -99,6 +101,26 @@ const UpdateTeamMemberLaborRateInput = z.object({
   revenueBonusPct: z.coerce.number().min(0).max(100).default(0),
 });
 
+const SaveTeamShiftPlanInput = z
+  .object({
+    venueId: z.string().min(1),
+    memberId: z.string().min(1),
+    shiftDate: ShiftDateSchema,
+    shiftStart: ShiftTimeSchema.optional().or(z.literal("")),
+    shiftEnd: ShiftTimeSchema.optional().or(z.literal("")),
+    isDayOff: z.boolean().default(false),
+    note: z.string().trim().max(240).optional().or(z.literal("")),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.isDayOff && (!value.shiftStart || !value.shiftEnd)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["shiftStart"],
+        message: "Укажите начало и конец смены.",
+      });
+    }
+  });
+
 const AddTaskCommentInput = z.object({
   venueId: z.string().min(1),
   taskId: z.string().min(1),
@@ -143,15 +165,16 @@ type TeamAuditEventInput = {
     | "task_created"
     | "task_status_updated"
     | "comment_added"
-    | "announcement_created";
-  targetType: "member" | "task" | "comment" | "announcement";
+    | "announcement_created"
+    | "shift_plan_updated";
+  targetType: "member" | "task" | "comment" | "announcement" | "shift_plan";
   targetId?: string | null;
   summary: string;
   metadata?: Record<string, unknown>;
 };
 
 function missingTeamTables(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|hourly_rate|shift_pay|revenue_bonus_pct|relation .* does not exist|column .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
 }
@@ -338,7 +361,7 @@ export async function updateTeamMemberLaborRateAction(
   const ctx = await getWritableTeamContext();
   if (!ctx.ok) return ctx;
 
-  if (ctx.mode === "sandbox" || !ctx.supabase) {
+  if (parsed.data.venueId === "dev-venue" || ctx.mode === "sandbox" || !ctx.supabase) {
     return {
       ok: true,
       mode: "sandbox",
@@ -389,6 +412,98 @@ export async function updateTeamMemberLaborRateAction(
   revalidatePath("/team");
   revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return { ok: true, mode: "saved", message: "Ставки сотрудника обновлены." };
+}
+
+export async function saveTeamShiftPlanAction(
+  raw: unknown,
+): Promise<TeamActionResult> {
+  const parsed = SaveTeamShiftPlanInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "Проверьте дату и время смены." };
+  }
+
+  const ctx = await getWritableTeamContext();
+  if (!ctx.ok) return ctx;
+
+  if (ctx.mode === "sandbox" || !ctx.supabase) {
+    return {
+      ok: true,
+      mode: "sandbox",
+      message: "Sandbox: план смены сохранен.",
+    };
+  }
+
+  const { data: member, error: memberError } = await ctx.supabase
+    .from("venue_memberships")
+    .select("id,full_name")
+    .eq("id", parsed.data.memberId)
+    .eq("venue_id", parsed.data.venueId)
+    .maybeSingle<{ id: string; full_name: string }>();
+
+  if (memberError) {
+    if (missingTeamTables(memberError.message)) {
+      return {
+        ok: false,
+        error: "В базе нет таблиц Team OS. Примените миграции команды.",
+      };
+    }
+    return { ok: false, error: memberError.message };
+  }
+
+  if (!member) {
+    return { ok: false, error: "Сотрудник не найден или нет доступа." };
+  }
+
+  const { data, error } = await ctx.supabase
+    .from("team_shift_plans")
+    .upsert(
+      {
+        venue_id: parsed.data.venueId,
+        membership_id: parsed.data.memberId,
+        shift_date: parsed.data.shiftDate,
+        shift_start: parsed.data.isDayOff ? null : parsed.data.shiftStart,
+        shift_end: parsed.data.isDayOff ? null : parsed.data.shiftEnd,
+        is_day_off: parsed.data.isDayOff,
+        note: parsed.data.note ?? "",
+        created_by: ctx.userId,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "venue_id,membership_id,shift_date" },
+    )
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    if (missingTeamTables(error.message)) {
+      return {
+        ok: false,
+        error: "В базе нет таблицы планов смен. Примените миграцию 0010_team_shift_plans.sql.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: parsed.data.venueId,
+    type: "shift_plan_updated",
+    targetType: "shift_plan",
+    targetId: data?.id ?? null,
+    summary: parsed.data.isDayOff
+      ? `Поставлен выходной: ${member.full_name}, ${parsed.data.shiftDate}.`
+      : `План смены обновлен: ${member.full_name}, ${parsed.data.shiftDate} ${parsed.data.shiftStart}-${parsed.data.shiftEnd}.`,
+    metadata: {
+      memberId: parsed.data.memberId,
+      shiftDate: parsed.data.shiftDate,
+      shiftStart: parsed.data.shiftStart,
+      shiftEnd: parsed.data.shiftEnd,
+      isDayOff: parsed.data.isDayOff,
+    },
+  });
+
+  revalidatePath("/team");
+  revalidatePath("/me");
+  revalidatePath(`/dashboard/${parsed.data.venueId}`);
+  return { ok: true, mode: "saved", message: "План смены сохранен." };
 }
 
 export async function updateTeamMemberStatusAction(

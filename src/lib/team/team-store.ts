@@ -20,6 +20,7 @@ import {
   type TeamTask,
 } from "./team-os";
 import type { TeamLearningProgress } from "./team-learning-progress";
+import type { TeamShiftPlan } from "./team-shift-plan";
 
 type DbMembership = {
   id: string;
@@ -93,6 +94,18 @@ type DbLearningProgress = {
   updated_at: string | null;
 };
 
+type DbShiftPlan = {
+  id: string;
+  venue_id: string;
+  membership_id: string;
+  shift_date: string;
+  shift_start: string | null;
+  shift_end: string | null;
+  is_day_off: boolean | null;
+  note: string | null;
+  updated_at: string | null;
+};
+
 type DbMembershipWithVenue = DbMembership & {
   venues?: { name: string | null; city: string | null } | null;
 };
@@ -108,6 +121,7 @@ export type TeamWorkspace = {
   announcements: TeamAnnouncement[];
   auditEvents: TeamAuditEvent[];
   learningProgress: TeamLearningProgress[];
+  shiftPlans: TeamShiftPlan[];
 };
 
 export type PersonalTeamWorkspace =
@@ -121,6 +135,7 @@ export type PersonalTeamWorkspace =
       comments: TeamTaskComment[];
       announcements: TeamAnnouncement[];
       learningProgress: TeamLearningProgress[];
+      shiftPlans: TeamShiftPlan[];
     }
   | { ok: false; reason: "unauthenticated" | "no_membership" };
 
@@ -145,7 +160,7 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
 ]);
 
 function isMissingTeamTable(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_progress|hourly_rate|shift_pay|revenue_bonus_pct|relation .* does not exist|column .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_progress|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
 }
@@ -271,6 +286,7 @@ function normalizeAuditEventType(value: string): TeamAuditEventType {
     "task_status_updated",
     "comment_added",
     "announcement_created",
+    "shift_plan_updated",
   ]);
   return known.has(value as TeamAuditEventType)
     ? (value as TeamAuditEventType)
@@ -286,7 +302,8 @@ export function mapAuditEventRow(row: DbAuditEvent): TeamAuditEvent {
       row.target_type === "member" ||
       row.target_type === "task" ||
       row.target_type === "comment" ||
-      row.target_type === "announcement"
+      row.target_type === "announcement" ||
+      row.target_type === "shift_plan"
         ? row.target_type
         : "task",
     targetId: row.target_id,
@@ -327,6 +344,26 @@ export function mapLearningProgressRow(
     completedAt,
     updatedAt,
   };
+}
+
+export function mapShiftPlanRow(row: DbShiftPlan): TeamShiftPlan {
+  return {
+    id: row.id,
+    venueId: row.venue_id,
+    memberId: row.membership_id,
+    shiftDate: row.shift_date,
+    shiftStart: normalizeShiftTime(row.shift_start),
+    shiftEnd: normalizeShiftTime(row.shift_end),
+    isDayOff: Boolean(row.is_day_off),
+    note: row.note ?? "",
+    updatedAt: row.updated_at ?? "",
+  };
+}
+
+function normalizeShiftTime(value: string | null): string | null {
+  if (!value) return null;
+  const match = value.match(/^(\d{2}):(\d{2})/);
+  return match ? `${match[1]}:${match[2]}` : null;
 }
 
 const DEMO_LEARNING_PROGRESS: TeamLearningProgress[] = [
@@ -388,6 +425,53 @@ const DEMO_LEARNING_PROGRESS: TeamLearningProgress[] = [
   },
 ];
 
+const DEMO_SHIFT_PLANS: TeamShiftPlan[] = [
+  {
+    id: "demo-plan-manager-1",
+    venueId: "dev-venue",
+    memberId: "staff-manager",
+    shiftDate: "2026-06-29",
+    shiftStart: "12:00",
+    shiftEnd: "23:00",
+    isDayOff: false,
+    note: "зал + касса",
+    updatedAt: "2026-06-27T10:00:00.000Z",
+  },
+  {
+    id: "demo-plan-service-1",
+    venueId: "dev-venue",
+    memberId: "staff-service",
+    shiftDate: "2026-06-29",
+    shiftStart: "16:00",
+    shiftEnd: "00:00",
+    isDayOff: false,
+    note: "вечерняя посадка",
+    updatedAt: "2026-06-27T10:00:00.000Z",
+  },
+  {
+    id: "demo-plan-chef-1",
+    venueId: "dev-venue",
+    memberId: "staff-chef",
+    shiftDate: "2026-06-29",
+    shiftStart: "11:00",
+    shiftEnd: "22:00",
+    isDayOff: false,
+    note: "закрыть стоп-лист",
+    updatedAt: "2026-06-27T10:00:00.000Z",
+  },
+  {
+    id: "demo-plan-manager-off",
+    venueId: "dev-venue",
+    memberId: "staff-manager",
+    shiftDate: "2026-06-30",
+    shiftStart: null,
+    shiftEnd: null,
+    isDayOff: true,
+    note: "после банкета",
+    updatedAt: "2026-06-27T10:00:00.000Z",
+  },
+];
+
 export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
   return {
     mode: "sandbox",
@@ -408,6 +492,7 @@ export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
     learningProgress: DEMO_LEARNING_PROGRESS.filter(
       (progress) => progress.venueId === "dev-venue",
     ),
+    shiftPlans: DEMO_SHIFT_PLANS.filter((plan) => plan.venueId === "dev-venue"),
   };
 }
 
@@ -442,6 +527,7 @@ export async function getTeamWorkspace(
       announcements: [],
       auditEvents: [],
       learningProgress: [],
+      shiftPlans: [],
     };
   }
 
@@ -470,6 +556,7 @@ export async function getTeamWorkspace(
       announcements: [],
       auditEvents: [],
       learningProgress: [],
+      shiftPlans: [],
     };
   }
 
@@ -547,6 +634,20 @@ export async function getTeamWorkspace(
           mapLearningProgressRow,
         );
 
+  const shiftPlansResult = await supabase
+    .from("team_shift_plans")
+    .select(
+      "id,venue_id,membership_id,shift_date,shift_start,shift_end,is_day_off,note,updated_at",
+    )
+    .eq("venue_id", venueId)
+    .order("shift_date", { ascending: true })
+    .order("shift_start", { ascending: true });
+
+  const shiftPlans =
+    shiftPlansResult.error && isMissingTeamTable(shiftPlansResult.error.message)
+      ? []
+      : ((shiftPlansResult.data ?? []) as DbShiftPlan[]).map(mapShiftPlanRow);
+
   return {
     mode: "saved",
     venueId,
@@ -558,6 +659,7 @@ export async function getTeamWorkspace(
     announcements,
     auditEvents,
     learningProgress,
+    shiftPlans,
   };
 }
 
@@ -577,6 +679,7 @@ function getDemoPersonalWorkspace(): PersonalTeamWorkspace {
     learningProgress: DEMO_LEARNING_PROGRESS.filter(
       (progress) => progress.membershipId === member.id,
     ),
+    shiftPlans: DEMO_SHIFT_PLANS.filter((plan) => plan.memberId === member.id),
   };
 }
 
@@ -697,6 +800,21 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
           mapLearningProgressRow,
         );
 
+  const shiftPlansResult = await supabase
+    .from("team_shift_plans")
+    .select(
+      "id,venue_id,membership_id,shift_date,shift_start,shift_end,is_day_off,note,updated_at",
+    )
+    .eq("venue_id", venueId)
+    .eq("membership_id", member.id)
+    .order("shift_date", { ascending: true })
+    .order("shift_start", { ascending: true });
+
+  const shiftPlans =
+    shiftPlansResult.error && !isMissingTeamTable(shiftPlansResult.error.message)
+      ? []
+      : ((shiftPlansResult.data ?? []) as DbShiftPlan[]).map(mapShiftPlanRow);
+
   getTeamRole(member.roleId);
 
   return {
@@ -709,5 +827,6 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
     comments,
     announcements,
     learningProgress,
+    shiftPlans,
   };
 }

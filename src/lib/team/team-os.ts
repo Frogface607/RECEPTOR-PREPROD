@@ -96,13 +96,14 @@ export type TeamAuditEventType =
   | "task_created"
   | "task_status_updated"
   | "comment_added"
-  | "announcement_created";
+  | "announcement_created"
+  | "shift_plan_updated";
 
 export type TeamAuditEvent = {
   id: string;
   venueId: string;
   type: TeamAuditEventType;
-  targetType: "member" | "task" | "comment" | "announcement";
+  targetType: "member" | "task" | "comment" | "announcement" | "shift_plan";
   targetId: string | null;
   summary: string;
   createdAtLabel: string;
