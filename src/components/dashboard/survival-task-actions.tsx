@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   BookOpenCheck,
   CheckCircle2,
+  Lightbulb,
   Loader2,
   Plus,
   Send,
@@ -53,6 +54,19 @@ function createdMessage(draft: SurvivalTaskDraft, message: string): string {
     ? ` Стандарт: ${draft.learningModuleTitle}.`
     : "";
   return `${message} Контур: ${sourceLabel(draft)}.${impact}${learning} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
+}
+
+function businessReasonFromContext(
+  contextNote: string | undefined,
+): string | null {
+  if (!contextNote) return null;
+  const marker = "Зачем:";
+  const start = contextNote.indexOf(marker);
+  if (start < 0) return null;
+  const raw = contextNote.slice(start);
+  const learningStart = raw.indexOf("Урок для команды:");
+  const reason = learningStart >= 0 ? raw.slice(0, learningStart) : raw;
+  return reason.replace(/\s+/g, " ").trim() || null;
 }
 
 export function SurvivalTaskActions({
@@ -108,6 +122,7 @@ export function SurvivalTaskActions({
         const learningHref = draft.learningModuleId
           ? `/me/learning?module=${encodeURIComponent(draft.learningModuleId)}`
           : null;
+        const businessReason = businessReasonFromContext(draft.contextNote);
         return (
           <div
             key={`${draft.roleId}-${index}-${draft.title}`}
@@ -142,6 +157,12 @@ export function SurvivalTaskActions({
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {draft.title}
                 </p>
+                {businessReason ? (
+                  <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-amber-100/90">
+                    <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-amber-200" />
+                    <span>{businessReason}</span>
+                  </p>
+                ) : null}
                 {draft.learningModuleTitle ? (
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-sky-100/90">
                     <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
