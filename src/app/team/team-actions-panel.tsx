@@ -1488,6 +1488,11 @@ export function TeamActionsPanel({
                     <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       {event.typeLabel}
                     </span>
+                    {event.impactLabel ? (
+                      <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-amber-200">
+                        {event.impactLabel}
+                      </span>
+                    ) : null}
                   </div>
                   <p className="text-sm leading-relaxed text-foreground/90">
                     {event.summary}

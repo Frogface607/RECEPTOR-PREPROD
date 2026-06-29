@@ -112,17 +112,15 @@ describe("team audit journal", () => {
   });
 
   test("uses operational task contour as journal type label", () => {
-    const taskEvent = event(
-      "task-margin",
-      "task_created",
-      "Создана задача.",
-    );
+    const taskEvent = event("task-margin", "task_created", "Создана задача.");
     taskEvent.sourceLabel = "ФОТ и маржа";
+    taskEvent.impactLabel = "120 000 ₽";
 
     const journal = buildTeamAuditJournal([taskEvent]);
 
     expect(journal.entries[0]).toMatchObject({
       typeLabel: "ФОТ и маржа",
+      impactLabel: "120 000 ₽",
       categoryId: "tasks",
     });
   });
