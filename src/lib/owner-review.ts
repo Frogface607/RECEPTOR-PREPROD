@@ -2034,14 +2034,15 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Откройте проверку iiko и убедитесь, что ключ, организация и OLAP работают.",
       role: "owner",
       tone: "risk",
+      taskSourceLabel: "Данные iiko",
     });
   }
 
   if (primaryLaborInsight && primaryLaborInsight.tone !== "good") {
-    const learning =
-      input.labor?.staffShifts === 0
-        ? iikoCashLearningHint()
-        : laborNumbersLearningHint();
+    const missingIikoShifts = input.labor?.staffShifts === 0;
+    const learning = missingIikoShifts
+      ? iikoCashLearningHint()
+      : laborNumbersLearningHint();
 
     hypotheses.push({
       title: primaryLaborInsight.title,
@@ -2049,6 +2050,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       check: primaryLaborInsight.action,
       role: primaryLaborInsight.tone === "setup" ? "owner" : "manager",
       tone: ownerToneFromLabor(primaryLaborInsight.tone),
+      taskSourceLabel: missingIikoShifts ? "Данные iiko" : "ФОТ и смены",
       ...learning,
     });
   }
@@ -2079,6 +2081,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
       role: "manager",
       tone: "risk",
+      taskSourceLabel: "Выручка и смены",
       learningModuleId: "shift-open-close",
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });
@@ -2092,6 +2095,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Проверить маржу, наличие, скорость отдачи и альтернативы для апсейла.",
       role: "chef",
       tone: topCategoryShare >= 42 ? "risk" : "watch",
+      taskSourceLabel: "Маржа и техкарты",
       learningModuleId: "tech-card-discipline",
       learningModuleTitle: "Техкарта как договор внутри команды",
     });
@@ -2105,6 +2109,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Проверить стоп-лист, заготовки, качество отдачи и что официанты предлагают рядом.",
       role: "service",
       tone: topDishShare >= 18 ? "watch" : "good",
+      taskSourceLabel: "Продажи и сервис",
       learningModuleId: "sales-eight-upsell",
       learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
@@ -2117,6 +2122,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       check: "Проверить цену, граммовку, подачу и возможность апсейла.",
       role: "chef",
       tone: "watch",
+      taskSourceLabel: "Продажи и сервис",
       learningModuleId: "sales-eight-upsell",
       learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
@@ -2130,6 +2136,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Зафиксировать причину: погода, банкет, команда, промо, трафик, стоп-лист.",
       role: "manager",
       tone: "watch",
+      taskSourceLabel: "Выручка и смены",
       learningModuleId: "shift-open-close",
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });

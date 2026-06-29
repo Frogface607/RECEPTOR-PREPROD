@@ -410,6 +410,7 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: expect.stringContaining("права на OLAP смены"),
+          sourceLabel: "Данные iiko",
           learningModuleId: "iiko-cash-discipline",
           learningModuleTitle: "iiko и кассовая дисциплина на смене",
           contextNote: expect.stringContaining(
@@ -1498,6 +1499,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Хит продаж нужно защищать как операционный актив",
           role: "service",
+          taskSourceLabel: "Продажи и сервис",
           learningModuleId: "sales-eight-upsell",
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
         }),
@@ -1508,7 +1510,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: expect.stringContaining("официанты предлагают рядом"),
           roleId: "service",
-          sourceLabel: "Гипотеза",
+          sourceLabel: "Продажи и сервис",
           learningModuleId: "sales-eight-upsell",
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
           contextNote: expect.stringContaining(
@@ -1540,6 +1542,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Категория может держать оборот, но не прибыль",
           role: "chef",
+          taskSourceLabel: "Маржа и техкарты",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
         }),
@@ -1550,6 +1553,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: expect.stringContaining("Проверить маржу"),
           roleId: "chef",
+          sourceLabel: "Маржа и техкарты",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
           contextNote: expect.stringContaining(
@@ -1587,6 +1591,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Просадка могла прийти из смены, а не из меню",
           role: "manager",
+          taskSourceLabel: "Выручка и смены",
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
         }),
@@ -1597,6 +1602,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: expect.stringContaining("кто работал"),
           roleId: "venue_manager",
+          sourceLabel: "Выручка и смены",
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
           contextNote: expect.stringContaining(
@@ -1635,6 +1641,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Слабый день нужно объяснить событием",
           role: "manager",
+          taskSourceLabel: "Выручка и смены",
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
         }),
