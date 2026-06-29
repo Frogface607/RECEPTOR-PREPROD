@@ -413,14 +413,97 @@ function findIngredientProduct(
 function normalizeIngredientUnit(
   value: string | undefined,
 ): "g" | "kg" | "ml" | "l" | "pcs" | null {
-  const unit = value?.trim().toLowerCase();
+  const unit = value
+    ?.trim()
+    .toLowerCase()
+    .replace(/[.\s]+$/g, "")
+    .replace(/ё/g, "е");
   if (!unit) return null;
 
-  if (["kg", "kilogram", "килограмм", "кг"].includes(unit)) return "kg";
-  if (["g", "gram", "гр", "г"].includes(unit)) return "g";
-  if (["l", "liter", "litre", "литр", "л"].includes(unit)) return "l";
-  if (["ml", "milliliter", "мл"].includes(unit)) return "ml";
-  if (["pcs", "piece", "pieces", "шт", "штука"].includes(unit)) return "pcs";
+  if (
+    [
+      "kg",
+      "kilogram",
+      "kilograms",
+      "кило",
+      "килограмм",
+      "килограмма",
+      "килограммы",
+      "килограммов",
+      "кг",
+    ].includes(unit)
+  ) {
+    return "kg";
+  }
+  if (
+    [
+      "g",
+      "gr",
+      "gram",
+      "grams",
+      "грамм",
+      "грамма",
+      "граммы",
+      "граммов",
+      "гр",
+      "г",
+    ].includes(unit)
+  ) {
+    return "g";
+  }
+  if (
+    [
+      "l",
+      "liter",
+      "litre",
+      "liters",
+      "litres",
+      "литр",
+      "литра",
+      "литры",
+      "литров",
+      "л",
+    ].includes(unit)
+  ) {
+    return "l";
+  }
+  if (
+    [
+      "ml",
+      "milliliter",
+      "millilitre",
+      "milliliters",
+      "millilitres",
+      "миллилитр",
+      "миллилитра",
+      "миллилитры",
+      "миллилитров",
+      "мл",
+    ].includes(unit)
+  ) {
+    return "ml";
+  }
+  if (
+    [
+      "pcs",
+      "pc",
+      "piece",
+      "pieces",
+      "portion",
+      "portions",
+      "шт",
+      "штук",
+      "штука",
+      "штуки",
+      "порц",
+      "порция",
+      "порцию",
+      "порции",
+      "порций",
+    ].includes(unit)
+  ) {
+    return "pcs";
+  }
 
   return null;
 }

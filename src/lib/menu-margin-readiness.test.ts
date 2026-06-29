@@ -360,6 +360,84 @@ describe("buildMenuMarginReadiness", () => {
     });
   });
 
+  test("calculates tech-card cost from Russian unit aliases", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Soup",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 5000,
+        },
+      ],
+      products: [
+        {
+          id: "soup-base",
+          name: "Soup",
+          sizePrices: [],
+        },
+        {
+          id: "potato",
+          name: "Potato",
+          unit: "g",
+          pricePerKg: 80,
+          sizePrices: [],
+        },
+        {
+          id: "cream",
+          name: "Cream",
+          unit: "ml",
+          pricePerKg: 160,
+          sizePrices: [],
+        },
+        {
+          id: "egg",
+          name: "Egg",
+          unit: "pcs",
+          purchasePricePerUnit: 12,
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-soup",
+          productId: "soup-base",
+          productName: "Soup",
+          items: [
+            {
+              productId: "potato",
+              productName: "Potato",
+              amount: 250,
+              unit: "гр.",
+            },
+            {
+              productId: "cream",
+              productName: "Cream",
+              amount: 0.1,
+              unit: "литра",
+            },
+            {
+              productId: "egg",
+              productName: "Egg",
+              amount: 1,
+              unit: "шт.",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(readiness.items[0]).toMatchObject({
+      hasCost: true,
+      costSource: "tech-card",
+      costReference: 48,
+      techCard: expect.objectContaining({
+        pricedIngredientRows: 3,
+        fullyCosted: true,
+      }),
+    });
+  });
+
   test("surfaces low proven margin as an owner risk", () => {
     const readiness = buildMenuMarginReadiness({
       dishes: [
