@@ -20,6 +20,23 @@ const STATUS_RANK: Record<TeamTask["status"], number> = {
   verified: 4,
 };
 
+function taskImpactScore(task: TeamTask): number {
+  const label = task.impactLabel?.trim();
+  if (!label) return 0;
+
+  const match = label.match(
+    /-?\d+(?:[\s\u00a0]\d{3})*(?:[,.]\d+)?|-?\d+(?:[,.]\d+)?/,
+  );
+  if (!match) return 1;
+
+  const value = Number(match[0].replace(/[\s\u00a0]/g, "").replace(",", "."));
+  if (!Number.isFinite(value)) return 1;
+
+  if (label.includes("₽")) return Math.max(value / 1000, 1);
+  if (label.includes("%")) return Math.max(value * 100, 1);
+  return Math.max(value, 1);
+}
+
 export type TeamTaskQueueItem = {
   task: TeamTask;
   focused: boolean;
@@ -75,6 +92,10 @@ export function buildTeamTaskQueue(
       const statusDelta =
         STATUS_RANK[left.task.status] - STATUS_RANK[right.task.status];
       if (statusDelta !== 0) return statusDelta;
+
+      const impactDelta =
+        taskImpactScore(right.task) - taskImpactScore(left.task);
+      if (impactDelta !== 0) return impactDelta;
 
       return left.index - right.index;
     })

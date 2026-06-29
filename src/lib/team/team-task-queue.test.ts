@@ -62,6 +62,46 @@ describe("team task queue", () => {
     ]);
   });
 
+  it("uses task impact inside the same priority and status", () => {
+    const queue = buildTeamTaskQueue([
+      task({ id: "plain", priority: "high", status: "new" }),
+      task({
+        id: "medium-impact",
+        priority: "high",
+        status: "new",
+        impactLabel: "ФОТ 20%",
+      }),
+      task({
+        id: "high-impact",
+        priority: "high",
+        status: "new",
+        impactLabel: "ФОТ 35%",
+      }),
+    ]);
+
+    expect(queue.openTasks.map((item) => item.task.id)).toEqual([
+      "high-impact",
+      "medium-impact",
+      "plain",
+    ]);
+  });
+
+  it("keeps explicit priority above impact score", () => {
+    const queue = buildTeamTaskQueue([
+      task({
+        id: "medium-money",
+        priority: "medium",
+        impactLabel: "150 000 ₽",
+      }),
+      task({ id: "high-plain", priority: "high" }),
+    ]);
+
+    expect(queue.openTasks.map((item) => item.task.id)).toEqual([
+      "high-plain",
+      "medium-money",
+    ]);
+  });
+
   it("counts urgent open tasks and groups open contours", () => {
     const queue = buildTeamTaskQueue([
       task({
