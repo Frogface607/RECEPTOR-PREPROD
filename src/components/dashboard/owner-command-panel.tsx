@@ -37,6 +37,10 @@ const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
   low: "данных мало",
 };
 
+function actionContour(action: OwnerReviewAction): string {
+  return action.sourceLabel ?? "контур";
+}
+
 function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
   if (tone === "risk") return <AlertTriangle className="size-4" />;
   if (tone === "watch") return <SearchCheck className="size-4" />;
@@ -251,6 +255,11 @@ export function OwnerCommandPanel({
                         <ToneIcon tone={action.tone} />
                         {ROLE_LABEL[action.role]}
                       </span>
+                      {action.sourceLabel ? (
+                        <span className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                          {actionContour(action)}
+                        </span>
+                      ) : null}
                       <p className="text-[13px] font-medium text-foreground">
                         {action.title}
                       </p>
