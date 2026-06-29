@@ -435,6 +435,79 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("does not create another FOT-margin task for the same employee contour", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-manager-expensive",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 50000,
+          items: 120,
+          employee: "Смена",
+          workers: [
+            {
+              memberId: "manager-1",
+              name: "Мария",
+              hours: 10,
+              shiftPay: 18000,
+              sales: 50000,
+            },
+          ],
+        },
+      ],
+    });
+    const margin = buildMenuMarginReadiness({
+      dishes,
+      products: [],
+    });
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-existing-fot-margin",
+        venueId: "venue-1",
+        title: "Проверить смену Марии и себестоимость топ-позиций",
+        source: "copilot",
+        sourceLabel: "ФОТ и маржа",
+        priority: "high",
+        status: "accepted",
+        audience: { type: "member", memberId: "manager-1" },
+        dueLabel: "сегодня",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin,
+      teamTasks,
+    });
+
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "ФОТ и маржа",
+          memberId: "manager-1",
+        }),
+      ]),
+    );
+    expect(
+      review.tasks.some(
+        (task) =>
+          task.sourceLabel === "ФОТ и маржа" &&
+          task.audienceMemberId === "manager-1",
+      ),
+    ).toBe(false);
+    expect(review.operationalPulse).toMatchObject({
+      openTaskContours: ["ФОТ и маржа"],
+    });
+  });
+
   test("names first labor blocker in owner evidence", () => {
     const labor = buildLaborBi({
       shifts: [

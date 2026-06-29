@@ -930,18 +930,24 @@ function draftMatchesOpenTeamTask(
   task: TeamTask,
 ): boolean {
   if (!isOpenTeamTask(task)) return false;
-  if (normalizeTaskTitle(task.title) !== normalizeTaskTitle(draft.title)) {
-    return false;
-  }
+  const titleMatches =
+    normalizeTaskTitle(task.title) === normalizeTaskTitle(draft.title);
+  const contourMatches =
+    Boolean(draft.sourceLabel) && draft.sourceLabel === task.sourceLabel;
 
   if (draft.audienceMemberId) {
     return (
       task.audience.type === "member" &&
-      task.audience.memberId === draft.audienceMemberId
+      task.audience.memberId === draft.audienceMemberId &&
+      (titleMatches || contourMatches)
     );
   }
 
-  return task.audience.type === "role" && task.audience.roleId === draft.roleId;
+  return (
+    task.audience.type === "role" &&
+    task.audience.roleId === draft.roleId &&
+    (titleMatches || contourMatches)
+  );
 }
 
 function withoutAlreadyOpenTeamTasks(
