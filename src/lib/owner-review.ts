@@ -1240,6 +1240,8 @@ function ownerActionFromShiftPlanVariance(
       primaryIssue.laborDelta !== 0
         ? formatRubles(Math.abs(primaryIssue.laborDelta))
         : primaryIssue.dateLabel,
+    learningModuleId: "shift-open-close",
+    learningModuleTitle: "Открытие и закрытие смены без хаоса",
   };
 }
 

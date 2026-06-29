@@ -881,6 +881,8 @@ describe("buildOwnerReview", () => {
           role: "manager",
           title: "Разобрать выход в выходной",
           tone: "risk",
+          learningModuleId: "shift-open-close",
+          learningModuleTitle: "Открытие и закрытие смены без хаоса",
         }),
       ]),
     );
@@ -888,6 +890,11 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       priority: "high",
       sourceLabel: "ФОТ и смены",
+      learningModuleId: "shift-open-close",
+      learningModuleTitle: "Открытие и закрытие смены без хаоса",
+      contextNote: expect.stringContaining(
+        "Урок для команды: Открытие и закрытие смены без хаоса.",
+      ),
     });
   });
 
