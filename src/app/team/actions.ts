@@ -567,6 +567,10 @@ async function closeLaborRateTasksForMembers(
     throw new Error(updateError.message);
   }
 
+  const firstTaskLabels = taskIds[0]
+    ? await findTaskContextLabels(ctx, venueId, taskIds[0])
+    : { sourceLabel: null, impactLabel: null };
+
   await writeTeamAuditEvent(ctx, {
     venueId,
     type: "task_status_updated",
@@ -577,7 +581,8 @@ async function closeLaborRateTasksForMembers(
       memberIds: uniqueMemberIds,
       taskIds,
       status: "done",
-      sourceLabel: "ФОТ setup",
+      sourceLabel: firstTaskLabels.sourceLabel ?? "ФОТ setup",
+      impactLabel: firstTaskLabels.impactLabel ?? `${taskIds.length} закрыто`,
     },
   });
 
