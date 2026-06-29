@@ -17,6 +17,7 @@ import {
 import type { TeamShiftPlanVarianceSummary } from "./team/team-shift-plan-variance";
 import type { TeamOpsReadiness } from "./team/team-ops-readiness";
 import type {
+  StaffMember,
   TeamAnnouncement,
   TeamAnnouncementRead,
   TeamAuditEvent,
@@ -873,6 +874,108 @@ describe("buildOwnerReview", () => {
         target: "team-journal",
       },
     });
+  });
+
+  test("turns unread important announcements into owner actions", () => {
+    const teamStaff: StaffMember[] = [
+      {
+        id: "service-1",
+        name: "Илья",
+        roleId: "service",
+        venueId: "venue-1",
+        status: "active",
+        shiftLabel: "вечер",
+      },
+      {
+        id: "service-2",
+        name: "Оля",
+        roleId: "service",
+        venueId: "venue-1",
+        status: "active",
+        shiftLabel: "вечер",
+      },
+    ];
+    const teamAnnouncements: TeamAnnouncement[] = [
+      {
+        id: "announcement-service",
+        venueId: "venue-1",
+        title: "Зал: фокус на ужин",
+        body: "Каждый стол получает рекомендацию.",
+        priority: "important",
+        audience: { type: "role", roleId: "service" },
+        createdByName: "Мария",
+        createdAtLabel: "14:10",
+      },
+    ];
+    const teamAnnouncementReads: TeamAnnouncementRead[] = [
+      {
+        announcementId: "announcement-service",
+        memberId: "service-1",
+        readAtLabel: "14:12",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+      teamStaff,
+      teamAnnouncements,
+      teamAnnouncementReads,
+    });
+
+    expect(review.operationalPulse).toMatchObject({
+      title: "Связь не закрыта",
+      tone: "watch",
+      action: {
+        label: "Открыть связь",
+        target: "team-journal",
+      },
+    });
+    expect(review.readiness).toMatchObject({
+      status: "partial",
+      action: {
+        label: "Открыть связь",
+        target: "team-journal",
+      },
+    });
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Связь",
+          detail: expect.stringContaining("1 без подтверждения"),
+          tone: "watch",
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Дожать связь",
+          target: "team-journal",
+          role: "manager",
+          tone: "watch",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: expect.stringContaining("Дожать связь"),
+          roleId: "venue_manager",
+          sourceLabel: "Команда",
+        }),
+      ]),
+    );
   });
 
   test("blocks profit readiness until FOT and margin are proven", () => {

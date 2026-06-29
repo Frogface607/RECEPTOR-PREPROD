@@ -23,6 +23,7 @@ import type {
   TeamOpsReadiness,
 } from "@/lib/team/team-ops-readiness";
 import type {
+  StaffMember,
   TeamAnnouncement,
   TeamAnnouncementRead,
   TeamAuditEvent,
@@ -144,6 +145,9 @@ export type OwnerOperationalProof = {
   lastClosedLoop: string | null;
   announcements: number;
   announcementReads: number;
+  unreadImportantAnnouncements: number;
+  unreadImportantAnnouncementRecipients: number;
+  unreadImportantAnnouncementTitle: string | null;
   lastAnnouncement: string | null;
   recentEvents: OwnerOperationalPulseEvent[];
 };
@@ -162,6 +166,7 @@ type BuildOwnerReviewInput = {
   team?: TeamOpsReadiness;
   teamTasks?: TeamTask[];
   teamAuditEvents?: TeamAuditEvent[];
+  teamStaff?: StaffMember[];
   teamAnnouncements?: TeamAnnouncement[];
   teamAnnouncementReads?: TeamAnnouncementRead[];
   shiftPlanVariance?: TeamShiftPlanVarianceSummary;
@@ -417,9 +422,58 @@ function announcementPulseEvent(
   };
 }
 
+function announcementRecipients(
+  announcement: TeamAnnouncement,
+  staff: StaffMember[] | undefined,
+): StaffMember[] {
+  return (staff ?? []).filter((member) => {
+    if (member.status === "paused") return false;
+    if (announcement.audience.type === "venue") return true;
+    return member.roleId === announcement.audience.roleId;
+  });
+}
+
+function topUnreadImportantAnnouncement(input: {
+  staff: StaffMember[] | undefined;
+  announcements: TeamAnnouncement[] | undefined;
+  announcementReads: TeamAnnouncementRead[] | undefined;
+}): {
+  announcement: TeamAnnouncement;
+  recipients: number;
+  unread: number;
+} | null {
+  const readKeys = new Set(
+    (input.announcementReads ?? []).map(
+      (read) => `${read.announcementId}:${read.memberId}`,
+    ),
+  );
+
+  return (
+    (input.announcements ?? [])
+      .filter((announcement) => announcement.priority === "important")
+      .map((announcement) => {
+        const recipients = announcementRecipients(announcement, input.staff);
+        const unread = recipients.filter(
+          (member) => !readKeys.has(`${announcement.id}:${member.id}`),
+        );
+        return {
+          announcement,
+          recipients: recipients.length,
+          unread: unread.length,
+        };
+      })
+      .filter((item) => item.recipients > 0 && item.unread > 0)
+      .sort((a, b) => {
+        if (a.unread !== b.unread) return b.unread - a.unread;
+        return b.recipients - a.recipients;
+      })[0] ?? null
+  );
+}
+
 function buildOperationalProof(
   tasks: TeamTask[] | undefined,
   auditEvents: TeamAuditEvent[] | undefined,
+  staff: StaffMember[] | undefined,
   announcements: TeamAnnouncement[] | undefined,
   announcementReads: TeamAnnouncementRead[] | undefined,
 ): OwnerOperationalProof | null {
@@ -429,6 +483,11 @@ function buildOperationalProof(
 
   const openTasks = (tasks ?? []).filter(isOpenTeamTask);
   const closedLoopEvents = (auditEvents ?? []).filter(isClosedLoopEvent);
+  const communicationGap = topUnreadImportantAnnouncement({
+    staff,
+    announcements,
+    announcementReads,
+  });
   const auditAnnouncementIds = new Set(
     (auditEvents ?? [])
       .filter(
@@ -455,6 +514,10 @@ function buildOperationalProof(
     lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
     announcements: announcements?.length ?? 0,
     announcementReads: announcementReads?.length ?? 0,
+    unreadImportantAnnouncements: communicationGap?.unread ?? 0,
+    unreadImportantAnnouncementRecipients: communicationGap?.recipients ?? 0,
+    unreadImportantAnnouncementTitle:
+      communicationGap?.announcement.title ?? null,
     lastAnnouncement: announcements?.[0]?.title ?? null,
     recentEvents,
   };
@@ -488,6 +551,27 @@ function operationalPulse(
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
       action: { label: "Открыть задачи", target: "team-actions" },
+    };
+  }
+
+  if (proof.unreadImportantAnnouncements > 0) {
+    return {
+      title: "Связь не закрыта",
+      detail: `${trimEvidenceDetail(
+        proof.unreadImportantAnnouncementTitle ?? "важное объявление",
+      )}: ${proof.unreadImportantAnnouncements} из ${
+        proof.unreadImportantAnnouncementRecipients
+      } еще не подтвердили.`,
+      tone:
+        proof.unreadImportantAnnouncements ===
+        proof.unreadImportantAnnouncementRecipients
+          ? "risk"
+          : "watch",
+      openTasks: proof.openTasks,
+      urgentOpenTasks: proof.urgentOpenTasks,
+      closedLoops: proof.closedLoops,
+      recentEvents: proof.recentEvents,
+      action: { label: "Открыть связь", target: "team-journal" },
     };
   }
 
@@ -566,9 +650,33 @@ function operationalCommunicationEvidence(
     label: "Связь",
     value: announcementCountLabel(proof.announcements),
     detail: proof.lastAnnouncement
-      ? `${announcementReadLabel(proof.announcementReads)}. Последнее: ${trimEvidenceDetail(proof.lastAnnouncement)}`
+      ? `${announcementReadLabel(proof.announcementReads)}${
+          proof.unreadImportantAnnouncements > 0
+            ? `, ${proof.unreadImportantAnnouncements} без подтверждения`
+            : ""
+        }. Последнее: ${trimEvidenceDetail(proof.lastAnnouncement)}`
       : "Командные объявления опубликованы в Team OS.",
-    tone: "good",
+    tone: proof.unreadImportantAnnouncements > 0 ? "watch" : "good",
+  };
+}
+
+function ownerActionFromCommunication(
+  proof: OwnerOperationalProof | null,
+): OwnerReviewAction | null {
+  if (!proof || proof.unreadImportantAnnouncements <= 0) return null;
+
+  return {
+    title: "Дожать связь",
+    detail: `${trimEvidenceDetail(
+      proof.unreadImportantAnnouncementTitle ?? "важное объявление",
+    )}: ${proof.unreadImportantAnnouncements} без подтверждения.`,
+    role: "manager",
+    tone:
+      proof.unreadImportantAnnouncements ===
+      proof.unreadImportantAnnouncementRecipients
+        ? "risk"
+        : "watch",
+    target: "team-journal",
   };
 }
 
@@ -701,6 +809,12 @@ function buildProfitReadiness(input: {
     score += 5;
     missing.push(openTasksLabel(input.operationalProof.openTasks));
     setAction({ label: "Открыть задачи", target: "team-actions" });
+  } else if (input.operationalProof.unreadImportantAnnouncements > 0) {
+    score += 5;
+    missing.push(
+      `${input.operationalProof.unreadImportantAnnouncements} неподтвержденных объявлений`,
+    );
+    setAction({ label: "Открыть связь", target: "team-journal" });
   } else {
     score += 10;
   }
@@ -716,6 +830,7 @@ function buildProfitReadiness(input: {
     input.team?.status !== "ready" ||
     !input.operationalProof ||
     input.operationalProof.openTasks > 0 ||
+    input.operationalProof.unreadImportantAnnouncements > 0 ||
     input.dataQuality.status === "watch" ||
     input.labor?.laborReadinessStatus === "partial" ||
     input.margin?.status === "partial";
@@ -1448,6 +1563,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   const operationalProof = buildOperationalProof(
     input.teamTasks,
     input.teamAuditEvents,
+    input.teamStaff,
     input.teamAnnouncements,
     input.teamAnnouncementReads,
   );
@@ -1552,6 +1668,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     input.shiftPlanVariance
       ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
       : null,
+    ownerActionFromCommunication(operationalProof),
     input.labor ? ownerActionFromLabor(input.labor) : null,
     input.margin ? ownerActionFromMargin(input.margin) : null,
     input.team ? ownerActionFromTeam(input.team) : null,
