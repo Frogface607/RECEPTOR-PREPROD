@@ -13,6 +13,7 @@ import {
   roleCan,
   type StaffMember,
   type TeamAnnouncement,
+  type TeamAnnouncementRead,
   type TeamAuditEvent,
   type TeamAuditEventType,
   type TeamTaskComment,
@@ -73,6 +74,12 @@ type DbAnnouncement = {
   created_at: string | null;
 };
 
+type DbAnnouncementRead = {
+  announcement_id: string;
+  membership_id: string;
+  read_at: string | null;
+};
+
 type DbAuditEvent = {
   id: string;
   venue_id: string;
@@ -131,6 +138,7 @@ export type TeamWorkspace = {
   tasks: TeamTask[];
   comments: TeamTaskComment[];
   announcements: TeamAnnouncement[];
+  announcementReads: TeamAnnouncementRead[];
   auditEvents: TeamAuditEvent[];
   learningProgress: TeamLearningProgress[];
   learningStandards: TeamLearningStandardOverride[];
@@ -147,6 +155,7 @@ export type PersonalTeamWorkspace =
       tasks: TeamTask[];
       comments: TeamTaskComment[];
       announcements: TeamAnnouncement[];
+      announcementReads: TeamAnnouncementRead[];
       learningProgress: TeamLearningProgress[];
       learningStandards: TeamLearningStandardOverride[];
       shiftPlans: TeamShiftPlan[];
@@ -174,7 +183,7 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
 ]);
 
 function isMissingTeamTable(message: string): boolean {
-  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_audit_events|team_learning_progress|team_learning_standards|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
+  return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_announcement_reads|team_audit_events|team_learning_progress|team_learning_standards|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
 }
@@ -291,6 +300,16 @@ export function mapAnnouncementRow(row: DbAnnouncement): TeamAnnouncement {
     audience,
     createdByName: "Команда",
     createdAtLabel: formatCreatedAtLabel(row.created_at),
+  };
+}
+
+export function mapAnnouncementReadRow(
+  row: DbAnnouncementRead,
+): TeamAnnouncementRead {
+  return {
+    announcementId: row.announcement_id,
+    memberId: row.membership_id,
+    readAtLabel: formatCreatedAtLabel(row.read_at),
   };
 }
 
@@ -514,6 +533,19 @@ const DEMO_SHIFT_PLANS: TeamShiftPlan[] = [
   },
 ];
 
+const DEMO_ANNOUNCEMENT_READS: TeamAnnouncementRead[] = [
+  {
+    announcementId: "announcement-venue-1",
+    memberId: "staff-service",
+    readAtLabel: "10:05",
+  },
+  {
+    announcementId: "announcement-venue-1",
+    memberId: "staff-chef",
+    readAtLabel: "10:08",
+  },
+];
+
 export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
   return {
     mode: "sandbox",
@@ -528,6 +560,7 @@ export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
     announcements: DEMO_TEAM_ANNOUNCEMENTS.filter(
       (announcement) => announcement.venueId === "dev-venue",
     ),
+    announcementReads: DEMO_ANNOUNCEMENT_READS,
     auditEvents: DEMO_TEAM_AUDIT_EVENTS.filter(
       (event) => event.venueId === "dev-venue",
     ),
@@ -572,6 +605,7 @@ export async function getTeamWorkspace(
       tasks: [],
       comments: [],
       announcements: [],
+      announcementReads: [],
       auditEvents: [],
       learningProgress: [],
       learningStandards: [],
@@ -602,6 +636,7 @@ export async function getTeamWorkspace(
       tasks: [],
       comments: [],
       announcements: [],
+      announcementReads: [],
       auditEvents: [],
       learningProgress: [],
       learningStandards: [],
@@ -651,6 +686,20 @@ export async function getTeamWorkspace(
       ? []
       : ((announcementsResult.data ?? []) as DbAnnouncement[]).map(
           mapAnnouncementRow,
+        );
+
+  const announcementReadsResult = await supabase
+    .from("team_announcement_reads")
+    .select("announcement_id,membership_id,read_at")
+    .eq("venue_id", venueId)
+    .order("read_at", { ascending: false });
+
+  const announcementReads =
+    announcementReadsResult.error &&
+    isMissingTeamTable(announcementReadsResult.error.message)
+      ? []
+      : ((announcementReadsResult.data ?? []) as DbAnnouncementRead[]).map(
+          mapAnnouncementReadRow,
         );
 
   const auditEventsResult = await supabase
@@ -722,6 +771,7 @@ export async function getTeamWorkspace(
     tasks,
     comments,
     announcements,
+    announcementReads,
     auditEvents,
     learningProgress,
     learningStandards,
@@ -742,6 +792,9 @@ function getDemoPersonalWorkspace(): PersonalTeamWorkspace {
     tasks: listTasksForMember(member.id),
     comments: DEMO_TASK_COMMENTS,
     announcements: listAnnouncementsForRole(member.roleId),
+    announcementReads: DEMO_ANNOUNCEMENT_READS.filter(
+      (read) => read.memberId === member.id,
+    ),
     learningProgress: DEMO_LEARNING_PROGRESS.filter(
       (progress) => progress.membershipId === member.id,
     ),
@@ -858,6 +911,21 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
           ),
         );
 
+  const announcementReadsResult = await supabase
+    .from("team_announcement_reads")
+    .select("announcement_id,membership_id,read_at")
+    .eq("venue_id", venueId)
+    .eq("membership_id", member.id)
+    .order("read_at", { ascending: false });
+
+  const announcementReads =
+    announcementReadsResult.error &&
+    !isMissingTeamTable(announcementReadsResult.error.message)
+      ? []
+      : ((announcementReadsResult.data ?? []) as DbAnnouncementRead[]).map(
+          mapAnnouncementReadRow,
+        );
+
   const learningProgressResult = await supabase
     .from("team_learning_progress")
     .select(
@@ -917,6 +985,7 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
     tasks: visibleTasks,
     comments,
     announcements,
+    announcementReads,
     learningProgress,
     learningStandards,
     shiftPlans,

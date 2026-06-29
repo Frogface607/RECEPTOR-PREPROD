@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   mapAnnouncementRow,
+  mapAnnouncementReadRow,
   mapAuditEventRow,
   mapCommentRow,
   mapLearningStandardRow,
@@ -138,6 +139,20 @@ describe("Team OS store mapping", () => {
 
     expect(roleAnnouncement.priority).toBe("important");
     expect(roleAnnouncement.audience).toEqual({ type: "role", roleId: "chef" });
+  });
+
+  test("maps announcement read receipts", () => {
+    const read = mapAnnouncementReadRow({
+      announcement_id: "announcement-1",
+      membership_id: "member-1",
+      read_at: "2026-06-29T09:15:00.000Z",
+    });
+
+    expect(read).toMatchObject({
+      announcementId: "announcement-1",
+      memberId: "member-1",
+    });
+    expect(read.readAtLabel).not.toBe("");
   });
 
   test("maps audit events", () => {

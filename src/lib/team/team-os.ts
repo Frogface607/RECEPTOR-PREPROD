@@ -87,6 +87,12 @@ export type TeamAnnouncement = {
   createdAtLabel: string;
 };
 
+export type TeamAnnouncementRead = {
+  announcementId: string;
+  memberId: string;
+  readAtLabel: string;
+};
+
 export type TeamAuditEventType =
   | "member_invited"
   | "member_status_updated"
@@ -563,6 +569,24 @@ export function listAnnouncementsForRole(
     if (announcement.audience.type === "venue") return true;
     return announcement.audience.roleId === roleId;
   });
+}
+
+export function countAnnouncementReads(
+  announcementId: string,
+  reads: TeamAnnouncementRead[] = [],
+): number {
+  return reads.filter((read) => read.announcementId === announcementId).length;
+}
+
+export function hasAnnouncementRead(
+  announcementId: string,
+  memberId: string,
+  reads: TeamAnnouncementRead[] = [],
+): boolean {
+  return reads.some(
+    (read) =>
+      read.announcementId === announcementId && read.memberId === memberId,
+  );
 }
 
 export function buildRoleHome(

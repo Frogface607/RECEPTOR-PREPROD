@@ -1,7 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
   buildRoleHome,
+  countAnnouncementReads,
   getTeamRole,
+  hasAnnouncementRead,
   listAnnouncementsForRole,
   listCommentsForTask,
   listRolePermissions,
@@ -70,5 +72,28 @@ describe("Team OS roles and permissions", () => {
     expect(chefAnnouncements.map((item) => item.id)).toContain(
       "announcement-kitchen-1",
     );
+  });
+
+  test("counts and detects announcement reads", () => {
+    const reads = [
+      {
+        announcementId: "announcement-venue-1",
+        memberId: "staff-service",
+        readAtLabel: "12:00",
+      },
+      {
+        announcementId: "announcement-venue-1",
+        memberId: "staff-chef",
+        readAtLabel: "12:05",
+      },
+    ];
+
+    expect(countAnnouncementReads("announcement-venue-1", reads)).toBe(2);
+    expect(
+      hasAnnouncementRead("announcement-venue-1", "staff-service", reads),
+    ).toBe(true);
+    expect(
+      hasAnnouncementRead("announcement-venue-1", "staff-cook", reads),
+    ).toBe(false);
   });
 });

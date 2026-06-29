@@ -18,6 +18,7 @@ import type { TeamShiftPlanVarianceSummary } from "./team/team-shift-plan-varian
 import type { TeamOpsReadiness } from "./team/team-ops-readiness";
 import type {
   TeamAnnouncement,
+  TeamAnnouncementRead,
   TeamAuditEvent,
   TeamTask,
 } from "./team/team-os";
@@ -821,6 +822,13 @@ describe("buildOwnerReview", () => {
         createdAtLabel: "14:10",
       },
     ];
+    const teamAnnouncementReads: TeamAnnouncementRead[] = [
+      {
+        announcementId: "announcement-fot",
+        memberId: "manager-1",
+        readAtLabel: "14:12",
+      },
+    ];
 
     const review = buildOwnerReview({
       summary,
@@ -833,6 +841,7 @@ describe("buildOwnerReview", () => {
       teamTasks: [],
       teamAuditEvents: [],
       teamAnnouncements,
+      teamAnnouncementReads,
     });
 
     expect(review.evidence).toEqual(
@@ -840,7 +849,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           label: "Связь",
           value: "1 объявление",
-          detail: expect.stringContaining("ФОТ перед отчетом"),
+          detail: expect.stringContaining("1 прочтение"),
           tone: "good",
         }),
       ]),

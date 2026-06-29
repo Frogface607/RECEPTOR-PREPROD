@@ -271,6 +271,7 @@ export default async function DashboardPage({
     teamTasks: teamWorkspace.tasks,
     teamAuditEvents: teamWorkspace.auditEvents,
     teamAnnouncements: teamWorkspace.announcements,
+    teamAnnouncementReads: teamWorkspace.announcementReads,
     shiftPlanVariance,
   });
 

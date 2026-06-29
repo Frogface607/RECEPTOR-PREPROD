@@ -24,6 +24,7 @@ import type {
 } from "@/lib/team/team-ops-readiness";
 import type {
   TeamAnnouncement,
+  TeamAnnouncementRead,
   TeamAuditEvent,
   TeamTask,
 } from "@/lib/team/team-os";
@@ -142,6 +143,7 @@ export type OwnerOperationalProof = {
   closedLoops: number;
   lastClosedLoop: string | null;
   announcements: number;
+  announcementReads: number;
   lastAnnouncement: string | null;
   recentEvents: OwnerOperationalPulseEvent[];
 };
@@ -161,6 +163,7 @@ type BuildOwnerReviewInput = {
   teamTasks?: TeamTask[];
   teamAuditEvents?: TeamAuditEvent[];
   teamAnnouncements?: TeamAnnouncement[];
+  teamAnnouncementReads?: TeamAnnouncementRead[];
   shiftPlanVariance?: TeamShiftPlanVarianceSummary;
 };
 
@@ -418,8 +421,11 @@ function buildOperationalProof(
   tasks: TeamTask[] | undefined,
   auditEvents: TeamAuditEvent[] | undefined,
   announcements: TeamAnnouncement[] | undefined,
+  announcementReads: TeamAnnouncementRead[] | undefined,
 ): OwnerOperationalProof | null {
-  if (!tasks && !auditEvents && !announcements) return null;
+  if (!tasks && !auditEvents && !announcements && !announcementReads) {
+    return null;
+  }
 
   const openTasks = (tasks ?? []).filter(isOpenTeamTask);
   const closedLoopEvents = (auditEvents ?? []).filter(isClosedLoopEvent);
@@ -448,6 +454,7 @@ function buildOperationalProof(
     closedLoops: closedLoopEvents.length,
     lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
     announcements: announcements?.length ?? 0,
+    announcementReads: announcementReads?.length ?? 0,
     lastAnnouncement: announcements?.[0]?.title ?? null,
     recentEvents,
   };
@@ -559,7 +566,7 @@ function operationalCommunicationEvidence(
     label: "Связь",
     value: announcementCountLabel(proof.announcements),
     detail: proof.lastAnnouncement
-      ? `Последнее: ${trimEvidenceDetail(proof.lastAnnouncement)}`
+      ? `${announcementReadLabel(proof.announcementReads)}. Последнее: ${trimEvidenceDetail(proof.lastAnnouncement)}`
       : "Командные объявления опубликованы в Team OS.",
     tone: "good",
   };
@@ -594,6 +601,10 @@ function urgentTasksLabel(count: number): string {
 
 function announcementCountLabel(count: number): string {
   return `${count} ${taskWord(count, "объявление", "объявления", "объявлений")}`;
+}
+
+function announcementReadLabel(count: number): string {
+  return `${count} ${taskWord(count, "прочтение", "прочтения", "прочтений")}`;
 }
 
 function buildProfitReadiness(input: {
@@ -1438,6 +1449,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     input.teamTasks,
     input.teamAuditEvents,
     input.teamAnnouncements,
+    input.teamAnnouncementReads,
   );
   const operational = operationalPulse(operationalProof);
   const readiness = buildProfitReadiness({

@@ -29,9 +29,11 @@ import {
 import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
 import {
   getTeamRole,
+  hasAnnouncementRead,
   type TeamAnnouncement,
   type TeamTask,
 } from "@/lib/team/team-os";
+import { AnnouncementReadButton } from "./announcement-read-button";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { TaskStatusButtons } from "./task-status-buttons";
 
@@ -363,6 +365,11 @@ export default async function MyCabinetPage() {
                       <AnnouncementCard
                         key={announcement.id}
                         announcement={announcement}
+                        isRead={hasAnnouncementRead(
+                          announcement.id,
+                          workspace.member.id,
+                          workspace.announcementReads,
+                        )}
                       />
                     ))
                   ) : (
@@ -559,8 +566,10 @@ function TaskCard({ task }: { task: TeamTask }) {
 
 function AnnouncementCard({
   announcement,
+  isRead,
 }: {
   announcement: TeamAnnouncement;
+  isRead: boolean;
 }) {
   return (
     <article className="rounded-lg border border-border/60 bg-card/50 p-4">
@@ -575,6 +584,11 @@ function AnnouncementCard({
         >
           {announcement.priority === "important" ? "важно" : "инфо"}
         </Badge>
+        {isRead ? (
+          <Badge variant="outline" className="border-brand/30 text-brand">
+            прочитано
+          </Badge>
+        ) : null}
         {announcement.createdAtLabel ? (
           <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             {announcement.createdAtLabel}
@@ -585,6 +599,10 @@ function AnnouncementCard({
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {announcement.body}
       </p>
+      <AnnouncementReadButton
+        announcementId={announcement.id}
+        initialRead={isRead}
+      />
     </article>
   );
 }

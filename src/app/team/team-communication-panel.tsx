@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { TeamCommunicationDraft } from "@/lib/team/team-communication-drafts";
 import {
+  countAnnouncementReads,
   listAnnouncementsForRole,
   listCommentsForTask,
   TEAM_ROLES,
   type TeamAnnouncement,
+  type TeamAnnouncementRead,
   type TeamRoleId,
   type TeamTask,
   type TeamTaskComment,
@@ -39,6 +41,7 @@ export function TeamCommunicationPanel({
   tasks,
   comments,
   announcements,
+  announcementReads,
   drafts = [],
 }: {
   venueId: string;
@@ -46,6 +49,7 @@ export function TeamCommunicationPanel({
   tasks: TeamTask[];
   comments: TeamTaskComment[];
   announcements: TeamAnnouncement[];
+  announcementReads: TeamAnnouncementRead[];
   drafts?: TeamCommunicationDraft[];
 }) {
   const [pending, startTransition] = useTransition();
@@ -260,6 +264,10 @@ export function TeamCommunicationPanel({
                 <AnnouncementRow
                   key={announcement.id}
                   announcement={announcement}
+                  readCount={countAnnouncementReads(
+                    announcement.id,
+                    announcementReads,
+                  )}
                 />
               ))}
             </div>
@@ -335,7 +343,13 @@ export function TeamCommunicationPanel({
   );
 }
 
-function AnnouncementRow({ announcement }: { announcement: TeamAnnouncement }) {
+function AnnouncementRow({
+  announcement,
+  readCount,
+}: {
+  announcement: TeamAnnouncement;
+  readCount: number;
+}) {
   return (
     <article
       id={`team-announcement-${announcement.id}`}
@@ -354,6 +368,9 @@ function AnnouncementRow({ announcement }: { announcement: TeamAnnouncement }) {
         </Badge>
         <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           {announcement.createdAtLabel}
+        </span>
+        <span className="rounded-full border border-border/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+          прочитано {readCount}
         </span>
       </div>
       <h4 className="mt-3 text-sm font-medium">{announcement.title}</h4>

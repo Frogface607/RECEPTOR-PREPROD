@@ -810,6 +810,7 @@ export default async function TeamPage({
           tasks={workspace.tasks}
           comments={workspace.comments}
           announcements={workspace.announcements}
+          announcementReads={workspace.announcementReads}
           drafts={communicationDrafts}
         />
 
