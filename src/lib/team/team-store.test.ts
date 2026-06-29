@@ -229,6 +229,25 @@ describe("Team OS store mapping", () => {
     });
   });
 
+  test("uses task status updates as fallback for learning links", () => {
+    const learning = buildTaskLearningMap([
+      {
+        event_type: "task_status_updated",
+        target_type: "task",
+        target_id: "task-existing",
+        metadata: {
+          learningModuleId: "shift-open-close",
+          learningModuleTitle: "Открытие и закрытие смены без хаоса",
+        },
+      },
+    ]);
+
+    expect(learning.get("task-existing")).toEqual({
+      moduleId: "shift-open-close",
+      moduleTitle: "Открытие и закрытие смены без хаоса",
+    });
+  });
+
   test("maps member and venue audiences", () => {
     expect(
       mapTaskRow({

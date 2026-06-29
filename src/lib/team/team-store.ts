@@ -481,30 +481,36 @@ export function buildTaskLearningMap(
     { moduleId?: string; moduleTitle?: string }
   >();
 
-  for (const row of rows) {
-    if (
-      row.event_type !== "task_created" ||
-      row.target_type !== "task" ||
-      !row.target_id ||
-      learning.has(row.target_id) ||
-      !row.metadata ||
-      typeof row.metadata !== "object" ||
-      Array.isArray(row.metadata)
-    ) {
-      continue;
-    }
+  const addLearning = (eventType: string) => {
+    for (const row of rows) {
+      if (
+        row.event_type !== eventType ||
+        row.target_type !== "task" ||
+        !row.target_id ||
+        learning.has(row.target_id) ||
+        !row.metadata ||
+        typeof row.metadata !== "object" ||
+        Array.isArray(row.metadata)
+      ) {
+        continue;
+      }
 
-    const metadata = row.metadata as {
-      learningModuleId?: unknown;
-      learningModuleTitle?: unknown;
-    };
-    const moduleId = normalizeTaskLabel(metadata.learningModuleId) ?? undefined;
-    const moduleTitle =
-      normalizeTaskLabel(metadata.learningModuleTitle) ?? undefined;
-    if (moduleId || moduleTitle) {
-      learning.set(row.target_id, { moduleId, moduleTitle });
+      const metadata = row.metadata as {
+        learningModuleId?: unknown;
+        learningModuleTitle?: unknown;
+      };
+      const moduleId =
+        normalizeTaskLabel(metadata.learningModuleId) ?? undefined;
+      const moduleTitle =
+        normalizeTaskLabel(metadata.learningModuleTitle) ?? undefined;
+      if (moduleId || moduleTitle) {
+        learning.set(row.target_id, { moduleId, moduleTitle });
+      }
     }
-  }
+  };
+
+  addLearning("task_created");
+  addLearning("task_status_updated");
 
   return learning;
 }

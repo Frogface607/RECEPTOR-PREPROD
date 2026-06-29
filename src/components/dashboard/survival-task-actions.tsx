@@ -82,6 +82,8 @@ export function SurvivalTaskActions({
         impactLabel: draft.impactLabel,
         contextNote: draft.contextNote,
         sourceLabel: draft.sourceLabel,
+        learningModuleId: draft.learningModuleId,
+        learningModuleTitle: draft.learningModuleTitle,
         dedupeOpenTask: true,
       });
 
