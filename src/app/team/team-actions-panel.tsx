@@ -427,9 +427,22 @@ export function TeamActionsPanel({
               Операции
             </p>
             <h2 className="mt-2 text-2xl font-medium">Доступы и задачи</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-border/55 bg-background/45 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                период: {laborSource.periodLabel}
+              </span>
+              <span
+                className={
+                  "rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.14em] " +
+                  sourceCopy.className
+                }
+              >
+                {sourceCopy.label}
+              </span>
+            </div>
           </div>
           <p className="max-w-md text-sm text-muted-foreground">
-            Быстрые действия управляющего.
+            Быстрые действия управляющего в том же периоде, который открыт в BI.
           </p>
         </div>
 
