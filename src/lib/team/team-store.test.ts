@@ -182,6 +182,19 @@ describe("Team OS store mapping", () => {
     expect(labels.get("task-1")).toBe("ФОТ и маржа");
   });
 
+  test("uses task status updates as fallback for source labels", () => {
+    const labels = buildTaskSourceLabelMap([
+      {
+        event_type: "task_status_updated",
+        target_type: "task",
+        target_id: "task-existing",
+        metadata: { sourceLabel: "Выручка и смены" },
+      },
+    ]);
+
+    expect(labels.get("task-existing")).toBe("Выручка и смены");
+  });
+
   test("builds task impact labels from task-created audit metadata", () => {
     const labels = buildTaskImpactLabelMap([
       {
@@ -199,6 +212,19 @@ describe("Team OS store mapping", () => {
     ]);
 
     expect(labels.get("task-1")).toBe("ФОТ 35%");
+  });
+
+  test("uses task status updates as fallback for impact labels", () => {
+    const labels = buildTaskImpactLabelMap([
+      {
+        event_type: "task_status_updated",
+        target_type: "task",
+        target_id: "task-existing",
+        metadata: { impactLabel: "80 000 ₽" },
+      },
+    ]);
+
+    expect(labels.get("task-existing")).toBe("80 000 ₽");
   });
 
   test("builds task learning links from task-created audit metadata", () => {

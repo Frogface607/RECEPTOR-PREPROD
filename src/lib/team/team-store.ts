@@ -424,19 +424,24 @@ export function buildTaskSourceLabelMap(
 ): Map<string, string> {
   const labels = new Map<string, string>();
 
-  for (const row of rows) {
-    if (
-      row.event_type !== "task_created" ||
-      row.target_type !== "task" ||
-      !row.target_id ||
-      labels.has(row.target_id)
-    ) {
-      continue;
-    }
+  const addLabels = (eventType: string) => {
+    for (const row of rows) {
+      if (
+        row.event_type !== eventType ||
+        row.target_type !== "task" ||
+        !row.target_id ||
+        labels.has(row.target_id)
+      ) {
+        continue;
+      }
 
-    const label = metadataSourceLabel(row.metadata);
-    if (label) labels.set(row.target_id, label);
-  }
+      const label = metadataSourceLabel(row.metadata);
+      if (label) labels.set(row.target_id, label);
+    }
+  };
+
+  addLabels("task_created");
+  addLabels("task_status_updated");
 
   return labels;
 }
@@ -451,19 +456,24 @@ export function buildTaskImpactLabelMap(
 ): Map<string, string> {
   const labels = new Map<string, string>();
 
-  for (const row of rows) {
-    if (
-      row.event_type !== "task_created" ||
-      row.target_type !== "task" ||
-      !row.target_id ||
-      labels.has(row.target_id)
-    ) {
-      continue;
-    }
+  const addLabels = (eventType: string) => {
+    for (const row of rows) {
+      if (
+        row.event_type !== eventType ||
+        row.target_type !== "task" ||
+        !row.target_id ||
+        labels.has(row.target_id)
+      ) {
+        continue;
+      }
 
-    const label = metadataImpactLabel(row.metadata);
-    if (label) labels.set(row.target_id, label);
-  }
+      const label = metadataImpactLabel(row.metadata);
+      if (label) labels.set(row.target_id, label);
+    }
+  };
+
+  addLabels("task_created");
+  addLabels("task_status_updated");
 
   return labels;
 }
