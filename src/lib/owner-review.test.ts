@@ -707,6 +707,8 @@ describe("buildOwnerReview", () => {
           title: "RMS не отдает закупочную цену",
           target: "margin-diagnostics",
           role: "owner",
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарта как договор внутри команды",
         }),
       ]),
     );
@@ -714,6 +716,11 @@ describe("buildOwnerReview", () => {
       title: expect.stringContaining("RMS не отдает закупочную цену"),
       roleId: "operations_manager",
       sourceLabel: "Маржа и техкарты",
+      learningModuleId: "tech-card-discipline",
+      learningModuleTitle: "Техкарта как договор внутри команды",
+      contextNote: expect.stringContaining(
+        "Урок для команды: Техкарта как договор внутри команды.",
+      ),
     });
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
@@ -787,6 +794,8 @@ describe("buildOwnerReview", () => {
           tone: "watch",
           title: expect.stringContaining("Cheap pasta"),
           detail: expect.stringContaining("45%"),
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарта как договор внутри команды",
         }),
       ]),
     );

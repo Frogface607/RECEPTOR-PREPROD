@@ -1446,6 +1446,7 @@ function ownerActionFromMargin(
 ): OwnerReviewAction | null {
   const nextAction = buildMenuMarginNextAction(input);
   const primaryRisk = input.topMarginRisks[0] ?? null;
+  const learning = marginLearningHint();
 
   if (nextAction.kind === "ready") {
     if (!primaryRisk) return null;
@@ -1459,6 +1460,7 @@ function ownerActionFromMargin(
       tone: primaryRisk.grossMarginPct < 45 ? "risk" : "watch",
       target: "margin-risk",
       impactLabel: `маржа ${primaryRisk.grossMarginPct}%`,
+      ...learning,
     };
   }
 
@@ -1474,6 +1476,17 @@ function ownerActionFromMargin(
       nextAction.kind === "missing-cost"
         ? "margin-diagnostics"
         : "margin-mapping",
+    ...learning,
+  };
+}
+
+function marginLearningHint(): Pick<
+  OwnerReviewAction,
+  "learningModuleId" | "learningModuleTitle"
+> {
+  return {
+    learningModuleId: "tech-card-discipline",
+    learningModuleTitle: "Техкарта как договор внутри команды",
   };
 }
 
