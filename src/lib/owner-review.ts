@@ -58,6 +58,9 @@ export type OwnerReviewHypothesis = {
   check: string;
   role: OwnerReviewRole;
   tone: OwnerReviewTone;
+  taskSourceLabel?: string;
+  audienceMemberId?: string;
+  audienceMemberName?: string;
 };
 
 export type OwnerReviewQuestion = {
@@ -272,7 +275,9 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     priority: rolePriority(item.tone),
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
-    sourceLabel: "Гипотеза",
+    sourceLabel: item.taskSourceLabel ?? "Гипотеза",
+    audienceMemberId: item.audienceMemberId,
+    audienceMemberName: item.audienceMemberName,
   };
 }
 
@@ -1349,6 +1354,9 @@ function laborMarginHypothesis(input: {
       role:
         bridge.tone === "setup" ? "chef" : bridge.employee ? "owner" : "chef",
       tone: ownerToneFromLaborBridge(bridge.tone),
+      taskSourceLabel: "ФОТ и маржа",
+      audienceMemberId: bridge.employee?.memberId,
+      audienceMemberName: bridge.employee?.name,
     };
   }
 
@@ -1826,6 +1834,12 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     role: item.role,
     text: item.check,
   }));
+  const bridgeHypotheses = visibleHypotheses.filter((item) =>
+    Boolean(item.taskSourceLabel),
+  );
+  const genericHypotheses = visibleHypotheses.filter(
+    (item) => !item.taskSourceLabel,
+  );
   const tasks = withoutAlreadyOpenTeamTasks(
     uniqueTaskDrafts([
       ...(() => {
@@ -1833,7 +1847,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         return task ? [task] : [];
       })(),
       ...actions.map(taskFromOwnerAction),
-      ...visibleHypotheses.map(taskFromHypothesis),
+      ...bridgeHypotheses.map(taskFromHypothesis),
+      ...genericHypotheses.map(taskFromHypothesis),
     ]),
     input.teamTasks,
   ).slice(0, 3);

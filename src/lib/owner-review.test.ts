@@ -417,6 +417,15 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "ФОТ и маржа",
+          audienceMemberId: "manager-1",
+          audienceMemberName: "Maria",
+        }),
+      ]),
+    );
   });
 
   test("names first labor blocker in owner evidence", () => {
