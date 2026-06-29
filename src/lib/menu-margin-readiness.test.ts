@@ -501,6 +501,70 @@ describe("buildMenuMarginReadiness", () => {
     });
   });
 
+  test("counts tech-card ingredient links resolved by article and name", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 6000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta",
+          sizePrices: [],
+        },
+        {
+          id: "flour",
+          name: "Flour",
+          article: "F-10",
+          unit: "g",
+          pricePerKg: 100,
+          sizePrices: [],
+        },
+        {
+          id: "sauce",
+          name: "Tomato sauce",
+          unit: "g",
+          pricePerKg: 200,
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-pasta",
+          productId: "pasta-base",
+          productName: "Pasta",
+          items: [
+            {
+              article: "F-10",
+              productName: "Wheat flour",
+              amount: 200,
+              unit: "g",
+            },
+            {
+              productName: "Tomato sauce",
+              amount: 100,
+              unit: "g",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(readiness.items[0].techCard).toMatchObject({
+      linkedIngredientRows: 2,
+      pricedIngredientRows: 2,
+      costReference: 40,
+      usable: true,
+      fullyCosted: true,
+    });
+    expect(readiness.usableTechCardDishes).toBe(1);
+  });
+
   test("surfaces low proven margin as an owner risk", () => {
     const readiness = buildMenuMarginReadiness({
       dishes: [

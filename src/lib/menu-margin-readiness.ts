@@ -324,7 +324,7 @@ function findTechCardMatch(
 
   const ingredientRows = chart.items.length;
   const linkedIngredientRows = chart.items.filter((item) =>
-    Boolean(item.productId),
+    Boolean(item.productId || findIngredientProduct(item, products)),
   ).length;
   const ingredientRowsWithAmount = chart.items.filter(
     (item) => item.amount !== undefined,
