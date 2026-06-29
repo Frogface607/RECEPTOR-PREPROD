@@ -95,6 +95,8 @@ export type OwnerReviewAction = {
   memberName?: string;
   sourceLabel?: string;
   taskTitle?: string;
+  learningModuleId?: string;
+  learningModuleTitle?: string;
   existingTaskId?: string;
 };
 
@@ -269,6 +271,13 @@ function actionTaskTitle(action: OwnerReviewAction): string {
   return trimTaskTitle(`${action.title}: ${action.detail}`);
 }
 
+function actionContextNote(action: OwnerReviewAction): string {
+  const learning = action.learningModuleTitle
+    ? ` Урок для команды: ${action.learningModuleTitle}.`
+    : "";
+  return trimTaskTitle(`${action.detail}${learning}`);
+}
+
 function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
   return {
     title: actionTaskTitle(action),
@@ -276,8 +285,10 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
     roleId: roleTask(action.role),
     dueLabel: roleDue(action.role),
     impactLabel: action.impactLabel,
-    contextNote: trimTaskTitle(action.detail),
+    contextNote: actionContextNote(action),
     sourceLabel: action.sourceLabel ?? actionSourceLabel(action),
+    learningModuleId: action.learningModuleId,
+    learningModuleTitle: action.learningModuleTitle,
     audienceMemberId: action.memberId,
     audienceMemberName: action.memberName,
   };
@@ -1422,6 +1433,8 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
         : undefined,
       sourceLabel: "ФОТ и смены",
       taskTitle: nextAction.title,
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle: "Цифры ресторана простым языком",
     };
   }
 
@@ -1509,6 +1522,8 @@ function ownerActionFromLaborMargin(input: {
     memberId: bridge.employee?.memberId,
     memberName: bridge.employee?.name,
     sourceLabel: "ФОТ и маржа",
+    learningModuleId: "tech-card-discipline",
+    learningModuleTitle: "Техкарта как договор внутри команды",
     taskTitle: bridge.employee
       ? `Разобрать ФОТ и маржу: ${bridge.employee.name}`
       : bridge.marginRiskDish
@@ -1929,6 +1944,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
             role: "owner",
             tone: "risk",
             target: "iiko-settings",
+            learningModuleId: "iiko-cash-discipline",
+            learningModuleTitle: "iiko и кассовая дисциплина на смене",
           } satisfies OwnerReviewAction)
         : null,
       input.shiftPlanVariance

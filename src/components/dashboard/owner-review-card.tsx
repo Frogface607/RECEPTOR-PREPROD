@@ -20,10 +20,7 @@ import type {
   OwnerReviewTone,
   OwnerReviewActionTarget,
 } from "@/lib/owner-review";
-import {
-  buildTeamHref,
-  type TeamPeriodParams,
-} from "@/lib/team/team-links";
+import { buildTeamHref, type TeamPeriodParams } from "@/lib/team/team-links";
 import { SurvivalTaskActions } from "./survival-task-actions";
 import { LinkButton } from "@/components/ui/link-button";
 
@@ -487,6 +484,11 @@ export function OwnerReviewCard({
                             {action.impactLabel}
                           </span>
                         ) : null}
+                        {action.learningModuleTitle ? (
+                          <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                            урок
+                          </span>
+                        ) : null}
                         {action.existingTaskId ? (
                           <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                             уже в Team OS
@@ -499,6 +501,11 @@ export function OwnerReviewCard({
                       <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
                         {action.detail}
                       </p>
+                      {action.learningModuleTitle ? (
+                        <p className="mt-1 text-[12px] leading-relaxed text-sky-100/85">
+                          Команде поможет: {action.learningModuleTitle}
+                        </p>
+                      ) : null}
                     </div>
                     <LinkButton
                       href={actionHref(action, venueId, teamPeriodParams)}

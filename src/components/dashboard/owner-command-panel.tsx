@@ -370,6 +370,11 @@ export function OwnerCommandPanel({
                     {mainAction.impactLabel}
                   </span>
                 ) : null}
+                {mainAction.learningModuleTitle ? (
+                  <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                    урок
+                  </span>
+                ) : null}
                 {mainAction.existingTaskId ? (
                   <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                     уже в Team OS
@@ -382,6 +387,11 @@ export function OwnerCommandPanel({
               <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
                 {mainAction.detail}
               </p>
+              {mainAction.learningModuleTitle ? (
+                <p className="mt-2 line-clamp-1 text-[12px] leading-relaxed text-sky-100/85">
+                  Команде поможет: {mainAction.learningModuleTitle}
+                </p>
+              ) : null}
               <LinkButton
                 href={actionHref(mainAction, venueId, teamPeriodParams)}
                 className="mt-4 h-9 px-3 text-[13px]"
@@ -500,6 +510,11 @@ export function OwnerCommandPanel({
                       {action.impactLabel ? (
                         <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
                           {action.impactLabel}
+                        </span>
+                      ) : null}
+                      {action.learningModuleTitle ? (
+                        <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                          урок
                         </span>
                       ) : null}
                       <p className="text-[13px] font-medium text-foreground">

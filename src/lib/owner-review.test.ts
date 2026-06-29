@@ -289,6 +289,8 @@ describe("buildOwnerReview", () => {
           role: "manager",
           tone: "watch",
           impactLabel: "ФОТ 10%",
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
         }),
       ]),
     );
@@ -297,6 +299,11 @@ describe("buildOwnerReview", () => {
       priority: "medium",
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle: "Цифры ресторана простым языком",
+      contextNote: expect.stringContaining(
+        "Урок для команды: Цифры ресторана простым языком.",
+      ),
     });
   });
 

@@ -41,6 +41,8 @@ export type SurvivalTaskDraft = {
   impactLabel?: string;
   contextNote?: string;
   sourceLabel?: string;
+  learningModuleId?: string;
+  learningModuleTitle?: string;
   audienceMemberId?: string;
   audienceMemberName?: string;
 };
