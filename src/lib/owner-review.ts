@@ -1547,6 +1547,9 @@ function shiftPlanVarianceIssueDetail(
 function laborEmployeeImpact(
   issue: ReturnType<typeof buildLaborEmployeeDiagnostics>[number],
 ): string {
+  if (issue.laborOverTarget && issue.laborOverTarget > 0) {
+    return formatRubles(issue.laborOverTarget);
+  }
   if (issue.laborCostPct !== null) {
     return `ФОТ ${formatCoverage(issue.laborCostPct)}`;
   }
@@ -1554,12 +1557,15 @@ function laborEmployeeImpact(
   return `${issue.shifts} смен`;
 }
 
-function laborShiftImpact(
-  shift: Pick<
-    ReturnType<typeof buildLaborShiftDiagnostics>[number],
-    "laborCostPct" | "revenue" | "staffCount"
-  >,
-): string {
+function laborShiftImpact(shift: {
+  laborCostPct: number | null;
+  laborOverTarget?: number | null;
+  revenue: number;
+  staffCount: number;
+}): string {
+  if (shift.laborOverTarget && shift.laborOverTarget > 0) {
+    return formatRubles(shift.laborOverTarget);
+  }
   if (shift.laborCostPct !== null) {
     return `ФОТ ${formatCoverage(shift.laborCostPct)}`;
   }
@@ -1688,9 +1694,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "manager",
       tone: "risk",
       target: "shift-diagnostics",
-      impactLabel: nextAction.shift
-        ? laborShiftImpact(nextAction.shift)
-        : undefined,
+      impactLabel: nextAction.impactLabel,
       ...laborNumbersLearningHint(),
     };
   }

@@ -212,7 +212,7 @@ describe("buildOwnerReview", () => {
           target: "shift-diagnostics",
           role: "manager",
           tone: "risk",
-          impactLabel: "ФОТ 35%",
+          impactLabel: expect.stringMatching(/^10\s000 ₽$/),
         }),
         expect.objectContaining({
           title: "Блюдо не связано с iiko",
@@ -357,7 +357,7 @@ describe("buildOwnerReview", () => {
           memberName: "Мария",
           role: "manager",
           tone: "risk",
-          impactLabel: "ФОТ 36%",
+          impactLabel: expect.stringMatching(/^5\s500\s₽$/),
           learningModuleId: "restaurant-numbers-basics",
           learningModuleTitle: "Цифры ресторана простым языком",
         }),
@@ -368,10 +368,10 @@ describe("buildOwnerReview", () => {
       priority: "high",
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",
-      impactLabel: "ФОТ 36%",
+      impactLabel: expect.stringMatching(/^5\s500\s₽$/),
       learningModuleId: "restaurant-numbers-basics",
       learningModuleTitle: "Цифры ресторана простым языком",
-      contextNote: expect.stringContaining("ФОТ 36%"),
+      contextNote: expect.stringContaining("Перерасход к цели"),
     });
     expect(review.tasks[0].contextNote).toContain(
       "Урок для команды: Цифры ресторана простым языком.",

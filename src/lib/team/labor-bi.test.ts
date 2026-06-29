@@ -304,19 +304,25 @@ describe("buildLaborBi", () => {
     expect(insights.map((item) => item.title)).toContain(
       "ФОТ выше целевой нормы",
     );
+    expect(insights[0].detail).toMatch(/5\s500 ₽/);
     expect(
       insights.some((item) => item.title.startsWith("Дорогая смена")),
     ).toBe(true);
+    expect(
+      insights.find((item) => item.title.startsWith("Дорогая смена"))?.detail,
+    ).toMatch(/5\s500 ₽/);
     expect(insights.some((item) => item.title.includes("человеко-час"))).toBe(
       true,
     );
     expect(buildLaborNextAction(labor)).toMatchObject({
       kind: "expensive-labor",
       title: "Разобрать дорогую смену",
+      impactLabel: expect.stringMatching(/^5\s500 ₽$/),
       shift: expect.objectContaining({
         shiftId: "shift-expensive",
       }),
     });
+    expect(buildLaborNextAction(labor).detail).toMatch(/5\s500 ₽/);
   });
 
   test("ranks employee diagnostics by missing rates and personal labor pressure", () => {
@@ -373,7 +379,9 @@ describe("buildLaborBi", () => {
       name: "Мария",
       title: "Сотрудник дорогой к выручке",
       tone: "risk",
+      laborOverTarget: 15500,
     });
+    expect(diagnostics[1].detail).toMatch(/15\s500 ₽/);
     expect(diagnostics[2]).toMatchObject({
       name: "Илья",
       title: "Низкая выручка на час сотрудника",

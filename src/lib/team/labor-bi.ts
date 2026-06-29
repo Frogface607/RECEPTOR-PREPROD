@@ -117,6 +117,7 @@ export type LaborNextAction = {
   action: string;
   blocker: LaborBlocker | null;
   shift: LaborShiftSummary | null;
+  impactLabel?: string;
 };
 
 export type LaborInsightOptions = {
@@ -133,6 +134,7 @@ export type LaborShiftDiagnostic = LaborShiftSummary & {
   title: string;
   detail: string;
   action: string;
+  laborOverTarget: number | null;
 };
 
 export type LaborEmployeeDiagnosticKind =
@@ -144,6 +146,7 @@ export type LaborEmployeeDiagnostic = LaborEmployeeSummary & {
   title: string;
   detail: string;
   action: string;
+  laborOverTarget: number | null;
 };
 
 export function buildLaborBi(input: {
@@ -299,10 +302,15 @@ export function buildLaborInsights(
   }
 
   if (labor.laborCostPct !== null && labor.laborCostPct > targetLaborCostPct) {
+    const overTarget = laborCostOverTarget(
+      labor.laborCost,
+      labor.revenue,
+      targetLaborCostPct,
+    );
     insights.push({
       tone: "risk",
       title: "ФОТ выше целевой нормы",
-      detail: `Сейчас ${formatPct(labor.laborCostPct)} от выручки при ориентире ${formatPct(targetLaborCostPct)}.`,
+      detail: `Сейчас ${formatPct(labor.laborCostPct)} от выручки при ориентире ${formatPct(targetLaborCostPct)}. Управляемый перерасход к цели: ${formatMoney(overTarget)}.`,
       action: "Проверьте состав смены, часы и фактическую загрузку зала.",
     });
   }
@@ -314,10 +322,15 @@ export function buildLaborInsights(
     )
     .sort((a, b) => (b.laborCostPct ?? 0) - (a.laborCostPct ?? 0))[0];
   if (expensiveShift) {
+    const overTarget = laborCostOverTarget(
+      expensiveShift.laborCost,
+      expensiveShift.revenue,
+      targetLaborCostPct,
+    );
     insights.push({
       tone: "watch",
       title: `Дорогая смена: ${formatShiftDate(expensiveShift.openTime)}`,
-      detail: `ФОТ смены ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}.`,
+      detail: `ФОТ смены ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}. Перерасход к цели: ${formatMoney(overTarget)}.`,
       action: "Сравните расписание, посадку и роли на этой смене.",
     });
   }
@@ -399,13 +412,19 @@ export function buildLaborNextAction(
     .sort((a, b) => (b.laborCostPct ?? 0) - (a.laborCostPct ?? 0))[0];
 
   if (expensiveShift) {
+    const overTarget = laborCostOverTarget(
+      expensiveShift.laborCost,
+      expensiveShift.revenue,
+      targetLaborCostPct,
+    );
     return {
       kind: "expensive-labor",
       title: "Разобрать дорогую смену",
-      detail: `${formatShiftDate(expensiveShift.openTime)}: ФОТ ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}.`,
+      detail: `${formatShiftDate(expensiveShift.openTime)}: ФОТ ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}; перерасход к цели ${formatMoney(overTarget)}.`,
       action: "Сверьте расписание, роли, часы и загрузку зала на этой смене.",
       blocker: null,
       shift: expensiveShift,
+      impactLabel: formatMoney(overTarget),
     };
   }
 
@@ -717,6 +736,12 @@ function decorateShiftDiagnostic(
   shift: LaborShiftSummary,
   options: Required<LaborInsightOptions>,
 ): LaborShiftDiagnostic {
+  const laborOverTarget = laborCostOverTarget(
+    shift.laborCost,
+    shift.revenue,
+    options.targetLaborCostPct,
+  );
+
   if (shift.missingRates > 0) {
     return {
       ...shift,
@@ -725,6 +750,7 @@ function decorateShiftDiagnostic(
       title: "ФОТ смены не доказан",
       detail: `${shift.missingRates} ${plural(shift.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки или карточки Team OS.`,
       action: "Сначала закройте ставку, потом сравнивайте смену по прибыли.",
+      laborOverTarget: null,
     };
   }
 
@@ -737,8 +763,9 @@ function decorateShiftDiagnostic(
       kind: "expensive-labor",
       tone: "risk",
       title: "Смена дорогая по ФОТ",
-      detail: `ФОТ ${formatPct(shift.laborCostPct)} при выручке ${formatMoney(shift.revenue)}.`,
+      detail: `ФОТ ${formatPct(shift.laborCostPct)} при выручке ${formatMoney(shift.revenue)}. Перерасход к цели: ${formatMoney(laborOverTarget)}.`,
       action: "Разберите расписание, роли и загрузку зала в этой смене.",
+      laborOverTarget,
     };
   }
 
@@ -753,6 +780,7 @@ function decorateShiftDiagnostic(
       title: "Низкая выручка на человеко-час",
       detail: `${formatMoney(shift.revenuePerHour)} на час при ориентире ${formatMoney(options.minimumRevenuePerLaborHour)}.`,
       action: "Проверьте лишние руки, слабые часы и задачи на продажи.",
+      laborOverTarget,
     };
   }
 
@@ -763,6 +791,7 @@ function decorateShiftDiagnostic(
     title: "Смена выглядит управляемо",
     detail: `ФОТ ${formatPct(shift.laborCostPct)}, ${formatMoney(shift.revenuePerHour)} на человеко-час.`,
     action: "Сравните с маржой блюд и закрепите этот состав как ориентир.",
+    laborOverTarget,
   };
 }
 
@@ -770,6 +799,12 @@ function decorateEmployeeDiagnostic(
   employee: LaborEmployeeSummary,
   options: Required<LaborInsightOptions>,
 ): LaborEmployeeDiagnostic {
+  const laborOverTarget = laborCostOverTarget(
+    employee.laborCost,
+    employee.sales,
+    options.targetLaborCostPct,
+  );
+
   if (employee.missingRate) {
     return {
       ...employee,
@@ -780,6 +815,7 @@ function decorateEmployeeDiagnostic(
       action: employee.memberId
         ? "Заполните ставку в карточке Team OS, чтобы ФОТ и прибыль считались точно."
         : "Создайте карточку сотрудника из iiko и задайте ставку ФОТ.",
+      laborOverTarget: null,
     };
   }
 
@@ -792,9 +828,10 @@ function decorateEmployeeDiagnostic(
       kind: "expensive-employee",
       tone: "risk",
       title: "Сотрудник дорогой к выручке",
-      detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)} при выручке ${formatMoney(employee.sales)}.`,
+      detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)} при выручке ${formatMoney(employee.sales)}. Перерасход к цели: ${formatMoney(laborOverTarget)}.`,
       action:
         "Проверьте часы, ставку, роль на смене и нагрузку: высокая выручка не всегда означает прибыль.",
+      laborOverTarget,
     };
   }
 
@@ -810,6 +847,7 @@ function decorateEmployeeDiagnostic(
       detail: `${employee.name}: ${formatMoney(employee.revenuePerHour)} на час при ориентире ${formatMoney(options.minimumRevenuePerLaborHour)}.`,
       action:
         "Сравните смены, посадку и задачи на продажи; возможно, человек стоит не в те часы или без фокуса на чек.",
+      laborOverTarget,
     };
   }
 
@@ -821,6 +859,7 @@ function decorateEmployeeDiagnostic(
     detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)}, ${formatMoney(employee.revenuePerHour)} на час.`,
     action:
       "Держите как рабочий ориентир и сравнивайте с маржинальностью продаж.",
+    laborOverTarget,
   };
 }
 
@@ -834,7 +873,15 @@ function shiftRiskScore(
     shift.laborCostPct !== null &&
     shift.laborCostPct > options.targetLaborCostPct
   ) {
-    return 20_000 + (shift.laborCostPct - options.targetLaborCostPct) * 100;
+    return (
+      20_000 +
+      laborCostOverTarget(
+        shift.laborCost,
+        shift.revenue,
+        options.targetLaborCostPct,
+      ) /
+        10
+    );
   }
 
   if (
@@ -859,7 +906,12 @@ function employeeRiskScore(
   ) {
     return (
       20_000 +
-      (employee.laborCostPct - options.targetLaborCostPct) * 100 +
+      laborCostOverTarget(
+        employee.laborCost,
+        employee.sales,
+        options.targetLaborCostPct,
+      ) /
+        10 +
       employee.sales / 1_000
     );
   }
@@ -918,6 +970,18 @@ function formatPct(value: number | null): string {
 function formatMoney(value: number | null): string {
   if (value === null) return "—";
   return `${Math.round(value).toLocaleString("ru-RU")} ₽`;
+}
+
+function laborCostOverTarget(
+  laborCost: number,
+  revenue: number,
+  targetLaborCostPct: number,
+): number {
+  if (revenue <= 0 || targetLaborCostPct <= 0) return 0;
+  return Math.max(
+    0,
+    roundMoney(laborCost - revenue * (targetLaborCostPct / 100)),
+  );
 }
 
 function formatLaborCoverageGap(labor: LaborBiSummary): string {
