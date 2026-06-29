@@ -41,8 +41,10 @@ import { loadTeamLabor } from "@/lib/team/team-labor-load";
 import {
   getTeamRole,
   hasAnnouncementRead,
+  listCommentsForTask,
   type TeamAnnouncement,
   type TeamTask,
+  type TeamTaskComment,
 } from "@/lib/team/team-os";
 import { AnnouncementReadButton } from "./announcement-read-button";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
@@ -263,12 +265,15 @@ export default async function MyCabinetPage({
   });
   const nextAction = operationPlan[0] ?? null;
   const nextActionTask = nextAction?.taskId
-    ? sortedOpenTasks.find((task) => task.id === nextAction.taskId) ?? null
+    ? (sortedOpenTasks.find((task) => task.id === nextAction.taskId) ?? null)
+    : null;
+  const nextActionTaskContext = nextActionTask
+    ? (listCommentsForTask(nextActionTask.id, workspace.comments)[0] ?? null)
     : null;
   const nextActionAnnouncement = nextAction?.announcementId
-    ? workspace.announcements.find(
+    ? (workspace.announcements.find(
         (announcement) => announcement.id === nextAction.announcementId,
-      ) ?? null
+      ) ?? null)
     : null;
   const unreadImportantAnnouncements = workspace.announcements.filter(
     (announcement) =>
@@ -315,7 +320,10 @@ export default async function MyCabinetPage({
       venueMeta="Команда"
     >
       <main className="flex-1">
-        <section id="team-actions" className="scroll-mt-24 border-b border-border/40">
+        <section
+          id="team-actions"
+          className="scroll-mt-24 border-b border-border/40"
+        >
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.86fr_1.14fr]">
             <div>
               <Badge variant="outline" className="border-brand/30 text-brand">
@@ -379,8 +387,7 @@ export default async function MyCabinetPage({
                             {nextAction.badge}
                           </Badge>
                         )}
-                        {nextActionTask &&
-                        sourceBadgeLabel(nextActionTask) ? (
+                        {nextActionTask && sourceBadgeLabel(nextActionTask) ? (
                           <Badge
                             variant="outline"
                             className="border-brand/30 bg-brand/10 text-brand"
@@ -401,6 +408,14 @@ export default async function MyCabinetPage({
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {nextAction.detail}
                       </p>
+                      {nextActionTaskContext ? (
+                        <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+                          <span className="font-medium text-foreground/80">
+                            {nextActionTaskContext.authorName}:
+                          </span>{" "}
+                          {nextActionTaskContext.body}
+                        </p>
+                      ) : null}
                       {nextActionTask ? (
                         <TaskStatusButtons
                           key={`${nextActionTask.id}-${nextActionTask.status}`}
@@ -464,6 +479,7 @@ export default async function MyCabinetPage({
                       title={group.title}
                       hint={group.hint}
                       tasks={group.tasks}
+                      comments={workspace.comments}
                     />
                   ))
                 ) : (
@@ -659,10 +675,12 @@ function TaskGroup({
   title,
   hint,
   tasks,
+  comments,
 }: {
   title: string;
   hint: string;
   tasks: TeamTask[];
+  comments: TeamTaskComment[];
 }) {
   return (
     <div className="rounded-lg border border-border/60 bg-card/45 p-4">
@@ -679,14 +697,24 @@ function TaskGroup({
       </div>
       <div className="mt-4 grid gap-3">
         {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
+          <TaskCard
+            key={task.id}
+            task={task}
+            context={listCommentsForTask(task.id, comments)[0] ?? null}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function TaskCard({ task }: { task: TeamTask }) {
+function TaskCard({
+  task,
+  context,
+}: {
+  task: TeamTask;
+  context: TeamTaskComment | null;
+}) {
   const sourceLabel = sourceBadgeLabel(task);
 
   return (
@@ -724,6 +752,14 @@ function TaskCard({ task }: { task: TeamTask }) {
       <p className="mt-3 text-sm leading-relaxed text-foreground/90">
         {task.title}
       </p>
+      {context ? (
+        <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+          <span className="font-medium text-foreground/80">
+            {context.authorName}:
+          </span>{" "}
+          {context.body}
+        </p>
+      ) : null}
       <TaskStatusButtons key={`${task.id}-${task.status}`} task={task} />
     </article>
   );
