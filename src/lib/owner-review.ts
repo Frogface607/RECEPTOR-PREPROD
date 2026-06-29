@@ -238,6 +238,45 @@ function dayRevenueImpactLabel(
   return gap > 0 ? formatRubles(gap) : undefined;
 }
 
+function shiftRevenueGap(
+  weakestShift: ShiftStat | undefined,
+  shifts: ShiftStat[],
+): number {
+  if (!weakestShift) return 0;
+  const positiveShifts = shifts.filter((shift) => shift.revenue > 0);
+  if (positiveShifts.length < 2) return 0;
+  const average =
+    positiveShifts.reduce((sum, shift) => sum + shift.revenue, 0) /
+    positiveShifts.length;
+  return Math.max(0, Math.round(average - weakestShift.revenue));
+}
+
+function shiftRevenueGapText(
+  weakestShift: ShiftStat | undefined,
+  shifts: ShiftStat[],
+): string | null {
+  const gap = shiftRevenueGap(weakestShift, shifts);
+  if (gap <= 0) return null;
+  return `Недобор слабой смены к средней смене периода: ${formatRubles(gap)}.`;
+}
+
+function shiftRevenueImpactLabel(
+  weakestShift: ShiftStat | undefined,
+  shifts: ShiftStat[],
+): string | undefined {
+  const gap = shiftRevenueGap(weakestShift, shifts);
+  return gap > 0 ? formatRubles(gap) : undefined;
+}
+
+function formatShiftDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(0, 10);
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
 function topByRevenue(points: RevenuePoint[], direction: "min" | "max") {
   const positive = points.filter((point) => point.revenue > 0);
   if (!positive.length) return null;
@@ -2319,6 +2358,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         weakestShift
           ? `Самая слабая смена: ${formatRubles(weakestShift.revenue)}.`
           : "Смены не дали явного ответа.",
+        shiftRevenueGapText(weakestShift, input.shifts),
       ]),
       check:
         "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
@@ -2326,6 +2366,30 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       tone: "risk",
       taskSourceLabel: "Выручка и смены",
       impactLabel: revenueDropImpactLabel(input.brief),
+      learningModuleId: "shift-open-close",
+      learningModuleTitle: "Открытие и закрытие смены без хаоса",
+    });
+  }
+
+  if (
+    hypotheses.length < 4 &&
+    (!input.brief.revenue.comparisonAvailable ||
+      input.brief.revenue.deltaPct >= -10) &&
+    weakestShift &&
+    shiftRevenueGap(weakestShift, input.shifts) > 0
+  ) {
+    hypotheses.push({
+      title: "Слабую смену нужно объяснить событием",
+      why: joinSentences([
+        `Смена ${formatShiftDate(weakestShift.openTime)} дала ${formatRubles(weakestShift.revenue)}.`,
+        shiftRevenueGapText(weakestShift, input.shifts),
+      ]),
+      check:
+        "Спросить управляющего: посадка, команда, стоп-лист, погода, жалобы и апсейл в этой смене.",
+      role: "manager",
+      tone: "watch",
+      taskSourceLabel: "Выручка и смены",
+      impactLabel: shiftRevenueImpactLabel(weakestShift, input.shifts),
       learningModuleId: "shift-open-close",
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });

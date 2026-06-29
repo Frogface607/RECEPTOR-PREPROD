@@ -1688,7 +1688,24 @@ describe("buildOwnerReview", () => {
       summary,
       dishes,
       categories,
-      shifts,
+      shifts: [
+        {
+          shiftId: "weak-shift",
+          openTime: "2026-06-25T12:00:00",
+          closeTime: "2026-06-25T22:00:00",
+          revenue: 20000,
+          items: 40,
+          employee: "Слабая смена",
+        },
+        {
+          shiftId: "strong-shift",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 100000,
+          items: 220,
+          employee: "Сильная смена",
+        },
+      ],
       brief: {
         ...brief,
         revenue: {
@@ -1720,6 +1737,16 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Просадка могла прийти из смены, а не из меню",
+          why: expect.stringMatching(
+            /Недобор слабой смены к средней смене периода: 40\s000\s₽\./,
+          ),
+        }),
+      ]),
+    );
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -1739,6 +1766,76 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           contextNote: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
+        }),
+      ]),
+    );
+  });
+
+  test("connects weak shift hypotheses with the shift control learning module", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts: [
+        {
+          shiftId: "weak-service",
+          openTime: "2026-06-25T12:00:00",
+          closeTime: "2026-06-25T22:00:00",
+          revenue: 20000,
+          items: 40,
+          employee: "Слабая смена",
+        },
+        {
+          shiftId: "normal-service",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 100000,
+          items: 220,
+          employee: "Сильная смена",
+        },
+      ],
+      brief: {
+        ...brief,
+        revenue: {
+          ...brief.revenue,
+          current: 120000,
+          previous: 120000,
+          deltaPct: 0,
+        },
+      },
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Слабую смену нужно объяснить событием",
+          role: "manager",
+          taskSourceLabel: "Выручка и смены",
+          impactLabel: expect.stringMatching(/^40\s000\s₽$/),
+          learningModuleId: "shift-open-close",
+          learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          why: expect.stringMatching(
+            /Недобор слабой смены к средней смене периода: 40\s000\s₽\./,
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          roleId: "venue_manager",
+          sourceLabel: "Выручка и смены",
+          impactLabel: expect.stringMatching(/^40\s000\s₽$/),
+          contextNote: expect.stringContaining(
+            "Урок для команды: Открытие и закрытие смены без хаоса.",
+          ),
         }),
       ]),
     );
