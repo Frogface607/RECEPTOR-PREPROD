@@ -90,7 +90,7 @@ function actionHref(action: OwnerReviewAction, venueId: string): string {
 
   if (action.existingTaskId) {
     const encodedTaskId = encodeURIComponent(action.existingTaskId);
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-task-${encodedTaskId}`;
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-actions`;
   }
 
   if (
@@ -125,7 +125,7 @@ function teamTaskQueueHref(
   }
 
   const encodedTaskId = encodeURIComponent(taskId);
-  return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-task-${encodedTaskId}`;
+  return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-actions`;
 }
 
 function actionCta(action: OwnerReviewAction): string {
