@@ -281,6 +281,11 @@ async function getWritableTeamContext(): Promise<
   return { ok: true, mode: "saved", userId: user.id, supabase };
 }
 
+function revalidateTeamWorkspace(venueId: string): void {
+  revalidatePath("/team");
+  revalidatePath(`/dashboard/${venueId}`);
+}
+
 async function writeTeamAuditEvent(
   ctx: WritableTeamContext,
   event: TeamAuditEventInput,
@@ -595,7 +600,7 @@ export async function inviteTeamMemberAction(
     },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   return {
     ok: true,
     mode: "saved",
@@ -710,8 +715,7 @@ export async function importIikoTeamMembersAction(
     },
   });
 
-  revalidatePath("/team");
-  revalidatePath(`/dashboard/${parsed.data.venueId}`);
+  revalidateTeamWorkspace(parsed.data.venueId);
   return {
     ok: true,
     mode: "saved",
@@ -796,9 +800,8 @@ export async function updateTeamMemberLaborRateAction(
     console.warn("Failed to auto-close labor rate task:", error);
   }
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   revalidatePath("/me");
-  revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return {
     ok: true,
     mode: "saved",
@@ -915,9 +918,8 @@ export async function bulkUpdateTeamMemberLaborRatesAction(
     console.warn("Failed to auto-close labor rate tasks:", error);
   }
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   revalidatePath("/me");
-  revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return {
     ok: true,
     mode: "saved",
@@ -1018,9 +1020,8 @@ export async function saveTeamShiftPlanAction(
     },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   revalidatePath("/me");
-  revalidatePath(`/dashboard/${parsed.data.venueId}`);
   return { ok: true, mode: "saved", message: "План смены сохранен." };
 }
 
@@ -1050,7 +1051,7 @@ export async function saveTeamLearningStandardAction(
     ctx.mode === "sandbox" ||
     !ctx.supabase
   ) {
-    revalidatePath("/team");
+    revalidateTeamWorkspace(parsed.data.venueId);
     return {
       ok: true,
       mode: "sandbox",
@@ -1089,7 +1090,7 @@ export async function saveTeamLearningStandardAction(
     },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   revalidatePath("/me");
   revalidatePath("/me/learning");
   return { ok: true, mode: "saved", message: "Стандарт роли обновлен." };
@@ -1166,7 +1167,7 @@ export async function updateTeamMemberStatusAction(
     metadata: { status: parsed.data.status },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   revalidatePath("/me");
   return {
     ok: true,
@@ -1243,7 +1244,7 @@ export async function resetTeamMemberPasswordAction(
     metadata: { email: member.email },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   return {
     ok: true,
     mode: "saved",
@@ -1277,7 +1278,7 @@ export async function createTeamTaskAction(
     try {
       const existingTask = await findExistingOpenTask(ctx, parsed.data);
       if (existingTask) {
-        revalidatePath("/team");
+        revalidateTeamWorkspace(parsed.data.venueId);
         return {
           ok: true,
           mode: "saved",
@@ -1356,7 +1357,7 @@ export async function createTeamTaskAction(
     },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   return { ok: true, mode: "saved", message: "Задача создана." };
 }
 
@@ -1420,7 +1421,7 @@ export async function updateTeamTaskStatusAction(
     metadata: { status: parsed.data.status, sourceLabel },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   return { ok: true, mode: "saved", message: "Статус задачи обновлен." };
 }
 
@@ -1482,7 +1483,7 @@ export async function addTaskCommentAction(
     metadata: { taskId: parsed.data.taskId },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   return { ok: true, mode: "saved", message: "Комментарий добавлен." };
 }
 
@@ -1545,6 +1546,6 @@ export async function createTeamAnnouncementAction(
     },
   });
 
-  revalidatePath("/team");
+  revalidateTeamWorkspace(parsed.data.venueId);
   return { ok: true, mode: "saved", message: "Объявление опубликовано." };
 }
