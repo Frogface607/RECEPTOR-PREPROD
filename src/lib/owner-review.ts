@@ -92,6 +92,7 @@ export type OwnerReviewAction = {
   memberId?: string;
   memberName?: string;
   sourceLabel?: string;
+  taskTitle?: string;
 };
 
 export type OwnerProfitReadinessStatus = "ready" | "partial" | "blocked";
@@ -259,6 +260,7 @@ function actionSourceLabel(action: OwnerReviewAction): string {
 }
 
 function actionTaskTitle(action: OwnerReviewAction): string {
+  if (action.taskTitle) return trimTaskTitle(action.taskTitle);
   return trimTaskTitle(`${action.title}: ${action.detail}`);
 }
 
@@ -1402,6 +1404,11 @@ function ownerActionFromLaborMargin(input: {
     memberId: bridge.employee?.memberId,
     memberName: bridge.employee?.name,
     sourceLabel: "ФОТ и маржа",
+    taskTitle: bridge.employee
+      ? `Разобрать ФОТ и маржу: ${bridge.employee.name}`
+      : bridge.marginRiskDish
+        ? `Разобрать ФОТ и маржу: ${bridge.marginRiskDish}`
+        : "Доказать ФОТ и маржу периода",
   };
 }
 
