@@ -73,6 +73,7 @@ export function SurvivalTaskActions({
         audienceRole: audienceType === "role" ? draft.roleId : undefined,
         audienceMemberId: draft.audienceMemberId,
         dueLabel: draft.dueLabel,
+        sourceLabel: draft.sourceLabel,
         dedupeOpenTask: true,
       });
 

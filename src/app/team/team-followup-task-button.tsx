@@ -29,6 +29,7 @@ export function TeamFollowUpTaskButton({
         audienceRole: audienceType === "role" ? draft.roleId : undefined,
         audienceMemberId: draft.audienceMemberId,
         dueLabel: draft.dueLabel,
+        sourceLabel: draft.sourceLabel,
         dedupeOpenTask: true,
       });
 

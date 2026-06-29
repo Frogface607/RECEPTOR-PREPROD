@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  buildTaskSourceLabelMap,
   mapAnnouncementRow,
   mapAnnouncementReadRow,
   mapAuditEventRow,
@@ -65,6 +66,45 @@ describe("Team OS store mapping", () => {
     expect(task.audience).toEqual({ type: "role", roleId: "line_cook" });
     expect(task.source).toBe("chef");
     expect(task.priority).toBe("high");
+  });
+
+  test("keeps operational source labels on mapped tasks", () => {
+    const task = mapTaskRow(
+      {
+        id: "task-labor-margin",
+        venue_id: "venue-1",
+        title: "Разобрать ФОТ и слабую маржу",
+        source: "copilot",
+        priority: "high",
+        status: "new",
+        audience_type: "member",
+        audience_member_id: "member-1",
+        audience_role: null,
+        due_label: "сегодня",
+      },
+      "ФОТ и маржа",
+    );
+
+    expect(task.sourceLabel).toBe("ФОТ и маржа");
+  });
+
+  test("builds task source labels from task-created audit metadata", () => {
+    const labels = buildTaskSourceLabelMap([
+      {
+        event_type: "task_created",
+        target_type: "task",
+        target_id: "task-1",
+        metadata: { sourceLabel: "ФОТ и маржа" },
+      },
+      {
+        event_type: "task_status_updated",
+        target_type: "task",
+        target_id: "task-1",
+        metadata: { sourceLabel: "wrong" },
+      },
+    ]);
+
+    expect(labels.get("task-1")).toBe("ФОТ и маржа");
   });
 
   test("maps member and venue audiences", () => {

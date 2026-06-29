@@ -83,8 +83,8 @@ function priorityLabel(priority: TeamTask["priority"]): string {
   return "низко";
 }
 
-function sourceBadgeLabel(source: TeamTask["source"]): string | null {
-  return source === "copilot" ? "Receptor" : null;
+function sourceBadgeLabel(task: TeamTask): string | null {
+  return task.sourceLabel ?? (task.source === "copilot" ? "Receptor" : null);
 }
 
 function learningStatusLabel(status: TeamLearningItem["status"]): string {
@@ -380,12 +380,12 @@ export default async function MyCabinetPage({
                           </Badge>
                         )}
                         {nextActionTask &&
-                        sourceBadgeLabel(nextActionTask.source) ? (
+                        sourceBadgeLabel(nextActionTask) ? (
                           <Badge
                             variant="outline"
                             className="border-brand/30 bg-brand/10 text-brand"
                           >
-                            {sourceBadgeLabel(nextActionTask.source)}
+                            {sourceBadgeLabel(nextActionTask)}
                           </Badge>
                         ) : null}
                         {nextActionTask?.dueLabel ? (
@@ -687,7 +687,7 @@ function TaskGroup({
 }
 
 function TaskCard({ task }: { task: TeamTask }) {
-  const sourceLabel = sourceBadgeLabel(task.source);
+  const sourceLabel = sourceBadgeLabel(task);
 
   return (
     <article className="rounded-lg border border-border/60 bg-card/50 p-4">

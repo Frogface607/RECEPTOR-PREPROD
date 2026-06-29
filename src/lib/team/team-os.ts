@@ -57,6 +57,7 @@ export type TeamTask = {
   id: string;
   title: string;
   source: "owner" | "copilot" | "manager" | "chef";
+  sourceLabel?: string;
   priority: "high" | "medium" | "low";
   status: "new" | "accepted" | "in_progress" | "done" | "verified";
   venueId: string;

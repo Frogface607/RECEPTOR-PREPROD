@@ -81,6 +81,7 @@ const CreateTeamTaskInput = z
     audienceMemberId: z.string().trim().optional().or(z.literal("")),
     audienceRole: TeamRoleIdSchema.optional(),
     dueLabel: z.string().trim().max(120).optional().or(z.literal("")),
+    sourceLabel: z.string().trim().max(80).optional().or(z.literal("")),
     dedupeOpenTask: z.boolean().optional().default(false),
   })
   .superRefine((value, ctx) => {
@@ -1284,6 +1285,8 @@ export async function createTeamTaskAction(
     return { ok: false, error: error.message };
   }
 
+  const sourceLabel = parsed.data.sourceLabel?.trim() || null;
+
   await writeTeamAuditEvent(ctx, {
     venueId: parsed.data.venueId,
     type: "task_created",
@@ -1292,6 +1295,7 @@ export async function createTeamTaskAction(
     summary: `Создана задача: ${parsed.data.title}.`,
     metadata: {
       source: parsed.data.source,
+      sourceLabel,
       priority: parsed.data.priority,
       audienceType,
       audienceMemberId:

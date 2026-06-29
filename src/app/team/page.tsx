@@ -191,8 +191,8 @@ function statusLabel(status: TeamTask["status"]): string {
   return "проверено";
 }
 
-function sourceBadgeLabel(source: TeamTask["source"]): string | null {
-  return source === "copilot" ? "Receptor" : null;
+function sourceBadgeLabel(task: TeamTask): string | null {
+  return task.sourceLabel ?? (task.source === "copilot" ? "Receptor" : null);
 }
 
 export default async function TeamPage({
@@ -2505,7 +2505,7 @@ function TaskRow({
   compact?: boolean;
   anchorId?: string;
 }) {
-  const sourceLabel = sourceBadgeLabel(task.source);
+  const sourceLabel = sourceBadgeLabel(task);
 
   return (
     <div

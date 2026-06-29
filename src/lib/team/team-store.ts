@@ -87,6 +87,7 @@ type DbAuditEvent = {
   target_type: string;
   target_id: string | null;
   summary: string;
+  metadata?: unknown;
   created_at: string | null;
 };
 
@@ -239,7 +240,7 @@ function normalizeMoney(value: number | string | null | undefined): number {
   return 0;
 }
 
-export function mapTaskRow(row: DbTask): TeamTask {
+export function mapTaskRow(row: DbTask, sourceLabel?: string): TeamTask {
   const roleId = normalizeTeamRoleId(row.audience_role);
   const audience =
     row.audience_type === "member" && row.audience_member_id
@@ -254,6 +255,7 @@ export function mapTaskRow(row: DbTask): TeamTask {
     source: TASK_SOURCES.has(row.source as TeamTask["source"])
       ? (row.source as TeamTask["source"])
       : "manager",
+    sourceLabel,
     priority: TASK_PRIORITIES.has(row.priority as TeamTask["priority"])
       ? (row.priority as TeamTask["priority"])
       : "medium",
@@ -349,6 +351,46 @@ export function mapAuditEventRow(row: DbAuditEvent): TeamAuditEvent {
     summary: row.summary,
     createdAtLabel: formatCreatedAtLabel(row.created_at),
   };
+}
+
+function metadataSourceLabel(value: unknown): string | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const label = (value as { sourceLabel?: unknown }).sourceLabel;
+  if (typeof label !== "string") return undefined;
+
+  const normalized = label.replace(/\s+/g, " ").trim();
+  if (!normalized) return undefined;
+  return normalized.length > 80 ? `${normalized.slice(0, 77).trim()}...` : normalized;
+}
+
+export function buildTaskSourceLabelMap(
+  rows: Array<{
+    event_type: string;
+    target_type: string;
+    target_id: string | null;
+    metadata?: unknown;
+  }>,
+): Map<string, string> {
+  const labels = new Map<string, string>();
+
+  for (const row of rows) {
+    if (
+      row.event_type !== "task_created" ||
+      row.target_type !== "task" ||
+      !row.target_id ||
+      labels.has(row.target_id)
+    ) {
+      continue;
+    }
+
+    const label = metadataSourceLabel(row.metadata);
+    if (label) labels.set(row.target_id, label);
+  }
+
+  return labels;
 }
 
 function normalizeAnswers(value: unknown): number[] {
@@ -647,7 +689,7 @@ export async function getTeamWorkspace(
   const staff = ((membershipsResult.data ?? []) as DbMembership[]).map(
     mapMembershipRow,
   );
-  const tasks = ((tasksResult.data ?? []) as DbTask[]).map(mapTaskRow);
+  const taskRows = (tasksResult.data ?? []) as DbTask[];
   const venueResult = await supabase
     .from("venues")
     .select("name,city,type")
@@ -704,7 +746,9 @@ export async function getTeamWorkspace(
 
   const auditEventsResult = await supabase
     .from("team_audit_events")
-    .select("id,venue_id,event_type,target_type,target_id,summary,created_at")
+    .select(
+      "id,venue_id,event_type,target_type,target_id,summary,metadata,created_at",
+    )
     .eq("venue_id", venueId)
     .order("created_at", { ascending: false })
     .limit(12);
@@ -716,6 +760,25 @@ export async function getTeamWorkspace(
       : ((auditEventsResult.data ?? []) as DbAuditEvent[]).map(
           mapAuditEventRow,
         );
+
+  const taskLabelEventsResult = await supabase
+    .from("team_audit_events")
+    .select("event_type,target_type,target_id,metadata")
+    .eq("venue_id", venueId)
+    .eq("event_type", "task_created")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  const taskSourceLabels =
+    taskLabelEventsResult.error &&
+    isMissingTeamTable(taskLabelEventsResult.error.message)
+      ? new Map<string, string>()
+      : buildTaskSourceLabelMap(
+          (taskLabelEventsResult.data ?? []) as DbAuditEvent[],
+        );
+  const tasks = taskRows.map((row) =>
+    mapTaskRow(row, taskSourceLabels.get(row.id)),
+  );
 
   const learningProgressResult = await supabase
     .from("team_learning_progress")
@@ -867,10 +930,29 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
     .eq("venue_id", venueId)
     .order("created_at", { ascending: false });
 
-  const tasks =
+  const taskRows =
     tasksResult.error && !isMissingTeamTable(tasksResult.error.message)
       ? []
-      : ((tasksResult.data ?? []) as DbTask[]).map(mapTaskRow);
+      : ((tasksResult.data ?? []) as DbTask[]);
+
+  const auditEventsResult = await supabase
+    .from("team_audit_events")
+    .select("event_type,target_type,target_id,metadata")
+    .eq("venue_id", venueId)
+    .eq("event_type", "task_created")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const taskSourceLabels =
+    auditEventsResult.error && !isMissingTeamTable(auditEventsResult.error.message)
+      ? new Map<string, string>()
+      : buildTaskSourceLabelMap(
+          (auditEventsResult.data ?? []) as DbAuditEvent[],
+        );
+
+  const tasks = taskRows.map((row) =>
+    mapTaskRow(row, taskSourceLabels.get(row.id)),
+  );
 
   const visibleTasks = roleCan(member.roleId, "view_all_tasks")
     ? tasks
