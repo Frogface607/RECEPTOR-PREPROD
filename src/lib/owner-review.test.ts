@@ -16,7 +16,11 @@ import {
 } from "./team/team-labor-readiness";
 import type { TeamShiftPlanVarianceSummary } from "./team/team-shift-plan-variance";
 import type { TeamOpsReadiness } from "./team/team-ops-readiness";
-import type { TeamAuditEvent, TeamTask } from "./team/team-os";
+import type {
+  TeamAnnouncement,
+  TeamAuditEvent,
+  TeamTask,
+} from "./team/team-os";
 
 const summary: RevenueSummary = {
   revenue: 100000,
@@ -801,6 +805,64 @@ describe("buildOwnerReview", () => {
           target: "shift-plan",
         },
       ],
+    });
+  });
+
+  test("shows team announcements as owner communication proof", () => {
+    const teamAnnouncements: TeamAnnouncement[] = [
+      {
+        id: "announcement-fot",
+        venueId: "venue-1",
+        title: "ФОТ перед отчетом",
+        body: "Проверьте ставки и смены до вечернего отчета.",
+        priority: "important",
+        audience: { type: "role", roleId: "venue_manager" },
+        createdByName: "Мария",
+        createdAtLabel: "14:10",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks: [],
+      teamAuditEvents: [],
+      teamAnnouncements,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Связь",
+          value: "1 объявление",
+          detail: expect.stringContaining("ФОТ перед отчетом"),
+          tone: "good",
+        }),
+      ]),
+    );
+    expect(review.operationalPulse).toMatchObject({
+      title: "Команда получила контекст",
+      tone: "good",
+      openTasks: 0,
+      closedLoops: 0,
+      recentEvents: [
+        {
+          label: "Объявление",
+          summary: "ФОТ перед отчетом",
+          timeLabel: "14:10",
+          tone: "watch",
+          target: "team-journal",
+        },
+      ],
+      action: {
+        label: "Открыть связь",
+        target: "team-journal",
+      },
     });
   });
 

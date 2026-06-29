@@ -270,6 +270,7 @@ export default async function DashboardPage({
     team: teamReadiness,
     teamTasks: teamWorkspace.tasks,
     teamAuditEvents: teamWorkspace.auditEvents,
+    teamAnnouncements: teamWorkspace.announcements,
     shiftPlanVariance,
   });
 
