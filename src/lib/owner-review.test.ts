@@ -493,6 +493,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           sourceLabel: "ФОТ и маржа",
           memberId: "manager-1",
+          existingTaskId: "task-existing-fot-margin",
         }),
       ]),
     );

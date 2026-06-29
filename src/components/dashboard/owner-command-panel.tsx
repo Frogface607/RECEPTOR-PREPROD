@@ -260,6 +260,11 @@ export function OwnerCommandPanel({
                           {actionContour(action)}
                         </span>
                       ) : null}
+                      {action.existingTaskId ? (
+                        <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                          уже в Team OS
+                        </span>
+                      ) : null}
                       <p className="text-[13px] font-medium text-foreground">
                         {action.title}
                       </p>

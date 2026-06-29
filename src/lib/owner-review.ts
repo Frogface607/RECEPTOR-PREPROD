@@ -93,6 +93,7 @@ export type OwnerReviewAction = {
   memberName?: string;
   sourceLabel?: string;
   taskTitle?: string;
+  existingTaskId?: string;
 };
 
 export type OwnerProfitReadinessStatus = "ready" | "partial" | "blocked";
@@ -963,6 +964,32 @@ function withoutAlreadyOpenTeamTasks(
   );
 }
 
+function taskDraftForAction(action: OwnerReviewAction): SurvivalTaskDraft {
+  return taskFromOwnerAction(action);
+}
+
+function openTaskForDraft(
+  draft: SurvivalTaskDraft,
+  tasks: TeamTask[] | undefined,
+): TeamTask | null {
+  if (!tasks?.length) return null;
+  return tasks.find((task) => draftMatchesOpenTeamTask(draft, task)) ?? null;
+}
+
+function markActionsWithOpenTasks(
+  actions: OwnerReviewAction[],
+  tasks: TeamTask[] | undefined,
+): OwnerReviewAction[] {
+  if (!tasks?.length) return actions;
+
+  return actions.map((action) => {
+    const existingTask = openTaskForDraft(taskDraftForAction(action), tasks);
+    return existingTask
+      ? { ...action, existingTaskId: existingTask.id }
+      : action;
+  });
+}
+
 function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
   const seen = new Set<string>();
   return drafts.filter((draft) => {
@@ -1816,33 +1843,34 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       tone: topDishShare >= 18 ? "watch" : "good",
     },
   ];
-  const actions = [
-    input.dataQuality.status === "risk" || input.dataMode === "mock"
-      ? ({
-          title: "Проверить источник данных",
-          detail:
-            input.dataMode === "mock"
-              ? "Сейчас открыт демо-контур. Для решений нужен live iiko."
-              : input.dataQuality.summary,
-          role: "owner",
-          tone: "risk",
-          target: "iiko-settings",
-        } satisfies OwnerReviewAction)
-      : null,
-    input.shiftPlanVariance
-      ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
-      : null,
-    ownerActionFromCommunication(operationalProof),
-    ownerActionFromLaborMargin({
-      labor: input.labor,
-      margin: input.margin,
-    }),
-    input.labor ? ownerActionFromLabor(input.labor) : null,
-    input.margin ? ownerActionFromMargin(input.margin) : null,
-    input.team ? ownerActionFromTeam(input.team) : null,
-  ]
-    .filter((item): item is OwnerReviewAction => item !== null)
-    .slice(0, 3);
+  const actions = markActionsWithOpenTasks(
+    [
+      input.dataQuality.status === "risk" || input.dataMode === "mock"
+        ? ({
+            title: "Проверить источник данных",
+            detail:
+              input.dataMode === "mock"
+                ? "Сейчас открыт демо-контур. Для решений нужен live iiko."
+                : input.dataQuality.summary,
+            role: "owner",
+            tone: "risk",
+            target: "iiko-settings",
+          } satisfies OwnerReviewAction)
+        : null,
+      input.shiftPlanVariance
+        ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
+        : null,
+      ownerActionFromCommunication(operationalProof),
+      ownerActionFromLaborMargin({
+        labor: input.labor,
+        margin: input.margin,
+      }),
+      input.labor ? ownerActionFromLabor(input.labor) : null,
+      input.margin ? ownerActionFromMargin(input.margin) : null,
+      input.team ? ownerActionFromTeam(input.team) : null,
+    ].filter((item): item is OwnerReviewAction => item !== null),
+    input.teamTasks,
+  ).slice(0, 3);
 
   const hypotheses: OwnerReviewHypothesis[] = [];
 
