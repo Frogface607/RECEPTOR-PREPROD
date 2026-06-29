@@ -3,7 +3,12 @@ import { buildTeamManagerFollowUp } from "./team-manager-followup";
 import type { TeamLaborReadiness } from "./team-labor-readiness";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
 import type { TeamShiftPlanVarianceSummary } from "./team-shift-plan-variance";
-import type { StaffMember, TeamTask } from "./team-os";
+import type {
+  StaffMember,
+  TeamAnnouncement,
+  TeamAnnouncementRead,
+  TeamTask,
+} from "./team-os";
 
 const manager: StaffMember = {
   id: "manager-1",
@@ -230,6 +235,67 @@ describe("buildTeamManagerFollowUp", () => {
         }),
       ]),
     );
+  });
+
+  test("adds follow-up for unread important announcements", () => {
+    const announcements: TeamAnnouncement[] = [
+      {
+        id: "announcement-service-focus",
+        venueId: "venue-1",
+        title: "Зал: фокус на вечер",
+        body: "Каждый стол получает рекомендацию по ужину.",
+        priority: "important",
+        audience: { type: "role", roleId: "service" },
+        createdByName: "Мария",
+        createdAtLabel: "13:00",
+      },
+    ];
+    const announcementReads: TeamAnnouncementRead[] = [
+      {
+        announcementId: "announcement-service-focus",
+        memberId: "waiter-1",
+        readAtLabel: "13:05",
+      },
+    ];
+    const secondWaiter: StaffMember = {
+      id: "waiter-2",
+      name: "Оля",
+      roleId: "service",
+      venueId: "venue-1",
+      status: "active",
+      shiftLabel: "вечер",
+    };
+
+    const followUp = buildTeamManagerFollowUp({
+      staff: [manager, waiter, secondWaiter],
+      tasks: [],
+      laborReadiness: readyLabor,
+      learningSummaries: [
+        learningSummary(manager),
+        learningSummary(waiter),
+        learningSummary(secondWaiter),
+      ],
+      shiftPlanVariance: readyVariance,
+      announcements,
+      announcementReads,
+    });
+
+    expect(followUp).toMatchObject({
+      status: "attention",
+      unreadImportantAnnouncements: 1,
+    });
+    expect(followUp.items[0]).toMatchObject({
+      id: "announcement-reads",
+      title: "Дожать подтверждение объявления",
+      href: "#team-announcement-announcement-service-focus",
+      metric: "1 без ответа",
+      taskDraft: {
+        priority: "medium",
+        roleId: "venue_manager",
+        sourceLabel: "Связь",
+        title: expect.stringContaining("Зал: фокус на вечер"),
+      },
+    });
   });
 
   test("returns a ready follow-up when manager has no blockers", () => {

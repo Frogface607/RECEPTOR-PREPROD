@@ -1,7 +1,12 @@
 import type { TeamLaborReadiness } from "./team-labor-readiness";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
 import type { TeamShiftPlanVarianceSummary } from "./team-shift-plan-variance";
-import type { TeamTask } from "./team-os";
+import type {
+  StaffMember,
+  TeamAnnouncement,
+  TeamAnnouncementRead,
+  TeamTask,
+} from "./team-os";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
 
 export type TeamManagerFollowUpStatus = "ready" | "attention" | "blocked";
@@ -26,6 +31,7 @@ export type TeamManagerFollowUp = {
   blockedAdmissions: number;
   laborCoveragePct: number;
   planCoveragePct: number;
+  unreadImportantAnnouncements: number;
   items: TeamManagerFollowUpItem[];
 };
 
@@ -89,17 +95,73 @@ function planFactDetail(variance: TeamShiftPlanVarianceSummary): string | null {
   return `${issue.member.name}: расхождение ${issue.hoursDelta > 0 ? "+" : ""}${issue.hoursDelta} ч. ${issue.dateLabel}.`;
 }
 
+function announcementRecipients(
+  announcement: TeamAnnouncement,
+  staff: StaffMember[],
+): StaffMember[] {
+  return staff.filter((member) => {
+    if (member.status === "paused") return false;
+    if (announcement.audience.type === "venue") return true;
+    return member.roleId === announcement.audience.roleId;
+  });
+}
+
+function topUnreadImportantAnnouncement(input: {
+  staff: StaffMember[];
+  announcements: TeamAnnouncement[];
+  announcementReads: TeamAnnouncementRead[];
+}): {
+  announcement: TeamAnnouncement;
+  recipients: number;
+  unread: number;
+} | null {
+  const readKeys = new Set(
+    input.announcementReads.map(
+      (read) => `${read.announcementId}:${read.memberId}`,
+    ),
+  );
+
+  return (
+    input.announcements
+      .filter((announcement) => announcement.priority === "important")
+      .map((announcement) => {
+        const recipients = announcementRecipients(announcement, input.staff);
+        const unread = recipients.filter(
+          (member) => !readKeys.has(`${announcement.id}:${member.id}`),
+        );
+        return {
+          announcement,
+          recipients: recipients.length,
+          unread: unread.length,
+        };
+      })
+      .filter((item) => item.recipients > 0 && item.unread > 0)
+      .sort((a, b) => {
+        if (a.unread !== b.unread) return b.unread - a.unread;
+        return b.recipients - a.recipients;
+      })[0] ?? null
+  );
+}
+
 export function buildTeamManagerFollowUp(input: {
+  staff?: StaffMember[];
   tasks: TeamTask[];
   laborReadiness: TeamLaborReadiness;
   learningSummaries: TeamLearningMemberSummary[];
   shiftPlanVariance: TeamShiftPlanVarianceSummary;
+  announcements?: TeamAnnouncement[];
+  announcementReads?: TeamAnnouncementRead[];
 }): TeamManagerFollowUp {
   const openTasks = input.tasks.filter(isOpenTask);
   const urgentTasks = openTasks.filter((task) => task.priority === "high");
   const blockedAdmissions = input.learningSummaries.filter(
     (summary) => summary.member.status !== "paused" && !summary.canWorkShift,
   );
+  const communicationGap = topUnreadImportantAnnouncement({
+    staff: input.staff ?? [],
+    announcements: input.announcements ?? [],
+    announcementReads: input.announcementReads ?? [],
+  });
   const items: TeamManagerFollowUpItem[] = [];
 
   if (urgentTasks.length > 0) {
@@ -116,6 +178,30 @@ export function buildTeamManagerFollowUp(input: {
         priority: "high",
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
+      }),
+    });
+  }
+
+  if (communicationGap) {
+    items.push({
+      id: "announcement-reads",
+      title: "Дожать подтверждение объявления",
+      detail: `${communicationGap.announcement.title}: ${communicationGap.unread} из ${communicationGap.recipients} еще не подтвердили.`,
+      tone:
+        communicationGap.unread === communicationGap.recipients
+          ? "risk"
+          : "watch",
+      href: `#team-announcement-${encodeURIComponent(
+        communicationGap.announcement.id,
+      )}`,
+      metric: `${communicationGap.unread} без ответа`,
+      taskDraft: managerTaskDraft({
+        title: `Дожать подтверждение объявления: ${communicationGap.announcement.title} — ${communicationGap.unread} без прочтения`,
+        priority:
+          communicationGap.unread === communicationGap.recipients
+            ? "high"
+            : "medium",
+        sourceLabel: "Связь",
       }),
     });
   }
@@ -271,6 +357,7 @@ export function buildTeamManagerFollowUp(input: {
       blockedAdmissions: blockedAdmissions.length,
       laborCoveragePct: input.laborReadiness.coveragePct,
       planCoveragePct: input.shiftPlanVariance.planCoveragePct,
+      unreadImportantAnnouncements: 0,
       items: [
         {
           id: "ready",
@@ -301,6 +388,7 @@ export function buildTeamManagerFollowUp(input: {
     blockedAdmissions: blockedAdmissions.length,
     laborCoveragePct: input.laborReadiness.coveragePct,
     planCoveragePct: input.shiftPlanVariance.planCoveragePct,
+    unreadImportantAnnouncements: communicationGap?.unread ?? 0,
     items: visibleItems,
   };
 }

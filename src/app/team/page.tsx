@@ -334,10 +334,13 @@ export default async function TeamPage({
     roster: shiftRoster,
   });
   const managerFollowUp = buildTeamManagerFollowUp({
+    staff: workspace.staff,
     tasks: workspace.tasks,
     laborReadiness,
     learningSummaries,
     shiftPlanVariance,
+    announcements: workspace.announcements,
+    announcementReads: workspace.announcementReads,
   });
   const communicationDrafts = buildTeamCommunicationDrafts({
     learningRolePlans,
@@ -989,7 +992,7 @@ function TeamManagerFollowUpCard({
         {followUp.detail}
       </p>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <FollowUpMetric
           label="Срочно"
           value={formatInteger(followUp.urgentTasks)}
@@ -999,6 +1002,10 @@ function TeamManagerFollowUpCard({
           value={formatInteger(followUp.blockedAdmissions)}
         />
         <FollowUpMetric label="ФОТ" value={`${followUp.laborCoveragePct}%`} />
+        <FollowUpMetric
+          label="Связь"
+          value={formatInteger(followUp.unreadImportantAnnouncements)}
+        />
       </div>
 
       <div className="mt-3 grid gap-2">
