@@ -30,6 +30,7 @@ export function TeamFollowUpTaskButton({
         audienceMemberId: draft.audienceMemberId,
         dueLabel: draft.dueLabel,
         impactLabel: draft.impactLabel,
+        contextNote: draft.contextNote,
         sourceLabel: draft.sourceLabel,
         dedupeOpenTask: true,
       });

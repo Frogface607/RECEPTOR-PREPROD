@@ -233,6 +233,7 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       sourceLabel: "ФОТ и маржа",
       impactLabel: "ФОТ 35%",
+      contextNote: expect.stringContaining("решение по часам без маржи"),
     });
     expect(review.tasks[0].title.length).toBeLessThan(80);
     expect(review.hypotheses).toEqual(
@@ -351,6 +352,7 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",
       impactLabel: "ФОТ 36%",
+      contextNote: expect.stringContaining("ФОТ 36%"),
     });
   });
 

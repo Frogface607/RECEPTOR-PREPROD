@@ -39,6 +39,7 @@ export type SurvivalTaskDraft = {
   roleId: TeamRoleId;
   dueLabel: string;
   impactLabel?: string;
+  contextNote?: string;
   sourceLabel?: string;
   audienceMemberId?: string;
   audienceMemberName?: string;

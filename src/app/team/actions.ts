@@ -82,6 +82,7 @@ const CreateTeamTaskInput = z
     audienceRole: TeamRoleIdSchema.optional(),
     dueLabel: z.string().trim().max(120).optional().or(z.literal("")),
     impactLabel: z.string().trim().max(80).optional().or(z.literal("")),
+    contextNote: z.string().trim().max(1000).optional().or(z.literal("")),
     sourceLabel: z.string().trim().max(80).optional().or(z.literal("")),
     dedupeOpenTask: z.boolean().optional().default(false),
   })
@@ -1279,6 +1280,7 @@ export async function createTeamTaskAction(
   const audienceType = parsed.data.audienceType;
   const sourceLabel = parsed.data.sourceLabel?.trim() || null;
   const impactLabel = parsed.data.impactLabel?.trim() || null;
+  const contextNote = parsed.data.contextNote?.trim() || null;
 
   if (parsed.data.dedupeOpenTask) {
     try {
@@ -1378,8 +1380,52 @@ export async function createTeamTaskAction(
     },
   });
 
+  let contextCommentSaved = false;
+  if (task?.id && contextNote) {
+    const { data: membership } = await ctx.supabase
+      .from("venue_memberships")
+      .select("id")
+      .eq("venue_id", parsed.data.venueId)
+      .eq("user_id", ctx.userId)
+      .maybeSingle<{ id: string }>();
+
+    const { data: comment, error: commentError } = await ctx.supabase
+      .from("team_task_comments")
+      .insert({
+        venue_id: parsed.data.venueId,
+        task_id: task.id,
+        author_membership_id: membership?.id ?? null,
+        author_user_id: ctx.userId,
+        body: contextNote,
+      })
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (!commentError) {
+      contextCommentSaved = true;
+      await writeTeamAuditEvent(ctx, {
+        venueId: parsed.data.venueId,
+        type: "comment_added",
+        targetType: "comment",
+        targetId: comment?.id ?? null,
+        summary: "Receptor добавил контекст к задаче.",
+        metadata: {
+          taskId: task.id,
+          sourceLabel,
+          impactLabel,
+        },
+      });
+    }
+  }
+
   revalidateTeamWorkspace(parsed.data.venueId);
-  return { ok: true, mode: "saved", message: "Задача создана." };
+  return {
+    ok: true,
+    mode: "saved",
+    message: contextCommentSaved
+      ? "Задача создана, контекст добавлен."
+      : "Задача создана.",
+  };
 }
 
 export async function updateTeamTaskStatusAction(

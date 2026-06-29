@@ -75,6 +75,7 @@ export function SurvivalTaskActions({
         audienceMemberId: draft.audienceMemberId,
         dueLabel: draft.dueLabel,
         impactLabel: draft.impactLabel,
+        contextNote: draft.contextNote,
         sourceLabel: draft.sourceLabel,
         dedupeOpenTask: true,
       });
@@ -127,7 +128,8 @@ export function SurvivalTaskActions({
                 </p>
                 <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                   Создастся в Team OS как задача для{" "}
-                  {audiencePrefix(draft).toLowerCase()} {audienceLabel(draft)}.
+                  {audiencePrefix(draft).toLowerCase()} {audienceLabel(draft)}
+                  {draft.contextNote ? " с первым комментарием от Receptor." : "."}
                 </p>
               </div>
 
