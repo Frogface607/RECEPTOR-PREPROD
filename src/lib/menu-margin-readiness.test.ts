@@ -630,6 +630,7 @@ describe("buildMenuMarginReadiness", () => {
         costReference: 55,
         salePrice: 100,
         grossProfit: 450,
+        grossProfitGapToTarget: 150,
         costSource: "product",
       }),
     ]);

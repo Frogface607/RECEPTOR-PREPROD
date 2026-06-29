@@ -57,6 +57,7 @@ export type MenuMarginRisk = {
   grossProfit: number;
   grossProfitPerItem: number;
   grossMarginPct: number;
+  grossProfitGapToTarget: number;
   costSource: "product" | "tech-card";
 };
 
@@ -119,7 +120,9 @@ export function buildMenuMarginReadiness(input: {
   products: Product[];
   mappings?: MenuItemMapping[];
   techCards?: MenuMarginTechCard[];
+  targetGrossMarginPct?: number;
 }): MenuMarginReadiness {
+  const targetGrossMarginPct = input.targetGrossMarginPct ?? 60;
   const products = input.products.filter((product) => product.active !== false);
   const mappings = input.mappings ?? [];
   const techCards = input.techCards ?? [];
@@ -244,7 +247,7 @@ export function buildMenuMarginReadiness(input: {
         item.grossProfit !== null &&
         item.grossProfitPerItem !== null &&
         item.grossMarginPct !== null &&
-        item.grossMarginPct < 60,
+        item.grossMarginPct < targetGrossMarginPct,
     )
     .map((item) => ({
       dishName: item.dishName,
@@ -256,10 +259,18 @@ export function buildMenuMarginReadiness(input: {
       grossProfit: item.grossProfit ?? 0,
       grossProfitPerItem: item.grossProfitPerItem ?? 0,
       grossMarginPct: item.grossMarginPct ?? 0,
+      grossProfitGapToTarget: grossProfitGapToTarget({
+        revenue: item.revenue,
+        grossProfit: item.grossProfit ?? 0,
+        targetGrossMarginPct,
+      }),
       costSource: item.costSource ?? "product",
     }))
     .sort(
-      (a, b) => a.grossMarginPct - b.grossMarginPct || b.revenue - a.revenue,
+      (a, b) =>
+        b.grossProfitGapToTarget - a.grossProfitGapToTarget ||
+        a.grossMarginPct - b.grossMarginPct ||
+        b.revenue - a.revenue,
     )
     .slice(0, 5);
 
@@ -511,6 +522,16 @@ function normalizeIngredientUnit(
 
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function grossProfitGapToTarget(input: {
+  revenue: number;
+  grossProfit: number;
+  targetGrossMarginPct: number;
+}): number {
+  if (input.revenue <= 0 || input.targetGrossMarginPct <= 0) return 0;
+  const targetGrossProfit = input.revenue * (input.targetGrossMarginPct / 100);
+  return roundMoney(Math.max(0, targetGrossProfit - input.grossProfit));
 }
 
 function findProductMatch(

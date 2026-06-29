@@ -1729,14 +1729,21 @@ function ownerActionFromMargin(
     if (!primaryRisk) return null;
     const source =
       primaryRisk.costSource === "tech-card" ? "по техкарте" : "по товару iiko";
+    const profitGapText =
+      primaryRisk.grossProfitGapToTarget > 0
+        ? ` Недобор валовой прибыли к цели: ${formatRubles(primaryRisk.grossProfitGapToTarget)}.`
+        : "";
 
     return {
       title: `Разобрать маржу: ${primaryRisk.dishName}`,
-      detail: `Валовая маржа ${primaryRisk.grossMarginPct}%: цена ${formatRubles(primaryRisk.salePrice)}, себестоимость ${formatRubles(primaryRisk.costReference)} ${source}. Проверьте цену, порцию, списания и состав техкарты.`,
+      detail: `Валовая маржа ${primaryRisk.grossMarginPct}%: цена ${formatRubles(primaryRisk.salePrice)}, себестоимость ${formatRubles(primaryRisk.costReference)} ${source}.${profitGapText} Проверьте цену, порцию, списания и состав техкарты.`,
       role: "chef",
       tone: primaryRisk.grossMarginPct < 45 ? "risk" : "watch",
       target: "margin-risk",
-      impactLabel: `маржа ${primaryRisk.grossMarginPct}%`,
+      impactLabel:
+        primaryRisk.grossProfitGapToTarget > 0
+          ? formatRubles(primaryRisk.grossProfitGapToTarget)
+          : `маржа ${primaryRisk.grossMarginPct}%`,
       ...learning,
     };
   }

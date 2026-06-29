@@ -861,15 +861,20 @@ describe("buildOwnerReview", () => {
           tone: "watch",
           title: expect.stringContaining("Cheap pasta"),
           detail: expect.stringContaining("45%"),
+          impactLabel: "150 ₽",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
         }),
       ]),
     );
+    expect(review.actions[0].detail).toContain(
+      "Недобор валовой прибыли к цели: 150 ₽.",
+    );
     expect(review.tasks[0]).toMatchObject({
       title: expect.stringContaining("Cheap pasta"),
       roleId: "chef",
       priority: "medium",
+      impactLabel: "150 ₽",
     });
   });
 
