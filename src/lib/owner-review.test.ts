@@ -978,6 +978,10 @@ describe("buildOwnerReview", () => {
           detail: expect.stringContaining("1 закрыто недавно"),
           tone: "risk",
         }),
+        expect.objectContaining({
+          label: "Контуры",
+          detail: expect.stringContaining("Разобрать дорогую смену"),
+        }),
       ]),
     );
     expect(review.operationalPulse).toMatchObject({
@@ -987,7 +991,6 @@ describe("buildOwnerReview", () => {
       urgentOpenTasks: 1,
       openTaskContours: ["ФОТ и маржа"],
       closedLoops: 1,
-      detail: expect.stringContaining("ФОТ и маржа"),
       recentEvents: [
         expect.objectContaining({
           label: "Закрыто",
@@ -1002,6 +1005,10 @@ describe("buildOwnerReview", () => {
         target: "team-actions",
       },
     });
+    expect(review.operationalPulse?.detail).toContain("ФОТ и маржа");
+    expect(review.operationalPulse?.detail).toContain(
+      "Разобрать дорогую смену",
+    );
   });
 
   test("shows FOT and shift plan fixes in the owner operational pulse", () => {
