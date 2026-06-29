@@ -13,10 +13,12 @@ import type { ReactNode } from "react";
 import { LinkButton } from "@/components/ui/link-button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import {
+  buildLaborEmployeeDiagnostics,
   buildLaborNextAction,
   buildLaborInsights,
   type LaborBlocker,
   type LaborBiSummary,
+  type LaborEmployeeDiagnostic,
   type LaborInsightTone,
   type LaborNextAction,
 } from "@/lib/team/labor-bi";
@@ -47,6 +49,9 @@ export function LaborBiCard({
   const insights = buildLaborInsights(labor);
   const nextAction = buildLaborNextAction(labor);
   const nextActionHref = buildLaborActionHref(ratesHref, nextAction);
+  const employeeDiagnostics = buildLaborEmployeeDiagnostics(labor)
+    .filter((item) => item.kind !== "healthy")
+    .slice(0, 3);
   const coverageLabel = formatPct(labor.revenueCoveragePct);
   const unpricedDetail =
     labor.unpricedStaffShifts > 0
@@ -186,6 +191,35 @@ export function LaborBiCard({
               <LaborBlockerCard
                 key={`${blocker.name}-${blocker.reason}`}
                 blocker={blocker}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {employeeDiagnostics.length > 0 ? (
+        <div className="mt-5 border-y border-border/45 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                РљРѕРіРѕ СЂР°Р·РѕР±СЂР°С‚СЊ
+              </p>
+              <h3 className="mt-1 text-base font-medium text-foreground">
+                РџРµСЂСЃРѕРЅР°Р»СЊРЅС‹Рµ СЂРёСЃРєРё Р¤РћРў
+              </h3>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+              Р’Р»Р°РґРµР»РµС† СЃСЂР°Р·Сѓ РІРёРґРёС‚, РєР°РєРѕРіРѕ
+              СЃРѕС‚СЂСѓРґРЅРёРєР° РѕС‚РєСЂС‹С‚СЊ РІ Team OS.
+            </p>
+          </div>
+
+          <div className="mt-3 grid gap-2 lg:grid-cols-3">
+            {employeeDiagnostics.map((employee) => (
+              <EmployeeDiagnosticCard
+                key={employee.memberId ?? employee.name}
+                employee={employee}
+                href={buildEmployeeDiagnosticHref(ratesHref, employee)}
               />
             ))}
           </div>
@@ -469,6 +503,104 @@ function LaborBlockerCard({ blocker }: { blocker: LaborBlocker }) {
       </p>
       <p className="mt-1 text-[11px] text-muted-foreground">
         выручки без точного ФОТ
+      </p>
+    </div>
+  );
+}
+
+function buildEmployeeDiagnosticHref(
+  ratesHref: string | undefined,
+  employee: LaborEmployeeDiagnostic,
+): string | null {
+  if (!ratesHref) return null;
+  const [path] = ratesHref.split("#");
+
+  if (employee.memberId) {
+    const separator = path.includes("?") ? "&" : "?";
+    const memberId = encodeURIComponent(employee.memberId);
+    return `${path}${separator}memberId=${memberId}&focusMemberId=${memberId}#labor-member-${memberId}`;
+  }
+
+  if (employee.kind === "missing-rate") return `${path}#team-actions`;
+  return `${path}#iiko-shift-diagnostics`;
+}
+
+function employeeDiagnosticLabel(
+  kind: LaborEmployeeDiagnostic["kind"],
+): string {
+  if (kind === "missing-rate") return "РЅРµС‚ СЃС‚Р°РІРєРё";
+  if (kind === "expensive-employee") return "РґРѕСЂРѕРіРѕ";
+  if (kind === "low-productivity") return "РЅРёР·РєРёР№ С‡Р°СЃ";
+  return "РЅРѕСЂРјР°";
+}
+
+function EmployeeDiagnosticCard({
+  employee,
+  href,
+}: {
+  employee: LaborEmployeeDiagnostic;
+  href: string | null;
+}) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/30 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-medium text-foreground">
+            {employee.name}
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {employee.shifts} СЃРјРµРЅ В· {formatHours(employee.hours)}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] ${insightClass(employee.tone)}`}
+        >
+          {employeeDiagnosticLabel(employee.kind)}
+        </span>
+      </div>
+
+      <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+        {employee.detail}
+      </p>
+
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <MiniMetric label="Р¤РћРў" value={formatPct(employee.laborCostPct)} />
+        <MiniMetric
+          label="РІС‹СЂСѓС‡РєР°"
+          value={formatRubles(employee.sales)}
+        />
+        <MiniMetric
+          label="РЅР° С‡Р°СЃ"
+          value={
+            employee.revenuePerHour
+              ? formatRubles(employee.revenuePerHour)
+              : "вЂ”"
+          }
+        />
+      </div>
+
+      {href ? (
+        <LinkButton
+          href={href}
+          variant="outline"
+          className="mt-3 h-8 w-full justify-between border-brand/35 bg-brand/10 px-3 text-[12px] text-brand hover:bg-brand/15"
+        >
+          РћС‚РєСЂС‹С‚СЊ РІ Team OS
+          <ArrowRight className="size-3.5" />
+        </LinkButton>
+      ) : null}
+    </div>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border/35 bg-card/35 px-2 py-1.5">
+      <p className="text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="numeric mt-1 truncate font-mono text-[11px] text-foreground">
+        {value}
       </p>
     </div>
   );
