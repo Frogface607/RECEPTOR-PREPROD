@@ -46,6 +46,7 @@ type DbTask = {
   venue_id: string;
   title: string;
   source: string;
+  source_label?: string | null;
   priority: string;
   status: string;
   audience_type: string;
@@ -182,11 +183,19 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
   "done",
   "verified",
 ]);
+const TASK_SELECT_COLUMNS =
+  "id,venue_id,title,source,source_label,priority,status,audience_type,audience_member_id,audience_role,due_label";
+const TASK_SELECT_COLUMNS_LEGACY =
+  "id,venue_id,title,source,priority,status,audience_type,audience_member_id,audience_role,due_label";
 
 function isMissingTeamTable(message: string): boolean {
   return /venue_memberships|team_tasks|team_task_comments|team_announcements|team_announcement_reads|team_audit_events|team_learning_progress|team_learning_standards|team_shift_plans|hourly_rate|shift_pay|revenue_bonus_pct|shift_date|shift_start|shift_end|is_day_off|relation .* does not exist|column .* does not exist/i.test(
     message,
   );
+}
+
+function missingSourceLabelColumn(message: string): boolean {
+  return /source_label/i.test(message);
 }
 
 function formatCreatedAtLabel(value: string | null): string {
@@ -240,6 +249,16 @@ function normalizeMoney(value: number | string | null | undefined): number {
   return 0;
 }
 
+function normalizeTaskSourceLabel(
+  value: string | null | undefined,
+): string | undefined {
+  if (!value?.trim()) return undefined;
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized.length > 80
+    ? `${normalized.slice(0, 77).trim()}...`
+    : normalized;
+}
+
 export function mapTaskRow(row: DbTask, sourceLabel?: string): TeamTask {
   const roleId = normalizeTeamRoleId(row.audience_role);
   const audience =
@@ -255,7 +274,7 @@ export function mapTaskRow(row: DbTask, sourceLabel?: string): TeamTask {
     source: TASK_SOURCES.has(row.source as TeamTask["source"])
       ? (row.source as TeamTask["source"])
       : "manager",
-    sourceLabel,
+    sourceLabel: normalizeTaskSourceLabel(row.source_label) ?? sourceLabel,
     priority: TASK_PRIORITIES.has(row.priority as TeamTask["priority"])
       ? (row.priority as TeamTask["priority"])
       : "medium",
@@ -658,14 +677,24 @@ export async function getTeamWorkspace(
 
   const tasksResult = await supabase
     .from("team_tasks")
-    .select(
-      "id,venue_id,title,source,priority,status,audience_type,audience_member_id,audience_role,due_label",
-    )
+    .select(TASK_SELECT_COLUMNS)
     .eq("venue_id", venueId)
     .order("created_at", { ascending: false });
+  let tasksData = tasksResult.data as DbTask[] | null;
+  let tasksError = tasksResult.error;
 
-  if (tasksResult.error) {
-    if (isMissingTeamTable(tasksResult.error.message)) {
+  if (tasksError && missingSourceLabelColumn(tasksError.message)) {
+    const fallbackResult = await supabase
+      .from("team_tasks")
+      .select(TASK_SELECT_COLUMNS_LEGACY)
+      .eq("venue_id", venueId)
+      .order("created_at", { ascending: false });
+    tasksData = fallbackResult.data as DbTask[] | null;
+    tasksError = fallbackResult.error;
+  }
+
+  if (tasksError) {
+    if (isMissingTeamTable(tasksError.message)) {
       return getDemoTeamWorkspace(venueId);
     }
     return {
@@ -690,7 +719,7 @@ export async function getTeamWorkspace(
   const staff = ((membershipsResult.data ?? []) as DbMembership[]).map(
     mapMembershipRow,
   );
-  const taskRows = (tasksResult.data ?? []) as DbTask[];
+  const taskRows = tasksData ?? [];
   const venueResult = await supabase
     .from("venues")
     .select("name,city,type")
@@ -925,16 +954,26 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
 
   const tasksResult = await supabase
     .from("team_tasks")
-    .select(
-      "id,venue_id,title,source,priority,status,audience_type,audience_member_id,audience_role,due_label",
-    )
+    .select(TASK_SELECT_COLUMNS)
     .eq("venue_id", venueId)
     .order("created_at", { ascending: false });
+  let tasksData = tasksResult.data as DbTask[] | null;
+  let tasksError = tasksResult.error;
+
+  if (tasksError && missingSourceLabelColumn(tasksError.message)) {
+    const fallbackResult = await supabase
+      .from("team_tasks")
+      .select(TASK_SELECT_COLUMNS_LEGACY)
+      .eq("venue_id", venueId)
+      .order("created_at", { ascending: false });
+    tasksData = fallbackResult.data as DbTask[] | null;
+    tasksError = fallbackResult.error;
+  }
 
   const taskRows =
-    tasksResult.error && !isMissingTeamTable(tasksResult.error.message)
+    tasksError && !isMissingTeamTable(tasksError.message)
       ? []
-      : ((tasksResult.data ?? []) as DbTask[]);
+      : (tasksData ?? []);
 
   const auditEventsResult = await supabase
     .from("team_audit_events")

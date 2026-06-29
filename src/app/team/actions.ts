@@ -256,6 +256,10 @@ function missingTeamTables(message: string): boolean {
   );
 }
 
+function missingSourceLabelColumn(message: string): boolean {
+  return /source_label/i.test(message);
+}
+
 async function getWritableTeamContext(): Promise<
   | {
       ok: true;
@@ -1265,6 +1269,7 @@ export async function createTeamTaskAction(
   }
 
   const audienceType = parsed.data.audienceType;
+  const sourceLabel = parsed.data.sourceLabel?.trim() || null;
 
   if (parsed.data.dedupeOpenTask) {
     try {
@@ -1299,14 +1304,27 @@ export async function createTeamTaskAction(
       audienceType === "member" ? parsed.data.audienceMemberId : null,
     audience_role: audienceType === "role" ? parsed.data.audienceRole : null,
     due_label: parsed.data.dueLabel || "",
+    source_label: sourceLabel,
     created_by: ctx.userId,
   };
 
-  const { data: task, error } = await ctx.supabase
+  let taskResult = await ctx.supabase
     .from("team_tasks")
     .insert(insert)
     .select("id")
     .maybeSingle<{ id: string }>();
+
+  if (taskResult.error && missingSourceLabelColumn(taskResult.error.message)) {
+    const legacyInsert = { ...insert };
+    delete (legacyInsert as { source_label?: string | null }).source_label;
+    taskResult = await ctx.supabase
+      .from("team_tasks")
+      .insert(legacyInsert)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+  }
+
+  const { data: task, error } = taskResult;
 
   if (error) {
     if (missingTeamTables(error.message)) {
@@ -1318,8 +1336,6 @@ export async function createTeamTaskAction(
     }
     return { ok: false, error: error.message };
   }
-
-  const sourceLabel = parsed.data.sourceLabel?.trim() || null;
 
   await writeTeamAuditEvent(ctx, {
     venueId: parsed.data.venueId,

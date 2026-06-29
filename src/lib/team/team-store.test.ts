@@ -88,6 +88,27 @@ describe("Team OS store mapping", () => {
     expect(task.sourceLabel).toBe("ФОТ и маржа");
   });
 
+  test("prefers task source labels stored on task rows", () => {
+    const task = mapTaskRow(
+      {
+        id: "task-labor-direct",
+        venue_id: "venue-1",
+        title: "Check labor and margin",
+        source: "copilot",
+        source_label: "Stored contour",
+        priority: "high",
+        status: "new",
+        audience_type: "member",
+        audience_member_id: "member-1",
+        audience_role: null,
+        due_label: "today",
+      },
+      "Legacy audit contour",
+    );
+
+    expect(task.sourceLabel).toBe("Stored contour");
+  });
+
   test("builds task source labels from task-created audit metadata", () => {
     const labels = buildTaskSourceLabelMap([
       {
