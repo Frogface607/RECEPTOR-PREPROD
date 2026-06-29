@@ -270,6 +270,18 @@ export function OwnerReviewCard({
               <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
                 {review.operationalPulse.detail}
               </p>
+              {review.operationalPulse.openTaskContours.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {review.operationalPulse.openTaskContours.map((contour) => (
+                    <span
+                      key={contour}
+                      className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand"
+                    >
+                      {contour}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
 
               {review.operationalPulse.recentEvents.length > 0 ? (
                 <div className="mt-3 divide-y divide-border/35 overflow-hidden rounded-md border border-border/35">

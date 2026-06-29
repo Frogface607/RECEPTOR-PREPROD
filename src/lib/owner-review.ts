@@ -138,6 +138,7 @@ export type OwnerOperationalPulse = {
   tone: OwnerReviewTone;
   openTasks: number;
   urgentOpenTasks: number;
+  openTaskContours: string[];
   closedLoops: number;
   recentEvents: OwnerOperationalPulseEvent[];
   action: OwnerProfitReadinessAction;
@@ -572,6 +573,7 @@ function operationalPulse(
       tone: "risk",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
+      openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
       action: { label: "Открыть Team OS", target: "team-actions" },
@@ -585,6 +587,7 @@ function operationalPulse(
       tone: "watch",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
+      openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
       action: { label: "Открыть задачи", target: "team-actions" },
@@ -606,6 +609,7 @@ function operationalPulse(
           : "watch",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
+      openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
       action: { label: "Открыть связь", target: "team-journal" },
@@ -619,6 +623,7 @@ function operationalPulse(
       tone: "good",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
+      openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
       action: { label: "Открыть журнал", target: "team-actions" },
@@ -634,6 +639,7 @@ function operationalPulse(
       tone: "good",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
+      openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
       action: { label: "Открыть связь", target: "team-journal" },
@@ -647,6 +653,7 @@ function operationalPulse(
     tone: "good",
     openTasks: proof.openTasks,
     urgentOpenTasks: proof.urgentOpenTasks,
+    openTaskContours: proof.openTaskContours,
     closedLoops: proof.closedLoops,
     recentEvents: proof.recentEvents,
     action: { label: "Открыть Team OS", target: "team-actions" },

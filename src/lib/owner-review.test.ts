@@ -877,6 +877,7 @@ describe("buildOwnerReview", () => {
       tone: "risk",
       openTasks: 1,
       urgentOpenTasks: 1,
+      openTaskContours: ["ФОТ и маржа"],
       closedLoops: 1,
       detail: expect.stringContaining("ФОТ и маржа"),
       recentEvents: [
