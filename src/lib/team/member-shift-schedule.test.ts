@@ -6,7 +6,7 @@ import {
   buildMemberShiftSchedule,
 } from "./member-shift-schedule";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
-import type { StaffMember, TeamTask } from "./team-os";
+import type { StaffMember, TeamAnnouncement, TeamTask } from "./team-os";
 
 const member: StaffMember = {
   id: "staff-service",
@@ -265,6 +265,78 @@ describe("buildMemberShiftSchedule", () => {
     expect(plan[0]?.detail).toMatch(/90\s000 ₽/);
   });
 
+  test("adds unread important announcements before regular tasks", () => {
+    const plan = buildMemberOperationPlan({
+      member,
+      tasks: [
+        buildTask({
+          id: "task-medium",
+          priority: "medium",
+          title: "Проверить витрину перед сменой",
+        }),
+      ],
+      schedule: [],
+      laborProfile: null,
+      learning: buildLearningSummary({ canWorkShift: true }),
+      announcements: [
+        buildAnnouncement({
+          id: "announcement-service",
+          title: "Новый стоп-лист на вечер",
+          priority: "important",
+          audience: { type: "role", roleId: "service" },
+        }),
+      ],
+      announcementReads: [],
+    });
+
+    expect(plan.map((item) => item.id)).toEqual([
+      "announcement-announcement-service",
+      "task-task-medium",
+    ]);
+    expect(plan[0]).toMatchObject({
+      title: "Подтвердить важное объявление",
+      detail: "Новый стоп-лист на вечер",
+      href: "#team-announcement-announcement-service",
+      tone: "work",
+      announcementId: "announcement-service",
+    });
+  });
+
+  test("skips important announcements already read by the member", () => {
+    const plan = buildMemberOperationPlan({
+      member,
+      tasks: [
+        buildTask({
+          id: "task-medium",
+          priority: "medium",
+          title: "Проверить витрину перед сменой",
+        }),
+      ],
+      schedule: [],
+      laborProfile: null,
+      learning: buildLearningSummary({ canWorkShift: true }),
+      announcements: [
+        buildAnnouncement({
+          id: "announcement-service",
+          priority: "important",
+          audience: { type: "role", roleId: "service" },
+        }),
+      ],
+      announcementReads: [
+        {
+          announcementId: "announcement-service",
+          memberId: member.id,
+          readAtLabel: "12:00",
+        },
+      ],
+    });
+
+    expect(plan[0]).toMatchObject({
+      id: "task-task-medium",
+      taskId: "task-medium",
+    });
+  });
+
   test("shows iiko shift matching as the next action without schedule", () => {
     const plan = buildMemberOperationPlan({
       member,
@@ -301,6 +373,22 @@ function buildTask(overrides: Partial<TeamTask>): TeamTask {
     venueId: "dev-venue",
     audience: { type: "member", memberId: member.id },
     dueLabel: "сегодня",
+    ...overrides,
+  };
+}
+
+function buildAnnouncement(
+  overrides: Partial<TeamAnnouncement>,
+): TeamAnnouncement {
+  return {
+    id: "announcement",
+    venueId: "dev-venue",
+    title: "Объявление",
+    body: "Текст объявления",
+    priority: "normal",
+    audience: { type: "venue", venueId: "dev-venue" },
+    createdByName: "Управляющий",
+    createdAtLabel: "12:00",
     ...overrides,
   };
 }

@@ -28,6 +28,10 @@ import {
 } from "@/lib/team/team-learning";
 import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
 import {
+  buildMemberOperationPlan,
+  type MemberOperationPlanItem,
+} from "@/lib/team/member-shift-schedule";
+import {
   getTeamRole,
   hasAnnouncementRead,
   type TeamAnnouncement,
@@ -84,6 +88,19 @@ function learningStatusClass(status: TeamLearningItem["status"]): string {
     return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
   }
   return "border-border bg-muted/40 text-muted-foreground";
+}
+
+function operationToneClass(tone: MemberOperationPlanItem["tone"]): string {
+  if (tone === "risk") {
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  }
+  if (tone === "setup") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-200";
+  }
+  if (tone === "ready") {
+    return "border-brand/30 bg-brand/10 text-brand";
+  }
+  return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
 }
 
 function statusClass(status: TeamTask["status"]): string {
@@ -196,10 +213,33 @@ export default async function MyCabinetPage() {
     (task) => task.status === "done" || task.status === "verified",
   );
   const sortedOpenTasks = sortTasks(openTasks);
-  const nextTask = sortedOpenTasks[0];
-  const nextTaskSourceLabel = nextTask
-    ? sourceBadgeLabel(nextTask.source)
+  const operationPlan = buildMemberOperationPlan({
+    member: workspace.member,
+    tasks: sortedOpenTasks,
+    schedule: [],
+    laborProfile: null,
+    learning: null,
+    announcements: workspace.announcements,
+    announcementReads: workspace.announcementReads,
+  });
+  const nextAction = operationPlan[0] ?? null;
+  const nextActionTask = nextAction?.taskId
+    ? sortedOpenTasks.find((task) => task.id === nextAction.taskId) ?? null
     : null;
+  const nextActionAnnouncement = nextAction?.announcementId
+    ? workspace.announcements.find(
+        (announcement) => announcement.id === nextAction.announcementId,
+      ) ?? null
+    : null;
+  const unreadImportantAnnouncements = workspace.announcements.filter(
+    (announcement) =>
+      announcement.priority === "important" &&
+      !hasAnnouncementRead(
+        announcement.id,
+        workspace.member.id,
+        workspace.announcementReads,
+      ),
+  ).length;
   const urgentTasks = openTasks.filter((task) => task.priority === "high");
   const taskGroups = [
     {
@@ -268,43 +308,77 @@ export default async function MyCabinetPage() {
                   <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                     Следующее действие
                   </p>
-                  {nextTask ? (
+                  {nextAction ? (
                     <>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={priorityClass(nextTask.priority)}
-                        >
-                          {priorityLabel(nextTask.priority)}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className={statusClass(nextTask.status)}
-                        >
-                          {statusLabel(nextTask.status)}
-                        </Badge>
-                        {nextTaskSourceLabel ? (
+                        {nextActionTask ? (
+                          <>
+                            <Badge
+                              variant="outline"
+                              className={priorityClass(nextActionTask.priority)}
+                            >
+                              {priorityLabel(nextActionTask.priority)}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={statusClass(nextActionTask.status)}
+                            >
+                              {statusLabel(nextActionTask.status)}
+                            </Badge>
+                          </>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className={operationToneClass(nextAction.tone)}
+                          >
+                            {nextAction.badge}
+                          </Badge>
+                        )}
+                        {nextActionTask &&
+                        sourceBadgeLabel(nextActionTask.source) ? (
                           <Badge
                             variant="outline"
                             className="border-brand/30 bg-brand/10 text-brand"
                           >
-                            {nextTaskSourceLabel}
+                            {sourceBadgeLabel(nextActionTask.source)}
                           </Badge>
                         ) : null}
-                        {nextTask.dueLabel ? (
+                        {nextActionTask?.dueLabel ? (
                           <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                             <Clock3 className="size-3.5" />
-                            {nextTask.dueLabel}
+                            {nextActionTask.dueLabel}
                           </span>
                         ) : null}
                       </div>
                       <h2 className="mt-4 text-xl font-medium leading-tight">
-                        {nextTask.title}
+                        {nextAction.title}
                       </h2>
-                      <TaskStatusButtons
-                        key={`${nextTask.id}-${nextTask.status}`}
-                        task={nextTask}
-                      />
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {nextAction.detail}
+                      </p>
+                      {nextActionTask ? (
+                        <TaskStatusButtons
+                          key={`${nextActionTask.id}-${nextActionTask.status}`}
+                          task={nextActionTask}
+                        />
+                      ) : nextActionAnnouncement ? (
+                        <AnnouncementReadButton
+                          announcementId={nextActionAnnouncement.id}
+                          initialRead={hasAnnouncementRead(
+                            nextActionAnnouncement.id,
+                            workspace.member.id,
+                            workspace.announcementReads,
+                          )}
+                        />
+                      ) : nextAction.tone !== "ready" ? (
+                        <Link
+                          href={nextAction.href}
+                          className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 text-sm font-medium text-foreground transition-colors hover:border-brand/40"
+                        >
+                          Открыть
+                          <ArrowRight className="size-4" />
+                        </Link>
+                      ) : null}
                     </>
                   ) : (
                     <>
@@ -325,7 +399,7 @@ export default async function MyCabinetPage() {
           <div className="mx-auto grid max-w-7xl gap-3 px-6 pb-8 sm:grid-cols-2 lg:grid-cols-4">
             <Metric label="активные" value={openTasks.length} />
             <Metric label="важные" value={urgentTasks.length} />
-            <Metric label="объявления" value={workspace.announcements.length} />
+            <Metric label="важная связь" value={unreadImportantAnnouncements} />
             <Metric label="закрыто" value={completedTasks.length} />
           </div>
         </section>
@@ -572,7 +646,10 @@ function AnnouncementCard({
   isRead: boolean;
 }) {
   return (
-    <article className="rounded-lg border border-border/60 bg-card/50 p-4">
+    <article
+      id={`team-announcement-${announcement.id}`}
+      className="scroll-mt-24 rounded-lg border border-border/60 bg-card/50 p-4"
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Badge
           variant="outline"

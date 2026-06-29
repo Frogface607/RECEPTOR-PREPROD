@@ -4,7 +4,12 @@ import type {
   LaborShiftWorker,
 } from "./labor-bi";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
-import type { StaffMember, TeamTask } from "./team-os";
+import type {
+  StaffMember,
+  TeamAnnouncement,
+  TeamAnnouncementRead,
+  TeamTask,
+} from "./team-os";
 
 export type MemberShiftScheduleItem = {
   shiftId: string;
@@ -38,6 +43,8 @@ export type MemberOperationPlanItem = {
   href: string;
   tone: MemberOperationPlanTone;
   badge: string;
+  taskId?: string;
+  announcementId?: string;
 };
 
 export function buildMemberShiftSchedule(input: {
@@ -108,6 +115,8 @@ export function buildMemberOperationPlan(input: {
   schedule: MemberShiftScheduleItem[];
   laborProfile: MemberLaborProfile | null;
   learning: TeamLearningMemberSummary | null;
+  announcements?: TeamAnnouncement[];
+  announcementReads?: TeamAnnouncementRead[];
   nextLearning?: { title: string; timeLabel: string } | null;
 }): MemberOperationPlanItem[] {
   const items: MemberOperationPlanItem[] = [];
@@ -152,18 +161,45 @@ export function buildMemberOperationPlan(input: {
 
   const openTasks = input.tasks.filter(isOpenTask);
   const urgentTask = openTasks.find((task) => task.priority === "high");
-  const nextTask = urgentTask ?? openTasks[0] ?? null;
+  if (urgentTask) {
+    items.push({
+      id: `task-${urgentTask.id}`,
+      title: "Закрыть срочную задачу",
+      detail: urgentTask.title,
+      href: "#team-actions",
+      tone: "risk",
+      badge: urgentTask.dueLabel || "задача",
+      taskId: urgentTask.id,
+    });
+  }
+
+  const unreadAnnouncement = findUnreadImportantAnnouncement({
+    member: input.member,
+    announcements: input.announcements,
+    reads: input.announcementReads,
+  });
+  if (unreadAnnouncement) {
+    items.push({
+      id: `announcement-${unreadAnnouncement.id}`,
+      title: "Подтвердить важное объявление",
+      detail: unreadAnnouncement.title,
+      href: `#team-announcement-${encodeURIComponent(unreadAnnouncement.id)}`,
+      tone: "work",
+      badge: "связь",
+      announcementId: unreadAnnouncement.id,
+    });
+  }
+
+  const nextTask = urgentTask ? null : (openTasks[0] ?? null);
   if (nextTask) {
     items.push({
       id: `task-${nextTask.id}`,
-      title:
-        nextTask.priority === "high"
-          ? "Закрыть срочную задачу"
-          : "Продвинуть задачу",
+      title: "Продвинуть задачу",
       detail: nextTask.title,
       href: "#team-actions",
-      tone: nextTask.priority === "high" ? "risk" : "work",
+      tone: "work",
       badge: nextTask.dueLabel || "задача",
+      taskId: nextTask.id,
     });
   }
 
@@ -202,6 +238,34 @@ export function buildMemberOperationPlan(input: {
   }
 
   return items.slice(0, 4);
+}
+
+function findUnreadImportantAnnouncement(input: {
+  member: StaffMember;
+  announcements?: TeamAnnouncement[];
+  reads?: TeamAnnouncementRead[];
+}): TeamAnnouncement | null {
+  return (
+    input.announcements?.find(
+      (announcement) =>
+        announcement.priority === "important" &&
+        isAnnouncementVisibleToMember(announcement, input.member) &&
+        !input.reads?.some(
+          (read) =>
+            read.announcementId === announcement.id &&
+            read.memberId === input.member.id,
+        ),
+    ) ?? null
+  );
+}
+
+function isAnnouncementVisibleToMember(
+  announcement: TeamAnnouncement,
+  member: StaffMember,
+): boolean {
+  if (announcement.venueId !== member.venueId) return false;
+  if (announcement.audience.type === "venue") return true;
+  return announcement.audience.roleId === member.roleId;
 }
 
 function matchShiftWorker(

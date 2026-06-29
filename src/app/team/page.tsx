@@ -39,6 +39,8 @@ import {
   listTasksForMember,
   TEAM_ROLES,
   type StaffMember,
+  type TeamAnnouncement,
+  type TeamAnnouncementRead,
   type TeamRoleId,
   type TeamTask,
 } from "@/lib/team/team-os";
@@ -541,6 +543,8 @@ export default async function TeamPage({
           learning={representativeLearning}
           learningFallback={memberLearning}
           schedule={memberSchedule}
+          announcements={workspace.announcements}
+          announcementReads={workspace.announcementReads}
           laborSource={laborLoad.source}
           periodLabel={formatPeriodLabel(period)}
           laborProfile={memberLaborProfile}
@@ -1476,6 +1480,8 @@ function RolePersonalBrief({
   learning,
   learningFallback,
   schedule,
+  announcements,
+  announcementReads,
   laborSource,
   periodLabel,
   laborProfile,
@@ -1486,6 +1492,8 @@ function RolePersonalBrief({
   learning: TeamLearningMemberSummary | null;
   learningFallback: TeamLearningItem[];
   schedule: MemberShiftScheduleItem[];
+  announcements: TeamAnnouncement[];
+  announcementReads: TeamAnnouncementRead[];
   laborSource: TeamLaborLoadResult["source"];
   periodLabel: string;
   laborProfile: MemberLaborProfile | null;
@@ -1517,6 +1525,8 @@ function RolePersonalBrief({
     schedule,
     laborProfile,
     learning,
+    announcements,
+    announcementReads,
     nextLearning,
   });
 
