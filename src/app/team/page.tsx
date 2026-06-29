@@ -765,6 +765,7 @@ export default async function TeamPage({
           venueId={workspace.venueId}
           staff={workspace.staff}
           tasks={workspace.tasks}
+          comments={workspace.comments}
           auditEvents={workspace.auditEvents}
           focusMemberId={focusMemberId}
           focusTaskId={focusTaskId}

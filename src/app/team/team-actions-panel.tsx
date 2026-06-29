@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -33,10 +28,12 @@ import {
 import { buildIikoStaffImportCandidates } from "@/lib/team/team-iiko-staff-import";
 import {
   TEAM_ROLES,
+  listCommentsForTask,
   type StaffMember,
   type TeamAuditEvent,
   type TeamRoleId,
   type TeamTask,
+  type TeamTaskComment,
 } from "@/lib/team/team-os";
 import { buildTeamTaskQueue } from "@/lib/team/team-task-queue";
 import {
@@ -206,6 +203,7 @@ export function TeamActionsPanel({
   venueId,
   staff,
   tasks,
+  comments = [],
   auditEvents,
   focusMemberId = "",
   focusTaskId = "",
@@ -216,6 +214,7 @@ export function TeamActionsPanel({
   venueId: string;
   staff: StaffMember[];
   tasks: TeamTask[];
+  comments?: TeamTaskComment[];
   auditEvents: TeamAuditEvent[];
   focusMemberId?: string;
   focusTaskId?: string;
@@ -231,6 +230,14 @@ export function TeamActionsPanel({
     [tasks, focusTaskId],
   );
   const focusedTask = taskQueue.focusedTask?.task;
+  const latestTaskContext = useMemo(() => {
+    return Object.fromEntries(
+      taskQueue.openTasks.map(({ task }) => [
+        task.id,
+        listCommentsForTask(task.id, comments)[0] ?? null,
+      ]),
+    ) as Record<string, TeamTaskComment | null>;
+  }, [comments, taskQueue.openTasks]);
 
   const [memberName, setMemberName] = useState(prefillMemberName);
   const [memberEmail, setMemberEmail] = useState("");
@@ -329,10 +336,7 @@ export function TeamActionsPanel({
     });
   }
 
-  function updateTaskStatus(
-    taskId: string,
-    status: TeamTask["status"],
-  ): void {
+  function updateTaskStatus(taskId: string, status: TeamTask["status"]): void {
     setStatusTaskId(taskId);
     setNextStatus(status);
     runAction(() =>
@@ -806,70 +810,82 @@ export function TeamActionsPanel({
 
             <div className="mt-4 space-y-2">
               {taskQueue.openTasks.length > 0 ? (
-                taskQueue.openTasks.slice(0, 6).map(({ task, focused }) => (
-                  <div
-                    key={task.id}
-                    className={
-                      "rounded-lg border p-3 " +
-                      (focused
-                        ? "border-brand/45 bg-brand/10"
-                        : "border-border/45 bg-background/35")
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setStatusTaskId(task.id)}
-                      className="block w-full text-left"
+                taskQueue.openTasks.slice(0, 6).map(({ task, focused }) => {
+                  const context = latestTaskContext[task.id];
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={
+                        "rounded-lg border p-3 " +
+                        (focused
+                          ? "border-brand/45 bg-brand/10"
+                          : "border-border/45 bg-background/35")
+                      }
                     >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-md border border-border/55 bg-card/60 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                          {taskPriorityLabel(task.priority)}
-                        </span>
-                        <span className="rounded-md border border-brand/25 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
-                          {taskStatusLabel(task.status)}
-                        </span>
-                        {task.sourceLabel ? (
-                          <span className="rounded-md border border-border/55 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                            {task.sourceLabel}
+                      <button
+                        type="button"
+                        onClick={() => setStatusTaskId(task.id)}
+                        className="block w-full text-left"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-md border border-border/55 bg-card/60 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                            {taskPriorityLabel(task.priority)}
                           </span>
-                        ) : null}
-                        {task.impactLabel ? (
-                          <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
-                            {task.impactLabel}
+                          <span className="rounded-md border border-brand/25 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                            {taskStatusLabel(task.status)}
                           </span>
+                          {task.sourceLabel ? (
+                            <span className="rounded-md border border-border/55 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                              {task.sourceLabel}
+                            </span>
+                          ) : null}
+                          {task.impactLabel ? (
+                            <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                              {task.impactLabel}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
+                          {task.title}
+                        </p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          {taskAudienceLabel(task, staff)} · {task.dueLabel}
+                        </p>
+                        {context ? (
+                          <p className="mt-2 line-clamp-2 rounded-md border border-border/40 bg-card/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+                            <span className="font-medium text-foreground/80">
+                              {context.authorName}:
+                            </span>{" "}
+                            {context.body}
+                          </p>
                         ) : null}
-                      </div>
-                      <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
-                        {task.title}
-                      </p>
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        {taskAudienceLabel(task, staff)} · {task.dueLabel}
-                      </p>
-                    </button>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {task.status !== "in_progress" ? (
+                      </button>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {task.status !== "in_progress" ? (
+                          <button
+                            type="button"
+                            disabled={pending}
+                            onClick={() =>
+                              updateTaskStatus(task.id, "in_progress")
+                            }
+                            className="inline-flex h-8 items-center justify-center rounded-lg border border-border/60 bg-background/50 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/35 hover:text-brand disabled:opacity-45"
+                          >
+                            В работу
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           disabled={pending}
-                          onClick={() =>
-                            updateTaskStatus(task.id, "in_progress")
-                          }
-                          className="inline-flex h-8 items-center justify-center rounded-lg border border-border/60 bg-background/50 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/35 hover:text-brand disabled:opacity-45"
+                          onClick={() => updateTaskStatus(task.id, "done")}
+                          className="inline-flex h-8 items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15 disabled:opacity-45"
                         >
-                          В работу
+                          Сделано
                         </button>
-                      ) : null}
-                      <button
-                        type="button"
-                        disabled={pending}
-                        onClick={() => updateTaskStatus(task.id, "done")}
-                        className="inline-flex h-8 items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15 disabled:opacity-45"
-                      >
-                        Сделано
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm leading-relaxed text-muted-foreground">
                   Открытых задач нет. Новые задачи из Owner Dashboard появятся
