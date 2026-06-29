@@ -78,6 +78,60 @@ describe("normalizeRmsPrice", () => {
     });
   });
 
+  test("normalizes Russian bulk unit aliases with trailing punctuation", () => {
+    const price = normalizeRmsPrice({
+      id: "ru-kg-1",
+      name: "Картофель",
+      unit: "кг.",
+      purchasePrice: 80,
+    });
+
+    expect(price).toMatchObject({
+      skuId: "ru-kg-1",
+      unit: "g",
+      originalUnit: "кг.",
+      pricePerUnit: 0.08,
+      pricePerKg: 80,
+      rawField: "purchasePrice",
+    });
+  });
+
+  test("normalizes Russian small unit aliases before cost conversion", () => {
+    const price = normalizeRmsPrice({
+      id: "ru-g-1",
+      name: "Соль",
+      unit: "гр.",
+      purchasePrice: 0.06,
+    });
+
+    expect(price).toMatchObject({
+      skuId: "ru-g-1",
+      unit: "g",
+      originalUnit: "гр.",
+      pricePerUnit: 0.06,
+      pricePerKg: 60,
+      rawField: "purchasePrice",
+    });
+  });
+
+  test("normalizes Russian liter aliases before cost conversion", () => {
+    const price = normalizeRmsPrice({
+      id: "ru-l-1",
+      name: "Сливки",
+      unit: "литра",
+      purchasePrice: 160,
+    });
+
+    expect(price).toMatchObject({
+      skuId: "ru-l-1",
+      unit: "ml",
+      originalUnit: "литра",
+      pricePerUnit: 0.16,
+      pricePerKg: 160,
+      rawField: "purchasePrice",
+    });
+  });
+
   test("reads product identity from nested RMS product container", () => {
     const price = normalizeRmsPrice({
       product: {

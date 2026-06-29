@@ -95,21 +95,59 @@ const NESTED_BULK_COST_FIELDS = [
 const UNIT_ALIASES: Record<string, ProductUnit> = {
   kg: "g",
   kilogram: "g",
+  kilograms: "g",
+  kilo: "g",
+  кило: "g",
+  килограмм: "g",
+  килограмма: "g",
+  килограммы: "g",
+  килограммов: "g",
   кг: "g",
   g: "g",
+  gr: "g",
   gram: "g",
+  grams: "g",
+  грамм: "g",
+  грамма: "g",
+  граммы: "g",
+  граммов: "g",
+  гр: "g",
   г: "g",
   l: "ml",
   liter: "ml",
   litre: "ml",
+  liters: "ml",
+  litres: "ml",
+  литр: "ml",
+  литра: "ml",
+  литры: "ml",
+  литров: "ml",
   л: "ml",
   ml: "ml",
   milliliter: "ml",
+  millilitre: "ml",
+  milliliters: "ml",
+  millilitres: "ml",
+  миллилитр: "ml",
+  миллилитра: "ml",
+  миллилитры: "ml",
+  миллилитров: "ml",
   мл: "ml",
   pcs: "pcs",
+  pc: "pcs",
   piece: "pcs",
   pieces: "pcs",
+  portion: "pcs",
+  portions: "pcs",
   шт: "pcs",
+  штук: "pcs",
+  штука: "pcs",
+  штуки: "pcs",
+  порц: "pcs",
+  порция: "pcs",
+  порцию: "pcs",
+  порции: "pcs",
+  порций: "pcs",
 };
 
 export function normalizeRmsPrices(payload: unknown): RmsPrice[] {
@@ -353,8 +391,9 @@ function readBoolean(
 }
 
 function normalizeUnit(unit?: string): ProductUnit {
-  if (!unit) return "pcs";
-  return UNIT_ALIASES[unit.trim().toLowerCase()] ?? "pcs";
+  const normalized = normalizeUnitKey(unit);
+  if (!normalized) return "pcs";
+  return UNIT_ALIASES[normalized] ?? "pcs";
 }
 
 function normalizeCurrency(currency?: string): string {
@@ -386,22 +425,64 @@ function toReferencePrice(pricePerUnit: number, unit: ProductUnit): number {
 }
 
 function isBulkUnit(unit?: string): boolean {
-  const normalized = unit?.trim().toLowerCase();
+  const normalized = normalizeUnitKey(unit);
   return (
     normalized === "kg" ||
+    normalized === "kilogram" ||
+    normalized === "kilograms" ||
+    normalized === "kilo" ||
+    normalized === "кило" ||
+    normalized === "килограмм" ||
+    normalized === "килограмма" ||
+    normalized === "килограммы" ||
+    normalized === "килограммов" ||
     normalized === "кг" ||
     normalized === "l" ||
+    normalized === "liter" ||
+    normalized === "litre" ||
+    normalized === "liters" ||
+    normalized === "litres" ||
+    normalized === "литр" ||
+    normalized === "литра" ||
+    normalized === "литры" ||
+    normalized === "литров" ||
     normalized === "л"
   );
 }
 
 function isSmallUnit(unit?: string): boolean {
-  const normalized = unit?.trim().toLowerCase();
+  const normalized = normalizeUnitKey(unit);
   return (
     normalized === "g" ||
+    normalized === "gr" ||
+    normalized === "gram" ||
+    normalized === "grams" ||
+    normalized === "грамм" ||
+    normalized === "грамма" ||
+    normalized === "граммы" ||
+    normalized === "граммов" ||
+    normalized === "гр" ||
     normalized === "г" ||
     normalized === "ml" ||
+    normalized === "milliliter" ||
+    normalized === "millilitre" ||
+    normalized === "milliliters" ||
+    normalized === "millilitres" ||
+    normalized === "миллилитр" ||
+    normalized === "миллилитра" ||
+    normalized === "миллилитры" ||
+    normalized === "миллилитров" ||
     normalized === "мл"
+  );
+}
+
+function normalizeUnitKey(unit?: string): string {
+  return (
+    unit
+      ?.trim()
+      .toLowerCase()
+      .replace(/[.\s]+$/g, "")
+      .replace(/ё/g, "е") ?? ""
   );
 }
 
