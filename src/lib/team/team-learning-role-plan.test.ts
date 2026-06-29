@@ -63,7 +63,7 @@ describe("buildTeamLearningRolePlans", () => {
     expect(service).toMatchObject({
       roleTitle: "Официант",
       members: 2,
-      totalItems: 2,
+      totalItems: 6,
       requiredItems: 1,
       requiredProgressPct: 50,
       admissionPct: 50,
@@ -166,7 +166,7 @@ describe("buildTeamLearningRolePlans", () => {
     expect(owner).toMatchObject({
       roleTitle: "Владелец",
       members: 0,
-      totalItems: 3,
+      totalItems: 5,
       admissionPct: 100,
       requiredProgressPct: 100,
     });

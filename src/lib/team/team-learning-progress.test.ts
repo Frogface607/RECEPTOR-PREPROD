@@ -73,7 +73,7 @@ describe("team learning progress", () => {
       admissionStatus: "admitted",
       canWorkShift: true,
     });
-    expect(service?.nextItem?.id).toBe("guest-feedback");
+    expect(service?.nextItem?.id).toBe("sales-eight-upsell");
     expect(chef).toMatchObject({
       completedCount: 0,
       requiredCompleted: 0,
@@ -96,7 +96,7 @@ describe("team learning progress", () => {
       admittedMembers: 1,
       blockedMembers: 1,
       admissionPct: 50,
-      averageBest: 42,
+      averageBest: 17,
     });
   });
 

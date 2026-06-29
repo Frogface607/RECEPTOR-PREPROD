@@ -11,10 +11,29 @@ describe("team learning catalog", () => {
 
     expect(serviceItems.map((item) => item.id)).toEqual([
       "service-recommendation",
+      "sales-eight-upsell",
+      "shift-open-close",
+      "iiko-cash-discipline",
       "guest-feedback",
+      "guest-conflict-service",
     ]);
     expect(serviceItems[0].sections.length).toBeGreaterThan(0);
     expect(serviceItems[0].quiz.length).toBeGreaterThan(0);
+  });
+
+  test("includes operational restaurant basics for Learning OS v0", () => {
+    const sales = getLearningItem("sales-eight-upsell");
+    const cash = getLearningItem("iiko-cash-discipline");
+    const numbers = getLearningItem("restaurant-numbers-basics");
+
+    expect(sales).toMatchObject({
+      title: "Восьмерка продаж и апселл в сервисе",
+      status: "ready",
+    });
+    expect(sales?.roles).toContain("service");
+    expect(cash?.roles).toContain("venue_manager");
+    expect(numbers?.roles).toContain("owner");
+    expect(numbers?.quiz).toHaveLength(3);
   });
 
   test("finds a learning item by id", () => {
