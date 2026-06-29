@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
-import { Megaphone, MessageSquareText, Send } from "lucide-react";
+import { Megaphone, MessageSquareText, Send, WandSparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { TeamCommunicationDraft } from "@/lib/team/team-communication-drafts";
 import {
   listAnnouncementsForRole,
   listCommentsForTask,
@@ -38,12 +39,14 @@ export function TeamCommunicationPanel({
   tasks,
   comments,
   announcements,
+  drafts = [],
 }: {
   venueId: string;
   roleId: TeamRoleId;
   tasks: TeamTask[];
   comments: TeamTaskComment[];
   announcements: TeamAnnouncement[];
+  drafts?: TeamCommunicationDraft[];
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
@@ -74,6 +77,17 @@ export function TeamCommunicationPanel({
       const result = await action();
       setMessage(resultToMessage(result));
     });
+  }
+
+  function applyDraft(draft: TeamCommunicationDraft) {
+    setAnnouncementTitle(draft.title);
+    setAnnouncementBody(draft.body);
+    setAnnouncementPriority(draft.priority);
+    setAnnouncementAudienceType(draft.audience.type);
+    if (draft.audience.type === "role") {
+      setAnnouncementAudienceRole(draft.audience.roleId);
+    }
+    setMessage(null);
   }
 
   return (
@@ -112,6 +126,37 @@ export function TeamCommunicationPanel({
               <Megaphone className="size-5 text-brand" />
               <h3 className="text-lg font-medium">Объявления</h3>
             </div>
+
+            {drafts.length > 0 ? (
+              <div className="mt-5 rounded-lg border border-brand/25 bg-brand/[0.045] p-3">
+                <div className="flex items-center gap-2">
+                  <WandSparkles className="size-4 text-brand" />
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-brand">
+                    Быстрые черновики
+                  </p>
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {drafts.map((draft) => (
+                    <button
+                      key={draft.id}
+                      type="button"
+                      onClick={() => applyDraft(draft)}
+                      className="rounded-lg border border-border/50 bg-background/45 p-3 text-left transition-colors hover:border-brand/35 hover:bg-background/65"
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-medium text-foreground">
+                          {draft.label}
+                        </span>
+                        <Badge variant="outline">{draft.reason}</Badge>
+                      </span>
+                      <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                        {draft.title}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             <form
               className="mt-5 space-y-3"
@@ -172,7 +217,8 @@ export function TeamCommunicationPanel({
                     value={announcementAudienceType}
                     onChange={(event) =>
                       setAnnouncementAudienceType(
-                        event.target.value as TeamAnnouncement["audience"]["type"],
+                        event.target
+                          .value as TeamAnnouncement["audience"]["type"],
                       )
                     }
                     className={FIELD_CLASS}
@@ -289,11 +335,7 @@ export function TeamCommunicationPanel({
   );
 }
 
-function AnnouncementRow({
-  announcement,
-}: {
-  announcement: TeamAnnouncement;
-}) {
+function AnnouncementRow({ announcement }: { announcement: TeamAnnouncement }) {
   return (
     <article className="rounded-lg border border-border/45 bg-background/35 p-3">
       <div className="flex flex-wrap items-center gap-2">

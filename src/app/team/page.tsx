@@ -89,6 +89,7 @@ import {
   type TeamManagerFollowUpStatus,
   type TeamManagerFollowUpTone,
 } from "@/lib/team/team-manager-followup";
+import { buildTeamCommunicationDrafts } from "@/lib/team/team-communication-drafts";
 import {
   buildLaborBi,
   buildLaborShiftDiagnostics,
@@ -336,6 +337,11 @@ export default async function TeamPage({
     tasks: workspace.tasks,
     laborReadiness,
     learningSummaries,
+    shiftPlanVariance,
+  });
+  const communicationDrafts = buildTeamCommunicationDrafts({
+    learningRolePlans,
+    laborReadiness,
     shiftPlanVariance,
   });
   const selectedMemberId = memberId || focusMemberId;
@@ -804,6 +810,7 @@ export default async function TeamPage({
           tasks={workspace.tasks}
           comments={workspace.comments}
           announcements={workspace.announcements}
+          drafts={communicationDrafts}
         />
 
         <section className="border-b border-border/40">
