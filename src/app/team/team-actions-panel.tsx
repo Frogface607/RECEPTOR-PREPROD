@@ -772,11 +772,24 @@ export function TeamActionsPanel({
                 detail="исполняется"
               />
               <TeamMetric
-                label="Закрыто"
-                value={`${taskQueue.completedCount}`}
-                detail={`из ${taskQueue.totalCount}`}
+                label="Срочно"
+                value={`${taskQueue.urgentOpenCount}`}
+                detail="в очереди"
               />
             </div>
+
+            {taskQueue.openContours.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {taskQueue.openContours.slice(0, 4).map((contour) => (
+                  <span
+                    key={contour.label}
+                    className="rounded-md border border-border/45 bg-background/35 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground"
+                  >
+                    {contour.label}: {contour.count}
+                  </span>
+                ))}
+              </div>
+            ) : null}
 
             <div className="mt-4 space-y-2">
               {taskQueue.openTasks.length > 0 ? (

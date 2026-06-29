@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { TeamTask } from "./team-os";
-import { buildTeamTaskQueue, isOpenTeamTask } from "./team-task-queue";
+import {
+  buildTeamTaskQueue,
+  isOpenTeamTask,
+  teamTaskContourLabel,
+} from "./team-task-queue";
 
 describe("team task queue", () => {
   it("classifies operationally open tasks", () => {
@@ -56,6 +60,45 @@ describe("team task queue", () => {
       "medium-new",
       "low-new",
     ]);
+  });
+
+  it("counts urgent open tasks and groups open contours", () => {
+    const queue = buildTeamTaskQueue([
+      task({
+        id: "fot",
+        priority: "high",
+        sourceLabel: "ФОТ и маржа",
+      }),
+      task({
+        id: "fot-2",
+        priority: "medium",
+        sourceLabel: "ФОТ и маржа",
+      }),
+      task({
+        id: "shift",
+        priority: "high",
+        sourceLabel: "План смен",
+      }),
+      task({
+        id: "closed",
+        priority: "high",
+        sourceLabel: "ФОТ и маржа",
+        status: "done",
+      }),
+    ]);
+
+    expect(queue.urgentOpenCount).toBe(2);
+    expect(queue.openContours).toEqual([
+      { label: "ФОТ и маржа", count: 2 },
+      { label: "План смен", count: 1 },
+    ]);
+  });
+
+  it("uses product contour labels when a task has no source label", () => {
+    expect(teamTaskContourLabel(task({ source: "copilot" }))).toBe("Receptor");
+    expect(teamTaskContourLabel(task({ source: "chef" }))).toBe("Кухня");
+    expect(teamTaskContourLabel(task({ source: "owner" }))).toBe("Владелец");
+    expect(teamTaskContourLabel(task({ source: "manager" }))).toBe("Team OS");
   });
 });
 

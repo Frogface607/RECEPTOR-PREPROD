@@ -25,17 +25,32 @@ export type TeamTaskQueueItem = {
   focused: boolean;
 };
 
+export type TeamTaskQueueContour = {
+  label: string;
+  count: number;
+};
+
 export type TeamTaskQueueSummary = {
   totalCount: number;
   openCount: number;
+  urgentOpenCount: number;
   inProgressCount: number;
   completedCount: number;
+  openContours: TeamTaskQueueContour[];
   focusedTask: TeamTaskQueueItem | null;
   openTasks: TeamTaskQueueItem[];
 };
 
 export function isOpenTeamTask(task: Pick<TeamTask, "status">): boolean {
   return OPEN_STATUSES.has(task.status);
+}
+
+export function teamTaskContourLabel(task: TeamTask): string {
+  if (task.sourceLabel?.trim()) return task.sourceLabel.trim();
+  if (task.source === "copilot") return "Receptor";
+  if (task.source === "chef") return "Кухня";
+  if (task.source === "owner") return "Владелец";
+  return "Team OS";
 }
 
 export function buildTeamTaskQueue(
@@ -65,6 +80,18 @@ export function buildTeamTaskQueue(
     })
     .map(({ task, focused }) => ({ task, focused }));
 
+  const openContours = Array.from(
+    openTasks.reduce((acc, item) => {
+      const label = teamTaskContourLabel(item.task);
+      acc.set(label, (acc.get(label) ?? 0) + 1);
+      return acc;
+    }, new Map<string, number>()),
+    ([label, count]) => ({ label, count }),
+  ).sort((left, right) => {
+    if (right.count !== left.count) return right.count - left.count;
+    return left.label.localeCompare(right.label, "ru");
+  });
+
   const focusedTask =
     items.find((item) => item.focused && isOpenTeamTask(item.task)) ??
     items.find((item) => item.focused) ??
@@ -73,11 +100,14 @@ export function buildTeamTaskQueue(
   return {
     totalCount: tasks.length,
     openCount: openTasks.length,
+    urgentOpenCount: openTasks.filter((item) => item.task.priority === "high")
+      .length,
     inProgressCount: tasks.filter((task) => task.status === "in_progress")
       .length,
     completedCount: tasks.filter(
       (task) => task.status === "done" || task.status === "verified",
     ).length,
+    openContours,
     focusedTask: focusedTask
       ? { task: focusedTask.task, focused: focusedTask.focused }
       : null,

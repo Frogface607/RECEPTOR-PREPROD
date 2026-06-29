@@ -323,7 +323,7 @@ export function OwnerCommandPanel({
                   </p>
                   <p className="mt-1 text-sm font-medium text-foreground">
                     {teamTaskQueue.openCount > 0
-                      ? `${teamTaskQueue.openCount} открыто · ${teamTaskQueue.inProgressCount} в работе`
+                      ? `${teamTaskQueue.openCount} открыто · ${teamTaskQueue.urgentOpenCount} срочно · ${teamTaskQueue.inProgressCount} в работе`
                       : "Открытых задач нет"}
                   </p>
                 </div>
@@ -362,6 +362,18 @@ export function OwnerCommandPanel({
                   Team OS и будет видно здесь.
                 </p>
               )}
+              {teamTaskQueue.openContours.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {teamTaskQueue.openContours.slice(0, 4).map((contour) => (
+                    <span
+                      key={contour.label}
+                      className="rounded-md border border-border/45 bg-background/35 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground"
+                    >
+                      {contour.label}: {contour.count}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ) : null}
 
