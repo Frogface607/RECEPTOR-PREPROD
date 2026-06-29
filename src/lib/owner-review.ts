@@ -201,6 +201,27 @@ function deltaText(brief: DailyBrief): string {
   return `${value > 0 ? "+" : ""}${value}%`;
 }
 
+function joinSentences(parts: Array<string | null | undefined>): string {
+  return parts.filter(Boolean).join(" ");
+}
+
+function revenueDropGapText(brief: DailyBrief): string | null {
+  if (!brief.revenue.comparisonAvailable) return null;
+  const gap = brief.revenue.previous - brief.revenue.current;
+  if (gap <= 0) return null;
+  return `Недобор к базе: ${formatRubles(gap)}.`;
+}
+
+function dayRevenueGapText(
+  weakestDay: RevenuePoint | null,
+  strongestDay: RevenuePoint | null,
+): string | null {
+  if (!weakestDay || !strongestDay) return null;
+  const gap = strongestDay.revenue - weakestDay.revenue;
+  if (gap <= 0) return null;
+  return `Разница дня: ${formatRubles(gap)}.`;
+}
+
 function topByRevenue(points: RevenuePoint[], direction: "min" | "max") {
   const positive = points.filter((point) => point.revenue > 0);
   if (!positive.length) return null;
@@ -281,9 +302,13 @@ function withLearningContext(
   if (!learningModuleTitle) return trimTaskTitle(base);
 
   const separator = /[.!?]$/.test(base) ? " " : ". ";
-  return trimTaskTitle(
-    `${base}${separator}Урок для команды: ${learningModuleTitle}.`,
-  );
+  const learningSuffix = `${separator}Урок для команды: ${learningModuleTitle}.`;
+  const fullContext = `${base}${learningSuffix}`;
+
+  if (fullContext.length <= 220) return trimTaskTitle(fullContext);
+
+  const baseLimit = Math.max(0, 220 - learningSuffix.length - 3);
+  return trimTaskTitle(`${base.slice(0, baseLimit).trim()}...${learningSuffix}`);
 }
 
 function actionContextNote(action: OwnerReviewAction): string {
@@ -2094,11 +2119,13 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   ) {
     hypotheses.push({
       title: "Просадка могла прийти из смены, а не из меню",
-      why: `Динамика к базе: ${deltaText(input.brief)}. ${
+      why: joinSentences([
+        `Динамика к базе: ${deltaText(input.brief)}.`,
+        revenueDropGapText(input.brief),
         weakestShift
           ? `Самая слабая смена: ${formatRubles(weakestShift.revenue)}.`
-          : "Смены не дали явного ответа."
-      }`,
+          : "Смены не дали явного ответа.",
+      ]),
       check:
         "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
       role: "manager",
@@ -2153,7 +2180,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   if (hypotheses.length < 3 && weakestDay && strongestDay) {
     hypotheses.push({
       title: "Слабый день нужно объяснить событием",
-      why: `${weakestDay.date}: ${formatRubles(weakestDay.revenue)} против ${strongestDay.date}: ${formatRubles(strongestDay.revenue)}.`,
+      why: joinSentences([
+        `${weakestDay.date}: ${formatRubles(weakestDay.revenue)} против ${strongestDay.date}: ${formatRubles(strongestDay.revenue)}.`,
+        dayRevenueGapText(weakestDay, strongestDay),
+      ]),
       check:
         "Зафиксировать причину: погода, банкет, команда, промо, трафик, стоп-лист.",
       role: "manager",

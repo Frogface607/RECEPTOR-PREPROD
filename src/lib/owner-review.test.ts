@@ -1580,6 +1580,8 @@ describe("buildOwnerReview", () => {
         ...brief,
         revenue: {
           ...brief.revenue,
+          current: 100000,
+          previous: 120000,
           deltaPct: -18,
         },
       },
@@ -1600,6 +1602,7 @@ describe("buildOwnerReview", () => {
           taskSourceLabel: "Выручка и смены",
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          why: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
         }),
       ]),
     );
@@ -1614,6 +1617,13 @@ describe("buildOwnerReview", () => {
           contextNote: expect.stringContaining(
             "Урок для команды: Открытие и закрытие смены без хаоса.",
           ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          contextNote: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
         }),
       ]),
     );
@@ -1650,6 +1660,7 @@ describe("buildOwnerReview", () => {
           taskSourceLabel: "Выручка и смены",
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          why: expect.stringMatching(/Разница дня: 80\s000\s₽\./),
         }),
       ]),
     );
