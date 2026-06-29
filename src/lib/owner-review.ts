@@ -60,6 +60,7 @@ export type OwnerReviewHypothesis = {
   role: OwnerReviewRole;
   tone: OwnerReviewTone;
   taskSourceLabel?: string;
+  impactLabel?: string;
   learningModuleId?: string;
   learningModuleTitle?: string;
   audienceMemberId?: string;
@@ -212,6 +213,12 @@ function revenueDropGapText(brief: DailyBrief): string | null {
   return `Недобор к базе: ${formatRubles(gap)}.`;
 }
 
+function revenueDropImpactLabel(brief: DailyBrief): string | undefined {
+  if (!brief.revenue.comparisonAvailable) return undefined;
+  const gap = brief.revenue.previous - brief.revenue.current;
+  return gap > 0 ? formatRubles(gap) : undefined;
+}
+
 function dayRevenueGapText(
   weakestDay: RevenuePoint | null,
   strongestDay: RevenuePoint | null,
@@ -220,6 +227,15 @@ function dayRevenueGapText(
   const gap = strongestDay.revenue - weakestDay.revenue;
   if (gap <= 0) return null;
   return `Разница дня: ${formatRubles(gap)}.`;
+}
+
+function dayRevenueImpactLabel(
+  weakestDay: RevenuePoint | null,
+  strongestDay: RevenuePoint | null,
+): string | undefined {
+  if (!weakestDay || !strongestDay) return undefined;
+  const gap = strongestDay.revenue - weakestDay.revenue;
+  return gap > 0 ? formatRubles(gap) : undefined;
 }
 
 function topByRevenue(points: RevenuePoint[], direction: "min" | "max") {
@@ -337,6 +353,7 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     priority: rolePriority(item.tone),
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
+    impactLabel: item.impactLabel,
     contextNote: withLearningContext(
       `${item.why} Проверка: ${item.check}`,
       item.learningModuleTitle,
@@ -1322,6 +1339,10 @@ function shiftPlanVarianceHypothesis(
       "Сверить график с фактическими сменами, отметить исключения и обновить ставку/план на следующую неделю.",
     role: "manager",
     tone: ownerToneFromShiftPlanVariance(primaryIssue.tone),
+    impactLabel:
+      primaryIssue.laborDelta !== 0
+        ? formatRubles(Math.abs(primaryIssue.laborDelta))
+        : primaryIssue.dateLabel,
   };
 }
 
@@ -2131,6 +2152,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       role: "manager",
       tone: "risk",
       taskSourceLabel: "Выручка и смены",
+      impactLabel: revenueDropImpactLabel(input.brief),
       learningModuleId: "shift-open-close",
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });
@@ -2189,6 +2211,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       role: "manager",
       tone: "watch",
       taskSourceLabel: "Выручка и смены",
+      impactLabel: dayRevenueImpactLabel(weakestDay, strongestDay),
       learningModuleId: "shift-open-close",
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });

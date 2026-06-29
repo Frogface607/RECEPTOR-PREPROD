@@ -1600,6 +1600,7 @@ describe("buildOwnerReview", () => {
           title: "Просадка могла прийти из смены, а не из меню",
           role: "manager",
           taskSourceLabel: "Выручка и смены",
+          impactLabel: expect.stringMatching(/^20\s000\s₽$/),
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
           why: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
@@ -1612,6 +1613,7 @@ describe("buildOwnerReview", () => {
           title: expect.stringContaining("кто работал"),
           roleId: "venue_manager",
           sourceLabel: "Выручка и смены",
+          impactLabel: expect.stringMatching(/^20\s000\s₽$/),
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
           contextNote: expect.stringContaining(
@@ -1658,6 +1660,7 @@ describe("buildOwnerReview", () => {
           title: "Слабый день нужно объяснить событием",
           role: "manager",
           taskSourceLabel: "Выручка и смены",
+          impactLabel: expect.stringMatching(/^80\s000\s₽$/),
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
           why: expect.stringMatching(/Разница дня: 80\s000\s₽\./),
