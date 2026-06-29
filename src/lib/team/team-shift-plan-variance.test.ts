@@ -184,4 +184,53 @@ describe("buildTeamShiftPlanVariance", () => {
       laborDelta: 700,
     });
   });
+
+  test("matches plan and iiko fact when the same employee has a fuller iiko name", () => {
+    const plan = buildTeamShiftPlanSummary({
+      staff: [staff[0]],
+      plans: [
+        {
+          id: "manager-short-name-plan",
+          venueId: "venue-1",
+          memberId: "manager",
+          shiftDate: "2026-06-29",
+          shiftStart: "12:00",
+          shiftEnd: "23:00",
+          isDayOff: false,
+          note: "",
+          updatedAt: "2026-06-28T10:00:00.000Z",
+        },
+      ],
+    });
+    const fuzzyShift: LaborShiftInput = {
+      shiftId: "manager-full-name-fact",
+      openTime: "2026-06-29T12:00:00",
+      closeTime: "2026-06-29T23:00:00",
+      revenue: 100000,
+      items: 210,
+      employee: "Мария Иванова",
+    };
+    const labor = buildLaborBi({ staff: [staff[0]], shifts: [fuzzyShift] });
+    const roster = buildTeamShiftRoster({
+      staff: [staff[0]],
+      shifts: [fuzzyShift],
+      labor,
+    });
+    const variance = buildTeamShiftPlanVariance({ plan, roster });
+
+    expect(labor.employees[0]).toMatchObject({
+      memberId: "manager",
+      name: "Мария",
+      missingRate: false,
+    });
+    expect(variance).toMatchObject({
+      plannedShifts: 1,
+      actualShifts: 1,
+      coveredActualShifts: 1,
+      planCoveragePct: 100,
+      missedPlanShifts: 0,
+      unplannedActualShifts: 0,
+    });
+    expect(variance.issues).toEqual([]);
+  });
 });

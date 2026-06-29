@@ -1,4 +1,8 @@
 import type { ShiftStat } from "@/lib/iiko/models";
+import {
+  findStaffMemberByName,
+  normalizeTeamMemberName,
+} from "./team-member-match";
 import type { StaffMember, TeamRoleId } from "./team-os";
 
 export type LaborRate = {
@@ -479,9 +483,12 @@ function normalizeWorkers(
 ): LaborShiftWorker[] {
   if (shift.workers && shift.workers.length > 0) {
     return shift.workers.map((worker) => {
-      const member = worker.memberId ? staffById.get(worker.memberId) : undefined;
+      const member = worker.memberId
+        ? staffById.get(worker.memberId)
+        : findStaffMemberByName(staffById.values(), worker.name);
       return {
         ...worker,
+        memberId: worker.memberId ?? member?.id,
         name: member?.name ?? worker.name,
         roleId: worker.roleId ?? member?.roleId,
         hourlyRate: worker.hourlyRate ?? member?.hourlyRate,
@@ -495,7 +502,7 @@ function normalizeWorkers(
   return [
     {
       memberId: member?.id,
-      name: shift.employee,
+      name: member?.name ?? shift.employee,
       roleId: member?.roleId,
       startedAt: shift.openTime,
       endedAt: shift.closeTime,
@@ -512,13 +519,11 @@ function findStaffByName(
 ): StaffMember | undefined {
   const normalizedName = normalizeName(name);
   if (!normalizedName || normalizedName === "смена") return undefined;
-  return [...staffById.values()].find(
-    (member) => normalizeName(member.name) === normalizedName,
-  );
+  return findStaffMemberByName(staffById.values(), name);
 }
 
 function normalizeName(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
+  return normalizeTeamMemberName(value);
 }
 
 function resolveRate(worker: LaborShiftWorker, rates: LaborRate[]): LaborRate | null {

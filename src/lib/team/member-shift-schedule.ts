@@ -10,6 +10,10 @@ import type {
   TeamAnnouncementRead,
   TeamTask,
 } from "./team-os";
+import {
+  isLikelySameTeamMemberName,
+  normalizeTeamMemberName,
+} from "./team-member-match";
 
 export type MemberShiftScheduleItem = {
   shiftId: string;
@@ -276,13 +280,13 @@ function matchShiftWorker(
     return (
       shift.workers.find((worker) => worker.memberId === member.id) ??
       shift.workers.find(
-        (worker) => normalizeName(worker.name) === normalizeName(member.name),
+        (worker) => isLikelySameTeamMemberName(worker.name, member.name),
       ) ??
       null
     );
   }
 
-  if (normalizeName(shift.employee) !== normalizeName(member.name)) {
+  if (!isLikelySameTeamMemberName(shift.employee, member.name)) {
     return null;
   }
 
@@ -348,7 +352,7 @@ function formatTime(value: string): string {
 }
 
 function normalizeName(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
+  return normalizeTeamMemberName(value);
 }
 
 function roundHours(value: number): number {
