@@ -93,7 +93,9 @@ import {
 } from "@/lib/team/team-manager-followup";
 import { buildTeamCommunicationDrafts } from "@/lib/team/team-communication-drafts";
 import {
+  buildLaborEmployeeDiagnostics,
   buildLaborShiftDiagnostics,
+  type LaborEmployeeDiagnostic,
   type LaborShiftDiagnostic,
 } from "@/lib/team/labor-bi";
 import {
@@ -250,6 +252,11 @@ export default async function TeamPage({
   });
   const shiftDiagnostics = laborLoad.laborBi
     ? buildLaborShiftDiagnostics(laborLoad.laborBi).slice(0, 5)
+    : [];
+  const employeeDiagnostics = laborLoad.laborBi
+    ? buildLaborEmployeeDiagnostics(laborLoad.laborBi)
+        .filter((item) => item.kind !== "healthy")
+        .slice(0, 4)
     : [];
   const shiftRoster = buildTeamShiftRoster({
     staff: workspace.staff,
@@ -578,6 +585,14 @@ export default async function TeamPage({
                   </div>
                 )}
               </div>
+
+              <EmployeeLaborDiagnostics
+                diagnostics={employeeDiagnostics}
+                employeeCount={laborLoad.laborBi?.employees.length ?? 0}
+                roleId={roleId}
+                venueId={workspace.venueId}
+                period={period}
+              />
             </div>
           </div>
         </section>
@@ -1905,6 +1920,170 @@ function ShiftDiagnosticRow({ shift }: { shift: LaborShiftDiagnostic }) {
       </div>
     </Link>
   );
+}
+
+function EmployeeLaborDiagnostics({
+  diagnostics,
+  employeeCount,
+  roleId,
+  venueId,
+  period,
+}: {
+  diagnostics: LaborEmployeeDiagnostic[];
+  employeeCount: number;
+  roleId: TeamRoleId;
+  venueId: string;
+  period: Period;
+}) {
+  return (
+    <div className="mt-5 border-t border-border/35 pt-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            РЎРѕС‚СЂСѓРґРЅРёРєРё
+          </p>
+          <h3 className="mt-2 text-lg font-medium">
+            РљРѕРіРѕ СЂР°Р·РѕР±СЂР°С‚СЊ РїРѕ Р¤РћРў
+          </h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {formatInteger(employeeCount)} РІ СЃРјРµРЅР°С…
+        </p>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {diagnostics.length > 0 ? (
+          diagnostics.map((employee) => (
+            <EmployeeLaborDiagnosticRow
+              key={employee.memberId ?? employee.name}
+              employee={employee}
+              roleId={roleId}
+              venueId={venueId}
+              period={period}
+            />
+          ))
+        ) : (
+          <div className="rounded-lg border border-brand/25 bg-brand/10 p-3">
+            <p className="text-sm font-medium text-foreground">
+              РЇРІРЅС‹С… СЂРёСЃРєРѕРІ РїРѕ СЃРѕС‚СЂСѓРґРЅРёРєР°Рј РЅРµ
+              РІРёРґРЅРѕ
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              РЎС‚Р°РІРєРё Рё РІС‹СЂСѓС‡РєР° РЅР° С‡Р°СЃ РІС‹РіР»СЏРґСЏС‚
+              СѓРїСЂР°РІР»СЏРµРјРѕ. Р”Р°Р»СЊС€Рµ СЂР°Р·Р±РёСЂР°Р№С‚Рµ
+              СЃРјРµРЅС‹, РјР°СЂР¶Сѓ Рё РїР»Р°РЅ/С„Р°РєС‚.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmployeeLaborDiagnosticRow({
+  employee,
+  roleId,
+  venueId,
+  period,
+}: {
+  employee: LaborEmployeeDiagnostic;
+  roleId: TeamRoleId;
+  venueId: string;
+  period: Period;
+}) {
+  const targetRole = employee.roleId ?? roleId;
+
+  return (
+    <Link
+      href={employeeDiagnosticHref({
+        employee,
+        roleId: targetRole,
+        venueId,
+        period,
+      })}
+      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center"
+    >
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={
+              "rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+              employeeDiagnosticToneClass(employee.tone)
+            }
+          >
+            {employeeDiagnosticKindLabel(employee.kind)}
+          </span>
+          <p className="text-sm font-medium text-foreground">{employee.name}</p>
+          <span className="text-xs text-muted-foreground">
+            {employee.roleId ? getTeamRole(employee.roleId).title : "iiko"}
+          </span>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          {employee.detail}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-foreground/85">
+          {employee.action}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground sm:grid-cols-4 xl:min-w-[420px]">
+        <ShiftValue
+          label="РІС‹СЂСѓС‡РєР°"
+          value={formatRubles(employee.sales)}
+        />
+        <ShiftValue label="Р¤РћРў" value={formatPct(employee.laborCostPct)} />
+        <ShiftValue
+          label="в‚Ѕ / С‡Р°СЃ"
+          value={
+            employee.revenuePerHour
+              ? formatRubles(employee.revenuePerHour)
+              : "вЂ”"
+          }
+        />
+        <ShiftValue label="СЃРјРµРЅ" value={formatInteger(employee.shifts)} />
+      </div>
+    </Link>
+  );
+}
+
+function employeeDiagnosticHref(input: {
+  employee: LaborEmployeeDiagnostic;
+  roleId: TeamRoleId;
+  venueId: string;
+  period: Period;
+}): string {
+  if (input.employee.memberId) {
+    return `${teamHref(
+      input.venueId,
+      input.roleId,
+      input.period,
+      input.employee.memberId,
+    )}#labor-member-${encodeURIComponent(input.employee.memberId)}`;
+  }
+
+  if (input.employee.kind === "missing-rate") return "#team-actions";
+  return "#iiko-shift-diagnostics";
+}
+
+function employeeDiagnosticToneClass(
+  tone: LaborEmployeeDiagnostic["tone"],
+): string {
+  if (tone === "risk")
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (tone === "setup")
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  if (tone === "watch")
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  return "border-brand/30 bg-brand/10 text-brand";
+}
+
+function employeeDiagnosticKindLabel(
+  kind: LaborEmployeeDiagnostic["kind"],
+): string {
+  if (kind === "missing-rate") return "РЅРµС‚ СЃС‚Р°РІРєРё";
+  if (kind === "expensive-employee") return "РґРѕСЂРѕРіРѕ";
+  if (kind === "low-productivity") return "РЅРёР·РєРёР№ С‡Р°СЃ";
+  return "РЅРѕСЂРјР°";
 }
 
 function ShiftValue({ label, value }: { label: string; value: string }) {
