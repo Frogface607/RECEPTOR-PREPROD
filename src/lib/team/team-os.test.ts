@@ -10,6 +10,8 @@ import {
   listTasksForMember,
   listTasksForRole,
   roleCan,
+  taskContextWithoutLearningHint,
+  taskLearningHintFromContext,
 } from "./team-os";
 
 describe("Team OS roles and permissions", () => {
@@ -59,6 +61,20 @@ describe("Team OS roles and permissions", () => {
 
     expect(comments).toHaveLength(1);
     expect(comments[0]?.authorName).toBe("Роман");
+  });
+
+  test("extracts learning hint from BI task context", () => {
+    expect(
+      taskLearningHintFromContext(
+        "ФОТ 36%. Урок для команды: Цифры ресторана простым языком.",
+      ),
+    ).toBe("Цифры ресторана простым языком");
+    expect(taskLearningHintFromContext("Без учебного стандарта")).toBeNull();
+    expect(
+      taskContextWithoutLearningHint(
+        "ФОТ 36%. Урок для команды: Цифры ресторана простым языком.",
+      ),
+    ).toBe("ФОТ 36%.");
   });
 
   test("filters announcements by role visibility", () => {

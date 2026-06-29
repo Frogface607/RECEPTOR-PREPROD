@@ -562,6 +562,21 @@ export function listCommentsForTask(
   return comments.filter((comment) => comment.taskId === taskId);
 }
 
+export function taskLearningHintFromContext(
+  context: string | null | undefined,
+): string | null {
+  const match = context?.match(/Урок для команды:\s*([^.\n]+)/);
+  return match?.[1]?.trim() || null;
+}
+
+export function taskContextWithoutLearningHint(
+  context: string | null | undefined,
+): string {
+  return (context ?? "")
+    .replace(/\s*Урок для команды:\s*[^.\n]+\.?/g, "")
+    .trim();
+}
+
 export function listAnnouncementsForRole(
   roleId: TeamRoleId,
   venueId = "dev-venue",

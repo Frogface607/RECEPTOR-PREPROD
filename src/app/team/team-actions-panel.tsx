@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
+  BookOpenCheck,
   CheckCircle2,
   Copy,
   History,
@@ -29,6 +30,8 @@ import { buildIikoStaffImportCandidates } from "@/lib/team/team-iiko-staff-impor
 import {
   TEAM_ROLES,
   listCommentsForTask,
+  taskContextWithoutLearningHint,
+  taskLearningHintFromContext,
   type StaffMember,
   type TeamAuditEvent,
   type TeamRoleId,
@@ -812,6 +815,12 @@ export function TeamActionsPanel({
               {taskQueue.openTasks.length > 0 ? (
                 taskQueue.openTasks.slice(0, 6).map(({ task, focused }) => {
                   const context = latestTaskContext[task.id];
+                  const learningHint = taskLearningHintFromContext(
+                    context?.body,
+                  );
+                  const contextBody = taskContextWithoutLearningHint(
+                    context?.body,
+                  );
 
                   return (
                     <div
@@ -845,6 +854,12 @@ export function TeamActionsPanel({
                               {task.impactLabel}
                             </span>
                           ) : null}
+                          {learningHint ? (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-sky-400/25 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                              <BookOpenCheck className="size-3" />
+                              стандарт
+                            </span>
+                          ) : null}
                         </div>
                         <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
                           {task.title}
@@ -852,12 +867,18 @@ export function TeamActionsPanel({
                         <p className="mt-1 text-[11px] text-muted-foreground">
                           {taskAudienceLabel(task, staff)} · {task.dueLabel}
                         </p>
-                        {context ? (
+                        {context && contextBody ? (
                           <p className="mt-2 line-clamp-2 rounded-md border border-border/40 bg-card/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
                             <span className="font-medium text-foreground/80">
                               {context.authorName}:
                             </span>{" "}
-                            {context.body}
+                            {contextBody}
+                          </p>
+                        ) : null}
+                        {learningHint ? (
+                          <p className="mt-2 flex items-start gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
+                            <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
+                            <span>Команде поможет: {learningHint}</span>
                           </p>
                         ) : null}
                       </button>
