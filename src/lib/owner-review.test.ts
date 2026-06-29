@@ -222,11 +222,15 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
-    expect(review.hypotheses[0]).toMatchObject({
-      title: "ФОТ выше целевой нормы",
-      tone: "risk",
-      role: "manager",
-    });
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "ФОТ выше целевой нормы",
+          tone: "risk",
+          role: "manager",
+        }),
+      ]),
+    );
     expect(review.tasks[0]).toMatchObject({
       title: "Разобрать ФОТ и маржу: Команда зала",
       priority: "high",
@@ -1533,6 +1537,50 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           target: "team-journal",
+        }),
+      ]),
+    );
+  });
+
+  test("prioritizes money-weighted BI hypotheses before setup noise", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          ...shifts[0],
+          workers: [
+            {
+              name: "Официант",
+              hours: 8,
+              sales: 100000,
+            },
+          ],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin: buildMenuMarginReadiness({
+        dishes,
+        products: [],
+      }),
+    });
+
+    expect(review.hypotheses[0]).toMatchObject({
+      taskSourceLabel: "Маржа и техкарты",
+      impactLabel: expect.stringContaining("80"),
+    });
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          taskSourceLabel: "ФОТ и смены",
         }),
       ]),
     );

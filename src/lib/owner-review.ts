@@ -1154,6 +1154,36 @@ function sortOwnerActions(actions: OwnerReviewAction[]): OwnerReviewAction[] {
     .map(({ action }) => action);
 }
 
+function hypothesisSourceScore(sourceLabel: string | undefined): number {
+  if (sourceLabel === "Данные iiko") return 900_000;
+  if (sourceLabel === "Маржа и техкарты") return 70_000;
+  if (sourceLabel === "ФОТ и смены") return 65_000;
+  if (sourceLabel === "Выручка и смены") return 60_000;
+  if (sourceLabel === "Продажи и сервис") return 50_000;
+  return 0;
+}
+
+function hypothesisPriorityScore(item: OwnerReviewHypothesis): number {
+  return (
+    toneScore(item.tone) +
+    hypothesisSourceScore(item.taskSourceLabel) +
+    impactScore(item.impactLabel)
+  );
+}
+
+function sortOwnerHypotheses(
+  hypotheses: OwnerReviewHypothesis[],
+): OwnerReviewHypothesis[] {
+  return hypotheses
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const scoreDelta =
+        hypothesisPriorityScore(b.item) - hypothesisPriorityScore(a.item);
+      return scoreDelta || a.index - b.index;
+    })
+    .map(({ item }) => item);
+}
+
 function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
   const seen = new Set<string>();
   return drafts.filter((draft) => {
@@ -2233,6 +2263,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       role: "chef",
       tone: topCategoryShare >= 42 ? "risk" : "watch",
       taskSourceLabel: "Маржа и техкарты",
+      impactLabel: formatRubles(topCategory.dishSumInt),
       learningModuleId: "tech-card-discipline",
       learningModuleTitle: "Техкарта как договор внутри команды",
     });
@@ -2247,6 +2278,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       role: "service",
       tone: topDishShare >= 18 ? "watch" : "good",
       taskSourceLabel: "Продажи и сервис",
+      impactLabel: formatRubles(topDish.dishSumInt),
       learningModuleId: "sales-eight-upsell",
       learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
@@ -2283,7 +2315,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     });
   }
 
-  const visibleHypotheses = hypotheses.slice(0, 4);
+  const visibleHypotheses = sortOwnerHypotheses(hypotheses).slice(0, 4);
   const questions: OwnerReviewQuestion[] = visibleHypotheses.map((item) => ({
     role: item.role,
     text: item.check,
