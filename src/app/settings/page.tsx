@@ -46,7 +46,9 @@ type SettingsVenue = {
   openTasksCount: number;
 };
 
-function normalizeIikoChannel(value: string | null | undefined): "cloud" | "rms" | null {
+function normalizeIikoChannel(
+  value: string | null | undefined,
+): "cloud" | "rms" | null {
   return value === "cloud" || value === "rms" ? value : null;
 }
 
@@ -95,32 +97,31 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
     .eq("owner_user_id", user.id)
     .order("created_at", { ascending: true });
 
-  let venues = venuesResult.data as
-    | Array<{
-        id: string;
-        name: string;
-        city: string | null;
-        type: string | null;
-        context_profile?: unknown | null;
-      }>
-    | null;
+  let venues = venuesResult.data as Array<{
+    id: string;
+    name: string;
+    city: string | null;
+    type: string | null;
+    context_profile?: unknown | null;
+  }> | null;
 
-  if (venuesResult.error && /context_profile/i.test(venuesResult.error.message)) {
+  if (
+    venuesResult.error &&
+    /context_profile/i.test(venuesResult.error.message)
+  ) {
     const fallbackResult = await supabase
       .from("venues")
       .select("id,name,city,type")
       .eq("owner_user_id", user.id)
       .order("created_at", { ascending: true });
 
-    venues = fallbackResult.data as
-      | Array<{
-          id: string;
-          name: string;
-          city: string | null;
-          type: string | null;
-          context_profile?: unknown | null;
-        }>
-      | null;
+    venues = fallbackResult.data as Array<{
+      id: string;
+      name: string;
+      city: string | null;
+      type: string | null;
+      context_profile?: unknown | null;
+    }> | null;
   }
 
   const rows = (venues ?? []) as Array<{
@@ -163,7 +164,9 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
       ])
     : [{ data: [] }, { data: [] }];
   const teamMembersByVenue = new Map<string, number>();
-  for (const membership of (membershipsResult.data ?? []) as Array<{ venue_id: string }>) {
+  for (const membership of (membershipsResult.data ?? []) as Array<{
+    venue_id: string;
+  }>) {
     teamMembersByVenue.set(
       membership.venue_id,
       (teamMembersByVenue.get(membership.venue_id) ?? 0) + 1,
@@ -182,22 +185,24 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
     );
   }
 
-  return uniqueSettingsVenues(rows.map((venue) => {
-    const completion = calculateContextCompletion(venue.context_profile);
+  return uniqueSettingsVenues(
+    rows.map((venue) => {
+      const completion = calculateContextCompletion(venue.context_profile);
 
-    return {
-      id: venue.id,
-      name: venue.name,
-      city: venue.city ?? "",
-      type: venue.type ?? "other",
-      iikoConnected: connected.has(venue.id),
-      iikoChannel: normalizeIikoChannel(connected.get(venue.id)),
-      contextRequiredPercentage: completion.requiredPercentage,
-      contextMissingRequired: completion.missingRequired.length,
-      teamMembersCount: teamMembersByVenue.get(venue.id) ?? 0,
-      openTasksCount: openTasksByVenue.get(venue.id) ?? 0,
-    };
-  }));
+      return {
+        id: venue.id,
+        name: venue.name,
+        city: venue.city ?? "",
+        type: venue.type ?? "other",
+        iikoConnected: connected.has(venue.id),
+        iikoChannel: normalizeIikoChannel(connected.get(venue.id)),
+        contextRequiredPercentage: completion.requiredPercentage,
+        contextMissingRequired: completion.missingRequired.length,
+        teamMembersCount: teamMembersByVenue.get(venue.id) ?? 0,
+        openTasksCount: openTasksByVenue.get(venue.id) ?? 0,
+      };
+    }),
+  );
 }
 
 export default async function SettingsPage() {
@@ -229,7 +234,7 @@ export default async function SettingsPage() {
           <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Workspace
+                Рабочее пространство
               </p>
               <h1 className="mt-1 text-xl font-medium">Настройки</h1>
             </div>
@@ -251,162 +256,163 @@ export default async function SettingsPage() {
         </header>
 
         <div className="mx-auto max-w-6xl px-6 py-8">
-        {user?.isDemo ? (
-          <div className="mb-8 flex items-start gap-3 rounded-xl border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4">
-            <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
-            <p className="text-[13px] leading-relaxed text-foreground/85">
-              Тестовый доступ.{" "}
-              {configured ? "Войдите" : "Подключите Supabase и войдите"},
-              чтобы сохранять профиль, заведения и подключения.
-            </p>
-          </div>
-        ) : null}
-
-        <LaunchChecklist venues={venues} firstVenueHref={firstVenueHref} />
-
-        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="space-y-6">
-          <Section icon={User} title="Профиль">
-            <Row label="Email" value={user?.email ?? "-"} />
-            <Row
-              label="Статус"
-              value={
-                user?.isDeveloper
-                  ? "Разработчик"
-                  : user?.isDemo
-                    ? "Тестовый доступ"
-                    : "Авторизован"
-              }
-            />
-          </Section>
-
-          <Section icon={Store} title="Заведения">
-            <div className="space-y-2">
-              {venues.length > 0 ? (
-                venues.map((venue) => (
-                  <div
-                    key={venue.id}
-                    className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3"
-                  >
-                    <div>
-                      <p className="text-[14px] font-medium text-foreground">
-                        {venue.name}
-                      </p>
-                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                        {venue.city || "город не указан"} · {venue.type}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <ContextStatus venue={venue} />
-                      {venue.iikoConnected ? (
-                        <span className="hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-brand sm:inline-flex">
-                          <CheckCircle2 className="size-3.5" />
-                          {venue.iikoChannel ?? "iiko"}
-                        </span>
-                      ) : (
-                        <span className="hidden text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
-                          нет iiko
-                        </span>
-                      )}
-                      <Link
-                        href={`/dashboard/${venue.id}`}
-                        className="text-[13px] text-brand underline-offset-4 hover:underline"
-                      >
-                        Открыть
-                      </Link>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-[13px] text-muted-foreground">
-                  Заведения еще не подключены.
-                </p>
-              )}
-            </div>
-            <Link
-              href="/onboarding?new=1"
-              className="mt-3 inline-block text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              + Добавить заведение
-            </Link>
-          </Section>
-          </div>
-
-          <div className="space-y-6">
-          <Section icon={Brain} title="Память заведения">
-            <div className="space-y-3">
-              <p className="text-[13px] leading-relaxed text-muted-foreground">
-                Анкета заведения дает AI постоянный контекст: формат,
-                экономику, команду, интеграции и правила работы с данными.
+          {user?.isDemo ? (
+            <div className="mb-8 flex items-start gap-3 rounded-xl border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4">
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
+              <p className="text-[13px] leading-relaxed text-foreground/85">
+                Тестовый доступ.{" "}
+                {configured ? "Войдите" : "Подключите Supabase и войдите"},
+                чтобы сохранять профиль, заведения и подключения.
               </p>
-              {venues.length > 0 ? (
+            </div>
+          ) : null}
+
+          <LaunchChecklist venues={venues} firstVenueHref={firstVenueHref} />
+
+          <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="space-y-6">
+              <Section icon={User} title="Профиль">
+                <Row label="Email" value={user?.email ?? "-"} />
+                <Row
+                  label="Статус"
+                  value={
+                    user?.isDeveloper
+                      ? "Разработчик"
+                      : user?.isDemo
+                        ? "Тестовый доступ"
+                        : "Авторизован"
+                  }
+                />
+              </Section>
+
+              <Section icon={Store} title="Заведения">
                 <div className="space-y-2">
-                  {venues.map((venue) => (
-                    <div
-                      key={venue.id}
-                      className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3"
-                    >
-                      <div>
-                        <p className="text-[14px] font-medium text-foreground">
-                          {venue.name}
-                        </p>
-                        <p className="text-[12px] text-muted-foreground">
-                          Обязательный контекст заполнен на{" "}
-                          {venue.contextRequiredPercentage}%.
-                          {venue.contextMissingRequired > 0
-                            ? ` Осталось полей: ${venue.contextMissingRequired}.`
-                            : " Готово к работе."}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/context?venueId=${encodeURIComponent(venue.id)}`}
-                        className="inline-flex items-center gap-1.5 text-[13px] text-brand underline-offset-4 hover:underline"
+                  {venues.length > 0 ? (
+                    venues.map((venue) => (
+                      <div
+                        key={venue.id}
+                        className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3"
                       >
-                        Анкета
-                        <ArrowUpRight className="size-3.5" />
-                      </Link>
-                    </div>
-                  ))}
+                        <div>
+                          <p className="text-[14px] font-medium text-foreground">
+                            {venue.name}
+                          </p>
+                          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                            {venue.city || "город не указан"} · {venue.type}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <ContextStatus venue={venue} />
+                          {venue.iikoConnected ? (
+                            <span className="hidden items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-brand sm:inline-flex">
+                              <CheckCircle2 className="size-3.5" />
+                              {venue.iikoChannel ?? "iiko"}
+                            </span>
+                          ) : (
+                            <span className="hidden text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
+                              нет iiko
+                            </span>
+                          )}
+                          <Link
+                            href={`/dashboard/${venue.id}`}
+                            className="text-[13px] text-brand underline-offset-4 hover:underline"
+                          >
+                            Открыть
+                          </Link>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-[13px] text-muted-foreground">
+                      Заведения еще не подключены.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-[13px] text-muted-foreground">
-                  Добавьте заведение, чтобы собрать его операционный контекст.
-                </p>
-              )}
+                <Link
+                  href="/onboarding?new=1"
+                  className="mt-3 inline-block text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  + Добавить заведение
+                </Link>
+              </Section>
             </div>
-          </Section>
 
-          <div id="iiko">
-            <IikoConnectionCenter venues={venues} />
-          </div>
+            <div className="space-y-6">
+              <Section icon={Brain} title="Память заведения">
+                <div className="space-y-3">
+                  <p className="text-[13px] leading-relaxed text-muted-foreground">
+                    Анкета заведения дает AI постоянный контекст: формат,
+                    экономику, команду, интеграции и правила работы с данными.
+                  </p>
+                  {venues.length > 0 ? (
+                    <div className="space-y-2">
+                      {venues.map((venue) => (
+                        <div
+                          key={venue.id}
+                          className="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-4 py-3"
+                        >
+                          <div>
+                            <p className="text-[14px] font-medium text-foreground">
+                              {venue.name}
+                            </p>
+                            <p className="text-[12px] text-muted-foreground">
+                              Обязательный контекст заполнен на{" "}
+                              {venue.contextRequiredPercentage}%.
+                              {venue.contextMissingRequired > 0
+                                ? ` Осталось полей: ${venue.contextMissingRequired}.`
+                                : " Готово к работе."}
+                            </p>
+                          </div>
+                          <Link
+                            href={`/context?venueId=${encodeURIComponent(venue.id)}`}
+                            className="inline-flex items-center gap-1.5 text-[13px] text-brand underline-offset-4 hover:underline"
+                          >
+                            Анкета
+                            <ArrowUpRight className="size-3.5" />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[13px] text-muted-foreground">
+                      Добавьте заведение, чтобы собрать его операционный
+                      контекст.
+                    </p>
+                  )}
+                </div>
+              </Section>
 
-          <Section icon={CreditCard} title="Подписка">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="rounded-full border border-border/60 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-foreground">
-                  Free
-                </span>
-                <span className="text-[13px] text-muted-foreground">
-                  1 заведение · базовый дашборд
-                </span>
+              <div id="iiko">
+                <IikoConnectionCenter venues={venues} />
               </div>
-              <Link
-                href="/pricing"
-                className="text-[13px] text-brand underline-offset-4 hover:underline"
-              >
-                Сравнить тарифы
-              </Link>
-            </div>
-          </Section>
 
-          <Section icon={ScrollText} title="Журнал действий">
-            <p className="text-[13px] text-muted-foreground">
-              Появится после первого входа и подключения iiko.
-            </p>
-          </Section>
+              <Section icon={CreditCard} title="Подписка">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full border border-border/60 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-foreground">
+                      Free
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">
+                      1 заведение · базовый дашборд
+                    </span>
+                  </div>
+                  <Link
+                    href="/pricing"
+                    className="text-[13px] text-brand underline-offset-4 hover:underline"
+                  >
+                    Сравнить тарифы
+                  </Link>
+                </div>
+              </Section>
+
+              <Section icon={ScrollText} title="Журнал действий">
+                <p className="text-[13px] text-muted-foreground">
+                  Появится после первого входа и подключения iiko.
+                </p>
+              </Section>
+            </div>
           </div>
         </div>
-      </div>
       </main>
     </AppShell>
   );
@@ -623,10 +629,7 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                   }
                 />
               </div>
-              <div
-                id={`iiko-diagnostics-${venue.id}`}
-                className="scroll-mt-24"
-              >
+              <div id={`iiko-diagnostics-${venue.id}`} className="scroll-mt-24">
                 <IikoDiagnosticsPanel
                   venueId={venue.id}
                   connected={venue.iikoConnected}
@@ -677,13 +680,7 @@ function DiagnosticItem({
   );
 }
 
-function StatusPill({
-  tone,
-  label,
-}: {
-  tone: "ok" | "warn";
-  label: string;
-}) {
+function StatusPill({ tone, label }: { tone: "ok" | "warn"; label: string }) {
   return (
     <span
       className={

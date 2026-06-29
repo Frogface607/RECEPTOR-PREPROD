@@ -69,7 +69,8 @@ const TIERS = [
     name: "Group",
     price: "от 59 000",
     period: "руб. / месяц",
-    blurb: "Холдинги, несколько брендов, расширенные роли и отдельный контур данных.",
+    blurb:
+      "Холдинги, несколько брендов, расширенные роли и отдельный контур данных.",
     cta: {
       label: "Обсудить Group",
       href: "mailto:bro@frogface.space?subject=Receptor%20Group",
@@ -90,40 +91,44 @@ const TIERS = [
 const COMPARISON_ROWS = [
   { label: "Заведений", values: ["1", "до 5", "индивидуально"] },
   { label: "Память заведения", values: ["базовая", "полная", "по холдингу"] },
-  { label: "Панель владельца", values: ["1 точка", "точки + недели", "холдинг"] },
+  {
+    label: "Панель владельца",
+    values: ["1 точка", "точки + недели", "холдинг"],
+  },
   { label: "Меню", values: ["базовое", "полное", "расширенное"] },
   { label: "Команда", values: ["-", "роли + задачи", "расширенная"] },
-  { label: "Гости, доставка, маркетинг", values: ["аддоны", "аддоны", "в сборке"] },
+  {
+    label: "Гости, доставка, маркетинг",
+    values: ["аддоны", "аддоны", "в сборке"],
+  },
   { label: "AI-сообщений / день", values: ["50", "200", "индивидуально"] },
-  { label: "AI provider mode", values: ["OpenAI/OpenRouter", "на выбор", "частный контур"] },
+  {
+    label: "AI provider mode",
+    values: ["OpenAI/OpenRouter", "на выбор", "частный контур"],
+  },
   { label: "Поддержка", values: ["чат", "приоритет", "выделенная"] },
 ] as const;
 
 const FAQ = [
   {
     q: "Это BI, CRM или ChatGPT-обертка?",
-    a:
-      "Нет. BI и AI входят в ядро, но продукт шире: Receptor хранит контекст ресторана, читает операционные данные, раскладывает роли и превращает цифры в действия для команды.",
+    a: "Нет. BI и AI входят в ядро, но продукт шире: Receptor хранит контекст ресторана, читает операционные данные, раскладывает роли и превращает цифры в действия для команды.",
   },
   {
     q: "Можно ли начать без iiko-ключа?",
-    a:
-      "Да. Можно собрать контекст, настроить роли и показать кабинет на demo-данных. После подключения iiko те же экраны переходят на live-цифры.",
+    a: "Да. Можно собрать контекст, настроить роли и показать кабинет на тестовых данных. После подключения iiko те же экраны переходят на реальные цифры.",
   },
   {
     q: "Можно ли работать без OpenAI?",
-    a:
-      "Да. Архитектура идет через AI provider adapter: OpenAI/OpenRouter для качества и разработки, YandexGPT/GigaChat/Qwen или частный режим для клиентов с ограничениями по данным.",
+    a: "Да. Архитектура идет через AI provider adapter: OpenAI/OpenRouter для качества и разработки, YandexGPT/GigaChat/Qwen или частный режим для клиентов с ограничениями по данным.",
   },
   {
     q: "Что входит во внедрение?",
-    a:
-      "Подключение данных, настройка памяти заведения, роли команды, первый утренний бриф, проверка цифр и подбор модулей под конкретный ресторан или сеть.",
+    a: "Подключение данных, настройка памяти заведения, роли команды, первый утренний бриф, проверка цифр и подбор модулей под конкретный ресторан или сеть.",
   },
   {
     q: "Как подключается iiko Marketplace?",
-    a:
-      "Marketplace имеет смысл как канал масштабирования после стабильной интеграции, поддержки и понятной экономики. Продукт остается самостоятельным SaaS с понятными тарифами и внедрением.",
+    a: "Marketplace имеет смысл как канал масштабирования после стабильной интеграции, поддержки и понятной экономики. Продукт остается самостоятельным SaaS с понятными тарифами и внедрением.",
   },
 ] as const;
 
@@ -162,8 +167,8 @@ export default function PricingPage() {
               </h1>
               <p className="mt-8 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
                 Операционная система управления рестораном: данные из iiko,
-                память заведения, AI-помощник, меню, команда, гости и модули
-                под конкретную задачу.
+                память заведения, AI-помощник, меню, команда, гости и модули под
+                конкретную задачу.
               </p>
             </div>
 
@@ -298,7 +303,10 @@ export default function PricingPage() {
             <article className="rounded-lg border border-brand/40 bg-card/75 p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <Badge variant="outline" className="border-brand/35 text-brand">
+                  <Badge
+                    variant="outline"
+                    className="border-brand/35 text-brand"
+                  >
                     Setup
                   </Badge>
                   <h3 className="mt-4 text-2xl font-medium">
@@ -363,7 +371,9 @@ export default function PricingPage() {
                     className="rounded-lg border border-border/60 bg-card/45 p-5"
                   >
                     <Icon className="size-5 text-brand" />
-                    <h3 className="mt-5 text-base font-medium">{module.title}</h3>
+                    <h3 className="mt-5 text-base font-medium">
+                      {module.title}
+                    </h3>
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                       {module.promise}
                     </p>
@@ -403,7 +413,10 @@ export default function PricingPage() {
                 </thead>
                 <tbody className="divide-y divide-border/30">
                   {COMPARISON_ROWS.map((row) => (
-                    <tr key={row.label} className="transition-colors hover:bg-card/40">
+                    <tr
+                      key={row.label}
+                      className="transition-colors hover:bg-card/40"
+                    >
                       <td className="px-6 py-4 text-foreground">{row.label}</td>
                       {row.values.map((value, index) => (
                         <td

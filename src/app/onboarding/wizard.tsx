@@ -124,7 +124,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
   const [rmsHost, setRmsHost] = useState("");
   const [rmsLogin, setRmsLogin] = useState("");
   const [rmsPassword, setRmsPassword] = useState("");
-  const [organizations, setOrganizations] = useState<IikoOrganizationOption[]>([]);
+  const [organizations, setOrganizations] = useState<IikoOrganizationOption[]>(
+    [],
+  );
   const [organizationId, setOrganizationId] = useState("");
   const [checkingIiko, setCheckingIiko] = useState(false);
   const [ownerContext, setOwnerContext] = useState("");
@@ -178,7 +180,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
       setOwnerContext(data.profile.positioning);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Не удалось собрать профиль заведения.",
+        err instanceof Error
+          ? err.message
+          : "Не удалось собрать профиль заведения.",
       );
     } finally {
       setResearchingVenue(false);
@@ -221,7 +225,10 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
         type,
         city,
         intelligenceProfile: intelligenceProfile
-          ? { ...intelligenceProfile, positioning: ownerContext || intelligenceProfile.positioning }
+          ? {
+              ...intelligenceProfile,
+              positioning: ownerContext || intelligenceProfile.positioning,
+            }
           : ownerContext
             ? {
                 format: `${type} · ${city || "город не указан"}`,
@@ -270,7 +277,11 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                       : "border-border/60 bg-card/60 text-muted-foreground")
                 }
               >
-                {done ? <Check className="size-4" /> : <Icon className="size-4" />}
+                {done ? (
+                  <Check className="size-4" />
+                ) : (
+                  <Icon className="size-4" />
+                )}
               </div>
               <span
                 className={
@@ -350,9 +361,15 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                     сильные стороны, риски и правила для советника.
                   </p>
                 </div>
-                {researchProviderLabel(researchProvider, intelligenceProfile) ? (
+                {researchProviderLabel(
+                  researchProvider,
+                  intelligenceProfile,
+                ) ? (
                   <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    {researchProviderLabel(researchProvider, intelligenceProfile)}
+                    {researchProviderLabel(
+                      researchProvider,
+                      intelligenceProfile,
+                    )}
                   </span>
                 ) : null}
               </div>
@@ -412,15 +429,18 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
                 Выберите Cloud API или прямой iiko RMS. Доступы хранятся
-                зашифрованно и используются только для BI и операционного контура.
+                зашифрованно и используются только для BI и операционного
+                контура.
               </p>
             </div>
 
             <div className="grid grid-cols-2 rounded-lg border border-border/60 bg-background/50 p-1">
-              {([
-                ["cloud", "Cloud API"],
-                ["rms", "RMS server"],
-              ] as const).map(([id, label]) => (
+              {(
+                [
+                  ["cloud", "Cloud API"],
+                  ["rms", "RMS server"],
+                ] as const
+              ).map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
@@ -564,10 +584,10 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                     читает продажи через `/resto/api/v2/reports/olap`.
                   </p>
                 )}
-              {demoMode ? (
-                <button
-                  type="button"
-                  onClick={openSandbox}
+                {demoMode ? (
+                  <button
+                    type="button"
+                    onClick={openSandbox}
                     className="inline-flex h-9 items-center justify-center rounded-md border border-border/60 bg-card/70 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/40"
                   >
                     Открыть тестовый кабинет без iiko
@@ -575,9 +595,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 ) : null}
                 {demoMode ? (
                   <p className="text-[12px] text-[color:var(--pro)]">
-                    В developer/demo режиме Receptor может проверить ключ iiko,
-                    но live-заведение и credentials не сохраняются. Для боевого
-                    подключения войдите обычным email/паролем.
+                    В тестовом режиме Receptor может проверить ключ iiko, но
+                    заведение и подключение не сохраняются. Для рабочего
+                    подключения войдите по email и паролю.
                   </p>
                 ) : null}
               </div>
@@ -593,7 +613,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Developer/demo режим не сохраняет live iiko. Войдите обычной учеткой, чтобы создать заведение и открыть BI на реальных данных."
+                ? "Тестовый режим не сохраняет подключение iiko. Войдите по email и паролю, чтобы создать заведение и открыть BI на реальных данных."
                 : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
             </p>
             {error ? (

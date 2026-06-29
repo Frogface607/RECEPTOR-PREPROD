@@ -68,9 +68,7 @@ function DiagnosticRow({ check }: { check: IikoDiagnosticCheck }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium text-foreground">
-              {check.title}
-            </p>
+            <p className="text-sm font-medium text-foreground">{check.title}</p>
             <span
               className={
                 "rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] " +
@@ -120,9 +118,7 @@ export function IikoDiagnosticsPanel({ venueId, connected }: Props) {
       setReport(payload.report);
     } catch (caught) {
       setError(
-        caught instanceof Error
-          ? caught.message
-          : "Не удалось проверить iiko.",
+        caught instanceof Error ? caught.message : "Не удалось проверить iiko.",
       );
     } finally {
       setIsLoading(false);
@@ -133,15 +129,16 @@ export function IikoDiagnosticsPanel({ venueId, connected }: Props) {
     report?.checks.filter((check) => check.status === "fail").length ?? 0;
   const warnings =
     report?.checks.filter((check) => check.status === "warn").length ?? 0;
-  const tone: IikoDiagnosticStatus = failures > 0
-    ? "fail"
-    : warnings > 0
-      ? "warn"
-      : report
-        ? "ok"
-        : connected
-          ? "warn"
-          : "warn";
+  const tone: IikoDiagnosticStatus =
+    failures > 0
+      ? "fail"
+      : warnings > 0
+        ? "warn"
+        : report
+          ? "ok"
+          : connected
+            ? "warn"
+            : "warn";
 
   return (
     <div className="mt-4 rounded-lg border border-border/50 bg-background/45 p-4">
@@ -159,8 +156,8 @@ export function IikoDiagnosticsPanel({ venueId, connected }: Props) {
             >
               {report
                 ? report.mode === "live"
-                  ? report.channel ?? "live"
-                  : "демо"
+                  ? (report.channel ?? "live")
+                  : "тест"
                 : connected
                   ? "можно проверить"
                   : "нет ключа"}
@@ -171,7 +168,7 @@ export function IikoDiagnosticsPanel({ venueId, connected }: Props) {
               ? report.summary
               : connected
                 ? "Проверим ключ, организацию, BI-отчет и продажи блюд."
-                : "Сначала подключите ключ. Проверка покажет, почему кабинет работает на демо-данных."}
+                : "Сначала подключите ключ. Проверка покажет, почему кабинет пока работает на тестовых данных."}
           </p>
           {report ? (
             <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">

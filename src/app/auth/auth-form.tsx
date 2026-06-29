@@ -22,20 +22,16 @@ type State =
   | { status: "error"; message: string };
 
 type PasswordLoginResponse =
-  | { ok: true; next: string }
-  | { ok: false; error: string };
+  { ok: true; next: string } | { ok: false; error: string };
 
 function safeNextPath(value: string): string {
-  return value.startsWith("/") && !value.startsWith("//")
-    ? value
-    : "/me";
+  return value.startsWith("/") && !value.startsWith("//") ? value : "/me";
 }
 
 function authCallbackUrl(nextPath: string): string {
-  const origin =
-    window.location.hostname.endsWith("receptorai.pro")
-      ? window.location.origin
-      : "https://www.receptorai.pro";
+  const origin = window.location.hostname.endsWith("receptorai.pro")
+    ? window.location.origin
+    : "https://www.receptorai.pro";
   return `${origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`;
 }
 
@@ -100,12 +96,10 @@ export function AuthForm({
           next: safeNextPath(nextPath),
         }),
       });
-      const payload = (await response
-        .json()
-        .catch(() => ({
-          ok: false,
-          error: "Не удалось войти. Попробуйте еще раз.",
-        }))) as PasswordLoginResponse;
+      const payload = (await response.json().catch(() => ({
+        ok: false,
+        error: "Не удалось войти. Попробуйте еще раз.",
+      }))) as PasswordLoginResponse;
 
       if (!response.ok || !payload.ok) {
         setState({
@@ -212,7 +206,11 @@ export function AuthForm({
             type="text"
             value={login}
             onChange={(e) => setLogin(e.target.value)}
-            placeholder={mode === "password" ? "masha или name@company.ru" : "name@company.ru"}
+            placeholder={
+              mode === "password"
+                ? "masha или name@company.ru"
+                : "name@company.ru"
+            }
             autoComplete={mode === "password" ? "username" : "email"}
             required
             className="w-full rounded-lg border border-border/60 bg-background/60 py-3 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
@@ -268,11 +266,11 @@ export function AuthForm({
       {developerMode ? (
         <details className="mt-7 border-t border-border/40 pt-5">
           <summary className="cursor-pointer text-[12px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
-            Developer access
+            Служебный вход
           </summary>
           <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
-            Для просмотра интерфейса без email-ссылки. Live iiko и заведения
-            сохраняются только при обычном входе через Supabase.
+            Для просмотра интерфейса без email-ссылки. Реальные подключения и
+            заведения сохраняются только при обычном входе.
           </p>
           <form action="/api/auth/dev" method="post" className="mt-4 space-y-3">
             <input type="hidden" name="next" value={safeNextPath(nextPath)} />
@@ -281,7 +279,7 @@ export function AuthForm({
               <input
                 type="password"
                 name="accessKey"
-                placeholder="Developer key"
+                placeholder="Служебный ключ"
                 required
                 className="w-full rounded-lg border border-border/60 bg-background/60 py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
               />
@@ -290,12 +288,12 @@ export function AuthForm({
               type="submit"
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 text-sm text-foreground transition-colors hover:border-brand/40 hover:bg-card"
             >
-              Войти как разработчик
+              Войти в тестовый кабинет
               <ArrowRight className="size-4 text-brand" />
             </button>
             {developerError ? (
               <p className="text-[13px] text-destructive">
-                Ключ не подошел. Проверь RECEPTOR_DEV_ACCESS_KEY.
+                Ключ не подошел. Проверьте служебный доступ.
               </p>
             ) : null}
           </form>
@@ -303,11 +301,11 @@ export function AuthForm({
       ) : demoMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Режим разработчика
+            Режим предпросмотра
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Auth еще не настроен в этом окружении. Можно открыть рабочий
-            кабинет для проверки сценария.
+            Авторизация еще не подключена в этом окружении. Можно открыть пример
+            кабинета и пройти основной сценарий.
           </p>
           <Link
             href="/dashboard/dev-venue"

@@ -212,7 +212,7 @@ export async function createVenueAction(
     return {
       ok: false,
       error:
-        "Developer access проверяет интерфейс, но не сохраняет live iiko. Войдите через обычный email/пароль Supabase и повторите подключение.",
+        "Тестовый кабинет показывает интерфейс, но не сохраняет подключение iiko. Войдите через обычный email и пароль, затем повторите подключение.",
     };
   }
   if (parsed.data.channel === "cloud") {

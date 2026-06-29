@@ -32,29 +32,32 @@ export function DataSourcePanel({
   const fallbackToDemo = intendedDataMode === "live" && dataMode === "mock";
   const isLive = dataMode === "live";
   const statusTitle = fallbackToDemo
-    ? "iiko подключен, BI временно на демо"
+    ? "iiko подключен, BI временно в тестовом контуре"
     : isLive
       ? "Работаем на реальных данных iiko"
-      : "Пока показываем демо-данные";
+      : "Пока показываем тестовые данные";
   const statusText =
     dataError ??
     (isLive
       ? "Цифры получены из подключенного источника. Проверьте покрытие периода перед управленческим решением."
-      : "Кабинет можно изучать и настраивать. После подключения iiko эти же блоки перейдут на live-цифры.");
+      : "Кабинет можно изучать и настраивать. После подключения iiko эти же блоки перейдут на реальные цифры.");
   const statusTone = fallbackToDemo
     ? "border-amber-400/35 bg-amber-400/10 text-amber-200"
     : isLive
       ? "border-brand/35 bg-brand/10 text-brand"
       : "border-[color:var(--pro)]/35 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
-  const StatusIcon = fallbackToDemo ? AlertTriangle : isLive ? RadioTower : DatabaseZap;
+  const StatusIcon = fallbackToDemo
+    ? AlertTriangle
+    : isLive
+      ? RadioTower
+      : DatabaseZap;
   const sourceLabel = isLive
     ? channel === "rms"
       ? "iiko RMS"
       : "iiko Cloud"
-    : "Демо-контур";
-  const settingsActionLabel = isLive && !fallbackToDemo
-    ? "Настройки данных"
-    : "Проверить iiko";
+    : "Тестовый контур";
+  const settingsActionLabel =
+    isLive && !fallbackToDemo ? "Настройки данных" : "Проверить iiko";
 
   return (
     <section className="rounded-xl border border-border/60 bg-card/55 p-4">
@@ -65,7 +68,7 @@ export function DataSourcePanel({
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.16em] ${statusTone}`}
             >
               <StatusIcon className="size-3.5" />
-              {isLive ? "live" : fallbackToDemo ? "резерв" : "демо"}
+              {isLive ? "реальные данные" : fallbackToDemo ? "резерв" : "тест"}
             </span>
             <span className="text-[12px] text-muted-foreground">
               {sourceLabel} · {periodLabel}

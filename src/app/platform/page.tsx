@@ -129,7 +129,7 @@ export default function PlatformPage() {
                   href="/dashboard/dev-venue"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Открыть демо-кабинет
+                  Открыть пример кабинета
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="/pricing" variant="outline">
@@ -140,7 +140,7 @@ export default function PlatformPage() {
 
             <div className="self-start rounded-lg border border-border/60 bg-card/60 p-5">
               <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                Product Workspace
+                Рабочий кабинет
               </p>
               <h2 className="mt-3 text-2xl font-medium leading-tight">
                 Единый рабочий слой для владельца, управляющего и команды.
@@ -279,9 +279,9 @@ export default function PlatformPage() {
                 Подключение начинается с кабинета, а не с долгого техпроекта.
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Receptor можно показать на демо-данных, затем добавить контекст
-                конкретного ресторана и подключить реальные источники. Для
-                команды интерфейс остается тем же.
+                Receptor можно показать на тестовых данных, затем добавить
+                контекст конкретного ресторана и подключить реальные источники.
+                Для команды интерфейс остается тем же.
               </p>
             </div>
 
