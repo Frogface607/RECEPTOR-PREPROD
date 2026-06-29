@@ -279,8 +279,8 @@ export function buildLaborInsights(
       tone: "setup",
       title: "Не все ставки заведены",
       detail: blocker
-        ? `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки. Первым закрыть: ${blocker.name}, ${formatMoney(blocker.sales)} выручки в сменах.`
-        : `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать ФОТ.`,
+        ? `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки. Первым закрыть: ${blocker.name}, ${formatMoney(blocker.sales)} выручки в сменах. ${formatLaborCoverageGap(labor)}`
+        : `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать ФОТ. ${formatLaborCoverageGap(labor)}`,
       action:
         blocker?.reason === "missing-member"
           ? "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko."
@@ -371,7 +371,7 @@ export function buildLaborNextAction(
     return {
       kind: "missing-member",
       title: "Добавить сотрудника из iiko",
-      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без карточки Team OS.`,
+      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без карточки Team OS. ${formatLaborCoverageGap(labor)}`,
       action:
         "Откройте Team OS, добавьте сотрудника с таким же именем и задайте ставку ФОТ.",
       blocker,
@@ -383,7 +383,7 @@ export function buildLaborNextAction(
     return {
       kind: "missing-rate",
       title: "Заполнить ставку ФОТ",
-      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без точной стоимости.`,
+      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без точной стоимости. ${formatLaborCoverageGap(labor)}`,
       action:
         "Откройте строку сотрудника в Team OS и заполните почасовую ставку, фикс за смену или процент.",
       blocker,
@@ -918,6 +918,18 @@ function formatPct(value: number | null): string {
 function formatMoney(value: number | null): string {
   if (value === null) return "—";
   return `${Math.round(value).toLocaleString("ru-RU")} ₽`;
+}
+
+function formatLaborCoverageGap(labor: LaborBiSummary): string {
+  if (labor.revenueCoveragePct === null) {
+    return "Покрытие ФОТ по выручке пока не считается.";
+  }
+
+  if (labor.unpricedRevenue <= 0) {
+    return `ФОТ доказан на ${formatPct(labor.revenueCoveragePct)} выручки периода.`;
+  }
+
+  return `ФОТ доказан на ${formatPct(labor.revenueCoveragePct)} выручки периода; ${formatMoney(labor.unpricedRevenue)} остаются без точной стоимости смен.`;
 }
 
 function formatShiftDate(value: string): string {

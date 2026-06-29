@@ -253,11 +253,16 @@ describe("buildLaborBi", () => {
         sales: 30000,
       }),
     ]);
-    expect(buildLaborInsights(labor)[0]).toMatchObject({
+    const setupInsight = buildLaborInsights(labor)[0];
+    expect(setupInsight).toMatchObject({
       title: "Не все ставки заведены",
       action: "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko.",
     });
-    expect(buildLaborNextAction(labor)).toMatchObject({
+    expect(setupInsight.detail).toContain("ФОТ доказан на 0%");
+    expect(setupInsight.detail).toMatch(/120\s000 ₽/);
+
+    const nextAction = buildLaborNextAction(labor);
+    expect(nextAction).toMatchObject({
       kind: "missing-member",
       title: "Добавить сотрудника из iiko",
       blocker: expect.objectContaining({
@@ -265,6 +270,8 @@ describe("buildLaborBi", () => {
         reason: "missing-member",
       }),
     });
+    expect(nextAction.detail).toContain("ФОТ доказан на 0%");
+    expect(nextAction.detail).toMatch(/120\s000 ₽/);
   });
 
   test("creates actionable insights for expensive labor", () => {
@@ -413,7 +420,8 @@ describe("buildLaborBi", () => {
       ],
     });
 
-    expect(buildLaborNextAction(labor)).toMatchObject({
+    const nextAction = buildLaborNextAction(labor);
+    expect(nextAction).toMatchObject({
       kind: "missing-rate",
       title: "Заполнить ставку ФОТ",
       blocker: expect.objectContaining({
@@ -421,6 +429,8 @@ describe("buildLaborBi", () => {
         name: "Илья",
       }),
     });
+    expect(nextAction.detail).toContain("ФОТ доказан на 0%");
+    expect(nextAction.detail).toMatch(/60\s000 ₽/);
   });
 
   test("orders shift diagnostics by labor risk", () => {
