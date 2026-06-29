@@ -438,6 +438,69 @@ describe("buildMenuMarginReadiness", () => {
     });
   });
 
+  test("falls back to product units when tech-card ingredients omit units", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Sauce",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 5000,
+        },
+      ],
+      products: [
+        {
+          id: "sauce-base",
+          name: "Sauce",
+          sizePrices: [],
+        },
+        {
+          id: "tomato",
+          name: "Tomato",
+          unit: "g",
+          pricePerKg: 80,
+          sizePrices: [],
+        },
+        {
+          id: "cream",
+          name: "Cream",
+          unit: "ml",
+          pricePerKg: 160,
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-sauce",
+          productId: "sauce-base",
+          productName: "Sauce",
+          items: [
+            {
+              productId: "tomato",
+              productName: "Tomato",
+              amount: 250,
+            },
+            {
+              productId: "cream",
+              productName: "Cream",
+              amount: 100,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(readiness.items[0]).toMatchObject({
+      hasCost: true,
+      costSource: "tech-card",
+      costReference: 36,
+      techCard: expect.objectContaining({
+        pricedIngredientRows: 2,
+        fullyCosted: true,
+      }),
+    });
+  });
+
   test("surfaces low proven margin as an owner risk", () => {
     const readiness = buildMenuMarginReadiness({
       dishes: [

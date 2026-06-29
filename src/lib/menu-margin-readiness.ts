@@ -365,8 +365,8 @@ function calculateIngredientCost(
   const costReference = getProductCostReference(product);
   if (costReference === null) return null;
 
-  const unit = normalizeIngredientUnit(ingredient.unit);
-  if (unit === "pcs" || product.unit === "pcs") return amount * costReference;
+  const unit = normalizeIngredientUnit(ingredient.unit) ?? product.unit ?? null;
+  if (unit === "pcs") return amount * costReference;
   if (unit === "kg" || unit === "l") return amount * costReference;
   if (unit === "g" || unit === "ml") return (amount / 1000) * costReference;
 
