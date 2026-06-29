@@ -2117,14 +2117,12 @@ function EmployeeLaborDiagnostics({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            РЎРѕС‚СЂСѓРґРЅРёРєРё
+            Сотрудники
           </p>
-          <h3 className="mt-2 text-lg font-medium">
-            РљРѕРіРѕ СЂР°Р·РѕР±СЂР°С‚СЊ РїРѕ Р¤РћРў
-          </h3>
+          <h3 className="mt-2 text-lg font-medium">Кого разобрать по ФОТ</h3>
         </div>
         <p className="text-xs text-muted-foreground">
-          {formatInteger(employeeCount)} РІ СЃРјРµРЅР°С…
+          {formatInteger(employeeCount)} в сменах
         </p>
       </div>
 
@@ -2142,13 +2140,11 @@ function EmployeeLaborDiagnostics({
         ) : (
           <div className="rounded-lg border border-brand/25 bg-brand/10 p-3">
             <p className="text-sm font-medium text-foreground">
-              РЇРІРЅС‹С… СЂРёСЃРєРѕРІ РїРѕ СЃРѕС‚СЂСѓРґРЅРёРєР°Рј РЅРµ
-              РІРёРґРЅРѕ
+              Явных рисков по сотрудникам не видно
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              РЎС‚Р°РІРєРё Рё РІС‹СЂСѓС‡РєР° РЅР° С‡Р°СЃ РІС‹РіР»СЏРґСЏС‚
-              СѓРїСЂР°РІР»СЏРµРјРѕ. Р”Р°Р»СЊС€Рµ СЂР°Р·Р±РёСЂР°Р№С‚Рµ
-              СЃРјРµРЅС‹, РјР°СЂР¶Сѓ Рё РїР»Р°РЅ/С„Р°РєС‚.
+              Ставки и выручка на час выглядят управляемо. Дальше разбирайте
+              смены, маржу и план/факт.
             </p>
           </div>
         )}
@@ -2204,20 +2200,17 @@ function EmployeeLaborDiagnosticRow({
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground sm:grid-cols-4 xl:min-w-[420px]">
+        <ShiftValue label="выручка" value={formatRubles(employee.sales)} />
+        <ShiftValue label="ФОТ" value={formatPct(employee.laborCostPct)} />
         <ShiftValue
-          label="РІС‹СЂСѓС‡РєР°"
-          value={formatRubles(employee.sales)}
-        />
-        <ShiftValue label="Р¤РћРў" value={formatPct(employee.laborCostPct)} />
-        <ShiftValue
-          label="в‚Ѕ / С‡Р°СЃ"
+          label="₽ / час"
           value={
             employee.revenuePerHour
               ? formatRubles(employee.revenuePerHour)
-              : "вЂ”"
+              : "—"
           }
         />
-        <ShiftValue label="СЃРјРµРЅ" value={formatInteger(employee.shifts)} />
+        <ShiftValue label="смен" value={formatInteger(employee.shifts)} />
       </div>
     </Link>
   );
@@ -2257,10 +2250,10 @@ function employeeDiagnosticToneClass(
 function employeeDiagnosticKindLabel(
   kind: LaborEmployeeDiagnostic["kind"],
 ): string {
-  if (kind === "missing-rate") return "РЅРµС‚ СЃС‚Р°РІРєРё";
-  if (kind === "expensive-employee") return "РґРѕСЂРѕРіРѕ";
-  if (kind === "low-productivity") return "РЅРёР·РєРёР№ С‡Р°СЃ";
-  return "РЅРѕСЂРјР°";
+  if (kind === "missing-rate") return "нет ставки";
+  if (kind === "expensive-employee") return "дорого";
+  if (kind === "low-productivity") return "низкий час";
+  return "норма";
 }
 
 function ShiftValue({ label, value }: { label: string; value: string }) {

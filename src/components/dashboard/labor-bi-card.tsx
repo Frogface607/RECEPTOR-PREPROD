@@ -216,15 +216,14 @@ export function LaborBiCard({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                РљРѕРіРѕ СЂР°Р·РѕР±СЂР°С‚СЊ
+                Кого разобрать
               </p>
               <h3 className="mt-1 text-base font-medium text-foreground">
-                РџРµСЂСЃРѕРЅР°Р»СЊРЅС‹Рµ СЂРёСЃРєРё Р¤РћРў
+                Персональные риски ФОТ
               </h3>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Р’Р»Р°РґРµР»РµС† СЃСЂР°Р·Сѓ РІРёРґРёС‚, РєР°РєРѕРіРѕ
-              СЃРѕС‚СЂСѓРґРЅРёРєР° РѕС‚РєСЂС‹С‚СЊ РІ Team OS.
+              Владелец сразу видит, какого сотрудника открыть в Team OS.
             </p>
           </div>
 
@@ -438,7 +437,7 @@ function LaborMarginBridgeStrip({ bridge }: { bridge: LaborMarginBridge }) {
               ) : (
                 <SearchCheck className="size-3.5" />
               )}
-              Р¤РћРў + РјР°СЂР¶Р°
+              ФОТ + маржа
             </span>
             <p className="text-[13px] font-medium text-foreground">
               {bridge.title}
@@ -454,23 +453,20 @@ function LaborMarginBridgeStrip({ bridge }: { bridge: LaborMarginBridge }) {
 
         <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[420px]">
           <MiniMetric
-            label={bridge.employee ? "СЂРёСЃРє Р¤РћРў" : "Р¤РћРў"}
+            label={bridge.employee ? "риск ФОТ" : "ФОТ"}
             value={
               bridge.laborCostPct !== null
                 ? formatPct(bridge.laborCostPct)
-                : "вЂ”"
+                : "—"
             }
           />
+          <MiniMetric label="маржа" value={`${bridge.marginCoveragePct}%`} />
           <MiniMetric
-            label="РјР°СЂР¶Р°"
-            value={`${bridge.marginCoveragePct}%`}
-          />
-          <MiniMetric
-            label="РІР°Р»РѕРІР°СЏ"
+            label="валовая"
             value={
               bridge.averageGrossMarginPct !== null
                 ? formatPct(bridge.averageGrossMarginPct)
-                : "вЂ”"
+                : "—"
             }
           />
         </div>
@@ -597,10 +593,10 @@ function buildEmployeeDiagnosticHref(
 function employeeDiagnosticLabel(
   kind: LaborEmployeeDiagnostic["kind"],
 ): string {
-  if (kind === "missing-rate") return "РЅРµС‚ СЃС‚Р°РІРєРё";
-  if (kind === "expensive-employee") return "РґРѕСЂРѕРіРѕ";
-  if (kind === "low-productivity") return "РЅРёР·РєРёР№ С‡Р°СЃ";
-  return "РЅРѕСЂРјР°";
+  if (kind === "missing-rate") return "нет ставки";
+  if (kind === "expensive-employee") return "дорого";
+  if (kind === "low-productivity") return "низкий час";
+  return "норма";
 }
 
 function EmployeeDiagnosticCard({
@@ -618,7 +614,7 @@ function EmployeeDiagnosticCard({
             {employee.name}
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            {employee.shifts} СЃРјРµРЅ В· {formatHours(employee.hours)}
+            {employee.shifts} смен · {formatHours(employee.hours)}
           </p>
         </div>
         <span
@@ -633,17 +629,14 @@ function EmployeeDiagnosticCard({
       </p>
 
       <div className="mt-3 grid grid-cols-3 gap-2">
-        <MiniMetric label="Р¤РћРў" value={formatPct(employee.laborCostPct)} />
+        <MiniMetric label="ФОТ" value={formatPct(employee.laborCostPct)} />
+        <MiniMetric label="выручка" value={formatRubles(employee.sales)} />
         <MiniMetric
-          label="РІС‹СЂСѓС‡РєР°"
-          value={formatRubles(employee.sales)}
-        />
-        <MiniMetric
-          label="РЅР° С‡Р°СЃ"
+          label="на час"
           value={
             employee.revenuePerHour
               ? formatRubles(employee.revenuePerHour)
-              : "вЂ”"
+              : "—"
           }
         />
       </div>
@@ -654,7 +647,7 @@ function EmployeeDiagnosticCard({
           variant="outline"
           className="mt-3 h-8 w-full justify-between border-brand/35 bg-brand/10 px-3 text-[12px] text-brand hover:bg-brand/15"
         >
-          РћС‚РєСЂС‹С‚СЊ РІ Team OS
+          Открыть в Team OS
           <ArrowRight className="size-3.5" />
         </LinkButton>
       ) : null}

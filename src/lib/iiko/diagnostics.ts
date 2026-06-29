@@ -10,7 +10,8 @@ import type { ResolvedVenue } from "@/lib/venues/get-venue";
 export type IikoDiagnosticStatus = "ok" | "warn" | "fail";
 
 export type IikoDiagnosticCheck = {
-  id: "credentials" | "organization" | "olap" | "dishes" | "costs" | "techcards";
+  id:
+    "credentials" | "organization" | "olap" | "dishes" | "costs" | "techcards";
   title: string;
   status: IikoDiagnosticStatus;
   detail: string;
@@ -49,7 +50,11 @@ function createProbe(config: IikoClientConfig): RealIikoProbe | null {
 function friendlyIikoError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
 
-  if (/api key|api login|401|unauthorized|auth failed|не принял api/i.test(message)) {
+  if (
+    /api key|api login|401|unauthorized|auth failed|не принял api/i.test(
+      message,
+    )
+  ) {
     return "iiko не принял ключ или логин. Скопируйте полный ключ из iiko Web и проверьте, что интеграция активна.";
   }
 
@@ -91,7 +96,13 @@ function fail(
   error: unknown,
   action?: string,
 ): IikoDiagnosticCheck {
-  return { id, title, status: "fail", detail: friendlyIikoError(error), action };
+  return {
+    id,
+    title,
+    status: "fail",
+    detail: friendlyIikoError(error),
+    action,
+  };
 }
 
 export async function runIikoDiagnostics(
@@ -195,7 +206,11 @@ export async function runIikoDiagnostics(
     const dishes = await probe.getDishStatistics({ type: "LAST_WEEK" }, 5);
     checks.push(
       dishes.length > 0
-        ? ok("dishes", "Блюда в продажах", `BI вернул ${dishes.length} позиций с продажами.`)
+        ? ok(
+            "dishes",
+            "Блюда в продажах",
+            `BI вернул ${dishes.length} позиций с продажами.`,
+          )
         : warn(
             "dishes",
             "Блюда в продажах",
@@ -281,7 +296,9 @@ export async function runIikoDiagnostics(
         .slice(0, 8)
         .map(([field, count]) => `${field}: ${count}`)
         .join(", ");
-      const ingredientFields = Object.entries(techCardProbe.ingredientFieldCounts)
+      const ingredientFields = Object.entries(
+        techCardProbe.ingredientFieldCounts,
+      )
         .slice(0, 8)
         .map(([field, count]) => `${field}: ${count}`)
         .join(", ");
@@ -291,13 +308,7 @@ export async function runIikoDiagnostics(
         techCardProbe.ingredientRowsWithAmount > 0;
 
       if (techCardProbe.status === "ready" && hasUsableTechCards) {
-        checks.push(
-          ok(
-            "techcards",
-            "Техкарты RMS",
-            techCardDetail,
-          ),
-        );
+        checks.push(ok("techcards", "Техкарты RMS", techCardDetail));
       } else if (techCardProbe.status === "ready") {
         checks.push(
           warn(
@@ -311,20 +322,20 @@ export async function runIikoDiagnostics(
         checks.push(
           warn(
             "techcards",
-            "РўРµС…РєР°СЂС‚С‹ RMS",
-            `Endpoint assemblyCharts/getAll РѕС‚РІРµС‚РёР», РЅРѕ Р·Р° РѕРєРЅРѕ ${techCardProbe.dateFrom} вЂ” ${techCardProbe.dateTo} С‚РµС…РєР°СЂС‚ РЅРµ РІРµСЂРЅСѓР».`,
-            "РџСЂРѕРІРµСЂСЊС‚Рµ, РµСЃС‚СЊ Р»Рё РІ iiko RMS С‚РµС…РєР°СЂС‚С‹ Рё РІРєР»СЋС‡РµРЅС‹ Р»Рё РїСЂР°РІР° РЅР° РёС… С‡С‚РµРЅРёРµ.",
+            "Техкарты RMS",
+            `Endpoint assemblyCharts/getAll ответил, но за окно ${techCardProbe.dateFrom} — ${techCardProbe.dateTo} техкарт не вернул.`,
+            "Проверьте, есть ли в iiko RMS техкарты и включены ли права на их чтение.",
           ),
         );
       } else {
         checks.push(
           warn(
             "techcards",
-            "РўРµС…РєР°СЂС‚С‹ RMS",
+            "Техкарты RMS",
             techCardProbe.status === "forbidden"
-              ? "RMS РЅРµ РґР°Р» РґРѕСЃС‚СѓРї Рє assemblyCharts/getAll."
-              : `RMS РЅРµ РґР°Р» РїСЂРѕС‡РёС‚Р°С‚СЊ С‚РµС…РєР°СЂС‚С‹: ${techCardProbe.error ?? "РѕС‚РІРµС‚ РЅРµ СЂР°СЃРїРѕР·РЅР°РЅ"}.`,
-            "РџРѕРїСЂРѕСЃРёС‚Рµ РїСЂР°РІР° RMS РЅР° С‡С‚РµРЅРёРµ С‚РµС…РєР°СЂС‚ / assembly charts.",
+              ? "RMS не дал доступ к assemblyCharts/getAll."
+              : `RMS не дал прочитать техкарты: ${techCardProbe.error ?? "ответ не распознан"}.`,
+            "Попросите права RMS на чтение техкарт / assembly charts.",
           ),
         );
       }
@@ -332,9 +343,9 @@ export async function runIikoDiagnostics(
       checks.push(
         fail(
           "techcards",
-          "РўРµС…РєР°СЂС‚С‹ RMS",
+          "Техкарты RMS",
           error,
-          "РџСЂРѕРІРµСЂСЊС‚Рµ РґРѕСЃС‚СѓРї RMS Рє assemblyCharts/getAll.",
+          "Проверьте доступ RMS к assemblyCharts/getAll.",
         ),
       );
     }

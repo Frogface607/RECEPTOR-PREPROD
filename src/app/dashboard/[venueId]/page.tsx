@@ -145,7 +145,7 @@ function dashboardDataErrorMessage(error: unknown): string {
     return "Нет права на api/v2/reports/olap. Попросите iiko включить OLAP reports для этого API login.";
   }
   if (/401/i.test(message)) {
-    return "iiko отклонил live-запрос. Проверьте права API login.";
+    return "iiko отклонил запрос к реальным данным. Проверьте права API login.";
   }
   return "Реальные данные iiko недоступны. Временно показываем тестовый контур.";
 }
