@@ -110,6 +110,7 @@ export type TeamAuditEvent = {
   id: string;
   venueId: string;
   type: TeamAuditEventType;
+  sourceLabel?: string;
   targetType:
     | "member"
     | "task"

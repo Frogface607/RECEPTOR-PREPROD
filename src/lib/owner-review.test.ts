@@ -951,6 +951,40 @@ describe("buildOwnerReview", () => {
     });
   });
 
+  test("uses task contour labels in the owner operational pulse", () => {
+    const teamAuditEvents: TeamAuditEvent[] = [
+      {
+        id: "audit-task-margin",
+        venueId: "venue-1",
+        type: "task_created",
+        sourceLabel: "ФОТ и маржа",
+        targetType: "task",
+        targetId: "task-margin",
+        summary: "Создана задача: разобрать ФОТ и слабую маржу.",
+        createdAtLabel: "14:10",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks: [],
+      teamAuditEvents,
+    });
+
+    expect(review.operationalPulse?.recentEvents[0]).toMatchObject({
+      label: "ФОТ и маржа",
+      summary: expect.stringContaining("разобрать ФОТ"),
+      timeLabel: "14:10",
+      target: "team-journal",
+    });
+  });
+
   test("shows team announcements as owner communication proof", () => {
     const teamAnnouncements: TeamAnnouncement[] = [
       {

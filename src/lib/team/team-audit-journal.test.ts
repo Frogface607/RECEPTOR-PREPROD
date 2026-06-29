@@ -110,4 +110,20 @@ describe("team audit journal", () => {
       access: 1,
     });
   });
+
+  test("uses operational task contour as journal type label", () => {
+    const taskEvent = event(
+      "task-margin",
+      "task_created",
+      "Создана задача.",
+    );
+    taskEvent.sourceLabel = "ФОТ и маржа";
+
+    const journal = buildTeamAuditJournal([taskEvent]);
+
+    expect(journal.entries[0]).toMatchObject({
+      typeLabel: "ФОТ и маржа",
+      categoryId: "tasks",
+    });
+  });
 });

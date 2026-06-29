@@ -338,6 +338,7 @@ export function mapAuditEventRow(row: DbAuditEvent): TeamAuditEvent {
     id: row.id,
     venueId: row.venue_id,
     type: normalizeAuditEventType(row.event_type),
+    sourceLabel: metadataSourceLabel(row.metadata),
     targetType:
       row.target_type === "member" ||
       row.target_type === "task" ||

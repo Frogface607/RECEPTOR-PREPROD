@@ -126,7 +126,7 @@ export function buildTeamAuditJournal(
       ...event,
       categoryId,
       categoryLabel: category?.label ?? "Действие",
-      typeLabel: auditEventTypeLabel(event.type),
+      typeLabel: event.sourceLabel ?? auditEventTypeLabel(event.type),
       contextHref: auditEventContextHref(event),
       contextLabel: auditEventContextLabel(event),
     };

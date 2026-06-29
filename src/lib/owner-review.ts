@@ -366,7 +366,7 @@ function auditEventLabel(event: TeamAuditEvent): string {
   if (event.type === "member_invited") return "Доступ";
   if (event.type === "member_status_updated") return "Доступ";
   if (event.type === "member_password_reset") return "Логин";
-  if (event.type === "task_created") return "Задача";
+  if (event.type === "task_created") return event.sourceLabel ?? "Задача";
   if (event.type === "comment_added") return "Комментарий";
   if (event.type === "announcement_created") return "Объявление";
   if (event.type === "task_status_updated") {
