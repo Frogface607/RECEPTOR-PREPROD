@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   BookOpenCheck,
   CheckCircle2,
@@ -102,6 +103,9 @@ export function SurvivalTaskActions({
         const state = states[index] ?? "idle";
         const saved = state === "saved";
         const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
+        const learningHref = draft.learningModuleId
+          ? `/me/learning?module=${encodeURIComponent(draft.learningModuleId)}`
+          : null;
         return (
           <div
             key={`${draft.roleId}-${index}-${draft.title}`}
@@ -139,7 +143,20 @@ export function SurvivalTaskActions({
                 {draft.learningModuleTitle ? (
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-sky-100/90">
                     <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
-                    <span>Команде поможет: {draft.learningModuleTitle}</span>
+                    <span>
+                      Команде поможет: {draft.learningModuleTitle}
+                      {learningHref ? (
+                        <>
+                          {" "}
+                          <Link
+                            href={learningHref}
+                            className="font-medium text-sky-100 underline-offset-4 hover:underline"
+                          >
+                            Открыть
+                          </Link>
+                        </>
+                      ) : null}
+                    </span>
                   </p>
                 ) : null}
                 <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">

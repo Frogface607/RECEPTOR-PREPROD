@@ -885,6 +885,17 @@ export function getLearningItem(itemId: string): TeamLearningItem | undefined {
   return LEARNING_CATALOG.find((item) => item.id === itemId);
 }
 
+export function getLearningItemByTitle(
+  title: string | null | undefined,
+): TeamLearningItem | undefined {
+  const normalized = title?.trim().toLocaleLowerCase("ru-RU");
+  if (!normalized) return undefined;
+
+  return LEARNING_CATALOG.find(
+    (item) => item.title.trim().toLocaleLowerCase("ru-RU") === normalized,
+  );
+}
+
 export function calculateLearningScore(
   item: TeamLearningItem,
   answers: readonly number[],

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   calculateLearningScore,
   getLearningItem,
+  getLearningItemByTitle,
   listLearningItemsForRole,
 } from "./team-learning";
 
@@ -41,6 +42,15 @@ describe("team learning catalog", () => {
 
     expect(item?.title).toContain("Техкарта");
     expect(item?.roles).toContain("chef");
+  });
+
+  test("finds a learning item by title from task context", () => {
+    const item = getLearningItem("restaurant-numbers-basics");
+
+    expect(getLearningItemByTitle(item?.title)?.id).toBe(
+      "restaurant-numbers-basics",
+    );
+    expect(getLearningItemByTitle("  ")).toBeUndefined();
   });
 
   test("calculates pass/fail score from selected answers", () => {
