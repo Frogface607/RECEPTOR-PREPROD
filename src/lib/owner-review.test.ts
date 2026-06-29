@@ -820,6 +820,7 @@ describe("buildOwnerReview", () => {
         venueId: "venue-1",
         title: "Разобрать дорогую смену",
         source: "copilot",
+        sourceLabel: "ФОТ и маржа",
         priority: "high",
         status: "new",
         audience: { type: "role", roleId: "venue_manager" },
@@ -877,6 +878,7 @@ describe("buildOwnerReview", () => {
       openTasks: 1,
       urgentOpenTasks: 1,
       closedLoops: 1,
+      detail: expect.stringContaining("ФОТ и маржа"),
       recentEvents: [
         expect.objectContaining({
           label: "Закрыто",

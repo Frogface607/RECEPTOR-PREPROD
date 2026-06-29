@@ -146,6 +146,7 @@ export type OwnerOperationalPulse = {
 export type OwnerOperationalProof = {
   openTasks: number;
   urgentOpenTasks: number;
+  openTaskContours: string[];
   closedLoops: number;
   lastClosedLoop: string | null;
   announcements: number;
@@ -340,6 +341,33 @@ function isOpenTeamTask(task: TeamTask): boolean {
   return task.status !== "done" && task.status !== "verified";
 }
 
+function taskContourLabel(task: TeamTask): string {
+  if (task.sourceLabel?.trim()) return task.sourceLabel.trim();
+  if (task.source === "copilot") return "Receptor";
+  if (task.source === "owner") return "Владелец";
+  if (task.source === "chef") return "Кухня";
+  return "Team OS";
+}
+
+function openTaskContourLabels(tasks: TeamTask[]): string[] {
+  const counts = new Map<string, number>();
+
+  for (const task of tasks) {
+    const label = taskContourLabel(task);
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ru-RU"))
+    .slice(0, 3)
+    .map(([label, count]) => (count > 1 ? `${label} x${count}` : label));
+}
+
+function openTaskContourText(contours: string[]): string {
+  if (contours.length === 0) return "";
+  return ` Контуры: ${contours.join(", ")}.`;
+}
+
 function normalizeTaskTitle(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
 }
@@ -518,6 +546,7 @@ function buildOperationalProof(
     openTasks: openTasks.length,
     urgentOpenTasks: openTasks.filter((task) => task.priority === "high")
       .length,
+    openTaskContours: openTaskContourLabels(openTasks),
     closedLoops: closedLoopEvents.length,
     lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
     announcements: announcements?.length ?? 0,
@@ -539,7 +568,7 @@ function operationalPulse(
   if (proof.urgentOpenTasks > 0) {
     return {
       title: "Есть срочные действия команды",
-      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым. Закройте их в Team OS, чтобы выводы владельца стали доказанными.`,
+      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)} Закройте их в Team OS, чтобы выводы владельца стали доказанными.`,
       tone: "risk",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
@@ -552,7 +581,7 @@ function operationalPulse(
   if (proof.openTasks > 0) {
     return {
       title: "Контур в работе",
-      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения. После закрытия задач владелец увидит это как управленческий результат.`,
+      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения.${openTaskContourText(proof.openTaskContours)} После закрытия задач владелец увидит это как управленческий результат.`,
       tone: "watch",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
@@ -633,7 +662,7 @@ function operationalProofEvidence(
           proof.lastClosedLoop ?? "задача закрыта в Team OS",
         )}`
       : proof.openTasks > 0
-        ? `${proof.urgentOpenTasks} срочных. Закрытые контуры появятся после выполнения задач в Team OS.`
+        ? `${proof.urgentOpenTasks} срочных${proof.openTaskContours.length ? `: ${proof.openTaskContours.join(", ")}` : ""}. Закрытые контуры появятся после выполнения задач в Team OS.`
         : "Открытых задач нет; новых закрытий в последних событиях не было.";
 
   return {
