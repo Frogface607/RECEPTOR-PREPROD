@@ -355,10 +355,11 @@ export default async function TeamPage({
                 Команда
               </Badge>
               <h1 className="mt-4 max-w-xl text-balance text-[clamp(1.9rem,3.2vw,2.75rem)] font-medium leading-[1.04]">
-                Штаб смены и команды.
+                Контроль смены.
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Доступы, ставки, обучение и задачи в одном рабочем контуре.
+                Сначала закрываем то, что мешает смене: срочные задачи, ФОТ,
+                допуск, связь и план/факт.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <LinkButton
@@ -368,11 +369,15 @@ export default async function TeamPage({
                   Панель владельца
                   <ArrowRight className="size-4" />
                 </LinkButton>
+                <LinkButton href="#shift-roster" variant="outline">
+                  Сменная сетка
+                </LinkButton>
                 <LinkButton
-                  href={teamHref(workspace.venueId, "service", period)}
+                  href="#learning-progress"
                   variant="outline"
+                  className="hidden sm:inline-flex"
                 >
-                  Вид официанта
+                  Допуск
                 </LinkButton>
               </div>
             </div>
@@ -426,14 +431,6 @@ export default async function TeamPage({
                 />
               </div>
             </div>
-          </div>
-
-          <div className="mx-auto max-w-7xl px-6 pb-8">
-            <LearningRolePlanGrid
-              venueId={workspace.venueId}
-              plans={learningRolePlans}
-              tasks={workspace.tasks}
-            />
           </div>
         </section>
 
@@ -678,65 +675,76 @@ export default async function TeamPage({
           id="learning-progress"
           className="scroll-mt-24 border-b border-border/40"
         >
-          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.78fr_1.22fr]">
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                    Обучение команды
-                  </p>
-                  <h2 className="mt-3 text-2xl font-medium">
-                    Стандарты под контролем
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Допуск к смене считается по обязательным материалам.
-                    Остальное — развитие и точки роста.
+          <div className="mx-auto max-w-7xl px-6 py-8">
+            <div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr]">
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+                      Обучение команды
+                    </p>
+                    <h2 className="mt-3 text-2xl font-medium">
+                      Стандарты под контролем
+                    </h2>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Допуск к смене считается по обязательным материалам.
+                      Остальное — развитие и точки роста.
+                    </p>
+                  </div>
+                  <GraduationCap className="size-6 shrink-0 text-brand" />
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <Metric
+                    label="Допущены"
+                    value={learningOverview.admittedMembers}
+                  />
+                  <Metric
+                    label="Нет допуска"
+                    value={learningOverview.blockedMembers}
+                  />
+                  <Metric
+                    label="Нужен фокус"
+                    value={learningOverview.attentionMembers}
+                  />
+                  <Metric
+                    label="Средний %"
+                    value={learningOverview.averageBest}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                      Допуск
+                    </p>
+                    <h2 className="mt-2 text-xl font-medium">
+                      Прогресс по сотрудникам
+                    </h2>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {workspace.learningProgress.length} попыток сохранено
                   </p>
                 </div>
-                <GraduationCap className="size-6 shrink-0 text-brand" />
-              </div>
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <Metric
-                  label="Допущены"
-                  value={learningOverview.admittedMembers}
-                />
-                <Metric
-                  label="Нет допуска"
-                  value={learningOverview.blockedMembers}
-                />
-                <Metric
-                  label="Нужен фокус"
-                  value={learningOverview.attentionMembers}
-                />
-                <Metric
-                  label="Средний %"
-                  value={learningOverview.averageBest}
-                />
+                <div className="mt-5 grid gap-3">
+                  {learningSummaries.map((summary) => (
+                    <LearningSummaryRow
+                      key={summary.member.id}
+                      summary={summary}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Допуск
-                  </p>
-                  <h2 className="mt-2 text-xl font-medium">
-                    Прогресс по сотрудникам
-                  </h2>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {workspace.learningProgress.length} попыток сохранено
-                </p>
-              </div>
-              <div className="mt-5 grid gap-3">
-                {learningSummaries.map((summary) => (
-                  <LearningSummaryRow
-                    key={summary.member.id}
-                    summary={summary}
-                  />
-                ))}
-              </div>
+            <div className="mt-6">
+              <LearningRolePlanGrid
+                venueId={workspace.venueId}
+                plans={learningRolePlans}
+                tasks={workspace.tasks}
+              />
             </div>
           </div>
         </section>
