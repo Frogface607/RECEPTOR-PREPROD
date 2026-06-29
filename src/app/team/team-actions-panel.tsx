@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useState, useTransition, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -178,6 +184,7 @@ export function TeamActionsPanel({
   tasks,
   auditEvents,
   focusMemberId = "",
+  focusTaskId = "",
   prefillMemberName = "",
   laborBi = null,
   laborSource,
@@ -187,6 +194,7 @@ export function TeamActionsPanel({
   tasks: TeamTask[];
   auditEvents: TeamAuditEvent[];
   focusMemberId?: string;
+  focusTaskId?: string;
   prefillMemberName?: string;
   laborBi?: LaborBiSummary | null;
   laborSource: LaborSource;
@@ -194,6 +202,9 @@ export function TeamActionsPanel({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
+  const focusedTask = focusTaskId
+    ? tasks.find((task) => task.id === focusTaskId)
+    : undefined;
 
   const [memberName, setMemberName] = useState(prefillMemberName);
   const [memberEmail, setMemberEmail] = useState("");
@@ -224,7 +235,9 @@ export function TeamActionsPanel({
   const [audienceMemberId, setAudienceMemberId] = useState(staff[0]?.id ?? "");
   const [dueLabel, setDueLabel] = useState("сегодня");
 
-  const [statusTaskId, setStatusTaskId] = useState(tasks[0]?.id ?? "");
+  const [statusTaskId, setStatusTaskId] = useState(
+    focusedTask?.id ?? tasks[0]?.id ?? "",
+  );
   const [nextStatus, setNextStatus] =
     useState<TeamTask["status"]>("in_progress");
   const [journalFilter, setJournalFilter] =
@@ -280,6 +293,10 @@ export function TeamActionsPanel({
       : missingRateNames
         ? missingRateNames
         : "ставки заведены";
+
+  useEffect(() => {
+    if (focusedTask?.id) setStatusTaskId(focusedTask.id);
+  }, [focusedTask?.id]);
 
   function runAction(action: () => Promise<TeamActionResult>) {
     setMessage(null);
@@ -679,7 +696,12 @@ export function TeamActionsPanel({
           </form>
 
           <form
-            className="rounded-lg border border-border/60 bg-card/50 p-5"
+            className={
+              "rounded-lg border bg-card/50 p-5 " +
+              (focusedTask
+                ? "border-brand/45 ring-1 ring-brand/25"
+                : "border-border/60")
+            }
             onSubmit={(event) => {
               event.preventDefault();
               runAction(() =>
@@ -695,6 +717,11 @@ export function TeamActionsPanel({
               <Send className="size-5 text-brand" />
               <h3 className="text-lg font-medium">Обновить статус</h3>
             </div>
+            {focusedTask ? (
+              <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
+                Открыта задача из экрана владельца: «{focusedTask.title}».
+              </p>
+            ) : null}
             <div className="mt-5 space-y-3">
               <FieldLabel label="Задача">
                 <select

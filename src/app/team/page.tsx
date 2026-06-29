@@ -209,6 +209,7 @@ export default async function TeamPage({
   const period = parsePeriodSearchParams(sp);
   const memberId = parseOptionalText(sp.memberId);
   const focusMemberId = parseOptionalText(sp.focusMemberId);
+  const focusTaskId = parseOptionalText(sp.focusTaskId);
   const prefillMemberName = parseOptionalText(sp.prefillMemberName);
   const user = await getCurrentUser();
   if (isSupabaseConfigured() && !user && venueId !== "dev-venue") {
@@ -219,6 +220,7 @@ export default async function TeamPage({
     });
     if (memberId) nextParams.set("memberId", memberId);
     if (focusMemberId) nextParams.set("focusMemberId", focusMemberId);
+    if (focusTaskId) nextParams.set("focusTaskId", focusTaskId);
     if (prefillMemberName)
       nextParams.set("prefillMemberName", prefillMemberName);
     const nextPath = `/team?${nextParams.toString()}`;
@@ -765,6 +767,7 @@ export default async function TeamPage({
           tasks={workspace.tasks}
           auditEvents={workspace.auditEvents}
           focusMemberId={focusMemberId}
+          focusTaskId={focusTaskId}
           prefillMemberName={prefillMemberName}
           laborBi={laborLoad.laborBi}
           laborSource={{
@@ -817,6 +820,7 @@ export default async function TeamPage({
                     key={task.id}
                     task={task}
                     anchorId={`team-task-${task.id}`}
+                    focused={focusTaskId === task.id}
                   />
                 ))}
               </div>
@@ -2670,10 +2674,12 @@ function TaskRow({
   task,
   compact = false,
   anchorId,
+  focused = false,
 }: {
   task: TeamTask;
   compact?: boolean;
   anchorId?: string;
+  focused?: boolean;
 }) {
   const sourceLabel = sourceBadgeLabel(task);
 
@@ -2681,7 +2687,10 @@ function TaskRow({
     <div
       id={anchorId}
       className={
-        "rounded-lg border border-border/45 bg-background/35 p-3 " +
+        "rounded-lg border p-3 " +
+        (focused
+          ? "border-brand/45 bg-brand/10 ring-1 ring-brand/25 "
+          : "border-border/45 bg-background/35 ") +
         (anchorId ? "operational-target scroll-mt-24" : "")
       }
     >

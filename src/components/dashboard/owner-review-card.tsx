@@ -109,6 +109,11 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
 function actionHref(action: OwnerReviewAction, venueId: string): string {
   const encodedVenueId = encodeURIComponent(venueId);
 
+  if (action.existingTaskId) {
+    const encodedTaskId = encodeURIComponent(action.existingTaskId);
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-task-${encodedTaskId}`;
+  }
+
   if (action.target === "labor-member" && action.memberId) {
     const encodedMemberId = encodeURIComponent(action.memberId);
     return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;

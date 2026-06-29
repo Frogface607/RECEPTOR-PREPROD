@@ -87,6 +87,11 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
 function actionHref(action: OwnerReviewAction, venueId: string): string {
   const encodedVenueId = encodeURIComponent(venueId);
 
+  if (action.existingTaskId) {
+    const encodedTaskId = encodeURIComponent(action.existingTaskId);
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-task-${encodedTaskId}`;
+  }
+
   if (
     (action.target === "labor-member" || action.target === "labor-rate") &&
     action.memberId
