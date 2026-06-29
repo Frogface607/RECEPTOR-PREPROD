@@ -13,6 +13,11 @@ import type { ReactNode } from "react";
 import { LinkButton } from "@/components/ui/link-button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import {
+  buildLaborMarginBridge,
+  type LaborMarginBridge,
+} from "@/lib/labor-margin-bridge";
+import type { MenuMarginReadiness } from "@/lib/menu-margin-readiness";
+import {
   buildLaborEmployeeDiagnostics,
   buildLaborNextAction,
   buildLaborInsights,
@@ -41,14 +46,19 @@ export function LaborBiCard({
   labor,
   ratesHref,
   setupProgress,
+  margin,
 }: {
   labor: LaborBiSummary;
   ratesHref?: string;
   setupProgress?: TeamLaborSetupProgress;
+  margin?: MenuMarginReadiness;
 }) {
   const insights = buildLaborInsights(labor);
   const nextAction = buildLaborNextAction(labor);
   const nextActionHref = buildLaborActionHref(ratesHref, nextAction);
+  const laborMarginBridge = margin
+    ? buildLaborMarginBridge({ labor, margin })
+    : null;
   const employeeDiagnostics = buildLaborEmployeeDiagnostics(labor)
     .filter((item) => item.kind !== "healthy")
     .slice(0, 3);
@@ -137,6 +147,10 @@ export function LaborBiCard({
           progress={setupProgress}
           href={buildSetupProgressHref(ratesHref, setupProgress)}
         />
+      ) : null}
+
+      {laborMarginBridge ? (
+        <LaborMarginBridgeStrip bridge={laborMarginBridge} />
       ) : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -405,6 +419,61 @@ function LaborSetupProgressStrip({
           value={formatInteger(progress.bulkRateTargets.length)}
           detail={`${formatInteger(progress.unpricedShifts)} сменных записей`}
         />
+      </div>
+    </div>
+  );
+}
+
+function LaborMarginBridgeStrip({ bridge }: { bridge: LaborMarginBridge }) {
+  return (
+    <div className="mt-4 rounded-lg border border-border/45 bg-background/30 p-3">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.14em] ${insightClass(bridge.tone)}`}
+            >
+              {bridge.tone === "good" ? (
+                <CheckCircle2 className="size-3.5" />
+              ) : (
+                <SearchCheck className="size-3.5" />
+              )}
+              Р¤РћРў + РјР°СЂР¶Р°
+            </span>
+            <p className="text-[13px] font-medium text-foreground">
+              {bridge.title}
+            </p>
+          </div>
+          <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-muted-foreground">
+            {bridge.detail}
+          </p>
+          <p className="mt-1 max-w-3xl text-[12px] leading-relaxed text-foreground/85">
+            {bridge.action}
+          </p>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[420px]">
+          <MiniMetric
+            label={bridge.employee ? "СЂРёСЃРє Р¤РћРў" : "Р¤РћРў"}
+            value={
+              bridge.laborCostPct !== null
+                ? formatPct(bridge.laborCostPct)
+                : "вЂ”"
+            }
+          />
+          <MiniMetric
+            label="РјР°СЂР¶Р°"
+            value={`${bridge.marginCoveragePct}%`}
+          />
+          <MiniMetric
+            label="РІР°Р»РѕРІР°СЏ"
+            value={
+              bridge.averageGrossMarginPct !== null
+                ? formatPct(bridge.averageGrossMarginPct)
+                : "вЂ”"
+            }
+          />
+        </div>
       </div>
     </div>
   );

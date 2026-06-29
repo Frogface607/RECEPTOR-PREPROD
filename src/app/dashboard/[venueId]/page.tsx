@@ -357,6 +357,7 @@ export default async function DashboardPage({
               labor={laborBi}
               ratesHref={laborRatesHref}
               setupProgress={laborSetupProgress}
+              margin={marginReadiness}
             />
           </div>
 
