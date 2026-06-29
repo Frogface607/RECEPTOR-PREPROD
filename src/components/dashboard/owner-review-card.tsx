@@ -20,6 +20,10 @@ import type {
   OwnerReviewTone,
   OwnerReviewActionTarget,
 } from "@/lib/owner-review";
+import {
+  buildTeamHref,
+  type TeamPeriodParams,
+} from "@/lib/team/team-links";
 import { SurvivalTaskActions } from "./survival-task-actions";
 import { LinkButton } from "@/components/ui/link-button";
 
@@ -42,8 +46,6 @@ const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
   low: "низкая уверенность",
 };
 
-type TeamPeriodParams = Record<string, string>;
-
 function actionContour(action: OwnerReviewAction): string {
   return action.sourceLabel ?? "контур";
 }
@@ -52,25 +54,6 @@ function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
   if (tone === "risk") return <AlertTriangle className="size-4" />;
   if (tone === "watch") return <SearchCheck className="size-4" />;
   return <CheckCircle2 className="size-4" />;
-}
-
-function teamHref(
-  venueId: string,
-  teamPeriodParams: TeamPeriodParams | undefined,
-  hash: string,
-  extraParams: Record<string, string | undefined> = {},
-): string {
-  const params = new URLSearchParams({
-    role: "venue_manager",
-    venueId,
-    ...(teamPeriodParams ?? {}),
-  });
-
-  for (const [key, value] of Object.entries(extraParams)) {
-    if (value) params.set(key, value);
-  }
-
-  return `/team?${params.toString()}${hash}`;
 }
 
 function targetHref(
@@ -85,39 +68,75 @@ function targetHref(
   }
 
   if (target === "labor-member") {
-    return teamHref(venueId, teamPeriodParams, "#team-actions");
+    return buildTeamHref({
+      venueId,
+      hash: "#team-actions",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "labor-rate") {
-    return teamHref(venueId, teamPeriodParams, "#labor-rates");
+    return buildTeamHref({
+      venueId,
+      hash: "#labor-rates",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "shift-coverage") {
-    return teamHref(venueId, teamPeriodParams, "#shift-coverage");
+    return buildTeamHref({
+      venueId,
+      hash: "#shift-coverage",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "shift-diagnostics") {
-    return teamHref(venueId, teamPeriodParams, "#iiko-shift-diagnostics");
+    return buildTeamHref({
+      venueId,
+      hash: "#iiko-shift-diagnostics",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "shift-plan") {
-    return teamHref(venueId, teamPeriodParams, "#shift-plan");
+    return buildTeamHref({
+      venueId,
+      hash: "#shift-plan",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "shift-plan-variance") {
-    return teamHref(venueId, teamPeriodParams, "#shift-plan-variance");
+    return buildTeamHref({
+      venueId,
+      hash: "#shift-plan-variance",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "team-learning") {
-    return teamHref(venueId, teamPeriodParams, "#learning-progress");
+    return buildTeamHref({
+      venueId,
+      hash: "#learning-progress",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "team-actions") {
-    return teamHref(venueId, teamPeriodParams, "#team-actions");
+    return buildTeamHref({
+      venueId,
+      hash: "#team-actions",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "team-journal") {
-    return teamHref(venueId, teamPeriodParams, "#team-journal");
+    return buildTeamHref({
+      venueId,
+      hash: "#team-journal",
+      periodParams: teamPeriodParams,
+    });
   }
 
   if (target === "margin-diagnostics") {
@@ -137,41 +156,47 @@ function actionHref(
   teamPeriodParams?: TeamPeriodParams,
 ): string {
   if (action.existingTaskId) {
-    return teamHref(venueId, teamPeriodParams, "#team-actions", {
-      focusTaskId: action.existingTaskId,
+    return buildTeamHref({
+      venueId,
+      hash: "#team-actions",
+      periodParams: teamPeriodParams,
+      params: { focusTaskId: action.existingTaskId },
     });
   }
 
   if (action.target === "labor-member" && action.memberId) {
     const encodedMemberId = encodeURIComponent(action.memberId);
-    return teamHref(
+    return buildTeamHref({
       venueId,
-      teamPeriodParams,
-      `#labor-member-${encodedMemberId}`,
-      {
+      hash: `#labor-member-${encodedMemberId}`,
+      periodParams: teamPeriodParams,
+      params: {
         memberId: action.memberId,
         focusMemberId: action.memberId,
       },
-    );
+    });
   }
 
   if (action.target === "labor-member" && action.memberName) {
-    return teamHref(venueId, teamPeriodParams, "#team-actions", {
-      prefillMemberName: action.memberName,
+    return buildTeamHref({
+      venueId,
+      hash: "#team-actions",
+      periodParams: teamPeriodParams,
+      params: { prefillMemberName: action.memberName },
     });
   }
 
   if (action.target === "labor-rate" && action.memberId) {
     const encodedMemberId = encodeURIComponent(action.memberId);
-    return teamHref(
+    return buildTeamHref({
       venueId,
-      teamPeriodParams,
-      `#labor-member-${encodedMemberId}`,
-      {
+      hash: `#labor-member-${encodedMemberId}`,
+      periodParams: teamPeriodParams,
+      params: {
         memberId: action.memberId,
         focusMemberId: action.memberId,
       },
-    );
+    });
   }
 
   return targetHref(action.target, venueId, teamPeriodParams);
