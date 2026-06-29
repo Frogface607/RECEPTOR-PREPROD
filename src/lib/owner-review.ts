@@ -91,6 +91,7 @@ export type OwnerReviewAction = {
   target: OwnerReviewActionTarget;
   memberId?: string;
   memberName?: string;
+  sourceLabel?: string;
 };
 
 export type OwnerProfitReadinessStatus = "ready" | "partial" | "blocked";
@@ -267,7 +268,9 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
     priority: rolePriority(action.tone),
     roleId: roleTask(action.role),
     dueLabel: roleDue(action.role),
-    sourceLabel: actionSourceLabel(action),
+    sourceLabel: action.sourceLabel ?? actionSourceLabel(action),
+    audienceMemberId: action.memberId,
+    audienceMemberName: action.memberName,
   };
 }
 
@@ -1363,6 +1366,45 @@ function ownerActionFromMargin(
   };
 }
 
+function ownerActionFromLaborMargin(input: {
+  labor?: LaborBiSummary;
+  margin?: MenuMarginReadiness;
+}): OwnerReviewAction | null {
+  if (!input.labor || !input.margin) return null;
+
+  const bridge = buildLaborMarginBridge({
+    labor: input.labor,
+    margin: input.margin,
+  });
+  if (bridge.tone === "good") return null;
+
+  const marginAction = buildMenuMarginNextAction(input.margin);
+  const target: OwnerReviewActionTarget = bridge.employee?.memberId
+    ? "labor-member"
+    : bridge.employee
+      ? "shift-diagnostics"
+      : marginAction.kind === "missing-cost"
+        ? "margin-diagnostics"
+        : marginAction.kind === "ready"
+          ? "margin-risk"
+          : "margin-mapping";
+
+  return {
+    title: bridge.title,
+    detail: bridge.detail,
+    role: bridge.employee
+      ? "manager"
+      : bridge.tone === "setup"
+        ? "chef"
+        : "owner",
+    tone: ownerToneFromLaborBridge(bridge.tone),
+    target,
+    memberId: bridge.employee?.memberId,
+    memberName: bridge.employee?.name,
+    sourceLabel: "ФОТ и маржа",
+  };
+}
+
 function teamActionTarget(href: string): OwnerReviewActionTarget {
   if (href === "#learning-progress") return "team-learning";
   if (href === "#team-actions") return "team-actions";
@@ -1778,6 +1820,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
       : null,
     ownerActionFromCommunication(operationalProof),
+    ownerActionFromLaborMargin({
+      labor: input.labor,
+      margin: input.margin,
+    }),
     input.labor ? ownerActionFromLabor(input.labor) : null,
     input.margin ? ownerActionFromMargin(input.margin) : null,
     input.team ? ownerActionFromTeam(input.team) : null,

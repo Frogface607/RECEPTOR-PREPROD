@@ -200,6 +200,13 @@ describe("buildOwnerReview", () => {
     expect(review.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          title: "ФОТ по Команда зала требует маржу рядом",
+          target: "shift-diagnostics",
+          role: "manager",
+          tone: "risk",
+          sourceLabel: "ФОТ и маржа",
+        }),
+        expect.objectContaining({
           title: "Разобрать дорогую смену",
           target: "shift-diagnostics",
           role: "manager",
@@ -218,10 +225,10 @@ describe("buildOwnerReview", () => {
       role: "manager",
     });
     expect(review.tasks[0]).toMatchObject({
-      title: expect.stringContaining("Разобрать дорогую смену"),
+      title: expect.stringContaining("ФОТ по Команда зала требует маржу рядом"),
       priority: "high",
       roleId: "venue_manager",
-      sourceLabel: "ФОТ и смены",
+      sourceLabel: "ФОТ и маржа",
     });
     expect(review.tasks[0].title).toContain("ФОТ");
     expect(review.hypotheses).toEqual(
