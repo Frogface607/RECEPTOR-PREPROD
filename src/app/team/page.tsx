@@ -60,7 +60,10 @@ import {
   type TeamShiftRosterCellStatus,
   type TeamShiftRosterRowStatus,
 } from "@/lib/team/team-shift-roster";
-import { buildTeamShiftPlanSummary } from "@/lib/team/team-shift-plan";
+import {
+  buildTeamShiftPlanSummary,
+  type TeamShiftPlanSummary,
+} from "@/lib/team/team-shift-plan";
 import {
   buildTeamShiftPlanVariance,
   type TeamShiftPlanVarianceIssue,
@@ -482,6 +485,13 @@ export default async function TeamPage({
           laborSource={laborLoad.source}
           periodLabel={formatPeriodLabel(period)}
           laborProfile={memberLaborProfile}
+        />
+
+        <ShiftOperationsRoute
+          roster={shiftRoster}
+          plan={shiftPlanSummary}
+          variance={shiftPlanVariance}
+          laborCoveragePct={laborLoad.laborBi?.revenueCoveragePct ?? null}
         />
 
         <TeamShiftRosterSection
@@ -1025,6 +1035,165 @@ function TeamManagerFollowUpRow({
 
 function isOpenTask(task: TeamTask): boolean {
   return task.status !== "done" && task.status !== "verified";
+}
+
+function ShiftOperationsRoute({
+  roster,
+  plan,
+  variance,
+  laborCoveragePct,
+}: {
+  roster: TeamShiftRoster;
+  plan: TeamShiftPlanSummary;
+  variance: TeamShiftPlanVarianceSummary;
+  laborCoveragePct: number | null;
+}) {
+  const steps: Array<{
+    index: string;
+    label: string;
+    title: string;
+    detail: string;
+    metric: string;
+    href: string;
+    tone: "good" | "watch" | "risk";
+    icon: ReactNode;
+  }> = [
+    {
+      index: "01",
+      label: "Факт",
+      title: "Кто работал",
+      detail: "Смены, часы, выручка и ФОТ из iiko.",
+      metric: `${formatInteger(roster.totalShifts)} смен`,
+      href: "#shift-roster",
+      tone: roster.rowsMissingRates > 0 ? "watch" : "good",
+      icon: <UsersRound className="size-4" />,
+    },
+    {
+      index: "02",
+      label: "План",
+      title: "Кого ставим",
+      detail: "График, выходные и прогноз ФОТ до смены.",
+      metric: `${formatInteger(plan.plannedShifts)} план`,
+      href: "#shift-plan",
+      tone: plan.missingRateShifts > 0 ? "watch" : "good",
+      icon: <CalendarDays className="size-4" />,
+    },
+    {
+      index: "03",
+      label: "Отклонения",
+      title: "Что не совпало",
+      detail: "План против факта: выходные, прогулы и часы.",
+      metric: `${formatInteger(variance.issues.length)} сигналов`,
+      href: "#shift-plan-variance",
+      tone: variance.issues.some((issue) => issue.tone === "risk")
+        ? "risk"
+        : variance.issues.length > 0
+          ? "watch"
+          : "good",
+      icon: <ClipboardCheck className="size-4" />,
+    },
+    {
+      index: "04",
+      label: "Диагностика",
+      title: "Где копать",
+      detail: "Дорогие смены, слабая выручка и ставки.",
+      metric: formatPct(laborCoveragePct),
+      href: "#iiko-shift-diagnostics",
+      tone:
+        laborCoveragePct === null
+          ? "watch"
+          : laborCoveragePct < 80
+            ? "risk"
+            : laborCoveragePct < 100
+              ? "watch"
+              : "good",
+      icon: <SearchCheck className="size-4" />,
+    },
+  ];
+
+  return (
+    <section className="border-b border-border/40">
+      <div className="mx-auto max-w-7xl px-6 py-6">
+        <div className="rounded-lg border border-border/60 bg-card/45 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
+                Маршрут смены
+              </p>
+              <h2 className="mt-2 text-xl font-medium">
+                Факт, план и отклонения в одном порядке
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Сначала смотрим реальные смены из iiko, затем план Team OS,
+              расхождения и точечную диагностику ФОТ.
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {steps.map((step) => (
+              <Link
+                key={step.href}
+                href={step.href}
+                className="group rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span
+                      className={
+                        "inline-flex size-9 shrink-0 items-center justify-center rounded-lg border text-[11px] font-medium " +
+                        shiftRouteToneClass(step.tone)
+                      }
+                    >
+                      {step.index}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {step.label}
+                      </span>
+                      <span className="mt-1 block text-sm font-medium text-foreground">
+                        {step.title}
+                      </span>
+                    </span>
+                  </div>
+                  <span
+                    className={
+                      "inline-flex size-8 shrink-0 items-center justify-center rounded-lg border " +
+                      shiftRouteToneClass(step.tone)
+                    }
+                  >
+                    {step.icon}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  {step.detail}
+                </p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="numeric text-sm font-medium text-foreground">
+                    {step.metric}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors group-hover:text-brand">
+                    открыть
+                    <ArrowRight className="size-3.5" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function shiftRouteToneClass(tone: "good" | "watch" | "risk"): string {
+  if (tone === "risk") {
+    return "border-destructive/35 bg-destructive/10 text-destructive";
+  }
+  if (tone === "watch") {
+    return "border-amber-400/35 bg-amber-400/10 text-amber-100";
+  }
+  return "border-brand/35 bg-brand/10 text-brand";
 }
 
 function TeamShiftRosterSection({
