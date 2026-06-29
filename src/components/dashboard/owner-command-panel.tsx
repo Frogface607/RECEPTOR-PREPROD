@@ -16,6 +16,7 @@ import type {
   OwnerReviewRole,
   OwnerReviewTone,
 } from "@/lib/owner-review";
+import type { TeamTaskQueueSummary } from "@/lib/team/team-task-queue";
 import { LinkButton } from "@/components/ui/link-button";
 
 const TONE_CLASS: Record<OwnerReviewTone, string> = {
@@ -114,6 +115,19 @@ function readinessHref(
   return targetHref(action.target, venueId);
 }
 
+function teamTaskQueueHref(
+  venueId: string,
+  taskId: string | undefined,
+): string {
+  const encodedVenueId = encodeURIComponent(venueId);
+  if (!taskId) {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+  }
+
+  const encodedTaskId = encodeURIComponent(taskId);
+  return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-task-${encodedTaskId}`;
+}
+
 function actionCta(action: OwnerReviewAction): string {
   if (action.existingTaskId) return "Открыть задачу";
   if (action.target === "margin-risk") return "Разобрать";
@@ -139,12 +153,15 @@ function primaryAction(review: OwnerReview): OwnerReviewAction | null {
 export function OwnerCommandPanel({
   venueId,
   review,
+  teamTaskQueue,
 }: {
   venueId: string;
   review: OwnerReview;
+  teamTaskQueue?: TeamTaskQueueSummary;
 }) {
   const mainAction = primaryAction(review);
   const proof = review.evidence.slice(0, 4);
+  const nextTeamTask = teamTaskQueue?.openTasks[0]?.task;
 
   return (
     <section className="rounded-xl border border-brand/30 bg-card/70 p-5 shadow-[0_18px_80px_rgba(0,0,0,0.22)] sm:p-6">
@@ -296,6 +313,57 @@ export function OwnerCommandPanel({
               и сменам ниже.
             </div>
           )}
+
+          {teamTaskQueue ? (
+            <div className="mt-4 rounded-lg border border-border/45 bg-card/35 p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Командная очередь
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-foreground">
+                    {teamTaskQueue.openCount > 0
+                      ? `${teamTaskQueue.openCount} открыто · ${teamTaskQueue.inProgressCount} в работе`
+                      : "Открытых задач нет"}
+                  </p>
+                </div>
+                <LinkButton
+                  href={teamTaskQueueHref(venueId, nextTeamTask?.id)}
+                  variant="outline"
+                  className="h-8 shrink-0 px-3 text-[12px]"
+                >
+                  {nextTeamTask ? "Открыть задачу" : "Открыть Team OS"}
+                  <ArrowRight className="size-3.5" />
+                </LinkButton>
+              </div>
+
+              {nextTeamTask ? (
+                <div className="mt-3 rounded-lg border border-border/40 bg-background/35 p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-md border border-brand/25 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                      следующая
+                    </span>
+                    {nextTeamTask.sourceLabel ? (
+                      <span className="rounded-md border border-border/45 bg-card/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                        {nextTeamTask.sourceLabel}
+                      </span>
+                    ) : null}
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {nextTeamTask.dueLabel}
+                    </span>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-foreground/90">
+                    {nextTeamTask.title}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+                  Если владелец создаст действие из рекомендаций, оно появится в
+                  Team OS и будет видно здесь.
+                </p>
+              )}
+            </div>
+          ) : null}
 
           {review.operationalPulse ? (
             <div className="mt-4 rounded-lg border border-border/45 bg-card/35 p-3">

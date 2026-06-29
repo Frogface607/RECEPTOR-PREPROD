@@ -40,6 +40,7 @@ import { buildTeamShiftPlanSummary } from "@/lib/team/team-shift-plan";
 import { buildTeamShiftPlanVariance } from "@/lib/team/team-shift-plan-variance";
 import { buildShiftOverview } from "@/lib/team/team-shift-planner";
 import { buildTeamShiftRoster } from "@/lib/team/team-shift-roster";
+import { buildTeamTaskQueue } from "@/lib/team/team-task-queue";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import type { IikoClient } from "@/lib/iiko/types";
 import type { RmsAssemblyChart } from "@/lib/iiko/rms-client";
@@ -275,6 +276,7 @@ export default async function DashboardPage({
     teamAnnouncementReads: teamWorkspace.announcementReads,
     shiftPlanVariance,
   });
+  const teamTaskQueue = buildTeamTaskQueue(teamWorkspace.tasks);
 
   return (
     <>
@@ -285,7 +287,11 @@ export default async function DashboardPage({
             period switch so the dashboard feels alive during exploration. */}
         <div key={periodLabel} className="contents">
           <div className="reveal reveal-1">
-            <OwnerCommandPanel venueId={venueId} review={ownerReview} />
+            <OwnerCommandPanel
+              venueId={venueId}
+              review={ownerReview}
+              teamTaskQueue={teamTaskQueue}
+            />
           </div>
 
           <div className="reveal reveal-2 mt-6">
