@@ -93,12 +93,13 @@ import {
 } from "@/lib/team/team-manager-followup";
 import { buildTeamCommunicationDrafts } from "@/lib/team/team-communication-drafts";
 import {
-  buildLaborBi,
   buildLaborShiftDiagnostics,
-  type LaborShiftInput,
-  type LaborBiSummary,
   type LaborShiftDiagnostic,
 } from "@/lib/team/labor-bi";
+import {
+  loadTeamLabor,
+  type TeamLaborLoadResult,
+} from "@/lib/team/team-labor-load";
 import {
   buildMemberOperationPlan,
   buildMemberLaborProfile,
@@ -111,11 +112,8 @@ import {
 } from "@/lib/team/member-shift-schedule";
 import { getTeamWorkspace } from "@/lib/team/team-store";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getVenueAccess } from "@/lib/auth/venue-access";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { formatInteger, formatRubles } from "@/lib/format";
-import { DEMO_ANCHOR, getDashboardClient } from "@/lib/iiko/config";
-import { MockIikoClient } from "@/lib/iiko/mock-client";
 import type { Period } from "@/lib/iiko/models";
 
 export const metadata: Metadata = {
@@ -171,75 +169,6 @@ function teamHref(
 function dashboardHref(venueId: string, period: Period): string {
   const params = new URLSearchParams(periodToSearchParams(period));
   return `/dashboard/${encodeURIComponent(venueId)}?${params.toString()}`;
-}
-
-type TeamLaborLoadResult = {
-  laborBi: LaborBiSummary | null;
-  shifts: LaborShiftInput[];
-  source: "live" | "demo" | "unavailable";
-  error: string | null;
-};
-
-function laborLoadErrorMessage(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
-  if (/401|auth|unauthorized/i.test(message)) {
-    return "iiko не дала доступ к сменам. Проверьте права интеграции.";
-  }
-  if (/OLAP|reports|shifts|смен/i.test(message)) {
-    return "iiko не вернула смены за выбранный период. Проверьте период и права OLAP.";
-  }
-  return "Смены iiko временно недоступны. Показываем только ставки Team OS.";
-}
-
-async function loadTeamLabor(input: {
-  venueId: string;
-  staff: StaffMember[];
-  period: Period;
-}): Promise<TeamLaborLoadResult> {
-  if (input.venueId === "dev-venue") {
-    const shifts = await new MockIikoClient({ today: DEMO_ANCHOR }).getShifts(
-      input.period,
-    );
-    return {
-      laborBi: buildLaborBi({ shifts, staff: input.staff }),
-      shifts,
-      source: "demo",
-      error: null,
-    };
-  }
-
-  const access = await getVenueAccess(input.venueId);
-  if (!access.ok) {
-    return {
-      laborBi: null,
-      shifts: [],
-      source: "unavailable",
-      error: "Нет доступа к заведению для загрузки смен iiko.",
-    };
-  }
-
-  try {
-    const shifts = await getDashboardClient(access.venue).getShifts(
-      input.period,
-    );
-    return {
-      laborBi: buildLaborBi({ shifts, staff: input.staff }),
-      shifts,
-      source: "live",
-      error: null,
-    };
-  } catch (error) {
-    console.error("[team] Failed to load iiko labor shifts", {
-      venueId: input.venueId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      laborBi: null,
-      shifts: [],
-      source: "unavailable",
-      error: laborLoadErrorMessage(error),
-    };
-  }
 }
 
 function priorityClass(priority: TeamTask["priority"]): string {

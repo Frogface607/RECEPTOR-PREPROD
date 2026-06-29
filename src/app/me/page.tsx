@@ -27,10 +27,17 @@ import {
   type TeamLearningItem,
 } from "@/lib/team/team-learning";
 import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
+import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import {
+  buildMemberLaborProfile,
   buildMemberOperationPlan,
+  buildMemberShiftSchedule,
+  type MemberLaborProfile,
+  type MemberLaborProfileStatus,
   type MemberOperationPlanItem,
+  type MemberShiftScheduleItem,
 } from "@/lib/team/member-shift-schedule";
+import { loadTeamLabor } from "@/lib/team/team-labor-load";
 import {
   getTeamRole,
   hasAnnouncementRead,
@@ -40,6 +47,12 @@ import {
 import { AnnouncementReadButton } from "./announcement-read-button";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { TaskStatusButtons } from "./task-status-buttons";
+import {
+  formatPeriodLabel,
+  parsePeriodSearchParams,
+  periodToSearchParams,
+} from "@/lib/venues/period";
+import { formatInteger, formatRubles } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Мой кабинет — RECEPTOR",
@@ -155,7 +168,12 @@ async function getFirstOwnedVenueId(): Promise<string | null> {
   return data?.id ?? null;
 }
 
-export default async function MyCabinetPage() {
+export default async function MyCabinetPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const period = parsePeriodSearchParams(await searchParams);
   const workspace = await getPersonalTeamWorkspace();
 
   if (!workspace.ok) {
@@ -205,6 +223,26 @@ export default async function MyCabinetPage() {
     workspace.member.roleId,
     workspace.learningStandards,
   );
+  const learningSummary =
+    buildTeamLearningSummaries(
+      [workspace.member],
+      workspace.learningProgress,
+      workspace.learningStandards,
+    )[0] ?? null;
+  const nextLearning = learningSummary?.nextItem ?? learningItems[0] ?? null;
+  const laborLoad = await loadTeamLabor({
+    venueId: workspace.venueId,
+    staff: [workspace.member],
+    period,
+  });
+  const memberSchedule = buildMemberShiftSchedule({
+    member: workspace.member,
+    shifts: laborLoad.shifts,
+  }).slice(0, 5);
+  const memberLaborProfile = buildMemberLaborProfile({
+    member: workspace.member,
+    labor: laborLoad.laborBi,
+  });
   const shiftLabel = workspace.member.shiftLabel?.trim() || "Смена не указана";
   const openTasks = workspace.tasks.filter(
     (task) => task.status !== "done" && task.status !== "verified",
@@ -216,11 +254,12 @@ export default async function MyCabinetPage() {
   const operationPlan = buildMemberOperationPlan({
     member: workspace.member,
     tasks: sortedOpenTasks,
-    schedule: [],
-    laborProfile: null,
-    learning: null,
+    schedule: memberSchedule,
+    laborProfile: memberLaborProfile,
+    learning: learningSummary,
     announcements: workspace.announcements,
     announcementReads: workspace.announcementReads,
+    nextLearning,
   });
   const nextAction = operationPlan[0] ?? null;
   const nextActionTask = nextAction?.taskId
@@ -241,6 +280,12 @@ export default async function MyCabinetPage() {
       ),
   ).length;
   const urgentTasks = openTasks.filter((task) => task.priority === "high");
+  const teamParams = new URLSearchParams({
+    role: role.id,
+    venueId: workspace.venueId,
+    memberId: workspace.member.id,
+    ...periodToSearchParams(period),
+  });
   const taskGroups = [
     {
       id: "in_progress" as const,
@@ -270,7 +315,7 @@ export default async function MyCabinetPage() {
       venueMeta="Команда"
     >
       <main className="flex-1">
-        <section className="border-b border-border/40">
+        <section id="team-actions" className="scroll-mt-24 border-b border-border/40">
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.86fr_1.14fr]">
             <div>
               <Badge variant="outline" className="border-brand/30 text-brand">
@@ -285,7 +330,7 @@ export default async function MyCabinetPage() {
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  href={`/team?role=${role.id}&venueId=${encodeURIComponent(workspace.venueId)}`}
+                  href={`/team?${teamParams.toString()}`}
                   className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
                 >
                   <LayoutDashboard className="size-4" />
@@ -398,9 +443,9 @@ export default async function MyCabinetPage() {
 
           <div className="mx-auto grid max-w-7xl gap-3 px-6 pb-8 sm:grid-cols-2 lg:grid-cols-4">
             <Metric label="активные" value={openTasks.length} />
-            <Metric label="важные" value={urgentTasks.length} />
+            <Metric label="срочные" value={urgentTasks.length} />
+            <Metric label="смены" value={memberSchedule.length} />
             <Metric label="важная связь" value={unreadImportantAnnouncements} />
-            <Metric label="закрыто" value={completedTasks.length} />
           </div>
         </section>
 
@@ -483,10 +528,45 @@ export default async function MyCabinetPage() {
         <section>
           <div className="mx-auto grid max-w-7xl gap-6 px-6 py-14 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-6">
-              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+              <div
+                id="iiko-shift-diagnostics"
+                className="scroll-mt-24 rounded-lg border border-border/60 bg-card/50 p-5"
+              >
                 <div className="flex items-center gap-3">
                   <CalendarClock className="size-5 text-brand" />
-                  <h2 className="text-xl font-medium">Смена сегодня</h2>
+                  <div>
+                    <h2 className="text-xl font-medium">Смены периода</h2>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatPeriodLabel(period)} ·{" "}
+                      {laborSourceLabel(laborLoad.source)}
+                    </p>
+                  </div>
+                </div>
+                {laborLoad.error ? (
+                  <p className="mt-4 rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-relaxed text-amber-100">
+                    {laborLoad.error}
+                  </p>
+                ) : null}
+                <div className="mt-5 grid gap-2">
+                  {memberSchedule.length ? (
+                    memberSchedule.map((shift) => (
+                      <PersonalShiftRow key={shift.shiftId} shift={shift} />
+                    ))
+                  ) : (
+                    <EmptyState text="В выбранном периоде смен по сотруднику не найдено." />
+                  )}
+                </div>
+              </div>
+
+              <MemberLaborSnapshot
+                memberId={workspace.member.id}
+                profile={memberLaborProfile}
+              />
+
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex items-center gap-3">
+                  <ClipboardCheck className="size-5 text-brand" />
+                  <h2 className="text-xl font-medium">На смену</h2>
                 </div>
                 <div className="mt-4 rounded-lg border border-brand/25 bg-brand/10 p-4">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
@@ -500,7 +580,7 @@ export default async function MyCabinetPage() {
                   </p>
                 </div>
                 <div className="mt-5 grid gap-2">
-                  {shiftChecklist.map((item) => (
+                  {shiftChecklist.slice(0, 3).map((item) => (
                     <div
                       key={item}
                       className="flex gap-3 rounded-lg border border-border/45 bg-background/35 p-3 text-sm leading-relaxed text-foreground/85"
@@ -534,7 +614,10 @@ export default async function MyCabinetPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+            <div
+              id="learning-progress"
+              className="scroll-mt-24 rounded-lg border border-border/60 bg-card/50 p-5"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3">
@@ -682,6 +765,130 @@ function AnnouncementCard({
       />
     </article>
   );
+}
+
+function MemberLaborSnapshot({
+  memberId,
+  profile,
+}: {
+  memberId: string;
+  profile: MemberLaborProfile;
+}) {
+  return (
+    <div
+      id={`labor-member-${memberId}`}
+      className="scroll-mt-24 rounded-lg border border-border/60 bg-card/50 p-5"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Экономика смен
+          </p>
+          <h2 className="mt-2 text-xl font-medium">Мой ФОТ и выручка</h2>
+        </div>
+        <Badge
+          variant="outline"
+          className={memberLaborStatusClass(profile.status)}
+        >
+          {memberLaborStatusLabel(profile.status)}
+        </Badge>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <PersonalValue
+          label="выручка"
+          value={formatRubles(profile.sales)}
+          detail={`${formatInteger(profile.shifts)} смен`}
+        />
+        <PersonalValue
+          label="ФОТ"
+          value={formatRubles(profile.laborCost)}
+          detail={formatPct(profile.laborCostPct)}
+        />
+        <PersonalValue
+          label="₽ / час"
+          value={
+            profile.revenuePerHour ? formatRubles(profile.revenuePerHour) : "—"
+          }
+          detail={formatHours(profile.hours)}
+        />
+      </div>
+      {profile.status !== "ready" ? (
+        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+          {profile.status === "missing_rate"
+            ? "Ставка не заполнена: ФОТ и прибыль по этим сменам считаются неполными."
+            : "В выбранном периоде iiko не вернула смены этого сотрудника."}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function PersonalShiftRow({ shift }: { shift: MemberShiftScheduleItem }) {
+  return (
+    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{shift.dayLabel}</Badge>
+          <p className="text-sm font-medium">{shift.timeLabel}</p>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {formatInteger(shift.items)} позиций · {formatHours(shift.hours)}
+        </p>
+      </div>
+      <div className="numeric text-sm font-medium text-foreground sm:text-right">
+        {formatRubles(shift.revenue)}
+      </div>
+    </div>
+  );
+}
+
+function PersonalValue({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+      <p className="numeric text-lg font-medium text-foreground">{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{detail}</p>
+    </div>
+  );
+}
+
+function memberLaborStatusLabel(status: MemberLaborProfileStatus): string {
+  if (status === "ready") return "считается";
+  if (status === "missing_rate") return "нет ставки";
+  return "нет смен";
+}
+
+function memberLaborStatusClass(status: MemberLaborProfileStatus): string {
+  if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
+  if (status === "missing_rate") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-border bg-muted/40 text-muted-foreground";
+}
+
+function laborSourceLabel(source: "live" | "demo" | "unavailable"): string {
+  if (source === "live") return "live iiko";
+  if (source === "demo") return "demo iiko";
+  return "iiko недоступна";
+}
+
+function formatPct(value: number | null): string {
+  if (value === null) return "—";
+  return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%`;
+}
+
+function formatHours(value: number): string {
+  return `${value.toLocaleString("ru-RU", { maximumFractionDigits: 1 })} ч`;
 }
 
 function LearningCard({ item }: { item: TeamLearningItem }) {
