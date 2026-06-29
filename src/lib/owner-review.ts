@@ -277,6 +277,7 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
     priority: rolePriority(action.tone),
     roleId: roleTask(action.role),
     dueLabel: roleDue(action.role),
+    impactLabel: action.impactLabel,
     sourceLabel: action.sourceLabel ?? actionSourceLabel(action),
     audienceMemberId: action.memberId,
     audienceMemberName: action.memberName,

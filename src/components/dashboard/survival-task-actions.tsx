@@ -46,7 +46,8 @@ function sourceLabel(draft: SurvivalTaskDraft): string {
 }
 
 function createdMessage(draft: SurvivalTaskDraft, message: string): string {
-  return `${message} Контур: ${sourceLabel(draft)}. Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
+  const impact = draft.impactLabel ? ` Вес: ${draft.impactLabel}.` : "";
+  return `${message} Контур: ${sourceLabel(draft)}.${impact} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
 }
 
 export function SurvivalTaskActions({
@@ -73,6 +74,7 @@ export function SurvivalTaskActions({
         audienceRole: audienceType === "role" ? draft.roleId : undefined,
         audienceMemberId: draft.audienceMemberId,
         dueLabel: draft.dueLabel,
+        impactLabel: draft.impactLabel,
         sourceLabel: draft.sourceLabel,
         dedupeOpenTask: true,
       });
@@ -114,6 +116,11 @@ export function SurvivalTaskActions({
                   <span className="text-[11px] text-muted-foreground">
                     {PRIORITY_LABEL[draft.priority]} · {draft.dueLabel}
                   </span>
+                  {draft.impactLabel ? (
+                    <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                      {draft.impactLabel}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {draft.title}

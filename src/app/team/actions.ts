@@ -81,6 +81,7 @@ const CreateTeamTaskInput = z
     audienceMemberId: z.string().trim().optional().or(z.literal("")),
     audienceRole: TeamRoleIdSchema.optional(),
     dueLabel: z.string().trim().max(120).optional().or(z.literal("")),
+    impactLabel: z.string().trim().max(80).optional().or(z.literal("")),
     sourceLabel: z.string().trim().max(80).optional().or(z.literal("")),
     dedupeOpenTask: z.boolean().optional().default(false),
   })
@@ -1273,6 +1274,7 @@ export async function createTeamTaskAction(
 
   const audienceType = parsed.data.audienceType;
   const sourceLabel = parsed.data.sourceLabel?.trim() || null;
+  const impactLabel = parsed.data.impactLabel?.trim() || null;
 
   if (parsed.data.dedupeOpenTask) {
     try {
@@ -1345,10 +1347,13 @@ export async function createTeamTaskAction(
     type: "task_created",
     targetType: "task",
     targetId: task?.id ?? null,
-    summary: `Создана задача: ${parsed.data.title}.`,
+    summary: impactLabel
+      ? `Создана задача: ${parsed.data.title}. Вес: ${impactLabel}.`
+      : `Создана задача: ${parsed.data.title}.`,
     metadata: {
       source: parsed.data.source,
       sourceLabel,
+      impactLabel,
       priority: parsed.data.priority,
       audienceType,
       audienceMemberId:
