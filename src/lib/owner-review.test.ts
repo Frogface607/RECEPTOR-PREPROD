@@ -205,17 +205,20 @@ describe("buildOwnerReview", () => {
           role: "manager",
           tone: "risk",
           sourceLabel: "ФОТ и маржа",
+          impactLabel: "ФОТ 35%",
         }),
         expect.objectContaining({
           title: "Разобрать дорогую смену",
           target: "shift-diagnostics",
           role: "manager",
           tone: "risk",
+          impactLabel: "ФОТ 35%",
         }),
         expect.objectContaining({
           title: "Блюдо не связано с iiko",
           target: "margin-mapping",
           role: "chef",
+          impactLabel: expect.stringMatching(/^20\s000\s₽$/),
         }),
       ]),
     );
@@ -337,6 +340,7 @@ describe("buildOwnerReview", () => {
           memberName: "Мария",
           role: "manager",
           tone: "risk",
+          impactLabel: "ФОТ 36%",
         }),
       ]),
     );

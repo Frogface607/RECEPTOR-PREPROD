@@ -93,6 +93,7 @@ export type OwnerReviewAction = {
   role: OwnerReviewRole;
   tone: OwnerReviewTone;
   target: OwnerReviewActionTarget;
+  impactLabel?: string;
   memberId?: string;
   memberName?: string;
   sourceLabel?: string;
@@ -1209,6 +1210,10 @@ function ownerActionFromShiftPlanVariance(
     role: "manager",
     tone: ownerToneFromShiftPlanVariance(primaryIssue.tone),
     target: "shift-plan-variance",
+    impactLabel:
+      primaryIssue.laborDelta !== 0
+        ? formatRubles(Math.abs(primaryIssue.laborDelta))
+        : primaryIssue.dateLabel,
   };
 }
 
@@ -1266,6 +1271,29 @@ function shiftPlanVarianceIssueDetail(
   return `${issue.dateLabel}: ${hoursDelta}, ${laborDelta}.`;
 }
 
+function laborEmployeeImpact(
+  issue: ReturnType<typeof buildLaborEmployeeDiagnostics>[number],
+): string {
+  if (issue.laborCostPct !== null) {
+    return `ФОТ ${formatCoverage(issue.laborCostPct)}`;
+  }
+  if (issue.sales > 0) return formatRubles(issue.sales);
+  return `${issue.shifts} смен`;
+}
+
+function laborShiftImpact(
+  shift: Pick<
+    ReturnType<typeof buildLaborShiftDiagnostics>[number],
+    "laborCostPct" | "revenue" | "staffCount"
+  >,
+): string {
+  if (shift.laborCostPct !== null) {
+    return `ФОТ ${formatCoverage(shift.laborCostPct)}`;
+  }
+  if (shift.revenue > 0) return formatRubles(shift.revenue);
+  return `${shift.staffCount} сотрудников`;
+}
+
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
   const firstLinkedEmployeeIssue = buildLaborEmployeeDiagnostics(input).find(
@@ -1283,6 +1311,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
         role: "manager",
         tone: ownerToneFromLabor(firstLinkedEmployeeIssue.tone),
         target: "labor-member",
+        impactLabel: laborEmployeeImpact(firstLinkedEmployeeIssue),
         memberId: firstLinkedEmployeeIssue.memberId,
         memberName: firstLinkedEmployeeIssue.name,
       };
@@ -1300,6 +1329,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "manager",
       tone: ownerToneFromLabor(firstShiftIssue.tone),
       target: "shift-diagnostics",
+      impactLabel: laborShiftImpact(firstShiftIssue),
     };
   }
 
@@ -1310,6 +1340,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "owner",
       tone: "watch",
       target: "iiko-settings",
+      impactLabel: `${input.shifts} смен`,
     };
   }
 
@@ -1320,6 +1351,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "manager",
       tone: "watch",
       target: "labor-member",
+      impactLabel: formatRubles(nextAction.blocker.sales),
       memberName: nextAction.blocker.name,
     };
   }
@@ -1331,6 +1363,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "manager",
       tone: "watch",
       target: "labor-rate",
+      impactLabel: formatRubles(nextAction.blocker.sales),
       memberId: nextAction.blocker.memberId,
       memberName: nextAction.blocker.name,
     };
@@ -1343,6 +1376,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "manager",
       tone: ownerToneFromLabor(firstLinkedEmployeeIssue.tone),
       target: "labor-member",
+      impactLabel: laborEmployeeImpact(firstLinkedEmployeeIssue),
       memberId: firstLinkedEmployeeIssue.memberId,
       memberName: firstLinkedEmployeeIssue.name,
     };
@@ -1355,6 +1389,9 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       role: "manager",
       tone: "risk",
       target: "shift-diagnostics",
+      impactLabel: nextAction.shift
+        ? laborShiftImpact(nextAction.shift)
+        : undefined,
     };
   }
 
@@ -1378,6 +1415,7 @@ function ownerActionFromMargin(
       role: "chef",
       tone: primaryRisk.grossMarginPct < 45 ? "risk" : "watch",
       target: "margin-risk",
+      impactLabel: `маржа ${primaryRisk.grossMarginPct}%`,
     };
   }
 
@@ -1386,6 +1424,9 @@ function ownerActionFromMargin(
     detail: nextAction.detail,
     role: nextAction.kind === "missing-cost" ? "owner" : "chef",
     tone: input.status === "blocked" ? "risk" : "watch",
+    impactLabel: nextAction.blocker
+      ? formatRubles(nextAction.blocker.revenue)
+      : `${input.revenueCoveragePct}%`,
     target:
       nextAction.kind === "missing-cost"
         ? "margin-diagnostics"
@@ -1426,6 +1467,15 @@ function ownerActionFromLaborMargin(input: {
         : "owner",
     tone: ownerToneFromLaborBridge(bridge.tone),
     target,
+    impactLabel:
+      bridge.employee?.laborCostPct !== null &&
+      bridge.employee?.laborCostPct !== undefined
+        ? `ФОТ ${formatCoverage(bridge.employee.laborCostPct)}`
+        : bridge.employee
+          ? formatRubles(bridge.employee.sales)
+          : marginAction.blocker
+            ? formatRubles(marginAction.blocker.revenue)
+            : `${bridge.marginCoveragePct}% маржа`,
     memberId: bridge.employee?.memberId,
     memberName: bridge.employee?.name,
     sourceLabel: "ФОТ и маржа",
@@ -1459,6 +1509,7 @@ function ownerActionFromTeam(
     role: "manager",
     tone: ownerToneFromTeam(action.tone),
     target: teamActionTarget(action.href),
+    impactLabel: `${input.score}% готово`,
   };
 }
 

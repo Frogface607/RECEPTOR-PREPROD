@@ -482,6 +482,11 @@ export function OwnerReviewCard({
                             {actionContour(action)}
                           </span>
                         ) : null}
+                        {action.impactLabel ? (
+                          <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                            {action.impactLabel}
+                          </span>
+                        ) : null}
                         {action.existingTaskId ? (
                           <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                             уже в Team OS
