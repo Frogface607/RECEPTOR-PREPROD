@@ -1339,6 +1339,26 @@ function laborShiftImpact(
   return `${shift.staffCount} сотрудников`;
 }
 
+function laborNumbersLearningHint(): Pick<
+  OwnerReviewAction,
+  "learningModuleId" | "learningModuleTitle"
+> {
+  return {
+    learningModuleId: "restaurant-numbers-basics",
+    learningModuleTitle: "Цифры ресторана простым языком",
+  };
+}
+
+function iikoCashLearningHint(): Pick<
+  OwnerReviewAction,
+  "learningModuleId" | "learningModuleTitle"
+> {
+  return {
+    learningModuleId: "iiko-cash-discipline",
+    learningModuleTitle: "iiko и кассовая дисциплина на смене",
+  };
+}
+
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
   const firstLinkedEmployeeIssue = buildLaborEmployeeDiagnostics(input).find(
@@ -1359,6 +1379,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
         impactLabel: laborEmployeeImpact(firstLinkedEmployeeIssue),
         memberId: firstLinkedEmployeeIssue.memberId,
         memberName: firstLinkedEmployeeIssue.name,
+        ...laborNumbersLearningHint(),
       };
     }
 
@@ -1375,6 +1396,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       tone: ownerToneFromLabor(firstShiftIssue.tone),
       target: "shift-diagnostics",
       impactLabel: laborShiftImpact(firstShiftIssue),
+      ...laborNumbersLearningHint(),
     };
   }
 
@@ -1386,6 +1408,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       tone: "watch",
       target: "iiko-settings",
       impactLabel: `${input.shifts} смен`,
+      ...iikoCashLearningHint(),
     };
   }
 
@@ -1398,6 +1421,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       target: "labor-member",
       impactLabel: formatRubles(nextAction.blocker.sales),
       memberName: nextAction.blocker.name,
+      ...laborNumbersLearningHint(),
     };
   }
 
@@ -1411,6 +1435,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       impactLabel: formatRubles(nextAction.blocker.sales),
       memberId: nextAction.blocker.memberId,
       memberName: nextAction.blocker.name,
+      ...laborNumbersLearningHint(),
     };
   }
 
@@ -1424,6 +1449,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       impactLabel: laborEmployeeImpact(firstLinkedEmployeeIssue),
       memberId: firstLinkedEmployeeIssue.memberId,
       memberName: firstLinkedEmployeeIssue.name,
+      ...laborNumbersLearningHint(),
     };
   }
 
@@ -1437,6 +1463,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       impactLabel: nextAction.shift
         ? laborShiftImpact(nextAction.shift)
         : undefined,
+      ...laborNumbersLearningHint(),
     };
   }
 
@@ -1452,8 +1479,7 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
         : undefined,
       sourceLabel: "ФОТ и смены",
       taskTitle: nextAction.title,
-      learningModuleId: "restaurant-numbers-basics",
-      learningModuleTitle: "Цифры ресторана простым языком",
+      ...laborNumbersLearningHint(),
     };
   }
 
@@ -2012,12 +2038,18 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   }
 
   if (primaryLaborInsight && primaryLaborInsight.tone !== "good") {
+    const learning =
+      input.labor?.staffShifts === 0
+        ? iikoCashLearningHint()
+        : laborNumbersLearningHint();
+
     hypotheses.push({
       title: primaryLaborInsight.title,
       why: primaryLaborInsight.detail,
       check: primaryLaborInsight.action,
       role: primaryLaborInsight.tone === "setup" ? "owner" : "manager",
       tone: ownerToneFromLabor(primaryLaborInsight.tone),
+      ...learning,
     });
   }
 

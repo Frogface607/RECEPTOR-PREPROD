@@ -351,6 +351,8 @@ describe("buildOwnerReview", () => {
           role: "manager",
           tone: "risk",
           impactLabel: "ФОТ 36%",
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
         }),
       ]),
     );
@@ -360,8 +362,62 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",
       impactLabel: "ФОТ 36%",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle: "Цифры ресторана простым языком",
       contextNote: expect.stringContaining("ФОТ 36%"),
     });
+    expect(review.tasks[0].contextNote).toContain(
+      "Урок для команды: Цифры ресторана простым языком.",
+    );
+  });
+
+  test("connects missing iiko shifts with the iiko discipline learning module", () => {
+    const labor = buildLaborBi({
+      shifts: [],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts: [],
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+    });
+
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Смены не найдены",
+          target: "iiko-settings",
+          learningModuleId: "iiko-cash-discipline",
+          learningModuleTitle: "iiko и кассовая дисциплина на смене",
+        }),
+      ]),
+    );
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Смены пока не найдены",
+          learningModuleId: "iiko-cash-discipline",
+          learningModuleTitle: "iiko и кассовая дисциплина на смене",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: expect.stringContaining("права на OLAP смены"),
+          learningModuleId: "iiko-cash-discipline",
+          learningModuleTitle: "iiko и кассовая дисциплина на смене",
+          contextNote: expect.stringContaining(
+            "Урок для команды: iiko и кассовая дисциплина на смене.",
+          ),
+        }),
+      ]),
+    );
   });
 
   test("connects employee FOT risk with proven weak margin in hypotheses", () => {
