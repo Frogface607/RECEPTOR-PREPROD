@@ -154,6 +154,50 @@ describe("buildTeamManagerFollowUp", () => {
     });
   });
 
+  test("uses impact-aware task queue for the next urgent task", () => {
+    const tasks: TeamTask[] = [
+      {
+        id: "task-small",
+        venueId: "venue-1",
+        title: "Проверить малую смену",
+        source: "copilot",
+        sourceLabel: "ФОТ и смены",
+        impactLabel: "10 000 ₽",
+        priority: "high",
+        status: "new",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+      {
+        id: "task-large",
+        venueId: "venue-1",
+        title: "Разобрать дорогую смену",
+        source: "copilot",
+        sourceLabel: "ФОТ и смены",
+        impactLabel: "120 000 ₽",
+        priority: "high",
+        status: "new",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+    ];
+
+    const followUp = buildTeamManagerFollowUp({
+      tasks,
+      laborReadiness: readyLabor,
+      learningSummaries: [learningSummary(manager), learningSummary(waiter)],
+      shiftPlanVariance: readyVariance,
+    });
+
+    expect(followUp.items[0]).toMatchObject({
+      id: "urgent-tasks",
+      detail: expect.stringContaining("Разобрать дорогую смену"),
+      taskDraft: expect.objectContaining({
+        title: "Разобрать срочную задачу: Разобрать дорогую смену",
+      }),
+    });
+  });
+
   test("adds learning admission and plan/fact follow-up", () => {
     const variance: TeamShiftPlanVarianceSummary = {
       ...readyVariance,

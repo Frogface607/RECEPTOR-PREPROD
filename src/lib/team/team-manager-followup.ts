@@ -8,6 +8,7 @@ import type {
   TeamAnnouncementRead,
   TeamTask,
 } from "./team-os";
+import { buildTeamTaskQueue } from "./team-task-queue";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
 
 export type TeamManagerFollowUpStatus = "ready" | "attention" | "blocked";
@@ -35,10 +36,6 @@ export type TeamManagerFollowUp = {
   unreadImportantAnnouncements: number;
   items: TeamManagerFollowUpItem[];
 };
-
-function isOpenTask(task: TeamTask): boolean {
-  return task.status !== "done" && task.status !== "verified";
-}
 
 function rubles(value: number): string {
   return `${Math.round(value).toLocaleString("ru-RU")} ₽`;
@@ -156,7 +153,8 @@ export function buildTeamManagerFollowUp(input: {
   announcements?: TeamAnnouncement[];
   announcementReads?: TeamAnnouncementRead[];
 }): TeamManagerFollowUp {
-  const openTasks = input.tasks.filter(isOpenTask);
+  const taskQueue = buildTeamTaskQueue(input.tasks);
+  const openTasks = taskQueue.openTasks.map((item) => item.task);
   const urgentTasks = openTasks.filter((task) => task.priority === "high");
   const blockedAdmissions = input.learningSummaries.filter(
     (summary) => summary.member.status !== "paused" && !summary.canWorkShift,
