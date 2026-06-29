@@ -353,6 +353,130 @@ async function findExistingOpenTask(
   return data ?? null;
 }
 
+async function findCurrentMembershipId(
+  ctx: WritableTeamContext,
+  venueId: string,
+): Promise<string | null> {
+  if (!ctx.supabase) return null;
+  const supabase = ctx.supabase;
+
+  const { data } = await supabase
+    .from("venue_memberships")
+    .select("id")
+    .eq("venue_id", venueId)
+    .eq("user_id", ctx.userId)
+    .maybeSingle<{ id: string }>();
+
+  return data?.id ?? null;
+}
+
+async function updateTaskContextLabels(
+  ctx: WritableTeamContext,
+  input: {
+    taskId: string;
+    sourceLabel: string | null;
+    impactLabel: string | null;
+  },
+): Promise<boolean> {
+  if (!ctx.supabase) return false;
+  const supabase = ctx.supabase;
+
+  const update: { source_label?: string; impact_label?: string } = {};
+  if (input.sourceLabel) update.source_label = input.sourceLabel;
+  if (input.impactLabel) update.impact_label = input.impactLabel;
+  if (Object.keys(update).length === 0) return false;
+
+  let result = await supabase
+    .from("team_tasks")
+    .update(update)
+    .eq("id", input.taskId);
+
+  if (result.error && missingImpactLabelColumn(result.error.message)) {
+    const fallbackUpdate = { ...update };
+    delete fallbackUpdate.impact_label;
+    result = await supabase
+      .from("team_tasks")
+      .update(fallbackUpdate)
+      .eq("id", input.taskId);
+  }
+
+  if (result.error && missingSourceLabelColumn(result.error.message)) {
+    const legacyUpdate = { ...update };
+    delete legacyUpdate.source_label;
+    delete legacyUpdate.impact_label;
+    if (Object.keys(legacyUpdate).length === 0) return false;
+    result = await supabase
+      .from("team_tasks")
+      .update(legacyUpdate)
+      .eq("id", input.taskId);
+  }
+
+  return !result.error;
+}
+
+async function addTaskContextComment(
+  ctx: WritableTeamContext,
+  input: {
+    venueId: string;
+    taskId: string;
+    contextNote: string | null;
+    sourceLabel: string | null;
+    impactLabel: string | null;
+  },
+): Promise<boolean> {
+  if (!ctx.supabase) return false;
+  if (!input.contextNote) return false;
+  const supabase = ctx.supabase;
+
+  const duplicate = await supabase
+    .from("team_task_comments")
+    .select("id")
+    .eq("venue_id", input.venueId)
+    .eq("task_id", input.taskId)
+    .eq("body", input.contextNote)
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  if (duplicate.error) {
+    if (missingTeamTables(duplicate.error.message)) return false;
+    return false;
+  }
+  if (duplicate.data) return false;
+
+  const membershipId = await findCurrentMembershipId(ctx, input.venueId);
+  const { data: comment, error: commentError } = await supabase
+    .from("team_task_comments")
+    .insert({
+      venue_id: input.venueId,
+      task_id: input.taskId,
+      author_membership_id: membershipId,
+      author_user_id: ctx.userId,
+      body: input.contextNote,
+    })
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (commentError) {
+    if (missingTeamTables(commentError.message)) return false;
+    return false;
+  }
+
+  await writeTeamAuditEvent(ctx, {
+    venueId: input.venueId,
+    type: "comment_added",
+    targetType: "comment",
+    targetId: comment?.id ?? null,
+    summary: "Receptor добавил контекст к задаче.",
+    metadata: {
+      taskId: input.taskId,
+      sourceLabel: input.sourceLabel,
+      impactLabel: input.impactLabel,
+    },
+  });
+
+  return true;
+}
+
 function normalizeTaskSourceLabel(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const normalized = value.replace(/\s+/g, " ").trim();
@@ -1286,11 +1410,40 @@ export async function createTeamTaskAction(
     try {
       const existingTask = await findExistingOpenTask(ctx, parsed.data);
       if (existingTask) {
+        const labelsUpdated = await updateTaskContextLabels(ctx, {
+          taskId: existingTask.id,
+          sourceLabel,
+          impactLabel,
+        });
+        const contextCommentSaved = await addTaskContextComment(ctx, {
+          venueId: parsed.data.venueId,
+          taskId: existingTask.id,
+          contextNote,
+          sourceLabel,
+          impactLabel,
+        });
+        if (labelsUpdated || contextCommentSaved) {
+          await writeTeamAuditEvent(ctx, {
+            venueId: parsed.data.venueId,
+            type: "task_status_updated",
+            targetType: "task",
+            targetId: existingTask.id,
+            summary: "Контекст существующей задачи обновлен.",
+            metadata: {
+              sourceLabel,
+              impactLabel,
+              contextCommentSaved,
+            },
+          });
+        }
         revalidateTeamWorkspace(parsed.data.venueId);
         return {
           ok: true,
           mode: "saved",
-          message: "Задача уже есть.",
+          message:
+            labelsUpdated || contextCommentSaved
+              ? "Задача уже есть, контекст обновлен."
+              : "Задача уже есть.",
         };
       }
     } catch (error) {
@@ -1382,40 +1535,13 @@ export async function createTeamTaskAction(
 
   let contextCommentSaved = false;
   if (task?.id && contextNote) {
-    const { data: membership } = await ctx.supabase
-      .from("venue_memberships")
-      .select("id")
-      .eq("venue_id", parsed.data.venueId)
-      .eq("user_id", ctx.userId)
-      .maybeSingle<{ id: string }>();
-
-    const { data: comment, error: commentError } = await ctx.supabase
-      .from("team_task_comments")
-      .insert({
-        venue_id: parsed.data.venueId,
-        task_id: task.id,
-        author_membership_id: membership?.id ?? null,
-        author_user_id: ctx.userId,
-        body: contextNote,
-      })
-      .select("id")
-      .maybeSingle<{ id: string }>();
-
-    if (!commentError) {
-      contextCommentSaved = true;
-      await writeTeamAuditEvent(ctx, {
-        venueId: parsed.data.venueId,
-        type: "comment_added",
-        targetType: "comment",
-        targetId: comment?.id ?? null,
-        summary: "Receptor добавил контекст к задаче.",
-        metadata: {
-          taskId: task.id,
-          sourceLabel,
-          impactLabel,
-        },
-      });
-    }
+    contextCommentSaved = await addTaskContextComment(ctx, {
+      venueId: parsed.data.venueId,
+      taskId: task.id,
+      contextNote,
+      sourceLabel,
+      impactLabel,
+    });
   }
 
   revalidateTeamWorkspace(parsed.data.venueId);
