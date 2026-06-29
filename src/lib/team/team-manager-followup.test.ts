@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { buildLaborBi } from "./labor-bi";
 import { buildTeamManagerFollowUp } from "./team-manager-followup";
 import type { TeamLaborReadiness } from "./team-labor-readiness";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
@@ -294,6 +295,57 @@ describe("buildTeamManagerFollowUp", () => {
         roleId: "venue_manager",
         sourceLabel: "Связь",
         title: expect.stringContaining("Зал: фокус на вечер"),
+      },
+    });
+  });
+
+  test("adds follow-up for expensive priced employee shifts", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-expensive-manager",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 50000,
+          items: 120,
+          employee: "Смена",
+          workers: [
+            {
+              memberId: "manager-1",
+              name: "Мария",
+              hours: 10,
+              shiftPay: 18000,
+              sales: 50000,
+            },
+          ],
+        },
+      ],
+    });
+
+    const followUp = buildTeamManagerFollowUp({
+      staff: [manager, waiter],
+      tasks: [],
+      laborReadiness: readyLabor,
+      labor,
+      learningSummaries: [learningSummary(manager), learningSummary(waiter)],
+      shiftPlanVariance: readyVariance,
+    });
+
+    expect(followUp).toMatchObject({
+      status: "blocked",
+      laborCoveragePct: 100,
+    });
+    expect(followUp.items[0]).toMatchObject({
+      id: "labor-employee-performance",
+      title: "Сотрудник дорогой к выручке",
+      href: "#labor-member-manager-1",
+      metric: "36% ФОТ",
+      taskDraft: {
+        priority: "high",
+        roleId: "venue_manager",
+        audienceMemberId: "manager-1",
+        audienceMemberName: "Мария",
+        sourceLabel: "ФОТ и смены",
       },
     });
   });

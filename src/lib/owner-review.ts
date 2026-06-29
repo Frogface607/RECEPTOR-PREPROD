@@ -7,6 +7,7 @@ import {
   type MenuMarginReadiness,
 } from "@/lib/menu-margin-readiness";
 import {
+  buildLaborEmployeeDiagnostics,
   buildLaborInsights,
   buildLaborNextAction,
   buildLaborShiftDiagnostics,
@@ -1177,8 +1178,26 @@ function shiftPlanVarianceIssueDetail(
 
 function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
   const nextAction = buildLaborNextAction(input);
+  const firstLinkedEmployeeIssue = buildLaborEmployeeDiagnostics(input).find(
+    (employee) =>
+      Boolean(employee.memberId) &&
+      employee.kind !== "healthy" &&
+      employee.kind !== "missing-rate",
+  );
 
   if (nextAction.kind === "ready") {
+    if (firstLinkedEmployeeIssue) {
+      return {
+        title: firstLinkedEmployeeIssue.title,
+        detail: firstLinkedEmployeeIssue.detail,
+        role: "manager",
+        tone: ownerToneFromLabor(firstLinkedEmployeeIssue.tone),
+        target: "labor-member",
+        memberId: firstLinkedEmployeeIssue.memberId,
+        memberName: firstLinkedEmployeeIssue.name,
+      };
+    }
+
     const firstShiftIssue = buildLaborShiftDiagnostics(input).find(
       (shift) => shift.kind !== "healthy",
     );
@@ -1224,6 +1243,18 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
       target: "labor-rate",
       memberId: nextAction.blocker.memberId,
       memberName: nextAction.blocker.name,
+    };
+  }
+
+  if (nextAction.kind === "expensive-labor" && firstLinkedEmployeeIssue) {
+    return {
+      title: firstLinkedEmployeeIssue.title,
+      detail: firstLinkedEmployeeIssue.detail,
+      role: "manager",
+      tone: ownerToneFromLabor(firstLinkedEmployeeIssue.tone),
+      target: "labor-member",
+      memberId: firstLinkedEmployeeIssue.memberId,
+      memberName: firstLinkedEmployeeIssue.name,
     };
   }
 

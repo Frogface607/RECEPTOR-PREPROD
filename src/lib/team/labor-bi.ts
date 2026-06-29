@@ -133,6 +133,20 @@ export type LaborShiftDiagnostic = LaborShiftSummary & {
   action: string;
 };
 
+export type LaborEmployeeDiagnosticKind =
+  | "missing-rate"
+  | "expensive-employee"
+  | "low-productivity"
+  | "healthy";
+
+export type LaborEmployeeDiagnostic = LaborEmployeeSummary & {
+  kind: LaborEmployeeDiagnosticKind;
+  tone: LaborInsightTone;
+  title: string;
+  detail: string;
+  action: string;
+};
+
 export function buildLaborBi(input: {
   shifts: LaborShiftInput[];
   staff?: StaffMember[];
@@ -421,6 +435,33 @@ export function buildLaborShiftDiagnostics(
     );
 }
 
+export function buildLaborEmployeeDiagnostics(
+  labor: LaborBiSummary,
+  options: LaborInsightOptions = {},
+): LaborEmployeeDiagnostic[] {
+  const targetLaborCostPct = options.targetLaborCostPct ?? 25;
+  const minimumRevenuePerLaborHour = options.minimumRevenuePerLaborHour ?? 6000;
+
+  return labor.employees
+    .map((employee) =>
+      decorateEmployeeDiagnostic(employee, {
+        targetLaborCostPct,
+        minimumRevenuePerLaborHour,
+      }),
+    )
+    .sort(
+      (a, b) =>
+        employeeRiskScore(b, {
+          targetLaborCostPct,
+          minimumRevenuePerLaborHour,
+        }) -
+          employeeRiskScore(a, {
+            targetLaborCostPct,
+            minimumRevenuePerLaborHour,
+          }) || b.sales - a.sales,
+    );
+}
+
 type MutableEmployeeSummary = {
   memberId?: string;
   name: string;
@@ -659,6 +700,63 @@ function decorateShiftDiagnostic(
   };
 }
 
+function decorateEmployeeDiagnostic(
+  employee: LaborEmployeeSummary,
+  options: Required<LaborInsightOptions>,
+): LaborEmployeeDiagnostic {
+  if (employee.missingRate) {
+    return {
+      ...employee,
+      kind: "missing-rate",
+      tone: "setup",
+      title: "Сотрудник без ставки ФОТ",
+      detail: `${employee.name}: ${formatMoney(employee.sales)} выручки и ${employee.shifts} ${plural(employee.shifts, "смена", "смены", "смен")} без точной стоимости.`,
+      action: employee.memberId
+        ? "Заполните ставку в карточке Team OS, чтобы ФОТ и прибыль считались точно."
+        : "Создайте карточку сотрудника из iiko и задайте ставку ФОТ.",
+    };
+  }
+
+  if (
+    employee.laborCostPct !== null &&
+    employee.laborCostPct > options.targetLaborCostPct
+  ) {
+    return {
+      ...employee,
+      kind: "expensive-employee",
+      tone: "risk",
+      title: "Сотрудник дорогой к выручке",
+      detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)} при выручке ${formatMoney(employee.sales)}.`,
+      action:
+        "Проверьте часы, ставку, роль на смене и нагрузку: высокая выручка не всегда означает прибыль.",
+    };
+  }
+
+  if (
+    employee.revenuePerHour !== null &&
+    employee.revenuePerHour < options.minimumRevenuePerLaborHour
+  ) {
+    return {
+      ...employee,
+      kind: "low-productivity",
+      tone: "watch",
+      title: "Низкая выручка на час сотрудника",
+      detail: `${employee.name}: ${formatMoney(employee.revenuePerHour)} на час при ориентире ${formatMoney(options.minimumRevenuePerLaborHour)}.`,
+      action:
+        "Сравните смены, посадку и задачи на продажи; возможно, человек стоит не в те часы или без фокуса на чек.",
+    };
+  }
+
+  return {
+    ...employee,
+    kind: "healthy",
+    tone: "good",
+    title: "Сотрудник выглядит управляемо",
+    detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)}, ${formatMoney(employee.revenuePerHour)} на час.`,
+    action: "Держите как рабочий ориентир и сравнивайте с маржинальностью продаж.",
+  };
+}
+
 function shiftRiskScore(
   shift: LaborShiftSummary,
   options: Required<LaborInsightOptions>,
@@ -677,6 +775,37 @@ function shiftRiskScore(
     shift.revenuePerHour < options.minimumRevenuePerLaborHour
   ) {
     return 10_000 + (options.minimumRevenuePerLaborHour - shift.revenuePerHour);
+  }
+
+  return 0;
+}
+
+function employeeRiskScore(
+  employee: LaborEmployeeSummary,
+  options: Required<LaborInsightOptions>,
+): number {
+  if (employee.missingRate) return 30_000 + employee.sales / 100;
+
+  if (
+    employee.laborCostPct !== null &&
+    employee.laborCostPct > options.targetLaborCostPct
+  ) {
+    return (
+      20_000 +
+      (employee.laborCostPct - options.targetLaborCostPct) * 100 +
+      employee.sales / 1_000
+    );
+  }
+
+  if (
+    employee.revenuePerHour !== null &&
+    employee.revenuePerHour < options.minimumRevenuePerLaborHour
+  ) {
+    return (
+      10_000 +
+      (options.minimumRevenuePerLaborHour - employee.revenuePerHour) +
+      employee.sales / 1_000
+    );
   }
 
   return 0;

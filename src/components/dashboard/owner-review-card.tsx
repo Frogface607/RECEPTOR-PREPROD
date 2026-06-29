@@ -105,6 +105,11 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
 function actionHref(action: OwnerReviewAction, venueId: string): string {
   const encodedVenueId = encodeURIComponent(venueId);
 
+  if (action.target === "labor-member" && action.memberId) {
+    const encodedMemberId = encodeURIComponent(action.memberId);
+    return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;
+  }
+
   if (action.target === "labor-member" && action.memberName) {
     return `/team?role=venue_manager&venueId=${encodedVenueId}&prefillMemberName=${encodeURIComponent(action.memberName)}#team-actions`;
   }
@@ -127,6 +132,8 @@ function readinessHref(
 function actionCta(action: OwnerReviewAction): string {
   if (action.target === "margin-risk") return "Разобрать маржу";
   if (action.target === "iiko-settings") return "Открыть iiko";
+  if (action.target === "labor-member" && action.memberId)
+    return "Открыть сотрудника";
   if (action.target === "labor-member") return "Добавить";
   if (action.target === "labor-rate") return "Открыть ставку";
   if (action.target === "shift-coverage") return "Открыть смены";

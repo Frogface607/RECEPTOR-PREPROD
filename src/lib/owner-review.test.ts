@@ -287,6 +287,60 @@ describe("buildOwnerReview", () => {
     });
   });
 
+  test("opens linked employee when personal FOT efficiency is risky", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-manager-expensive",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 50000,
+          items: 120,
+          employee: "Смена",
+          workers: [
+            {
+              memberId: "manager-1",
+              name: "Мария",
+              hours: 10,
+              shiftPay: 18000,
+              sales: 50000,
+            },
+          ],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+    });
+
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Сотрудник дорогой к выручке",
+          target: "labor-member",
+          memberId: "manager-1",
+          memberName: "Мария",
+          role: "manager",
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("Сотрудник дорогой к выручке"),
+      priority: "high",
+      roleId: "venue_manager",
+      sourceLabel: "ФОТ и смены",
+    });
+  });
+
   test("names first labor blocker in owner evidence", () => {
     const labor = buildLaborBi({
       shifts: [

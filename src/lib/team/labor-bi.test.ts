@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   buildLaborBi,
+  buildLaborEmployeeDiagnostics,
   buildLaborInsights,
   buildLaborNextAction,
   buildLaborShiftDiagnostics,
@@ -308,6 +309,68 @@ describe("buildLaborBi", () => {
       shift: expect.objectContaining({
         shiftId: "shift-expensive",
       }),
+    });
+  });
+
+  test("ranks employee diagnostics by missing rates and personal labor pressure", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-team",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 90000,
+          items: 180,
+          employee: "Смена",
+          workers: [
+            {
+              memberId: "manager",
+              name: "Мария",
+              hours: 10,
+              shiftPay: 28000,
+              sales: 50000,
+            },
+            {
+              memberId: "waiter",
+              name: "Илья",
+              hours: 8,
+              hourlyRate: 350,
+              sales: 30000,
+            },
+            {
+              name: "Петр",
+              hours: 8,
+              sales: 10000,
+            },
+          ],
+        },
+      ],
+    });
+
+    const diagnostics = buildLaborEmployeeDiagnostics(labor, {
+      targetLaborCostPct: 25,
+      minimumRevenuePerLaborHour: 6000,
+    });
+
+    expect(diagnostics.map((item) => item.kind)).toEqual([
+      "missing-rate",
+      "expensive-employee",
+      "low-productivity",
+    ]);
+    expect(diagnostics[0]).toMatchObject({
+      name: "Петр",
+      title: "Сотрудник без ставки ФОТ",
+      tone: "setup",
+    });
+    expect(diagnostics[1]).toMatchObject({
+      name: "Мария",
+      title: "Сотрудник дорогой к выручке",
+      tone: "risk",
+    });
+    expect(diagnostics[2]).toMatchObject({
+      name: "Илья",
+      title: "Низкая выручка на час сотрудника",
+      tone: "watch",
     });
   });
 

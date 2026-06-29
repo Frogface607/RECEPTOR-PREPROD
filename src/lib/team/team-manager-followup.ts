@@ -1,4 +1,8 @@
 import type { TeamLaborReadiness } from "./team-labor-readiness";
+import {
+  buildLaborEmployeeDiagnostics,
+  type LaborBiSummary,
+} from "./labor-bi";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
 import type { TeamShiftPlanVarianceSummary } from "./team-shift-plan-variance";
 import type {
@@ -147,6 +151,7 @@ export function buildTeamManagerFollowUp(input: {
   staff?: StaffMember[];
   tasks: TeamTask[];
   laborReadiness: TeamLaborReadiness;
+  labor?: LaborBiSummary | null;
   learningSummaries: TeamLearningMemberSummary[];
   shiftPlanVariance: TeamShiftPlanVarianceSummary;
   announcements?: TeamAnnouncement[];
@@ -162,6 +167,12 @@ export function buildTeamManagerFollowUp(input: {
     announcements: input.announcements ?? [],
     announcementReads: input.announcementReads ?? [],
   });
+  const employeeLaborIssue =
+    input.labor && input.laborReadiness.status === "ready"
+      ? buildLaborEmployeeDiagnostics(input.labor).find(
+          (item) => item.kind !== "healthy" && item.kind !== "missing-rate",
+        )
+      : null;
   const items: TeamManagerFollowUpItem[] = [];
 
   if (urgentTasks.length > 0) {
@@ -277,6 +288,32 @@ export function buildTeamManagerFollowUp(input: {
     });
   }
 
+  if (employeeLaborIssue) {
+    items.push({
+      id: "labor-employee-performance",
+      title: employeeLaborIssue.title,
+      detail: employeeLaborIssue.detail,
+      tone: employeeLaborIssue.tone === "risk" ? "risk" : "watch",
+      href: employeeLaborIssue.memberId
+        ? `#labor-member-${encodeURIComponent(employeeLaborIssue.memberId)}`
+        : "#iiko-shift-diagnostics",
+      metric:
+        employeeLaborIssue.laborCostPct !== null
+          ? `${employeeLaborIssue.laborCostPct}% ФОТ`
+          : `${rubles(employeeLaborIssue.revenuePerHour ?? 0)}/ч`,
+      taskDraft: {
+        ...managerTaskDraft({
+          title: `${employeeLaborIssue.title}: ${employeeLaborIssue.name}`,
+          priority: employeeLaborIssue.tone === "risk" ? "high" : "medium",
+          sourceLabel: "ФОТ и смены",
+        }),
+        roleId: employeeLaborIssue.roleId ?? "venue_manager",
+        audienceMemberId: employeeLaborIssue.memberId,
+        audienceMemberName: employeeLaborIssue.name,
+      },
+    });
+  }
+
   const learningBlocker = topBlockedAdmission(input.learningSummaries);
   if (learningBlocker) {
     items.push({
@@ -376,7 +413,8 @@ export function buildTeamManagerFollowUp(input: {
   const blocked =
     urgentTasks.length > 0 ||
     input.laborReadiness.status === "blocked" ||
-    input.shiftPlanVariance.issues.some((issue) => issue.tone === "risk");
+    input.shiftPlanVariance.issues.some((issue) => issue.tone === "risk") ||
+    visibleItems.some((item) => item.tone === "risk");
 
   return {
     status: blocked ? "blocked" : "attention",

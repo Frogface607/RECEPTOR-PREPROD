@@ -268,6 +268,7 @@ export default async function TeamPage({
     staff: workspace.staff,
     tasks: workspace.tasks,
     laborReadiness,
+    labor: laborLoad.laborBi,
     learningSummaries,
     shiftPlanVariance,
     announcements: workspace.announcements,
