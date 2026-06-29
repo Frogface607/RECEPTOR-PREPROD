@@ -959,6 +959,8 @@ describe("buildOwnerReview", () => {
         id: "audit-learning-closed",
         venueId: "venue-1",
         type: "task_status_updated",
+        sourceLabel: "Обучение",
+        impactLabel: "1 допуск",
         targetType: "task",
         targetId: "task-closed",
         summary:
@@ -1002,8 +1004,8 @@ describe("buildOwnerReview", () => {
       closedLoops: 1,
       recentEvents: [
         expect.objectContaining({
-          label: "Закрыто",
-          summary: expect.stringContaining("Автоматически закрыта задача"),
+          label: "Обучение",
+          summary: expect.stringContaining("1 допуск"),
           timeLabel: "12:10",
           tone: "good",
           target: "team-journal",

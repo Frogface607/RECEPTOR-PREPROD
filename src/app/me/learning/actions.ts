@@ -158,6 +158,7 @@ async function closeLearningAdmissionTasks(input: {
       moduleTitle,
       status: "done",
       sourceLabel: "Обучение",
+      impactLabel: `${taskIds.length} допуск`,
     },
   });
 
