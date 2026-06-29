@@ -77,6 +77,18 @@ describe("Team OS roles and permissions", () => {
     ).toBe("ФОТ 36%.");
   });
 
+  test("keeps dots inside learning standard titles", () => {
+    const context =
+      "Проверьте кассовую дисциплину. Урок для команды: iiko 2.0 и кассовая дисциплина.";
+
+    expect(taskLearningHintFromContext(context)).toBe(
+      "iiko 2.0 и кассовая дисциплина",
+    );
+    expect(taskContextWithoutLearningHint(context)).toBe(
+      "Проверьте кассовую дисциплину.",
+    );
+  });
+
   test("filters announcements by role visibility", () => {
     const serviceAnnouncements = listAnnouncementsForRole("service");
     const chefAnnouncements = listAnnouncementsForRole("chef");
