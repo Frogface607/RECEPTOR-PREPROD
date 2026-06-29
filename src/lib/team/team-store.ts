@@ -47,6 +47,7 @@ type DbTask = {
   title: string;
   source: string;
   source_label?: string | null;
+  impact_label?: string | null;
   priority: string;
   status: string;
   audience_type: string;
@@ -184,6 +185,8 @@ const TASK_STATUSES = new Set<TeamTask["status"]>([
   "verified",
 ]);
 const TASK_SELECT_COLUMNS =
+  "id,venue_id,title,source,source_label,impact_label,priority,status,audience_type,audience_member_id,audience_role,due_label";
+const TASK_SELECT_COLUMNS_WITHOUT_IMPACT =
   "id,venue_id,title,source,source_label,priority,status,audience_type,audience_member_id,audience_role,due_label";
 const TASK_SELECT_COLUMNS_LEGACY =
   "id,venue_id,title,source,priority,status,audience_type,audience_member_id,audience_role,due_label";
@@ -196,6 +199,10 @@ function isMissingTeamTable(message: string): boolean {
 
 function missingSourceLabelColumn(message: string): boolean {
   return /source_label/i.test(message);
+}
+
+function missingImpactLabelColumn(message: string): boolean {
+  return /impact_label/i.test(message);
 }
 
 function formatCreatedAtLabel(value: string | null): string {
@@ -259,7 +266,21 @@ function normalizeTaskSourceLabel(
     : normalized;
 }
 
-export function mapTaskRow(row: DbTask, sourceLabel?: string): TeamTask {
+function normalizeTaskImpactLabel(
+  value: string | null | undefined,
+): string | undefined {
+  if (!value?.trim()) return undefined;
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized.length > 80
+    ? `${normalized.slice(0, 77).trim()}...`
+    : normalized;
+}
+
+export function mapTaskRow(
+  row: DbTask,
+  sourceLabel?: string,
+  impactLabel?: string,
+): TeamTask {
   const roleId = normalizeTeamRoleId(row.audience_role);
   const audience =
     row.audience_type === "member" && row.audience_member_id
@@ -275,6 +296,7 @@ export function mapTaskRow(row: DbTask, sourceLabel?: string): TeamTask {
       ? (row.source as TeamTask["source"])
       : "manager",
     sourceLabel: normalizeTaskSourceLabel(row.source_label) ?? sourceLabel,
+    impactLabel: normalizeTaskImpactLabel(row.impact_label) ?? impactLabel,
     priority: TASK_PRIORITIES.has(row.priority as TeamTask["priority"])
       ? (row.priority as TeamTask["priority"])
       : "medium",
@@ -386,6 +408,21 @@ function metadataSourceLabel(value: unknown): string | undefined {
   return normalized.length > 80 ? `${normalized.slice(0, 77).trim()}...` : normalized;
 }
 
+function metadataImpactLabel(value: unknown): string | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const label = (value as { impactLabel?: unknown }).impactLabel;
+  if (typeof label !== "string") return undefined;
+
+  const normalized = label.replace(/\s+/g, " ").trim();
+  if (!normalized) return undefined;
+  return normalized.length > 80
+    ? `${normalized.slice(0, 77).trim()}...`
+    : normalized;
+}
+
 export function buildTaskSourceLabelMap(
   rows: Array<{
     event_type: string;
@@ -407,6 +444,33 @@ export function buildTaskSourceLabelMap(
     }
 
     const label = metadataSourceLabel(row.metadata);
+    if (label) labels.set(row.target_id, label);
+  }
+
+  return labels;
+}
+
+export function buildTaskImpactLabelMap(
+  rows: Array<{
+    event_type: string;
+    target_type: string;
+    target_id: string | null;
+    metadata?: unknown;
+  }>,
+): Map<string, string> {
+  const labels = new Map<string, string>();
+
+  for (const row of rows) {
+    if (
+      row.event_type !== "task_created" ||
+      row.target_type !== "task" ||
+      !row.target_id ||
+      labels.has(row.target_id)
+    ) {
+      continue;
+    }
+
+    const label = metadataImpactLabel(row.metadata);
     if (label) labels.set(row.target_id, label);
   }
 
@@ -683,6 +747,15 @@ export async function getTeamWorkspace(
   let tasksData = tasksResult.data as DbTask[] | null;
   let tasksError = tasksResult.error;
 
+  if (tasksError && missingImpactLabelColumn(tasksError.message)) {
+    const fallbackResult = await supabase
+      .from("team_tasks")
+      .select(TASK_SELECT_COLUMNS_WITHOUT_IMPACT)
+      .eq("venue_id", venueId)
+      .order("created_at", { ascending: false });
+    tasksData = fallbackResult.data as DbTask[] | null;
+    tasksError = fallbackResult.error;
+  }
   if (tasksError && missingSourceLabelColumn(tasksError.message)) {
     const fallbackResult = await supabase
       .from("team_tasks")
@@ -806,8 +879,15 @@ export async function getTeamWorkspace(
       : buildTaskSourceLabelMap(
           (taskLabelEventsResult.data ?? []) as DbAuditEvent[],
         );
+  const taskImpactLabels =
+    taskLabelEventsResult.error &&
+    isMissingTeamTable(taskLabelEventsResult.error.message)
+      ? new Map<string, string>()
+      : buildTaskImpactLabelMap(
+          (taskLabelEventsResult.data ?? []) as DbAuditEvent[],
+        );
   const tasks = taskRows.map((row) =>
-    mapTaskRow(row, taskSourceLabels.get(row.id)),
+    mapTaskRow(row, taskSourceLabels.get(row.id), taskImpactLabels.get(row.id)),
   );
 
   const learningProgressResult = await supabase
@@ -960,6 +1040,15 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
   let tasksData = tasksResult.data as DbTask[] | null;
   let tasksError = tasksResult.error;
 
+  if (tasksError && missingImpactLabelColumn(tasksError.message)) {
+    const fallbackResult = await supabase
+      .from("team_tasks")
+      .select(TASK_SELECT_COLUMNS_WITHOUT_IMPACT)
+      .eq("venue_id", venueId)
+      .order("created_at", { ascending: false });
+    tasksData = fallbackResult.data as DbTask[] | null;
+    tasksError = fallbackResult.error;
+  }
   if (tasksError && missingSourceLabelColumn(tasksError.message)) {
     const fallbackResult = await supabase
       .from("team_tasks")
@@ -989,9 +1078,15 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
       : buildTaskSourceLabelMap(
           (auditEventsResult.data ?? []) as DbAuditEvent[],
         );
+  const taskImpactLabels =
+    auditEventsResult.error && !isMissingTeamTable(auditEventsResult.error.message)
+      ? new Map<string, string>()
+      : buildTaskImpactLabelMap(
+          (auditEventsResult.data ?? []) as DbAuditEvent[],
+        );
 
   const tasks = taskRows.map((row) =>
-    mapTaskRow(row, taskSourceLabels.get(row.id)),
+    mapTaskRow(row, taskSourceLabels.get(row.id), taskImpactLabels.get(row.id)),
   );
 
   const visibleTasks = roleCan(member.roleId, "view_all_tasks")

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  buildTaskImpactLabelMap,
   buildTaskSourceLabelMap,
   mapAnnouncementRow,
   mapAnnouncementReadRow,
@@ -109,6 +110,30 @@ describe("Team OS store mapping", () => {
     expect(task.sourceLabel).toBe("Stored contour");
   });
 
+  test("keeps task impact labels on mapped tasks", () => {
+    const task = mapTaskRow(
+      {
+        id: "task-impact",
+        venue_id: "venue-1",
+        title: "Check labor and margin",
+        source: "copilot",
+        source_label: "ФОТ и маржа",
+        impact_label: "ФОТ 35%",
+        priority: "high",
+        status: "new",
+        audience_type: "member",
+        audience_member_id: "member-1",
+        audience_role: null,
+        due_label: "today",
+      },
+      "Legacy contour",
+      "20 000 ₽",
+    );
+
+    expect(task.sourceLabel).toBe("ФОТ и маржа");
+    expect(task.impactLabel).toBe("ФОТ 35%");
+  });
+
   test("builds task source labels from task-created audit metadata", () => {
     const labels = buildTaskSourceLabelMap([
       {
@@ -126,6 +151,25 @@ describe("Team OS store mapping", () => {
     ]);
 
     expect(labels.get("task-1")).toBe("ФОТ и маржа");
+  });
+
+  test("builds task impact labels from task-created audit metadata", () => {
+    const labels = buildTaskImpactLabelMap([
+      {
+        event_type: "task_created",
+        target_type: "task",
+        target_id: "task-1",
+        metadata: { impactLabel: "ФОТ 35%" },
+      },
+      {
+        event_type: "task_status_updated",
+        target_type: "task",
+        target_id: "task-1",
+        metadata: { impactLabel: "wrong" },
+      },
+    ]);
+
+    expect(labels.get("task-1")).toBe("ФОТ 35%");
   });
 
   test("maps member and venue audiences", () => {

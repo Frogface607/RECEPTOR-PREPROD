@@ -441,6 +441,11 @@ export function OwnerCommandPanel({
                         {nextTeamTask.sourceLabel}
                       </span>
                     ) : null}
+                    {nextTeamTask.impactLabel ? (
+                      <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                        {nextTeamTask.impactLabel}
+                      </span>
+                    ) : null}
                     <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                       {nextTeamTask.dueLabel}
                     </span>

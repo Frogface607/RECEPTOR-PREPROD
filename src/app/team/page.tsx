@@ -2707,6 +2707,14 @@ function TaskRow({
             {sourceLabel}
           </Badge>
         ) : null}
+        {task.impactLabel ? (
+          <Badge
+            variant="outline"
+            className="border-amber-500/30 bg-amber-500/10 text-amber-200"
+          >
+            {task.impactLabel}
+          </Badge>
+        ) : null}
         <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           {task.dueLabel}
         </span>

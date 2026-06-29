@@ -833,6 +833,11 @@ export function TeamActionsPanel({
                             {task.sourceLabel}
                           </span>
                         ) : null}
+                        {task.impactLabel ? (
+                          <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                            {task.impactLabel}
+                          </span>
+                        ) : null}
                       </div>
                       <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
                         {task.title}

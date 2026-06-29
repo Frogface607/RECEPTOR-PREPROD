@@ -706,6 +706,14 @@ function TaskCard({ task }: { task: TeamTask }) {
             {sourceLabel}
           </Badge>
         ) : null}
+        {task.impactLabel ? (
+          <Badge
+            variant="outline"
+            className="border-amber-500/30 bg-amber-500/10 text-amber-200"
+          >
+            {task.impactLabel}
+          </Badge>
+        ) : null}
         {task.dueLabel ? (
           <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <Clock3 className="size-3.5" />

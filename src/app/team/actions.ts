@@ -261,6 +261,10 @@ function missingSourceLabelColumn(message: string): boolean {
   return /source_label/i.test(message);
 }
 
+function missingImpactLabelColumn(message: string): boolean {
+  return /impact_label/i.test(message);
+}
+
 async function getWritableTeamContext(): Promise<
   | {
       ok: true;
@@ -1310,6 +1314,7 @@ export async function createTeamTaskAction(
     audience_role: audienceType === "role" ? parsed.data.audienceRole : null,
     due_label: parsed.data.dueLabel || "",
     source_label: sourceLabel,
+    impact_label: impactLabel,
     created_by: ctx.userId,
   };
 
@@ -1319,9 +1324,20 @@ export async function createTeamTaskAction(
     .select("id")
     .maybeSingle<{ id: string }>();
 
+  if (taskResult.error && missingImpactLabelColumn(taskResult.error.message)) {
+    const fallbackInsert = { ...insert };
+    delete (fallbackInsert as { impact_label?: string | null }).impact_label;
+    taskResult = await ctx.supabase
+      .from("team_tasks")
+      .insert(fallbackInsert)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+  }
+
   if (taskResult.error && missingSourceLabelColumn(taskResult.error.message)) {
     const legacyInsert = { ...insert };
     delete (legacyInsert as { source_label?: string | null }).source_label;
+    delete (legacyInsert as { impact_label?: string | null }).impact_label;
     taskResult = await ctx.supabase
       .from("team_tasks")
       .insert(legacyInsert)
