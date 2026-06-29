@@ -271,6 +271,12 @@ function trimTaskTitle(value: string): string {
   return `${normalized.slice(0, 217).trim()}...`;
 }
 
+function trimContextNote(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 320) return normalized;
+  return `${normalized.slice(0, 317).trim()}...`;
+}
+
 function trimEvidenceDetail(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (normalized.length <= 120) return normalized;
@@ -310,27 +316,86 @@ function actionTaskTitle(action: OwnerReviewAction): string {
   return trimTaskTitle(`${action.title}: ${action.detail}`);
 }
 
-function withLearningContext(
-  context: string,
-  learningModuleTitle?: string,
-): string {
+function appendSentence(base: string, sentence: string): string {
+  const trimmedBase = base.trim();
+  const trimmedSentence = sentence.trim();
+  if (!trimmedBase) return trimmedSentence;
+  if (!trimmedSentence) return trimmedBase;
+  const separator = /[.!?]$/.test(trimmedBase) ? " " : ". ";
+  return `${trimmedBase}${separator}${trimmedSentence}`;
+}
+
+function withLearningContext({
+  context,
+  learningModuleTitle,
+  reason,
+}: {
+  context: string;
+  learningModuleTitle?: string;
+  reason?: string | null;
+}): string {
   const base = context.trim();
-  if (!learningModuleTitle) return trimTaskTitle(base);
+  const suffixParts = [
+    reason ? `Зачем: ${reason}.` : null,
+    learningModuleTitle ? `Урок для команды: ${learningModuleTitle}.` : null,
+  ].filter((item): item is string => Boolean(item));
 
-  const separator = /[.!?]$/.test(base) ? " " : ". ";
-  const learningSuffix = `${separator}Урок для команды: ${learningModuleTitle}.`;
-  const fullContext = `${base}${learningSuffix}`;
+  if (suffixParts.length === 0) return trimContextNote(base);
 
-  if (fullContext.length <= 220) return trimTaskTitle(fullContext);
+  const suffix = suffixParts.join(" ");
+  const fullContext = appendSentence(base, suffix);
 
-  const baseLimit = Math.max(0, 220 - learningSuffix.length - 3);
-  return trimTaskTitle(
-    `${base.slice(0, baseLimit).trim()}...${learningSuffix}`,
+  if (fullContext.length <= 320) return trimContextNote(fullContext);
+
+  const baseLimit = Math.max(0, 320 - suffix.length - 5);
+  return trimContextNote(
+    appendSentence(`${base.slice(0, baseLimit).trim()}...`, suffix),
   );
 }
 
+function taskReasonForSource(
+  sourceLabel: string | undefined,
+  impactLabel: string | undefined,
+): string | null {
+  if (sourceLabel === "Маржа и техкарты") {
+    return impactLabel
+      ? `закрыть ${impactLabel} выручки без понятной себестоимости`
+      : "понять, где меню зарабатывает деньги, а где только делает оборот";
+  }
+  if (sourceLabel === "ФОТ и смены" || sourceLabel === "ФОТ и маржа") {
+    return impactLabel
+      ? `понять, сколько ${impactLabel} стоит смене и прибыли`
+      : "связать выручку смены с реальной стоимостью команды";
+  }
+  if (sourceLabel === "Выручка и смены") {
+    return impactLabel
+      ? `найти причину недобора ${impactLabel}`
+      : "понять, в какой смене теряется выручка";
+  }
+  if (sourceLabel === "Продажи и сервис") {
+    return impactLabel
+      ? `защитить ${impactLabel} выручки через сервис и апселл`
+      : "превратить продажи в повторяемый стандарт сервиса";
+  }
+  if (sourceLabel === "Данные iiko") {
+    return "не принимать управленческие решения на неполных данных";
+  }
+  if (sourceLabel?.startsWith("ФОТ")) {
+    return "доказать стоимость смен до выводов о прибыли";
+  }
+  if (sourceLabel === "Команда") {
+    return "довести BI-решение до людей, иначе оно останется отчетом";
+  }
+  return null;
+}
+
 function actionContextNote(action: OwnerReviewAction): string {
-  return withLearningContext(action.detail, action.learningModuleTitle);
+  const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
+  return withLearningContext({
+    context: action.detail,
+    learningModuleTitle: action.learningModuleTitle,
+    reason: taskReasonForSource(sourceLabel, action.impactLabel),
+  });
 }
 
 function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
@@ -356,10 +421,11 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
     impactLabel: item.impactLabel,
-    contextNote: withLearningContext(
-      `${item.why} Проверка: ${item.check}`,
-      item.learningModuleTitle,
-    ),
+    contextNote: withLearningContext({
+      context: `${item.why} Проверка: ${item.check}`,
+      learningModuleTitle: item.learningModuleTitle,
+      reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
+    }),
     sourceLabel: item.taskSourceLabel ?? "Гипотеза",
     learningModuleId: item.learningModuleId,
     learningModuleTitle: item.learningModuleTitle,
