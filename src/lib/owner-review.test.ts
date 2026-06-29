@@ -736,6 +736,7 @@ describe("buildOwnerReview", () => {
           summary: expect.stringContaining("Автоматически закрыта задача"),
           timeLabel: "12:10",
           tone: "good",
+          target: "team-journal",
         }),
       ],
       action: {
@@ -790,12 +791,14 @@ describe("buildOwnerReview", () => {
           summary: "Ставка ФОТ обновлена: Маша.",
           timeLabel: "13:20",
           tone: "good",
+          target: "labor-rate",
         },
         {
           label: "План",
           summary: "План смены обновлен: Маша, 2026-06-26 16:00-00:00.",
           timeLabel: "13:25",
           tone: "good",
+          target: "shift-plan",
         },
       ],
     });

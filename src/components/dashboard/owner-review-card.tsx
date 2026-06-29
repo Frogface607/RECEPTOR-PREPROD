@@ -10,6 +10,7 @@ import {
   SearchCheck,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
 import type {
   OwnerReview,
   OwnerReviewAction,
@@ -70,6 +71,10 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
     return `/team?role=venue_manager&venueId=${encodedVenueId}#iiko-shift-diagnostics`;
   }
 
+  if (target === "shift-plan") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan`;
+  }
+
   if (target === "shift-plan-variance") {
     return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan-variance`;
   }
@@ -80,6 +85,10 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
 
   if (target === "team-actions") {
     return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+  }
+
+  if (target === "team-journal") {
+    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-journal`;
   }
 
   if (target === "margin-diagnostics") {
@@ -122,8 +131,10 @@ function actionCta(action: OwnerReviewAction): string {
   if (action.target === "labor-rate") return "Открыть ставку";
   if (action.target === "shift-coverage") return "Открыть смены";
   if (action.target === "shift-diagnostics") return "Разобрать смену";
+  if (action.target === "shift-plan") return "Открыть план";
   if (action.target === "shift-plan-variance") return "Открыть план/факт";
   if (action.target === "team-learning") return "Открыть обучение";
+  if (action.target === "team-journal") return "Открыть журнал";
   if (action.target === "team-actions") return "Открыть Team OS";
   if (action.target === "margin-diagnostics") return "Проверить RMS";
   return "Связать блюдо";
@@ -256,9 +267,10 @@ export function OwnerReviewCard({
               {review.operationalPulse.recentEvents.length > 0 ? (
                 <div className="mt-3 divide-y divide-border/35 overflow-hidden rounded-md border border-border/35">
                   {review.operationalPulse.recentEvents.map((event) => (
-                    <div
+                    <Link
                       key={`${event.label}-${event.timeLabel}-${event.summary}`}
-                      className="grid gap-2 px-3 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+                      href={targetHref(event.target, venueId)}
+                      className="grid gap-2 px-3 py-2 transition-colors hover:bg-card/45 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:items-center"
                     >
                       <span
                         className={
@@ -276,7 +288,8 @@ export function OwnerReviewCard({
                           {event.timeLabel}
                         </span>
                       ) : null}
-                    </div>
+                      <ArrowRight className="hidden size-3.5 text-muted-foreground sm:block" />
+                    </Link>
                   ))}
                 </div>
               ) : null}

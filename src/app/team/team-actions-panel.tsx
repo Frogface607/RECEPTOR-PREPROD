@@ -1223,7 +1223,10 @@ export function TeamActionsPanel({
           </div>
         </div>
 
-        <div className="mt-6 rounded-lg border border-border/60 bg-card/50 p-5">
+        <div
+          id="team-journal"
+          className="mt-6 scroll-mt-24 rounded-lg border border-border/60 bg-card/50 p-5"
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">

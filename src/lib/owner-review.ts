@@ -63,11 +63,13 @@ export type OwnerReviewActionTarget =
   | "labor-rate"
   | "shift-coverage"
   | "shift-diagnostics"
+  | "shift-plan"
   | "shift-plan-variance"
   | "margin-diagnostics"
   | "margin-mapping"
   | "margin-risk"
   | "team-actions"
+  | "team-journal"
   | "team-learning";
 
 export type OwnerReviewAction = {
@@ -116,6 +118,7 @@ export type OwnerOperationalPulseEvent = {
   summary: string;
   timeLabel: string;
   tone: OwnerReviewTone;
+  target: OwnerReviewActionTarget;
 };
 
 export type OwnerOperationalPulse = {
@@ -210,6 +213,7 @@ function actionSourceLabel(action: OwnerReviewAction): string {
     action.target === "labor-rate" ||
     action.target === "shift-coverage" ||
     action.target === "shift-diagnostics" ||
+    action.target === "shift-plan" ||
     action.target === "shift-plan-variance"
   ) {
     return "ФОТ и смены";
@@ -221,7 +225,11 @@ function actionSourceLabel(action: OwnerReviewAction): string {
   ) {
     return "Маржа и техкарты";
   }
-  if (action.target === "team-actions" || action.target === "team-learning") {
+  if (
+    action.target === "team-actions" ||
+    action.target === "team-journal" ||
+    action.target === "team-learning"
+  ) {
     return "Команда";
   }
   return "Данные iiko";
@@ -360,6 +368,21 @@ function auditEventTone(event: TeamAuditEvent): OwnerReviewTone {
   return "watch";
 }
 
+function auditEventTarget(event: TeamAuditEvent): OwnerReviewActionTarget {
+  if (event.type === "member_labor_rate_updated") return "labor-rate";
+  if (event.type === "shift_plan_updated") return "shift-plan";
+  if (event.type === "learning_standard_updated") return "team-learning";
+  if (
+    event.type === "task_created" ||
+    event.type === "task_status_updated" ||
+    event.type === "comment_added" ||
+    event.type === "announcement_created"
+  ) {
+    return "team-journal";
+  }
+  return "team-actions";
+}
+
 function operationalPulseEvent(
   event: TeamAuditEvent,
 ): OwnerOperationalPulseEvent {
@@ -368,6 +391,7 @@ function operationalPulseEvent(
     summary: trimEvidenceDetail(event.summary),
     timeLabel: event.createdAtLabel,
     tone: auditEventTone(event),
+    target: auditEventTarget(event),
   };
 }
 
@@ -1058,6 +1082,7 @@ function teamActionTarget(href: string): OwnerReviewActionTarget {
   if (href === "#shift-coverage") return "shift-coverage";
   if (href === "#labor-rates") return "labor-rate";
   if (href === "#iiko-shift-diagnostics") return "shift-diagnostics";
+  if (href === "#shift-plan") return "shift-plan";
   return "team-actions";
 }
 
