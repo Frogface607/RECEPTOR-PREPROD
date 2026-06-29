@@ -60,6 +60,8 @@ export type OwnerReviewHypothesis = {
   role: OwnerReviewRole;
   tone: OwnerReviewTone;
   taskSourceLabel?: string;
+  learningModuleId?: string;
+  learningModuleTitle?: string;
   audienceMemberId?: string;
   audienceMemberName?: string;
 };
@@ -295,13 +297,21 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
 }
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
+  const learning = item.learningModuleTitle
+    ? ` Урок для команды: ${item.learningModuleTitle}.`
+    : "";
+
   return {
     title: trimTaskTitle(item.check),
     priority: rolePriority(item.tone),
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
-    contextNote: trimTaskTitle(`${item.why} Проверка: ${item.check}`),
+    contextNote: trimTaskTitle(
+      `${item.why} Проверка: ${item.check}.${learning}`,
+    ),
     sourceLabel: item.taskSourceLabel ?? "Гипотеза",
+    learningModuleId: item.learningModuleId,
+    learningModuleTitle: item.learningModuleTitle,
     audienceMemberId: item.audienceMemberId,
     audienceMemberName: item.audienceMemberName,
   };
@@ -2052,6 +2062,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Проверить стоп-лист, заготовки, качество отдачи и что официанты предлагают рядом.",
       role: "service",
       tone: topDishShare >= 18 ? "watch" : "good",
+      learningModuleId: "sales-eight-upsell",
+      learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
   }
 
@@ -2062,6 +2074,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       check: "Проверить цену, граммовку, подачу и возможность апсейла.",
       role: "chef",
       tone: "watch",
+      learningModuleId: "sales-eight-upsell",
+      learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
   }
 

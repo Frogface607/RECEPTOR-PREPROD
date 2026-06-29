@@ -1421,6 +1421,48 @@ describe("buildOwnerReview", () => {
     expect(review.readiness.detail).toContain("1 открытая задача Team OS");
   });
 
+  test("connects sales hypotheses with the upsell learning module", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Хит продаж нужно защищать как операционный актив",
+          role: "service",
+          learningModuleId: "sales-eight-upsell",
+          learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: expect.stringContaining("официанты предлагают рядом"),
+          roleId: "service",
+          sourceLabel: "Гипотеза",
+          learningModuleId: "sales-eight-upsell",
+          learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+          contextNote: expect.stringContaining(
+            "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+          ),
+        }),
+      ]),
+    );
+  });
+
   test("marks profit readiness ready when data, economics and loops are closed", () => {
     const review = buildOwnerReview({
       summary,
