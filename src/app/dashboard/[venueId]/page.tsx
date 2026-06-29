@@ -7,6 +7,7 @@ import { CategoriesChart } from "@/components/dashboard/categories-chart";
 import { ShiftsTable } from "@/components/dashboard/shifts-table";
 import { DataQualityStrip } from "@/components/dashboard/data-quality-strip";
 import { DataSourcePanel } from "@/components/dashboard/data-source-panel";
+import { OwnerCommandPanel } from "@/components/dashboard/owner-command-panel";
 import { OwnerReviewCard } from "@/components/dashboard/owner-review-card";
 import { VenueIntelligenceCard } from "@/components/dashboard/venue-intelligence-card";
 import { MenuEngineeringCard } from "@/components/dashboard/menu-engineering-card";
@@ -284,34 +285,48 @@ export default async function DashboardPage({
         {/* key={periodLabel} re-triggers the entrance animation on each
             period switch — the dashboard feels alive during exploration. */}
         <div key={periodLabel} className="contents">
-          <div className="reveal reveal-1 mb-7">
+          <div className="reveal reveal-1 mb-5">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               Панель владельца · {periodLabel}
             </p>
             <h2 className="mt-2 text-balance text-2xl font-medium leading-tight tracking-[-0.02em] sm:text-3xl">
-              Утренний управленческий экран
+              Что важно сейчас
             </h2>
             <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
-              Сначала решение владельца: что происходит, где риск и что сделать
-              сегодня. Графики ниже — детализация.
+              Коротко о деньгах, сменах, марже и действиях команды. Подробные
+              графики и диагностика ниже.
             </p>
           </div>
 
-          <div className="reveal reveal-2 mb-6">
-            <DataSourcePanel
-              chatHref={chatHref}
-              periodLabel={periodLabel}
-              dataMode={dataMode}
-              intendedDataMode={intendedDataMode}
-              channel={iikoConfig.mode === "real" ? iikoConfig.channel : null}
-              dataError={dataError}
-              quality={quality}
-            />
+          <div className="reveal reveal-2">
+            <OwnerCommandPanel venueId={venueId} review={ownerReview} />
           </div>
 
-          <div className="reveal reveal-2">
-            <OwnerReviewCard venueId={venueId} review={ownerReview} />
-          </div>
+          <details className="reveal reveal-3 mt-4 rounded-xl border border-border/60 bg-card/35 px-4 py-3">
+            <summary className="cursor-pointer select-none text-[12px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+              Статус данных и подключения
+            </summary>
+            <div className="mt-4">
+              <DataSourcePanel
+                chatHref={chatHref}
+                periodLabel={periodLabel}
+                dataMode={dataMode}
+                intendedDataMode={intendedDataMode}
+                channel={iikoConfig.mode === "real" ? iikoConfig.channel : null}
+                dataError={dataError}
+                quality={quality}
+              />
+            </div>
+          </details>
+
+          <details className="reveal reveal-3 mt-4 rounded-xl border border-border/60 bg-card/35 px-4 py-3">
+            <summary className="cursor-pointer select-none text-[12px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+              Подробный разбор и постановка задач
+            </summary>
+            <div className="mt-4">
+              <OwnerReviewCard venueId={venueId} review={ownerReview} />
+            </div>
+          </details>
 
           <div className="reveal reveal-2 mt-6">
             <KpiGrid
