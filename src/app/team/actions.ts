@@ -1436,7 +1436,12 @@ export async function createTeamTaskAction(
           sourceLabel,
           impactLabel,
         });
-        if (labelsUpdated || contextCommentSaved) {
+        const learningContextProvided = Boolean(
+          learningModuleId || learningModuleTitle,
+        );
+        const existingTaskContextUpdated =
+          labelsUpdated || contextCommentSaved || learningContextProvided;
+        if (existingTaskContextUpdated) {
           await writeTeamAuditEvent(ctx, {
             venueId: parsed.data.venueId,
             type: "task_status_updated",
@@ -1457,7 +1462,7 @@ export async function createTeamTaskAction(
           ok: true,
           mode: "saved",
           message:
-            labelsUpdated || contextCommentSaved
+            existingTaskContextUpdated
               ? "Задача уже есть, контекст обновлен."
               : "Задача уже есть.",
         };
