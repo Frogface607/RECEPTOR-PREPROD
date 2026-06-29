@@ -120,7 +120,7 @@ export async function runIikoDiagnostics(
       warn(
         "credentials",
         "Ключ iiko",
-        "Для этого заведения нет сохраненного live-доступа. Кабинет работает на демо-данных.",
+        "Для этого заведения нет сохраненного доступа iiko. Кабинет работает на тестовых данных.",
         "Подключите iiko в настройках заведения.",
       ),
     );
@@ -129,7 +129,7 @@ export async function runIikoDiagnostics(
       checkedAt,
       mode: "mock",
       channel: null,
-      summary: "Live-данные пока не подключены",
+      summary: "Реальные данные пока не подключены",
       checks,
     };
   }
@@ -372,7 +372,7 @@ export async function runIikoDiagnostics(
         ? "iiko подключен, но часть проверок не прошла"
         : warnings > 0
           ? "iiko отвечает, есть предупреждения"
-          : "iiko готов к live BI",
+          : "iiko готов к рабочему BI",
     checks,
   };
 }
@@ -382,12 +382,12 @@ export function getMockIikoDiagnosticReport(): IikoDiagnosticReport {
     checkedAt: new Date().toISOString(),
     mode: "mock",
     channel: null,
-    summary: "Live-данные пока не подключены",
+    summary: "Реальные данные пока не подключены",
     checks: [
       warn(
         "credentials",
         "Ключ iiko",
-        `Кабинет работает на демо-датасете от ${DEMO_ANCHOR}.`,
+        `Кабинет работает на тестовых данных от ${DEMO_ANCHOR}.`,
         "Подключите iiko в настройках заведения.",
       ),
     ],

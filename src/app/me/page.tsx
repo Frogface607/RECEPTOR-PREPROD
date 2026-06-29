@@ -877,8 +877,8 @@ function memberLaborStatusClass(status: MemberLaborProfileStatus): string {
 }
 
 function laborSourceLabel(source: "live" | "demo" | "unavailable"): string {
-  if (source === "live") return "live iiko";
-  if (source === "demo") return "demo iiko";
+  if (source === "live") return "реальные данные";
+  if (source === "demo") return "тестовые данные";
   return "iiko недоступна";
 }
 

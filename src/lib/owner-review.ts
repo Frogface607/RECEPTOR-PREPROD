@@ -773,7 +773,7 @@ function buildProfitReadiness(input: {
   };
 
   if (input.dataMode === "mock") {
-    missing.push("live iiko");
+    missing.push("реальные данные iiko");
     setAction({ label: "Проверить iiko", target: "iiko-settings" });
   } else if (input.dataQuality.status === "risk") {
     missing.push("полное покрытие периода");
@@ -888,7 +888,7 @@ function buildProfitReadiness(input: {
       status,
       score: roundedScore,
       title: "Можно считать прибыль",
-      detail: "Live-данные, ФОТ, себестоимость и Team OS контуры закрыты.",
+      detail: "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
       missing: [],
       action: null,
       tone: "good",
@@ -1521,7 +1521,7 @@ function confidenceFor(input: BuildOwnerReviewInput): {
   if (input.dataMode === "mock") {
     return {
       confidence: "low",
-      reason: "показаны демо-данные, для решений нужен live iiko",
+      reason: "показаны тестовые данные, для решений нужны реальные данные iiko",
     };
   }
 
@@ -1842,7 +1842,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
             title: "Проверить источник данных",
             detail:
               input.dataMode === "mock"
-                ? "Сейчас открыт демо-контур. Для решений нужен live iiko."
+                ? "Сейчас открыт тестовый контур. Для решений нужны реальные данные iiko."
                 : input.dataQuality.summary,
             role: "owner",
             tone: "risk",
@@ -1871,7 +1871,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       title: "Данные могут подменять реальность",
       why:
         input.dataMode === "mock"
-          ? "Сейчас включен демо-контур, поэтому выводы одинаковые по смыслу."
+          ? "Сейчас включены тестовые данные, поэтому выводы одинаковые по смыслу."
           : "В выбранном периоде не хватает продаж или дней с данными.",
       check:
         "Откройте проверку iiko и убедитесь, что ключ, организация и OLAP работают.",

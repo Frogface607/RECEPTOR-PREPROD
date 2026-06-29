@@ -123,15 +123,15 @@ function laborSourceCopy(source: LaborSource): {
 } {
   if (source.status === "live") {
     return {
-      label: "live iiko",
+      label: "реальные данные",
       detail: `Смены загружены за период: ${source.periodLabel}.`,
       className: "border-brand/30 bg-brand/10 text-brand",
     };
   }
   if (source.status === "demo") {
     return {
-      label: "demo iiko",
-      detail: `Показываем пример смен за период: ${source.periodLabel}.`,
+      label: "тестовые данные",
+      detail: `Показываем пример смен за период: ${source.periodLabel}. После подключения iiko расчет перейдет на реальные смены.`,
       className: "border-border/60 bg-background/45 text-muted-foreground",
     };
   }

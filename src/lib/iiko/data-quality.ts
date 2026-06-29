@@ -38,7 +38,9 @@ export function buildRevenueDataQuality(
   const warnings: string[] = [];
 
   if (options.dataMode === "mock") {
-    warnings.push("Показаны демо-данные. Для решений подключите живую iiko.");
+    warnings.push(
+      "Показаны тестовые данные. Для решений подключите реальные данные iiko.",
+    );
   }
 
   if (summary.revenue <= 0 || activeDays === 0) {

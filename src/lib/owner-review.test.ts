@@ -1395,7 +1395,7 @@ describe("buildOwnerReview", () => {
       status: "ready",
       score: 100,
       title: "Можно считать прибыль",
-      detail: "Live-данные, ФОТ, себестоимость и Team OS контуры закрыты.",
+      detail: "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
       missing: [],
       action: null,
       tone: "good",

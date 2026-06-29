@@ -64,6 +64,6 @@ describe("buildRevenueDataQuality", () => {
     );
 
     expect(quality.status).toBe("watch");
-    expect(quality.warnings[0]).toContain("демо-данные");
+    expect(quality.warnings[0]).toContain("тестовые данные");
   });
 });
