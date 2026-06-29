@@ -39,7 +39,7 @@ export function VenueIntelligenceCard({
               ? "Deep Research"
               : profile.researchStatus === "manual"
                 ? "Настроено вручную"
-                : "Демо-профиль"}
+                : "Тестовый профиль"}
           </span>
           <span className="rounded-lg border border-brand/30 bg-brand/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
             Context {contextCompletion.requiredPercentage}%

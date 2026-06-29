@@ -277,7 +277,7 @@ export default async function SettingsPage() {
                   label="Статус"
                   value={
                     user?.isDeveloper
-                      ? "Разработчик"
+                      ? "Служебный доступ"
                       : user?.isDemo
                         ? "Тестовый доступ"
                         : "Авторизован"

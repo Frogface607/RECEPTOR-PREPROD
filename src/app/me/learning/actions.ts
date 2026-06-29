@@ -202,7 +202,7 @@ export async function saveLearningProgressAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Демо: прогресс сохранен локально.",
+      message: "Тестовый режим: прогресс сохранен локально.",
       progress: localProgress,
     };
   }

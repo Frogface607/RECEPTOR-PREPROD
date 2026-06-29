@@ -12,7 +12,10 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { researchVenueContextAction, updateVenueContextAction } from "./actions";
+import {
+  researchVenueContextAction,
+  updateVenueContextAction,
+} from "./actions";
 import {
   calculateContextCompletion,
   DEMO_CONTEXT_ANSWERS,
@@ -59,8 +62,14 @@ export function ContextBuilder({
   const [pending, startTransition] = useTransition();
   const [researchPending, startResearchTransition] = useTransition();
 
-  const completion = useMemo(() => calculateContextCompletion(answers), [answers]);
-  const prompt = useMemo(() => formatContextAnswersForPrompt(answers), [answers]);
+  const completion = useMemo(
+    () => calculateContextCompletion(answers),
+    [answers],
+  );
+  const prompt = useMemo(
+    () => formatContextAnswersForPrompt(answers),
+    [answers],
+  );
 
   const setAnswer = (id: string, value: string | string[]) => {
     setAnswers((current) => ({ ...current, [id]: value }));
@@ -91,7 +100,7 @@ export function ContextBuilder({
       setAnswers(result.answers);
       setSaveMessage(
         result.mode === "sandbox"
-          ? "Sandbox: контекст обновлен локально, без записи в Supabase."
+          ? "Тестовый режим: контекст обновлен локально, без записи."
           : "Контекст сохранен в профиль заведения.",
       );
     });
@@ -261,11 +270,13 @@ export function ContextBuilder({
 
           {completion.missingRequired.length > 0 ? (
             <div className="mt-5 rounded-lg border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4 text-xs leading-relaxed text-muted-foreground">
-              Не заполнены обязательные поля: {completion.missingRequired.join(", ")}.
+              Не заполнены обязательные поля:{" "}
+              {completion.missingRequired.join(", ")}.
             </div>
           ) : (
             <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-4 text-xs leading-relaxed text-foreground/85">
-              Базовый контекст готов для советника, ежедневного брифа и задач команды.
+              Базовый контекст готов для советника, ежедневного брифа и задач
+              команды.
             </div>
           )}
 
@@ -397,7 +408,7 @@ function QuestionControl({
   value: string | string[] | undefined;
   onChange: (value: string | string[]) => void;
 }) {
-  const textValue = Array.isArray(value) ? value.join("\n") : value ?? "";
+  const textValue = Array.isArray(value) ? value.join("\n") : (value ?? "");
   const arrayValue = Array.isArray(value)
     ? value
     : value

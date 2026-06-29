@@ -35,7 +35,7 @@ export async function updateOwnTaskStatusAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Нужно войти." };
   if (user.isDemo) {
-    return { ok: true, message: "Демо: статус задачи обновлен." };
+    return { ok: true, message: "Тестовый режим: статус задачи обновлен." };
   }
 
   const supabase = await getServerSupabase();
@@ -80,7 +80,10 @@ export async function markAnnouncementReadAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Нужно войти." };
   if (user.isDemo) {
-    return { ok: true, message: "Демо: объявление отмечено как прочитанное." };
+    return {
+      ok: true,
+      message: "Тестовый режим: объявление отмечено как прочитанное.",
+    };
   }
 
   const supabase = await getServerSupabase();

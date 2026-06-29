@@ -195,8 +195,10 @@ export function TechCardStudio() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     const safeName =
-      input.dishName.trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") ||
-      "tech-card";
+      input.dishName
+        .trim()
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
+        .replace(/^-|-$/g, "") || "tech-card";
     link.href = url;
     link.download = `receptor-${safeName}.json`;
     link.click();
@@ -271,12 +273,25 @@ export function TechCardStudio() {
   return (
     <div className="space-y-8">
       <div className="print:hidden grid gap-4 lg:grid-cols-4">
-        <SummaryCard label="Себестоимость" value={formatRub(calculation.totalCost)} />
-        <SummaryCard label="Порция" value={formatRub(calculation.costPerPortion)} />
-        <SummaryCard label="Рекомендуемая цена" value={formatRub(calculation.recommendedPrice)} />
+        <SummaryCard
+          label="Себестоимость"
+          value={formatRub(calculation.totalCost)}
+        />
+        <SummaryCard
+          label="Порция"
+          value={formatRub(calculation.costPerPortion)}
+        />
+        <SummaryCard
+          label="Рекомендуемая цена"
+          value={formatRub(calculation.recommendedPrice)}
+        />
         <SummaryCard
           label="Связь с iiko"
-          value={calculation.mappingCoveragePercent > 0 ? `${calculation.mappingCoveragePercent}%` : "после iiko"}
+          value={
+            calculation.mappingCoveragePercent > 0
+              ? `${calculation.mappingCoveragePercent}%`
+              : "после iiko"
+          }
         />
       </div>
 
@@ -298,13 +313,22 @@ export function TechCardStudio() {
               </p>
             </div>
             <div className="flex max-w-full flex-wrap gap-2 lg:justify-end">
-              <ActionButton onClick={saveVersion} icon={<Save className="size-4" />}>
+              <ActionButton
+                onClick={saveVersion}
+                icon={<Save className="size-4" />}
+              >
                 Сохранить
               </ActionButton>
-              <ActionButton onClick={printPdf} icon={<Printer className="size-4" />}>
+              <ActionButton
+                onClick={printPdf}
+                icon={<Printer className="size-4" />}
+              >
                 PDF
               </ActionButton>
-              <ActionButton onClick={reset} icon={<RotateCcw className="size-4" />}>
+              <ActionButton
+                onClick={reset}
+                icon={<RotateCcw className="size-4" />}
+              >
                 Очистить
               </ActionButton>
             </div>
@@ -399,7 +423,11 @@ export function TechCardStudio() {
                       <input
                         value={ingredient.name}
                         onChange={(event) =>
-                          updateIngredient(ingredient.id, "name", event.target.value)
+                          updateIngredient(
+                            ingredient.id,
+                            "name",
+                            event.target.value,
+                          )
                         }
                         placeholder="Ингредиент"
                         className="h-9 w-full min-w-[180px] rounded-lg border border-border/50 bg-background/50 px-3 text-[12px] outline-none focus:border-brand/50"
@@ -468,7 +496,11 @@ export function TechCardStudio() {
                       <input
                         value={ingredient.article ?? ""}
                         onChange={(event) =>
-                          updateIngredient(ingredient.id, "article", event.target.value)
+                          updateIngredient(
+                            ingredient.id,
+                            "article",
+                            event.target.value,
+                          )
                         }
                         placeholder="iiko"
                         className="h-9 w-[90px] rounded-lg border border-border/50 bg-background/50 px-3 text-[12px] outline-none focus:border-brand/50"
@@ -476,7 +508,9 @@ export function TechCardStudio() {
                     </td>
                     <td className="px-3 py-2 text-right text-[12px] text-foreground">
                       <div>{formatRub(ingredient.cost)}</div>
-                      <div className="text-muted-foreground">{ingredient.lossPercent}%</div>
+                      <div className="text-muted-foreground">
+                        {ingredient.lossPercent}%
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-right">
                       <button
@@ -622,8 +656,8 @@ function DraftGeneratorPanel({
             </p>
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Введите идею блюда. Receptor набросает ингредиенты, граммовки,
-            КБЖУ, цену и технологию с учётом профиля заведения.
+            Введите идею блюда. Receptor набросает ингредиенты, граммовки, КБЖУ,
+            цену и технологию с учётом профиля заведения.
           </p>
         </div>
         <div className="flex w-full flex-col gap-2 lg:w-[420px]">
@@ -688,14 +722,18 @@ function ExportStrip({
       <ActionButton onClick={onCopyMarkdown} icon={<Copy className="size-4" />}>
         {copied ? "Скопировано" : "Markdown"}
       </ActionButton>
-      <ActionButton onClick={onExportJson} icon={<Download className="size-4" />}>
+      <ActionButton
+        onClick={onExportJson}
+        icon={<Download className="size-4" />}
+      >
         JSON
       </ActionButton>
       <ActionButton onClick={onImportJson} icon={<Upload className="size-4" />}>
         Импорт
       </ActionButton>
       <span className="text-[12px] leading-relaxed text-muted-foreground">
-        Для демо достаточно PDF и материалов запуска; JSON нужен для переноса версии.
+        Для первого показа достаточно PDF и материалов запуска; JSON нужен для
+        переноса версии.
       </span>
     </div>
   );
@@ -731,7 +769,9 @@ function VenueProfileStrip({
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1.5">
-          <span className="text-[12px] font-medium text-foreground">Формат</span>
+          <span className="text-[12px] font-medium text-foreground">
+            Формат
+          </span>
           <input
             value={profile.format}
             onChange={(event) => update({ format: event.target.value })}
@@ -1049,7 +1089,10 @@ function PrintableTechCard({
           <PrintMetric label="Категория" value={input.category || "-"} />
           <PrintMetric label="Порций" value={String(input.portions || 1)} />
           <PrintMetric label="Выход" value={`${input.outputWeight || 0} г`} />
-          <PrintMetric label="Себестоимость" value={formatRub(calculation.totalCost)} />
+          <PrintMetric
+            label="Себестоимость"
+            value={formatRub(calculation.totalCost)}
+          />
         </div>
 
         <div className="mt-5 border border-neutral-300 p-3 text-xs">
@@ -1076,8 +1119,12 @@ function PrintableTechCard({
             {calculation.ingredients.map((ingredient) => (
               <tr key={ingredient.id}>
                 <PrintTd>{ingredient.name || "-"}</PrintTd>
-                <PrintTd>{ingredient.grossQty} {ingredient.unit}</PrintTd>
-                <PrintTd>{ingredient.netQty} {ingredient.unit}</PrintTd>
+                <PrintTd>
+                  {ingredient.grossQty} {ingredient.unit}
+                </PrintTd>
+                <PrintTd>
+                  {ingredient.netQty} {ingredient.unit}
+                </PrintTd>
                 <PrintTd>{ingredient.lossPercent}%</PrintTd>
                 <PrintTd>{formatRub(ingredient.cost)}</PrintTd>
                 <PrintTd>{ingredient.article || "-"}</PrintTd>

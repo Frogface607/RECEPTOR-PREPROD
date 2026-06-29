@@ -34,7 +34,8 @@ export function OwnerCockpitCard({
   const contextCompletion = calculateContextCompletion(venue.context);
   const prioritySignal = pickPrioritySignal(brief.signals);
   const actions = brief.actions.slice(0, 3);
-  const dataModeLabel = dataMode === "live" ? "Live-данные" : "Демо-данные";
+  const dataModeLabel =
+    dataMode === "live" ? "Реальные данные" : "Тестовые данные";
   const dataModeDetail =
     dataMode === "live"
       ? "Работает на подключенной организации."
@@ -83,8 +84,20 @@ export function OwnerCockpitCard({
                   ? `${brief.revenue.deltaPct > 0 ? "+" : ""}${brief.revenue.deltaPct}%`
                   : "—"
               }
-              detail={hasComparison ? (isDown ? "просадка к базе" : "динамика к базе") : "нет базы сравнения"}
-              icon={<DeltaIcon className={isDown ? "size-4 text-destructive" : "size-4 text-brand"} />}
+              detail={
+                hasComparison
+                  ? isDown
+                    ? "просадка к базе"
+                    : "динамика к базе"
+                  : "нет базы сравнения"
+              }
+              icon={
+                <DeltaIcon
+                  className={
+                    isDown ? "size-4 text-destructive" : "size-4 text-brand"
+                  }
+                />
+              }
             />
             <MetricPill
               label="Контекст"
@@ -100,7 +113,9 @@ export function OwnerCockpitCard({
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                 Что сделать сегодня
               </p>
-              <h2 className="mt-2 text-lg font-medium">Три управленческих шага</h2>
+              <h2 className="mt-2 text-lg font-medium">
+                Три управленческих шага
+              </h2>
             </div>
             <BadgeCheck className="size-5 text-brand" />
           </div>

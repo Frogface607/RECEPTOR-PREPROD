@@ -2017,7 +2017,7 @@ function formatShiftDate(value: string): string {
 
 function laborSourceLabel(source: TeamLaborLoadResult["source"]): string {
   if (source === "live") return "живые смены iiko";
-  if (source === "demo") return "демо-смены";
+  if (source === "demo") return "тестовые смены";
   return "смены недоступны";
 }
 

@@ -346,7 +346,9 @@ function normalizeTaskSourceLabel(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!normalized) return null;
-  return normalized.length > 80 ? `${normalized.slice(0, 77).trim()}...` : normalized;
+  return normalized.length > 80
+    ? `${normalized.slice(0, 77).trim()}...`
+    : normalized;
 }
 
 async function findTaskSourceLabel(
@@ -495,7 +497,7 @@ export async function inviteTeamMemberAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: сотрудник добавлен в демо-режиме.",
+      message: "Тестовый режим: сотрудник добавлен.",
     };
   }
 
@@ -623,7 +625,7 @@ export async function importIikoTeamMembersAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: `Sandbox: подготовлен импорт из iiko (${members.length}).`,
+      message: `Тестовый режим: подготовлен импорт из iiko (${members.length}).`,
     };
   }
 
@@ -736,7 +738,7 @@ export async function updateTeamMemberLaborRateAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: ставки сотрудника обновлены.",
+      message: "Тестовый режим: ставки сотрудника обновлены.",
     };
   }
 
@@ -830,7 +832,7 @@ export async function bulkUpdateTeamMemberLaborRatesAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: `Sandbox: массовая ставка ФОТ применена к ${memberIds.length}.`,
+      message: `Тестовый режим: массовая ставка ФОТ применена к ${memberIds.length}.`,
     };
   }
 
@@ -944,7 +946,7 @@ export async function saveTeamShiftPlanAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: план смены сохранен.",
+      message: "Тестовый режим: план смены сохранен.",
     };
   }
 
@@ -1052,7 +1054,7 @@ export async function saveTeamLearningStandardAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: стандарт роли обновлен.",
+      message: "Тестовый режим: стандарт роли обновлен.",
     };
   }
 
@@ -1122,7 +1124,7 @@ export async function updateTeamMemberStatusAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: статус доступа обновлен.",
+      message: "Тестовый режим: статус доступа обновлен.",
     };
   }
 
@@ -1191,7 +1193,7 @@ export async function resetTeamMemberPasswordAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: пароль сотрудника обновлен.",
+      message: "Тестовый режим: пароль сотрудника обновлен.",
     };
   }
 
@@ -1264,7 +1266,7 @@ export async function createTeamTaskAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: задача создана в демо-режиме.",
+      message: "Тестовый режим: задача создана.",
     };
   }
 
@@ -1373,7 +1375,7 @@ export async function updateTeamTaskStatusAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: статус задачи обновлен в демо-режиме.",
+      message: "Тестовый режим: статус задачи обновлен.",
     };
   }
 
@@ -1437,7 +1439,7 @@ export async function addTaskCommentAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: комментарий добавлен в демо-режиме.",
+      message: "Тестовый режим: комментарий добавлен.",
     };
   }
 
@@ -1499,7 +1501,7 @@ export async function createTeamAnnouncementAction(
     return {
       ok: true,
       mode: "sandbox",
-      message: "Sandbox: объявление опубликовано в демо-режиме.",
+      message: "Тестовый режим: объявление опубликовано.",
     };
   }
 

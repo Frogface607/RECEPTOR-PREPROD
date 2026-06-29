@@ -147,7 +147,7 @@ function dashboardDataErrorMessage(error: unknown): string {
   if (/401/i.test(message)) {
     return "iiko отклонил live-запрос. Проверьте права API login.";
   }
-  return "Live-данные iiko недоступны. Временно показываем demo.";
+  return "Реальные данные iiko недоступны. Временно показываем тестовый контур.";
 }
 
 export default async function DashboardPage({
