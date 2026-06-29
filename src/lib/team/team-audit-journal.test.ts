@@ -9,12 +9,13 @@ function event(
   id: string,
   type: TeamAuditEvent["type"],
   summary = "Событие",
+  targetType: TeamAuditEvent["targetType"] = "task",
 ): TeamAuditEvent {
   return {
     id,
     venueId: "venue-1",
     type,
-    targetType: type === "shift_plan_updated" ? "shift_plan" : "task",
+    targetType,
     targetId: id,
     summary,
     createdAtLabel: "12:00",
@@ -36,12 +37,27 @@ describe("team audit journal", () => {
 
   test("builds entries and filter counts", () => {
     const journal = buildTeamAuditJournal([
-      event("labor-1", "member_labor_rate_updated", "Ставка ФОТ обновлена."),
-      event("plan-1", "shift_plan_updated", "План смены обновлен."),
+      event(
+        "member-1",
+        "member_labor_rate_updated",
+        "Ставка ФОТ обновлена.",
+        "member",
+      ),
+      event(
+        "plan-1",
+        "shift_plan_updated",
+        "План смены обновлен.",
+        "shift_plan",
+      ),
       event("task-1", "task_created", "Создана задача."),
       event("task-2", "comment_added", "Добавлен комментарий."),
-      event("learning-1", "learning_standard_updated", "Допуск обновлен."),
-      event("access-1", "member_invited", "Создан доступ."),
+      event(
+        "learning-1",
+        "learning_standard_updated",
+        "Допуск обновлен.",
+        "learning_standard",
+      ),
+      event("access-1", "member_invited", "Создан доступ.", "member"),
     ]);
 
     expect(journal.entries.map((entry) => entry.categoryId)).toEqual([
@@ -55,6 +71,20 @@ describe("team audit journal", () => {
     expect(journal.entries[0]).toMatchObject({
       categoryLabel: "ФОТ",
       typeLabel: "ФОТ",
+      contextHref: "#labor-member-member-1",
+      contextLabel: "К сотруднику",
+    });
+    expect(journal.entries[1]).toMatchObject({
+      contextHref: "#shift-plan",
+      contextLabel: "К плану",
+    });
+    expect(journal.entries[2]).toMatchObject({
+      contextHref: "#team-task-task-1",
+      contextLabel: "К задаче",
+    });
+    expect(journal.entries[4]).toMatchObject({
+      contextHref: "#learning-progress",
+      contextLabel: "К обучению",
     });
     expect(
       Object.fromEntries(

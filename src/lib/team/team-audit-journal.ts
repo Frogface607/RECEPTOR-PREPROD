@@ -13,6 +13,8 @@ export type TeamAuditJournalEntry = TeamAuditEvent & {
   categoryId: Exclude<TeamAuditJournalCategoryId, "all">;
   categoryLabel: string;
   typeLabel: string;
+  contextHref: string;
+  contextLabel: string;
 };
 
 export type TeamAuditJournalSummary = {
@@ -83,6 +85,30 @@ export function auditEventJournalCategory(
   return "access";
 }
 
+export function auditEventContextHref(event: TeamAuditEvent): string {
+  if (event.targetType === "member" && event.targetId) {
+    return `#labor-member-${encodeURIComponent(event.targetId)}`;
+  }
+
+  if (event.targetType === "task" && event.targetId) {
+    return `#team-task-${encodeURIComponent(event.targetId)}`;
+  }
+
+  if (event.targetType === "shift_plan") return "#shift-plan";
+  if (event.targetType === "learning_standard") return "#learning-progress";
+  if (event.targetType === "announcement") return "#team-journal";
+
+  return "#team-actions";
+}
+
+export function auditEventContextLabel(event: TeamAuditEvent): string {
+  if (event.targetType === "member") return "К сотруднику";
+  if (event.targetType === "task") return "К задаче";
+  if (event.targetType === "shift_plan") return "К плану";
+  if (event.targetType === "learning_standard") return "К обучению";
+  return "Открыть";
+}
+
 export function buildTeamAuditJournal(
   events: TeamAuditEvent[],
 ): TeamAuditJournalSummary {
@@ -97,6 +123,8 @@ export function buildTeamAuditJournal(
       categoryId,
       categoryLabel: category?.label ?? "Действие",
       typeLabel: auditEventTypeLabel(event.type),
+      contextHref: auditEventContextHref(event),
+      contextLabel: auditEventContextLabel(event),
     };
   });
 

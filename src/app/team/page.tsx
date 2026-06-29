@@ -835,7 +835,11 @@ export default async function TeamPage({
               </div>
               <div className="mt-5 grid gap-3">
                 {home.visibleTasks.map((task) => (
-                  <TaskRow key={task.id} task={task} />
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    anchorId={`team-task-${task.id}`}
+                  />
                 ))}
               </div>
             </div>
@@ -2361,14 +2365,22 @@ function LearningSummaryRow({
 function TaskRow({
   task,
   compact = false,
+  anchorId,
 }: {
   task: TeamTask;
   compact?: boolean;
+  anchorId?: string;
 }) {
   const sourceLabel = sourceBadgeLabel(task.source);
 
   return (
-    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+    <div
+      id={anchorId}
+      className={
+        "rounded-lg border border-border/45 bg-background/35 p-3 " +
+        (anchorId ? "scroll-mt-24" : "")
+      }
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className={priorityClass(task.priority)}>
           {task.priority}

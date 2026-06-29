@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
+  ArrowRight,
   CheckCircle2,
   Copy,
   History,
@@ -1275,9 +1277,10 @@ export function TeamActionsPanel({
           <div className="mt-5 grid gap-3">
             {visibleJournalEntries.length > 0 ? (
               visibleJournalEntries.map((event) => (
-                <div
+                <Link
                   key={event.id}
-                  className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+                  href={event.contextHref}
+                  className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_1fr_auto_auto] sm:items-center"
                 >
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-md border border-brand/25 bg-brand/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
@@ -1293,7 +1296,11 @@ export function TeamActionsPanel({
                   <span className="text-xs text-muted-foreground">
                     {event.createdAtLabel || "только что"}
                   </span>
-                </div>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-brand">
+                    {event.contextLabel}
+                    <ArrowRight className="size-3.5" />
+                  </span>
+                </Link>
               ))
             ) : (
               <p className="rounded-lg border border-border/45 bg-background/35 p-4 text-sm text-muted-foreground">
