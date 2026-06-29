@@ -1484,6 +1484,60 @@ describe("buildOwnerReview", () => {
     expect(review.readiness.detail).toContain("1 открытая задача Team OS");
   });
 
+  test("prioritizes money-weighted BI actions over communication chores", () => {
+    const staff: StaffMember[] = [
+      {
+        id: "waiter-1",
+        name: "Официант",
+        roleId: "service",
+        venueId: "venue-1",
+        status: "active",
+        shiftLabel: "Зал",
+      },
+    ];
+    const announcements: TeamAnnouncement[] = [
+      {
+        id: "announcement-1",
+        venueId: "venue-1",
+        title: "Подтвердить важное объявление",
+        body: "Проверить чтение командой.",
+        priority: "important",
+        audience: { type: "venue", venueId: "venue-1" },
+        createdByName: "Receptor",
+        createdAtLabel: "сегодня",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      margin: buildMenuMarginReadiness({
+        dishes,
+        products: [],
+      }),
+      teamStaff: staff,
+      teamAnnouncements: announcements,
+      teamAnnouncementReads: [],
+    });
+
+    expect(review.actions[0]).toMatchObject({
+      target: "margin-mapping",
+      impactLabel: expect.stringContaining("20"),
+    });
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: "team-journal",
+        }),
+      ]),
+    );
+  });
+
   test("connects sales hypotheses with the upsell learning module", () => {
     const review = buildOwnerReview({
       summary,

@@ -324,7 +324,9 @@ function withLearningContext(
   if (fullContext.length <= 220) return trimTaskTitle(fullContext);
 
   const baseLimit = Math.max(0, 220 - learningSuffix.length - 3);
-  return trimTaskTitle(`${base.slice(0, baseLimit).trim()}...${learningSuffix}`);
+  return trimTaskTitle(
+    `${base.slice(0, baseLimit).trim()}...${learningSuffix}`,
+  );
 }
 
 function actionContextNote(action: OwnerReviewAction): string {
@@ -1088,6 +1090,68 @@ function markActionsWithOpenTasks(
       ? { ...action, existingTaskId: existingTask.id }
       : action;
   });
+}
+
+function impactScore(label: string | undefined): number {
+  if (!label) return 0;
+  const match = label
+    .replace(/\s/g, "")
+    .replace(",", ".")
+    .match(/\d+(?:\.\d+)?/);
+  if (!match) return 0;
+  const value = Number(match[0]);
+  if (!Number.isFinite(value)) return 0;
+  return label.includes("%") ? value * 1_000 : value;
+}
+
+function targetScore(target: OwnerReviewActionTarget): number {
+  if (target === "iiko-settings") return 900_000;
+  if (
+    target === "margin-diagnostics" ||
+    target === "margin-mapping" ||
+    target === "margin-risk"
+  ) {
+    return 70_000;
+  }
+  if (
+    target === "labor-member" ||
+    target === "labor-rate" ||
+    target === "shift-coverage" ||
+    target === "shift-diagnostics" ||
+    target === "shift-plan-variance"
+  ) {
+    return 65_000;
+  }
+  if (target === "shift-plan") return 55_000;
+  if (target === "team-actions") return 45_000;
+  if (target === "team-learning") return 35_000;
+  if (target === "team-journal") return 30_000;
+  return 0;
+}
+
+function toneScore(tone: OwnerReviewTone): number {
+  if (tone === "risk") return 1_000_000;
+  if (tone === "watch") return 500_000;
+  return 0;
+}
+
+function actionPriorityScore(action: OwnerReviewAction): number {
+  return (
+    toneScore(action.tone) +
+    targetScore(action.target) +
+    impactScore(action.impactLabel)
+  );
+}
+
+function sortOwnerActions(actions: OwnerReviewAction[]): OwnerReviewAction[] {
+  return actions
+    .map((action, index) => ({ action, index }))
+    .sort((a, b) => {
+      const scoreDelta =
+        actionPriorityScore(b.action) - actionPriorityScore(a.action);
+      return scoreDelta || a.index - b.index;
+    })
+    .map(({ action }) => action);
 }
 
 function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
@@ -2058,35 +2122,37 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       tone: topDishShare >= 18 ? "watch" : "good",
     },
   ];
-  const actions = markActionsWithOpenTasks(
-    [
-      input.dataQuality.status === "risk" || input.dataMode === "mock"
-        ? ({
-            title: "Проверить источник данных",
-            detail:
-              input.dataMode === "mock"
-                ? "Сейчас открыт тестовый контур. Для решений нужны реальные данные iiko."
-                : input.dataQuality.summary,
-            role: "owner",
-            tone: "risk",
-            target: "iiko-settings",
-            learningModuleId: "iiko-cash-discipline",
-            learningModuleTitle: "iiko и кассовая дисциплина на смене",
-          } satisfies OwnerReviewAction)
-        : null,
-      input.shiftPlanVariance
-        ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
-        : null,
-      ownerActionFromCommunication(operationalProof),
-      ownerActionFromLaborMargin({
-        labor: input.labor,
-        margin: input.margin,
-      }),
-      input.labor ? ownerActionFromLabor(input.labor) : null,
-      input.margin ? ownerActionFromMargin(input.margin) : null,
-      input.team ? ownerActionFromTeam(input.team) : null,
-    ].filter((item): item is OwnerReviewAction => item !== null),
-    input.teamTasks,
+  const actions = sortOwnerActions(
+    markActionsWithOpenTasks(
+      [
+        input.dataQuality.status === "risk" || input.dataMode === "mock"
+          ? ({
+              title: "Проверить источник данных",
+              detail:
+                input.dataMode === "mock"
+                  ? "Сейчас открыт тестовый контур. Для решений нужны реальные данные iiko."
+                  : input.dataQuality.summary,
+              role: "owner",
+              tone: "risk",
+              target: "iiko-settings",
+              learningModuleId: "iiko-cash-discipline",
+              learningModuleTitle: "iiko и кассовая дисциплина на смене",
+            } satisfies OwnerReviewAction)
+          : null,
+        input.shiftPlanVariance
+          ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
+          : null,
+        ownerActionFromCommunication(operationalProof),
+        ownerActionFromLaborMargin({
+          labor: input.labor,
+          margin: input.margin,
+        }),
+        input.labor ? ownerActionFromLabor(input.labor) : null,
+        input.margin ? ownerActionFromMargin(input.margin) : null,
+        input.team ? ownerActionFromTeam(input.team) : null,
+      ].filter((item): item is OwnerReviewAction => item !== null),
+      input.teamTasks,
+    ),
   ).slice(0, 3);
 
   const hypotheses: OwnerReviewHypothesis[] = [];
