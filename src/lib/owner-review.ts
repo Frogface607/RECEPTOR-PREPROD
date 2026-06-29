@@ -273,11 +273,21 @@ function actionTaskTitle(action: OwnerReviewAction): string {
   return trimTaskTitle(`${action.title}: ${action.detail}`);
 }
 
+function withLearningContext(
+  context: string,
+  learningModuleTitle?: string,
+): string {
+  const base = context.trim();
+  if (!learningModuleTitle) return trimTaskTitle(base);
+
+  const separator = /[.!?]$/.test(base) ? " " : ". ";
+  return trimTaskTitle(
+    `${base}${separator}Урок для команды: ${learningModuleTitle}.`,
+  );
+}
+
 function actionContextNote(action: OwnerReviewAction): string {
-  const learning = action.learningModuleTitle
-    ? ` Урок для команды: ${action.learningModuleTitle}.`
-    : "";
-  return trimTaskTitle(`${action.detail}${learning}`);
+  return withLearningContext(action.detail, action.learningModuleTitle);
 }
 
 function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
@@ -297,17 +307,14 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
 }
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
-  const learning = item.learningModuleTitle
-    ? ` Урок для команды: ${item.learningModuleTitle}.`
-    : "";
-
   return {
     title: trimTaskTitle(item.check),
     priority: rolePriority(item.tone),
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
-    contextNote: trimTaskTitle(
-      `${item.why} Проверка: ${item.check}.${learning}`,
+    contextNote: withLearningContext(
+      `${item.why} Проверка: ${item.check}`,
+      item.learningModuleTitle,
     ),
     sourceLabel: item.taskSourceLabel ?? "Гипотеза",
     learningModuleId: item.learningModuleId,
@@ -2040,6 +2047,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
       role: "manager",
       tone: "risk",
+      learningModuleId: "shift-open-close",
+      learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });
   }
 
@@ -2087,6 +2096,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Зафиксировать причину: погода, банкет, команда, промо, трафик, стоп-лист.",
       role: "manager",
       tone: "watch",
+      learningModuleId: "shift-open-close",
+      learningModuleTitle: "Открытие и закрытие смены без хаоса",
     });
   }
 

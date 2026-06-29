@@ -1463,6 +1463,88 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("connects revenue drop hypotheses with the shift control learning module", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief: {
+        ...brief,
+        revenue: {
+          ...brief.revenue,
+          deltaPct: -18,
+        },
+      },
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Просадка могла прийти из смены, а не из меню",
+          role: "manager",
+          learningModuleId: "shift-open-close",
+          learningModuleTitle: "Открытие и закрытие смены без хаоса",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: expect.stringContaining("кто работал"),
+          roleId: "venue_manager",
+          learningModuleId: "shift-open-close",
+          learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          contextNote: expect.stringContaining(
+            "Урок для команды: Открытие и закрытие смены без хаоса.",
+          ),
+        }),
+      ]),
+    );
+  });
+
+  test("connects weak day hypotheses with the shift control learning module", () => {
+    const review = buildOwnerReview({
+      summary: {
+        ...summary,
+        revenue: 120000,
+        points: [
+          { date: "2026-06-25", revenue: 20000 },
+          { date: "2026-06-26", revenue: 100000 },
+        ],
+      },
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Слабый день нужно объяснить событием",
+          role: "manager",
+          learningModuleId: "shift-open-close",
+          learningModuleTitle: "Открытие и закрытие смены без хаоса",
+        }),
+      ]),
+    );
+  });
+
   test("marks profit readiness ready when data, economics and loops are closed", () => {
     const review = buildOwnerReview({
       summary,
