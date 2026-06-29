@@ -985,6 +985,44 @@ describe("buildOwnerReview", () => {
     });
   });
 
+  test("keeps task contour labels when an operational loop is closed", () => {
+    const teamAuditEvents: TeamAuditEvent[] = [
+      {
+        id: "audit-task-margin-done",
+        venueId: "venue-1",
+        type: "task_status_updated",
+        sourceLabel: "ФОТ и маржа",
+        targetType: "task",
+        targetId: "task-margin",
+        summary: "Статус задачи обновлен: done.",
+        createdAtLabel: "14:30",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks: [],
+      teamAuditEvents,
+    });
+
+    expect(review.operationalPulse).toMatchObject({
+      closedLoops: 1,
+      recentEvents: [
+        expect.objectContaining({
+          label: "ФОТ и маржа",
+          tone: "good",
+          target: "team-journal",
+        }),
+      ],
+    });
+  });
+
   test("shows team announcements as owner communication proof", () => {
     const teamAnnouncements: TeamAnnouncement[] = [
       {

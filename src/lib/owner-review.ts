@@ -370,6 +370,7 @@ function auditEventLabel(event: TeamAuditEvent): string {
   if (event.type === "comment_added") return "Комментарий";
   if (event.type === "announcement_created") return "Объявление";
   if (event.type === "task_status_updated") {
+    if (event.sourceLabel) return event.sourceLabel;
     return isClosedLoopEvent(event) ? "Закрыто" : "Статус";
   }
   return "Team OS";

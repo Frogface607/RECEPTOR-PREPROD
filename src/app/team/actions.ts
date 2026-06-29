@@ -338,6 +338,35 @@ async function findExistingOpenTask(
   return data ?? null;
 }
 
+function normalizeTaskSourceLabel(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (!normalized) return null;
+  return normalized.length > 80 ? `${normalized.slice(0, 77).trim()}...` : normalized;
+}
+
+async function findTaskSourceLabel(
+  ctx: WritableTeamContext,
+  venueId: string,
+  taskId: string,
+): Promise<string | null> {
+  if (ctx.mode === "sandbox" || !ctx.supabase) return null;
+
+  const { data, error } = await ctx.supabase
+    .from("team_audit_events")
+    .select("metadata")
+    .eq("venue_id", venueId)
+    .eq("event_type", "task_created")
+    .eq("target_type", "task")
+    .eq("target_id", taskId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ metadata: Record<string, unknown> | null }>();
+
+  if (error) return null;
+  return normalizeTaskSourceLabel(data?.metadata?.sourceLabel);
+}
+
 async function closeLaborRateTasksForMembers(
   ctx: WritableTeamContext,
   venueId: string,
@@ -398,7 +427,12 @@ async function closeLaborRateTasksForMembers(
     targetType: "task",
     targetId: taskIds[0] ?? null,
     summary: `Автоматически закрыты задачи ФОТ после обновления ставок: ${taskIds.length}.`,
-    metadata: { memberIds: uniqueMemberIds, taskIds, status: "done" },
+    metadata: {
+      memberIds: uniqueMemberIds,
+      taskIds,
+      status: "done",
+      sourceLabel: "ФОТ setup",
+    },
   });
 
   return taskIds;
@@ -1353,13 +1387,19 @@ export async function updateTeamTaskStatusAction(
     return { ok: false, error: "Задача не найдена или нет доступа." };
   }
 
+  const sourceLabel = await findTaskSourceLabel(
+    ctx,
+    parsed.data.venueId,
+    parsed.data.taskId,
+  );
+
   await writeTeamAuditEvent(ctx, {
     venueId: parsed.data.venueId,
     type: "task_status_updated",
     targetType: "task",
     targetId: parsed.data.taskId,
     summary: `Статус задачи обновлен: ${parsed.data.status}.`,
-    metadata: { status: parsed.data.status },
+    metadata: { status: parsed.data.status, sourceLabel },
   });
 
   revalidatePath("/team");

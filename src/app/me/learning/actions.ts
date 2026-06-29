@@ -152,7 +152,13 @@ async function closeLearningAdmissionTasks(input: {
     target_type: "task",
     target_id: taskIds[0] ?? null,
     summary: `Автоматически закрыта задача обучения после сдачи модуля: ${moduleTitle}.`,
-    metadata: { taskIds, memberId, moduleTitle, status: "done" },
+    metadata: {
+      taskIds,
+      memberId,
+      moduleTitle,
+      status: "done",
+      sourceLabel: "Обучение",
+    },
   });
 
   if (auditResult.error && !missingLearningTable(auditResult.error.message)) {
