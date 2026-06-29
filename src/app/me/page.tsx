@@ -22,6 +22,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
 import {
+  getLearningItemByTitle,
   getRoleDayFocus,
   listShiftChecklistForRole,
   type TeamLearningItem,
@@ -42,6 +43,8 @@ import {
   getTeamRole,
   hasAnnouncementRead,
   listCommentsForTask,
+  taskContextWithoutLearningHint,
+  taskLearningHintFromContext,
   type TeamAnnouncement,
   type TeamTask,
   type TeamTaskComment,
@@ -270,6 +273,15 @@ export default async function MyCabinetPage({
   const nextActionTaskContext = nextActionTask
     ? (listCommentsForTask(nextActionTask.id, workspace.comments)[0] ?? null)
     : null;
+  const nextActionLearningTitle = taskLearningHintFromContext(
+    nextActionTaskContext?.body,
+  );
+  const nextActionLearningItem = getLearningItemByTitle(
+    nextActionLearningTitle,
+  );
+  const nextActionContextBody = taskContextWithoutLearningHint(
+    nextActionTaskContext?.body,
+  );
   const nextActionAnnouncement = nextAction?.announcementId
     ? (workspace.announcements.find(
         (announcement) => announcement.id === nextAction.announcementId,
@@ -408,13 +420,29 @@ export default async function MyCabinetPage({
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {nextAction.detail}
                       </p>
-                      {nextActionTaskContext ? (
+                      {nextActionTaskContext && nextActionContextBody ? (
                         <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
                           <span className="font-medium text-foreground/80">
                             {nextActionTaskContext.authorName}:
                           </span>{" "}
-                          {nextActionTaskContext.body}
+                          {nextActionContextBody}
                         </p>
+                      ) : null}
+                      {nextActionLearningTitle ? (
+                        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
+                          <BookOpenCheck className="size-3.5 text-sky-200" />
+                          <span>
+                            Поможет стандарт: {nextActionLearningTitle}
+                          </span>
+                          {nextActionLearningItem ? (
+                            <Link
+                              href={`/me/learning?module=${encodeURIComponent(nextActionLearningItem.id)}`}
+                              className="font-medium text-sky-100 underline-offset-4 hover:underline"
+                            >
+                              Открыть
+                            </Link>
+                          ) : null}
+                        </div>
                       ) : null}
                       {nextActionTask ? (
                         <TaskStatusButtons
@@ -716,6 +744,9 @@ function TaskCard({
   context: TeamTaskComment | null;
 }) {
   const sourceLabel = sourceBadgeLabel(task);
+  const learningTitle = taskLearningHintFromContext(context?.body);
+  const learningItem = getLearningItemByTitle(learningTitle);
+  const contextBody = taskContextWithoutLearningHint(context?.body);
 
   return (
     <article className="rounded-lg border border-border/60 bg-card/50 p-4">
@@ -742,6 +773,14 @@ function TaskCard({
             {task.impactLabel}
           </Badge>
         ) : null}
+        {learningTitle ? (
+          <Badge
+            variant="outline"
+            className="border-sky-400/25 bg-sky-400/10 text-sky-200"
+          >
+            стандарт
+          </Badge>
+        ) : null}
         {task.dueLabel ? (
           <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <Clock3 className="size-3.5" />
@@ -752,13 +791,27 @@ function TaskCard({
       <p className="mt-3 text-sm leading-relaxed text-foreground/90">
         {task.title}
       </p>
-      {context ? (
+      {context && contextBody ? (
         <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
           <span className="font-medium text-foreground/80">
             {context.authorName}:
           </span>{" "}
-          {context.body}
+          {contextBody}
         </p>
+      ) : null}
+      {learningTitle ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
+          <BookOpenCheck className="size-3.5 text-sky-200" />
+          <span>Поможет стандарт: {learningTitle}</span>
+          {learningItem ? (
+            <Link
+              href={`/me/learning?module=${encodeURIComponent(learningItem.id)}`}
+              className="font-medium text-sky-100 underline-offset-4 hover:underline"
+            >
+              Открыть
+            </Link>
+          ) : null}
+        </div>
       ) : null}
       <TaskStatusButtons key={`${task.id}-${task.status}`} task={task} />
     </article>
