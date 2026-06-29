@@ -19,6 +19,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import type { LaborBiSummary } from "@/lib/team/labor-bi";
+import {
+  buildTeamAuditJournal,
+  type TeamAuditJournalCategoryId,
+} from "@/lib/team/team-audit-journal";
 import { buildIikoStaffImportCandidates } from "@/lib/team/team-iiko-staff-import";
 import {
   TEAM_ROLES,
@@ -137,18 +141,6 @@ function resultToMessage(result: TeamActionResult): Message {
   return { tone: "success", text: result.message };
 }
 
-function auditTypeLabel(type: TeamAuditEvent["type"]): string {
-  if (type === "member_invited") return "доступ";
-  if (type === "member_status_updated") return "статус";
-  if (type === "member_password_reset") return "пароль";
-  if (type === "member_labor_rate_updated") return "ФОТ";
-  if (type === "task_created") return "задача";
-  if (type === "task_status_updated") return "статус задачи";
-  if (type === "comment_added") return "комментарий";
-  if (type === "shift_plan_updated") return "график";
-  return "объявление";
-}
-
 function laborReadinessCopy(status: TeamLaborReadinessStatus): {
   title: string;
   detail: string;
@@ -233,6 +225,8 @@ export function TeamActionsPanel({
   const [statusTaskId, setStatusTaskId] = useState(tasks[0]?.id ?? "");
   const [nextStatus, setNextStatus] =
     useState<TeamTask["status"]>("in_progress");
+  const [journalFilter, setJournalFilter] =
+    useState<TeamAuditJournalCategoryId>("all");
 
   const selectableStaff = useMemo(
     () => staff.filter((member) => member.status !== "paused"),
@@ -249,6 +243,17 @@ export function TeamActionsPanel({
   const iikoImportCandidates = useMemo(
     () => buildIikoStaffImportCandidates(laborReadiness.iikoBlockers),
     [laborReadiness.iikoBlockers],
+  );
+  const journal = useMemo(
+    () => buildTeamAuditJournal(auditEvents),
+    [auditEvents],
+  );
+  const visibleJournalEntries = useMemo(
+    () =>
+      journalFilter === "all"
+        ? journal.entries
+        : journal.entries.filter((entry) => entry.categoryId === journalFilter),
+    [journal.entries, journalFilter],
   );
   const hasBulkRateValue = Boolean(
     bulkHourlyRate.trim() || bulkShiftPay.trim() || bulkRevenueBonusPct.trim(),
@@ -1233,20 +1238,55 @@ export function TeamActionsPanel({
                 Журнал
               </p>
               <h3 className="mt-2 text-xl font-medium">Последние действия</h3>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Фильтруйте события по контуру, чтобы быстро понять, что
+                изменилось в ФОТ, обучении, плане смен и задачах.
+              </p>
             </div>
             <History className="size-5 text-brand" />
           </div>
 
+          <div className="mt-5 flex flex-wrap gap-2">
+            {journal.categories.map((category) => {
+              const active = journalFilter === category.id;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setJournalFilter(category.id)}
+                  className={
+                    "inline-flex h-8 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-colors " +
+                    (active
+                      ? "border-brand/45 bg-brand/10 text-brand"
+                      : "border-border/55 bg-background/35 text-muted-foreground hover:border-brand/30 hover:text-foreground")
+                  }
+                  aria-pressed={active}
+                  title={category.description}
+                >
+                  <span>{category.label}</span>
+                  <span className="numeric rounded-md bg-card/70 px-1.5 py-0.5 text-[10px]">
+                    {formatInteger(category.count)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="mt-5 grid gap-3">
-            {auditEvents.length > 0 ? (
-              auditEvents.map((event) => (
+            {visibleJournalEntries.length > 0 ? (
+              visibleJournalEntries.map((event) => (
                 <div
                   key={event.id}
                   className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center"
                 >
-                  <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    {auditTypeLabel(event.type)}
-                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-md border border-brand/25 bg-brand/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
+                      {event.categoryLabel}
+                    </span>
+                    <span className="rounded-md border border-border/60 bg-card/60 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {event.typeLabel}
+                    </span>
+                  </div>
                   <p className="text-sm leading-relaxed text-foreground/90">
                     {event.summary}
                   </p>
@@ -1257,8 +1297,9 @@ export function TeamActionsPanel({
               ))
             ) : (
               <p className="rounded-lg border border-border/45 bg-background/35 p-4 text-sm text-muted-foreground">
-                Журнал появится после первого изменения доступа, задачи или
-                объявления.
+                {auditEvents.length > 0
+                  ? "В этом фильтре пока нет событий."
+                  : "Журнал появится после первого изменения доступа, задачи или объявления."}
               </p>
             )}
           </div>
