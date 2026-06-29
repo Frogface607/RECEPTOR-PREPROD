@@ -16,19 +16,21 @@ type MockResponse = {
 function mockFetch(responses: MockResponse[]) {
   const calls: { url: string; init?: RequestInit }[] = [];
   const queue = [...responses];
-  const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    calls.push({ url: input.toString(), init });
-    const next = queue.shift();
-    if (!next) throw new Error(`unexpected fetch ${input.toString()}`);
-    const body =
-      typeof next.body === "string" ? next.body : JSON.stringify(next.body);
-    return new Response(body, {
-      status: next.status ?? 200,
-      headers: {
-        "Content-Type": next.contentType ?? "application/json",
-      },
-    });
-  });
+  const fetchImpl = vi.fn(
+    async (input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ url: input.toString(), init });
+      const next = queue.shift();
+      if (!next) throw new Error(`unexpected fetch ${input.toString()}`);
+      const body =
+        typeof next.body === "string" ? next.body : JSON.stringify(next.body);
+      return new Response(body, {
+        status: next.status ?? 200,
+        headers: {
+          "Content-Type": next.contentType ?? "application/json",
+        },
+      });
+    },
+  );
   return { fetchImpl, calls };
 }
 
@@ -108,14 +110,27 @@ describe("RmsIikoClient", () => {
       {
         body: {
           data: [
-            { DishName: "A", DishGroup: "Beer", DishDiscountSumInt: 100, DishAmountInt: 2 },
-            { DishName: "B", DishGroup: null, DishDiscountSumInt: 500, DishAmountInt: 3.4 },
+            {
+              DishName: "A",
+              DishGroup: "Beer",
+              DishDiscountSumInt: 100,
+              DishAmountInt: 2,
+            },
+            {
+              DishName: "B",
+              DishGroup: null,
+              DishDiscountSumInt: 500,
+              DishAmountInt: 3.4,
+            },
           ],
         },
       },
     ]);
 
-    const dishes = await client(fetchImpl).getDishStatistics({ type: "TODAY" }, 2);
+    const dishes = await client(fetchImpl).getDishStatistics(
+      { type: "TODAY" },
+      2,
+    );
     expect(dishes[0]).toMatchObject({
       dishName: "B",
       dishGroup: "—",
@@ -174,7 +189,10 @@ describe("RmsIikoClient", () => {
       { status: 400, body: { error: "Unknown field Session.Id" } },
       { status: 400, body: { error: "Unknown field Session.Id" } },
       { status: 400, body: { error: "Unknown field Session.Id" } },
-      { status: 400, body: { error: "Unknown field CashSessionOpenDate.Typed" } },
+      {
+        status: 400,
+        body: { error: "Unknown field CashSessionOpenDate.Typed" },
+      },
       { status: 400, body: { error: "Unknown field SessionDate.Typed" } },
       {
         body: {
@@ -310,7 +328,9 @@ describe("RmsIikoClient", () => {
       },
     ]);
 
-    await expect(client(fetchImpl).probeAssemblyCharts()).resolves.toMatchObject({
+    await expect(
+      client(fetchImpl).probeAssemblyCharts(),
+    ).resolves.toMatchObject({
       status: "ready",
       assemblyCharts: 1,
       normalizedCharts: 1,
@@ -342,6 +362,20 @@ describe("RmsIikoClient", () => {
                 },
               ],
             },
+            {
+              assemblyChartId: "chart-flat",
+              "product.id": "dish-flat",
+              "product.name": "Flat dish",
+              ingredients: [
+                {
+                  "product.id": "flat-flour",
+                  "product.name": "Flat flour",
+                  "product.num": "F-10",
+                  "product.unit.name": "kg",
+                  nettoQty: "0,25",
+                },
+              ],
+            },
           ],
         },
       },
@@ -364,6 +398,22 @@ describe("RmsIikoClient", () => {
           },
         ],
       },
+      {
+        id: "chart-flat",
+        productId: "dish-flat",
+        productName: "Flat dish",
+        name: "Flat dish",
+        items: [
+          {
+            productId: "flat-flour",
+            productName: "Flat flour",
+            article: "F-10",
+            amount: 0.25,
+            unit: "kg",
+            rawField: "ingredients",
+          },
+        ],
+      },
     ]);
   });
 
@@ -373,7 +423,9 @@ describe("RmsIikoClient", () => {
       { status: 403, body: "forbidden", contentType: "text/plain" },
     ]);
 
-    await expect(client(fetchImpl).probeAssemblyCharts()).resolves.toMatchObject({
+    await expect(
+      client(fetchImpl).probeAssemblyCharts(),
+    ).resolves.toMatchObject({
       endpoint: "/resto/api/v2/assemblyCharts/getAll",
       status: "forbidden",
       assemblyCharts: 0,

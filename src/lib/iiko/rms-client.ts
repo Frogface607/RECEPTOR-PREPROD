@@ -48,7 +48,8 @@ type RmsRawRow = Record<string, unknown>;
 
 export type RmsCostFieldProbe = {
   endpoint: string | null;
-  costStatus: "ready" | "menu-prices-only" | "missing-cost-fields" | "unreadable";
+  costStatus:
+    "ready" | "menu-prices-only" | "missing-cost-fields" | "unreadable";
   rawRows: number;
   normalizedProducts: number;
   activeProducts: number;
@@ -200,8 +201,18 @@ const RMS_PRICE_FIELD_ALIASES = [
   "taxRate",
 ] as const;
 const RMS_SHIFT_FIELD_SETS = [
-  ["Session.Id", "SessionOpenDate.Typed", "SessionCloseDate.Typed", "CashierName"],
-  ["Session.Id", "SessionOpenDate.Typed", "SessionCloseDate.Typed", "WaiterName"],
+  [
+    "Session.Id",
+    "SessionOpenDate.Typed",
+    "SessionCloseDate.Typed",
+    "CashierName",
+  ],
+  [
+    "Session.Id",
+    "SessionOpenDate.Typed",
+    "SessionCloseDate.Typed",
+    "WaiterName",
+  ],
   ["Session.Id", "SessionOpenDate.Typed", "SessionCloseDate.Typed"],
   ["CashSessionOpenDate.Typed", "CashSessionCloseDate.Typed", "CashierName"],
   ["SessionDate.Typed", "CashierName"],
@@ -370,7 +381,10 @@ function readOptionalShiftCloseTime(
   return closeTime ? toIsoDateTime(closeTime, "23:59:59") : undefined;
 }
 
-function periodToRange(period: Period, today: string): { from: string; to: string } {
+function periodToRange(
+  period: Period,
+  today: string,
+): { from: string; to: string } {
   const dates = resolvePeriodToDates(period, today);
   if (dates.length === 0) return { from: today, to: today };
   return { from: dates[0], to: dates[dates.length - 1] };
@@ -433,7 +447,10 @@ export class RmsIikoClient implements IikoClient {
       rows.reduce((sum, row) => sum + readNumber(row, "DishAmountInt"), 0),
     );
     const orderCount = Math.round(
-      rows.reduce((sum, row) => sum + readNumber(row, RMS_ORDER_COUNT_FIELD), 0),
+      rows.reduce(
+        (sum, row) => sum + readNumber(row, RMS_ORDER_COUNT_FIELD),
+        0,
+      ),
     );
     const uniqueDishes = await this.getUniqueDishesCount(period);
 
@@ -446,10 +463,7 @@ export class RmsIikoClient implements IikoClient {
     });
   }
 
-  async getDishStatistics(
-    period: Period,
-    topN: number,
-  ): Promise<DishStat[]> {
+  async getDishStatistics(period: Period, topN: number): Promise<DishStat[]> {
     const rows = await this.runOlap(period, {
       groupByRowFields: ["DishName", "DishGroup"],
       aggregateFields: ["DishAmountInt", RMS_REVENUE_FIELD],
@@ -486,16 +500,22 @@ export class RmsIikoClient implements IikoClient {
     const { rows, fields } = await this.runShiftOlap(period);
 
     return rows.map((row, index) => {
-      const date = readFirstText(row, [
-        "SessionOpenDate.Typed",
-        "CashSessionOpenDate.Typed",
-        "SessionDate.Typed",
-        "OpenDate.Typed",
-      ], this.today);
+      const date = readFirstText(
+        row,
+        [
+          "SessionOpenDate.Typed",
+          "CashSessionOpenDate.Typed",
+          "SessionDate.Typed",
+          "OpenDate.Typed",
+        ],
+        this.today,
+      );
       const sessionId = readFirstText(row, ["Session.Id"], "");
       const employee = readFirstText(row, RMS_SHIFT_EMPLOYEE_FIELDS, "Смена");
       return ShiftStatSchema.parse({
-        shiftId: sessionId ? `rms-shift-${sessionId}` : `rms-shift-${date}-${index}`,
+        shiftId: sessionId
+          ? `rms-shift-${sessionId}`
+          : `rms-shift-${date}-${index}`,
         openTime: toIsoDateTime(date, "00:00:00"),
         closeTime: readOptionalShiftCloseTime(row, fields),
         revenue: readNumber(row, RMS_REVENUE_FIELD),
@@ -530,9 +550,7 @@ export class RmsIikoClient implements IikoClient {
         const products = mergeProductsWithRmsPrices(
           normalizeIikoProducts(payload),
           prices,
-        ).filter(
-          (product) => product.active !== false,
-        );
+        ).filter((product) => product.active !== false);
         if (products.length > 0) return products;
       } catch {
         errors.push(`${endpoint}: invalid JSON`);
@@ -605,7 +623,10 @@ export class RmsIikoClient implements IikoClient {
 
         const prices = normalizeRmsPrices(payload);
         const costFieldCounts = countFields(rows, RMS_COST_FIELD_ALIASES);
-        const menuPriceFieldCounts = countFields(rows, RMS_MENU_PRICE_FIELD_ALIASES);
+        const menuPriceFieldCounts = countFields(
+          rows,
+          RMS_MENU_PRICE_FIELD_ALIASES,
+        );
         const costStatus =
           prices.length > 0
             ? ("ready" as const)
@@ -621,7 +642,8 @@ export class RmsIikoClient implements IikoClient {
           costStatus,
           rawRows: rows.length,
           normalizedProducts: products.length,
-          activeProducts: products.filter((product) => product.active !== false).length,
+          activeProducts: products.filter((product) => product.active !== false)
+            .length,
           normalizedPriceRows: prices.length,
           productsWithCachedCost: products.filter((product) =>
             Boolean(product.pricePerKg || product.purchasePricePerUnit),
@@ -729,15 +751,16 @@ export class RmsIikoClient implements IikoClient {
         chartsWithDishLink: normalizedCharts.filter((chart) =>
           Boolean(chart.productId),
         ).length,
-        chartsWithItems: normalizedCharts.filter((chart) => chart.items.length > 0)
-          .length,
+        chartsWithItems: normalizedCharts.filter(
+          (chart) => chart.items.length > 0,
+        ).length,
         totalItems: ingredientRows.length,
         ingredientRows: ingredientRows.length,
         ingredientRowsWithProductLink: ingredientRows.filter((item) =>
           Boolean(item.productId),
         ).length,
-        ingredientRowsWithAmount: ingredientRows.filter((item) =>
-          item.amount !== undefined,
+        ingredientRowsWithAmount: ingredientRows.filter(
+          (item) => item.amount !== undefined,
         ).length,
         ingredientRowsWithUnit: ingredientRows.filter((item) =>
           Boolean(item.unit),
@@ -834,7 +857,11 @@ export class RmsIikoClient implements IikoClient {
       try {
         const payload = JSON.parse(text) as
           | Array<Record<string, unknown>>
-          | { organizations?: Array<Record<string, unknown>>; data?: Array<Record<string, unknown>>; items?: Array<Record<string, unknown>> };
+          | {
+              organizations?: Array<Record<string, unknown>>;
+              data?: Array<Record<string, unknown>>;
+              items?: Array<Record<string, unknown>>;
+            };
         const rows = Array.isArray(payload)
           ? payload
           : (payload.organizations ?? payload.data ?? payload.items ?? []);
@@ -901,31 +928,34 @@ export class RmsIikoClient implements IikoClient {
   ): Promise<RmsOlapRow[]> {
     const key = await this.getSessionKey();
     const { from, to } = periodToRange(period, this.today);
-    const res = await this.fetchImpl(this.url("/resto/api/v2/reports/olap", { key }), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        Accept: "application/json",
-        "User-Agent": "Receptor-iiko-RMS-Client/2.0",
-      },
-      body: JSON.stringify({
-        reportType: "SALES",
-        buildSummary: true,
-        groupByRowFields: params.groupByRowFields,
-        groupByColFields: [],
-        aggregateFields: params.aggregateFields,
-        filters: {
-          "OpenDate.Typed": {
-            filterType: "DateRange",
-            periodType: "CUSTOM",
-            from,
-            to,
-            includeLow: true,
-            includeHigh: true,
-          },
+    const res = await this.fetchImpl(
+      this.url("/resto/api/v2/reports/olap", { key }),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          Accept: "application/json",
+          "User-Agent": "Receptor-iiko-RMS-Client/2.0",
         },
-      }),
-    });
+        body: JSON.stringify({
+          reportType: "SALES",
+          buildSummary: true,
+          groupByRowFields: params.groupByRowFields,
+          groupByColFields: [],
+          aggregateFields: params.aggregateFields,
+          filters: {
+            "OpenDate.Typed": {
+              filterType: "DateRange",
+              periodType: "CUSTOM",
+              from,
+              to,
+              includeLow: true,
+              includeHigh: true,
+            },
+          },
+        }),
+      },
+    );
 
     if (!res.ok) {
       throw new Error(
@@ -938,7 +968,11 @@ export class RmsIikoClient implements IikoClient {
   }
 
   private async getSessionKey(forceRefresh = false): Promise<string> {
-    if (!forceRefresh && this.sessionKey && Date.now() < this.sessionExpiresAt) {
+    if (
+      !forceRefresh &&
+      this.sessionKey &&
+      Date.now() < this.sessionExpiresAt
+    ) {
       return this.sessionKey;
     }
 
@@ -1005,7 +1039,10 @@ function extractPreparedCharts(payload: unknown): RmsRawRow[] {
 }
 
 function normalizeAssemblyChart(chart: RmsRawRow): RmsAssemblyChart {
-  const productId = readFirstStringPath(chart, RMS_ASSEMBLY_CHART_PRODUCT_ID_PATHS);
+  const productId = readFirstStringPath(
+    chart,
+    RMS_ASSEMBLY_CHART_PRODUCT_ID_PATHS,
+  );
   const productName = readFirstStringPath(chart, RMS_ASSEMBLY_CHART_NAME_PATHS);
 
   return {
@@ -1042,8 +1079,14 @@ function normalizeAssemblyChartIngredient(
     row,
     RMS_ASSEMBLY_INGREDIENT_PRODUCT_ID_PATHS,
   );
-  const productName = readFirstStringPath(row, RMS_ASSEMBLY_INGREDIENT_NAME_PATHS);
-  const article = readFirstStringPath(row, RMS_ASSEMBLY_INGREDIENT_ARTICLE_PATHS);
+  const productName = readFirstStringPath(
+    row,
+    RMS_ASSEMBLY_INGREDIENT_NAME_PATHS,
+  );
+  const article = readFirstStringPath(
+    row,
+    RMS_ASSEMBLY_INGREDIENT_ARTICLE_PATHS,
+  );
   const amount = readFirstPositiveNumberPath(
     row,
     RMS_ASSEMBLY_INGREDIENT_AMOUNT_PATHS,
@@ -1088,7 +1131,10 @@ function readFirstPositiveNumberPath(
     const value = readPath(row, path);
     if (!hasMeaningfulValue(value)) continue;
 
-    const parsed = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+    const parsed =
+      typeof value === "number"
+        ? value
+        : Number(String(value).replace(",", "."));
     if (Number.isFinite(parsed) && parsed > 0) return parsed;
   }
 
@@ -1101,13 +1147,16 @@ function countFields(
 ): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const field of fields) {
-    const count = rows.filter((row) => hasMeaningfulValue(readPath(row, field))).length;
+    const count = rows.filter((row) =>
+      hasMeaningfulValue(readPath(row, field)),
+    ).length;
     if (count > 0) counts[field] = count;
   }
   return counts;
 }
 
 function readPath(row: RmsRawRow, path: string): unknown {
+  if (Object.prototype.hasOwnProperty.call(row, path)) return row[path];
   if (!path.includes(".")) return row[path];
 
   let current: unknown = row;
@@ -1118,7 +1167,10 @@ function readPath(row: RmsRawRow, path: string): unknown {
   return current;
 }
 
-function topFieldCounts(rows: RmsRawRow[], limit: number): Record<string, number> {
+function topFieldCounts(
+  rows: RmsRawRow[],
+  limit: number,
+): Record<string, number> {
   const counts = new Map<string, number>();
   rows.forEach((row) => {
     Object.keys(row).forEach((field) => {
