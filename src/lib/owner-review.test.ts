@@ -284,15 +284,16 @@ describe("buildOwnerReview", () => {
     expect(review.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "Низкая выручка на человеко-час",
+          title: "Разобрать слабую смену",
           target: "shift-diagnostics",
           role: "manager",
           tone: "watch",
+          impactLabel: "ФОТ 10%",
         }),
       ]),
     );
     expect(review.tasks[0]).toMatchObject({
-      title: expect.stringContaining("Низкая выручка на человеко-час"),
+      title: "Разобрать слабую смену",
       priority: "medium",
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",

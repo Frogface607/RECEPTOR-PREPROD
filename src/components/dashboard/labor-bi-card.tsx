@@ -85,27 +85,37 @@ export function LaborBiCard({
             className:
               "border-destructive/35 bg-destructive/10 text-destructive",
           }
-        : labor.laborReadinessStatus === "ready"
+        : nextAction.kind === "low-productivity"
           ? {
-              label: "ФОТ считается",
-              title: "Стоимость смен под контролем",
-              detail: `Ставки заведены, точность ФОТ ${coverageLabel}. Можно сравнивать выручку, человеко-часы и нагрузку команды.`,
-              className: "border-brand/35 bg-brand/10 text-brand",
+              label: "Слабая смена",
+              title: "ФОТ считается, но команда не добрала выручку",
+              detail:
+                "Ставки закрыты. Следующий разбор — где смена дала мало выручки на человеко-час: лишние руки, слабые часы, посадка или средний чек.",
+              className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
             }
-          : labor.laborReadinessStatus === "partial"
+          : labor.laborReadinessStatus === "ready"
             ? {
-                label: "ФОТ частичный",
-                title: "ФОТ считается не по всем сменам",
-                detail: `Точная часть покрывает ${coverageLabel} сменной выручки. ${formatRubles(labor.unpricedRevenue)} пока без ставки или карточки сотрудника.`,
-                className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
+                label: "ФОТ считается",
+                title: "Стоимость смен под контролем",
+                detail: `Ставки заведены, точность ФОТ ${coverageLabel}. Можно сравнивать выручку, человеко-часы и нагрузку команды.`,
+                className: "border-brand/35 bg-brand/10 text-brand",
               }
-            : {
-                label: "ФОТ не доказан",
-                title: "Смены видны, но ФОТ еще нельзя считать",
-                detail:
-                  "Receptor видит смены и часы, но не нашел ни одной точной ставки. Сначала свяжите сотрудников и задайте правила ФОТ в Team OS.",
-                className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
-              };
+            : labor.laborReadinessStatus === "partial"
+              ? {
+                  label: "ФОТ частичный",
+                  title: "ФОТ считается не по всем сменам",
+                  detail: `Точная часть покрывает ${coverageLabel} сменной выручки. ${formatRubles(labor.unpricedRevenue)} пока без ставки или карточки сотрудника.`,
+                  className:
+                    "border-amber-400/35 bg-amber-400/10 text-amber-200",
+                }
+              : {
+                  label: "ФОТ не доказан",
+                  title: "Смены видны, но ФОТ еще нельзя считать",
+                  detail:
+                    "Receptor видит смены и часы, но не нашел ни одной точной ставки. Сначала свяжите сотрудников и задайте правила ФОТ в Team OS.",
+                  className:
+                    "border-amber-400/35 bg-amber-400/10 text-amber-200",
+                };
 
   const topEmployees = labor.employees.slice(0, 4);
   const topBlockers = labor.topBlockers.slice(0, 3);
@@ -314,7 +324,7 @@ function buildLaborActionHref(
     );
   }
 
-  if (action.kind === "expensive-labor") {
+  if (action.kind === "expensive-labor" || action.kind === "low-productivity") {
     return `${path}#iiko-shift-diagnostics`;
   }
 
@@ -511,7 +521,8 @@ function LaborNextActionCard({
       ? "Добавить в Team OS"
       : action.kind === "missing-rate"
         ? "Открыть ставку"
-        : action.kind === "expensive-labor"
+        : action.kind === "expensive-labor" ||
+            action.kind === "low-productivity"
           ? "Открыть смены"
           : "Открыть Team OS";
 

@@ -107,7 +107,8 @@ export type LaborNextActionKind =
   | "missing-shifts"
   | "missing-member"
   | "missing-rate"
-  | "expensive-labor";
+  | "expensive-labor"
+  | "low-productivity";
 
 export type LaborNextAction = {
   kind: LaborNextActionKind;
@@ -124,10 +125,7 @@ export type LaborInsightOptions = {
 };
 
 export type LaborShiftDiagnosticKind =
-  | "missing-rates"
-  | "expensive-labor"
-  | "low-productivity"
-  | "healthy";
+  "missing-rates" | "expensive-labor" | "low-productivity" | "healthy";
 
 export type LaborShiftDiagnostic = LaborShiftSummary & {
   kind: LaborShiftDiagnosticKind;
@@ -138,10 +136,7 @@ export type LaborShiftDiagnostic = LaborShiftSummary & {
 };
 
 export type LaborEmployeeDiagnosticKind =
-  | "missing-rate"
-  | "expensive-employee"
-  | "low-productivity"
-  | "healthy";
+  "missing-rate" | "expensive-employee" | "low-productivity" | "healthy";
 
 export type LaborEmployeeDiagnostic = LaborEmployeeSummary & {
   kind: LaborEmployeeDiagnosticKind;
@@ -156,7 +151,9 @@ export function buildLaborBi(input: {
   staff?: StaffMember[];
   rates?: LaborRate[];
 }): LaborBiSummary {
-  const staffById = new Map((input.staff ?? []).map((member) => [member.id, member]));
+  const staffById = new Map(
+    (input.staff ?? []).map((member) => [member.id, member]),
+  );
   const employeeTotals = new Map<string, MutableEmployeeSummary>();
   let pricedStaffShifts = 0;
   let unpricedStaffShifts = 0;
@@ -232,7 +229,10 @@ export function buildLaborBi(input: {
     laborCostPct: pct(laborCost, revenue),
     revenuePerLaborHour: ratio(revenue, staffHours),
     averageStaffPerShift: round(ratio(staffShifts, input.shifts.length) ?? 0),
-    missingRates: shiftsBreakdown.reduce((total, shift) => total + shift.missingRates, 0),
+    missingRates: shiftsBreakdown.reduce(
+      (total, shift) => total + shift.missingRates,
+      0,
+    ),
     pricedStaffShifts,
     unpricedStaffShifts,
     pricedRevenue: roundedPricedRevenue,
@@ -292,7 +292,8 @@ export function buildLaborInsights(
     insights.push({
       tone: "setup",
       title: "ФОТ сейчас считается как 0 ₽",
-      detail: "Смены есть, но по ним нет ни почасовой ставки, ни фикса за смену, ни процента от продаж.",
+      detail:
+        "Смены есть, но по ним нет ни почасовой ставки, ни фикса за смену, ни процента от продаж.",
       action: "Задайте хотя бы один тип ставки для сотрудников на смене.",
     });
   }
@@ -307,7 +308,10 @@ export function buildLaborInsights(
   }
 
   const expensiveShift = labor.shiftsBreakdown
-    .filter((shift) => shift.laborCostPct !== null && shift.laborCostPct > targetLaborCostPct)
+    .filter(
+      (shift) =>
+        shift.laborCostPct !== null && shift.laborCostPct > targetLaborCostPct,
+    )
     .sort((a, b) => (b.laborCostPct ?? 0) - (a.laborCostPct ?? 0))[0];
   if (expensiveShift) {
     insights.push({
@@ -326,7 +330,8 @@ export function buildLaborInsights(
       tone: "watch",
       title: "Выручка на человеко-час ниже цели",
       detail: `${formatMoney(labor.revenuePerLaborHour)} на час при ориентире ${formatMoney(minimumRevenuePerLaborHour)}.`,
-      action: "Проверьте слабые часы, лишние руки на смене и продажи официантов.",
+      action:
+        "Проверьте слабые часы, лишние руки на смене и продажи официантов.",
     });
   }
 
@@ -335,7 +340,8 @@ export function buildLaborInsights(
       tone: "good",
       title: "ФОТ выглядит управляемо",
       detail: `ФОТ ${formatPct(labor.laborCostPct)} от выручки, ${formatMoney(labor.revenuePerLaborHour)} на человеко-час.`,
-      action: "Сравните с маржинальностью блюд и держите этот уровень как базу.",
+      action:
+        "Сравните с маржинальностью блюд и держите этот уровень как базу.",
     });
   }
 
@@ -347,6 +353,7 @@ export function buildLaborNextAction(
   options: LaborInsightOptions = {},
 ): LaborNextAction {
   const targetLaborCostPct = options.targetLaborCostPct ?? 25;
+  const minimumRevenuePerLaborHour = options.minimumRevenuePerLaborHour ?? 6000;
 
   if (labor.staffShifts === 0) {
     return {
@@ -399,6 +406,32 @@ export function buildLaborNextAction(
       action: "Сверьте расписание, роли, часы и загрузку зала на этой смене.",
       blocker: null,
       shift: expensiveShift,
+    };
+  }
+
+  const lowProductivityShift = labor.shiftsBreakdown
+    .filter(
+      (shift) =>
+        shift.revenuePerHour !== null &&
+        shift.revenuePerHour < minimumRevenuePerLaborHour,
+    )
+    .sort(
+      (a, b) =>
+        minimumRevenuePerLaborHour -
+          (b.revenuePerHour ?? 0) -
+          (minimumRevenuePerLaborHour - (a.revenuePerHour ?? 0)) ||
+        b.revenue - a.revenue,
+    )[0];
+
+  if (lowProductivityShift) {
+    return {
+      kind: "low-productivity",
+      title: "Разобрать слабую смену",
+      detail: `${formatShiftDate(lowProductivityShift.openTime)}: ${formatMoney(lowProductivityShift.revenuePerHour)} на человеко-час при ориентире ${formatMoney(minimumRevenuePerLaborHour)}.`,
+      action:
+        "Сверьте состав смены, слабые часы, посадку и задачи на средний чек.",
+      blocker: null,
+      shift: lowProductivityShift,
     };
   }
 
@@ -526,18 +559,27 @@ function normalizeName(value: string): string {
   return normalizeTeamMemberName(value);
 }
 
-function resolveRate(worker: LaborShiftWorker, rates: LaborRate[]): LaborRate | null {
-  if (worker.hourlyRate || worker.shiftPay || worker.revenueBonusPct) return worker;
+function resolveRate(
+  worker: LaborShiftWorker,
+  rates: LaborRate[],
+): LaborRate | null {
+  if (worker.hourlyRate || worker.shiftPay || worker.revenueBonusPct)
+    return worker;
   return (
     (worker.memberId
       ? rates.find((rate) => rate.memberId === worker.memberId)
       : undefined) ??
-    (worker.roleId ? rates.find((rate) => rate.roleId === worker.roleId) : undefined) ??
+    (worker.roleId
+      ? rates.find((rate) => rate.roleId === worker.roleId)
+      : undefined) ??
     null
   );
 }
 
-function resolveHours(worker: LaborShiftWorker, shift: LaborShiftInput): number {
+function resolveHours(
+  worker: LaborShiftWorker,
+  shift: LaborShiftInput,
+): number {
   if (typeof worker.hours === "number" && Number.isFinite(worker.hours)) {
     return Math.max(worker.hours, 0);
   }
@@ -548,7 +590,11 @@ function resolveHours(worker: LaborShiftWorker, shift: LaborShiftInput): number 
 
   const started = Date.parse(startedAt);
   const ended = Date.parse(endedAt);
-  if (!Number.isFinite(started) || !Number.isFinite(ended) || ended <= started) {
+  if (
+    !Number.isFinite(started) ||
+    !Number.isFinite(ended) ||
+    ended <= started
+  ) {
     return 0;
   }
 
@@ -565,17 +611,27 @@ function calculateWorkerCost(
   const shiftPay = worker.shiftPay ?? rate?.shiftPay ?? 0;
   const revenueBonusPct = worker.revenueBonusPct ?? rate?.revenueBonusPct ?? 0;
 
-  return roundMoney(hours * hourlyRate + shiftPay + sales * (revenueBonusPct / 100));
+  return roundMoney(
+    hours * hourlyRate + shiftPay + sales * (revenueBonusPct / 100),
+  );
 }
 
-function isMissingRate(worker: LaborShiftWorker, rate: LaborRate | null): boolean {
-  return !worker.hourlyRate && !worker.shiftPay && !worker.revenueBonusPct && !rate;
+function isMissingRate(
+  worker: LaborShiftWorker,
+  rate: LaborRate | null,
+): boolean {
+  return (
+    !worker.hourlyRate && !worker.shiftPay && !worker.revenueBonusPct && !rate
+  );
 }
 
 function upsertEmployee(
   map: Map<string, MutableEmployeeSummary>,
   worker: LaborShiftWorker,
-  delta: Pick<MutableEmployeeSummary, "hours" | "sales" | "laborCost" | "missingRate">,
+  delta: Pick<
+    MutableEmployeeSummary,
+    "hours" | "sales" | "laborCost" | "missingRate"
+  >,
 ): void {
   const key = worker.memberId ?? worker.name;
   const current =
@@ -599,7 +655,9 @@ function upsertEmployee(
   map.set(key, current);
 }
 
-function finalizeEmployee(employee: MutableEmployeeSummary): LaborEmployeeSummary {
+function finalizeEmployee(
+  employee: MutableEmployeeSummary,
+): LaborEmployeeSummary {
   return {
     ...employee,
     hours: round(employee.hours),
@@ -624,7 +682,9 @@ function buildLaborBlockers(employees: LaborEmployeeSummary[]): LaborBlocker[] {
         ? ("missing-rate" as const)
         : ("missing-member" as const),
     }))
-    .sort((a, b) => b.sales - a.sales || b.hours - a.hours || b.shifts - a.shifts)
+    .sort(
+      (a, b) => b.sales - a.sales || b.hours - a.hours || b.shifts - a.shifts,
+    )
     .slice(0, 5);
 }
 
@@ -633,7 +693,8 @@ function resolveLaborReadinessStatus(input: {
   pricedStaffShifts: number;
   unpricedStaffShifts: number;
 }): LaborReadinessStatus {
-  if (input.staffShifts === 0 || input.pricedStaffShifts === 0) return "blocked";
+  if (input.staffShifts === 0 || input.pricedStaffShifts === 0)
+    return "blocked";
   if (input.unpricedStaffShifts > 0) return "partial";
   return "ready";
 }
@@ -758,7 +819,8 @@ function decorateEmployeeDiagnostic(
     tone: "good",
     title: "Сотрудник выглядит управляемо",
     detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)}, ${formatMoney(employee.revenuePerHour)} на час.`,
-    action: "Держите как рабочий ориентир и сравнивайте с маржинальностью продаж.",
+    action:
+      "Держите как рабочий ориентир и сравнивайте с маржинальностью продаж.",
   };
 }
 

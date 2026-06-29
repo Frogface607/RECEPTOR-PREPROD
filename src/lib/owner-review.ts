@@ -1410,6 +1410,21 @@ function ownerActionFromLabor(input: LaborBiSummary): OwnerReviewAction | null {
     };
   }
 
+  if (nextAction.kind === "low-productivity") {
+    return {
+      title: nextAction.title,
+      detail: nextAction.detail,
+      role: "manager",
+      tone: "watch",
+      target: "shift-diagnostics",
+      impactLabel: nextAction.shift
+        ? laborShiftImpact(nextAction.shift)
+        : undefined,
+      sourceLabel: "ФОТ и смены",
+      taskTitle: nextAction.title,
+    };
+  }
+
   return null;
 }
 

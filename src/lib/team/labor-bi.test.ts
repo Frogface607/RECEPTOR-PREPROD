@@ -297,9 +297,9 @@ describe("buildLaborBi", () => {
     expect(insights.map((item) => item.title)).toContain(
       "ФОТ выше целевой нормы",
     );
-    expect(insights.some((item) => item.title.startsWith("Дорогая смена"))).toBe(
-      true,
-    );
+    expect(
+      insights.some((item) => item.title.startsWith("Дорогая смена")),
+    ).toBe(true);
     expect(insights.some((item) => item.title.includes("человеко-час"))).toBe(
       true,
     );
@@ -474,5 +474,48 @@ describe("buildLaborBi", () => {
       "expensive-labor",
       "healthy",
     ]);
+  });
+
+  test("promotes low revenue per labor hour as the next action after rates are ready", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "slow-shift",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 40000,
+          items: 120,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Мария",
+              hours: 10,
+              shiftPay: 3000,
+              sales: 20000,
+            },
+            {
+              name: "Илья",
+              hours: 10,
+              shiftPay: 3000,
+              sales: 20000,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(
+      buildLaborNextAction(labor, {
+        targetLaborCostPct: 25,
+        minimumRevenuePerLaborHour: 6000,
+      }),
+    ).toMatchObject({
+      kind: "low-productivity",
+      title: "Разобрать слабую смену",
+      shift: expect.objectContaining({
+        shiftId: "slow-shift",
+        revenuePerHour: 2000,
+      }),
+    });
   });
 });
