@@ -115,6 +115,7 @@ function readinessHref(
 }
 
 function actionCta(action: OwnerReviewAction): string {
+  if (action.existingTaskId) return "Открыть задачу";
   if (action.target === "margin-risk") return "Разобрать";
   if (action.target === "iiko-settings") return "Открыть iiko";
   if (action.target === "labor-member" && action.memberId) return "Открыть";
