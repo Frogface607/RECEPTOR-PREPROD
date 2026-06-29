@@ -522,6 +522,33 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("keeps shift economics in the first owner evidence tiles", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+    });
+
+    expect(review.evidence.slice(0, 4).map((item) => item.label)).toEqual([
+      "Деньги",
+      "ФОТ",
+      "Маржа",
+      "Экономика",
+    ]);
+    expect(review.evidence[3]).toMatchObject({
+      value: "связана",
+      tone: "good",
+      detail: expect.stringContaining("Себестоимость покрывает"),
+    });
+  });
+
   test("asks to check RMS prices when linked items have no cost", () => {
     const margin = buildMenuMarginReadiness({
       dishes,

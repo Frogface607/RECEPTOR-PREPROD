@@ -1056,6 +1056,13 @@ function unitEconomicsEvidence(input: {
 
   const labor = input.labor;
   const margin = input.margin;
+  const bridge =
+    labor && margin
+      ? buildLaborMarginBridge({
+          labor,
+          margin,
+        })
+      : null;
   const laborIncomplete =
     Boolean(labor) && labor?.laborReadinessStatus !== "ready";
   const marginIncomplete = Boolean(margin) && margin?.status !== "ready";
@@ -1069,7 +1076,9 @@ function unitEconomicsEvidence(input: {
     return {
       label: "Экономика",
       value: "не доказана",
-      detail: `ФОТ покрыт на ${laborCoverage}, маржа на ${marginCoverage} выручки.`,
+      detail: bridge
+        ? `${bridge.title}: ФОТ покрыт на ${laborCoverage}, маржа на ${marginCoverage} выручки.`
+        : `ФОТ покрыт на ${laborCoverage}, маржа на ${marginCoverage} выручки.`,
       tone: "risk",
     };
   }
@@ -1087,7 +1096,9 @@ function unitEconomicsEvidence(input: {
     return {
       label: "Экономика",
       value: "маржа не доказана",
-      detail: `${formatRubles(margin.blockedRevenue)} выручки без себестоимости.`,
+      detail: bridge
+        ? bridge.detail
+        : `${formatRubles(margin.blockedRevenue)} выручки без себестоимости.`,
       tone: margin.status === "blocked" ? "risk" : "watch",
     };
   }
@@ -1096,16 +1107,22 @@ function unitEconomicsEvidence(input: {
     return {
       label: "Экономика",
       value: "ФОТ давит",
-      detail: `ФОТ ${formatCoverage(laborPct)} от выручки, маржа покрыта на ${marginCoverage}.`,
+      detail:
+        bridge && bridge.tone !== "good"
+          ? bridge.detail
+          : `ФОТ ${formatCoverage(laborPct)} от выручки, маржа покрыта на ${marginCoverage}.`,
       tone: "risk",
     };
   }
 
   return {
     label: "Экономика",
-    value: "можно считать",
-    detail: `ФОТ ${formatCoverage(laborPct)}, маржа покрыта на ${marginCoverage}.`,
-    tone: "good",
+    value: bridge?.tone === "good" ? "связана" : "можно считать",
+    detail:
+      bridge?.tone === "good"
+        ? bridge.detail
+        : `ФОТ ${formatCoverage(laborPct)}, маржа покрыта на ${marginCoverage}.`,
+    tone: bridge ? ownerToneFromLaborBridge(bridge.tone) : "good",
   };
 }
 
@@ -1695,6 +1712,13 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     },
     ...(input.labor ? [laborEvidence(input.labor)] : []),
     ...(input.margin ? [marginEvidence(input.margin)] : []),
+    ...(() => {
+      const evidence = unitEconomicsEvidence({
+        labor: input.labor,
+        margin: input.margin,
+      });
+      return evidence ? [evidence] : [];
+    })(),
     ...(input.team ? [teamEvidence(input.team)] : []),
     ...(operationalProof ? [operationalProofEvidence(operationalProof)] : []),
     ...(() => {
@@ -1707,13 +1731,6 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       const evidence = input.shiftPlanVariance
         ? shiftPlanVarianceEvidence(input.shiftPlanVariance)
         : null;
-      return evidence ? [evidence] : [];
-    })(),
-    ...(() => {
-      const evidence = unitEconomicsEvidence({
-        labor: input.labor,
-        margin: input.margin,
-      });
       return evidence ? [evidence] : [];
     })(),
     {
