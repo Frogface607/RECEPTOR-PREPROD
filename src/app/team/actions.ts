@@ -10,6 +10,10 @@ import { normalizeIikoStaffName } from "@/lib/team/team-iiko-staff-import";
 import { listLearningItemsForRole } from "@/lib/team/team-learning";
 import type { TeamLearningStandardStatus } from "@/lib/team/team-learning-standards";
 import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
+import {
+  normalizeTaskImpactLabel,
+  normalizeTaskSourceLabel,
+} from "@/lib/team/team-task-labels";
 import { selectLaborRateTasksToClose } from "@/lib/team/team-task-autoresolve";
 
 const TeamRoleIdSchema = z.enum(
@@ -477,15 +481,6 @@ async function addTaskContextComment(
   return true;
 }
 
-function normalizeTaskSourceLabel(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const normalized = value.replace(/\s+/g, " ").trim();
-  if (!normalized) return null;
-  return normalized.length > 80
-    ? `${normalized.slice(0, 77).trim()}...`
-    : normalized;
-}
-
 async function findTaskContextLabels(
   ctx: WritableTeamContext,
   venueId: string,
@@ -509,7 +504,7 @@ async function findTaskContextLabels(
   if (error) return { sourceLabel: null, impactLabel: null };
   return {
     sourceLabel: normalizeTaskSourceLabel(data?.metadata?.sourceLabel),
-    impactLabel: normalizeTaskSourceLabel(data?.metadata?.impactLabel),
+    impactLabel: normalizeTaskImpactLabel(data?.metadata?.impactLabel),
   };
 }
 

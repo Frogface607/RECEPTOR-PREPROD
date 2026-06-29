@@ -26,6 +26,10 @@ import {
   type TeamLearningStandardOverride,
 } from "./team-learning-standards";
 import type { TeamShiftPlan } from "./team-shift-plan";
+import {
+  normalizeTaskImpactLabel,
+  normalizeTaskSourceLabel,
+} from "./team-task-labels";
 
 type DbMembership = {
   id: string;
@@ -254,26 +258,6 @@ function normalizeMoney(value: number | string | null | undefined): number {
     if (Number.isFinite(parsed) && parsed >= 0) return parsed;
   }
   return 0;
-}
-
-function normalizeTaskSourceLabel(
-  value: string | null | undefined,
-): string | undefined {
-  if (!value?.trim()) return undefined;
-  const normalized = value.replace(/\s+/g, " ").trim();
-  return normalized.length > 80
-    ? `${normalized.slice(0, 77).trim()}...`
-    : normalized;
-}
-
-function normalizeTaskImpactLabel(
-  value: string | null | undefined,
-): string | undefined {
-  if (!value?.trim()) return undefined;
-  const normalized = value.replace(/\s+/g, " ").trim();
-  return normalized.length > 80
-    ? `${normalized.slice(0, 77).trim()}...`
-    : normalized;
 }
 
 export function mapTaskRow(
