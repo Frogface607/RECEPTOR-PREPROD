@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useEffect,
   useMemo,
   useState,
   useTransition,
@@ -39,6 +38,7 @@ import {
   type TeamRoleId,
   type TeamTask,
 } from "@/lib/team/team-os";
+import { buildTeamTaskQueue } from "@/lib/team/team-task-queue";
 import {
   buildBulkLaborRateTargets,
   buildTeamLaborReadiness,
@@ -84,9 +84,9 @@ const TASK_STATUSES: Array<{ value: TeamTask["status"]; label: string }> = [
 ];
 
 const TASK_PRIORITIES: Array<{ value: TeamTask["priority"]; label: string }> = [
-  { value: "high", label: "high" },
-  { value: "medium", label: "medium" },
-  { value: "low", label: "low" },
+  { value: "high", label: "срочно" },
+  { value: "medium", label: "обычно" },
+  { value: "low", label: "низкий" },
 ];
 
 const FIELD_CLASS =
@@ -149,6 +149,30 @@ function resultToMessage(result: TeamActionResult): Message {
   return { tone: "success", text: result.message };
 }
 
+function taskStatusLabel(status: TeamTask["status"]): string {
+  return TASK_STATUSES.find((item) => item.value === status)?.label ?? status;
+}
+
+function taskPriorityLabel(priority: TeamTask["priority"]): string {
+  return (
+    TASK_PRIORITIES.find((item) => item.value === priority)?.label ?? priority
+  );
+}
+
+function taskAudienceLabel(task: TeamTask, staff: StaffMember[]): string {
+  const audience = task.audience;
+  if (audience.type === "venue") return "всему заведению";
+  if (audience.type === "role") {
+    return (
+      TEAM_ROLES.find((role) => role.id === audience.roleId)?.title ?? "роли"
+    );
+  }
+  return (
+    staff.find((member) => member.id === audience.memberId)?.name ??
+    "сотруднику"
+  );
+}
+
 function laborReadinessCopy(status: TeamLaborReadinessStatus): {
   title: string;
   detail: string;
@@ -202,9 +226,11 @@ export function TeamActionsPanel({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Message | null>(null);
-  const focusedTask = focusTaskId
-    ? tasks.find((task) => task.id === focusTaskId)
-    : undefined;
+  const taskQueue = useMemo(
+    () => buildTeamTaskQueue(tasks, focusTaskId),
+    [tasks, focusTaskId],
+  );
+  const focusedTask = taskQueue.focusedTask?.task;
 
   const [memberName, setMemberName] = useState(prefillMemberName);
   const [memberEmail, setMemberEmail] = useState("");
@@ -294,10 +320,6 @@ export function TeamActionsPanel({
         ? missingRateNames
         : "ставки заведены";
 
-  useEffect(() => {
-    if (focusedTask?.id) setStatusTaskId(focusedTask.id);
-  }, [focusedTask?.id]);
-
   function runAction(action: () => Promise<TeamActionResult>) {
     setMessage(null);
     startTransition(async () => {
@@ -305,6 +327,21 @@ export function TeamActionsPanel({
       setMessage(resultToMessage(result));
       if (result.ok) router.refresh();
     });
+  }
+
+  function updateTaskStatus(
+    taskId: string,
+    status: TeamTask["status"],
+  ): void {
+    setStatusTaskId(taskId);
+    setNextStatus(status);
+    runAction(() =>
+      updateTeamTaskStatusAction({
+        venueId,
+        taskId,
+        status,
+      }),
+    );
   }
 
   async function copyLogin(member: StaffMember) {
@@ -722,6 +759,94 @@ export function TeamActionsPanel({
                 Открыта задача из экрана владельца: «{focusedTask.title}».
               </p>
             ) : null}
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <TeamMetric
+                label="Открыто"
+                value={`${taskQueue.openCount}`}
+                detail="в работе"
+              />
+              <TeamMetric
+                label="Сейчас"
+                value={`${taskQueue.inProgressCount}`}
+                detail="исполняется"
+              />
+              <TeamMetric
+                label="Закрыто"
+                value={`${taskQueue.completedCount}`}
+                detail={`из ${taskQueue.totalCount}`}
+              />
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {taskQueue.openTasks.length > 0 ? (
+                taskQueue.openTasks.slice(0, 6).map(({ task, focused }) => (
+                  <div
+                    key={task.id}
+                    className={
+                      "rounded-lg border p-3 " +
+                      (focused
+                        ? "border-brand/45 bg-brand/10"
+                        : "border-border/45 bg-background/35")
+                    }
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setStatusTaskId(task.id)}
+                      className="block w-full text-left"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-md border border-border/55 bg-card/60 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                          {taskPriorityLabel(task.priority)}
+                        </span>
+                        <span className="rounded-md border border-brand/25 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                          {taskStatusLabel(task.status)}
+                        </span>
+                        {task.sourceLabel ? (
+                          <span className="rounded-md border border-border/55 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                            {task.sourceLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
+                        {task.title}
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        {taskAudienceLabel(task, staff)} · {task.dueLabel}
+                      </p>
+                    </button>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {task.status !== "in_progress" ? (
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() =>
+                            updateTaskStatus(task.id, "in_progress")
+                          }
+                          className="inline-flex h-8 items-center justify-center rounded-lg border border-border/60 bg-background/50 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/35 hover:text-brand disabled:opacity-45"
+                        >
+                          В работу
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => updateTaskStatus(task.id, "done")}
+                        className="inline-flex h-8 items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15 disabled:opacity-45"
+                      >
+                        Сделано
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm leading-relaxed text-muted-foreground">
+                  Открытых задач нет. Новые задачи из Owner Dashboard появятся
+                  здесь, чтобы управляющий сразу вел их до результата.
+                </p>
+              )}
+            </div>
+
             <div className="mt-5 space-y-3">
               <FieldLabel label="Задача">
                 <select
