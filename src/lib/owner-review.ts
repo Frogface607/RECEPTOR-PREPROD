@@ -792,6 +792,28 @@ function urgentTasksLabel(count: number): string {
   return `${count} ${taskWord(count, "срочная задача", "срочные задачи", "срочных задач")} Team OS`;
 }
 
+function readinessCoverageLine(input: {
+  dataMode: "live" | "mock";
+  dataQuality: RevenueDataQuality;
+  labor?: LaborBiSummary;
+  margin?: MenuMarginReadiness;
+}): string {
+  const sales =
+    input.dataMode === "mock"
+      ? "продажи в демо"
+      : `продажи ${formatCoverage(input.dataQuality.coveragePct)}`;
+  const labor =
+    input.labor?.revenueCoveragePct !== null &&
+    input.labor?.revenueCoveragePct !== undefined
+      ? `ФОТ ${formatCoverage(input.labor.revenueCoveragePct)} выручки`
+      : "ФОТ без покрытия";
+  const margin = input.margin
+    ? `себестоимость ${formatCoverage(input.margin.revenueCoveragePct)} выручки`
+    : "себестоимость без покрытия";
+
+  return `Покрытие: ${sales}, ${labor}, ${margin}.`;
+}
+
 function announcementCountLabel(count: number): string {
   return `${count} ${taskWord(count, "объявление", "объявления", "объявлений")}`;
 }
@@ -944,7 +966,7 @@ function buildProfitReadiness(input: {
       status,
       score: roundedScore,
       title: "Прибыль требует проверки",
-      detail: `Проверить: ${compactMissing(missing)}. После закрытия контуров выводы можно превращать в задачи.`,
+      detail: `${readinessCoverageLine(input)} Проверить: ${compactMissing(missing)}. После закрытия контуров выводы можно превращать в задачи.`,
       missing,
       action,
       tone: "watch",
@@ -955,7 +977,7 @@ function buildProfitReadiness(input: {
     status,
     score: roundedScore,
     title: "Прибыль не доказана",
-    detail: `Не хватает: ${compactMissing(missing)}. До этого решения по прибыли лучше держать как гипотезы.`,
+    detail: `${readinessCoverageLine(input)} Не хватает: ${compactMissing(missing)}. До этого решения по прибыли лучше держать как гипотезы.`,
     missing,
     action,
     tone: "risk",

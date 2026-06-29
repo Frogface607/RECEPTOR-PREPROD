@@ -1432,6 +1432,9 @@ describe("buildOwnerReview", () => {
         target: "shift-coverage",
       },
     });
+    expect(review.readiness.detail).toContain(
+      "Покрытие: продажи 100%, ФОТ без покрытия, себестоимость без покрытия.",
+    );
     expect(review.readiness.detail).toContain("ФОТ");
     expect(review.readiness.detail).toContain("себестоимость");
   });
@@ -1475,6 +1478,9 @@ describe("buildOwnerReview", () => {
         target: "team-actions",
       },
     });
+    expect(review.readiness.detail).toContain(
+      "Покрытие: продажи 100%, ФОТ 100% выручки, себестоимость 100% выручки.",
+    );
     expect(review.readiness.detail).toContain("1 открытая задача Team OS");
   });
 
