@@ -59,6 +59,8 @@ export type TeamTask = {
   source: "owner" | "copilot" | "manager" | "chef";
   sourceLabel?: string;
   impactLabel?: string;
+  learningModuleId?: string;
+  learningModuleTitle?: string;
   priority: "high" | "medium" | "low";
   status: "new" | "accepted" | "in_progress" | "done" | "verified";
   venueId: string;

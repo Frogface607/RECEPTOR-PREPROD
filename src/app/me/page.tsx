@@ -22,6 +22,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
 import {
+  getLearningItem,
   getLearningItemByTitle,
   getRoleDayFocus,
   listShiftChecklistForRole,
@@ -273,12 +274,20 @@ export default async function MyCabinetPage({
   const nextActionTaskContext = nextActionTask
     ? (listCommentsForTask(nextActionTask.id, workspace.comments)[0] ?? null)
     : null;
-  const nextActionLearningTitle = taskLearningHintFromContext(
+  const nextActionContextLearningTitle = taskLearningHintFromContext(
     nextActionTaskContext?.body,
   );
-  const nextActionLearningItem = getLearningItemByTitle(
-    nextActionLearningTitle,
-  );
+  const nextActionLearningItem =
+    (nextActionTask?.learningModuleId
+      ? getLearningItem(nextActionTask.learningModuleId)
+      : undefined) ??
+    getLearningItemByTitle(
+      nextActionTask?.learningModuleTitle ?? nextActionContextLearningTitle,
+    );
+  const nextActionLearningTitle =
+    nextActionTask?.learningModuleTitle ??
+    nextActionLearningItem?.title ??
+    nextActionContextLearningTitle;
   const nextActionContextBody = taskContextWithoutLearningHint(
     nextActionTaskContext?.body,
   );
@@ -744,8 +753,14 @@ function TaskCard({
   context: TeamTaskComment | null;
 }) {
   const sourceLabel = sourceBadgeLabel(task);
-  const learningTitle = taskLearningHintFromContext(context?.body);
-  const learningItem = getLearningItemByTitle(learningTitle);
+  const contextLearningTitle = taskLearningHintFromContext(context?.body);
+  const learningItem =
+    (task.learningModuleId
+      ? getLearningItem(task.learningModuleId)
+      : undefined) ??
+    getLearningItemByTitle(task.learningModuleTitle ?? contextLearningTitle);
+  const learningTitle =
+    task.learningModuleTitle ?? learningItem?.title ?? contextLearningTitle;
   const contextBody = taskContextWithoutLearningHint(context?.body);
 
   return (

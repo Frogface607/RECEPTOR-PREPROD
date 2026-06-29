@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   buildTaskImpactLabelMap,
+  buildTaskLearningMap,
   buildTaskSourceLabelMap,
   mapAnnouncementRow,
   mapAnnouncementReadRow,
@@ -134,6 +135,34 @@ describe("Team OS store mapping", () => {
     expect(task.impactLabel).toBe("ФОТ 35%");
   });
 
+  test("keeps task learning module links on mapped tasks", () => {
+    const task = mapTaskRow(
+      {
+        id: "task-learning",
+        venue_id: "venue-1",
+        title: "Check weak shift",
+        source: "copilot",
+        priority: "high",
+        status: "new",
+        audience_type: "role",
+        audience_member_id: null,
+        audience_role: "venue_manager",
+        due_label: "today",
+      },
+      undefined,
+      undefined,
+      {
+        moduleId: "shift-open-close",
+        moduleTitle: "Открытие и закрытие смены без хаоса",
+      },
+    );
+
+    expect(task.learningModuleId).toBe("shift-open-close");
+    expect(task.learningModuleTitle).toBe(
+      "Открытие и закрытие смены без хаоса",
+    );
+  });
+
   test("builds task source labels from task-created audit metadata", () => {
     const labels = buildTaskSourceLabelMap([
       {
@@ -170,6 +199,34 @@ describe("Team OS store mapping", () => {
     ]);
 
     expect(labels.get("task-1")).toBe("ФОТ 35%");
+  });
+
+  test("builds task learning links from task-created audit metadata", () => {
+    const learning = buildTaskLearningMap([
+      {
+        event_type: "task_created",
+        target_type: "task",
+        target_id: "task-1",
+        metadata: {
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
+        },
+      },
+      {
+        event_type: "task_status_updated",
+        target_type: "task",
+        target_id: "task-1",
+        metadata: {
+          learningModuleId: "wrong",
+          learningModuleTitle: "wrong",
+        },
+      },
+    ]);
+
+    expect(learning.get("task-1")).toEqual({
+      moduleId: "restaurant-numbers-basics",
+      moduleTitle: "Цифры ресторана простым языком",
+    });
   });
 
   test("maps member and venue audiences", () => {

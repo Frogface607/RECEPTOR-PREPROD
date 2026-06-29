@@ -22,7 +22,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatInteger, formatRubles } from "@/lib/format";
 import type { LaborBiSummary } from "@/lib/team/labor-bi";
-import { getLearningItemByTitle } from "@/lib/team/team-learning";
+import {
+  getLearningItem,
+  getLearningItemByTitle,
+} from "@/lib/team/team-learning";
 import {
   buildTeamAuditJournal,
   type TeamAuditJournalCategoryId,
@@ -816,10 +819,20 @@ export function TeamActionsPanel({
               {taskQueue.openTasks.length > 0 ? (
                 taskQueue.openTasks.slice(0, 6).map(({ task, focused }) => {
                   const context = latestTaskContext[task.id];
-                  const learningHint = taskLearningHintFromContext(
+                  const contextLearningHint = taskLearningHintFromContext(
                     context?.body,
                   );
-                  const learningItem = getLearningItemByTitle(learningHint);
+                  const learningItem =
+                    (task.learningModuleId
+                      ? getLearningItem(task.learningModuleId)
+                      : undefined) ??
+                    getLearningItemByTitle(
+                      task.learningModuleTitle ?? contextLearningHint,
+                    );
+                  const learningHint =
+                    task.learningModuleTitle ??
+                    learningItem?.title ??
+                    contextLearningHint;
                   const contextBody = taskContextWithoutLearningHint(
                     context?.body,
                   );

@@ -88,6 +88,13 @@ const CreateTeamTaskInput = z
     impactLabel: z.string().trim().max(80).optional().or(z.literal("")),
     contextNote: z.string().trim().max(1000).optional().or(z.literal("")),
     sourceLabel: z.string().trim().max(80).optional().or(z.literal("")),
+    learningModuleId: z.string().trim().max(120).optional().or(z.literal("")),
+    learningModuleTitle: z
+      .string()
+      .trim()
+      .max(160)
+      .optional()
+      .or(z.literal("")),
     dedupeOpenTask: z.boolean().optional().default(false),
   })
   .superRefine((value, ctx) => {
@@ -1410,6 +1417,8 @@ export async function createTeamTaskAction(
   const sourceLabel = parsed.data.sourceLabel?.trim() || null;
   const impactLabel = parsed.data.impactLabel?.trim() || null;
   const contextNote = parsed.data.contextNote?.trim() || null;
+  const learningModuleId = parsed.data.learningModuleId?.trim() || null;
+  const learningModuleTitle = parsed.data.learningModuleTitle?.trim() || null;
 
   if (parsed.data.dedupeOpenTask) {
     try {
@@ -1437,6 +1446,8 @@ export async function createTeamTaskAction(
             metadata: {
               sourceLabel,
               impactLabel,
+              learningModuleId,
+              learningModuleTitle,
               contextCommentSaved,
             },
           });
@@ -1530,6 +1541,8 @@ export async function createTeamTaskAction(
       source: parsed.data.source,
       sourceLabel,
       impactLabel,
+      learningModuleId,
+      learningModuleTitle,
       priority: parsed.data.priority,
       audienceType,
       audienceMemberId:

@@ -28,6 +28,7 @@ import {
 import type { TeamShiftPlan } from "./team-shift-plan";
 import {
   normalizeTaskImpactLabel,
+  normalizeTaskLabel,
   normalizeTaskSourceLabel,
 } from "./team-task-labels";
 
@@ -264,6 +265,7 @@ export function mapTaskRow(
   row: DbTask,
   sourceLabel?: string,
   impactLabel?: string,
+  learning?: { moduleId?: string; moduleTitle?: string },
 ): TeamTask {
   const roleId = normalizeTeamRoleId(row.audience_role);
   const audience =
@@ -281,6 +283,8 @@ export function mapTaskRow(
       : "manager",
     sourceLabel: normalizeTaskSourceLabel(row.source_label) ?? sourceLabel,
     impactLabel: normalizeTaskImpactLabel(row.impact_label) ?? impactLabel,
+    learningModuleId: learning?.moduleId,
+    learningModuleTitle: learning?.moduleTitle,
     priority: TASK_PRIORITIES.has(row.priority as TeamTask["priority"])
       ? (row.priority as TeamTask["priority"])
       : "medium",
@@ -462,6 +466,47 @@ export function buildTaskImpactLabelMap(
   }
 
   return labels;
+}
+
+export function buildTaskLearningMap(
+  rows: Array<{
+    event_type: string;
+    target_type: string;
+    target_id: string | null;
+    metadata?: unknown;
+  }>,
+): Map<string, { moduleId?: string; moduleTitle?: string }> {
+  const learning = new Map<
+    string,
+    { moduleId?: string; moduleTitle?: string }
+  >();
+
+  for (const row of rows) {
+    if (
+      row.event_type !== "task_created" ||
+      row.target_type !== "task" ||
+      !row.target_id ||
+      learning.has(row.target_id) ||
+      !row.metadata ||
+      typeof row.metadata !== "object" ||
+      Array.isArray(row.metadata)
+    ) {
+      continue;
+    }
+
+    const metadata = row.metadata as {
+      learningModuleId?: unknown;
+      learningModuleTitle?: unknown;
+    };
+    const moduleId = normalizeTaskLabel(metadata.learningModuleId) ?? undefined;
+    const moduleTitle =
+      normalizeTaskLabel(metadata.learningModuleTitle) ?? undefined;
+    if (moduleId || moduleTitle) {
+      learning.set(row.target_id, { moduleId, moduleTitle });
+    }
+  }
+
+  return learning;
 }
 
 function normalizeAnswers(value: unknown): number[] {
@@ -873,8 +918,20 @@ export async function getTeamWorkspace(
       : buildTaskImpactLabelMap(
           (taskLabelEventsResult.data ?? []) as DbAuditEvent[],
         );
+  const taskLearning =
+    taskLabelEventsResult.error &&
+    isMissingTeamTable(taskLabelEventsResult.error.message)
+      ? new Map<string, { moduleId?: string; moduleTitle?: string }>()
+      : buildTaskLearningMap(
+          (taskLabelEventsResult.data ?? []) as DbAuditEvent[],
+        );
   const tasks = taskRows.map((row) =>
-    mapTaskRow(row, taskSourceLabels.get(row.id), taskImpactLabels.get(row.id)),
+    mapTaskRow(
+      row,
+      taskSourceLabels.get(row.id),
+      taskImpactLabels.get(row.id),
+      taskLearning.get(row.id),
+    ),
   );
 
   const learningProgressResult = await supabase
@@ -1073,9 +1130,19 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
       : buildTaskImpactLabelMap(
           (auditEventsResult.data ?? []) as DbAuditEvent[],
         );
+  const taskLearning =
+    auditEventsResult.error &&
+    !isMissingTeamTable(auditEventsResult.error.message)
+      ? new Map<string, { moduleId?: string; moduleTitle?: string }>()
+      : buildTaskLearningMap((auditEventsResult.data ?? []) as DbAuditEvent[]);
 
   const tasks = taskRows.map((row) =>
-    mapTaskRow(row, taskSourceLabels.get(row.id), taskImpactLabels.get(row.id)),
+    mapTaskRow(
+      row,
+      taskSourceLabels.get(row.id),
+      taskImpactLabels.get(row.id),
+      taskLearning.get(row.id),
+    ),
   );
 
   const visibleTasks = roleCan(member.roleId, "view_all_tasks")
