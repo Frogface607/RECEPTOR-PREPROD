@@ -937,6 +937,7 @@ describe("buildOwnerReview", () => {
         title: "Разобрать дорогую смену",
         source: "copilot",
         sourceLabel: "ФОТ и маржа",
+        impactLabel: "ФОТ 35%",
         priority: "high",
         status: "new",
         audience: { type: "role", roleId: "venue_manager" },
@@ -1016,6 +1017,15 @@ describe("buildOwnerReview", () => {
     expect(review.operationalPulse?.detail).toContain("ФОТ и маржа");
     expect(review.operationalPulse?.detail).toContain(
       "Разобрать дорогую смену",
+    );
+    expect(review.operationalPulse?.detail).toContain("ФОТ 35%");
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Контуры",
+          detail: expect.stringContaining("ФОТ 35%"),
+        }),
+      ]),
     );
   });
 
@@ -1403,7 +1413,8 @@ describe("buildOwnerReview", () => {
       status: "ready",
       score: 100,
       title: "Можно считать прибыль",
-      detail: "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
+      detail:
+        "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
       missing: [],
       action: null,
       tone: "good",

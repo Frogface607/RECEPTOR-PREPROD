@@ -24,10 +24,7 @@ import type {
   TeamOpsActionTone,
   TeamOpsReadiness,
 } from "@/lib/team/team-ops-readiness";
-import {
-  buildTeamTaskQueue,
-  isOpenTeamTask,
-} from "@/lib/team/team-task-queue";
+import { buildTeamTaskQueue, isOpenTeamTask } from "@/lib/team/team-task-queue";
 import type {
   StaffMember,
   TeamAnnouncement,
@@ -157,6 +154,7 @@ export type OwnerOperationalProof = {
   urgentOpenTasks: number;
   openTaskContours: string[];
   nextOpenTaskTitle: string | null;
+  nextOpenTaskImpactLabel: string | null;
   closedLoops: number;
   lastClosedLoop: string | null;
   announcements: number;
@@ -354,8 +352,8 @@ function taskFromLaborSetupProgress(
 }
 
 function openTaskContourLabels(tasks: TeamTask[]): string[] {
-  return buildTeamTaskQueue(tasks).openContours
-    .slice(0, 3)
+  return buildTeamTaskQueue(tasks)
+    .openContours.slice(0, 3)
     .map(({ label, count }) => (count > 1 ? `${label} x${count}` : label));
 }
 
@@ -364,9 +362,15 @@ function openTaskContourText(contours: string[]): string {
   return ` Контуры: ${contours.join(", ")}.`;
 }
 
-function nextOpenTaskText(title: string | null): string {
+function nextOpenTaskText(
+  title: string | null,
+  impactLabel?: string | null,
+): string {
   if (!title) return "";
-  return ` Следующая задача: ${trimEvidenceDetail(title)}.`;
+  const impactText = impactLabel
+    ? ` Вес: ${trimEvidenceDetail(impactLabel)}.`
+    : "";
+  return ` Следующая задача: ${trimEvidenceDetail(title)}.${impactText}`;
 }
 
 function normalizeTaskTitle(value: string): string {
@@ -550,6 +554,7 @@ function buildOperationalProof(
       taskQueue.openTasks.map((item) => item.task),
     ),
     nextOpenTaskTitle: taskQueue.openTasks[0]?.task.title ?? null,
+    nextOpenTaskImpactLabel: taskQueue.openTasks[0]?.task.impactLabel ?? null,
     closedLoops: closedLoopEvents.length,
     lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
     announcements: announcements?.length ?? 0,
@@ -571,7 +576,7 @@ function operationalPulse(
   if (proof.urgentOpenTasks > 0) {
     return {
       title: "Есть срочные действия команды",
-      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle)} Закройте их в Team OS, чтобы выводы владельца стали доказанными.`,
+      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закройте их в Team OS, чтобы выводы владельца стали доказанными.`,
       tone: "risk",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
@@ -585,7 +590,7 @@ function operationalPulse(
   if (proof.openTasks > 0) {
     return {
       title: "Контур в работе",
-      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle)} После закрытия задач владелец увидит это как управленческий результат.`,
+      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} После закрытия задач владелец увидит это как управленческий результат.`,
       tone: "watch",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
@@ -669,9 +674,9 @@ function operationalProofEvidence(
     proof.closedLoops > 0
       ? `${proof.closedLoops} закрыто недавно. Последнее: ${trimEvidenceDetail(
           proof.lastClosedLoop ?? "задача закрыта в Team OS",
-        )}.${nextOpenTaskText(proof.nextOpenTaskTitle)}`
+        )}.${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)}`
       : proof.openTasks > 0
-        ? `${proof.urgentOpenTasks} срочных${proof.openTaskContours.length ? `: ${proof.openTaskContours.join(", ")}` : ""}.${nextOpenTaskText(proof.nextOpenTaskTitle)} Закрытые контуры появятся после выполнения задач в Team OS.`
+        ? `${proof.urgentOpenTasks} срочных${proof.openTaskContours.length ? `: ${proof.openTaskContours.join(", ")}` : ""}.${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закрытые контуры появятся после выполнения задач в Team OS.`
         : "Открытых задач нет; новых закрытий в последних событиях не было.";
 
   return {
@@ -892,7 +897,8 @@ function buildProfitReadiness(input: {
       status,
       score: roundedScore,
       title: "Можно считать прибыль",
-      detail: "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
+      detail:
+        "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
       missing: [],
       action: null,
       tone: "good",
@@ -1575,7 +1581,8 @@ function confidenceFor(input: BuildOwnerReviewInput): {
   if (input.dataMode === "mock") {
     return {
       confidence: "low",
-      reason: "показаны тестовые данные, для решений нужны реальные данные iiko",
+      reason:
+        "показаны тестовые данные, для решений нужны реальные данные iiko",
     };
   }
 
