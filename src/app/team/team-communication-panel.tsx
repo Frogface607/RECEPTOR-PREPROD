@@ -337,7 +337,10 @@ export function TeamCommunicationPanel({
 
 function AnnouncementRow({ announcement }: { announcement: TeamAnnouncement }) {
   return (
-    <article className="rounded-lg border border-border/45 bg-background/35 p-3">
+    <article
+      id={`team-announcement-${announcement.id}`}
+      className="operational-target scroll-mt-24 rounded-lg border border-border/45 bg-background/35 p-3"
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Badge
           variant="outline"

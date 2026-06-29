@@ -96,6 +96,9 @@ export function auditEventContextHref(event: TeamAuditEvent): string {
 
   if (event.targetType === "shift_plan") return "#shift-plan";
   if (event.targetType === "learning_standard") return "#learning-progress";
+  if (event.targetType === "announcement" && event.targetId) {
+    return `#team-announcement-${encodeURIComponent(event.targetId)}`;
+  }
   if (event.targetType === "announcement") return "#team-journal";
 
   return "#team-actions";
@@ -106,6 +109,7 @@ export function auditEventContextLabel(event: TeamAuditEvent): string {
   if (event.targetType === "task") return "К задаче";
   if (event.targetType === "shift_plan") return "К плану";
   if (event.targetType === "learning_standard") return "К обучению";
+  if (event.targetType === "announcement") return "К объявлению";
   return "Открыть";
 }
 

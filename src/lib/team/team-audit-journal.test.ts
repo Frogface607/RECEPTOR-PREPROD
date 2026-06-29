@@ -52,6 +52,12 @@ describe("team audit journal", () => {
       event("task-1", "task_created", "Создана задача."),
       event("task-2", "comment_added", "Добавлен комментарий."),
       event(
+        "announcement-1",
+        "announcement_created",
+        "Опубликовано объявление.",
+        "announcement",
+      ),
+      event(
         "learning-1",
         "learning_standard_updated",
         "Допуск обновлен.",
@@ -63,6 +69,7 @@ describe("team audit journal", () => {
     expect(journal.entries.map((entry) => entry.categoryId)).toEqual([
       "labor",
       "plan",
+      "tasks",
       "tasks",
       "tasks",
       "learning",
@@ -83,6 +90,10 @@ describe("team audit journal", () => {
       contextLabel: "К задаче",
     });
     expect(journal.entries[4]).toMatchObject({
+      contextHref: "#team-announcement-announcement-1",
+      contextLabel: "К объявлению",
+    });
+    expect(journal.entries[5]).toMatchObject({
       contextHref: "#learning-progress",
       contextLabel: "К обучению",
     });
@@ -91,10 +102,10 @@ describe("team audit journal", () => {
         journal.categories.map((category) => [category.id, category.count]),
       ),
     ).toMatchObject({
-      all: 6,
+      all: 7,
       labor: 1,
       plan: 1,
-      tasks: 2,
+      tasks: 3,
       learning: 1,
       access: 1,
     });
