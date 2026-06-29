@@ -380,6 +380,7 @@ export function mapAuditEventRow(row: DbAuditEvent): TeamAuditEvent {
     venueId: row.venue_id,
     type: normalizeAuditEventType(row.event_type),
     sourceLabel: metadataSourceLabel(row.metadata),
+    impactLabel: metadataImpactLabel(row.metadata),
     targetType:
       row.target_type === "member" ||
       row.target_type === "task" ||
@@ -405,7 +406,9 @@ function metadataSourceLabel(value: unknown): string | undefined {
 
   const normalized = label.replace(/\s+/g, " ").trim();
   if (!normalized) return undefined;
-  return normalized.length > 80 ? `${normalized.slice(0, 77).trim()}...` : normalized;
+  return normalized.length > 80
+    ? `${normalized.slice(0, 77).trim()}...`
+    : normalized;
 }
 
 function metadataImpactLabel(value: unknown): string | undefined {
@@ -1073,13 +1076,15 @@ export async function getPersonalTeamWorkspace(): Promise<PersonalTeamWorkspace>
     .limit(100);
 
   const taskSourceLabels =
-    auditEventsResult.error && !isMissingTeamTable(auditEventsResult.error.message)
+    auditEventsResult.error &&
+    !isMissingTeamTable(auditEventsResult.error.message)
       ? new Map<string, string>()
       : buildTaskSourceLabelMap(
           (auditEventsResult.data ?? []) as DbAuditEvent[],
         );
   const taskImpactLabels =
-    auditEventsResult.error && !isMissingTeamTable(auditEventsResult.error.message)
+    auditEventsResult.error &&
+    !isMissingTeamTable(auditEventsResult.error.message)
       ? new Map<string, string>()
       : buildTaskImpactLabelMap(
           (auditEventsResult.data ?? []) as DbAuditEvent[],

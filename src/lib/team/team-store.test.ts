@@ -282,7 +282,7 @@ describe("Team OS store mapping", () => {
     expect(event.createdAtLabel).not.toBe("");
   });
 
-  test("maps task audit source labels from metadata", () => {
+  test("maps task audit source and impact labels from metadata", () => {
     const event = mapAuditEventRow({
       id: "audit-task-source",
       venue_id: "venue-1",
@@ -290,11 +290,12 @@ describe("Team OS store mapping", () => {
       target_type: "task",
       target_id: "task-1",
       summary: "Создана задача.",
-      metadata: { sourceLabel: "ФОТ и маржа" },
+      metadata: { sourceLabel: "ФОТ и маржа", impactLabel: "120 000 ₽" },
       created_at: null,
     });
 
     expect(event.sourceLabel).toBe("ФОТ и маржа");
+    expect(event.impactLabel).toBe("120 000 ₽");
   });
 
   test("keeps labor rate audit events", () => {

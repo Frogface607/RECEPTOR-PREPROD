@@ -1128,6 +1128,7 @@ describe("buildOwnerReview", () => {
         venueId: "venue-1",
         type: "task_status_updated",
         sourceLabel: "ФОТ и маржа",
+        impactLabel: "120 000 ₽",
         targetType: "task",
         targetId: "task-margin",
         summary: "Статус задачи обновлен: done.",
@@ -1152,6 +1153,7 @@ describe("buildOwnerReview", () => {
       recentEvents: [
         expect.objectContaining({
           label: "ФОТ и маржа",
+          summary: expect.stringContaining("120 000 ₽"),
           tone: "good",
           target: "team-journal",
         }),

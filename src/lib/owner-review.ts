@@ -439,12 +439,18 @@ function auditEventTarget(event: TeamAuditEvent): OwnerReviewActionTarget {
   return "team-actions";
 }
 
+function auditEventSummary(event: TeamAuditEvent): string {
+  const summary = trimEvidenceDetail(event.summary);
+  if (!event.impactLabel) return summary;
+  return `${summary} Вес: ${trimEvidenceDetail(event.impactLabel)}.`;
+}
+
 function operationalPulseEvent(
   event: TeamAuditEvent,
 ): OwnerOperationalPulseEvent {
   return {
     label: auditEventLabel(event),
-    summary: trimEvidenceDetail(event.summary),
+    summary: auditEventSummary(event),
     timeLabel: event.createdAtLabel,
     tone: auditEventTone(event),
     target: auditEventTarget(event),

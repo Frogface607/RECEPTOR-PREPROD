@@ -486,12 +486,14 @@ function normalizeTaskSourceLabel(value: unknown): string | null {
     : normalized;
 }
 
-async function findTaskSourceLabel(
+async function findTaskContextLabels(
   ctx: WritableTeamContext,
   venueId: string,
   taskId: string,
-): Promise<string | null> {
-  if (ctx.mode === "sandbox" || !ctx.supabase) return null;
+): Promise<{ sourceLabel: string | null; impactLabel: string | null }> {
+  if (ctx.mode === "sandbox" || !ctx.supabase) {
+    return { sourceLabel: null, impactLabel: null };
+  }
 
   const { data, error } = await ctx.supabase
     .from("team_audit_events")
@@ -504,8 +506,11 @@ async function findTaskSourceLabel(
     .limit(1)
     .maybeSingle<{ metadata: Record<string, unknown> | null }>();
 
-  if (error) return null;
-  return normalizeTaskSourceLabel(data?.metadata?.sourceLabel);
+  if (error) return { sourceLabel: null, impactLabel: null };
+  return {
+    sourceLabel: normalizeTaskSourceLabel(data?.metadata?.sourceLabel),
+    impactLabel: normalizeTaskSourceLabel(data?.metadata?.impactLabel),
+  };
 }
 
 async function closeLaborRateTasksForMembers(
@@ -1599,7 +1604,7 @@ export async function updateTeamTaskStatusAction(
     return { ok: false, error: "Задача не найдена или нет доступа." };
   }
 
-  const sourceLabel = await findTaskSourceLabel(
+  const taskLabels = await findTaskContextLabels(
     ctx,
     parsed.data.venueId,
     parsed.data.taskId,
@@ -1611,7 +1616,7 @@ export async function updateTeamTaskStatusAction(
     targetType: "task",
     targetId: parsed.data.taskId,
     summary: `Статус задачи обновлен: ${parsed.data.status}.`,
-    metadata: { status: parsed.data.status, sourceLabel },
+    metadata: { status: parsed.data.status, ...taskLabels },
   });
 
   revalidateTeamWorkspace(parsed.data.venueId);

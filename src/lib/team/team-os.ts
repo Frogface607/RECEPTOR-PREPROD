@@ -112,6 +112,7 @@ export type TeamAuditEvent = {
   venueId: string;
   type: TeamAuditEventType;
   sourceLabel?: string;
+  impactLabel?: string;
   targetType:
     | "member"
     | "task"
