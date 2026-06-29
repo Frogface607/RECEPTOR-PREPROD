@@ -277,6 +277,7 @@ export default async function DashboardPage({
     shiftPlanVariance,
   });
   const teamTaskQueue = buildTeamTaskQueue(teamWorkspace.tasks);
+  const teamPeriodParams = periodToSearchParams(period);
 
   return (
     <>
@@ -291,6 +292,7 @@ export default async function DashboardPage({
               venueId={venueId}
               review={ownerReview}
               teamTaskQueue={teamTaskQueue}
+              teamPeriodParams={teamPeriodParams}
             />
           </div>
 
@@ -334,7 +336,11 @@ export default async function DashboardPage({
                 Подробный разбор и постановка задач
               </summary>
               <div className="mt-4">
-                <OwnerReviewCard venueId={venueId} review={ownerReview} />
+                <OwnerReviewCard
+                  venueId={venueId}
+                  review={ownerReview}
+                  teamPeriodParams={teamPeriodParams}
+                />
               </div>
             </details>
           </div>

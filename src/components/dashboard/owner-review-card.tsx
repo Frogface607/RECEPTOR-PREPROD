@@ -42,6 +42,8 @@ const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
   low: "низкая уверенность",
 };
 
+type TeamPeriodParams = Record<string, string>;
+
 function actionContour(action: OwnerReviewAction): string {
   return action.sourceLabel ?? "контур";
 }
@@ -52,7 +54,30 @@ function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
   return <CheckCircle2 className="size-4" />;
 }
 
-function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
+function teamHref(
+  venueId: string,
+  teamPeriodParams: TeamPeriodParams | undefined,
+  hash: string,
+  extraParams: Record<string, string | undefined> = {},
+): string {
+  const params = new URLSearchParams({
+    role: "venue_manager",
+    venueId,
+    ...(teamPeriodParams ?? {}),
+  });
+
+  for (const [key, value] of Object.entries(extraParams)) {
+    if (value) params.set(key, value);
+  }
+
+  return `/team?${params.toString()}${hash}`;
+}
+
+function targetHref(
+  target: OwnerReviewActionTarget,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
   const encodedVenueId = encodeURIComponent(venueId);
 
   if (target === "iiko-settings") {
@@ -60,39 +85,39 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
   }
 
   if (target === "labor-member") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions");
   }
 
   if (target === "labor-rate") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#labor-rates`;
+    return teamHref(venueId, teamPeriodParams, "#labor-rates");
   }
 
   if (target === "shift-coverage") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-coverage`;
+    return teamHref(venueId, teamPeriodParams, "#shift-coverage");
   }
 
   if (target === "shift-diagnostics") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#iiko-shift-diagnostics`;
+    return teamHref(venueId, teamPeriodParams, "#iiko-shift-diagnostics");
   }
 
   if (target === "shift-plan") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan`;
+    return teamHref(venueId, teamPeriodParams, "#shift-plan");
   }
 
   if (target === "shift-plan-variance") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan-variance`;
+    return teamHref(venueId, teamPeriodParams, "#shift-plan-variance");
   }
 
   if (target === "team-learning") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#learning-progress`;
+    return teamHref(venueId, teamPeriodParams, "#learning-progress");
   }
 
   if (target === "team-actions") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions");
   }
 
   if (target === "team-journal") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-journal`;
+    return teamHref(venueId, teamPeriodParams, "#team-journal");
   }
 
   if (target === "margin-diagnostics") {
@@ -106,36 +131,58 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
   return "#margin-mapping-workspace";
 }
 
-function actionHref(action: OwnerReviewAction, venueId: string): string {
-  const encodedVenueId = encodeURIComponent(venueId);
-
+function actionHref(
+  action: OwnerReviewAction,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
   if (action.existingTaskId) {
-    const encodedTaskId = encodeURIComponent(action.existingTaskId);
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions", {
+      focusTaskId: action.existingTaskId,
+    });
   }
 
   if (action.target === "labor-member" && action.memberId) {
     const encodedMemberId = encodeURIComponent(action.memberId);
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;
+    return teamHref(
+      venueId,
+      teamPeriodParams,
+      `#labor-member-${encodedMemberId}`,
+      {
+        memberId: action.memberId,
+        focusMemberId: action.memberId,
+      },
+    );
   }
 
   if (action.target === "labor-member" && action.memberName) {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&prefillMemberName=${encodeURIComponent(action.memberName)}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions", {
+      prefillMemberName: action.memberName,
+    });
   }
 
   if (action.target === "labor-rate" && action.memberId) {
     const encodedMemberId = encodeURIComponent(action.memberId);
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;
+    return teamHref(
+      venueId,
+      teamPeriodParams,
+      `#labor-member-${encodedMemberId}`,
+      {
+        memberId: action.memberId,
+        focusMemberId: action.memberId,
+      },
+    );
   }
 
-  return targetHref(action.target, venueId);
+  return targetHref(action.target, venueId, teamPeriodParams);
 }
 
 function readinessHref(
   action: OwnerProfitReadinessAction,
   venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
 ): string {
-  return targetHref(action.target, venueId);
+  return targetHref(action.target, venueId, teamPeriodParams);
 }
 
 function actionCta(action: OwnerReviewAction): string {
@@ -160,9 +207,11 @@ function actionCta(action: OwnerReviewAction): string {
 export function OwnerReviewCard({
   venueId,
   review,
+  teamPeriodParams,
 }: {
   venueId: string;
   review: OwnerReview;
+  teamPeriodParams?: TeamPeriodParams;
 }) {
   return (
     <section className="rounded-xl border border-brand/25 bg-card/70 p-5 sm:p-6">
@@ -229,7 +278,11 @@ export function OwnerReviewCard({
             </p>
             {review.readiness.action ? (
               <LinkButton
-                href={readinessHref(review.readiness.action, venueId)}
+                href={readinessHref(
+                  review.readiness.action,
+                  venueId,
+                  teamPeriodParams,
+                )}
                 variant="outline"
                 className="mt-3 h-8 px-3 text-[12px]"
               >
@@ -298,7 +351,7 @@ export function OwnerReviewCard({
                   {review.operationalPulse.recentEvents.map((event) => (
                     <Link
                       key={`${event.label}-${event.timeLabel}-${event.summary}`}
-                      href={targetHref(event.target, venueId)}
+                      href={targetHref(event.target, venueId, teamPeriodParams)}
                       className="grid gap-2 px-3 py-2 transition-colors hover:bg-card/45 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:items-center"
                     >
                       <span
@@ -324,7 +377,11 @@ export function OwnerReviewCard({
               ) : null}
 
               <LinkButton
-                href={readinessHref(review.operationalPulse.action, venueId)}
+                href={readinessHref(
+                  review.operationalPulse.action,
+                  venueId,
+                  teamPeriodParams,
+                )}
                 variant="outline"
                 className="mt-3 h-8 px-3 text-[12px]"
               >
@@ -414,7 +471,7 @@ export function OwnerReviewCard({
                       </p>
                     </div>
                     <LinkButton
-                      href={actionHref(action, venueId)}
+                      href={actionHref(action, venueId, teamPeriodParams)}
                       variant="outline"
                       className="h-8 shrink-0 px-3 text-[12px]"
                     >

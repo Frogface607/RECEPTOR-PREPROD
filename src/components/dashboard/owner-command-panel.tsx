@@ -38,6 +38,8 @@ const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
   low: "данных мало",
 };
 
+type TeamPeriodParams = Record<string, string>;
+
 function actionContour(action: OwnerReviewAction): string {
   return action.sourceLabel ?? "контур";
 }
@@ -48,36 +50,59 @@ function ToneIcon({ tone }: { tone: OwnerReviewTone }) {
   return <CheckCircle2 className="size-4" />;
 }
 
-function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
+function teamHref(
+  venueId: string,
+  teamPeriodParams: TeamPeriodParams | undefined,
+  hash: string,
+  extraParams: Record<string, string | undefined> = {},
+): string {
+  const params = new URLSearchParams({
+    role: "venue_manager",
+    venueId,
+    ...(teamPeriodParams ?? {}),
+  });
+
+  for (const [key, value] of Object.entries(extraParams)) {
+    if (value) params.set(key, value);
+  }
+
+  return `/team?${params.toString()}${hash}`;
+}
+
+function targetHref(
+  target: OwnerReviewActionTarget,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
   const encodedVenueId = encodeURIComponent(venueId);
 
   if (target === "iiko-settings") return "/settings#iiko";
   if (target === "labor-member") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions");
   }
   if (target === "labor-rate") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#labor-rates`;
+    return teamHref(venueId, teamPeriodParams, "#labor-rates");
   }
   if (target === "shift-coverage") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-coverage`;
+    return teamHref(venueId, teamPeriodParams, "#shift-coverage");
   }
   if (target === "shift-diagnostics") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#iiko-shift-diagnostics`;
+    return teamHref(venueId, teamPeriodParams, "#iiko-shift-diagnostics");
   }
   if (target === "shift-plan") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan`;
+    return teamHref(venueId, teamPeriodParams, "#shift-plan");
   }
   if (target === "shift-plan-variance") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#shift-plan-variance`;
+    return teamHref(venueId, teamPeriodParams, "#shift-plan-variance");
   }
   if (target === "team-learning") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#learning-progress`;
+    return teamHref(venueId, teamPeriodParams, "#learning-progress");
   }
   if (target === "team-actions") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions");
   }
   if (target === "team-journal") {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-journal`;
+    return teamHref(venueId, teamPeriodParams, "#team-journal");
   }
   if (target === "margin-diagnostics") {
     return `/settings#iiko-diagnostics-${encodedVenueId}`;
@@ -85,12 +110,15 @@ function targetHref(target: OwnerReviewActionTarget, venueId: string): string {
   return "#margin-mapping-workspace";
 }
 
-function actionHref(action: OwnerReviewAction, venueId: string): string {
-  const encodedVenueId = encodeURIComponent(venueId);
-
+function actionHref(
+  action: OwnerReviewAction,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
   if (action.existingTaskId) {
-    const encodedTaskId = encodeURIComponent(action.existingTaskId);
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions", {
+      focusTaskId: action.existingTaskId,
+    });
   }
 
   if (
@@ -98,34 +126,46 @@ function actionHref(action: OwnerReviewAction, venueId: string): string {
     action.memberId
   ) {
     const encodedMemberId = encodeURIComponent(action.memberId);
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&memberId=${encodedMemberId}&focusMemberId=${encodedMemberId}#labor-member-${encodedMemberId}`;
+    return teamHref(
+      venueId,
+      teamPeriodParams,
+      `#labor-member-${encodedMemberId}`,
+      {
+        memberId: action.memberId,
+        focusMemberId: action.memberId,
+      },
+    );
   }
 
   if (action.target === "labor-member" && action.memberName) {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}&prefillMemberName=${encodeURIComponent(action.memberName)}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions", {
+      prefillMemberName: action.memberName,
+    });
   }
 
-  return targetHref(action.target, venueId);
+  return targetHref(action.target, venueId, teamPeriodParams);
 }
 
 function readinessHref(
   action: OwnerProfitReadinessAction,
   venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
 ): string {
-  return targetHref(action.target, venueId);
+  return targetHref(action.target, venueId, teamPeriodParams);
 }
 
 function teamTaskQueueHref(
   venueId: string,
   taskId: string | undefined,
+  teamPeriodParams?: TeamPeriodParams,
 ): string {
-  const encodedVenueId = encodeURIComponent(venueId);
   if (!taskId) {
-    return `/team?role=venue_manager&venueId=${encodedVenueId}#team-actions`;
+    return teamHref(venueId, teamPeriodParams, "#team-actions");
   }
 
-  const encodedTaskId = encodeURIComponent(taskId);
-  return `/team?role=venue_manager&venueId=${encodedVenueId}&focusTaskId=${encodedTaskId}#team-actions`;
+  return teamHref(venueId, teamPeriodParams, "#team-actions", {
+    focusTaskId: taskId,
+  });
 }
 
 function actionCta(action: OwnerReviewAction): string {
@@ -154,10 +194,12 @@ export function OwnerCommandPanel({
   venueId,
   review,
   teamTaskQueue,
+  teamPeriodParams,
 }: {
   venueId: string;
   review: OwnerReview;
   teamTaskQueue?: TeamTaskQueueSummary;
+  teamPeriodParams?: TeamPeriodParams;
 }) {
   const mainAction = primaryAction(review);
   const proof = review.evidence.slice(0, 4);
@@ -194,13 +236,19 @@ export function OwnerCommandPanel({
 
           <div className="mt-5 flex flex-wrap gap-3">
             {mainAction ? (
-              <LinkButton href={actionHref(mainAction, venueId)}>
+              <LinkButton
+                href={actionHref(mainAction, venueId, teamPeriodParams)}
+              >
                 {actionCta(mainAction)}
                 <ArrowRight className="size-4" />
               </LinkButton>
             ) : review.readiness.action ? (
               <LinkButton
-                href={readinessHref(review.readiness.action, venueId)}
+                href={readinessHref(
+                  review.readiness.action,
+                  venueId,
+                  teamPeriodParams,
+                )}
               >
                 {review.readiness.action.label}
                 <ArrowRight className="size-4" />
@@ -208,7 +256,11 @@ export function OwnerCommandPanel({
             ) : null}
             {review.operationalPulse ? (
               <LinkButton
-                href={readinessHref(review.operationalPulse.action, venueId)}
+                href={readinessHref(
+                  review.operationalPulse.action,
+                  venueId,
+                  teamPeriodParams,
+                )}
                 variant="outline"
               >
                 Открыть контур
@@ -297,7 +349,7 @@ export function OwnerCommandPanel({
                     </p>
                   </div>
                   <LinkButton
-                    href={actionHref(action, venueId)}
+                    href={actionHref(action, venueId, teamPeriodParams)}
                     variant="outline"
                     className="h-8 shrink-0 px-3 text-[12px]"
                   >
@@ -328,7 +380,11 @@ export function OwnerCommandPanel({
                   </p>
                 </div>
                 <LinkButton
-                  href={teamTaskQueueHref(venueId, nextTeamTask?.id)}
+                  href={teamTaskQueueHref(
+                    venueId,
+                    nextTeamTask?.id,
+                    teamPeriodParams,
+                  )}
                   variant="outline"
                   className="h-8 shrink-0 px-3 text-[12px]"
                 >
