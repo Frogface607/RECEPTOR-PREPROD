@@ -2060,6 +2060,8 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         "Проверить маржу, наличие, скорость отдачи и альтернативы для апсейла.",
       role: "chef",
       tone: topCategoryShare >= 42 ? "risk" : "watch",
+      learningModuleId: "tech-card-discipline",
+      learningModuleTitle: "Техкарта как договор внутри команды",
     });
   }
 

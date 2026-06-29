@@ -1463,6 +1463,47 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("connects category margin hypotheses with the tech-card learning module", () => {
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Категория может держать оборот, но не прибыль",
+          role: "chef",
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарта как договор внутри команды",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: expect.stringContaining("Проверить маржу"),
+          roleId: "chef",
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарта как договор внутри команды",
+          contextNote: expect.stringContaining(
+            "Урок для команды: Техкарта как договор внутри команды.",
+          ),
+        }),
+      ]),
+    );
+  });
+
   test("connects revenue drop hypotheses with the shift control learning module", () => {
     const review = buildOwnerReview({
       summary,
