@@ -942,6 +942,9 @@ function TeamManagerFollowUpCard({
   venueId: string;
   followUp: TeamManagerFollowUp;
 }) {
+  const primaryItem = followUp.items[0] ?? null;
+  const secondaryItems = followUp.items.slice(1, 3);
+
   return (
     <div>
       <div className="flex items-start justify-between gap-3">
@@ -979,11 +982,61 @@ function TeamManagerFollowUpCard({
         />
       </div>
 
-      <div className="mt-3 grid gap-2">
-        {followUp.items.map((item) => (
-          <TeamManagerFollowUpRow key={item.id} venueId={venueId} item={item} />
-        ))}
-      </div>
+      {primaryItem ? (
+        <div className="mt-4 rounded-lg border border-brand/30 bg-brand/10 p-4">
+          <Link href={primaryItem.href} className="block">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={
+                  "inline-flex size-7 items-center justify-center rounded-md border " +
+                  managerFollowUpToneClass(primaryItem.tone)
+                }
+              >
+                <span className="size-2 rounded-full bg-current" />
+              </span>
+              <span className="rounded-md border border-border/45 bg-background/40 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {primaryItem.metric}
+              </span>
+            </div>
+            <h3 className="mt-3 text-base font-medium leading-snug text-foreground">
+              {primaryItem.title}
+            </h3>
+            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+              {primaryItem.detail}
+            </p>
+          </Link>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <LinkButton
+              href={primaryItem.href}
+              className="h-9 px-3 text-[13px]"
+            >
+              Открыть
+              <ArrowRight className="size-3.5" />
+            </LinkButton>
+            {primaryItem.taskDraft ? (
+              <TeamFollowUpTaskButton
+                venueId={venueId}
+                draft={primaryItem.taskDraft}
+              />
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {secondaryItems.length > 0 ? (
+        <div className="mt-4 grid gap-2">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Следом
+          </p>
+          {secondaryItems.map((item) => (
+            <TeamManagerFollowUpRow
+              key={item.id}
+              venueId={venueId}
+              item={item}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
