@@ -149,6 +149,7 @@ describe("buildTeamManagerFollowUp", () => {
         roleId: "service",
         priority: "medium",
         sourceLabel: "ФОТ и смены",
+        impactLabel: "80 000 ₽",
       },
     });
   });
@@ -232,6 +233,7 @@ describe("buildTeamManagerFollowUp", () => {
           taskDraft: expect.objectContaining({
             priority: "high",
             sourceLabel: "План/факт",
+            impactLabel: "50% план",
           }),
         }),
       ]),
@@ -294,6 +296,7 @@ describe("buildTeamManagerFollowUp", () => {
         priority: "medium",
         roleId: "venue_manager",
         sourceLabel: "Связь",
+        impactLabel: "1 без ответа",
         title: expect.stringContaining("Зал: фокус на вечер"),
       },
     });
@@ -346,6 +349,7 @@ describe("buildTeamManagerFollowUp", () => {
         audienceMemberId: "manager-1",
         audienceMemberName: "Мария",
         sourceLabel: "ФОТ и смены",
+        impactLabel: "36% ФОТ",
       },
     });
   });

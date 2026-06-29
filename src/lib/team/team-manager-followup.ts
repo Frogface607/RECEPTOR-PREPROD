@@ -1,8 +1,5 @@
 import type { TeamLaborReadiness } from "./team-labor-readiness";
-import {
-  buildLaborEmployeeDiagnostics,
-  type LaborBiSummary,
-} from "./labor-bi";
+import { buildLaborEmployeeDiagnostics, type LaborBiSummary } from "./labor-bi";
 import type { TeamLearningMemberSummary } from "./team-learning-progress";
 import type { TeamShiftPlanVarianceSummary } from "./team-shift-plan-variance";
 import type {
@@ -52,6 +49,7 @@ function managerTaskDraft(input: {
   priority: TeamTask["priority"];
   dueLabel?: string;
   sourceLabel: string;
+  impactLabel?: string;
 }): SurvivalTaskDraft {
   return {
     title: input.title,
@@ -59,6 +57,7 @@ function managerTaskDraft(input: {
     roleId: "venue_manager",
     dueLabel: input.dueLabel ?? "сегодня",
     sourceLabel: input.sourceLabel,
+    impactLabel: input.impactLabel,
   };
 }
 
@@ -189,6 +188,7 @@ export function buildTeamManagerFollowUp(input: {
         priority: "high",
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
+        impactLabel: `${urgentTasks.length} срочно`,
       }),
     });
   }
@@ -213,6 +213,7 @@ export function buildTeamManagerFollowUp(input: {
             ? "high"
             : "medium",
         sourceLabel: "Связь",
+        impactLabel: `${communicationGap.unread} без ответа`,
       }),
     });
   }
@@ -234,6 +235,7 @@ export function buildTeamManagerFollowUp(input: {
         title: "Проверить выгрузку смен iiko для расчета ФОТ",
         priority: "high",
         sourceLabel: "ФОТ и смены",
+        impactLabel: "нет смен",
       }),
     });
   } else if (iikoBlocker) {
@@ -258,6 +260,7 @@ export function buildTeamManagerFollowUp(input: {
           priority:
             input.laborReadiness.status === "blocked" ? "high" : "medium",
           sourceLabel: "ФОТ и смены",
+          impactLabel: rubles(iikoBlocker.sales),
         }),
         roleId: iikoBlocker.roleId ?? "venue_manager",
         audienceMemberId:
@@ -280,6 +283,7 @@ export function buildTeamManagerFollowUp(input: {
           priority:
             input.laborReadiness.status === "blocked" ? "high" : "medium",
           sourceLabel: "ФОТ и смены",
+          impactLabel: `${input.laborReadiness.coveragePct}% ФОТ`,
         }),
         roleId: firstMissingRate.roleId,
         audienceMemberId: firstMissingRate.id,
@@ -306,6 +310,10 @@ export function buildTeamManagerFollowUp(input: {
           title: `${employeeLaborIssue.title}: ${employeeLaborIssue.name}`,
           priority: employeeLaborIssue.tone === "risk" ? "high" : "medium",
           sourceLabel: "ФОТ и смены",
+          impactLabel:
+            employeeLaborIssue.laborCostPct !== null
+              ? `${employeeLaborIssue.laborCostPct}% ФОТ`
+              : `${rubles(employeeLaborIssue.revenuePerHour ?? 0)}/ч`,
         }),
         roleId: employeeLaborIssue.roleId ?? "venue_manager",
         audienceMemberId: employeeLaborIssue.memberId,
@@ -334,6 +342,7 @@ export function buildTeamManagerFollowUp(input: {
               ? "medium"
               : "high",
           sourceLabel: "Обучение",
+          impactLabel: `${blockedAdmissions.length} без допуска`,
         }),
         roleId: learningBlocker.member.roleId,
         audienceMemberId: learningBlocker.member.id,
@@ -359,6 +368,7 @@ export function buildTeamManagerFollowUp(input: {
             ? "high"
             : "medium",
         sourceLabel: "План/факт",
+        impactLabel: `${input.shiftPlanVariance.planCoveragePct}% план`,
       }),
     });
   }
@@ -377,6 +387,7 @@ export function buildTeamManagerFollowUp(input: {
         priority: firstTask.priority,
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
+        impactLabel: `${openTasks.length} открыто`,
       }),
     });
   }
