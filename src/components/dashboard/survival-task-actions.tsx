@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, Loader2, Plus, Send } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  Plus,
+  Send,
+  Tags,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 import { createTeamTaskAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
@@ -24,6 +32,22 @@ const PRIORITY_LABEL: Record<TeamTask["priority"], string> = {
   medium: "средне",
   low: "низко",
 };
+
+function audienceLabel(draft: SurvivalTaskDraft): string {
+  return draft.audienceMemberName ?? ROLE_LABEL[draft.roleId];
+}
+
+function audiencePrefix(draft: SurvivalTaskDraft): string {
+  return draft.audienceMemberName ? "Сотрудник" : "Роль";
+}
+
+function sourceLabel(draft: SurvivalTaskDraft): string {
+  return draft.sourceLabel ?? "Разбор владельца";
+}
+
+function createdMessage(draft: SurvivalTaskDraft, message: string): string {
+  return `${message} Контур: ${sourceLabel(draft)}. Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
+}
 
 export function SurvivalTaskActions({
   venueId,
@@ -54,7 +78,7 @@ export function SurvivalTaskActions({
 
       if (result.ok) {
         setStates((current) => ({ ...current, [index]: "saved" }));
-        setMessage(result.message);
+        setMessage(createdMessage(draft, result.message));
       } else {
         setStates((current) => ({ ...current, [index]: "error" }));
         setMessage(result.error);
@@ -69,6 +93,7 @@ export function SurvivalTaskActions({
       {drafts.map((draft, index) => {
         const state = states[index] ?? "idle";
         const saved = state === "saved";
+        const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
         return (
           <div
             key={`${draft.roleId}-${index}-${draft.title}`}
@@ -77,20 +102,24 @@ export function SurvivalTaskActions({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md border border-brand/35 bg-brand/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-brand">
-                    {draft.audienceMemberName ?? ROLE_LABEL[draft.roleId]}
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-brand/35 bg-brand/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-brand">
+                    <Tags className="size-3" />
+                    {sourceLabel(draft)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-border/45 bg-background/45 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    <AudienceIcon className="size-3" />
+                    {audiencePrefix(draft)}: {audienceLabel(draft)}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
                     {PRIORITY_LABEL[draft.priority]} · {draft.dueLabel}
                   </span>
-                  {draft.sourceLabel ? (
-                    <span className="rounded-md border border-border/45 bg-background/45 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      {draft.sourceLabel}
-                    </span>
-                  ) : null}
                 </div>
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {draft.title}
+                </p>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  Создастся в Team OS как задача для{" "}
+                  {audiencePrefix(draft).toLowerCase()} {audienceLabel(draft)}.
                 </p>
               </div>
 
