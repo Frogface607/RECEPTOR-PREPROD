@@ -160,7 +160,9 @@ describe("buildMenuMarginReadiness", () => {
       reason: "missing-cost",
       productName: "Mapped product",
     });
-    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+    const nextAction = buildMenuMarginNextAction(readiness);
+
+    expect(nextAction).toMatchObject({
       kind: "missing-link",
       title: "Блюдо не связано с iiko",
       blocker: expect.objectContaining({
@@ -168,6 +170,8 @@ describe("buildMenuMarginReadiness", () => {
         reason: "missing-link",
       }),
     });
+    expect(nextAction.detail).toContain("50");
+    expect(nextAction.detail).toContain("выручки периода");
   });
 
   test("explains linked product without RMS cost as the next action", () => {
@@ -218,6 +222,8 @@ describe("buildMenuMarginReadiness", () => {
     expect(nextAction.detail).toContain("Pasta");
     expect(nextAction.detail).toContain("Pasta semi-finished");
     expect(nextAction.detail).toContain("purchasePrice");
+    expect(nextAction.detail).toContain("30");
+    expect(nextAction.detail).toContain("выручки периода");
     expect(nextAction.action).toContain("RMS-права");
   });
 
@@ -277,10 +283,14 @@ describe("buildMenuMarginReadiness", () => {
       techCardIngredientRows: 2,
       techCardLinkedIngredientRows: 2,
     });
-    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+    const nextAction = buildMenuMarginNextAction(readiness);
+
+    expect(nextAction).toMatchObject({
       kind: "missing-cost",
       title: "Техкарта есть, не хватает цен ингредиентов",
     });
+    expect(nextAction.detail).toContain("30");
+    expect(nextAction.detail).toContain("выручки периода");
   });
 
   test("calculates proven food cost from priced tech-card ingredients", () => {

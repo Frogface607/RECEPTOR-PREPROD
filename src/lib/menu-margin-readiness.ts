@@ -1,4 +1,5 @@
 import type { DishStat, Product } from "@/lib/iiko/models";
+import { formatRubles } from "@/lib/format";
 import {
   findMappedProduct,
   type MenuItemMapping,
@@ -589,7 +590,7 @@ export function buildMenuMarginNextAction(
     return {
       kind: "missing-cost",
       title: "Техкарта есть, не хватает цен ингредиентов",
-      detail: `«${blocker.dishName}» связано с ${linkedProduct}. RMS отдал состав: ${blocker.techCardIngredientRows} строк, ${blocker.techCardLinkedIngredientRows} связаны с товарами.`,
+      detail: `«${blocker.dishName}» связано с ${linkedProduct}. RMS отдал состав: ${blocker.techCardIngredientRows} строк, ${blocker.techCardLinkedIngredientRows} связаны с товарами. Без цен ингредиентов не доказано ${formatRubles(blocker.revenue)} выручки периода.`,
       action:
         "Проверьте закупочные цены ингредиентов в RMS. После этого Receptor сможет считать food cost по составу техкарты.",
       blocker,
@@ -613,7 +614,7 @@ export function buildMenuMarginNextAction(
     return {
       kind: "missing-cost",
       title: "RMS не отдает закупочную цену",
-      detail: `«${blocker.dishName}» связано с ${product}, но у товара нет purchasePrice, cost или price_per_unit.`,
+      detail: `«${blocker.dishName}» связано с ${product}, но у товара нет purchasePrice, cost или price_per_unit. Без цены не доказано ${formatRubles(blocker.revenue)} выручки периода.`,
       action:
         "Откройте диагностику iiko и проверьте RMS-права на номенклатуру, закупочные цены или техкарты.",
       blocker,
@@ -623,7 +624,7 @@ export function buildMenuMarginNextAction(
   return {
     kind: "missing-link",
     title: "Блюдо не связано с iiko",
-    detail: `«${blocker.dishName}» продается в BI, но не связано с товаром номенклатуры.`,
+    detail: `«${blocker.dishName}» продается в BI, но не связано с товаром номенклатуры. Без связи не доказано ${formatRubles(blocker.revenue)} выручки периода.`,
     action:
       "Свяжите блюдо с правильным товаром iiko, затем проверьте, пришла ли закупочная цена.",
     blocker,
