@@ -1,4 +1,5 @@
 import { formatInteger, formatRubles } from "@/lib/format";
+import { buildLaborMarginBridge } from "@/lib/labor-margin-bridge";
 import { buildMenuEngineering } from "@/lib/menu-engineering";
 import type { DailyBrief } from "@/lib/brief/daily-brief";
 import type { RevenueDataQuality } from "@/lib/iiko/data-quality";
@@ -1332,34 +1333,49 @@ function laborMarginHypothesis(input: {
   labor?: LaborBiSummary;
   margin?: MenuMarginReadiness;
 }): OwnerReviewHypothesis | null {
-  if (!input.margin || input.margin.status === "ready") return null;
+  if (!input.margin) return null;
+
+  if (input.labor) {
+    const bridge = buildLaborMarginBridge({
+      labor: input.labor,
+      margin: input.margin,
+    });
+    if (bridge.tone === "good") return null;
+
+    return {
+      title: bridge.title,
+      why: bridge.detail,
+      check: bridge.action,
+      role:
+        bridge.tone === "setup" ? "chef" : bridge.employee ? "owner" : "chef",
+      tone: ownerToneFromLaborBridge(bridge.tone),
+    };
+  }
+
+  if (input.margin.status === "ready") return null;
+
   const nextAction = buildMenuMarginNextAction(input.margin);
-  const laborPct = input.labor?.laborCostPct;
-  const laborIsHigh =
-    laborPct !== null && laborPct !== undefined && laborPct >= 25;
   const topBlocker = nextAction.blocker;
   const blockerText = topBlocker
     ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки): ${nextAction.title}.`
     : "Начните с топ-позиций без себестоимости.";
   const marginAction = nextAction.action;
 
-  if (!laborIsHigh) {
-    return {
-      title: "Маржа пока не доказана",
-      why: `Себестоимость покрывает ${input.margin.revenueCoveragePct}% выручки периода. ${blockerText}`,
-      check: marginAction,
-      role: "chef",
-      tone: input.margin.status === "blocked" ? "risk" : "watch",
-    };
-  }
-
   return {
-    title: "ФОТ давит, а маржа не доказана",
-    why: `ФОТ ${laborPct}% от выручки, при этом себестоимость покрывает только ${input.margin.revenueCoveragePct}% выручки. ${blockerText}`,
-    check: `${marginAction} После этого решать: резать часы, менять расписание или править меню.`,
-    role: "owner",
-    tone: "risk",
+    title: "Маржа пока не доказана",
+    why: `Себестоимость покрывает ${input.margin.revenueCoveragePct}% выручки периода. ${blockerText}`,
+    check: marginAction,
+    role: "chef",
+    tone: input.margin.status === "blocked" ? "risk" : "watch",
   };
+}
+
+function ownerToneFromLaborBridge(
+  tone: ReturnType<typeof buildLaborMarginBridge>["tone"],
+): OwnerReviewTone {
+  if (tone === "risk") return "risk";
+  if (tone === "good") return "good";
+  return "watch";
 }
 
 function confidenceFor(input: BuildOwnerReviewInput): {

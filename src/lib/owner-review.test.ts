@@ -227,8 +227,8 @@ describe("buildOwnerReview", () => {
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "ФОТ давит, а маржа не доказана",
-          why: expect.stringContaining("Паста"),
+          title: "ФОТ по Команда зала требует маржу рядом",
+          why: expect.stringContaining("себестоимость покрывает только 0%"),
           tone: "risk",
           role: "owner",
         }),
@@ -339,6 +339,84 @@ describe("buildOwnerReview", () => {
       roleId: "venue_manager",
       sourceLabel: "ФОТ и смены",
     });
+  });
+
+  test("connects employee FOT risk with proven weak margin in hypotheses", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-manager-expensive",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 50000,
+          items: 120,
+          employee: "Shift",
+          workers: [
+            {
+              memberId: "manager-1",
+              name: "Maria",
+              hours: 10,
+              shiftPay: 18000,
+              sales: 50000,
+            },
+          ],
+        },
+      ],
+    });
+    const margin = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Cheap pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 1000,
+        },
+        {
+          dishName: "Healthy steak",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 10000,
+        },
+      ],
+      products: [
+        {
+          id: "cheap-pasta",
+          name: "Cheap pasta",
+          purchasePrice: 55,
+          sizePrices: [],
+        },
+        {
+          id: "healthy-steak",
+          name: "Healthy steak",
+          purchasePrice: 250,
+          sizePrices: [],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Проверить смену: Maria и слабая маржа",
+          why: expect.stringContaining("Cheap pasta"),
+          check: expect.stringContaining("проблема может быть в меню"),
+          role: "owner",
+          tone: "risk",
+        }),
+      ]),
+    );
   });
 
   test("names first labor blocker in owner evidence", () => {
