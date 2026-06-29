@@ -2378,7 +2378,7 @@ function TaskRow({
       id={anchorId}
       className={
         "rounded-lg border border-border/45 bg-background/35 p-3 " +
-        (anchorId ? "scroll-mt-24" : "")
+        (anchorId ? "operational-target scroll-mt-24" : "")
       }
     >
       <div className="flex flex-wrap items-center gap-2">

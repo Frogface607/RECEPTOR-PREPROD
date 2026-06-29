@@ -1000,7 +1000,7 @@ export function TeamActionsPanel({
                       id={`labor-member-${member.id}`}
                       key={member.id}
                       className={
-                        "scroll-mt-24 align-top " +
+                        "operational-target scroll-mt-24 align-top " +
                         (isFocused ? "bg-brand/10" : "")
                       }
                     >
