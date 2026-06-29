@@ -62,6 +62,43 @@ describe("normalizeRmsPrice", () => {
     });
   });
 
+  test("reads flattened dotted RMS purchase cost fields", () => {
+    const price = normalizeRmsPrice({
+      id: "flat-1",
+      name: "Flat tomato",
+      unit: "kg",
+      "purchase.pricePerUnit": 0.61,
+    });
+
+    expect(price).toMatchObject({
+      skuId: "flat-1",
+      pricePerUnit: 0.61,
+      pricePerKg: 610,
+      rawField: "purchase.pricePerUnit",
+    });
+  });
+
+  test("reads product identity from nested RMS product container", () => {
+    const price = normalizeRmsPrice({
+      product: {
+        id: "nested-product",
+        name: "Nested product",
+      },
+      unit: "kg",
+      cost: {
+        pricePerUnit: 0.27,
+      },
+    });
+
+    expect(price).toMatchObject({
+      skuId: "nested-product",
+      name: "Nested product",
+      pricePerUnit: 0.27,
+      pricePerKg: 270,
+      rawField: "cost.pricePerUnit",
+    });
+  });
+
   test("reads explicit nested cost fields under RMS price containers", () => {
     const price = normalizeRmsPrice({
       id: "nested-2",

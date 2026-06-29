@@ -95,21 +95,21 @@ const NESTED_BULK_COST_FIELDS = [
 const UNIT_ALIASES: Record<string, ProductUnit> = {
   kg: "g",
   kilogram: "g",
-  "кг": "g",
+  кг: "g",
   g: "g",
   gram: "g",
-  "г": "g",
+  г: "g",
   l: "ml",
   liter: "ml",
   litre: "ml",
-  "л": "ml",
+  л: "ml",
   ml: "ml",
   milliliter: "ml",
-  "мл": "ml",
+  мл: "ml",
   pcs: "pcs",
   piece: "pcs",
   pieces: "pcs",
-  "шт": "pcs",
+  шт: "pcs",
 };
 
 export function normalizeRmsPrices(payload: unknown): RmsPrice[] {
@@ -119,8 +119,21 @@ export function normalizeRmsPrices(payload: unknown): RmsPrice[] {
 }
 
 export function normalizeRmsPrice(raw: RawRmsPrice): RmsPrice | null {
-  const skuId = readText(raw, ["skuId", "id", "productId", "_id"]);
-  const name = readText(raw, ["name", "title"]);
+  const skuId = readText(raw, [
+    "skuId",
+    "id",
+    "productId",
+    "product.id",
+    "nomenclatureId",
+    "nomenclature.id",
+    "_id",
+  ]);
+  const name = readText(raw, [
+    "name",
+    "title",
+    "product.name",
+    "nomenclature.name",
+  ]);
   if (!skuId || !name) return null;
 
   const originalUnit = readText(raw, [
@@ -143,7 +156,8 @@ export function normalizeRmsPrice(raw: RawRmsPrice): RmsPrice | null {
     pricePerUnit: cost.pricePerUnit,
     pricePerKg: cost.pricePerKg,
     currency: normalizeCurrency(readText(raw, ["currency"])),
-    vatPct: readNumber(raw, ["vat_pct", "vatPct", "vat", "vatRate", "taxRate"]) ?? 0,
+    vatPct:
+      readNumber(raw, ["vat_pct", "vatPct", "vat", "vatRate", "taxRate"]) ?? 0,
     source: "iiko_rms",
     rawField: cost.rawField,
     active: readBoolean(raw, ["active", "isActive"], true),
@@ -259,7 +273,7 @@ function readArticle(raw: RawRmsPrice): string | undefined {
 
 function readText(raw: RawRmsPrice, keys: string[]): string | undefined {
   for (const key of keys) {
-    const value = raw[key];
+    const value = readPath(raw, key);
     if (value === null || value === undefined) continue;
     const text = String(value).trim();
     if (text) return text;
@@ -276,7 +290,7 @@ function readNumberWithField(
   keys: readonly string[],
 ): { field: string; value: number } | undefined {
   for (const key of keys) {
-    const value = toNumber(raw[key]);
+    const value = toNumber(readPath(raw, key));
     if (value !== undefined && value > 0) return { field: key, value };
   }
   return undefined;
@@ -288,19 +302,38 @@ function readNestedNumberWithField(
   keys: readonly string[],
 ): { field: string; value: number } | undefined {
   for (const container of containers) {
-    const value = raw[container];
-    if (!isRecord(value)) continue;
+    const value = readPath(raw, container);
 
-    const nested = readNumberWithField(value, keys);
-    if (nested) {
-      return {
-        field: `${container}.${nested.field}`,
-        value: nested.value,
-      };
+    if (isRecord(value)) {
+      const nested = readNumberWithField(value, keys);
+      if (nested) {
+        return {
+          field: `${container}.${nested.field}`,
+          value: nested.value,
+        };
+      }
+    }
+
+    for (const key of keys) {
+      const field = `${container}.${key}`;
+      const flattened = toNumber(readPath(raw, field));
+      if (flattened !== undefined && flattened > 0) {
+        return { field, value: flattened };
+      }
     }
   }
 
   return undefined;
+}
+
+function readPath(raw: RawRmsPrice, key: string): unknown {
+  if (Object.prototype.hasOwnProperty.call(raw, key)) return raw[key];
+  if (!key.includes(".")) return undefined;
+
+  return key.split(".").reduce<unknown>((current, part) => {
+    if (!isRecord(current)) return undefined;
+    return current[part];
+  }, raw);
 }
 
 function readBoolean(
@@ -354,12 +387,22 @@ function toReferencePrice(pricePerUnit: number, unit: ProductUnit): number {
 
 function isBulkUnit(unit?: string): boolean {
   const normalized = unit?.trim().toLowerCase();
-  return normalized === "kg" || normalized === "кг" || normalized === "l" || normalized === "л";
+  return (
+    normalized === "kg" ||
+    normalized === "кг" ||
+    normalized === "l" ||
+    normalized === "л"
+  );
 }
 
 function isSmallUnit(unit?: string): boolean {
   const normalized = unit?.trim().toLowerCase();
-  return normalized === "g" || normalized === "г" || normalized === "ml" || normalized === "мл";
+  return (
+    normalized === "g" ||
+    normalized === "г" ||
+    normalized === "ml" ||
+    normalized === "мл"
+  );
 }
 
 function toNumber(value: unknown): number | undefined {
