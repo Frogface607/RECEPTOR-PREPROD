@@ -429,8 +429,39 @@ function LaborSetupProgressStrip({
           detail={`${formatInteger(progress.unpricedShifts)} сменных записей`}
         />
       </div>
+
+      {progress.setupBlockers.length > 0 ? (
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {progress.setupBlockers.map((blocker) => (
+            <div
+              key={`${blocker.name}-${blocker.reason}`}
+              className="rounded-lg border border-border/45 bg-card/35 p-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="min-w-0 truncate text-[12px] font-medium text-foreground">
+                  {blocker.name}
+                </p>
+                <span className="shrink-0 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                  {setupBlockerLabel(blocker)}
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                {formatInteger(blocker.shifts)} смен ·{" "}
+                {formatHours(blocker.hours)} · {formatRubles(blocker.revenue)}{" "}
+                без точного ФОТ
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function setupBlockerLabel(
+  blocker: TeamLaborSetupProgress["setupBlockers"][number],
+): string {
+  return blocker.action === "add-member" ? "карточка" : "ставка";
 }
 
 function LaborMarginBridgeStrip({ bridge }: { bridge: LaborMarginBridge }) {

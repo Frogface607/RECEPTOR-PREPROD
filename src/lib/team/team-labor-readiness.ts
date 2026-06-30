@@ -34,6 +34,15 @@ export type TeamBulkLaborRateTarget = {
   shiftLabel: string;
 };
 
+export type TeamLaborSetupBlocker = {
+  name: string;
+  reason: LaborBlocker["reason"];
+  action: TeamLaborIikoBlocker["action"];
+  shifts: number;
+  hours: number;
+  revenue: number;
+};
+
 export type TeamLaborSetupProgressStatus =
   "ready" | "needs-shifts" | "needs-members" | "needs-rates";
 
@@ -50,6 +59,7 @@ export type TeamLaborSetupProgress = {
   missingStaffCards: number;
   missingRateCards: number;
   bulkRateTargets: TeamBulkLaborRateTarget[];
+  setupBlockers: TeamLaborSetupBlocker[];
   unpricedShifts: number;
   unpricedRevenue: number;
 };
@@ -93,6 +103,14 @@ export function buildTeamLaborSetupProgress(
     bulkRateTargets.length,
     missingRateBlockers,
   );
+  const setupBlockers = readiness.iikoBlockers.slice(0, 3).map((blocker) => ({
+    name: blocker.name,
+    reason: blocker.reason,
+    action: blocker.action,
+    shifts: blocker.shifts,
+    hours: blocker.hours,
+    revenue: blocker.sales,
+  }));
   const base = {
     coveragePct: readiness.coveragePct,
     activeStaff: readiness.activeStaff,
@@ -100,6 +118,7 @@ export function buildTeamLaborSetupProgress(
     missingStaffCards,
     missingRateCards,
     bulkRateTargets,
+    setupBlockers,
     unpricedShifts: readiness.iikoUnpricedStaffShifts,
     unpricedRevenue: readiness.iikoUnpricedRevenue,
   };

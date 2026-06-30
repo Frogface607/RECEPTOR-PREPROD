@@ -141,6 +141,14 @@ describe("buildTeamLaborReadiness", () => {
       tone: "watch",
       missingStaffCards: 1,
       target: "labor-rates",
+      setupBlockers: [
+        expect.objectContaining({
+          name: "Петр",
+          action: "add-member",
+          reason: "missing-member",
+          revenue: 100000,
+        }),
+      ],
     });
   });
 
@@ -170,6 +178,14 @@ describe("buildTeamLaborReadiness", () => {
       missingStaffCards: 0,
       missingRateCards: 1,
       ctaLabel: "Закрыть ставки",
+      setupBlockers: [
+        expect.objectContaining({
+          name: "Петр",
+          action: "set-rate",
+          reason: "missing-rate",
+          revenue: 80000,
+        }),
+      ],
     });
     expect(progress.bulkRateTargets).toEqual([
       expect.objectContaining({ id: "petr" }),
