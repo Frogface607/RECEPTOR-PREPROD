@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  selectIikoMemberImportTasksToClose,
   selectLaborRateTasksToClose,
   selectLearningAdmissionTasksToClose,
 } from "./team-task-autoresolve";
@@ -16,6 +17,19 @@ function task(
     title,
     status,
     audience: { type: "member", memberId },
+  };
+}
+
+function roleTask(
+  id: string,
+  title: string,
+  status: TeamTask["status"] = "new",
+): Pick<TeamTask, "id" | "title" | "status" | "audience"> {
+  return {
+    id,
+    title,
+    status,
+    audience: { type: "role", roleId: "venue_manager" },
   };
 }
 
@@ -47,6 +61,22 @@ describe("team task autoresolve", () => {
       ];
 
     expect(selectLaborRateTasksToClose(tasks, ["petr"])).toEqual([]);
+  });
+
+  test("selects open role tasks for imported iiko staff cards", () => {
+    const tasks: Array<Pick<TeamTask, "id" | "title" | "status" | "audience">> =
+      [
+        roleTask("import", "Импортировать сотрудников из iiko в Team OS"),
+        roleTask("cards", "Создать карточки сотрудников iiko", "in_progress"),
+        roleTask("done", "Импортировать сотрудников из iiko", "done"),
+        roleTask("other", "Проверить выгрузку смен iiko"),
+        task("member", "Импортировать сотрудников из iiko", "petr"),
+      ];
+
+    expect(selectIikoMemberImportTasksToClose(tasks)).toEqual([
+      tasks[0],
+      tasks[1],
+    ]);
   });
 
   test("selects only the open admission task for the passed module", () => {

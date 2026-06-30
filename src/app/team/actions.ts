@@ -15,7 +15,10 @@ import {
   normalizeTaskImpactLabel,
   normalizeTaskSourceLabel,
 } from "@/lib/team/team-task-labels";
-import { selectLaborRateTasksToClose } from "@/lib/team/team-task-autoresolve";
+import {
+  selectIikoMemberImportTasksToClose,
+  selectLaborRateTasksToClose,
+} from "@/lib/team/team-task-autoresolve";
 
 const TeamRoleIdSchema = z.enum(
   TEAM_ROLES.map((role) => role.id) as [TeamRoleId, ...TeamRoleId[]],
@@ -247,6 +250,7 @@ type AutoCloseTaskRow = {
   id: string;
   title: string;
   status: TeamTask["status"];
+  audience_type?: TeamTask["audience"]["type"] | null;
   audience_member_id: string | null;
 };
 
@@ -624,6 +628,73 @@ async function closeLaborRateTasksForMembers(
   return taskIds;
 }
 
+async function closeIikoMemberImportTasks(
+  ctx: WritableTeamContext,
+  venueId: string,
+): Promise<string[]> {
+  if (ctx.mode === "sandbox" || !ctx.supabase) return [];
+
+  const { data, error } = await ctx.supabase
+    .from("team_tasks")
+    .select("id,title,status,audience_type,audience_member_id")
+    .eq("venue_id", venueId)
+    .neq("audience_type", "member")
+    .in("status", OPEN_TASK_STATUSES);
+
+  if (error) {
+    if (missingTeamTables(error.message)) return [];
+    throw new Error(error.message);
+  }
+
+  const taskIds = selectIikoMemberImportTasksToClose(
+    ((data ?? []) as AutoCloseTaskRow[]).map((task) => ({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      audience:
+        task.audience_type === "venue"
+          ? ({ type: "venue", venueId } as const)
+          : ({ type: "role", roleId: "venue_manager" } as const),
+    })),
+  ).map((task) => task.id);
+
+  if (taskIds.length === 0) return [];
+
+  const { error: updateError } = await ctx.supabase
+    .from("team_tasks")
+    .update({
+      status: "done" satisfies TeamTask["status"],
+      updated_at: new Date().toISOString(),
+    })
+    .eq("venue_id", venueId)
+    .in("id", taskIds);
+
+  if (updateError) {
+    if (missingTeamTables(updateError.message)) return [];
+    throw new Error(updateError.message);
+  }
+
+  const firstTaskLabels = taskIds[0]
+    ? await findTaskContextLabels(ctx, venueId, taskIds[0])
+    : { sourceLabel: null, impactLabel: null };
+
+  await writeTeamAuditEvent(ctx, {
+    venueId,
+    type: "task_status_updated",
+    targetType: "task",
+    targetId: taskIds[0] ?? null,
+    summary: `Автоматически закрыты задачи импорта сотрудников iiko: ${taskIds.length}.`,
+    metadata: {
+      taskIds,
+      status: "done",
+      sourceLabel: firstTaskLabels.sourceLabel ?? "ФОТ setup",
+      impactLabel: firstTaskLabels.impactLabel ?? `${taskIds.length} закрыто`,
+    },
+  });
+
+  return taskIds;
+}
+
 function parseActionInput(raw: unknown): Record<string, unknown> {
   if (raw instanceof FormData) {
     return Object.fromEntries(raw.entries());
@@ -850,10 +921,28 @@ export async function importIikoTeamMembersAction(
     }));
 
   if (rows.length === 0) {
+    let closedTaskIds: string[] = [];
+    let taskCloseWarning = false;
+    try {
+      closedTaskIds = await closeIikoMemberImportTasks(
+        ctx,
+        parsed.data.venueId,
+      );
+    } catch (error) {
+      taskCloseWarning = true;
+      console.warn("Failed to auto-close iiko import tasks:", error);
+    }
+
     return {
       ok: true,
       mode: "saved",
-      message: "Сотрудники из iiko уже есть в Team OS.",
+      message:
+        "Сотрудники из iiko уже есть в Team OS." +
+        (closedTaskIds.length > 0
+          ? ` Закрыто задач импорта: ${closedTaskIds.length}.`
+          : taskCloseWarning
+            ? " Задачи импорта не закрылись автоматически."
+            : ""),
     };
   }
 
@@ -890,11 +979,26 @@ export async function importIikoTeamMembersAction(
     },
   });
 
+  let closedTaskIds: string[] = [];
+  let taskCloseWarning = false;
+  try {
+    closedTaskIds = await closeIikoMemberImportTasks(ctx, parsed.data.venueId);
+  } catch (error) {
+    taskCloseWarning = true;
+    console.warn("Failed to auto-close iiko import tasks:", error);
+  }
+
   revalidateTeamWorkspace(parsed.data.venueId);
   return {
     ok: true,
     mode: "saved",
-    message: `Добавлены сотрудники из iiko: ${names.join(", ")}. Теперь заполните ставки ФОТ.`,
+    message:
+      `Добавлены сотрудники из iiko: ${names.join(", ")}. Теперь заполните ставки ФОТ.` +
+      (closedTaskIds.length > 0
+        ? ` Закрыто задач импорта: ${closedTaskIds.length}.`
+        : taskCloseWarning
+          ? " Задачи импорта не закрылись автоматически."
+          : ""),
   };
 }
 

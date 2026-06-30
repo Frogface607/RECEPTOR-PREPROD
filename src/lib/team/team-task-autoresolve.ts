@@ -14,6 +14,17 @@ export function isLaborRateSetupTaskTitle(title: string): boolean {
   return isRussianLaborRate || isEnglishLaborRate;
 }
 
+export function isIikoMemberImportTaskTitle(title: string): boolean {
+  const normalized = title.toLocaleLowerCase("ru-RU");
+  const mentionsIiko = normalized.includes("iiko");
+  const mentionsImport =
+    normalized.includes("импорт") || normalized.includes("карточ");
+  const mentionsTeam =
+    normalized.includes("сотруд") || normalized.includes("team os");
+
+  return mentionsIiko && mentionsImport && mentionsTeam;
+}
+
 export function selectLaborRateTasksToClose(
   tasks: AutoClosableTask[],
   memberIds: string[],
@@ -27,6 +38,17 @@ export function selectLaborRateTasksToClose(
       task.audience.type === "member" &&
       targetMemberIds.has(task.audience.memberId) &&
       isLaborRateSetupTaskTitle(task.title),
+  );
+}
+
+export function selectIikoMemberImportTasksToClose(
+  tasks: AutoClosableTask[],
+): AutoClosableTask[] {
+  return tasks.filter(
+    (task) =>
+      !CLOSED_STATUSES.has(task.status) &&
+      task.audience.type !== "member" &&
+      isIikoMemberImportTaskTitle(task.title),
   );
 }
 
