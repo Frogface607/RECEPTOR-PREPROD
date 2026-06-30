@@ -299,8 +299,11 @@ export function TeamActionsPanel({
     [staff, laborBi],
   );
   const bulkRateTargets = useMemo(
-    () => buildBulkLaborRateTargets(staff),
-    [staff],
+    () =>
+      buildBulkLaborRateTargets(staff, {
+        blockers: laborReadiness.iikoBlockers,
+      }),
+    [staff, laborReadiness.iikoBlockers],
   );
   const iikoImportCandidates = useMemo(
     () => buildIikoStaffImportCandidates(laborReadiness.iikoBlockers),
@@ -1138,7 +1141,8 @@ export function TeamActionsPanel({
                   </h4>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     Только сотрудники без ставки. Заполненные ставки не
-                    перезаписываем.
+                    перезаписываем. Если есть смены iiko, первыми идут те, кто
+                    сильнее искажает ФОТ.
                   </p>
                 </div>
                 <div className="grid w-full gap-2 sm:grid-cols-[1fr_1fr_0.8fr_auto] lg:max-w-2xl">
@@ -1180,7 +1184,7 @@ export function TeamActionsPanel({
                 </div>
               </div>
               <p className="mt-2 truncate text-[11px] text-muted-foreground">
-                В очереди:{" "}
+                В очереди по влиянию на ФОТ:{" "}
                 {bulkRateTargets
                   .slice(0, 4)
                   .map((target) => target.name)

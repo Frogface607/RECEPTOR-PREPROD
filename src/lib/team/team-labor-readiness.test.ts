@@ -117,6 +117,43 @@ describe("buildTeamLaborReadiness", () => {
     ]);
   });
 
+  test("prioritizes bulk labor rate targets by iiko unpriced revenue", () => {
+    const staff: StaffMember[] = [
+      { ...baseMember, id: "petr", name: "Петр" },
+      { ...baseMember, id: "boris", name: "Борис" },
+      { ...baseMember, id: "anna", name: "Анна" },
+    ];
+    const labor = buildLaborBi({
+      staff,
+      shifts: [
+        {
+          shiftId: "shift-impact",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 210000,
+          items: 340,
+          employee: "Смена",
+          workers: [
+            { memberId: "petr", name: "Петр", hours: 8, sales: 80000 },
+            { memberId: "boris", name: "Борис", hours: 8, sales: 130000 },
+          ],
+        },
+      ],
+    });
+    const readiness = buildTeamLaborReadiness(staff, labor);
+
+    expect(
+      buildBulkLaborRateTargets(staff, {
+        blockers: readiness.iikoBlockers,
+      }).map((target) => target.id),
+    ).toEqual(["boris", "petr", "anna"]);
+    expect(
+      buildTeamLaborSetupProgress(staff, readiness).bulkRateTargets.map(
+        (target) => target.id,
+      ),
+    ).toEqual(["boris", "petr", "anna"]);
+  });
+
   test("prioritizes importing missing iiko staff in setup progress", () => {
     const staff: StaffMember[] = [
       { ...baseMember, id: "ready", name: "Илья", hourlyRate: 350 },

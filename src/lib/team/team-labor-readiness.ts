@@ -34,6 +34,11 @@ export type TeamBulkLaborRateTarget = {
   shiftLabel: string;
 };
 
+type BulkLaborRateTargetOptions = {
+  limit?: number;
+  blockers?: LaborBlocker[];
+};
+
 export type TeamLaborSetupBlocker = {
   name: string;
   reason: LaborBlocker["reason"];
@@ -72,13 +77,25 @@ export function hasLaborRate(member: StaffMember): boolean {
 
 export function buildBulkLaborRateTargets(
   staff: StaffMember[],
-  options: { limit?: number } = {},
+  options: BulkLaborRateTargetOptions = {},
 ): TeamBulkLaborRateTarget[] {
   const limit = Math.max(options.limit ?? 50, 1);
+  const blockerRevenueByMemberId = new Map(
+    (options.blockers ?? [])
+      .filter(
+        (blocker) => blocker.reason === "missing-rate" && blocker.memberId,
+      )
+      .map((blocker) => [blocker.memberId as string, blocker.sales]),
+  );
 
   return staff
     .filter((member) => member.status !== "paused" && !hasLaborRate(member))
-    .sort((a, b) => a.name.localeCompare(b.name, "ru-RU"))
+    .sort((a, b) => {
+      const aRevenue = blockerRevenueByMemberId.get(a.id) ?? 0;
+      const bRevenue = blockerRevenueByMemberId.get(b.id) ?? 0;
+      if (aRevenue !== bRevenue) return bRevenue - aRevenue;
+      return a.name.localeCompare(b.name, "ru-RU");
+    })
     .slice(0, limit)
     .map((member) => ({
       id: member.id,
@@ -92,7 +109,9 @@ export function buildTeamLaborSetupProgress(
   staff: StaffMember[],
   readiness: TeamLaborReadiness,
 ): TeamLaborSetupProgress {
-  const bulkRateTargets = buildBulkLaborRateTargets(staff);
+  const bulkRateTargets = buildBulkLaborRateTargets(staff, {
+    blockers: readiness.iikoBlockers,
+  });
   const missingStaffCards = readiness.iikoBlockers.filter(
     (blocker) => blocker.reason === "missing-member",
   ).length;
