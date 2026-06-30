@@ -942,7 +942,7 @@ export function TeamActionsPanel({
                           <div className="mt-2 flex items-start gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
                             <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
                             <div className="min-w-0">
-                              <p>Команде поможет: {learningHint}</p>
+                              <p>Стандарт задачи: {learningHint}</p>
                               {checklistHint ? (
                                 <p className="mt-1 text-sky-100">
                                   Чеклист: {checklistHint}

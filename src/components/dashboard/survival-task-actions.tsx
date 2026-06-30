@@ -202,7 +202,7 @@ export function SurvivalTaskActions({
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-sky-100/90">
                     <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
                     <span>
-                      Команде поможет: {draft.learningModuleTitle}
+                      Стандарт задачи: {draft.learningModuleTitle}
                       {checklistTitle ? `. Чеклист: ${checklistTitle}` : ""}
                       {learningHref ? (
                         <>

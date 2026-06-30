@@ -1759,7 +1759,7 @@ function RolePersonalBrief({
               variant="outline"
               className="justify-between"
             >
-              Открыть обучение
+              Открыть стандарты
               <ArrowRight className="size-4" />
             </LinkButton>
             <LinkButton
@@ -1828,7 +1828,7 @@ function RolePersonalBrief({
                     className="rounded-lg border border-brand/25 bg-brand/10 p-3 transition-colors hover:border-brand/45"
                   >
                     <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-                      Следующий урок
+                      Следующий стандарт
                     </p>
                     <p className="mt-1 text-sm font-medium">
                       {nextLearning.title}

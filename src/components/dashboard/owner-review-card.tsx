@@ -219,7 +219,7 @@ function actionCta(action: OwnerReviewAction): string {
   if (action.target === "shift-diagnostics") return "Разобрать смену";
   if (action.target === "shift-plan") return "Открыть план";
   if (action.target === "shift-plan-variance") return "Открыть план/факт";
-  if (action.target === "team-learning") return "Открыть обучение";
+  if (action.target === "team-learning") return "Открыть стандарты";
   if (action.target === "team-journal") return "Открыть журнал";
   if (action.target === "team-actions") return "Открыть Team OS";
   if (action.target === "margin-diagnostics") return "Проверить RMS";
