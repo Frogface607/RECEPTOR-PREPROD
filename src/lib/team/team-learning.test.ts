@@ -80,6 +80,20 @@ describe("team learning catalog", () => {
         }),
       ]),
     );
+    expect(getLearningItem("iiko-cash-discipline")?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Если Receptor не видит смены iiko",
+        }),
+      ]),
+    );
+    expect(getLearningItem("restaurant-numbers-basics")?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Если ФОТ не считается полностью",
+        }),
+      ]),
+    );
     expect(techCard?.sections).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

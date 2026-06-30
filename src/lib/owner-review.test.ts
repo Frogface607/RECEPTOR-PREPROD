@@ -2313,7 +2313,64 @@ describe("buildOwnerReview", () => {
       audienceMemberName: "Петр",
       priority: "high",
       sourceLabel: "ФОТ setup",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle: "Цифры ресторана простым языком",
+      learningChecklistTitle: "Если ФОТ не считается полностью",
     });
+    expect(review.tasks[0].contextNote).toContain(
+      "Вопрос: какая ставка или роль нужна, чтобы корректно посчитать ФОТ смены.",
+    );
+    expect(review.tasks[0].contextNote).toContain(
+      "Чеклист: Если ФОТ не считается полностью.",
+    );
+  });
+
+  test("explains missing iiko shifts in the FOT setup task", () => {
+    const staff = [
+      {
+        id: "manager",
+        name: "Управляющий",
+        roleId: "venue_manager" as const,
+        venueId: "venue-1",
+        status: "active" as const,
+        shiftLabel: "iiko",
+        hourlyRate: 500,
+      },
+    ];
+    const labor = buildLaborBi({ staff, shifts: [] });
+    const laborReadiness = buildTeamLaborReadiness(staff, labor);
+    const laborSetupProgress = buildTeamLaborSetupProgress(
+      staff,
+      laborReadiness,
+    );
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts: [],
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      laborSetupProgress,
+    });
+
+    expect(review.tasks[0]).toMatchObject({
+      title: expect.stringContaining("Проверить выгрузку смен iiko"),
+      roleId: "operations_manager",
+      priority: "high",
+      sourceLabel: "ФОТ setup",
+      learningModuleId: "iiko-cash-discipline",
+      learningModuleTitle: "iiko и кассовая дисциплина на смене",
+      learningChecklistTitle: "Если Receptor не видит смены iiko",
+    });
+    expect(review.tasks[0].contextNote).toContain(
+      "Вопрос: каких прав, смен или фильтров iiko не хватает для расчета ФОТ.",
+    );
+    expect(review.tasks[0].contextNote).toContain(
+      "Чеклист: Если Receptor не видит смены iiko.",
+    );
   });
 
   test("uses team comments as field context for owner decisions", () => {

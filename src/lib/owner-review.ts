@@ -688,6 +688,8 @@ function taskFromLaborSetupProgress(
   if (!progress || progress.status === "ready") return null;
 
   if (progress.status === "needs-shifts") {
+    const learningModuleTitle = "iiko и кассовая дисциплина на смене";
+    const learningChecklistTitle = "Если Receptor не видит смены iiko";
     return {
       title:
         "Проверить выгрузку смен iiko для расчета ФОТ: без смен Receptor не видит сотрудников, часы и стоимость периода.",
@@ -695,8 +697,24 @@ function taskFromLaborSetupProgress(
       roleId: "operations_manager",
       dueLabel: "сегодня",
       sourceLabel: "ФОТ setup",
+      learningModuleId: "iiko-cash-discipline",
+      learningModuleTitle,
+      learningChecklistTitle,
+      contextNote: withLearningContext({
+        context:
+          "Проверка: смены iiko не пришли в ФОТ-контур, поэтому Receptor не может связать выручку с людьми, часами и стоимостью команды.",
+        question:
+          "каких прав, смен или фильтров iiko не хватает для расчета ФОТ",
+        reason:
+          "не принимать решения по сменам и прибыли без фактических смен iiko",
+        learningModuleTitle,
+        checklistTitle: learningChecklistTitle,
+      }),
     };
   }
+
+  const learningModuleTitle = "Цифры ресторана простым языком";
+  const learningChecklistTitle = "Если ФОТ не считается полностью";
 
   if (progress.status === "needs-members") {
     return {
@@ -707,6 +725,18 @@ function taskFromLaborSetupProgress(
       roleId: "venue_manager",
       dueLabel: "сегодня",
       sourceLabel: "ФОТ setup",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle,
+      learningChecklistTitle,
+      contextNote: withLearningContext({
+        context: `Проверка: ${progress.missingStaffCards} карточек сотрудников не связано с iiko, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.`,
+        question:
+          "какие сотрудники iiko должны быть связаны с Team OS, чтобы ФОТ стал доказанным",
+        reason:
+          "видеть реальную стоимость команды в сменах, а не только выручку",
+        learningModuleTitle,
+        checklistTitle: learningChecklistTitle,
+      }),
     };
   }
 
@@ -723,6 +753,18 @@ function taskFromLaborSetupProgress(
       audienceMemberName: firstRateTarget.name,
       dueLabel: "сегодня",
       sourceLabel: "ФОТ setup",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle,
+      learningChecklistTitle,
+      contextNote: withLearningContext({
+        context: `Проверка: у ${firstRateTarget.name}${extraTargets > 0 ? ` и еще ${extraTargets}` : ""} нет ставки ФОТ, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+        question:
+          "какая ставка или роль нужна, чтобы корректно посчитать ФОТ смены",
+        reason:
+          "не завышать прибыль из-за незаполненной стоимости сотрудника",
+        learningModuleTitle,
+        checklistTitle: learningChecklistTitle,
+      }),
     };
   }
 
@@ -734,6 +776,16 @@ function taskFromLaborSetupProgress(
     roleId: "venue_manager",
     dueLabel: "сегодня",
     sourceLabel: "ФОТ setup",
+    learningModuleId: "restaurant-numbers-basics",
+    learningModuleTitle,
+    learningChecklistTitle,
+    contextNote: withLearningContext({
+      context: `Проверка: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+      question: "какие ставки нужно заполнить, чтобы ФОТ стал доказанным",
+      reason: "не завышать прибыль из-за незаполненной стоимости команды",
+      learningModuleTitle,
+      checklistTitle: learningChecklistTitle,
+    }),
   };
 }
 
