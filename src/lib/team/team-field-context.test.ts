@@ -74,4 +74,44 @@ describe("buildTeamFieldContextDigest", () => {
 
     expect(digest).toBeNull();
   });
+
+  test("recognizes guided field note templates", () => {
+    const comments: TeamTaskComment[] = [
+      {
+        id: "comment-event",
+        venueId: "venue-1",
+        taskId: "task-service",
+        authorName: "Маша",
+        body: "Событие / посадка: было 36 гостей и плотная бронь.",
+        createdAtLabel: "21:40",
+      },
+      {
+        id: "comment-team",
+        venueId: "venue-1",
+        taskId: "task-service",
+        authorName: "Игорь",
+        body: "Команде мешало: кухня задержала два стола на горячем.",
+        createdAtLabel: "22:20",
+      },
+      {
+        id: "comment-sales",
+        venueId: "venue-1",
+        taskId: "task-service",
+        authorName: "Оля",
+        body: "Сервис / продажи: гости хорошо брали лимонад по рекомендации.",
+        createdAtLabel: "22:30",
+      },
+    ];
+
+    const digest = buildTeamFieldContextDigest({ comments, tasks });
+
+    expect(digest).toMatchObject({
+      totalNotes: 3,
+      signals: expect.arrayContaining([
+        expect.objectContaining({ kind: "event" }),
+        expect.objectContaining({ kind: "team" }),
+        expect.objectContaining({ kind: "service" }),
+      ]),
+    });
+  });
 });
