@@ -7,6 +7,7 @@ import {
   type TeamTask,
   type TeamTaskComment,
 } from "@/lib/team/team-os";
+import { isLikelySameTeamMemberName } from "@/lib/team/team-member-match";
 import type { TeamLearningProgress } from "@/lib/team/team-learning-progress";
 import type { TeamLearningStandardOverride } from "@/lib/team/team-learning-standards";
 
@@ -15,6 +16,7 @@ export type RestaurantAdvisorMemory = {
   fieldSummary: string | null;
   fieldSignals: string[];
   fieldMemoryQuality: string | null;
+  memberSignals: string[];
   openTasks: string[];
   learningGaps: string[];
 };
@@ -85,6 +87,49 @@ function learningGapLines(input: RestaurantMemoryInput): string[] {
     });
 }
 
+function memberMemoryLines(input: RestaurantMemoryInput): string[] {
+  const learningByMemberId = new Map(
+    buildTeamLearningSummaries(
+      input.staff,
+      input.learningProgress,
+      input.learningStandards,
+    ).map((summary) => [summary.member.id, summary]),
+  );
+
+  return input.staff
+    .filter((member) => member.status !== "paused")
+    .flatMap((member) => {
+      const role = getTeamRole(member.roleId).title;
+      const notes = input.comments.filter((comment) =>
+        isLikelySameTeamMemberName(comment.authorName, member.name),
+      );
+      const readiness = summarizeFieldNoteReadiness(
+        notes.map((note) => note.body),
+      );
+      const learning = learningByMemberId.get(member.id);
+      const parts: string[] = [];
+
+      if (learning && !learning.canWorkShift) {
+        parts.push(
+          `обучение: ${learning.nextItem?.title ?? "базовый допуск"}`,
+        );
+      }
+
+      if (readiness.total === 0) {
+        parts.push("нет итога смены");
+      } else if (readiness.complete === 0) {
+        parts.push(
+          `итог неполный: не хватает ${readiness.bestMissing.join(", ")}`,
+        );
+      } else {
+        parts.push(`итоги смены: ${readiness.complete}/${readiness.total}`);
+      }
+
+      return parts.length > 0 ? [`${member.name} (${role}): ${parts.join(", ")}`] : [];
+    })
+    .slice(0, 6);
+}
+
 export function buildRestaurantAdvisorMemory(
   input: RestaurantMemoryInput,
 ): RestaurantAdvisorMemory {
@@ -111,6 +156,7 @@ export function buildRestaurantAdvisorMemory(
           `${signal.title}: ${signal.detail} (${signal.sourceCount})`,
       ) ?? [],
     fieldMemoryQuality,
+    memberSignals: memberMemoryLines(input),
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
   };
@@ -140,6 +186,10 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   if (memory.fieldMemoryQuality) {
     lines.push(`Качество памяти смены: ${memory.fieldMemoryQuality}.`);
+  }
+
+  if (memory.memberSignals.length > 0) {
+    lines.push(`Люди и допуск: ${memory.memberSignals.join("; ")}`);
   }
 
   if (memory.openTasks.length > 0) {
