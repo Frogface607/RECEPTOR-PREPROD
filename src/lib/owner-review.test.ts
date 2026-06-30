@@ -333,6 +333,124 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("ties a weak revenue shift to labor context when FOT explains it", () => {
+    const periodShifts: ShiftStat[] = [
+      {
+        shiftId: "shift-weak-fot",
+        openTime: "2026-06-25T12:00:00",
+        closeTime: "2026-06-25T22:00:00",
+        revenue: 40000,
+        items: 55,
+        employee: "Слабая смена",
+      },
+      {
+        shiftId: "shift-strong",
+        openTime: "2026-06-26T12:00:00",
+        closeTime: "2026-06-26T22:00:00",
+        revenue: 120000,
+        items: 140,
+        employee: "Сильная смена",
+      },
+    ];
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          ...periodShifts[0],
+          workers: [
+            {
+              name: "Зал",
+              hours: 10,
+              shiftPay: 16000,
+              sales: 40000,
+            },
+          ],
+        },
+        {
+          ...periodShifts[1],
+          workers: [
+            {
+              name: "Зал",
+              hours: 10,
+              shiftPay: 8000,
+              sales: 120000,
+            },
+          ],
+        },
+      ],
+    });
+    const periodSummary: RevenueSummary = {
+      ...summary,
+      revenue: 160000,
+      averageCheck: 2500,
+      itemsSold: 195,
+      points: [
+        { date: "2026-06-25", revenue: 40000 },
+        { date: "2026-06-26", revenue: 120000 },
+      ],
+    };
+    const periodBrief: DailyBrief = {
+      ...brief,
+      revenue: {
+        current: 160000,
+        previous: 0,
+        deltaPct: 0,
+        comparisonAvailable: false,
+      },
+    };
+
+    const review = buildOwnerReview({
+      summary: periodSummary,
+      dishes,
+      categories,
+      shifts: periodShifts,
+      brief: periodBrief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Слабую смену нужно объяснить событием",
+          tone: "risk",
+          taskTitle: expect.stringContaining("Разобрать слабую смену"),
+          taskSourceLabel: "ФОТ и смены",
+          impactLabel: expect.stringMatching(/^40\s000\s₽ · 6\s000\s₽$/),
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
+          learningChecklistTitle: "Если BI показал перерасход ФОТ",
+          briefingQuestion:
+            "какой состав смены, посадка или продажа сделали ФОТ дорогим к выручке",
+        }),
+      ]),
+    );
+    const weakShiftHypothesis = review.hypotheses.find(
+      (item) => item.title === "Слабую смену нужно объяснить событием",
+    );
+    expect(weakShiftHypothesis?.why).toContain(
+      "По этой же смене есть ФОТ-риск",
+    );
+    expect(weakShiftHypothesis?.check).toContain("Разобрать состав смены");
+
+    const weakShiftTask = review.tasks.find((task) =>
+      task.title.startsWith("Разобрать слабую смену"),
+    );
+    expect(weakShiftTask).toMatchObject({
+      roleId: "venue_manager",
+      priority: "high",
+      sourceLabel: "ФОТ и смены",
+      learningModuleId: "restaurant-numbers-basics",
+      learningChecklistTitle: "Если BI показал перерасход ФОТ",
+    });
+    expect(weakShiftTask?.contextNote).toContain(
+      "Вопрос: какой состав смены, посадка или продажа сделали ФОТ дорогим к выручке.",
+    );
+    expect(weakShiftTask?.contextNote).toContain(
+      "Проверка: Разобрать состав смены",
+    );
+  });
+
   test("opens linked employee when personal FOT efficiency is risky", () => {
     const labor = buildLaborBi({
       shifts: [

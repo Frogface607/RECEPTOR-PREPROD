@@ -298,6 +298,16 @@ function formatShiftDate(value: string): string {
   }).format(date);
 }
 
+function formatStaffCountLabel(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${count} сотрудник`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${count} сотрудника`;
+  }
+  return `${count} сотрудников`;
+}
+
 function shiftTaskTitle(prefix: string, shift: ShiftStat | undefined): string {
   return shift ? `${prefix}: ${formatShiftDate(shift.openTime)}` : prefix;
 }
@@ -308,6 +318,99 @@ function shiftCheckWithFieldContext(
 ): string {
   if (!fieldHypothesis) return check;
   return `${check} Сверить с полевым фактом: ${fieldHypothesis.title}.`;
+}
+
+function impactLabelWithLabor(
+  revenueImpact: string | undefined,
+  laborImpact: string | undefined,
+): string | undefined {
+  if (revenueImpact && laborImpact) return `${revenueImpact} · ${laborImpact}`;
+  return revenueImpact ?? laborImpact;
+}
+
+function laborContextForWeakShift(input: {
+  weakestShift: ShiftStat | undefined;
+  labor?: LaborBiSummary;
+}): Pick<
+  OwnerReviewHypothesis,
+  | "why"
+  | "check"
+  | "tone"
+  | "taskSourceLabel"
+  | "learningModuleId"
+  | "learningModuleTitle"
+  | "learningChecklistTitle"
+  | "briefingQuestion"
+  | "impactLabel"
+> | null {
+  if (!input.weakestShift || !input.labor) return null;
+
+  const diagnostic = buildLaborShiftDiagnostics(input.labor).find(
+    (shift) => shift.shiftId === input.weakestShift?.shiftId,
+  );
+  if (!diagnostic || diagnostic.kind === "healthy") return null;
+
+  const laborLabel =
+    diagnostic.laborCostPct !== null
+      ? `ФОТ ${formatCoverage(diagnostic.laborCostPct)}`
+      : undefined;
+  const revenuePerHourLabel =
+    diagnostic.revenuePerHour !== null
+      ? `${formatRubles(diagnostic.revenuePerHour)} на человеко-час`
+      : undefined;
+  const staffLabel =
+    diagnostic.staffCount > 0
+      ? formatStaffCountLabel(diagnostic.staffCount)
+      : undefined;
+  const shiftFacts = [laborLabel, revenuePerHourLabel, staffLabel]
+    .filter(Boolean)
+    .join(", ");
+
+  if (diagnostic.kind === "missing-rates") {
+    return {
+      why: `По этой же смене ФОТ не доказан: ${diagnostic.missingRates} сотрудников без ставки.`,
+      check:
+        "Сначала закрыть ставки по людям в слабой смене, затем разобрать посадку, стоп-лист и продажи.",
+      tone: "watch",
+      taskSourceLabel: "ФОТ и смены",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle: "Цифры ресторана простым языком",
+      learningChecklistTitle: "Если ФОТ не считается полностью",
+      briefingQuestion:
+        "у кого в слабой смене не закрыта ставка и как это меняет вывод по прибыли",
+      impactLabel: `${diagnostic.missingRates} без ставки`,
+    };
+  }
+
+  if (diagnostic.kind === "expensive-labor") {
+    return {
+      why: `По этой же смене есть ФОТ-риск: ${shiftFacts}. ${diagnostic.detail}`,
+      check:
+        "Разобрать состав смены: кто работал, сколько стоила смена, какая была посадка, что продавали и почему ФОТ съел выручку.",
+      tone: "risk",
+      taskSourceLabel: "ФОТ и смены",
+      learningModuleId: "restaurant-numbers-basics",
+      learningModuleTitle: "Цифры ресторана простым языком",
+      learningChecklistTitle: "Если BI показал перерасход ФОТ",
+      briefingQuestion:
+        "какой состав смены, посадка или продажа сделали ФОТ дорогим к выручке",
+      impactLabel: laborShiftImpact(diagnostic),
+    };
+  }
+
+  return {
+    why: `По этой же смене низкая продуктивность: ${shiftFacts}. ${diagnostic.detail}`,
+    check:
+      "Разобрать, почему команда дала мало выручки на человеко-час: посадка, роли, апселл, стоп-лист или неверный график.",
+    tone: "watch",
+    taskSourceLabel: "ФОТ и смены",
+    learningModuleId: "restaurant-numbers-basics",
+    learningModuleTitle: "Цифры ресторана простым языком",
+    learningChecklistTitle: "Если BI показал перерасход ФОТ",
+    briefingQuestion:
+      "почему слабая смена дала мало выручки на человеко-час и что меняем в следующей",
+    impactLabel: laborShiftImpact(diagnostic),
+  };
 }
 
 function topByRevenue(points: RevenuePoint[], direction: "min" | "max") {
@@ -671,6 +774,7 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
   const shouldLeadWithCheck =
     (item.taskSourceLabel === "Выручка и смены" &&
       item.check.includes("Сверить с полевым фактом")) ||
+    item.taskSourceLabel === "ФОТ и смены" ||
     item.taskSourceLabel === "ФОТ и маржа";
   const context =
     item.taskSourceLabel === "Полевой контекст"
@@ -2866,6 +2970,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   const weakestShift = [...input.shifts]
     .filter((shift) => shift.revenue > 0)
     .sort((a, b) => a.revenue - b.revenue)[0];
+  const weakShiftLaborContext = laborContextForWeakShift({
+    weakestShift,
+    labor: input.labor,
+  });
   const menu = buildMenuEngineering(input.dishes);
   const { confidence, reason } = confidenceFor(input);
   const laborInsights = input.labor ? buildLaborInsights(input.labor) : [];
@@ -3102,18 +3210,29 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           ? `Самая слабая смена: ${formatRubles(weakestShift.revenue)}.`
           : "Смены не дали явного ответа.",
         shiftRevenueGapText(weakestShift, input.shifts),
+        weakShiftLaborContext?.why,
       ]),
       check: shiftCheckWithFieldContext(
-        "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
+        weakShiftLaborContext?.check ??
+          "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
         fieldHypothesis,
       ),
       role: "manager",
       tone: "risk",
       taskTitle: shiftTaskTitle("Разобрать просадку смены", weakestShift),
-      taskSourceLabel: "Выручка и смены",
-      impactLabel: revenueDropImpactLabel(input.brief),
-      learningModuleId: "shift-open-close",
-      learningModuleTitle: "Открытие и закрытие смены без хаоса",
+      taskSourceLabel:
+        weakShiftLaborContext?.taskSourceLabel ?? "Выручка и смены",
+      impactLabel: impactLabelWithLabor(
+        revenueDropImpactLabel(input.brief),
+        weakShiftLaborContext?.impactLabel,
+      ),
+      learningModuleId:
+        weakShiftLaborContext?.learningModuleId ?? "shift-open-close",
+      learningModuleTitle:
+        weakShiftLaborContext?.learningModuleTitle ??
+        "Открытие и закрытие смены без хаоса",
+      learningChecklistTitle: weakShiftLaborContext?.learningChecklistTitle,
+      briefingQuestion: weakShiftLaborContext?.briefingQuestion,
     });
   }
 
@@ -3129,18 +3248,29 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       why: joinSentences([
         `Смена ${formatShiftDate(weakestShift.openTime)} дала ${formatRubles(weakestShift.revenue)}.`,
         shiftRevenueGapText(weakestShift, input.shifts),
+        weakShiftLaborContext?.why,
       ]),
       check: shiftCheckWithFieldContext(
-        "Спросить управляющего: посадка, команда, стоп-лист, погода, жалобы и апсейл в этой смене.",
+        weakShiftLaborContext?.check ??
+          "Спросить управляющего: посадка, команда, стоп-лист, погода, жалобы и апсейл в этой смене.",
         fieldHypothesis,
       ),
       role: "manager",
-      tone: "watch",
+      tone: weakShiftLaborContext?.tone ?? "watch",
       taskTitle: shiftTaskTitle("Разобрать слабую смену", weakestShift),
-      taskSourceLabel: "Выручка и смены",
-      impactLabel: shiftRevenueImpactLabel(weakestShift, input.shifts),
-      learningModuleId: "shift-open-close",
-      learningModuleTitle: "Открытие и закрытие смены без хаоса",
+      taskSourceLabel:
+        weakShiftLaborContext?.taskSourceLabel ?? "Выручка и смены",
+      impactLabel: impactLabelWithLabor(
+        shiftRevenueImpactLabel(weakestShift, input.shifts),
+        weakShiftLaborContext?.impactLabel,
+      ),
+      learningModuleId:
+        weakShiftLaborContext?.learningModuleId ?? "shift-open-close",
+      learningModuleTitle:
+        weakShiftLaborContext?.learningModuleTitle ??
+        "Открытие и закрытие смены без хаоса",
+      learningChecklistTitle: weakShiftLaborContext?.learningChecklistTitle,
+      briefingQuestion: weakShiftLaborContext?.briefingQuestion,
     });
   }
 
