@@ -201,9 +201,13 @@ function actionRow(
       value: mainAction.impactLabel
         ? `${mainAction.title} · ${mainAction.impactLabel}`
         : mainAction.title,
-      detail: appendBriefingQuestion(
-        mainAction.detail,
-        mainAction.briefingQuestion,
+      detail: appendLearningStandard(
+        appendBriefingQuestion(
+          mainAction.detail,
+          mainAction.briefingQuestion,
+        ),
+        mainAction.learningModuleTitle,
+        mainAction.learningChecklistTitle,
       ),
       tone: mainAction.tone,
     };

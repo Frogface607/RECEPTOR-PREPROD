@@ -126,6 +126,8 @@ describe("buildOwnerMorningReviewRows", () => {
     review.actions[0] = {
       ...review.actions[0],
       briefingQuestion: "какая смена, человек или ставка съедает прибыль",
+      learningModuleTitle: "Цифры ресторана простым языком",
+      learningChecklistTitle: "Если BI показал перерасход ФОТ",
     };
 
     const rows = buildOwnerMorningReviewRows({ review });
@@ -143,6 +145,12 @@ describe("buildOwnerMorningReviewRows", () => {
     });
     expect(rows[2].detail).toContain(
       "Вопрос: какая смена, человек или ставка съедает прибыль?",
+    );
+    expect(rows[2].detail).toContain(
+      "Стандарт: Цифры ресторана простым языком.",
+    );
+    expect(rows[2].detail).toContain(
+      "Чеклист: Если BI показал перерасход ФОТ.",
     );
     expect(rows).toHaveLength(3);
   });
