@@ -79,6 +79,7 @@ export type TeamTaskComment = {
 
 export type TeamTaskContextBrief = {
   fieldFact: string | null;
+  question: string | null;
   check: string | null;
   reason: string | null;
 };
@@ -617,6 +618,13 @@ export function taskContextBriefFromContext(
 ): TeamTaskContextBrief {
   return {
     fieldFact: contextSection(context, "Полевой факт:", [
+      "Вопрос:",
+      "Проверка:",
+      "Зачем:",
+      "Урок для команды:",
+      "Чеклист:",
+    ]),
+    question: contextSection(context, "Вопрос:", [
       "Проверка:",
       "Зачем:",
       "Урок для команды:",

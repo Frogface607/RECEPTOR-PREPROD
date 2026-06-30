@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Copy,
   History,
+  HelpCircle,
   KeyRound,
   Lightbulb,
   ListChecks,
@@ -850,6 +851,7 @@ export function TeamActionsPanel({
                   );
                   const hasContextBrief = Boolean(
                     contextBrief.fieldFact ||
+                    contextBrief.question ||
                     contextBrief.check ||
                     contextBrief.reason,
                   );
@@ -905,6 +907,12 @@ export function TeamActionsPanel({
                               <p className="flex items-start gap-2 text-foreground/80">
                                 <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
                                 <span>{contextBrief.fieldFact}</span>
+                              </p>
+                            ) : null}
+                            {contextBrief.question ? (
+                              <p className="flex items-start gap-2 text-foreground/80">
+                                <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                                <span>{contextBrief.question}</span>
                               </p>
                             ) : null}
                             {contextBrief.check ? (

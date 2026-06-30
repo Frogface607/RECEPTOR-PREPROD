@@ -10,6 +10,7 @@ import {
   Clock3,
   Flame,
   GraduationCap,
+  HelpCircle,
   Inbox,
   LayoutDashboard,
   Lightbulb,
@@ -841,7 +842,10 @@ function TaskContextBlock({ context }: { context: TeamTaskComment | null }) {
   const contextBody = taskContextWithoutLearningHint(context?.body);
   const contextBrief = taskContextBriefFromContext(context?.body);
   const hasContextBrief = Boolean(
-    contextBrief.fieldFact || contextBrief.check || contextBrief.reason,
+    contextBrief.fieldFact ||
+    contextBrief.question ||
+    contextBrief.check ||
+    contextBrief.reason,
   );
 
   if (!context || !contextBody) return null;
@@ -853,6 +857,12 @@ function TaskContextBlock({ context }: { context: TeamTaskComment | null }) {
           <p className="flex items-start gap-2 text-foreground/80">
             <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
             <span>{contextBrief.fieldFact}</span>
+          </p>
+        ) : null}
+        {contextBrief.question ? (
+          <p className="flex items-start gap-2 text-foreground/80">
+            <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+            <span>{contextBrief.question}</span>
           </p>
         ) : null}
         {contextBrief.check ? (

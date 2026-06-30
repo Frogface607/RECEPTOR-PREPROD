@@ -2365,6 +2365,9 @@ describe("buildOwnerReview", () => {
     const fieldTaskContext = review.tasks.find(
       (task) => task.sourceLabel === "Полевой контекст",
     )?.contextNote;
+    expect(fieldTaskContext).toContain(
+      "Вопрос: что в смене объясняет эту цифру?",
+    );
     expect(fieldTaskContext).toContain("Проверка: На брифинге");
     expect(fieldTaskContext).toContain("Связанные факты:");
     expect(fieldTaskContext).toContain("Стоп-лист и заготовки");

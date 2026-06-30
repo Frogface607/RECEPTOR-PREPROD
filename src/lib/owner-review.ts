@@ -332,10 +332,10 @@ function trimTaskTitle(value: string): string {
   return `${normalized.slice(0, 217).trim()}...`;
 }
 
-function trimContextNote(value: string): string {
+function trimContextNote(value: string, limit = 420): string {
   const normalized = value.replace(/\s+/g, " ").trim();
-  if (normalized.length <= 420) return normalized;
-  return `${normalized.slice(0, 417).trim()}...`;
+  if (normalized.length <= limit) return normalized;
+  return `${normalized.slice(0, Math.max(0, limit - 3)).trim()}...`;
 }
 
 function trimEvidenceDetail(value: string): string {
@@ -391,11 +391,13 @@ function withLearningContext({
   learningModuleTitle,
   checklistTitle,
   reason,
+  limit = 420,
 }: {
   context: string;
   learningModuleTitle?: string;
   checklistTitle?: string | null;
   reason?: string | null;
+  limit?: number;
 }): string {
   const base = context.trim();
   const suffixParts = [
@@ -404,16 +406,17 @@ function withLearningContext({
     checklistTitle ? `Чеклист: ${checklistTitle}.` : null,
   ].filter((item): item is string => Boolean(item));
 
-  if (suffixParts.length === 0) return trimContextNote(base);
+  if (suffixParts.length === 0) return trimContextNote(base, limit);
 
   const suffix = suffixParts.join(" ");
   const fullContext = appendSentence(base, suffix);
 
-  if (fullContext.length <= 420) return trimContextNote(fullContext);
+  if (fullContext.length <= limit) return trimContextNote(fullContext, limit);
 
-  const baseLimit = Math.max(0, 420 - suffix.length - 5);
+  const baseLimit = Math.max(0, limit - suffix.length - 5);
   return trimContextNote(
     appendSentence(`${base.slice(0, baseLimit).trim()}...`, suffix),
+    limit,
   );
 }
 
@@ -530,9 +533,7 @@ function actionContextNote(action: OwnerReviewAction): string {
   const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
   const context =
     sourceLabel === "Полевой контекст"
-      ? action.detail.startsWith("Полевой факт:")
-        ? action.detail
-        : `Полевой факт: ${action.detail}`
+      ? fieldBriefingContext(action.detail)
       : action.detail.startsWith("Проверка:")
         ? action.detail
         : `Проверка: ${action.detail}`;
@@ -543,6 +544,7 @@ function actionContextNote(action: OwnerReviewAction): string {
       action.learningChecklistTitle ??
       taskChecklistForSource(sourceLabel, action.learningModuleId),
     reason: taskReasonForSource(sourceLabel, action.impactLabel),
+    limit: sourceLabel === "Полевой контекст" ? 900 : undefined,
   });
 }
 
@@ -563,13 +565,29 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
   };
 }
 
+function fieldBriefingContext(detail: string): string {
+  const checkMarker = " Проверка: ";
+  const checkIndex = detail.indexOf(checkMarker);
+  const rawFact =
+    checkIndex >= 0 ? detail.slice(0, checkIndex).trim() : detail.trim();
+  const rawCheck =
+    checkIndex >= 0 ? detail.slice(checkIndex + checkMarker.length).trim() : "";
+  const fact = rawFact.startsWith("Полевой факт:")
+    ? rawFact
+    : `Полевой факт: ${rawFact}`;
+
+  if (!rawCheck) return fact;
+
+  return `${fact} Вопрос: что в смене объясняет эту цифру? Проверка: ${rawCheck}`;
+}
+
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
   const shouldLeadWithCheck =
     item.taskSourceLabel === "Выручка и смены" &&
     item.check.includes("Сверить с полевым фактом");
   const context =
     item.taskSourceLabel === "Полевой контекст"
-      ? `Полевой факт: ${item.why} Проверка: ${item.check}`
+      ? fieldBriefingContext(`${item.why} Проверка: ${item.check}`)
       : shouldLeadWithCheck
         ? `Проверка: ${item.check} ${item.why}`
         : `${item.why} Проверка: ${item.check}`;
@@ -587,6 +605,7 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
       learningModuleTitle: item.learningModuleTitle,
       checklistTitle: hypothesisChecklistTitle(item),
       reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
+      limit: item.taskSourceLabel === "Полевой контекст" ? 900 : undefined,
     }),
     sourceLabel: item.taskSourceLabel ?? "Гипотеза",
     learningModuleId: item.learningModuleId,
