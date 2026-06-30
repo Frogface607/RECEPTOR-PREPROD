@@ -107,6 +107,11 @@ describe("team learning catalog", () => {
         }),
         expect.objectContaining({
           title: "Если BI показал недобор валовой прибыли",
+          body: expect.stringContaining("смену рядом"),
+          bullets: expect.arrayContaining([
+            expect.stringContaining("дорогая смена"),
+            expect.stringContaining("слабую маржу"),
+          ]),
         }),
         expect.objectContaining({
           title: "Если категория держит оборот",
