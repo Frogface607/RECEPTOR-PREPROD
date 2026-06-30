@@ -88,7 +88,7 @@ describe("runMockChatTurn — routing", () => {
     const text = ev.find((e) => e.type === "text");
     expect(text?.text.toLowerCase()).toContain("спрос");
     expect(text?.text).toContain("Контекст анкеты");
-    expect(text?.text).toContain("Память ресторана");
+    expect(text?.text).toContain("Что уже знаю");
     expect(text?.text).toContain("Итог смены: ливень");
     expect(text?.text).toContain("Рабочий ритм Receptor");
   });

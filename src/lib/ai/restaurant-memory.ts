@@ -136,3 +136,28 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   return lines.join("\n");
 }
+
+export function formatRestaurantAdvisorMemoryForAnswer(
+  memory: RestaurantAdvisorMemory | undefined,
+): string {
+  if (!memory) {
+    return [
+      "Что уже знаю:",
+      "• Команда и итоги смены пока не попали в память советника.",
+      "• Чтобы советы стали точнее, попросите управляющего оставить итог смены.",
+    ].join("\n");
+  }
+
+  return [
+    "Что уже знаю:",
+    `• Команда: ${memory.teamSummary}.`,
+    memory.fieldSummary
+      ? `• Последняя память смены: ${memory.fieldSummary}`
+      : "• Память смены пока пустая.",
+    memory.learningGaps[0]
+      ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`
+      : memory.openTasks[0]
+        ? `• Первое открытое действие: ${memory.openTasks[0]}.`
+        : "• Критичных учебных пробелов сейчас не видно.",
+  ].join("\n");
+}

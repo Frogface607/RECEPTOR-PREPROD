@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   buildRestaurantAdvisorMemory,
+  formatRestaurantAdvisorMemoryForAnswer,
   formatRestaurantAdvisorMemoryForPrompt,
 } from "./restaurant-memory";
 import type { StaffMember, TeamTask, TeamTaskComment } from "@/lib/team/team-os";
@@ -93,5 +94,21 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Память ресторана");
     expect(text).toContain("Сигналы с поля");
     expect(text).toContain("Учебные пробелы");
+  });
+
+  test("formats a compact memory summary for user-facing answers", () => {
+    const text = formatRestaurantAdvisorMemoryForAnswer({
+      teamSummary: "2 активных сотрудников",
+      fieldSummary: "Итог смены: ливень и стоп-лист",
+      fieldSignals: ["Погода: ливень", "Стоп-лист: мята"],
+      openTasks: ["Проверить стоп-лист — до 17:00"],
+      learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+    });
+
+    expect(text).toContain("Что уже знаю");
+    expect(text).toContain("Последняя память смены");
+    expect(text).toContain("Первый учебный пробел");
+    expect(text).not.toContain("Сигналы с поля");
+    expect(text).not.toContain("Открытые действия:");
   });
 });

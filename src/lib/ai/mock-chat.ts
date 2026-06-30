@@ -28,7 +28,7 @@ import type { PeriodType } from "@/lib/iiko/models";
 import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
 import type { VenueContextAnswers } from "@/lib/venues/context-questionnaire";
 import {
-  formatRestaurantAdvisorMemoryForPrompt,
+  formatRestaurantAdvisorMemoryForAnswer,
   type RestaurantAdvisorMemory,
 } from "./restaurant-memory";
 
@@ -279,7 +279,7 @@ function formatSuggestAnswer(
       : "Контекст анкеты пока не заполнен: для точных советов нужны формат, команда, системы и ограничения.",
     "",
     `Фокус сейчас: ${profile.recommendedFocus.slice(0, 3).join("; ")}.`,
-    formatRestaurantAdvisorMemoryForPrompt(memory),
+    formatRestaurantAdvisorMemoryForAnswer(memory),
     "Рабочий ритм Receptor: перед сменой закрываем блокер, на смене даем учебный фокус, после смены собираем короткий факт, утром принимаем одно решение.",
     "",
     "Спроси меня:",
