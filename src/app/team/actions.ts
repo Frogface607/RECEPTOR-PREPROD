@@ -919,7 +919,7 @@ export async function importIikoTeamMembersAction(
       ok: true,
       mode: "saved",
       message:
-        "Сотрудники из iiko уже есть в Team OS." +
+        "Сотрудники из iiko уже есть в команде." +
         (closedTaskIds.length > 0
           ? ` Закрыто задач импорта: ${closedTaskIds.length}.`
           : taskCloseWarning
@@ -1224,7 +1224,7 @@ export async function saveTeamShiftPlanAction(
     if (missingTeamTables(memberError.message)) {
       return {
         ok: false,
-        error: "В базе нет таблиц Team OS. Примените миграции команды.",
+        error: "В базе нет таблиц команды. Примените миграции команды.",
       };
     }
     return { ok: false, error: memberError.message };

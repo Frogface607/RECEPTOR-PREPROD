@@ -146,7 +146,7 @@ export function TeamShiftPlanPanel({
                   <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-200" />
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Есть смены без ставки. ФОТ будет занижен, пока не заполнены
-                    ₽/час или ₽/смена в Team OS.
+                    ₽/час или ₽/смена в карточке сотрудника.
                   </p>
                 </div>
               ) : (

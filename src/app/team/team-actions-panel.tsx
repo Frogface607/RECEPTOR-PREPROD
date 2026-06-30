@@ -123,7 +123,7 @@ function iikoBlockerActionLabel(blocker: TeamLaborIikoBlocker): string {
 
 function iikoBlockerReasonLabel(blocker: TeamLaborIikoBlocker): string {
   return blocker.action === "add-member"
-    ? "нет карточки Team OS"
+    ? "нет карточки сотрудника"
     : "нет ставки";
 }
 
@@ -150,7 +150,7 @@ function laborSourceCopy(source: LaborSource): {
     label: "iiko недоступна",
     detail:
       source.error ??
-      `Смены за период ${source.periodLabel} не загрузились. Показываем ставки Team OS.`,
+      `Смены за период ${source.periodLabel} не загрузились. Показываем ставки из карточек сотрудников.`,
     className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
   };
 }
@@ -193,7 +193,7 @@ function laborReadinessCopy(status: TeamLaborReadinessStatus): {
     return {
       title: "ФОТ готов к расчету",
       detail:
-        "У активной команды заведены ставки. Owner Dashboard может считать ФОТ точнее.",
+        "У активной команды заведены ставки. Панель владельца может считать ФОТ точнее.",
       className: "border-brand/35 bg-brand/10 text-brand",
     };
   }
@@ -996,7 +996,7 @@ export function TeamActionsPanel({
                 })
               ) : (
                 <p className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm leading-relaxed text-muted-foreground">
-                  Открытых задач нет. Новые задачи из Owner Dashboard появятся
+                  Открытых задач нет. Новые задачи из панели владельца появятся
                   здесь, чтобы управляющий сразу вел их до результата.
                 </p>
               )}

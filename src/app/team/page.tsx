@@ -843,86 +843,103 @@ export default async function TeamPage({
         />
 
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-14 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Права кабинета</h2>
-              </div>
-              <div className="mt-5 grid gap-3">
-                {home.permissions.map((permission) => (
-                  <div
-                    key={permission.id}
-                    className="rounded-lg border border-border/45 bg-background/35 p-3"
-                  >
-                    <p className="text-sm font-medium">{permission.title}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      {permission.description}
-                    </p>
+          <div className="mx-auto max-w-7xl px-6 py-8">
+            <details className="group rounded-lg border border-border/60 bg-card/35 p-4">
+              <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-md outline-none transition-colors hover:bg-background/30 focus-visible:ring-2 focus-visible:ring-brand/50 sm:flex-row sm:items-center sm:justify-between">
+                <span className="flex min-w-0 items-start gap-3">
+                  <KeyRound className="mt-1 size-5 shrink-0 text-brand" />
+                  <span>
+                    <span className="block text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Подробности управления
+                    </span>
+                    <span className="mt-1 block text-lg font-medium text-foreground">
+                      Доступы, сотрудники и полный список задач
+                    </span>
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
+                  открыть
+                  <ArrowRight className="size-4 transition-transform group-open:rotate-90" />
+                </span>
+              </summary>
+
+              <div className="mt-5 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-lg border border-border/60 bg-background/30 p-5">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="size-5 text-brand" />
+                    <h2 className="text-xl font-medium">Права кабинета</h2>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="mt-5 grid gap-3">
+                    {home.permissions.map((permission) => (
+                      <div
+                        key={permission.id}
+                        className="rounded-lg border border-border/45 bg-background/35 p-3"
+                      >
+                        <p className="text-sm font-medium">{permission.title}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {permission.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <ClipboardList className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Задачи в этом кабинете</h2>
-              </div>
-              <div className="mt-5 grid gap-3">
-                {home.visibleTasks.map((task) => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    anchorId={`team-task-${task.id}`}
-                    focused={focusTaskId === task.id}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-border/40">
-          <div className="mx-auto max-w-7xl px-6 py-14">
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <UsersRound className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Сотрудники</h2>
-              </div>
-              <div className="mt-5 grid gap-3 lg:grid-cols-2">
-                {visibleStaff.map((member) => (
-                  <StaffRow
-                    key={member.id}
-                    member={member}
-                    href={teamHref(
-                      workspace.venueId,
-                      member.roleId,
-                      period,
-                      member.id,
-                    )}
-                    selected={representativeMember?.id === member.id}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <div className="mx-auto max-w-7xl px-6 py-14">
-            <div className="rounded-lg border border-border/60 bg-card/50 p-6">
-              <div className="flex items-start gap-3">
-                <KeyRound className="mt-1 size-5 shrink-0 text-brand" />
-                <div>
-                  <h2 className="text-xl font-medium">Далее: сменный чат.</h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                    Сейчас фиксируем задачи, объявления и комментарии. Чат
-                    добавим поверх этой структуры.
-                  </p>
+                <div className="rounded-lg border border-border/60 bg-background/30 p-5">
+                  <div className="flex items-center gap-3">
+                    <ClipboardList className="size-5 text-brand" />
+                    <h2 className="text-xl font-medium">Задачи в этом кабинете</h2>
+                  </div>
+                  <div className="mt-5 grid gap-3">
+                    {home.visibleTasks.map((task) => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        anchorId={`team-task-${task.id}`}
+                        focused={focusTaskId === task.id}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                <div className="rounded-lg border border-border/60 bg-background/30 p-5">
+                  <div className="flex items-center gap-3">
+                    <UsersRound className="size-5 text-brand" />
+                    <h2 className="text-xl font-medium">Сотрудники</h2>
+                  </div>
+                  <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                    {visibleStaff.map((member) => (
+                      <StaffRow
+                        key={member.id}
+                        member={member}
+                        href={teamHref(
+                          workspace.venueId,
+                          member.roleId,
+                          period,
+                          member.id,
+                        )}
+                        selected={representativeMember?.id === member.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border/60 bg-background/30 p-6">
+                  <div className="flex items-start gap-3">
+                    <KeyRound className="mt-1 size-5 shrink-0 text-brand" />
+                    <div>
+                      <h2 className="text-xl font-medium">Сменный чат позже.</h2>
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        Сейчас достаточно задач, объявлений, комментариев и итогов
+                        смены. Чат добавим, когда этот ритм станет привычным для
+                        команды.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
           </div>
         </section>
       </main>
@@ -1254,7 +1271,7 @@ function ShiftOperationsRoute({
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Сначала смотрим реальные смены из iiko, затем план Team OS,
+              Сначала смотрим реальные смены из iiko, затем график команды,
               расхождения и точечную диагностику ФОТ.
             </p>
           </div>
@@ -1354,7 +1371,7 @@ function TeamShiftRosterSection({
                     Кто работал и сколько стоила смена
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Фактические смены из iiko связаны с сотрудниками Team OS и
+                    Фактические смены из iiko связаны с карточками сотрудников и
                     ставками ФОТ.
                   </p>
                 </div>
@@ -1501,7 +1518,7 @@ function TeamShiftPlanVarianceSection({
                 Где график разошелся с реальностью
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Сверяем план Team OS с фактическими сменами iiko: кто вышел без
+                Сверяем график команды с фактическими сменами iiko: кто вышел без
                 плана, кто не вышел и где ФОТ уехал по часам.
               </p>
             </div>
@@ -1757,7 +1774,7 @@ function RolePersonalBrief({
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="rounded-lg border border-border/60 bg-card/50 p-5">
             <p className="text-sm text-muted-foreground">
-              Для этой роли пока нет сотрудника. Добавьте его в Team OS, чтобы
+              Для этой роли пока нет сотрудника. Добавьте его в команду, чтобы
               появился личный кабинет.
             </p>
           </div>
@@ -1903,7 +1920,7 @@ function RolePersonalBrief({
                       </p>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                         Если сотрудник был на смене, проверьте совпадение имени
-                        в iiko и Team OS или права на выгрузку смен.
+                        в iiko и карточках сотрудников или права на выгрузку смен.
                       </p>
                     </div>
                   )}
