@@ -16,6 +16,10 @@ import {
   isLikelySameTeamMemberName,
   normalizeTeamMemberName,
 } from "./team-member-match";
+import {
+  summarizeFieldNoteReadiness,
+  type FieldNoteReadinessSummary,
+} from "./field-note-input";
 
 export type MemberShiftScheduleItem = {
   shiftId: string;
@@ -411,6 +415,9 @@ export function buildMemberSecondBrainProfile(input: {
     isLikelySameTeamMemberName(comment.authorName, input.member.name),
   );
   const latestNote = ownNotes[ownNotes.length - 1] ?? null;
+  const fieldMemory = summarizeFieldNoteReadiness(
+    ownNotes.map((note) => note.body),
+  );
   const nextLearning = input.nextLearning ?? input.learning?.nextItem ?? null;
 
   const facts: MemberSecondBrainFact[] = [
@@ -423,7 +430,7 @@ export function buildMemberSecondBrainProfile(input: {
     learningFact(input.learning, nextLearning),
     laborFact(input.laborProfile, input.schedule),
     taskFact(openTasks.length, urgentTasks.length),
-    fieldFact(latestNote, ownNotes.length),
+    fieldFact(latestNote, ownNotes.length, fieldMemory),
   ];
 
   const primary =
@@ -441,13 +448,18 @@ export function buildMemberSecondBrainProfile(input: {
       role.shortTitle,
       input.member.status === "active" ? "активен" : input.member.status,
       input.learning?.canWorkShift ? "допущен" : "нужен допуск",
-      latestNote ? "есть поле" : "нет итога смены",
+      fieldMemory.complete > 0
+        ? "итог полный"
+        : latestNote
+          ? "итог неполный"
+          : "нет итога смены",
     ],
     facts,
     nextQuestion: memberNextQuestion({
       learning: input.learning,
       nextLearning,
       latestNote,
+      fieldMemory,
       urgentTasks,
       openTasks,
       laborProfile: input.laborProfile,
@@ -551,6 +563,7 @@ function taskFact(openTasks: number, urgentTasks: number): MemberSecondBrainFact
 function fieldFact(
   latestNote: TeamTaskComment | null,
   count: number,
+  readiness: FieldNoteReadinessSummary,
 ): MemberSecondBrainFact {
   if (!latestNote) {
     return {
@@ -562,11 +575,20 @@ function fieldFact(
     };
   }
 
+  if (readiness.complete === 0) {
+    return {
+      label: "Поле",
+      value: `${readiness.complete}/${readiness.total}`,
+      detail: `Итог есть, но советнику не хватает: ${readiness.bestMissing.join(", ")}.`,
+      tone: "setup",
+    };
+  }
+
   return {
     label: "Поле",
-    value: `${count}`,
+    value: `${readiness.complete}/${count}`,
     detail: trimProfileDetail(latestNote.body),
-    tone: "work",
+    tone: readiness.complete === count ? "ready" : "work",
   };
 }
 
@@ -574,6 +596,7 @@ function memberNextQuestion(input: {
   learning: TeamLearningMemberSummary | null;
   nextLearning: { title: string; timeLabel: string } | null;
   latestNote: TeamTaskComment | null;
+  fieldMemory: FieldNoteReadinessSummary;
   urgentTasks: TeamTask[];
   openTasks: TeamTask[];
   laborProfile: MemberLaborProfile | null;
@@ -588,6 +611,9 @@ function memberNextQuestion(input: {
   }
   if (input.urgentTasks[0]) {
     return `Что мешает закрыть срочную задачу «${input.urgentTasks[0].title}»?`;
+  }
+  if (input.latestNote && input.fieldMemory.complete === 0) {
+    return `В итоге смены не хватает: ${input.fieldMemory.bestMissing.join(", ")}. Что произошло, почему это важно, когда/сколько и что проверить утром?`;
   }
   if (!input.latestNote) {
     return "Что произошло на последней смене: гости, стоп-лист, конфликт, продажи или что проверить утром?";

@@ -456,7 +456,7 @@ describe("buildMemberShiftSchedule", () => {
           venueId: "dev-venue",
           taskId: "task-high",
           authorName: "Маша",
-          body: "Итог смены: гости просили безалкогольный коктейль, к 21:00 закончилась мята.",
+          body: "Итог смены: гости просили безалкогольный коктейль, к 21:00 закончилась мята. Утром проверить заготовки и добавить замену в стоп-лист.",
           createdAtLabel: "23:10",
         },
       ],
@@ -471,7 +471,7 @@ describe("buildMemberShiftSchedule", () => {
 
     expect(profile).toMatchObject({
       title: "Маша: рабочий контекст",
-      tags: expect.arrayContaining(["Service", "активен", "нужен допуск", "есть поле"]),
+      tags: expect.arrayContaining(["Service", "активен", "нужен допуск", "итог полный"]),
       nextQuestion: "Что мешает пройти стандарт «Как рекомендовать блюдо» до смены?",
     });
     expect(profile.facts).toEqual(
@@ -483,7 +483,7 @@ describe("buildMemberShiftSchedule", () => {
         }),
         expect.objectContaining({
           label: "Поле",
-          value: "1",
+          value: "1/1",
           detail: expect.stringContaining("Итог смены"),
         }),
       ]),
@@ -510,6 +510,39 @@ describe("buildMemberShiftSchedule", () => {
       ]),
     );
     expect(profile.nextQuestion).toContain("Что произошло на последней смене");
+  });
+
+  test("asks what is missing when the member shift summary is weak", () => {
+    const profile = buildMemberSecondBrainProfile({
+      member,
+      tasks: [],
+      comments: [
+        {
+          id: "comment-weak-field",
+          venueId: "dev-venue",
+          taskId: "task-field",
+          authorName: "Маша",
+          body: "Итог смены: было странно. Надо обсудить.",
+          createdAtLabel: "23:15",
+        },
+      ],
+      schedule: [],
+      laborProfile: null,
+      learning: buildLearningSummary({ canWorkShift: true }),
+    });
+
+    expect(profile.tags).toEqual(expect.arrayContaining(["итог неполный"]));
+    expect(profile.facts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Поле",
+          value: "0/1",
+          detail: expect.stringContaining("не хватает"),
+          tone: "setup",
+        }),
+      ]),
+    );
+    expect(profile.nextQuestion).toContain("В итоге смены не хватает");
   });
 });
 
