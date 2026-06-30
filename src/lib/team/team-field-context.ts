@@ -19,6 +19,8 @@ export type TeamFieldContextDigest = {
 };
 
 const SYSTEM_MARKERS = ["урок для команды:", "чеклист:", "зачем:", "receptor"];
+const FIELD_CONTEXT_TASK_TITLE = "Полевой контекст смены";
+const FIELD_CONTEXT_SOURCE_LABELS = new Set(["Поле", "Полевой контекст"]);
 
 const SIGNAL_RULES: Array<{
   kind: TeamFieldSignalKind;
@@ -85,6 +87,14 @@ function commentTaskLabel(
   return `${comment.authorName}: ${task.sourceLabel ?? task.title}`;
 }
 
+function isFieldContextTask(task: TeamTask | undefined): boolean {
+  if (!task) return false;
+  return (
+    task.title === FIELD_CONTEXT_TASK_TITLE ||
+    FIELD_CONTEXT_SOURCE_LABELS.has(task.sourceLabel ?? "")
+  );
+}
+
 function signalWeight(kind: TeamFieldSignalKind): number {
   if (kind === "conflict" || kind === "stock") return 500;
   if (kind === "team") return 400;
@@ -117,20 +127,23 @@ export function buildTeamFieldContextDigest({
   tasks?: TeamTask[];
 }): TeamFieldContextDigest | null {
   const tasksById = new Map(tasks.map((task) => [task.id, task]));
-  const fieldComments = comments.filter(
+  const candidateComments = comments.filter(
     (comment) =>
       normalize(comment.body).length > 0 && !isSystemComment(comment),
   );
 
-  if (fieldComments.length === 0) return null;
+  if (candidateComments.length === 0) return null;
+
+  const matchedCommentIds = new Set<string>();
 
   const signals = SIGNAL_RULES.flatMap((rule) => {
-    const matched = fieldComments.filter((comment) => {
+    const matched = candidateComments.filter((comment) => {
       const body = searchText(comment.body);
       return rule.keywords.some((keyword) => body.includes(keyword));
     });
 
     if (matched.length === 0) return [];
+    for (const comment of matched) matchedCommentIds.add(comment.id);
 
     const latest = matched[matched.length - 1];
     return [
@@ -147,6 +160,19 @@ export function buildTeamFieldContextDigest({
     return weightDelta || b.sourceCount - a.sourceCount;
   });
 
+  const fieldContextNotes = candidateComments.filter(
+    (comment) =>
+      isFieldContextTask(tasksById.get(comment.taskId)) &&
+      !matchedCommentIds.has(comment.id),
+  );
+
+  if (signals.length === 0 && fieldContextNotes.length === 0) return null;
+
+  const totalNotes = new Set([
+    ...matchedCommentIds,
+    ...fieldContextNotes.map((comment) => comment.id),
+  ]).size;
+
   const signalCount = signals.reduce(
     (sum, signal) => sum + signal.sourceCount,
     0,
@@ -154,10 +180,10 @@ export function buildTeamFieldContextDigest({
   const summary =
     signals.length > 0
       ? fieldSummary(signals)
-      : `Команда оставила ${fieldComments.length} заметок без явного BI-тега.`;
+      : `Команда оставила ${fieldContextNotes.length} заметок без явного BI-тега.`;
 
   return {
-    totalNotes: fieldComments.length,
+    totalNotes,
     signalCount,
     signals: signals.slice(0, 3),
     summary,

@@ -14,6 +14,17 @@ const tasks: TeamTask[] = [
     audience: { type: "role", roleId: "venue_manager" },
     dueLabel: "сегодня",
   },
+  {
+    id: "task-field",
+    title: "Полевой контекст смены",
+    source: "manager",
+    sourceLabel: "Поле",
+    priority: "medium",
+    status: "in_progress",
+    venueId: "venue-1",
+    audience: { type: "role", roleId: "venue_manager" },
+    dueLabel: "ежедневно",
+  },
 ];
 
 describe("buildTeamFieldContextDigest", () => {
@@ -75,6 +86,48 @@ describe("buildTeamFieldContextDigest", () => {
     });
 
     expect(digest).toBeNull();
+  });
+
+  test("ignores ordinary task chatter without field signals", () => {
+    const digest = buildTeamFieldContextDigest({
+      comments: [
+        {
+          id: "comment-noise",
+          venueId: "venue-1",
+          taskId: "task-service",
+          authorName: "Маша",
+          body: "Приняла, сделаю после смены.",
+          createdAtLabel: "18:00",
+        },
+      ],
+      tasks,
+    });
+
+    expect(digest).toBeNull();
+  });
+
+  test("keeps untagged comments from the dedicated field context task", () => {
+    const digest = buildTeamFieldContextDigest({
+      comments: [
+        {
+          id: "comment-field-note",
+          venueId: "venue-1",
+          taskId: "task-field",
+          authorName: "Оля",
+          body: "Сегодня есть пара наблюдений для утреннего разбора.",
+          createdAtLabel: "23:00",
+        },
+      ],
+      tasks,
+    });
+
+    expect(digest).toMatchObject({
+      totalNotes: 1,
+      signalCount: 0,
+      signals: [],
+    });
+    expect(digest?.summary).toContain("1");
+    expect(digest?.summary).toContain("BI-тега");
   });
 
   test("recognizes guided field note templates", () => {
