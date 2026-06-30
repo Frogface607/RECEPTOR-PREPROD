@@ -7,7 +7,9 @@ import {
   CheckCircle2,
   Circle,
   ListChecks,
+  MessageSquareText,
   RotateCcw,
+  Target,
   Trophy,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +24,7 @@ import {
   buildTeamLearningAdmission,
   type TeamLearningAdmission,
 } from "@/lib/team/team-learning-admission";
+import { buildTeamLearningShiftCard } from "@/lib/team/team-learning-shift-card";
 import type { TeamLearningProgressSnapshot } from "@/lib/team/team-learning-progress";
 import { saveLearningProgressAction } from "./actions";
 
@@ -169,6 +172,13 @@ export function LearningWorkspace({
   const admission = useMemo(
     () => buildTeamLearningAdmission({ items, progress }),
     [items, progress],
+  );
+  const shiftCard = useMemo(
+    () =>
+      activeItem
+        ? buildTeamLearningShiftCard(activeItem, activeChecklistTitle)
+        : null,
+    [activeItem, activeChecklistTitle],
   );
 
   function selectAnswer(questionIndex: number, answerIndex: number) {
@@ -367,7 +377,7 @@ export function LearningWorkspace({
               {checklistExists ? (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-brand/30 bg-brand/10 px-3 py-1.5 text-[12px] leading-relaxed text-brand">
                   <ListChecks className="size-3.5" />
-                  <span>Фокус BI: {activeChecklistTitle}</span>
+                  <span>Фокус смены: {activeChecklistTitle}</span>
                 </div>
               ) : null}
             </div>
@@ -382,6 +392,50 @@ export function LearningWorkspace({
               </div>
             ) : null}
           </div>
+
+          {shiftCard ? (
+            <div className="mt-5 rounded-lg border border-brand/25 bg-brand/[0.06] p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                    Практика на сегодня
+                  </p>
+                  <h3 className="mt-1 text-sm font-medium text-foreground">
+                    {shiftCard.title}
+                  </h3>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="w-fit border-brand/30 text-brand"
+                >
+                  в смену
+                </Badge>
+              </div>
+              <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+                {shiftCard.reason}
+              </p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <Target className="size-3.5 text-brand" />
+                    Действие
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                    {shiftCard.action}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <MessageSquareText className="size-3.5 text-brand" />
+                    В память ресторана
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                    {shiftCard.fieldNote}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-6 grid gap-4">
             {activeItem.sections.map((section) => {
@@ -402,7 +456,7 @@ export function LearningWorkspace({
                   {focused ? (
                     <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-brand/30 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-brand">
                       <ListChecks className="size-3" />
-                      Чеклист из BI-задачи
+                      Чеклист из задачи
                     </div>
                   ) : null}
                   <h3 className="text-sm font-medium">{section.title}</h3>
