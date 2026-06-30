@@ -100,6 +100,8 @@ describe("restaurant advisor memory", () => {
     expect(memory.fieldSignals.join("\n")).toContain("Погода");
     expect(memory.openTasks[0]).toContain("Проверить стоп-лист");
     expect(memory.learningGaps[0]).toContain("Маша");
+    expect(memory.memoryGraph.join("\n")).toContain("Маша -> роль");
+    expect(memory.memoryGraph.join("\n")).toContain("оставил(а) итог смены");
   });
 
   test("suggests briefing questions when shift memory is incomplete and not assigned", () => {
@@ -140,6 +142,9 @@ describe("restaurant advisor memory", () => {
       memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+      memoryGraph: [
+        "Маша -> оставил(а) итог смены -> Поле: ливень и стоп-лист",
+      ],
     });
 
     expect(text).toContain("Память ресторана");
@@ -148,6 +153,8 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Добор памяти смены уже поставлен");
     expect(text).toContain("Люди и допуск");
     expect(text).toContain("Учебные пробелы");
+    expect(text).toContain("Связи памяти");
+    expect(text).toContain("Маша -> оставил(а) итог смены");
   });
 
   test("formats shift memory follow-up questions for advisor prompt", () => {
@@ -163,6 +170,7 @@ describe("restaurant advisor memory", () => {
       memberSignals: [],
       openTasks: [],
       learningGaps: [],
+      memoryGraph: [],
     });
 
     expect(text).toContain("Вопросы для добора памяти смены");
@@ -181,6 +189,7 @@ describe("restaurant advisor memory", () => {
       memberSignals: ["Маша (Управляющий): итог неполный"],
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+      memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
     });
 
     expect(text).toContain("Что уже знаю");
@@ -205,6 +214,7 @@ describe("restaurant advisor memory", () => {
       memberSignals: [],
       openTasks: [],
       learningGaps: [],
+      memoryGraph: [],
     });
 
     expect(text).toContain("Следующий вопрос для брифа");

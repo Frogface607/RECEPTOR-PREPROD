@@ -19,6 +19,7 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+  memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
 };
 
 function input(message: string) {
@@ -105,6 +106,8 @@ describe("runOpenAIChatTurn", () => {
     expect(firstBody.instructions).toContain("Итог смены: ливень");
     expect(firstBody.instructions).toContain("Добор памяти смены уже поставлен");
     expect(firstBody.instructions).toContain("Учебные пробелы");
+    expect(firstBody.instructions).toContain("Связи памяти");
+    expect(firstBody.instructions).toContain("Маша -> оставил(а) итог смены");
     expect(firstBody.instructions).toContain("операционный ритм Receptor");
     expect(firstBody.instructions).toContain("короткий итог смены");
     expect(tool?.tool).toBe("get_revenue");

@@ -1,5 +1,9 @@
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
+import {
+  buildRestaurantMemoryGraph,
+  formatRestaurantMemoryGraph,
+} from "@/lib/ai/restaurant-memory-graph";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import {
   getTeamRole,
@@ -21,6 +25,7 @@ export type RestaurantAdvisorMemory = {
   memberSignals: string[];
   openTasks: string[];
   learningGaps: string[];
+  memoryGraph: string[];
 };
 
 type RestaurantMemoryInput = {
@@ -173,6 +178,13 @@ export function buildRestaurantAdvisorMemory(
     fieldReadiness.complete === 0 && !fieldTaskStatus
       ? fieldReadiness.followUpQuestions
       : [];
+  const memoryGraph = formatRestaurantMemoryGraph(
+    buildRestaurantMemoryGraph({
+      staff: input.staff,
+      tasks: input.tasks,
+      comments: input.comments,
+    }),
+  );
 
   return {
     teamSummary: roleSummary(input.staff),
@@ -188,6 +200,7 @@ export function buildRestaurantAdvisorMemory(
     memberSignals: memberMemoryLines(input),
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
+    memoryGraph,
   };
 }
 
@@ -237,6 +250,10 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   if (memory.learningGaps.length > 0) {
     lines.push(`Учебные пробелы: ${memory.learningGaps.join("; ")}`);
+  }
+
+  if (memory.memoryGraph.length > 0) {
+    lines.push(`Связи памяти: ${memory.memoryGraph.join("; ")}`);
   }
 
   return lines.join("\n");
