@@ -71,6 +71,7 @@ export function FieldNoteForm() {
   const [pending, setPending] = useState(false);
   const [listening, setListening] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [savedToMemory, setSavedToMemory] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const readiness = getFieldNoteReadiness(body);
@@ -108,6 +109,7 @@ export function FieldNoteForm() {
 
   function addTemplate(text: string) {
     setMessage(null);
+    setSavedToMemory(false);
     setBody((current) => {
       const value = current.trimEnd();
       return value ? `${value}\n${text}` : text;
@@ -118,6 +120,7 @@ export function FieldNoteForm() {
     const transcript = value.trim();
     if (!transcript) return;
 
+    setSavedToMemory(false);
     setBody((current) => {
       const trimmed = current.trimEnd();
       return trimmed ? `${trimmed} ${transcript}` : transcript;
@@ -197,10 +200,12 @@ export function FieldNoteForm() {
 
         setPending(true);
         setMessage(null);
+        setSavedToMemory(false);
         try {
           const result = await submitFieldNoteAction({ body });
           setMessage(resultText(result));
           if (result.ok) {
+            setSavedToMemory(true);
             setBody("");
             router.refresh();
           }
@@ -269,7 +274,10 @@ export function FieldNoteForm() {
 
       <textarea
         value={body}
-        onChange={(event) => setBody(event.target.value)}
+        onChange={(event) => {
+          setSavedToMemory(false);
+          setBody(event.target.value);
+        }}
         rows={4}
         maxLength={1500}
         placeholder="Например: из-за ливня отменили три брони, к 21:00 закончилась мята, гости спрашивали безалкогольные коктейли. Утром проверить стоп-лист и дать залу замену для брифа..."
@@ -333,6 +341,23 @@ export function FieldNoteForm() {
         <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
           {message}
         </p>
+      ) : null}
+
+      {savedToMemory ? (
+        <div className="mt-3 rounded-lg border border-brand/35 bg-brand/10 p-3">
+          <div className="flex items-start gap-2">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Итог попал в память смены.
+              </p>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                Управляющий и владелец увидят этот контекст в разборе, а
+                советник будет связывать его с задачами, обучением и цифрами.
+              </p>
+            </div>
+          </div>
+        </div>
       ) : null}
     </form>
   );
