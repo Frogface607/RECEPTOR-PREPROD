@@ -1626,12 +1626,15 @@ function draftMatchesOpenTeamTask(
   task: TeamTask,
 ): boolean {
   if (!isOpenTeamTask(task)) return false;
+  const contextMatches = taskContextMatches(draft, task);
   const titleMatches =
-    normalizeTaskTitle(task.title) === normalizeTaskTitle(draft.title);
+    normalizeTaskTitle(task.title) === normalizeTaskTitle(draft.title) &&
+    contextMatches;
   const contourMatches =
     draft.sourceLabel !== "Выручка и смены" &&
     Boolean(draft.sourceLabel) &&
-    draft.sourceLabel === task.sourceLabel;
+    draft.sourceLabel === task.sourceLabel &&
+    contextMatches;
 
   if (draft.audienceMemberId) {
     return (
@@ -1645,6 +1648,14 @@ function draftMatchesOpenTeamTask(
     task.audience.type === "role" &&
     task.audience.roleId === draft.roleId &&
     (titleMatches || contourMatches)
+  );
+}
+
+function taskContextMatches(draft: SurvivalTaskDraft, task: TeamTask): boolean {
+  if (!draft.impactLabel || !task.impactLabel) return true;
+  return (
+    normalizeTaskTitle(draft.impactLabel) ===
+    normalizeTaskTitle(task.impactLabel)
   );
 }
 
