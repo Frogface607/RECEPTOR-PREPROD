@@ -47,11 +47,20 @@ function primaryBiRow(review: OwnerReview): OwnerMorningReviewRow {
 
 function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
   const field = review.evidence.find((item) => item.label === "Поле");
+  const fieldHypothesis =
+    review.hypotheses.find(
+      (item) => item.taskSourceLabel === "Полевой контекст",
+    ) ?? null;
+
   if (field) {
     return {
       label: "Поле",
-      value: field.value,
-      detail: field.detail,
+      value: fieldHypothesis
+        ? `${field.value} · ${fieldHypothesis.title}`
+        : field.value,
+      detail: fieldHypothesis
+        ? `${field.detail} Проверка: ${fieldHypothesis.check}`
+        : field.detail,
       tone: field.tone,
     };
   }

@@ -56,7 +56,20 @@ function baseReview(): OwnerReview {
 
 describe("buildOwnerMorningReviewRows", () => {
   test("builds a compact owner morning review from BI, field context and action", () => {
-    const rows = buildOwnerMorningReviewRows({ review: baseReview() });
+    const review = baseReview();
+    review.hypotheses = [
+      {
+        title: "Проверить стоп-лист и потерянные продажи",
+        why: "Стоп-лист: Маша — закончилась мята",
+        check:
+          "Сверить, какие позиции закончились и сколько выручки они давали.",
+        role: "manager",
+        tone: "risk",
+        taskSourceLabel: "Полевой контекст",
+      },
+    ];
+
+    const rows = buildOwnerMorningReviewRows({ review });
 
     expect(rows).toEqual([
       expect.objectContaining({
@@ -67,8 +80,8 @@ describe("buildOwnerMorningReviewRows", () => {
       }),
       expect.objectContaining({
         label: "Поле",
-        value: "2 сигнала",
-        detail: expect.stringContaining("закончилась мята"),
+        value: "2 сигнала · Проверить стоп-лист и потерянные продажи",
+        detail: expect.stringContaining("сколько выручки"),
         tone: "risk",
       }),
       expect.objectContaining({
