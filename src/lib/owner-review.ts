@@ -2385,6 +2385,9 @@ function ownerActionFromLaborMargin(input: {
     sourceLabel: "ФОТ и маржа",
     learningModuleId: "tech-card-discipline",
     learningModuleTitle: "Техкарта как договор внутри команды",
+    learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+    briefingQuestion:
+      "какая цена, порция, списание, ставка или состав смены объясняет разрыв прибыли",
     taskTitle: bridge.employee
       ? `Разобрать ФОТ и маржу: ${bridge.employee.name}`
       : bridge.marginRiskDish
@@ -2440,6 +2443,16 @@ function laborMarginHypothesis(input: {
         bridge.tone === "setup" ? "chef" : bridge.employee ? "owner" : "chef",
       tone: ownerToneFromLaborBridge(bridge.tone),
       taskSourceLabel: "ФОТ и маржа",
+      taskTitle: bridge.employee
+        ? `Разобрать ФОТ и маржу: ${bridge.employee.name}`
+        : bridge.marginRiskDish
+          ? `Разобрать ФОТ и маржу: ${bridge.marginRiskDish}`
+          : "Доказать ФОТ и маржу периода",
+      learningModuleId: "tech-card-discipline",
+      learningModuleTitle: "Техкарта как договор внутри команды",
+      learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+      briefingQuestion:
+        "какая цена, порция, списание, ставка или состав смены объясняет разрыв прибыли",
       audienceMemberId: bridge.employee?.memberId,
       audienceMemberName: bridge.employee?.name,
     };

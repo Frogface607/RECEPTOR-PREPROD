@@ -523,6 +523,27 @@ describe("buildOwnerReview", () => {
           check: expect.stringContaining("проблема может быть в меню"),
           role: "owner",
           tone: "risk",
+          taskTitle: "Разобрать ФОТ и маржу: Maria",
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарта как договор внутри команды",
+          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          briefingQuestion:
+            "какая цена, порция, списание, ставка или состав смены объясняет разрыв прибыли",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разобрать ФОТ и маржу: Maria",
+          sourceLabel: "ФОТ и маржа",
+          audienceMemberId: "manager-1",
+          audienceMemberName: "Maria",
+          learningModuleId: "tech-card-discipline",
+          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          contextNote: expect.stringContaining(
+            "Вопрос: какая цена, порция, списание, ставка или состав смены объясняет разрыв прибыли.",
+          ),
         }),
       ]),
     );
@@ -530,8 +551,9 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           sourceLabel: "ФОТ и маржа",
-          audienceMemberId: "manager-1",
-          audienceMemberName: "Maria",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если BI показал недобор валовой прибыли.",
+          ),
         }),
       ]),
     );
