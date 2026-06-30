@@ -3020,9 +3020,9 @@ describe("buildOwnerReview", () => {
           title: "Разобрать ФОТ и маржу смены",
           taskSourceLabel: "Полевой контекст",
           check: expect.stringContaining("продажи маржинальных позиций"),
-          learningModuleId: "tech-card-discipline",
-          learningModuleTitle: "Техкарты, себестоимость и дисциплина меню",
-          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          learningModuleId: "shift-brief",
+          learningModuleTitle: "Брифинг смены и передача контекста",
+          learningChecklistTitle: "Если полевая заметка про ФОТ или маржу",
           briefingQuestion:
             "что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф",
         }),
@@ -3033,8 +3033,8 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Разобрать ФОТ и маржу смены",
           sourceLabel: "Полевой контекст",
-          learningModuleId: "tech-card-discipline",
-          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          learningModuleId: "shift-brief",
+          learningChecklistTitle: "Если полевая заметка про ФОТ или маржу",
           contextNote: expect.stringContaining(
             "Полевой факт: Саша: Поле",
           ),
@@ -3048,10 +3048,10 @@ describe("buildOwnerReview", () => {
       "Вопрос: что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф?",
     );
     expect(fieldTaskContext).toContain(
-      "Стандарт: Техкарты, себестоимость и дисциплина меню.",
+      "Стандарт: Брифинг смены и передача контекста.",
     );
     expect(fieldTaskContext).toContain(
-      "Чеклист: Если BI показал недобор валовой прибыли.",
+      "Чеклист: Если полевая заметка про ФОТ или маржу.",
     );
   });
 

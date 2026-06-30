@@ -151,6 +151,15 @@ describe("team learning catalog", () => {
         expect.objectContaining({
           title: "Если полевая заметка про сервис или запрос гостей",
         }),
+        expect.objectContaining({
+          title: "Если полевая заметка про ФОТ или маржу",
+          body: expect.stringContaining("валовую прибыль"),
+          bullets: expect.arrayContaining([
+            expect.stringContaining("маржинальные позиции"),
+            expect.stringContaining("ФОТ"),
+            expect.stringContaining("брифа"),
+          ]),
+        }),
       ]),
     );
   });

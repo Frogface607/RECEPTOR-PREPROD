@@ -2052,11 +2052,11 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
       title: "Разобрать ФОТ и маржу смены",
       question:
         "что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф",
-      checklistTitle: "Если BI показал недобор валовой прибыли",
+      checklistTitle: "Если полевая заметка про ФОТ или маржу",
       check:
         "Сверить ФОТ смены, средний чек, скидки и продажи маржинальных позиций, чтобы понять: проблема в графике, сервисе, цене, порции или фокусе продаж.",
-      learningModuleId: "tech-card-discipline",
-      learningModuleTitle: "Техкарты, себестоимость и дисциплина меню",
+      learningModuleId: "shift-brief",
+      learningModuleTitle: "Брифинг смены и передача контекста",
     };
   }
   if (kind === "guest") {

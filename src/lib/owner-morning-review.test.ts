@@ -162,8 +162,8 @@ describe("buildOwnerMorningReviewRows", () => {
         impactLabel: "1 сигнал",
         briefingQuestion:
           "что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф",
-        learningModuleTitle: "Техкарты, себестоимость и дисциплина меню",
-        learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+        learningModuleTitle: "Брифинг смены и передача контекста",
+        learningChecklistTitle: "Если полевая заметка про ФОТ или маржу",
       },
     ];
 
