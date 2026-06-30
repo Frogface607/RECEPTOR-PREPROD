@@ -18,6 +18,13 @@ export type FieldNoteReadiness = {
   missing: string[];
 };
 
+export type FieldNoteReadinessSummary = {
+  total: number;
+  complete: number;
+  bestScore: number;
+  bestMissing: string[];
+};
+
 export const FIELD_NOTE_MEMORY_PROMPTS: FieldNotePrompt[] = [
   {
     label: "Факт",
@@ -162,4 +169,22 @@ export function fieldNoteReadinessHint(readiness: FieldNoteReadiness): string {
   }
 
   return `Чтобы советник понял контекст, добавьте: ${readiness.missing.join(", ")}.`;
+}
+
+export function summarizeFieldNoteReadiness(
+  values: readonly string[],
+): FieldNoteReadinessSummary {
+  const readiness = values
+    .map(getFieldNoteReadiness)
+    .filter((item) => item.hasFact);
+  const best = readiness.toSorted((left, right) => right.score - left.score)[0];
+
+  return {
+    total: readiness.length,
+    complete: readiness.filter((item) => item.score === 4).length,
+    bestScore: best?.score ?? 0,
+    bestMissing: best?.missing ?? FIELD_NOTE_MEMORY_PROMPTS.map((item) =>
+      item.label.toLocaleLowerCase("ru-RU"),
+    ),
+  };
 }

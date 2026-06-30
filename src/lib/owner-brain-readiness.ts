@@ -1,4 +1,5 @@
 import type { OwnerReviewTone } from "@/lib/owner-review";
+import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import type { TeamLearningMemberSummary } from "@/lib/team/team-learning-progress";
 import { summarizeTeamLearning } from "@/lib/team/team-learning-progress";
@@ -108,9 +109,12 @@ function fieldSource({
   tasks: TeamTask[];
 }): OwnerBrainSource {
   const digest = buildTeamFieldContextDigest({ comments, tasks });
+  const noteReadiness = summarizeFieldNoteReadiness(
+    comments.map((comment) => comment.body),
+  );
   const status: OwnerBrainSourceStatus = !digest
     ? "missing"
-    : digest.totalNotes >= 3 || digest.signalCount >= 2
+    : noteReadiness.complete > 0
       ? "ready"
       : "work";
 
@@ -118,9 +122,11 @@ function fieldSource({
     id: "field",
     label: "Смена",
     status,
-    value: digest ? `${digest.totalNotes}` : "0",
+    value: digest ? `${noteReadiness.complete}/${noteReadiness.total}` : "0",
     detail: digest
-      ? digest.summary
+      ? noteReadiness.complete > 0
+        ? `Есть полный итог смены. ${digest.summary}`
+        : `Заметка есть, но не хватает: ${noteReadiness.bestMissing.join(", ")}. ${digest.summary}`
       : "После смены нужен короткий итог: гости, событие, стоп-лист, конфликт, погода, что мешало продавать.",
     actionLabel: digest ? "Дополнить" : "Оставить итог",
   };

@@ -119,4 +119,33 @@ describe("owner brain readiness", () => {
     expect(readiness.nextSource.id).toBe("learning");
     expect(readiness.nextSource.detail).toContain("Не допущены");
   });
+
+  test("keeps shift memory in progress when the note has no context or scale", () => {
+    const readiness = buildOwnerBrainReadiness({
+      context: DEMO_CONTEXT_ANSWERS,
+      staff,
+      tasks,
+      comments: [
+        {
+          id: "weak-note",
+          venueId: "venue",
+          taskId: "field",
+          authorName: "Маша",
+          body: "Итог смены: было странно. Надо обсудить.",
+          createdAtLabel: "22:10",
+        },
+      ],
+      learningSummaries: staff.map((member) => learningSummary(member)),
+      dataMode: "live",
+    });
+
+    const field = readiness.sources.find((source) => source.id === "field");
+
+    expect(field).toMatchObject({
+      status: "work",
+      value: "0/1",
+    });
+    expect(field?.detail).toContain("не хватает");
+    expect(readiness.nextSource.id).toBe("field");
+  });
 });

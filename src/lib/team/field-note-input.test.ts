@@ -5,6 +5,7 @@ import {
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
+  summarizeFieldNoteReadiness,
 } from "./field-note-input";
 
 describe("field note input", () => {
@@ -120,5 +121,25 @@ describe("field note input", () => {
         ),
       ),
     ).toContain("память смены");
+  });
+
+  test("summarizes completed shift memory notes", () => {
+    expect(
+      summarizeFieldNoteReadiness([
+        "Было странно и неприятно. Надо обсудить.",
+        "Итог смены: к 21:00 закончилась мята. Контекст: ливень, гости просили лимонады. Масштаб: 6 отказов. Действие: утром проверить заказ мяты.",
+      ]),
+    ).toMatchObject({
+      total: 2,
+      complete: 1,
+      bestScore: 4,
+      bestMissing: [],
+    });
+
+    expect(summarizeFieldNoteReadiness([])).toMatchObject({
+      total: 0,
+      complete: 0,
+      bestScore: 0,
+    });
   });
 });

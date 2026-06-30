@@ -90,6 +90,10 @@ import {
   buildTeamFieldContextDigest,
   type TeamFieldContextDigest,
 } from "@/lib/team/team-field-context";
+import {
+  summarizeFieldNoteReadiness,
+  type FieldNoteReadinessSummary,
+} from "@/lib/team/field-note-input";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
 import {
   buildTeamOpsReadiness,
@@ -261,6 +265,9 @@ export default async function TeamPage({
     comments: workspace.comments,
     tasks: workspace.tasks,
   });
+  const fieldNoteReadiness = summarizeFieldNoteReadiness(
+    workspace.comments.map((comment) => comment.body),
+  );
   const learningFocusPlan = buildTeamLearningFocusPlan({
     plans: learningRolePlans,
     fieldContext: learningFieldContext,
@@ -527,7 +534,10 @@ export default async function TeamPage({
           laborProfile={memberLaborProfile}
         />
 
-        <TeamShiftMemorySection digest={learningFieldContext} />
+        <TeamShiftMemorySection
+          digest={learningFieldContext}
+          readiness={fieldNoteReadiness}
+        />
 
         <ShiftOperationsRoute
           roster={shiftRoster}
@@ -2341,8 +2351,10 @@ function dailyWorkflowToneClass(tone: TeamDailyWorkflowTone): string {
 
 function TeamShiftMemorySection({
   digest,
+  readiness,
 }: {
   digest: TeamFieldContextDigest | null;
+  readiness: FieldNoteReadinessSummary;
 }) {
   return (
     <section
@@ -2375,8 +2387,26 @@ function TeamShiftMemorySection({
                     {digest.summary}
                   </p>
                 </div>
-                <Badge variant="outline">{digest.totalNotes} заметок</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline">{digest.totalNotes} заметок</Badge>
+                  <Badge
+                    variant="outline"
+                    className={
+                      readiness.complete > 0
+                        ? "border-brand/30 text-brand"
+                        : "border-amber-400/30 text-amber-200"
+                    }
+                  >
+                    Полных итогов {readiness.complete}/{readiness.total}
+                  </Badge>
+                </div>
               </div>
+              {readiness.complete === 0 ? (
+                <div className="rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-[12px] leading-relaxed text-amber-100">
+                  Чтобы советник понял смену, добавьте в итог:{" "}
+                  {readiness.bestMissing.join(", ")}.
+                </div>
+              ) : null}
               <div className="flex flex-wrap gap-2">
                 {digest.signals.map((signal) => (
                   <span
