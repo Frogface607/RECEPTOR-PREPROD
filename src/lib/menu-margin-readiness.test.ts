@@ -781,14 +781,24 @@ describe("buildMenuMarginReadiness", () => {
       hasUsableTechCard: true,
       techCard: expect.objectContaining({
         pricedIngredientRows: 1,
+        unpricedIngredientRows: 1,
+        missingPriceIngredientNames: ["Egg"],
         costReference: null,
         fullyCosted: false,
       }),
     });
-    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+    expect(readiness.topBlockers[0]).toMatchObject({
+      techCardPricedIngredientRows: 1,
+      techCardUnpricedIngredientRows: 1,
+      missingIngredientPriceNames: ["Egg"],
+    });
+    const nextAction = buildMenuMarginNextAction(readiness);
+    expect(nextAction).toMatchObject({
       kind: "missing-cost",
       title: "Техкарта есть, не хватает цен ингредиентов",
     });
+    expect(nextAction.detail).toContain("Egg");
+    expect(nextAction.detail).toContain("1 строк");
   });
 
   test("marks margin as ready when all key dishes have proven cost", () => {

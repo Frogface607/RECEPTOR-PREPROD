@@ -37,6 +37,8 @@ export type MenuMarginBlocker = {
   techCardIngredientRows: number;
   techCardLinkedIngredientRows: number;
   techCardPricedIngredientRows: number;
+  techCardUnpricedIngredientRows: number;
+  missingIngredientPriceNames: string[];
 };
 
 export type MenuMarginNextAction = {
@@ -110,6 +112,8 @@ export type MenuMarginTechCardMatch = {
   linkedIngredientRows: number;
   ingredientRowsWithAmount: number;
   pricedIngredientRows: number;
+  unpricedIngredientRows: number;
+  missingPriceIngredientNames: string[];
   costReference: number | null;
   usable: boolean;
   fullyCosted: boolean;
@@ -234,6 +238,10 @@ export function buildMenuMarginReadiness(input: {
       techCardIngredientRows: item.techCard?.ingredientRows ?? 0,
       techCardLinkedIngredientRows: item.techCard?.linkedIngredientRows ?? 0,
       techCardPricedIngredientRows: item.techCard?.pricedIngredientRows ?? 0,
+      techCardUnpricedIngredientRows:
+        item.techCard?.unpricedIngredientRows ?? 0,
+      missingIngredientPriceNames:
+        item.techCard?.missingPriceIngredientNames ?? [],
     }))
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
@@ -341,9 +349,19 @@ function findTechCardMatch(
   const ingredientRowsWithAmount = chart.items.filter(
     (item) => item.amount !== undefined,
   ).length;
-  const pricedRows = chart.items
-    .map((item) => calculateIngredientCost(item, products))
+  const ingredientDiagnostics = chart.items.map((item) =>
+    diagnoseIngredientCost(item, products),
+  );
+  const pricedRows = ingredientDiagnostics
+    .map((item) => item.cost)
     .filter((cost): cost is number => cost !== null);
+  const missingPriceIngredients = ingredientDiagnostics.filter(
+    (item) => item.missingPrice,
+  );
+  const missingPriceIngredientNames = missingPriceIngredients
+    .map((item) => item.name)
+    .filter((name, index, names) => names.indexOf(name) === index)
+    .slice(0, 5);
   const costReference =
     ingredientRowsWithAmount > 0 &&
     pricedRows.length === ingredientRowsWithAmount
@@ -358,9 +376,32 @@ function findTechCardMatch(
     linkedIngredientRows,
     ingredientRowsWithAmount,
     pricedIngredientRows: pricedRows.length,
+    unpricedIngredientRows: missingPriceIngredients.length,
+    missingPriceIngredientNames,
     costReference,
     usable: linkedIngredientRows > 0 && ingredientRowsWithAmount > 0,
     fullyCosted: costReference !== null,
+  };
+}
+
+function diagnoseIngredientCost(
+  ingredient: MenuMarginTechCardIngredient,
+  products: Product[],
+): { cost: number | null; missingPrice: boolean; name: string } {
+  const product = findIngredientProduct(ingredient, products);
+  const cost = calculateIngredientCost(ingredient, products);
+  const hasAmount = positive(ingredient.amount) !== null;
+  const missingPrice =
+    hasAmount && Boolean(product) && getProductCostReference(product) === null;
+
+  return {
+    cost,
+    missingPrice,
+    name:
+      product?.name ??
+      ingredient.productName ??
+      ingredient.article ??
+      "ингредиент",
   };
 }
 
@@ -608,12 +649,13 @@ export function buildMenuMarginNextAction(
 
   if (blocker?.reason === "missing-cost" && blocker.hasTechCard) {
     const linkedProduct = blocker.productName ?? "выбранным товаром iiko";
+    const missingIngredients = missingIngredientPriceText(blocker);
     return {
       kind: "missing-cost",
       title: "Техкарта есть, не хватает цен ингредиентов",
-      detail: `«${blocker.dishName}» связано с ${linkedProduct}. RMS отдал состав: ${blocker.techCardIngredientRows} строк, ${blocker.techCardLinkedIngredientRows} связаны с товарами. Без цен ингредиентов не доказано ${formatRubles(blocker.revenue)} выручки периода.`,
+      detail: `«${blocker.dishName}» связано с ${linkedProduct}. RMS отдал состав: ${blocker.techCardIngredientRows} строк, ${blocker.techCardLinkedIngredientRows} связаны с товарами, ${blocker.techCardUnpricedIngredientRows} строк без закупочной цены${missingIngredients}. Без цен ингредиентов не доказано ${formatRubles(blocker.revenue)} выручки периода.`,
       action:
-        "Проверьте закупочные цены ингредиентов в RMS. После этого Receptor сможет считать food cost по составу техкарты.",
+        "Проверьте закупочные цены этих ингредиентов в RMS. После этого Receptor сможет считать food cost по составу техкарты.",
       blocker,
     };
   }
@@ -650,6 +692,11 @@ export function buildMenuMarginNextAction(
       "Свяжите блюдо с правильным товаром iiko, затем проверьте, пришла ли закупочная цена.",
     blocker,
   };
+}
+
+function missingIngredientPriceText(blocker: MenuMarginBlocker): string {
+  if (blocker.missingIngredientPriceNames.length === 0) return "";
+  return `: ${blocker.missingIngredientPriceNames.join(", ")}`;
 }
 
 function primaryMarginBlocker(

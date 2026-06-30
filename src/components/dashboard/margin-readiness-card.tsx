@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CheckCircle2, ReceiptText } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ReceiptText,
+} from "lucide-react";
 import { MarginMappingWorkspace } from "./margin-mapping-actions";
 import type { Product } from "@/lib/iiko/models";
 import { formatInteger, formatRubles } from "@/lib/format";
@@ -13,7 +18,8 @@ import {
 const STATUS_COPY = {
   ready: {
     title: "Техкарты готовы к проверке маржи",
-    detail: "Связи и цены есть по ключевым позициям. Можно искать слабую маржу.",
+    detail:
+      "Связи и цены есть по ключевым позициям. Можно искать слабую маржу.",
     className: "border-brand/35 bg-brand/10 text-brand",
   },
   partial: {
@@ -195,8 +201,12 @@ function MarginDebtMetric({
       <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
-      <p className="numeric mt-1 text-base font-medium text-foreground">{value}</p>
-      <p className="mt-1 truncate text-[11px] text-muted-foreground">{detail}</p>
+      <p className="numeric mt-1 text-base font-medium text-foreground">
+        {value}
+      </p>
+      <p className="mt-1 truncate text-[11px] text-muted-foreground">
+        {detail}
+      </p>
     </div>
   );
 }
@@ -228,6 +238,11 @@ function MarginBlockerCard({ item }: { item: MenuMarginBlocker }) {
       <p className="mt-1 truncate text-[11px] text-muted-foreground">
         {item.productName ?? "товар не выбран"}
       </p>
+      {item.missingIngredientPriceNames.length > 0 ? (
+        <p className="mt-1 truncate text-[11px] text-amber-200/85">
+          Без цены: {item.missingIngredientPriceNames.join(", ")}
+        </p>
+      ) : null}
     </div>
   );
 }
