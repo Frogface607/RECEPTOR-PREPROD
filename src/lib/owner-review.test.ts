@@ -2209,9 +2209,16 @@ describe("buildOwnerReview", () => {
           title: "Разобрать конфликт смены с цифрами",
           sourceLabel: "Полевой контекст",
           learningModuleTitle: "Брифинг смены и передача контекста",
-          contextNote: expect.stringContaining("Проверка: На брифинге"),
+          contextNote: expect.stringContaining("Полевой факт: Маша"),
         }),
       ]),
+    );
+    const fieldTaskContext = review.tasks.find(
+      (task) => task.sourceLabel === "Полевой контекст",
+    )?.contextNote;
+    expect(fieldTaskContext).toContain("Проверка: На брифинге");
+    expect(fieldTaskContext).toContain(
+      "Зачем: связать факты смены с BI, назначить ответственного и убрать повторяемую причину.",
     );
   });
 });

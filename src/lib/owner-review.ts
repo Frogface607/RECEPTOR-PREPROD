@@ -432,6 +432,9 @@ function taskReasonForSource(
   if (sourceLabel === "Данные iiko") {
     return "не принимать управленческие решения на неполных данных";
   }
+  if (sourceLabel === "Полевой контекст") {
+    return "связать факты смены с BI, назначить ответственного и убрать повторяемую причину";
+  }
   if (sourceLabel?.startsWith("ФОТ")) {
     return "доказать стоимость смен до выводов о прибыли";
   }
@@ -526,6 +529,11 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
 }
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
+  const context =
+    item.taskSourceLabel === "Полевой контекст"
+      ? `Полевой факт: ${item.why} Проверка: ${item.check}`
+      : `${item.why} Проверка: ${item.check}`;
+
   return {
     title: item.taskTitle
       ? trimTaskTitle(item.taskTitle)
@@ -535,7 +543,7 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     dueLabel: roleDue(item.role),
     impactLabel: item.impactLabel,
     contextNote: withLearningContext({
-      context: `${item.why} Проверка: ${item.check}`,
+      context,
       learningModuleTitle: item.learningModuleTitle,
       checklistTitle: hypothesisChecklistTitle(item),
       reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
