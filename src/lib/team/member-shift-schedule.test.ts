@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { buildLaborBi } from "./labor-bi";
 import {
+  buildMemberDailyRoute,
   buildMemberOperationPlan,
   buildMemberSecondBrainProfile,
   buildMemberLaborProfile,
@@ -336,6 +337,82 @@ describe("buildMemberShiftSchedule", () => {
       id: "task-task-medium",
       taskId: "task-medium",
     });
+  });
+
+  test("builds a shift route that starts with unread briefing", () => {
+    const route = buildMemberDailyRoute({
+      member,
+      tasks: [],
+      comments: [],
+      learning: buildLearningSummary({ canWorkShift: true }),
+      announcements: [
+        buildAnnouncement({
+          id: "announcement-service",
+          title: "Сегодня продаем лимонад без мяты",
+          priority: "important",
+          audience: { type: "role", roleId: "service" },
+        }),
+      ],
+      announcementReads: [],
+    });
+
+    expect(route.readyCount).toBe(2);
+    expect(route.totalCount).toBe(4);
+    expect(route.focus).toMatchObject({
+      id: "briefing",
+      title: "Прочитать бриф",
+      action: "Подтвердить",
+      href: "#team-announcement-announcement-service",
+    });
+    expect(route.items.map((item) => item.id)).toEqual([
+      "briefing",
+      "learning",
+      "task",
+      "shift_memory",
+    ]);
+  });
+
+  test("routes the employee to shift memory after briefing, learning and tasks", () => {
+    const route = buildMemberDailyRoute({
+      member,
+      tasks: [],
+      comments: [],
+      learning: buildLearningSummary({ canWorkShift: true }),
+      announcements: [],
+      announcementReads: [],
+    });
+
+    expect(route.focus).toMatchObject({
+      id: "shift_memory",
+      status: "нет итога",
+      href: "#shift-summary",
+    });
+    expect(route.headline).toContain("память ресторана");
+  });
+
+  test("marks the route complete when the employee left a shift note", () => {
+    const route = buildMemberDailyRoute({
+      member,
+      tasks: [],
+      comments: [
+        {
+          id: "comment-field",
+          venueId: "dev-venue",
+          taskId: "task-field",
+          authorName: "Маша",
+          body: "Итог смены: гости просили безалкогольный коктейль, утром проверить мяту.",
+          createdAtLabel: "23:10",
+        },
+      ],
+      learning: buildLearningSummary({ canWorkShift: true }),
+      announcements: [],
+      announcementReads: [],
+    });
+
+    expect(route.readyCount).toBe(4);
+    expect(route.headline).toContain("закрыта");
+    expect(route.focus.id).toBe("shift_memory");
+    expect(route.focus.action).toBe("Дополнить");
   });
 
   test("shows iiko shift matching as the next action without schedule", () => {

@@ -53,6 +53,32 @@ export type MemberOperationPlanItem = {
   announcementId?: string;
 };
 
+export type MemberDailyRouteItemId =
+  | "briefing"
+  | "learning"
+  | "task"
+  | "shift_memory";
+
+export type MemberDailyRouteItem = {
+  id: MemberDailyRouteItemId;
+  step: string;
+  title: string;
+  detail: string;
+  href: string;
+  status: string;
+  action: string;
+  ready: boolean;
+  tone: MemberOperationPlanTone;
+};
+
+export type MemberDailyRoute = {
+  readyCount: number;
+  totalCount: number;
+  headline: string;
+  focus: MemberDailyRouteItem;
+  items: MemberDailyRouteItem[];
+};
+
 export type MemberSecondBrainTone = "risk" | "setup" | "work" | "ready";
 
 export type MemberSecondBrainFact = {
@@ -261,6 +287,112 @@ export function buildMemberOperationPlan(input: {
   }
 
   return items.slice(0, 4);
+}
+
+export function buildMemberDailyRoute(input: {
+  member: StaffMember;
+  tasks: TeamTask[];
+  comments?: TeamTaskComment[];
+  learning: TeamLearningMemberSummary | null;
+  announcements?: TeamAnnouncement[];
+  announcementReads?: TeamAnnouncementRead[];
+  nextLearning?: { title: string; timeLabel: string } | null;
+}): MemberDailyRoute {
+  const unreadAnnouncement = findUnreadImportantAnnouncement({
+    member: input.member,
+    announcements: input.announcements,
+    reads: input.announcementReads,
+  });
+  const openTasks = input.tasks.filter(isOpenTask);
+  const urgentTask = openTasks.find((task) => task.priority === "high");
+  const nextTask = urgentTask ?? openTasks[0] ?? null;
+  const ownNotes = (input.comments ?? []).filter((comment) =>
+    isLikelySameTeamMemberName(comment.authorName, input.member.name),
+  );
+  const latestNote = ownNotes[ownNotes.length - 1] ?? null;
+  const learningReady = Boolean(input.learning?.canWorkShift);
+  const nextLearning = input.nextLearning ?? input.learning?.nextItem ?? null;
+
+  const items: MemberDailyRouteItem[] = [
+    {
+      id: "briefing",
+      step: "01",
+      title: "Прочитать бриф",
+      detail: unreadAnnouncement
+        ? unreadAnnouncement.title
+        : "Важных объявлений для роли сейчас нет.",
+      href: unreadAnnouncement
+        ? `#team-announcement-${encodeURIComponent(unreadAnnouncement.id)}`
+        : "#team-announcements",
+      status: unreadAnnouncement ? "важно" : "прочитано",
+      action: unreadAnnouncement ? "Подтвердить" : "Проверить",
+      ready: !unreadAnnouncement,
+      tone: unreadAnnouncement ? "work" : "ready",
+    },
+    {
+      id: "learning",
+      step: "02",
+      title: "Закрыть допуск",
+      detail: learningReady
+        ? "Обязательные стандарты не блокируют смену."
+        : nextLearning
+          ? `${nextLearning.title} · ${nextLearning.timeLabel}`
+          : "Нужно пройти обязательные материалы роли.",
+      href: "#learning-progress",
+      status: learningReady ? "допущен" : "нужен допуск",
+      action: learningReady ? "Открыть обучение" : "Пройти",
+      ready: learningReady,
+      tone: learningReady
+        ? "ready"
+        : input.learning?.admissionStatus === "not_started"
+          ? "risk"
+          : "setup",
+    },
+    {
+      id: "task",
+      step: "03",
+      title: "Сделать задачу",
+      detail: nextTask
+        ? nextTask.title
+        : "Открытых задач на сотрудника или роль нет.",
+      href: "#team-actions",
+      status: nextTask
+        ? urgentTask
+          ? "срочно"
+          : `${openTasks.length} открыто`
+        : "нет задач",
+      action: nextTask ? "Открыть" : "Проверить",
+      ready: !nextTask,
+      tone: urgentTask ? "risk" : nextTask ? "work" : "ready",
+    },
+    {
+      id: "shift_memory",
+      step: "04",
+      title: "Оставить итог смены",
+      detail: latestNote
+        ? trimProfileDetail(latestNote.body)
+        : "После смены зафиксируйте гостей, стоп-лист, конфликт, погоду и что проверить утром.",
+      href: "#shift-summary",
+      status: latestNote ? "есть итог" : "нет итога",
+      action: latestNote ? "Дополнить" : "Записать",
+      ready: Boolean(latestNote),
+      tone: latestNote ? "work" : "setup",
+    },
+  ];
+
+  const readyCount = items.filter((item) => item.ready).length;
+  const focus = items.find((item) => !item.ready) ?? items[items.length - 1];
+
+  return {
+    readyCount,
+    totalCount: items.length,
+    headline:
+      readyCount === items.length
+        ? "Смена закрыта в памяти ресторана."
+        : "Сделайте минимум, чтобы смена попала в память ресторана.",
+    focus,
+    items,
+  };
 }
 
 export function buildMemberSecondBrainProfile(input: {

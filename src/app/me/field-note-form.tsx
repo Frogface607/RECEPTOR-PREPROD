@@ -166,7 +166,8 @@ export function FieldNoteForm() {
 
   return (
     <form
-      className="rounded-lg border border-border/60 bg-card/50 p-5"
+      id="shift-summary"
+      className="scroll-mt-24 rounded-lg border border-border/60 bg-card/50 p-5"
       onSubmit={async (event) => {
         event.preventDefault();
         if (!canSubmit) return;

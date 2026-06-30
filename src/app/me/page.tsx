@@ -36,10 +36,13 @@ import {
 import { listLearningItemsForRoleWithStandards } from "@/lib/team/team-learning-standards";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import {
+  buildMemberDailyRoute,
   buildMemberLaborProfile,
   buildMemberOperationPlan,
   buildMemberSecondBrainProfile,
   buildMemberShiftSchedule,
+  type MemberDailyRoute,
+  type MemberDailyRouteItem,
   type MemberLaborProfile,
   type MemberLaborProfileStatus,
   type MemberOperationPlanItem,
@@ -287,6 +290,15 @@ export default async function MyCabinetPage({
     learning: learningSummary,
     nextLearning,
   });
+  const dailyRoute = buildMemberDailyRoute({
+    member: workspace.member,
+    tasks: sortedOpenTasks,
+    comments: workspace.comments,
+    learning: learningSummary,
+    announcements: workspace.announcements,
+    announcementReads: workspace.announcementReads,
+    nextLearning,
+  });
   const nextAction = operationPlan[0] ?? null;
   const nextActionTask = nextAction?.taskId
     ? (sortedOpenTasks.find((task) => task.id === nextAction.taskId) ?? null)
@@ -518,6 +530,10 @@ export default async function MyCabinetPage({
             </div>
           </div>
 
+          <div className="mx-auto max-w-7xl px-6 pb-8">
+            <MemberDailyRoutePanel route={dailyRoute} />
+          </div>
+
           <div className="mx-auto grid max-w-7xl gap-3 px-6 pb-8 sm:grid-cols-2 lg:grid-cols-4">
             <Metric label="активные" value={openTasks.length} />
             <Metric label="срочные" value={urgentTasks.length} />
@@ -556,7 +572,7 @@ export default async function MyCabinetPage({
               <FieldNoteForm />
 
               <div>
-                <div className="flex items-center gap-3">
+                <div id="team-announcements" className="flex scroll-mt-24 items-center gap-3">
                   <Megaphone className="size-5 text-brand" />
                   <h2 className="text-2xl font-medium">Объявления</h2>
                 </div>
@@ -737,6 +753,92 @@ function memberSecondBrainToneClass(tone: MemberSecondBrainTone): string {
     return "border-[color:var(--pro)]/25 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
   }
   return "border-brand/25 bg-brand/10 text-brand";
+}
+
+function dailyRouteIcon(item: MemberDailyRouteItem) {
+  if (item.id === "briefing") return Megaphone;
+  if (item.id === "learning") return GraduationCap;
+  if (item.id === "task") return ListChecks;
+  return MessageSquareText;
+}
+
+function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
+  const focus = route.focus;
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-card/45 p-4">
+      <div className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
+        <div className="rounded-lg border border-brand/25 bg-brand/[0.05] p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+                Ритм смены
+              </p>
+              <h2 className="mt-2 text-base font-medium">{route.headline}</h2>
+            </div>
+            <span className="rounded-md border border-border/50 bg-background/60 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              {route.readyCount}/{route.totalCount}
+            </span>
+          </div>
+          <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+            Следующий шаг: {focus.title.toLowerCase()}. {focus.detail}
+          </p>
+          <Link
+            href={focus.href}
+            className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+          >
+            {focus.action}
+          </Link>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          {route.items.map((item) => {
+            const Icon = dailyRouteIcon(item);
+
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={
+                  "group flex min-h-32 flex-col justify-between rounded-lg border p-3 transition-colors hover:border-brand/35 hover:bg-background/55 " +
+                  (item.id === focus.id
+                    ? "border-brand/35 bg-brand/[0.04]"
+                    : "border-border/45 bg-background/35")
+                }
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="flex size-8 items-center justify-center rounded-lg border border-border/45 bg-card/45 text-foreground">
+                    <Icon className="size-4" />
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={operationToneClass(item.tone)}
+                  >
+                    {item.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {item.step}
+                  </p>
+                  <p className="text-sm font-medium text-foreground">
+                    {item.title}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
+                    {item.detail}
+                  </p>
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground transition-colors group-hover:text-foreground">
+                    {item.action}
+                    <ArrowRight className="size-3.5" />
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function MemberSecondBrainCard({
