@@ -144,7 +144,11 @@ function bridgeRow(
 ): OwnerMorningReviewRow | null {
   const field = review.evidence.find((item) => item.label === "Поле");
   const hypothesis = fieldHypothesis(review);
-  if (!field || !hypothesis || bi.tone === "good") return null;
+  const hasFieldRisk =
+    field?.tone === "risk" || hypothesis?.tone === "risk";
+  if (!field || !hypothesis || (bi.tone === "good" && !hasFieldRisk)) {
+    return null;
+  }
 
   return {
     label: "Вопрос",
@@ -170,7 +174,11 @@ function fieldActionRow(
 ): OwnerMorningReviewRow | null {
   const field = review.evidence.find((item) => item.label === "Поле");
   const hypothesis = fieldHypothesis(review);
-  if (!field || !hypothesis || bi.tone === "good") return null;
+  const hasFieldRisk =
+    field?.tone === "risk" || hypothesis?.tone === "risk";
+  if (!field || !hypothesis || (bi.tone === "good" && !hasFieldRisk)) {
+    return null;
+  }
 
   const title = hypothesis.taskTitle ?? hypothesis.title;
   return {

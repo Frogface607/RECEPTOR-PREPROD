@@ -155,6 +155,54 @@ describe("buildOwnerMorningReviewRows", () => {
     expect(rows).toHaveLength(3);
   });
 
+  test("keeps risky money field context visible even when primary BI is calm", () => {
+    const review = baseReview();
+    review.evidence = review.evidence.map((item) =>
+      item.label === "Деньги" || item.label === "ФОТ"
+        ? { ...item, tone: "good" as const }
+        : item,
+    );
+    review.hypotheses = [
+      {
+        title: "Разобрать ФОТ и маржу смены",
+        why: "Маржа и ФОТ смены: Саша — маржинальные закуски не предлагали",
+        check:
+          "Сверить ФОТ смены, средний чек, скидки и продажи маржинальных позиций.",
+        role: "manager",
+        tone: "risk",
+        taskSourceLabel: "Полевой контекст",
+        impactLabel: "1 сигнал",
+        briefingQuestion:
+          "что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф",
+        learningModuleTitle: "Техкарты, себестоимость и дисциплина меню",
+        learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+      },
+    ];
+
+    const rows = buildOwnerMorningReviewRows({ review });
+
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Вопрос",
+          value: "Что спросить на разборе",
+          detail: expect.stringContaining(
+            "что смена продавала, где потеряла валовую прибыль",
+          ),
+          tone: "risk",
+        }),
+        expect.objectContaining({
+          label: "Действие",
+          value: "Разобрать ФОТ и маржу смены · 1 сигнал",
+          detail: expect.stringContaining(
+            "Чеклист: Если BI показал недобор валовой прибыли.",
+          ),
+          tone: "risk",
+        }),
+      ]),
+    );
+  });
+
   test("turns unlinked field context into a morning briefing question", () => {
     const review = baseReview();
 
