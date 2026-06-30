@@ -1005,6 +1005,17 @@ function TeamManagerFollowUpCard({
             <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
               {primaryItem.detail}
             </p>
+            {primaryItem.taskDraft?.learningChecklistTitle ? (
+              <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-md border border-sky-400/25 bg-sky-400/10 px-2.5 py-1.5 text-[11px] text-sky-100">
+                <GraduationCap className="size-3.5 shrink-0" />
+                <span className="shrink-0 uppercase tracking-[0.12em]">
+                  стандарт
+                </span>
+                <span className="truncate text-muted-foreground">
+                  {primaryItem.taskDraft.learningChecklistTitle}
+                </span>
+              </div>
+            ) : null}
           </Link>
           <div className="mt-4 flex flex-wrap gap-2">
             <LinkButton
@@ -1080,6 +1091,12 @@ function TeamManagerFollowUpRow({
           </span>
         </span>
         <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+          {item.taskDraft?.learningChecklistTitle ? (
+            <span className="inline-flex items-center gap-1 rounded-md border border-sky-400/25 bg-sky-400/10 px-2 py-1 text-sky-100">
+              <GraduationCap className="size-3" />
+              стандарт
+            </span>
+          ) : null}
           {item.metric}
           <ArrowRight className="size-4" />
         </span>
