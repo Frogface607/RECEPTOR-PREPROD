@@ -110,6 +110,7 @@ export type OwnerReviewAction = {
   learningModuleTitle?: string;
   learningChecklistTitle?: string;
   existingTaskId?: string;
+  existingTaskStatus?: TeamTask["status"];
 };
 
 export type OwnerProfitReadinessStatus = "ready" | "partial" | "blocked";
@@ -1337,7 +1338,11 @@ function markActionsWithOpenTasks(
   return actions.map((action) => {
     const existingTask = openTaskForDraft(taskDraftForAction(action), tasks);
     return existingTask
-      ? { ...action, existingTaskId: existingTask.id }
+      ? {
+          ...action,
+          existingTaskId: existingTask.id,
+          existingTaskStatus: existingTask.status,
+        }
       : action;
   });
 }

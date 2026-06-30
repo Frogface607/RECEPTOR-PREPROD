@@ -584,6 +584,7 @@ describe("buildOwnerReview", () => {
           sourceLabel: "ФОТ и маржа",
           memberId: "manager-1",
           existingTaskId: "task-existing-fot-margin",
+          existingTaskStatus: "accepted",
         }),
       ]),
     );

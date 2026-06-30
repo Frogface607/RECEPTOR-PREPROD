@@ -17,6 +17,7 @@ import type {
 } from "@/lib/owner-review";
 import { buildOwnerMorningReviewRows } from "@/lib/owner-morning-review";
 import { buildTeamHref, type TeamPeriodParams } from "@/lib/team/team-links";
+import type { TeamTask } from "@/lib/team/team-os";
 import type { TeamTaskQueueSummary } from "@/lib/team/team-task-queue";
 import { LinkButton } from "@/components/ui/link-button";
 
@@ -37,6 +38,14 @@ const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
   high: "уверенно",
   medium: "нужно проверить",
   low: "данных мало",
+};
+
+const TASK_STATUS_LABEL: Record<TeamTask["status"], string> = {
+  new: "новая",
+  accepted: "принята",
+  in_progress: "в работе",
+  done: "сделана",
+  verified: "проверена",
 };
 
 function actionContour(action: OwnerReviewAction): string {
@@ -408,7 +417,10 @@ export function OwnerCommandPanel({
                 ) : null}
                 {mainAction.existingTaskId ? (
                   <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    уже в Team OS
+                    Team OS
+                    {mainAction.existingTaskStatus
+                      ? `: ${TASK_STATUS_LABEL[mainAction.existingTaskStatus]}`
+                      : ""}
                   </span>
                 ) : null}
               </div>
