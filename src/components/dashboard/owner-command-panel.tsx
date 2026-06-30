@@ -600,21 +600,22 @@ export function OwnerCommandPanel({
                         {brainReadiness.fieldMemory.followUpTask.dueLabel}
                       </span>
                     </span>
-                  ) : brainReadiness.fieldMemory.followUpQuestions.length > 0 ? (
-                    <span className="mt-2 grid gap-1.5">
+                  ) : brainReadiness.fieldMemory.nextQuestion ? (
+                    <span className="mt-2 block rounded-md border border-amber-400/20 bg-amber-400/8 px-2 py-1.5 text-[12px] leading-relaxed text-amber-100">
                       <span className="block text-[10px] uppercase tracking-[0.14em] text-amber-200/80">
-                        Что уточнить
+                        Вопрос для брифа
                       </span>
-                      {brainReadiness.fieldMemory.followUpQuestions
-                        .slice(0, 2)
-                        .map((question) => (
-                          <span
-                            key={question}
-                            className="block rounded-md border border-amber-400/20 bg-amber-400/8 px-2 py-1 text-[12px] leading-relaxed text-amber-100"
-                          >
-                            {question}
-                          </span>
-                        ))}
+                      <span className="mt-1 block text-foreground">
+                        {brainReadiness.fieldMemory.nextQuestion}
+                      </span>
+                      {brainReadiness.fieldMemory.followUpQuestions[1] ? (
+                        <span className="mt-1 block text-muted-foreground">
+                          Еще уточнить:{" "}
+                          {brainReadiness.fieldMemory.followUpQuestions
+                            .slice(1, 3)
+                            .join(" · ")}
+                        </span>
+                      ) : null}
                     </span>
                   ) : null}
                 </span>

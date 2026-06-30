@@ -41,6 +41,7 @@ export type OwnerBrainFieldMemory = {
   value: string;
   detail: string;
   actionLabel: string;
+  nextQuestion: string | null;
   followUpQuestions: string[];
   followUpTask: OwnerBrainFieldMemoryTask | null;
 };
@@ -180,6 +181,11 @@ function fieldSource({
     : noteReadiness.complete > 0
       ? "ready"
       : "work";
+  const actionLabel = followUpTask
+    ? "Открыть задачу"
+    : !digest || noteReadiness.complete === 0
+      ? "Поставить задачу"
+      : "Открыть";
 
   return {
     id: "field",
@@ -191,7 +197,7 @@ function fieldSource({
         ? `Есть полный итог смены. ${digest.summary}`
         : `Заметка есть, но не хватает: ${noteReadiness.bestMissing.join(", ")}. ${digest.summary}`
       : "После смены нужен короткий итог: гости, событие, стоп-лист, конфликт, погода, что мешало продавать.",
-    actionLabel: digest ? "Дополнить" : "Оставить итог",
+    actionLabel,
     followUpQuestions: noteReadiness.followUpQuestions,
     followUpTask,
   };
@@ -206,7 +212,8 @@ function fieldMemoryFromSource(
       title: "Последний итог смены",
       value: source.value,
       detail: source.detail,
-      actionLabel: "Открыть",
+      actionLabel: source.actionLabel,
+      nextQuestion: null,
       followUpQuestions: [],
       followUpTask: null,
     };
@@ -218,7 +225,8 @@ function fieldMemoryFromSource(
       title: "Итог смены нужно уточнить",
       value: source.value,
       detail: source.detail,
-      actionLabel: source.followUpTask ? "Открыть задачу" : "Дополнить",
+      actionLabel: source.actionLabel,
+      nextQuestion: source.followUpTask ? null : (source.followUpQuestions[0] ?? null),
       followUpQuestions: source.followUpQuestions,
       followUpTask: source.followUpTask,
     };
@@ -229,7 +237,8 @@ function fieldMemoryFromSource(
     title: "Итог смены еще не собран",
     value: source.value,
     detail: source.detail,
-    actionLabel: source.followUpTask ? "Открыть задачу" : "Оставить итог",
+    actionLabel: source.actionLabel,
+    nextQuestion: source.followUpTask ? null : (source.followUpQuestions[0] ?? null),
     followUpQuestions: source.followUpQuestions,
     followUpTask: source.followUpTask,
   };

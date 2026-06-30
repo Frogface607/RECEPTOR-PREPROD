@@ -2381,6 +2381,8 @@ function TeamShiftMemorySection({
     readiness,
     signalSummary: digest?.summary,
   });
+  const primaryFollowUpQuestion = readiness.followUpQuestions[0] ?? null;
+  const secondaryFollowUpQuestions = readiness.followUpQuestions.slice(1, 3);
 
   return (
     <section
@@ -2433,16 +2435,21 @@ function TeamShiftMemorySection({
                     Чтобы советник понял смену, добавьте в итог:{" "}
                     {readiness.bestMissing.join(", ")}.
                   </p>
-                  <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
-                    {readiness.followUpQuestions.map((question) => (
-                      <span
-                        key={question}
-                        className="rounded-md border border-amber-300/20 bg-background/30 px-2 py-1.5"
-                      >
-                        {question}
+                  {primaryFollowUpQuestion ? (
+                    <div className="mt-2 rounded-md border border-amber-300/20 bg-background/30 px-2 py-1.5">
+                      <span className="block text-[10px] uppercase tracking-[0.14em] text-amber-200/80">
+                        Вопрос для брифа
                       </span>
-                    ))}
-                  </div>
+                      <span className="mt-1 block text-foreground">
+                        {primaryFollowUpQuestion}
+                      </span>
+                      {secondaryFollowUpQuestions.length > 0 ? (
+                        <span className="mt-1 block text-muted-foreground">
+                          Еще уточнить: {secondaryFollowUpQuestions.join(" · ")}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
               <div className="flex flex-wrap gap-2">
@@ -2466,16 +2473,21 @@ function TeamShiftMemorySection({
                 стоп-лист, конфликт, погоду, что продавали и что проверить
                 утром.
               </p>
-              <div className="grid gap-1.5 sm:grid-cols-2">
-                {readiness.followUpQuestions.map((question) => (
-                  <span
-                    key={question}
-                    className="rounded-md border border-border/50 bg-background/35 px-2.5 py-2 text-[12px] leading-relaxed text-muted-foreground"
-                  >
-                    {question}
+              {primaryFollowUpQuestion ? (
+                <div className="rounded-md border border-border/50 bg-background/35 px-2.5 py-2 text-[12px] leading-relaxed text-muted-foreground">
+                  <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Вопрос для брифа
                   </span>
-                ))}
-              </div>
+                  <span className="mt-1 block text-foreground">
+                    {primaryFollowUpQuestion}
+                  </span>
+                  {secondaryFollowUpQuestions.length > 0 ? (
+                    <span className="mt-1 block">
+                      Еще уточнить: {secondaryFollowUpQuestions.join(" · ")}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           )}
 
