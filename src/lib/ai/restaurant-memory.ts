@@ -16,6 +16,7 @@ export type RestaurantAdvisorMemory = {
   fieldSummary: string | null;
   fieldSignals: string[];
   fieldMemoryQuality: string | null;
+  fieldMemoryTaskStatus: string | null;
   memberSignals: string[];
   openTasks: string[];
   learningGaps: string[];
@@ -71,6 +72,26 @@ function openTaskLines(tasks: TeamTask[]): string[] {
         .filter(Boolean)
         .join(" "),
     );
+}
+
+function taskStatusLabel(status: TeamTask["status"]): string {
+  if (status === "new") return "новая";
+  if (status === "accepted") return "принята";
+  if (status === "in_progress") return "в работе";
+  return "ожидает проверки";
+}
+
+function fieldMemoryTaskStatus(tasks: TeamTask[]): string | null {
+  const task = tasks.find(
+    (item) =>
+      OPEN_TASK_STATUSES.has(item.status) &&
+      item.sourceLabel === "Память смены" &&
+      item.learningChecklistTitle === "Если итог смены неполный",
+  );
+
+  if (!task) return null;
+
+  return `${task.title} (${taskStatusLabel(task.status)}${task.dueLabel ? `, ${task.dueLabel}` : ""})`;
 }
 
 function learningGapLines(input: RestaurantMemoryInput): string[] {
@@ -156,6 +177,7 @@ export function buildRestaurantAdvisorMemory(
           `${signal.title}: ${signal.detail} (${signal.sourceCount})`,
       ) ?? [],
     fieldMemoryQuality,
+    fieldMemoryTaskStatus: fieldMemoryTaskStatus(input.tasks),
     memberSignals: memberMemoryLines(input),
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
@@ -186,6 +208,10 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   if (memory.fieldMemoryQuality) {
     lines.push(`Качество памяти смены: ${memory.fieldMemoryQuality}.`);
+  }
+
+  if (memory.fieldMemoryTaskStatus) {
+    lines.push(`Добор памяти смены уже поставлен: ${memory.fieldMemoryTaskStatus}.`);
   }
 
   if (memory.memberSignals.length > 0) {
@@ -225,6 +251,9 @@ export function formatRestaurantAdvisorMemoryForAnswer(
           /^память смены неполная:\s*/i,
           "",
         )}.`
+      : null,
+    memory.fieldMemoryTaskStatus
+      ? `• Добор памяти уже в работе: ${memory.fieldMemoryTaskStatus}.`
       : null,
     memory.learningGaps[0]
       ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`

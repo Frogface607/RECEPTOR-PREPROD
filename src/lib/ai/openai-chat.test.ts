@@ -13,6 +13,8 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   fieldSummary: "Итог смены: ливень, отменили 3 брони после 19:00",
   fieldSignals: ["Погода и внешний контекст: ливень"],
   fieldMemoryQuality: "полных итогов смены: 1/1",
+  fieldMemoryTaskStatus:
+    "Уточнить итог смены: контекст/причина (в работе, до утреннего разбора)",
   memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
@@ -100,6 +102,7 @@ describe("runOpenAIChatTurn", () => {
     expect(firstBody.instructions).toContain("Ты не отчетчик");
     expect(firstBody.instructions).toContain("Память ресторана");
     expect(firstBody.instructions).toContain("Итог смены: ливень");
+    expect(firstBody.instructions).toContain("Добор памяти смены уже поставлен");
     expect(firstBody.instructions).toContain("Учебные пробелы");
     expect(firstBody.instructions).toContain("операционный ритм Receptor");
     expect(firstBody.instructions).toContain("короткий итог смены");

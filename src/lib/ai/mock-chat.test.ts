@@ -11,6 +11,8 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   fieldSummary: "Итог смены: ливень, отменили 3 брони после 19:00",
   fieldSignals: ["Погода и внешний контекст: ливень"],
   fieldMemoryQuality: "полных итогов смены: 1/1",
+  fieldMemoryTaskStatus:
+    "Уточнить итог смены: контекст/причина (в работе, до утреннего разбора)",
   memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
@@ -79,6 +81,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Контекст ресторана:");
     expect(text?.text).toContain("Обучение:");
     expect(text?.text).toContain("Память смены:");
+    expect(text?.text).toContain("Добор памяти смены");
     expect(text?.text).toContain("Обучить в первую очередь");
     expect(text?.text).toContain("итога смены");
     expect(text?.text).toContain("короткий факт с поля");
@@ -92,6 +95,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Контекст анкеты");
     expect(text?.text).toContain("Что уже знаю");
     expect(text?.text).toContain("Итог смены: ливень");
+    expect(text?.text).toContain("Добор памяти уже в работе");
     expect(text?.text).toContain("Рабочий ритм Receptor");
   });
 });

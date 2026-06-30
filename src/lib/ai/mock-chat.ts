@@ -323,6 +323,9 @@ function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[]
   return [
     `Память ресторана: ${memory.teamSummary}.`,
     memory.fieldSummary ? `Память смены: ${memory.fieldSummary}` : null,
+    memory.fieldMemoryTaskStatus
+      ? `Добор памяти смены: ${memory.fieldMemoryTaskStatus}.`
+      : null,
     memory.learningGaps[0]
       ? `Обучить в первую очередь: ${memory.learningGaps[0]}.`
       : null,
