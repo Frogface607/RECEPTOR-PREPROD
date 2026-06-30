@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { createTeamTaskAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
+import { buildFocusedTeamTaskHref } from "@/lib/team/team-links";
 
 export function TeamFollowUpTaskButton({
   venueId,
@@ -13,6 +15,7 @@ export function TeamFollowUpTaskButton({
   venueId: string;
   draft: SurvivalTaskDraft;
 }) {
+  const router = useRouter();
   const [state, setState] = useState<"idle" | "saved" | "error">("idle");
   const [isPending, startTransition] = useTransition();
 
@@ -38,7 +41,21 @@ export function TeamFollowUpTaskButton({
         dedupeOpenTask: true,
       });
 
-      setState(result.ok ? "saved" : "error");
+      if (result.ok) {
+        setState("saved");
+        if (result.taskId) {
+          router.push(
+            buildFocusedTeamTaskHref({
+              venueId,
+              taskId: result.taskId,
+              pathname: window.location.pathname,
+              currentSearch: window.location.search,
+            }),
+          );
+        }
+      } else {
+        setState("error");
+      }
     });
   }
 

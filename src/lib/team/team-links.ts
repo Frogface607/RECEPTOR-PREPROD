@@ -23,3 +23,22 @@ export function buildTeamHref({
 
   return `/team?${params.toString()}${hash}`;
 }
+
+export function buildFocusedTeamTaskHref({
+  venueId,
+  taskId,
+  pathname = "/team",
+  currentSearch = "",
+}: {
+  venueId: string;
+  taskId: string;
+  pathname?: string;
+  currentSearch?: string;
+}): string {
+  const params = new URLSearchParams(currentSearch);
+  if (!params.get("role")) params.set("role", "venue_manager");
+  params.set("venueId", venueId);
+  params.set("focusTaskId", taskId);
+
+  return `${pathname}?${params.toString()}#team-actions`;
+}
