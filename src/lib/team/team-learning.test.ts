@@ -105,6 +105,16 @@ describe("team learning catalog", () => {
         expect.objectContaining({
           title: "Если ФОТ не считается полностью",
         }),
+        expect.objectContaining({
+          title: "Если BI показал перерасход ФОТ",
+          body: expect.stringContaining("слабой смене"),
+          bullets: expect.arrayContaining([
+            expect.stringContaining("человеко-час"),
+            expect.stringContaining("состав команды"),
+            expect.stringContaining("полевой факт"),
+            expect.stringContaining("маржу рядом"),
+          ]),
+        }),
       ]),
     );
     expect(techCard?.sections).toEqual(
