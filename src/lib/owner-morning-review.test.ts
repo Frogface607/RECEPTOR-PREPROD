@@ -67,6 +67,8 @@ describe("buildOwnerMorningReviewRows", () => {
         tone: "risk",
         taskSourceLabel: "Полевой контекст",
         impactLabel: "2 сигнала",
+        briefingQuestion:
+          "что закончилось, сколько продаж потеряли и кто отвечает за запас",
       },
     ];
 
@@ -88,13 +90,17 @@ describe("buildOwnerMorningReviewRows", () => {
       expect.objectContaining({
         label: "Вопрос",
         value: "Что спросить на разборе",
-        detail: expect.stringContaining("Объясняет ли полевой факт цифру"),
+        detail: expect.stringContaining(
+          "Вопрос: что закончилось, сколько продаж потеряли и кто отвечает за запас?",
+        ),
         tone: "risk",
       }),
       expect.objectContaining({
         label: "Действие",
         value: "Проверить стоп-лист и потерянные продажи · 2 сигнала",
-        detail: expect.stringContaining("сколько выручки"),
+        detail: expect.stringContaining(
+          "Вопрос: что закончилось, сколько продаж потеряли и кто отвечает за запас?",
+        ),
         tone: "risk",
       }),
     ]);
@@ -103,6 +109,10 @@ describe("buildOwnerMorningReviewRows", () => {
   test("prompts for field notes when the owner review has no field context", () => {
     const review = baseReview();
     review.evidence = review.evidence.filter((item) => item.label !== "Поле");
+    review.actions[0] = {
+      ...review.actions[0],
+      briefingQuestion: "какая смена, человек или ставка съедает прибыль",
+    };
 
     const rows = buildOwnerMorningReviewRows({ review });
 
@@ -117,6 +127,9 @@ describe("buildOwnerMorningReviewRows", () => {
       value: "Разобрать дорогую смену · 38% ФОТ",
       tone: "risk",
     });
+    expect(rows[2].detail).toContain(
+      "Вопрос: какая смена, человек или ставка съедает прибыль?",
+    );
     expect(rows).toHaveLength(3);
   });
 });

@@ -77,6 +77,21 @@ function fieldHypothesis(review: OwnerReview) {
   );
 }
 
+function questionSentence(question: string | null | undefined): string | null {
+  const trimmed = question?.trim();
+  if (!trimmed) return null;
+  return `Вопрос: ${trimmed}${/[?!.]$/.test(trimmed) ? "" : "?"}`;
+}
+
+function appendBriefingQuestion(
+  detail: string,
+  question: string | null | undefined,
+): string {
+  const questionText = questionSentence(question);
+  if (!questionText || detail.includes("Вопрос:")) return detail;
+  return `${detail} ${questionText}`;
+}
+
 function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
   const field = review.evidence.find((item) => item.label === "Поле");
   const hypothesis = fieldHypothesis(review);
@@ -112,7 +127,13 @@ function bridgeRow(
   return {
     label: "Вопрос",
     value: "Что спросить на разборе",
-    detail: `Объясняет ли полевой факт цифру «${bi.value}»? ${hypothesis.check}`,
+    detail: [
+      `Объясняет ли полевой факт цифру «${bi.value}»?`,
+      questionSentence(hypothesis.briefingQuestion),
+      `Проверка: ${hypothesis.check}`,
+    ]
+      .filter((part): part is string => Boolean(part))
+      .join(" "),
     tone: bi.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
 }
@@ -131,7 +152,10 @@ function fieldActionRow(
     value: hypothesis.impactLabel
       ? `${title} · ${hypothesis.impactLabel}`
       : title,
-    detail: `${hypothesis.why} Проверка: ${hypothesis.check}`,
+    detail: appendBriefingQuestion(
+      `${hypothesis.why} Проверка: ${hypothesis.check}`,
+      hypothesis.briefingQuestion,
+    ),
     tone:
       hypothesis.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
@@ -147,7 +171,10 @@ function actionRow(
       value: mainAction.impactLabel
         ? `${mainAction.title} · ${mainAction.impactLabel}`
         : mainAction.title,
-      detail: mainAction.detail,
+      detail: appendBriefingQuestion(
+        mainAction.detail,
+        mainAction.briefingQuestion,
+      ),
       tone: mainAction.tone,
     };
   }
