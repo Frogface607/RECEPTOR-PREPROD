@@ -181,8 +181,8 @@ export function FieldNoteForm() {
             <h2 className="text-xl font-medium">Что было на смене</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Гости, стоп-лист, конфликт, событие, команда, продажи. Коротко и по
-            делу.
+            Гости, стоп-лист, конфликт, событие, команда, продажи. Факт,
+            время/количество и что сделали.
           </p>
         </div>
         <button

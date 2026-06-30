@@ -6,7 +6,9 @@ import {
 
 describe("field note input", () => {
   test("rejects empty guided templates", () => {
-    expect(hasMeaningfulFieldNoteBody("Гости спрашивали: ")).toBe(false);
+    expect(hasMeaningfulFieldNoteBody(FIELD_NOTE_TEMPLATES[0].text)).toBe(
+      false,
+    );
     expect(
       hasMeaningfulFieldNoteBody(
         FIELD_NOTE_TEMPLATES.map((template) => template.text).join("\n"),
@@ -16,11 +18,13 @@ describe("field note input", () => {
 
   test("accepts guided templates with actual shift facts", () => {
     expect(
-      hasMeaningfulFieldNoteBody("Гости спрашивали: лимонад без сахара"),
+      hasMeaningfulFieldNoteBody(
+        "Гости спрашивали:\nСколько раз / когда: 4 раза после 21:00\nЧто ответили: предложили лимонад без сахара",
+      ),
     ).toBe(true);
     expect(
       hasMeaningfulFieldNoteBody(
-        "Стоп-лист / закончилось: мята к 21:00\nКоманде мешало: кухня задержала горячее",
+        "Стоп-лист / закончилось: мята\nКогда заметили: к 21:00\nЧто заменили или потеряли: не продали 6 лимонадов\nКоманде мешало: кухня задержала горячее",
       ),
     ).toBe(true);
   });
