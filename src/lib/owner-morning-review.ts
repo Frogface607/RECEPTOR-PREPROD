@@ -105,7 +105,7 @@ function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
       : appendBriefingQuestion(field.detail, UNTIED_FIELD_CONTEXT_QUESTION);
 
     return {
-      label: "Поле",
+      label: "Память смены",
       value: hypothesis ? `${field.value} · ${hypothesis.title}` : field.value,
       detail,
       tone: field.tone,
@@ -113,10 +113,10 @@ function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
   }
 
   return {
-    label: "Поле",
+    label: "Память смены",
     value: "нет заметок",
     detail:
-      "Попросите управляющего собрать короткий факт смены: гости, стоп-лист, конфликт, событие или трение команды.",
+      "Попросите управляющего или старшего смены оставить короткий итог: гости, стоп-лист, конфликт, событие или что мешало продавать.",
     tone: "watch",
   };
 }

@@ -1,12 +1,15 @@
 import {
   AlertTriangle,
   ArrowRight,
+  BookOpenCheck,
   CheckCircle2,
   ClipboardList,
   GaugeCircle,
   HelpCircle,
+  MessageSquareText,
   SearchCheck,
 } from "lucide-react";
+import Link from "next/link";
 import type {
   OwnerProfitReadinessAction,
   OwnerReview,
@@ -252,6 +255,21 @@ export function OwnerCommandPanel({
     mainAction ? 1 : 0,
     mainAction ? 3 : 2,
   );
+  const teamActionsHref = buildTeamHref({
+    venueId,
+    hash: "#team-actions",
+    periodParams: teamPeriodParams,
+  });
+  const shiftMemoryHref = buildTeamHref({
+    venueId,
+    hash: "#shift-summary",
+    periodParams: teamPeriodParams,
+  });
+  const teamLearningHref = buildTeamHref({
+    venueId,
+    hash: "#learning-progress",
+    periodParams: teamPeriodParams,
+  });
 
   return (
     <section className="rounded-xl border border-brand/30 bg-card/70 p-5 shadow-[0_18px_80px_rgba(0,0,0,0.22)] sm:p-6">
@@ -260,7 +278,7 @@ export function OwnerCommandPanel({
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/35 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-brand">
               <GaugeCircle className="size-3.5" />
-              Сводка владельца
+              Утро владельца
             </span>
             <span
               className={
@@ -346,34 +364,80 @@ export function OwnerCommandPanel({
             ) : null}
           </div>
 
-          <div className="mt-6 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {proof.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-lg border border-border/45 bg-background/35 p-3"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    {item.label}
-                  </p>
-                  <span
-                    className={
-                      "inline-flex size-6 items-center justify-center rounded-md border " +
-                      TONE_CLASS[item.tone]
-                    }
-                  >
-                    <ToneIcon tone={item.tone} />
-                  </span>
-                </div>
-                <p className="mt-3 truncate text-xl font-medium text-foreground">
-                  {item.value}
-                </p>
-                <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
-                  {item.detail}
-                </p>
-              </div>
-            ))}
+          <div className="mt-5 grid gap-2 md:grid-cols-3">
+            <Link
+              href={teamActionsHref}
+              className="group rounded-lg border border-border/50 bg-background/30 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10"
+            >
+              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                <ClipboardList className="size-3.5 text-brand" />
+                До смены
+              </span>
+              <span className="mt-2 block text-sm font-medium text-foreground">
+                Фокус, задачи и бриф
+              </span>
+            </Link>
+            <Link
+              href={shiftMemoryHref}
+              className="group rounded-lg border border-brand/30 bg-brand/10 p-3 transition-colors hover:border-brand/55 hover:bg-brand/15"
+            >
+              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-brand">
+                <MessageSquareText className="size-3.5" />
+                После смены
+              </span>
+              <span className="mt-2 block text-sm font-medium text-foreground">
+                Итог с поля в память
+              </span>
+            </Link>
+            <Link
+              href={teamLearningHref}
+              className="group rounded-lg border border-border/50 bg-background/30 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10"
+            >
+              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                <BookOpenCheck className="size-3.5 text-brand" />
+                Обучение
+              </span>
+              <span className="mt-2 block text-sm font-medium text-foreground">
+                Закрыть пробел команды
+              </span>
+            </Link>
           </div>
+
+          {proof.length > 0 ? (
+            <details className="mt-4 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+              <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                Что учтено в разборе · {proof.length}
+              </summary>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {proof.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-lg border border-border/45 bg-card/35 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {item.label}
+                      </p>
+                      <span
+                        className={
+                          "inline-flex size-6 items-center justify-center rounded-md border " +
+                          TONE_CLASS[item.tone]
+                        }
+                      >
+                        <ToneIcon tone={item.tone} />
+                      </span>
+                    </div>
+                    <p className="mt-3 truncate text-xl font-medium text-foreground">
+                      {item.value}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
+                      {item.detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </div>
 
         <div className="rounded-lg border border-border/55 bg-background/35 p-4">

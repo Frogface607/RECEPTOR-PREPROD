@@ -84,7 +84,7 @@ describe("buildOwnerMorningReviewRows", () => {
         tone: "risk",
       }),
       expect.objectContaining({
-        label: "Поле",
+        label: "Память смены",
         value: "2 сигнала · Проверить стоп-лист и потерянные продажи",
         detail: "Стоп-лист: Маша — закончилась мята",
         tone: "risk",
@@ -125,11 +125,11 @@ describe("buildOwnerMorningReviewRows", () => {
     const rows = buildOwnerMorningReviewRows({ review });
 
     expect(rows[1]).toMatchObject({
-      label: "Поле",
+      label: "Память смены",
       value: "нет заметок",
       tone: "watch",
     });
-    expect(rows[1].detail).toContain("собрать короткий факт смены");
+    expect(rows[1].detail).toContain("оставить короткий итог");
     expect(rows[2]).toMatchObject({
       label: "Действие",
       value: "Разобрать дорогую смену · 38% ФОТ",
@@ -197,7 +197,7 @@ describe("buildOwnerMorningReviewRows", () => {
     const rows = buildOwnerMorningReviewRows({ review });
 
     expect(rows[1]).toMatchObject({
-      label: "Поле",
+      label: "Память смены",
       value: "2 сигнала",
       tone: "risk",
     });
