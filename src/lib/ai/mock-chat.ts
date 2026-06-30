@@ -27,6 +27,10 @@ import type { IikoClient } from "@/lib/iiko/types";
 import type { PeriodType } from "@/lib/iiko/models";
 import type { VenueIntelligenceProfile } from "@/lib/venues/intelligence";
 import type { VenueContextAnswers } from "@/lib/venues/context-questionnaire";
+import {
+  formatRestaurantAdvisorMemoryForPrompt,
+  type RestaurantAdvisorMemory,
+} from "./restaurant-memory";
 
 // ---------------------------------------------------------------------------
 // Stream event shapes (also used by the API route + UI)
@@ -50,6 +54,7 @@ export type ChatTurnInput = {
   venueCity: string;
   venueProfile: VenueIntelligenceProfile;
   venueContext?: VenueContextAnswers;
+  restaurantMemory?: RestaurantAdvisorMemory;
   dataMode?: "mock" | "real";
   iikoClient: IikoClient;
 };
@@ -260,6 +265,7 @@ function formatSuggestAnswer(
   venueName: string,
   profile: VenueIntelligenceProfile,
   context?: VenueContextAnswers,
+  memory?: RestaurantAdvisorMemory,
 ): string {
   const teamRoles = Array.isArray(context?.team_roles)
     ? context.team_roles.slice(0, 4).join(", ")
@@ -273,6 +279,7 @@ function formatSuggestAnswer(
       : "Контекст анкеты пока не заполнен: для точных советов нужны формат, команда, системы и ограничения.",
     "",
     `Фокус сейчас: ${profile.recommendedFocus.slice(0, 3).join("; ")}.`,
+    formatRestaurantAdvisorMemoryForPrompt(memory),
     "Рабочий ритм Receptor: перед сменой закрываем блокер, на смене даем учебный фокус, после смены собираем короткий факт, утром принимаем одно решение.",
     "",
     "Спроси меня:",
@@ -306,10 +313,28 @@ function contextBriefLines(context: VenueContextAnswers | undefined): string[] {
   ].filter((line): line is string => Boolean(line));
 }
 
+function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[] {
+  if (!memory) {
+    return [
+      "Память ресторана: команда и итоги смены пока не попали в контекст советника.",
+    ];
+  }
+
+  return [
+    `Память ресторана: ${memory.teamSummary}.`,
+    memory.fieldSummary ? `Память смены: ${memory.fieldSummary}` : null,
+    memory.learningGaps[0]
+      ? `Обучить в первую очередь: ${memory.learningGaps[0]}.`
+      : null,
+    memory.openTasks[0] ? `Открытое действие: ${memory.openTasks[0]}.` : null,
+  ].filter((line): line is string => Boolean(line));
+}
+
 function formatOwnerBriefAnswer(
   dataMode: ChatTurnInput["dataMode"],
   profile: VenueIntelligenceProfile,
   context: VenueContextAnswers | undefined,
+  memory: RestaurantAdvisorMemory | undefined,
   out: Awaited<ReturnType<typeof getOwnerBriefTool.handler>>,
 ): string {
   const prefix =
@@ -324,6 +349,7 @@ function formatOwnerBriefAnswer(
     ...prefix,
     "Управленческий разбор:",
     ...contextBriefLines(context),
+    ...memoryBriefLines(memory),
     "",
     `Факт: выручка ${formatRubles(out.revenue.total)}, средний чек ${formatRubles(out.revenue.averageCheck)}, продано ${formatInteger(out.revenue.itemsSold)} позиций.`,
     out.menu.topDish
@@ -389,6 +415,7 @@ export async function* runMockChatTurn(
           input.dataMode,
           input.venueProfile,
           input.venueContext,
+          input.restaurantMemory,
           output,
         ),
       };
@@ -491,6 +518,7 @@ export async function* runMockChatTurn(
           input.venueName,
           input.venueProfile,
           input.venueContext,
+          input.restaurantMemory,
         ),
       };
       break;

@@ -7,6 +7,8 @@ import {
   runOpenAIChatTurn,
 } from "@/lib/ai/openai-chat";
 import { getVenueAccess } from "@/lib/auth/venue-access";
+import { buildRestaurantAdvisorMemory } from "@/lib/ai/restaurant-memory";
+import { getTeamWorkspace } from "@/lib/team/team-store";
 
 const BodySchema = z.object({
   venueId: z.string().min(1),
@@ -50,6 +52,8 @@ export async function POST(request: Request) {
     new Date().toISOString().slice(0, 10),
   );
   const useOpenAI = isOpenAIChatConfigured();
+  const teamWorkspace = await getTeamWorkspace(parsed.data.venueId);
+  const restaurantMemory = buildRestaurantAdvisorMemory(teamWorkspace);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -62,6 +66,7 @@ export async function POST(request: Request) {
           venueCity: venue.city,
           venueProfile: venue.intelligence,
           venueContext: venue.context,
+          restaurantMemory,
           dataMode: iikoConfig.mode,
           iikoClient,
         };
@@ -81,6 +86,7 @@ export async function POST(request: Request) {
             venueCity: venue.city,
             venueProfile: venue.intelligence,
             venueContext: venue.context,
+            restaurantMemory,
             dataMode: iikoConfig.mode,
             iikoClient,
           })) {

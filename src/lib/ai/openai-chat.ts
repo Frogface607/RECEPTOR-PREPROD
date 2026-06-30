@@ -11,6 +11,7 @@ import type { ChatEvent, ChatTurnInput } from "./mock-chat";
 import type { IikoClient } from "@/lib/iiko/types";
 import { formatVenueProfileForPrompt } from "@/lib/venues/intelligence";
 import { formatContextAnswersForPrompt } from "@/lib/venues/context-questionnaire";
+import { formatRestaurantAdvisorMemoryForPrompt } from "./restaurant-memory";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_MODEL = "gpt-5.5";
@@ -72,6 +73,7 @@ function systemPrompt(input: ChatTurnInput): string {
     input.venueContext && Object.keys(input.venueContext).length > 0
       ? ["Контекстная анкета ресторана:", formatContextAnswersForPrompt(input.venueContext)].join("\n")
       : "Контекстная анкета ресторана: пока не заполнена.",
+    formatRestaurantAdvisorMemoryForPrompt(input.restaurantMemory),
     "Ты не отчетчик. Твоя ценность — связывать цифры, контекст заведения, роли, стандарты, обучение команды и факты смены.",
     "Держи операционный ритм Receptor: перед сменой закрыть блокер, на смене дать учебный фокус, после смены собрать короткий факт с поля, утром превратить цифры и факт в одно решение владельца.",
     "Если совет получается очевидным, преврати его в конкретный вопрос для брифа и одно действие с ответственным.",

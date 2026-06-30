@@ -3,8 +3,16 @@ import { runMockChatTurn } from "./mock-chat";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 import { DEMO_CONTEXT_ANSWERS } from "@/lib/venues/context-questionnaire";
+import type { RestaurantAdvisorMemory } from "./restaurant-memory";
 
 const ANCHOR = "2026-05-29";
+const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
+  teamSummary: "2 активных сотрудников",
+  fieldSummary: "Итог смены: ливень, отменили 3 брони после 19:00",
+  fieldSignals: ["Погода и внешний контекст: ливень"],
+  openTasks: ["Проверить стоп-лист — до 17:00"],
+  learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+};
 
 function client() {
   return new MockIikoClient({ today: ANCHOR });
@@ -19,6 +27,7 @@ async function collect(message: string) {
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,
     venueContext: DEMO_CONTEXT_ANSWERS,
+    restaurantMemory: RESTAURANT_MEMORY,
     iikoClient: client(),
   })) {
     events.push(ev);
@@ -67,6 +76,8 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Диагностика:");
     expect(text?.text).toContain("Контекст ресторана:");
     expect(text?.text).toContain("Обучение:");
+    expect(text?.text).toContain("Память смены:");
+    expect(text?.text).toContain("Обучить в первую очередь");
     expect(text?.text).toContain("итога смены");
     expect(text?.text).toContain("короткий факт с поля");
   });
@@ -77,6 +88,8 @@ describe("runMockChatTurn — routing", () => {
     const text = ev.find((e) => e.type === "text");
     expect(text?.text.toLowerCase()).toContain("спрос");
     expect(text?.text).toContain("Контекст анкеты");
+    expect(text?.text).toContain("Память ресторана");
+    expect(text?.text).toContain("Итог смены: ливень");
     expect(text?.text).toContain("Рабочий ритм Receptor");
   });
 });

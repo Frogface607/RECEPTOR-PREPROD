@@ -3,10 +3,18 @@ import { runOpenAIChatTurn, isOpenAIChatConfigured } from "./openai-chat";
 import { MockIikoClient } from "@/lib/iiko/mock-client";
 import { DEFAULT_VENUE_INTELLIGENCE } from "@/lib/venues/intelligence";
 import { DEMO_CONTEXT_ANSWERS } from "@/lib/venues/context-questionnaire";
+import type { RestaurantAdvisorMemory } from "./restaurant-memory";
 
 const ORIGINAL_OPENAI_KEY = process.env.OPENAI_API_KEY;
 const ORIGINAL_OPENAI_MODEL = process.env.OPENAI_MODEL;
 const ANCHOR = "2026-05-29";
+const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
+  teamSummary: "2 активных сотрудников",
+  fieldSummary: "Итог смены: ливень, отменили 3 брони после 19:00",
+  fieldSignals: ["Погода и внешний контекст: ливень"],
+  openTasks: ["Проверить стоп-лист — до 17:00"],
+  learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+};
 
 function input(message: string) {
   return {
@@ -16,6 +24,7 @@ function input(message: string) {
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,
     venueContext: DEMO_CONTEXT_ANSWERS,
+    restaurantMemory: RESTAURANT_MEMORY,
     iikoClient: new MockIikoClient({ today: ANCHOR }),
   };
 }
@@ -87,6 +96,9 @@ describe("runOpenAIChatTurn", () => {
     expect(firstBody.instructions).toContain("Контекстная анкета ресторана");
     expect(firstBody.instructions).toContain("POS/back-office: iiko");
     expect(firstBody.instructions).toContain("Ты не отчетчик");
+    expect(firstBody.instructions).toContain("Память ресторана");
+    expect(firstBody.instructions).toContain("Итог смены: ливень");
+    expect(firstBody.instructions).toContain("Учебные пробелы");
     expect(firstBody.instructions).toContain("операционный ритм Receptor");
     expect(firstBody.instructions).toContain("короткий итог смены");
     expect(tool?.tool).toBe("get_revenue");
