@@ -282,9 +282,33 @@ function formatSuggestAnswer(
   ].join("\n");
 }
 
+function firstContextItem(
+  context: VenueContextAnswers | undefined,
+  key: string,
+): string | null {
+  const value = context?.[key];
+  if (Array.isArray(value)) return value[0] ?? null;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function contextBriefLines(context: VenueContextAnswers | undefined): string[] {
+  const pain = firstContextItem(context, "daily_pains");
+  const gap = firstContextItem(context, "knowledge_gaps");
+  const shiftRules = firstContextItem(context, "shift_summary_rules");
+
+  return [
+    pain ? `Контекст ресторана: сейчас болит — ${pain}.` : null,
+    gap ? `Обучение: первый пробел команды — ${gap}.` : null,
+    shiftRules
+      ? "Поле: утром сверяй цифры с итогом смены, а не только с отчетом iiko."
+      : "Поле: попроси управляющего оставить короткий итог смены, чтобы понять причину цифр.",
+  ].filter((line): line is string => Boolean(line));
+}
+
 function formatOwnerBriefAnswer(
   dataMode: ChatTurnInput["dataMode"],
   profile: VenueIntelligenceProfile,
+  context: VenueContextAnswers | undefined,
   out: Awaited<ReturnType<typeof getOwnerBriefTool.handler>>,
 ): string {
   const prefix =
@@ -298,6 +322,7 @@ function formatOwnerBriefAnswer(
   return [
     ...prefix,
     "Управленческий разбор:",
+    ...contextBriefLines(context),
     "",
     `Факт: выручка ${formatRubles(out.revenue.total)}, средний чек ${formatRubles(out.revenue.averageCheck)}, продано ${formatInteger(out.revenue.itemsSold)} позиций.`,
     out.menu.topDish
@@ -322,6 +347,7 @@ function formatOwnerBriefAnswer(
     "Что сделать сегодня:",
     ...out.actions.map((action, index) => `${index + 1}. ${action}`),
     `${out.actions.length + 1}. ${profile.recommendedFocus[3]}`,
+    `${out.actions.length + 2}. На брифе спросить: что из итога смены объясняет цифры и чему надо быстро доучить команду?`,
   ].join("\n");
 }
 
@@ -357,7 +383,12 @@ export async function* runMockChatTurn(
       };
       yield {
         type: "text",
-        text: formatOwnerBriefAnswer(input.dataMode, input.venueProfile, output),
+        text: formatOwnerBriefAnswer(
+          input.dataMode,
+          input.venueProfile,
+          input.venueContext,
+          output,
+        ),
       };
       break;
     }
