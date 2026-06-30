@@ -181,6 +181,11 @@ export function LearningWorkspace({
         : null,
     [activeItem, activeChecklistTitle],
   );
+  const shiftSummaryHref = shiftCard
+    ? `/me?fieldNoteTemplate=${encodeURIComponent(
+        shiftCard.fieldNoteTemplate,
+      )}#shift-summary`
+    : "/me#shift-summary";
 
   function selectAnswer(questionIndex: number, answerIndex: number) {
     if (submittedScore) return;
@@ -446,7 +451,7 @@ export function LearningWorkspace({
                     </p>
                   </div>
                   <Link
-                    href="/me#shift-summary"
+                    href={shiftSummaryHref}
                     className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15"
                   >
                     Оставить итог

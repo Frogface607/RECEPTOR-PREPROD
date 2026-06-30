@@ -78,6 +78,28 @@ export function FieldNoteForm() {
   const canSubmit = hasMeaningfulFieldNoteBody(body) && !pending;
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const handoffTemplate = url.searchParams.get("fieldNoteTemplate")?.trim();
+    if (!handoffTemplate) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      setBody((current) =>
+        current.trim() ? current : handoffTemplate.slice(0, 1500),
+      );
+      setMessage(
+        "Шаблон из обучения добавлен. Допишите реальные факты смены вместо многоточий.",
+      );
+    });
+    url.searchParams.delete("fieldNoteTemplate");
+    window.history.replaceState(
+      null,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     return () => {
       recognitionRef.current?.stop();
       recognitionRef.current = null;
