@@ -862,6 +862,12 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: "Маржа пока не доказана",
+          taskSourceLabel: "Маржа и техкарты",
+          taskTitle: "RMS не отдает закупочную цену",
+          impactLabel: expect.stringMatching(/20\s000\s₽/),
+          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          briefingQuestion:
+            "каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже",
           check: expect.stringContaining("RMS-права"),
         }),
       ]),
@@ -952,7 +958,12 @@ describe("buildOwnerReview", () => {
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          taskSourceLabel: "Маржа и техкарты",
+          taskTitle: "Техкарта есть, не хватает цен ингредиентов",
+          impactLabel: expect.stringMatching(/30\s000\s₽/),
           learningChecklistTitle: "Если в техкарте нет цен ингредиентов",
+          briefingQuestion:
+            "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost",
         }),
       ]),
     );

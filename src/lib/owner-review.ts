@@ -2480,6 +2480,14 @@ function laborMarginHypothesis(input: {
 
   const nextAction = buildMenuMarginNextAction(input.margin);
   const topBlocker = nextAction.blocker;
+  const missingTechCardPrices =
+    nextAction.kind === "missing-cost" && Boolean(topBlocker?.hasTechCard);
+  const learningChecklistTitle = missingTechCardPrices
+    ? "Если в техкарте нет цен ингредиентов"
+    : "Если BI показал недобор валовой прибыли";
+  const briefingQuestion = missingTechCardPrices
+    ? "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost"
+    : "каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже";
   const blockerText = topBlocker
     ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки): ${nextAction.title}.`
     : "Начните с топ-позиций без себестоимости.";
@@ -2491,6 +2499,13 @@ function laborMarginHypothesis(input: {
     check: marginAction,
     role: "chef",
     tone: input.margin.status === "blocked" ? "risk" : "watch",
+    taskSourceLabel: "Маржа и техкарты",
+    taskTitle: nextAction.title,
+    impactLabel: topBlocker
+      ? formatRubles(topBlocker.revenue)
+      : `${input.margin.revenueCoveragePct}% маржа`,
+    learningChecklistTitle,
+    briefingQuestion,
     ...marginLearningHint(),
   };
 }
