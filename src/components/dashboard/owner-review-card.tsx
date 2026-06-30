@@ -222,7 +222,11 @@ function actionCta(action: OwnerReviewAction): string {
   if (action.target === "team-learning") return "Открыть стандарты";
   if (action.target === "team-journal") return "Открыть журнал";
   if (action.target === "team-actions") return "Открыть Team OS";
-  if (action.target === "margin-diagnostics") return "Проверить RMS";
+  if (action.target === "margin-diagnostics") {
+    return action.learningChecklistTitle === "Если в техкарте нет цен ингредиентов"
+      ? "Закрыть цены техкарт"
+      : "Проверить цены RMS";
+  }
   return "Связать блюдо";
 }
 
