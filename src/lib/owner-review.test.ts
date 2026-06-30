@@ -2432,8 +2432,80 @@ describe("buildOwnerReview", () => {
     expect(fieldTaskContext).toContain("Проверка: На брифинге");
     expect(fieldTaskContext).toContain("Связанные факты:");
     expect(fieldTaskContext).toContain("Стоп-лист и заготовки");
+  expect(fieldTaskContext).toContain(
+    "Зачем: связать факты смены с BI, назначить ответственного и убрать повторяемую причину.",
+  );
+  });
+
+  test("routes service field notes to the upsell learning checklist", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-field",
+        title: "Полевой контекст смены",
+        source: "manager",
+        sourceLabel: "Поле",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "ежедневно",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-service-field",
+        venueId: "venue-1",
+        taskId: "task-field",
+        authorName: "Оля",
+        body: "Сервис / продажи: гости хорошо брали лимонад по рекомендации, но не все официанты предлагали закуску к пиву.",
+        createdAtLabel: "22:30",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Проверить сервис и допродажи",
+          taskSourceLabel: "Полевой контекст",
+          learningModuleId: "sales-eight-upsell",
+          learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+          learningChecklistTitle: "Если BI показал точку для апселла",
+          briefingQuestion:
+            "что команда реально рекомендовала гостям и где нужен простой скрипт",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Проверить сервис и допродажи",
+          sourceLabel: "Полевой контекст",
+          learningModuleId: "sales-eight-upsell",
+          learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+          learningChecklistTitle: "Если BI показал точку для апселла",
+          contextNote: expect.stringContaining(
+            "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+          ),
+        }),
+      ]),
+    );
+    const fieldTaskContext = review.tasks.find(
+      (task) => task.title === "Проверить сервис и допродажи",
+    )?.contextNote;
     expect(fieldTaskContext).toContain(
-      "Зачем: связать факты смены с BI, назначить ответственного и убрать повторяемую причину.",
+      "Чеклист: Если BI показал точку для апселла.",
     );
   });
 

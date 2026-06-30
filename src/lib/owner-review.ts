@@ -1832,8 +1832,8 @@ function fieldContextHypothesis(
     briefingQuestion: task.question,
     impactLabel:
       digest.signalCount > 1 ? `${digest.signalCount} сигнала` : "1 сигнал",
-    learningModuleId: "shift-brief",
-    learningModuleTitle: "Брифинг смены и передача контекста",
+    learningModuleId: task.learningModuleId,
+    learningModuleTitle: task.learningModuleTitle,
     learningChecklistTitle: task.checklistTitle,
   };
 }
@@ -1843,6 +1843,8 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   question: string;
   checklistTitle: string;
   check: string;
+  learningModuleId: string;
+  learningModuleTitle: string;
 } {
   if (kind === "conflict") {
     return {
@@ -1851,6 +1853,8 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
       checklistTitle: "Если полевая заметка про конфликт",
       check:
         "На брифинге уточнить причину конфликта, стол/блюдо/время ожидания и проверить, повлияло ли это на возвраты, скидки или повторные жалобы.",
+      learningModuleId: "shift-brief",
+      learningModuleTitle: "Брифинг смены и передача контекста",
     };
   }
   if (kind === "stock") {
@@ -1861,6 +1865,8 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
       checklistTitle: "Если полевая заметка про стоп-лист",
       check:
         "Сверить, какие позиции закончились, сколько они давали выручки в периоде и кто отвечает за заказ, заготовки и вечерний стоп-лист.",
+      learningModuleId: "shift-brief",
+      learningModuleTitle: "Брифинг смены и передача контекста",
     };
   }
   if (kind === "team") {
@@ -1870,6 +1876,8 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
       checklistTitle: "Разбор: факт, вопрос, проверка, действие",
       check:
         "Спросить, где команда теряет время или путается, и превратить ответ в один чеклист, задачу или короткое обучение по роли.",
+      learningModuleId: "shift-brief",
+      learningModuleTitle: "Брифинг смены и передача контекста",
     };
   }
   if (kind === "event") {
@@ -1879,6 +1887,8 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
       checklistTitle: "Разбор: факт, вопрос, проверка, действие",
       check:
         "Уточнить посадку, событие, состав смены и средний чек, чтобы понять, что повторить или исправить перед похожим днем.",
+      learningModuleId: "shift-brief",
+      learningModuleTitle: "Брифинг смены и передача контекста",
     };
   }
   if (kind === "guest") {
@@ -1886,18 +1896,22 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
       title: "Проверить частый вопрос гостей",
       question:
         "какой запрос гостей стоит превратить в меню, скрипт или обучение",
-      checklistTitle: "Если полевая заметка про сервис или запрос гостей",
+      checklistTitle: "Если BI показал точку для апселла",
       check:
         "Посчитать, повторяется ли запрос гостей, и решить: добавить позицию, подготовить скрипт официантам или вынести ответ в меню.",
+      learningModuleId: "sales-eight-upsell",
+      learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     };
   }
   return {
     title: "Проверить сервис и допродажи",
     question:
       "что команда реально рекомендовала гостям и где нужен простой скрипт",
-    checklistTitle: "Если полевая заметка про сервис или запрос гостей",
+    checklistTitle: "Если BI показал точку для апселла",
     check:
       "На брифинге разобрать, что команда рекомендовала гостям, какие позиции продавались лучше и где нужен простой скрипт допродажи.",
+    learningModuleId: "sales-eight-upsell",
+    learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
   };
 }
 
