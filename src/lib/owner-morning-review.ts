@@ -110,9 +110,9 @@ function bridgeRow(
   if (!field || !hypothesis || bi.tone === "good") return null;
 
   return {
-    label: "Связка",
-    value: `${bi.value} + ${hypothesis.title}`,
-    detail: `Проверьте, объясняет ли полевой факт цифру: ${hypothesis.check}`,
+    label: "Вопрос",
+    value: "Что спросить на разборе",
+    detail: `Объясняет ли полевой факт цифру «${bi.value}»? ${hypothesis.check}`,
     tone: bi.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
 }

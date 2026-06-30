@@ -86,11 +86,9 @@ describe("buildOwnerMorningReviewRows", () => {
         tone: "risk",
       }),
       expect.objectContaining({
-        label: "Связка",
-        value: expect.stringContaining(
-          "ФОТ: 38% + Проверить стоп-лист и потерянные продажи",
-        ),
-        detail: expect.stringContaining("объясняет ли полевой факт цифру"),
+        label: "Вопрос",
+        value: "Что спросить на разборе",
+        detail: expect.stringContaining("Объясняет ли полевой факт цифру"),
         tone: "risk",
       }),
       expect.objectContaining({
