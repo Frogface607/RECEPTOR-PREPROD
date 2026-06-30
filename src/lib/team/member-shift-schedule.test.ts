@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { buildLaborBi } from "./labor-bi";
 import {
   buildMemberOperationPlan,
+  buildMemberSecondBrainProfile,
   buildMemberLaborProfile,
   buildMemberShiftSchedule,
 } from "./member-shift-schedule";
@@ -360,6 +361,78 @@ describe("buildMemberShiftSchedule", () => {
       href: "#iiko-shift-diagnostics",
       tone: "setup",
     });
+  });
+
+  test("builds a second-brain profile from learning, tasks and field notes", () => {
+    const profile = buildMemberSecondBrainProfile({
+      member,
+      tasks: [
+        buildTask({
+          id: "task-high",
+          priority: "high",
+          title: "Разобрать жалобу гостя",
+        }),
+      ],
+      comments: [
+        {
+          id: "comment-field",
+          venueId: "dev-venue",
+          taskId: "task-high",
+          authorName: "Маша",
+          body: "Итог смены: гости просили безалкогольный коктейль, к 21:00 закончилась мята.",
+          createdAtLabel: "23:10",
+        },
+      ],
+      schedule: [],
+      laborProfile: null,
+      learning: buildLearningSummary({ canWorkShift: false }),
+      nextLearning: {
+        title: "Как рекомендовать блюдо",
+        timeLabel: "7 минут",
+      },
+    });
+
+    expect(profile).toMatchObject({
+      title: "Маша: рабочий контекст",
+      tags: expect.arrayContaining(["Service", "активен", "нужен допуск", "есть поле"]),
+      nextQuestion: "Что мешает пройти стандарт «Как рекомендовать блюдо» до смены?",
+    });
+    expect(profile.facts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Обучение",
+          value: "не начато",
+          tone: "risk",
+        }),
+        expect.objectContaining({
+          label: "Поле",
+          value: "1",
+          detail: expect.stringContaining("Итог смены"),
+        }),
+      ]),
+    );
+  });
+
+  test("asks for a shift summary when the member has no field context", () => {
+    const profile = buildMemberSecondBrainProfile({
+      member,
+      tasks: [],
+      comments: [],
+      schedule: [],
+      laborProfile: null,
+      learning: buildLearningSummary({ canWorkShift: true }),
+    });
+
+    expect(profile.facts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Поле",
+          value: "нет итога",
+          tone: "setup",
+        }),
+      ]),
+    );
+    expect(profile.nextQuestion).toContain("Что произошло на последней смене");
   });
 });
 

@@ -43,6 +43,7 @@ import {
   type TeamAnnouncementRead,
   type TeamRoleId,
   type TeamTask,
+  type TeamTaskComment,
 } from "@/lib/team/team-os";
 import {
   listShiftChecklistForRole,
@@ -109,10 +110,14 @@ import {
   buildMemberOperationPlan,
   buildMemberLaborProfile,
   buildMemberShiftSchedule,
+  buildMemberSecondBrainProfile,
   type MemberLaborProfile,
   type MemberLaborProfileStatus,
   type MemberOperationPlanItem,
   type MemberOperationPlanTone,
+  type MemberSecondBrainFact,
+  type MemberSecondBrainProfile,
+  type MemberSecondBrainTone,
   type MemberShiftScheduleItem,
 } from "@/lib/team/member-shift-schedule";
 import { getTeamWorkspace } from "@/lib/team/team-store";
@@ -484,6 +489,7 @@ export default async function TeamPage({
           schedule={memberSchedule}
           announcements={workspace.announcements}
           announcementReads={workspace.announcementReads}
+          comments={workspace.comments}
           laborSource={laborLoad.source}
           periodLabel={formatPeriodLabel(period)}
           laborProfile={memberLaborProfile}
@@ -1679,6 +1685,7 @@ function RolePersonalBrief({
   schedule,
   announcements,
   announcementReads,
+  comments,
   laborSource,
   periodLabel,
   laborProfile,
@@ -1691,6 +1698,7 @@ function RolePersonalBrief({
   schedule: MemberShiftScheduleItem[];
   announcements: TeamAnnouncement[];
   announcementReads: TeamAnnouncementRead[];
+  comments: TeamTaskComment[];
   laborSource: TeamLaborLoadResult["source"];
   periodLabel: string;
   laborProfile: MemberLaborProfile | null;
@@ -1724,6 +1732,15 @@ function RolePersonalBrief({
     learning,
     announcements,
     announcementReads,
+    nextLearning,
+  });
+  const secondBrainProfile = buildMemberSecondBrainProfile({
+    member,
+    tasks,
+    comments,
+    schedule,
+    laborProfile,
+    learning,
     nextLearning,
   });
 
@@ -1791,6 +1808,8 @@ function RolePersonalBrief({
         </div>
 
         <div className="grid gap-5">
+          <MemberSecondBrainCard profile={secondBrainProfile} />
+
           <MemberOperationPlanCard items={operationPlan} />
 
           <div className="rounded-lg border border-border/60 bg-card/50 p-5">
@@ -1885,6 +1904,86 @@ function RolePersonalBrief({
       </div>
     </section>
   );
+}
+
+function MemberSecondBrainCard({
+  profile,
+}: {
+  profile: MemberSecondBrainProfile;
+}) {
+  return (
+    <div className="rounded-lg border border-brand/25 bg-card/55 p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <SearchCheck className="mt-0.5 size-5 text-brand" />
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+              Профиль сотрудника
+            </p>
+            <h3 className="mt-2 text-lg font-medium">{profile.title}</h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {profile.summary}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          {profile.tags.map((tag) => (
+            <Badge key={tag} variant="outline">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2 md:grid-cols-2">
+        {profile.facts.map((fact) => (
+          <MemberSecondBrainFactRow key={fact.label} fact={fact} />
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border/45 bg-background/35 p-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          Следующий вопрос
+        </p>
+        <p className="mt-1 text-sm leading-relaxed text-foreground/90">
+          {profile.nextQuestion}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MemberSecondBrainFactRow({
+  fact,
+}: {
+  fact: MemberSecondBrainFact;
+}) {
+  return (
+    <div
+      className={
+        "rounded-lg border p-3 " + memberSecondBrainToneClass(fact.tone)
+      }
+    >
+      <p className="text-[10px] uppercase tracking-[0.15em] opacity-75">
+        {fact.label}
+      </p>
+      <p className="mt-1 text-sm font-medium">{fact.value}</p>
+      <p className="mt-1 text-xs leading-relaxed opacity-80">{fact.detail}</p>
+    </div>
+  );
+}
+
+function memberSecondBrainToneClass(tone: MemberSecondBrainTone): string {
+  if (tone === "risk") {
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  }
+  if (tone === "setup") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  if (tone === "work") {
+    return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  }
+  return "border-brand/30 bg-brand/10 text-brand";
 }
 
 function MemberOperationPlanCard({

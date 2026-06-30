@@ -8,8 +8,10 @@ import type {
   StaffMember,
   TeamAnnouncement,
   TeamAnnouncementRead,
+  TeamTaskComment,
   TeamTask,
 } from "./team-os";
+import { getTeamRole } from "./team-os";
 import {
   isLikelySameTeamMemberName,
   normalizeTeamMemberName,
@@ -49,6 +51,23 @@ export type MemberOperationPlanItem = {
   badge: string;
   taskId?: string;
   announcementId?: string;
+};
+
+export type MemberSecondBrainTone = "risk" | "setup" | "work" | "ready";
+
+export type MemberSecondBrainFact = {
+  label: string;
+  value: string;
+  detail: string;
+  tone: MemberSecondBrainTone;
+};
+
+export type MemberSecondBrainProfile = {
+  title: string;
+  summary: string;
+  tags: string[];
+  facts: MemberSecondBrainFact[];
+  nextQuestion: string;
 };
 
 export function buildMemberShiftSchedule(input: {
@@ -242,6 +261,215 @@ export function buildMemberOperationPlan(input: {
   }
 
   return items.slice(0, 4);
+}
+
+export function buildMemberSecondBrainProfile(input: {
+  member: StaffMember;
+  tasks: TeamTask[];
+  comments?: TeamTaskComment[];
+  schedule: MemberShiftScheduleItem[];
+  laborProfile: MemberLaborProfile | null;
+  learning: TeamLearningMemberSummary | null;
+  nextLearning?: { title: string; timeLabel: string } | null;
+}): MemberSecondBrainProfile {
+  const role = getTeamRole(input.member.roleId);
+  const openTasks = input.tasks.filter(isOpenTask);
+  const urgentTasks = openTasks.filter((task) => task.priority === "high");
+  const ownNotes = (input.comments ?? []).filter((comment) =>
+    isLikelySameTeamMemberName(comment.authorName, input.member.name),
+  );
+  const latestNote = ownNotes[ownNotes.length - 1] ?? null;
+  const nextLearning = input.nextLearning ?? input.learning?.nextItem ?? null;
+
+  const facts: MemberSecondBrainFact[] = [
+    {
+      label: "Роль",
+      value: role.title,
+      detail: input.member.shiftLabel || "смена не назначена",
+      tone: input.member.status === "active" ? "ready" : "setup",
+    },
+    learningFact(input.learning, nextLearning),
+    laborFact(input.laborProfile, input.schedule),
+    taskFact(openTasks.length, urgentTasks.length),
+    fieldFact(latestNote, ownNotes.length),
+  ];
+
+  const primary =
+    facts.find((fact) => fact.tone === "risk") ??
+    facts.find((fact) => fact.tone === "setup") ??
+    facts.find((fact) => fact.tone === "work") ??
+    facts[0];
+
+  return {
+    title: `${input.member.name}: рабочий контекст`,
+    summary: primary
+      ? `${primary.label}: ${primary.detail}`
+      : "Профиль сотрудника собирается из роли, обучения, смен, задач и заметок после смены.",
+    tags: [
+      role.shortTitle,
+      input.member.status === "active" ? "активен" : input.member.status,
+      input.learning?.canWorkShift ? "допущен" : "нужен допуск",
+      latestNote ? "есть поле" : "нет итога смены",
+    ],
+    facts,
+    nextQuestion: memberNextQuestion({
+      learning: input.learning,
+      nextLearning,
+      latestNote,
+      urgentTasks,
+      openTasks,
+      laborProfile: input.laborProfile,
+    }),
+  };
+}
+
+function learningFact(
+  learning: TeamLearningMemberSummary | null,
+  nextLearning: { title: string; timeLabel: string } | null,
+): MemberSecondBrainFact {
+  if (!learning) {
+    return {
+      label: "Обучение",
+      value: "нет данных",
+      detail: "Прогресс обучения еще не собран.",
+      tone: "setup",
+    };
+  }
+
+  if (!learning.canWorkShift) {
+    return {
+      label: "Обучение",
+      value:
+        learning.admissionStatus === "not_started"
+          ? "не начато"
+          : "не закрыто",
+      detail: nextLearning
+        ? `Следующий стандарт: ${nextLearning.title}.`
+        : `Не закрыто обязательных модулей: ${learning.requiredMissing}.`,
+      tone: "risk",
+    };
+  }
+
+  return {
+    label: "Обучение",
+    value: `${learning.averageBest}%`,
+    detail:
+      learning.completedCount > 0
+        ? `Закрыто модулей: ${learning.completedCount}/${learning.totalCount}.`
+        : "Обязательные стандарты не блокируют смену.",
+    tone: learning.status === "complete" ? "ready" : "work",
+  };
+}
+
+function laborFact(
+  laborProfile: MemberLaborProfile | null,
+  schedule: MemberShiftScheduleItem[],
+): MemberSecondBrainFact {
+  if (laborProfile?.status === "missing_rate") {
+    return {
+      label: "Смены",
+      value: "нет ставки",
+      detail:
+        "Сотрудник есть в сменах, но стоимость работы не участвует в экономике.",
+      tone: "risk",
+    };
+  }
+
+  if (laborProfile?.status === "ready") {
+    return {
+      label: "Смены",
+      value: `${laborProfile.shifts}`,
+      detail: `${formatMoney(laborProfile.sales)} продаж за период, ${laborProfile.hours.toLocaleString("ru-RU")} ч.`,
+      tone: "ready",
+    };
+  }
+
+  return {
+    label: "Смены",
+    value: schedule.length > 0 ? `${schedule.length}` : "нет",
+    detail:
+      schedule.length > 0
+        ? "Есть план/факт смен, но профиль ФОТ еще не доказан."
+        : "В выбранном периоде смены сотрудника не найдены.",
+    tone: schedule.length > 0 ? "work" : "setup",
+  };
+}
+
+function taskFact(openTasks: number, urgentTasks: number): MemberSecondBrainFact {
+  if (urgentTasks > 0) {
+    return {
+      label: "Задачи",
+      value: `${urgentTasks} срочно`,
+      detail: "Есть срочная задача, которую надо разобрать до смены.",
+      tone: "risk",
+    };
+  }
+
+  return {
+    label: "Задачи",
+    value: `${openTasks}`,
+    detail:
+      openTasks > 0
+        ? "Есть открытые действия по роли или лично сотруднику."
+        : "Открытых задач нет.",
+    tone: openTasks > 0 ? "work" : "ready",
+  };
+}
+
+function fieldFact(
+  latestNote: TeamTaskComment | null,
+  count: number,
+): MemberSecondBrainFact {
+  if (!latestNote) {
+    return {
+      label: "Поле",
+      value: "нет итога",
+      detail:
+        "Сотрудник еще не оставлял факты смены. Советнику не хватает живого контекста.",
+      tone: "setup",
+    };
+  }
+
+  return {
+    label: "Поле",
+    value: `${count}`,
+    detail: trimProfileDetail(latestNote.body),
+    tone: "work",
+  };
+}
+
+function memberNextQuestion(input: {
+  learning: TeamLearningMemberSummary | null;
+  nextLearning: { title: string; timeLabel: string } | null;
+  latestNote: TeamTaskComment | null;
+  urgentTasks: TeamTask[];
+  openTasks: TeamTask[];
+  laborProfile: MemberLaborProfile | null;
+}): string {
+  if (input.learning && !input.learning.canWorkShift) {
+    return input.nextLearning
+      ? `Что мешает пройти стандарт «${input.nextLearning.title}» до смены?`
+      : "Какой обязательный стандарт мешает уверенно выпускать сотрудника в смену?";
+  }
+  if (input.laborProfile?.status === "missing_rate") {
+    return "Какая ставка или схема оплаты должна быть у этого сотрудника?";
+  }
+  if (input.urgentTasks[0]) {
+    return `Что мешает закрыть срочную задачу «${input.urgentTasks[0].title}»?`;
+  }
+  if (!input.latestNote) {
+    return "Что произошло на последней смене: гости, стоп-лист, конфликт, продажи или что проверить утром?";
+  }
+  if (input.openTasks[0]) {
+    return `Какой следующий шаг по задаче «${input.openTasks[0].title}»?`;
+  }
+  return "Что сотрудник заметил на смене и какой один стандарт стоит усилить?";
+}
+
+function trimProfileDetail(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 150) return normalized;
+  return `${normalized.slice(0, 147).trim()}...`;
 }
 
 function findUnreadImportantAnnouncement(input: {

@@ -38,10 +38,13 @@ import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import {
   buildMemberLaborProfile,
   buildMemberOperationPlan,
+  buildMemberSecondBrainProfile,
   buildMemberShiftSchedule,
   type MemberLaborProfile,
   type MemberLaborProfileStatus,
   type MemberOperationPlanItem,
+  type MemberSecondBrainFact,
+  type MemberSecondBrainTone,
   type MemberShiftScheduleItem,
 } from "@/lib/team/member-shift-schedule";
 import { loadTeamLabor } from "@/lib/team/team-labor-load";
@@ -273,6 +276,15 @@ export default async function MyCabinetPage({
     learning: learningSummary,
     announcements: workspace.announcements,
     announcementReads: workspace.announcementReads,
+    nextLearning,
+  });
+  const memberProfile = buildMemberSecondBrainProfile({
+    member: workspace.member,
+    tasks: sortedOpenTasks,
+    comments: workspace.comments,
+    schedule: memberSchedule,
+    laborProfile: memberLaborProfile,
+    learning: learningSummary,
     nextLearning,
   });
   const nextAction = operationPlan[0] ?? null;
@@ -539,6 +551,8 @@ export default async function MyCabinetPage({
             </div>
 
             <div className="space-y-6">
+              <MemberSecondBrainCard profile={memberProfile} />
+
               <FieldNoteForm />
 
               <div>
@@ -709,6 +723,95 @@ export default async function MyCabinetPage({
         </section>
       </main>
     </AppShell>
+  );
+}
+
+function memberSecondBrainToneClass(tone: MemberSecondBrainTone): string {
+  if (tone === "risk") {
+    return "border-destructive/25 bg-destructive/10 text-destructive";
+  }
+  if (tone === "setup") {
+    return "border-amber-400/25 bg-amber-400/10 text-amber-100";
+  }
+  if (tone === "work") {
+    return "border-[color:var(--pro)]/25 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+  }
+  return "border-brand/25 bg-brand/10 text-brand";
+}
+
+function MemberSecondBrainCard({
+  profile,
+}: {
+  profile: {
+    title: string;
+    summary: string;
+    tags: string[];
+    facts: MemberSecondBrainFact[];
+    nextQuestion: string;
+  };
+}) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+      <div className="flex items-start gap-3">
+        <Lightbulb className="mt-1 size-5 shrink-0 text-brand" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Профиль для советника
+          </p>
+          <h2 className="mt-3 text-xl font-medium">{profile.title}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {profile.summary}
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {profile.tags.map((tag) => (
+          <span
+            key={tag}
+            className="rounded-md border border-border/50 bg-background/45 px-2.5 py-1 text-[11px] text-muted-foreground"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+      <div className="mt-4 grid gap-2">
+        {profile.facts.map((fact) => (
+          <MemberSecondBrainFactRow key={fact.label} fact={fact} />
+        ))}
+      </div>
+      <div className="mt-4 rounded-lg border border-brand/25 bg-brand/10 p-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+          Вопрос на онбординг / бриф
+        </p>
+        <p className="mt-1 text-sm leading-relaxed text-foreground">
+          {profile.nextQuestion}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MemberSecondBrainFactRow({
+  fact,
+}: {
+  fact: MemberSecondBrainFact;
+}) {
+  return (
+    <div className="grid gap-2 rounded-lg border border-border/45 bg-background/35 p-3 sm:grid-cols-[120px_90px_1fr]">
+      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        {fact.label}
+      </p>
+      <span
+        className={`w-fit rounded-md border px-2 py-0.5 text-[11px] ${memberSecondBrainToneClass(
+          fact.tone,
+        )}`}
+      >
+        {fact.value}
+      </span>
+      <p className="text-[12px] leading-relaxed text-muted-foreground">
+        {fact.detail}
+      </p>
+    </div>
   );
 }
 
