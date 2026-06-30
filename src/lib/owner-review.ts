@@ -3041,9 +3041,12 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       check: "Проверить цену, граммовку, подачу и возможность апсейла.",
       role: "chef",
       tone: "watch",
-      taskSourceLabel: "Продажи и сервис",
-      learningModuleId: "sales-eight-upsell",
-      learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+      taskSourceLabel: "Маржа и техкарты",
+      learningModuleId: "tech-card-discipline",
+      learningModuleTitle: "Техкарта как договор внутри команды",
+      learningChecklistTitle: "Если блюдо дает объем без денег",
+      briefingQuestion:
+        "какая цена, порция или себестоимость делает объем слабым для чека",
     });
   }
 

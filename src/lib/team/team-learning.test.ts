@@ -111,6 +111,9 @@ describe("team learning catalog", () => {
         expect.objectContaining({
           title: "Если категория держит оборот",
         }),
+        expect.objectContaining({
+          title: "Если блюдо дает объем без денег",
+        }),
       ]),
     );
     expect(shiftBrief?.sections).toEqual(

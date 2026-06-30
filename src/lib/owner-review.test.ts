@@ -2008,6 +2008,72 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("routes volume-trap dishes to the tech-card checklist", () => {
+    const volumeTrapDishes: DishStat[] = [
+      {
+        dishName: "Стейк",
+        dishGroup: "Кухня",
+        dishAmountInt: 20,
+        dishSumInt: 80000,
+      },
+      {
+        dishName: "Паста",
+        dishGroup: "Кухня",
+        dishAmountInt: 30,
+        dishSumInt: 15000,
+      },
+      {
+        dishName: "Чай",
+        dishGroup: "Бар",
+        dishAmountInt: 100,
+        dishSumInt: 5000,
+      },
+    ];
+    const review = buildOwnerReview({
+      summary: {
+        ...summary,
+        revenue: 100000,
+      },
+      dishes: volumeTrapDishes,
+      categories: [],
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Есть блюдо с большим объемом и слабым вкладом в чек",
+          taskSourceLabel: "Маржа и техкарты",
+          role: "chef",
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарта как договор внутри команды",
+          learningChecklistTitle: "Если блюдо дает объем без денег",
+          briefingQuestion:
+            "какая цена, порция или себестоимость делает объем слабым для чека",
+          why: expect.stringContaining("Чай"),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Маржа и техкарты",
+          roleId: "chef",
+          learningModuleId: "tech-card-discipline",
+          learningChecklistTitle: "Если блюдо дает объем без денег",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если блюдо дает объем без денег.",
+          ),
+        }),
+      ]),
+    );
+  });
+
   test("connects revenue drop hypotheses with the shift control learning module", () => {
     const teamTasks: TeamTask[] = [
       {
