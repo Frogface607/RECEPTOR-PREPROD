@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   FIELD_NOTE_TEMPLATES,
+  fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
 } from "./field-note-input";
@@ -77,5 +78,23 @@ describe("field note input", () => {
       score: 3,
       missing: [],
     });
+  });
+
+  test("explains what the shift note still needs", () => {
+    expect(
+      fieldNoteReadinessHint(getFieldNoteReadiness(FIELD_NOTE_TEMPLATES[0].text)),
+    ).toContain("Начните с одного факта");
+
+    expect(
+      fieldNoteReadinessHint(getFieldNoteReadiness("закончилась мята")),
+    ).toContain("когда/сколько");
+
+    expect(
+      fieldNoteReadinessHint(
+        getFieldNoteReadiness(
+          "Стоп-лист: к 21:00 закончилась мята. Утром проверить заказ и дать замену лимонада.",
+        ),
+      ),
+    ).toContain("память смены");
   });
 });

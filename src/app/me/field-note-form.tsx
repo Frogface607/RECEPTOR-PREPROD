@@ -13,6 +13,7 @@ import {
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
 import {
   FIELD_NOTE_TEMPLATES,
+  fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
 } from "@/lib/team/field-note-input";
@@ -72,6 +73,7 @@ export function FieldNoteForm() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const readiness = getFieldNoteReadiness(body);
+  const readinessHint = fieldNoteReadinessHint(readiness);
   const canSubmit = hasMeaningfulFieldNoteBody(body) && !pending;
 
   useEffect(() => {
@@ -190,8 +192,8 @@ export function FieldNoteForm() {
             <h2 className="text-xl font-medium">Итог смены</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Что случилось, почему это важно, что проверить утром и что сказать
-            на брифе. Можно надиктовать голосом.
+            За 90 секунд: что случилось, почему это важно, что проверить утром
+            и что сказать на брифе.
           </p>
         </div>
         <button
@@ -254,6 +256,16 @@ export function FieldNoteForm() {
           </span>
         ))}
       </div>
+
+      <p
+        className={`mt-3 rounded-lg border px-3 py-2 text-[12px] leading-relaxed ${
+          readiness.score === 3
+            ? "border-brand/35 bg-brand/10 text-brand"
+            : "border-border/55 bg-background/30 text-muted-foreground"
+        }`}
+      >
+        {readinessHint}
+      </p>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">

@@ -112,3 +112,15 @@ export function getFieldNoteReadiness(value: string): FieldNoteReadiness {
 export function hasMeaningfulFieldNoteBody(value: string): boolean {
   return getFieldNoteReadiness(value).hasFact;
 }
+
+export function fieldNoteReadinessHint(readiness: FieldNoteReadiness): string {
+  if (readiness.score === 3) {
+    return "Готово: итог попадет в память смены и утренний разбор владельца.";
+  }
+
+  if (!readiness.hasFact) {
+    return "Начните с одного факта смены: что случилось с гостями, продажами, стоп-листом, командой или сервисом.";
+  }
+
+  return `Чтобы советник понял контекст, добавьте: ${readiness.missing.join(", ")}.`;
+}
