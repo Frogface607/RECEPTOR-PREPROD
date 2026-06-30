@@ -273,4 +273,61 @@ describe("owner brain readiness", () => {
       },
     });
   });
+
+  test("shows when shift memory answer was received from a follow-up task", () => {
+    const readiness = buildOwnerBrainReadiness({
+      context: DEMO_CONTEXT_ANSWERS,
+      staff,
+      tasks: [
+        ...tasks,
+        {
+          id: "shift-memory-task-done",
+          venueId: "venue",
+          title: "Уточнить итог смены: контекст/причина, когда/сколько",
+          source: "copilot",
+          sourceLabel: "Память смены",
+          learningChecklistTitle: "Если итог смены неполный",
+          priority: "medium",
+          status: "done",
+          audience: { type: "role", roleId: "venue_manager" },
+          dueLabel: "до утреннего разбора",
+        },
+      ],
+      comments: [
+        {
+          id: "weak-note",
+          venueId: "venue",
+          taskId: "field",
+          authorName: "Маша",
+          body: "Итог смены: было странно. Надо обсудить.",
+          createdAtLabel: "22:10",
+        },
+        {
+          id: "answer",
+          venueId: "venue",
+          taskId: "shift-memory-task-done",
+          authorName: "Маша",
+          body:
+            "Итог смены: ливень начался после 19:00, отменили 3 брони, гости просили горячие напитки, утром проверить мяту и стоп-лист.",
+          createdAtLabel: "22:40",
+        },
+      ],
+      learningSummaries: staff.map((member) => learningSummary(member)),
+      dataMode: "live",
+    });
+
+    expect(readiness.fieldMemory.detail).toContain("Ответ по задаче получен");
+    expect(readiness.fieldMemory).toMatchObject({
+      status: "ready",
+      actionLabel: "Открыть",
+      followUpTask: null,
+      answerSource: {
+        title: "Уточнить итог смены: контекст/причина, когда/сколько",
+        statusLabel: "сделана",
+        dueLabel: "до утреннего разбора",
+        done: true,
+        verified: false,
+      },
+    });
+  });
 });

@@ -587,7 +587,20 @@ export function OwnerCommandPanel({
                   <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
                     {brainReadiness.fieldMemory.detail}
                   </span>
-                  {brainReadiness.fieldMemory.followUpTask ? (
+                  {brainReadiness.fieldMemory.answerSource ? (
+                    <span className="mt-2 block rounded-md border border-brand/25 bg-brand/10 px-2 py-1.5 text-[12px] leading-relaxed text-brand">
+                      <span className="block text-[10px] uppercase tracking-[0.14em] text-brand/80">
+                        Получено из задачи
+                      </span>
+                      <span className="mt-1 block text-foreground">
+                        {brainReadiness.fieldMemory.answerSource.title}
+                      </span>
+                      <span className="mt-1 block text-muted-foreground">
+                        {brainReadiness.fieldMemory.answerSource.statusLabel} ·{" "}
+                        {brainReadiness.fieldMemory.answerSource.dueLabel}
+                      </span>
+                    </span>
+                  ) : brainReadiness.fieldMemory.followUpTask ? (
                     <span className="mt-2 block rounded-md border border-brand/25 bg-brand/10 px-2 py-1.5 text-[12px] leading-relaxed text-brand">
                       <span className="block text-[10px] uppercase tracking-[0.14em] text-brand/80">
                         Уже в работе

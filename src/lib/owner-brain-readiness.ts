@@ -3,7 +3,12 @@ import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import type { TeamLearningMemberSummary } from "@/lib/team/team-learning-progress";
 import { summarizeTeamLearning } from "@/lib/team/team-learning-progress";
-import type { StaffMember, TeamTask, TeamTaskComment } from "@/lib/team/team-os";
+import {
+  isShiftMemoryFollowUpTask,
+  type StaffMember,
+  type TeamTask,
+  type TeamTaskComment,
+} from "@/lib/team/team-os";
 import { buildContextMemoryReadiness } from "@/lib/venues/context-questionnaire";
 
 export type OwnerBrainSourceId =
@@ -44,12 +49,15 @@ export type OwnerBrainFieldMemory = {
   nextQuestion: string | null;
   followUpQuestions: string[];
   followUpTask: OwnerBrainFieldMemoryTask | null;
+  answerSource: OwnerBrainFieldMemoryTask | null;
 };
 
 export type OwnerBrainFieldMemoryTask = {
   title: string;
   statusLabel: string;
   dueLabel: string;
+  done: boolean;
+  verified: boolean;
 };
 
 export type OwnerBrainReadiness = {
@@ -75,6 +83,7 @@ type BuildOwnerBrainReadinessInput = {
 type FieldOwnerBrainSource = OwnerBrainSource & {
   followUpQuestions: string[];
   followUpTask: OwnerBrainFieldMemoryTask | null;
+  answerTask: OwnerBrainFieldMemoryTask | null;
 };
 
 function sourceWeight(status: OwnerBrainSourceStatus): number {
@@ -144,24 +153,63 @@ function taskStatusLabel(status: TeamTask["status"]): string {
   if (status === "new") return "новая";
   if (status === "accepted") return "принята";
   if (status === "in_progress") return "в работе";
-  return "ожидает проверки";
+  if (status === "done") return "сделана";
+  return "проверена";
+}
+
+function fieldMemoryTaskFromTask(task: TeamTask): OwnerBrainFieldMemoryTask {
+  return {
+    title: task.title,
+    statusLabel: taskStatusLabel(task.status),
+    dueLabel: task.dueLabel,
+    done: task.status === "done" || task.status === "verified",
+    verified: task.status === "verified",
+  };
 }
 
 function fieldFollowUpTask(tasks: TeamTask[]): OwnerBrainFieldMemoryTask | null {
   const task = tasks.find(
     (item) =>
       isOpenTask(item) &&
-      item.sourceLabel === "Память смены" &&
-      item.learningChecklistTitle === "Если итог смены неполный",
+      isShiftMemoryFollowUpTask(item),
   );
 
   if (!task) return null;
 
-  return {
-    title: task.title,
-    statusLabel: taskStatusLabel(task.status),
-    dueLabel: task.dueLabel,
-  };
+  return fieldMemoryTaskFromTask(task);
+}
+
+function isCompleteShiftMemoryAnswer(comment: TeamTaskComment): boolean {
+  if (!comment.body.trim().toLowerCase().startsWith("итог смены:")) {
+    return false;
+  }
+
+  return summarizeFieldNoteReadiness([comment.body]).complete > 0;
+}
+
+function fieldAnswerTask({
+  comments,
+  tasks,
+}: {
+  comments: TeamTaskComment[];
+  tasks: TeamTask[];
+}): OwnerBrainFieldMemoryTask | null {
+  const shiftMemoryTasks = tasks.filter(isShiftMemoryFollowUpTask);
+  const answeredTasks = shiftMemoryTasks.filter((task) =>
+    comments.some(
+      (comment) =>
+        comment.taskId === task.id && isCompleteShiftMemoryAnswer(comment),
+    ),
+  );
+
+  const task =
+    answeredTasks.find((item) => item.status === "verified") ??
+    answeredTasks.find((item) => item.status === "done") ??
+    answeredTasks.find((item) => !isOpenTask(item)) ??
+    answeredTasks.find(isOpenTask) ??
+    null;
+
+  return task ? fieldMemoryTaskFromTask(task) : null;
 }
 
 function fieldSource({
@@ -176,12 +224,15 @@ function fieldSource({
     comments.map((comment) => comment.body),
   );
   const followUpTask = fieldFollowUpTask(tasks);
+  const answerTask = fieldAnswerTask({ comments, tasks });
   const status: OwnerBrainSourceStatus = !digest
     ? "missing"
     : noteReadiness.complete > 0
       ? "ready"
       : "work";
-  const actionLabel = followUpTask
+  const actionLabel = answerTask && !answerTask.done
+    ? "Открыть задачу"
+    : followUpTask
     ? "Открыть задачу"
     : !digest || noteReadiness.complete === 0
       ? "Поставить задачу"
@@ -194,12 +245,15 @@ function fieldSource({
     value: digest ? `${noteReadiness.complete}/${noteReadiness.total}` : "0",
     detail: digest
       ? noteReadiness.complete > 0
-        ? `Есть полный итог смены. ${digest.summary}`
+        ? answerTask
+          ? `Ответ по задаче получен. ${digest.summary}`
+          : `Есть полный итог смены. ${digest.summary}`
         : `Заметка есть, но не хватает: ${noteReadiness.bestMissing.join(", ")}. ${digest.summary}`
       : "После смены нужен короткий итог: гости, событие, стоп-лист, конфликт, погода, что мешало продавать.",
     actionLabel,
     followUpQuestions: noteReadiness.followUpQuestions,
     followUpTask,
+    answerTask,
   };
 }
 
@@ -216,6 +270,7 @@ function fieldMemoryFromSource(
       nextQuestion: null,
       followUpQuestions: [],
       followUpTask: null,
+      answerSource: source.answerTask,
     };
   }
 
@@ -229,6 +284,7 @@ function fieldMemoryFromSource(
       nextQuestion: source.followUpTask ? null : (source.followUpQuestions[0] ?? null),
       followUpQuestions: source.followUpQuestions,
       followUpTask: source.followUpTask,
+      answerSource: null,
     };
   }
 
@@ -241,6 +297,7 @@ function fieldMemoryFromSource(
     nextQuestion: source.followUpTask ? null : (source.followUpQuestions[0] ?? null),
     followUpQuestions: source.followUpQuestions,
     followUpTask: source.followUpTask,
+    answerSource: null,
   };
 }
 
