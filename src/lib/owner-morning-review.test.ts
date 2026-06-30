@@ -132,4 +132,20 @@ describe("buildOwnerMorningReviewRows", () => {
     );
     expect(rows).toHaveLength(3);
   });
+
+  test("turns unlinked field context into a morning briefing question", () => {
+    const review = baseReview();
+
+    const rows = buildOwnerMorningReviewRows({ review });
+
+    expect(rows[1]).toMatchObject({
+      label: "Поле",
+      value: "2 сигнала",
+      tone: "risk",
+    });
+    expect(rows[1].detail).toContain(
+      "Вопрос: какая цифра подтверждает этот факт: выручка, ФОТ, маржа, стоп-лист или отзывы гостей?",
+    );
+    expect(rows).toHaveLength(3);
+  });
 });

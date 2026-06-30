@@ -92,17 +92,22 @@ function appendBriefingQuestion(
   return `${detail} ${questionText}`;
 }
 
+const UNTIED_FIELD_CONTEXT_QUESTION =
+  "какая цифра подтверждает этот факт: выручка, ФОТ, маржа, стоп-лист или отзывы гостей";
+
 function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
   const field = review.evidence.find((item) => item.label === "Поле");
   const hypothesis = fieldHypothesis(review);
 
   if (field) {
+    const detail = hypothesis
+      ? `${field.detail} Проверка: ${hypothesis.check}`
+      : appendBriefingQuestion(field.detail, UNTIED_FIELD_CONTEXT_QUESTION);
+
     return {
       label: "Поле",
       value: hypothesis ? `${field.value} · ${hypothesis.title}` : field.value,
-      detail: hypothesis
-        ? `${field.detail} Проверка: ${hypothesis.check}`
-        : field.detail,
+      detail,
       tone: field.tone,
     };
   }
