@@ -18,7 +18,14 @@ export type TeamFieldContextDigest = {
   summary: string;
 };
 
-const SYSTEM_MARKERS = ["урок для команды:", "чеклист:", "зачем:", "receptor"];
+const SYSTEM_MARKERS = [
+  "урок для команды:",
+  "стандарт:",
+  "стандарт задачи:",
+  "чеклист:",
+  "зачем:",
+  "receptor",
+];
 const FIELD_CONTEXT_TASK_TITLE = "Полевой контекст смены";
 const FIELD_CONTEXT_SOURCE_LABELS = new Set(["Поле", "Полевой контекст"]);
 

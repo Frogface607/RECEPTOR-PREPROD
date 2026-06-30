@@ -310,7 +310,7 @@ describe("buildOwnerReview", () => {
       learningModuleTitle: "Цифры ресторана простым языком",
       learningChecklistTitle: "Если BI показал перерасход ФОТ",
       contextNote: expect.stringContaining(
-        "Урок для команды: Цифры ресторана простым языком.",
+        "Стандарт: Цифры ресторана простым языком.",
       ),
     });
     expect(review.tasks[0].contextNote).toContain("Проверка:");
@@ -393,7 +393,7 @@ describe("buildOwnerReview", () => {
       contextNote: expect.stringContaining("Перерасход к цели"),
     });
     expect(review.tasks[0].contextNote).toContain(
-      "Урок для команды: Цифры ресторана простым языком.",
+      "Стандарт: Цифры ресторана простым языком.",
     );
     expect(review.tasks[0].contextNote).toContain(
       "Чеклист: Если BI показал перерасход ФОТ.",
@@ -446,7 +446,7 @@ describe("buildOwnerReview", () => {
           learningModuleTitle: "iiko и кассовая дисциплина на смене",
           learningChecklistTitle: "Если Receptor не видит смены iiko",
           contextNote: expect.stringContaining(
-            "Урок для команды: iiko и кассовая дисциплина на смене.",
+            "Стандарт: iiko и кассовая дисциплина на смене.",
           ),
         }),
       ]),
@@ -845,7 +845,7 @@ describe("buildOwnerReview", () => {
       learningModuleTitle: "Техкарта как договор внутри команды",
       learningChecklistTitle: "Если BI показал недобор валовой прибыли",
       contextNote: expect.stringContaining(
-        "Урок для команды: Техкарта как договор внутри команды.",
+        "Стандарт: Техкарта как договор внутри команды.",
       ),
     });
     expect(review.tasks[0].contextNote).toContain("Проверка:");
@@ -1145,7 +1145,7 @@ describe("buildOwnerReview", () => {
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
       learningChecklistTitle: "Если план и факт смен не совпали",
       contextNote: expect.stringContaining(
-        "Урок для команды: Открытие и закрытие смены без хаоса.",
+        "Стандарт: Открытие и закрытие смены без хаоса.",
       ),
     });
     expect(review.tasks[0].contextNote).toContain(
@@ -1221,7 +1221,7 @@ describe("buildOwnerReview", () => {
       "Вопрос: какой обязательный модуль мешает сотруднику выйти в смену.",
     );
     expect(review.tasks[0].contextNote).toContain(
-      "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+      "Стандарт: Восьмерка продаж и апселл в сервисе.",
     );
   });
 
@@ -1934,7 +1934,7 @@ describe("buildOwnerReview", () => {
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
           learningChecklistTitle: "Если BI показал точку для апселла",
           contextNote: expect.stringContaining(
-            "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+            "Стандарт: Восьмерка продаж и апселл в сервисе.",
           ),
         }),
       ]),
@@ -1991,7 +1991,7 @@ describe("buildOwnerReview", () => {
           learningModuleTitle: "Техкарта как договор внутри команды",
           learningChecklistTitle: "Если категория держит оборот",
           contextNote: expect.stringContaining(
-            "Урок для команды: Техкарта как договор внутри команды.",
+            "Стандарт: Техкарта как договор внутри команды.",
           ),
         }),
       ]),
@@ -2178,7 +2178,7 @@ describe("buildOwnerReview", () => {
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
           learningChecklistTitle: "Если BI показал слабую смену",
           contextNote: expect.stringContaining(
-            "Урок для команды: Открытие и закрытие смены без хаоса.",
+            "Стандарт: Открытие и закрытие смены без хаоса.",
           ),
         }),
       ]),
@@ -2278,7 +2278,7 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Выручка и смены",
           impactLabel: expect.stringMatching(/^40\s000\s₽$/),
           contextNote: expect.stringContaining(
-            "Урок для команды: Открытие и закрытие смены без хаоса.",
+            "Стандарт: Открытие и закрытие смены без хаоса.",
           ),
         }),
       ]),
@@ -2640,7 +2640,7 @@ describe("buildOwnerReview", () => {
         venueId: "venue-1",
         taskId: "task-shift-context",
         authorName: "Receptor",
-        body: "Зачем: понять риск. Урок для команды: Цифры ресторана простым языком.",
+        body: "Зачем: понять риск. Стандарт: Цифры ресторана простым языком.",
         createdAtLabel: "10:00",
       },
     ];
@@ -2792,7 +2792,7 @@ describe("buildOwnerReview", () => {
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
           learningChecklistTitle: "Если BI показал точку для апселла",
           contextNote: expect.stringContaining(
-            "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+            "Стандарт: Восьмерка продаж и апселл в сервисе.",
           ),
         }),
       ]),

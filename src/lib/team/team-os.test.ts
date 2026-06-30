@@ -79,9 +79,22 @@ describe("Team OS roles and permissions", () => {
     expect(taskContextWithoutLearningHint(context)).toBe("ФОТ 36%.");
   });
 
+  test("extracts standard hint from new BI task context", () => {
+    const context =
+      "ФОТ 36%. Стандарт: Цифры ресторана простым языком. Чеклист: Если BI показал перерасход ФОТ.";
+
+    expect(taskLearningHintFromContext(context)).toBe(
+      "Цифры ресторана простым языком",
+    );
+    expect(taskChecklistHintFromContext(context)).toBe(
+      "Если BI показал перерасход ФОТ",
+    );
+    expect(taskContextWithoutLearningHint(context)).toBe("ФОТ 36%.");
+  });
+
   test("keeps dots inside learning standard titles", () => {
     const context =
-      "Проверьте кассовую дисциплину. Урок для команды: iiko 2.0 и кассовая дисциплина.";
+      "Проверьте кассовую дисциплину. Стандарт: iiko 2.0 и кассовая дисциплина.";
 
     expect(taskLearningHintFromContext(context)).toBe(
       "iiko 2.0 и кассовая дисциплина",
@@ -93,7 +106,7 @@ describe("Team OS roles and permissions", () => {
 
   test("extracts field briefing sections from task context", () => {
     const context =
-      "Полевой факт: Маша: Выручка и смены — закончилась мята к 21:00. Вопрос: что в смене объясняет эту цифру? Проверка: Сверить стоп-лист и потерянные продажи. Зачем: связать факты смены с BI. Урок для команды: Брифинг смены и передача контекста. Чеклист: После смены собери полевой факт.";
+      "Полевой факт: Маша: Выручка и смены — закончилась мята к 21:00. Вопрос: что в смене объясняет эту цифру? Проверка: Сверить стоп-лист и потерянные продажи. Зачем: связать факты смены с BI. Стандарт: Брифинг смены и передача контекста. Чеклист: После смены собери полевой факт.";
 
     expect(taskContextBriefFromContext(context)).toEqual({
       fieldFact:

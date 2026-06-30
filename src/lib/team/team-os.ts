@@ -576,7 +576,7 @@ export function taskLearningHintFromContext(
   context: string | null | undefined,
 ): string | null {
   const match = context?.match(
-    /Урок для команды:\s*([^\n]+?)(?:\.\s*)?(?:Чеклист:\s*[^\n]+?(?:\.\s*)?)?$/,
+    /(?:Урок для команды|Стандарт(?: задачи)?):\s*([^\n]+?)(?:\.\s*)?(?:Чеклист:\s*[^\n]+?(?:\.\s*)?)?$/,
   );
   return match?.[1]?.trim() || null;
 }
@@ -593,7 +593,7 @@ export function taskContextWithoutLearningHint(
 ): string {
   return (context ?? "")
     .replace(/\s*Чеклист:\s*[^\n]+?(?:\.\s*)?$/g, "")
-    .replace(/\s*Урок для команды:\s*[^\n]+?(?:\.\s*)?$/g, "")
+    .replace(/\s*(?:Урок для команды|Стандарт(?: задачи)?):\s*[^\n]+?(?:\.\s*)?$/g, "")
     .trim();
 }
 
@@ -623,21 +623,29 @@ export function taskContextBriefFromContext(
       "Проверка:",
       "Зачем:",
       "Урок для команды:",
+      "Стандарт:",
+      "Стандарт задачи:",
       "Чеклист:",
     ]),
     question: contextSection(context, "Вопрос:", [
       "Проверка:",
       "Зачем:",
       "Урок для команды:",
+      "Стандарт:",
+      "Стандарт задачи:",
       "Чеклист:",
     ]),
     check: contextSection(context, "Проверка:", [
       "Зачем:",
       "Урок для команды:",
+      "Стандарт:",
+      "Стандарт задачи:",
       "Чеклист:",
     ]),
     reason: contextSection(context, "Зачем:", [
       "Урок для команды:",
+      "Стандарт:",
+      "Стандарт задачи:",
       "Чеклист:",
     ]),
   };

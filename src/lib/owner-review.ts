@@ -416,7 +416,7 @@ function withLearningContext({
   const suffixParts = [
     question && !base.includes("Вопрос:") ? `Вопрос: ${question}.` : null,
     reason ? `Зачем: ${reason}.` : null,
-    learningModuleTitle ? `Урок для команды: ${learningModuleTitle}.` : null,
+    learningModuleTitle ? `Стандарт: ${learningModuleTitle}.` : null,
     checklistTitle ? `Чеклист: ${checklistTitle}.` : null,
   ].filter((item): item is string => Boolean(item));
 
