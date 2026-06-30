@@ -84,6 +84,11 @@ describe("owner brain readiness", () => {
     expect(readiness.tone).toBe("risk");
     expect(readiness.nextSource.id).toBe("context");
     expect(readiness.summary).toContain("живой контекст");
+    expect(readiness.fieldMemory).toMatchObject({
+      status: "missing",
+      title: "Итог смены еще не собран",
+      actionLabel: "Оставить итог",
+    });
     expect(readiness.snapshot).toMatchObject([
       {
         id: "known",
@@ -117,6 +122,13 @@ describe("owner brain readiness", () => {
     expect(readiness.sources.find((source) => source.id === "field")?.status).toBe(
       "ready",
     );
+    expect(readiness.fieldMemory).toMatchObject({
+      status: "ready",
+      title: "Последний итог смены",
+      value: "1/1",
+      actionLabel: "Открыть",
+    });
+    expect(readiness.fieldMemory.detail).toContain("ливень");
     expect(readiness.snapshot[0]).toMatchObject({
       id: "known",
       value: "Профиль, Люди, Смена, Допуск, Факты",
@@ -181,6 +193,12 @@ describe("owner brain readiness", () => {
       value: "0/1",
     });
     expect(field?.detail).toContain("не хватает");
+    expect(readiness.fieldMemory).toMatchObject({
+      status: "work",
+      title: "Итог смены нужно уточнить",
+      value: "0/1",
+      actionLabel: "Дополнить",
+    });
     expect(readiness.nextSource.id).toBe("field");
     expect(readiness.snapshot[1].value).toContain("Смена: нужно дописать");
     expect(readiness.snapshot[2]).toMatchObject({

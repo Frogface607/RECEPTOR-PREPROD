@@ -564,6 +564,41 @@ export function OwnerCommandPanel({
                 ))}
               </div>
 
+              <Link
+                href={brainSourceIdHref("field", venueId, teamPeriodParams)}
+                className="mt-3 grid gap-3 rounded-lg border border-brand/25 bg-background/35 p-3 transition-colors hover:border-brand/55 hover:bg-brand/10 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+              >
+                <span
+                  className={
+                    "inline-flex size-9 items-center justify-center rounded-lg border " +
+                    BRAIN_STATUS_CLASS[brainReadiness.fieldMemory.status]
+                  }
+                >
+                  <MessageSquareText className="size-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] uppercase tracking-[0.16em] text-brand">
+                    Живой факт смены
+                  </span>
+                  <span className="mt-1 block text-sm font-medium text-foreground">
+                    {brainReadiness.fieldMemory.title} ·{" "}
+                    {brainReadiness.fieldMemory.value}
+                  </span>
+                  <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
+                    {brainReadiness.fieldMemory.detail}
+                  </span>
+                </span>
+                <span
+                  className={
+                    "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
+                    BRAIN_STATUS_CLASS[brainReadiness.fieldMemory.status]
+                  }
+                >
+                  {brainReadiness.fieldMemory.actionLabel}
+                  <ArrowRight className="size-3.5" />
+                </span>
+              </Link>
+
               <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
                 <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
                   Все источники памяти · {brainReadiness.sources.length}

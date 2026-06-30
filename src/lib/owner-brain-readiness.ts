@@ -35,6 +35,14 @@ export type OwnerBrainMemorySnapshot = {
   sourceId?: OwnerBrainSourceId;
 };
 
+export type OwnerBrainFieldMemory = {
+  status: OwnerBrainSourceStatus;
+  title: string;
+  value: string;
+  detail: string;
+  actionLabel: string;
+};
+
 export type OwnerBrainReadiness = {
   score: number;
   tone: OwnerReviewTone;
@@ -43,6 +51,7 @@ export type OwnerBrainReadiness = {
   nextSource: OwnerBrainSource;
   sources: OwnerBrainSource[];
   snapshot: OwnerBrainMemorySnapshot[];
+  fieldMemory: OwnerBrainFieldMemory;
 };
 
 type BuildOwnerBrainReadinessInput = {
@@ -141,6 +150,36 @@ function fieldSource({
         : `Заметка есть, но не хватает: ${noteReadiness.bestMissing.join(", ")}. ${digest.summary}`
       : "После смены нужен короткий итог: гости, событие, стоп-лист, конфликт, погода, что мешало продавать.",
     actionLabel: digest ? "Дополнить" : "Оставить итог",
+  };
+}
+
+function fieldMemoryFromSource(source: OwnerBrainSource): OwnerBrainFieldMemory {
+  if (source.status === "ready") {
+    return {
+      status: source.status,
+      title: "Последний итог смены",
+      value: source.value,
+      detail: source.detail,
+      actionLabel: "Открыть",
+    };
+  }
+
+  if (source.status === "work") {
+    return {
+      status: source.status,
+      title: "Итог смены нужно уточнить",
+      value: source.value,
+      detail: source.detail,
+      actionLabel: "Дополнить",
+    };
+  }
+
+  return {
+    status: source.status,
+    title: "Итог смены еще не собран",
+    value: source.value,
+    detail: source.detail,
+    actionLabel: "Оставить итог",
   };
 }
 
@@ -268,10 +307,11 @@ function buildMemorySnapshot({
 export function buildOwnerBrainReadiness(
   input: BuildOwnerBrainReadinessInput,
 ): OwnerBrainReadiness {
+  const field = fieldSource({ comments: input.comments, tasks: input.tasks });
   const sources: OwnerBrainSource[] = [
     contextSource(input.context),
     teamSource(input.staff),
-    fieldSource({ comments: input.comments, tasks: input.tasks }),
+    field,
     learningSource(input.learningSummaries),
     iikoSource(input.dataMode),
   ];
@@ -299,5 +339,6 @@ export function buildOwnerBrainReadiness(
     nextSource,
     sources,
     snapshot,
+    fieldMemory: fieldMemoryFromSource(field),
   };
 }
