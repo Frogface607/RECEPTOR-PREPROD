@@ -83,7 +83,22 @@ describe("owner brain readiness", () => {
 
     expect(readiness.tone).toBe("risk");
     expect(readiness.nextSource.id).toBe("context");
-    expect(readiness.summary).toContain("докормите");
+    expect(readiness.summary).toContain("живой контекст");
+    expect(readiness.snapshot).toMatchObject([
+      {
+        id: "known",
+        value: "пока ничего надежного",
+        tone: "risk",
+      },
+      {
+        id: "missing",
+        tone: "watch",
+      },
+      {
+        id: "next",
+        sourceId: "context",
+      },
+    ]);
   });
 
   test("marks the restaurant brain usable when context, field notes and team are present", () => {
@@ -102,6 +117,21 @@ describe("owner brain readiness", () => {
     expect(readiness.sources.find((source) => source.id === "field")?.status).toBe(
       "ready",
     );
+    expect(readiness.snapshot[0]).toMatchObject({
+      id: "known",
+      value: "Профиль, Люди, Смена, Допуск, Факты",
+      tone: "good",
+    });
+    expect(readiness.snapshot[1]).toMatchObject({
+      id: "missing",
+      value: "критичных пробелов нет",
+      tone: "good",
+    });
+    expect(readiness.snapshot[2]).toMatchObject({
+      id: "next",
+      label: "Готово к вопросам",
+      tone: "good",
+    });
   });
 
   test("shows learning as the next source when staff is not admitted to shifts", () => {
@@ -118,6 +148,11 @@ describe("owner brain readiness", () => {
 
     expect(readiness.nextSource.id).toBe("learning");
     expect(readiness.nextSource.detail).toContain("Не допущены");
+    expect(readiness.snapshot[1].value).toContain("Допуск: нужно дописать");
+    expect(readiness.snapshot[2]).toMatchObject({
+      sourceId: "learning",
+      value: "Допуск: 1/2",
+    });
   });
 
   test("keeps shift memory in progress when the note has no context or scale", () => {
@@ -147,5 +182,10 @@ describe("owner brain readiness", () => {
     });
     expect(field?.detail).toContain("не хватает");
     expect(readiness.nextSource.id).toBe("field");
+    expect(readiness.snapshot[1].value).toContain("Смена: нужно дописать");
+    expect(readiness.snapshot[2]).toMatchObject({
+      sourceId: "field",
+      value: "Смена: 0/1",
+    });
   });
 });

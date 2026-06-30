@@ -24,6 +24,17 @@ export type OwnerBrainSource = {
   actionLabel: string;
 };
 
+export type OwnerBrainMemorySnapshotId = "known" | "missing" | "next";
+
+export type OwnerBrainMemorySnapshot = {
+  id: OwnerBrainMemorySnapshotId;
+  label: string;
+  value: string;
+  detail: string;
+  tone: OwnerReviewTone;
+  sourceId?: OwnerBrainSourceId;
+};
+
 export type OwnerBrainReadiness = {
   score: number;
   tone: OwnerReviewTone;
@@ -31,6 +42,7 @@ export type OwnerBrainReadiness = {
   summary: string;
   nextSource: OwnerBrainSource;
   sources: OwnerBrainSource[];
+  snapshot: OwnerBrainMemorySnapshot[];
 };
 
 type BuildOwnerBrainReadinessInput = {
@@ -57,7 +69,7 @@ function scoreTone(score: number): OwnerReviewTone {
 function statusTitle(tone: OwnerReviewTone): string {
   if (tone === "good") return "советник видит ресторан";
   if (tone === "watch") return "память почти собрана";
-  return "советник пока слепой";
+  return "советнику не хватает памяти";
 }
 
 function contextSource(context: unknown): OwnerBrainSource {
@@ -180,6 +192,79 @@ function iikoSource(dataMode: "live" | "mock"): OwnerBrainSource {
   };
 }
 
+function sourceStatusLabel(status: OwnerBrainSourceStatus): string {
+  if (status === "ready") return "готово";
+  if (status === "work") return "нужно дописать";
+  return "нет данных";
+}
+
+function buildMemorySnapshot({
+  sources,
+  nextSource,
+}: {
+  sources: OwnerBrainSource[];
+  nextSource: OwnerBrainSource;
+}): OwnerBrainMemorySnapshot[] {
+  const readySources = sources.filter((source) => source.status === "ready");
+  const weakSources = sources.filter((source) => source.status !== "ready");
+  const firstWeak = weakSources[0] ?? null;
+
+  const known: OwnerBrainMemorySnapshot = {
+    id: "known",
+    label: "Уже знает",
+    value:
+      readySources.length > 0
+        ? readySources.map((source) => source.label).join(", ")
+        : "пока ничего надежного",
+    detail:
+      readySources.length > 0
+        ? "На эти источники советник уже может опираться в ответах."
+        : "Сначала нужен профиль заведения, команда и хотя бы один итог смены.",
+    tone: readySources.length > 0 ? "good" : "risk",
+  };
+
+  const missing: OwnerBrainMemorySnapshot = {
+    id: "missing",
+    label: "Не хватает",
+    value:
+      weakSources.length > 0
+        ? weakSources
+            .map((source) => `${source.label}: ${sourceStatusLabel(source.status)}`)
+            .join(", ")
+        : "критичных пробелов нет",
+    detail:
+      firstWeak?.detail ??
+      "Базовая память собрана. Дальше можно задавать вопросы о причинах, людях, меню и действиях.",
+    tone: weakSources.length > 0 ? "watch" : "good",
+    sourceId: firstWeak?.id,
+  };
+
+  const next: OwnerBrainMemorySnapshot = firstWeak
+    ? {
+        id: "next",
+        label: "Следующий сбор",
+        value: `${nextSource.label}: ${nextSource.value}`,
+        detail: nextSource.detail,
+        tone:
+          nextSource.status === "missing"
+            ? "risk"
+            : nextSource.status === "work"
+              ? "watch"
+              : "good",
+        sourceId: nextSource.id,
+      }
+    : {
+        id: "next",
+        label: "Готово к вопросам",
+        value: "советник в контексте",
+        detail:
+          "Спросите, почему просела смена, кого обучить, что проверить утром или какую гипотезу дать управляющему.",
+        tone: "good",
+      };
+
+  return [known, missing, next];
+}
+
 export function buildOwnerBrainReadiness(
   input: BuildOwnerBrainReadinessInput,
 ): OwnerBrainReadiness {
@@ -199,6 +284,7 @@ export function buildOwnerBrainReadiness(
     sources.find((source) => source.status === "missing") ??
     sources.find((source) => source.status === "work") ??
     sources[0];
+  const snapshot = buildMemorySnapshot({ sources, nextSource });
 
   return {
     score,
@@ -208,9 +294,10 @@ export function buildOwnerBrainReadiness(
       tone === "good"
         ? "Можно спрашивать советника о причинах, людях, меню и действиях на день."
         : tone === "watch"
-          ? "Дособерите следующий источник памяти, чтобы советы опирались не только на цифры."
-          : "Сначала докормите систему живым контекстом: профиль, команда, итог смены и допуск.",
+          ? "Доберите следующий источник памяти, чтобы советы опирались не только на цифры."
+          : "Сначала соберите живой контекст: профиль заведения, команда, итог смены и допуск.",
     nextSource,
     sources,
+    snapshot,
   };
 }

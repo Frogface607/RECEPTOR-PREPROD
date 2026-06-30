@@ -12,8 +12,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type {
+  OwnerBrainMemorySnapshot,
   OwnerBrainReadiness,
   OwnerBrainSource,
+  OwnerBrainSourceId,
   OwnerBrainSourceStatus,
 } from "@/lib/owner-brain-readiness";
 import type {
@@ -227,16 +229,24 @@ function brainSourceHref(
   venueId: string,
   teamPeriodParams?: TeamPeriodParams,
 ): string {
-  if (source.id === "context") return "/context";
-  if (source.id === "iiko") return "/settings#iiko";
-  if (source.id === "field") {
+  return brainSourceIdHref(source.id, venueId, teamPeriodParams);
+}
+
+function brainSourceIdHref(
+  sourceId: OwnerBrainSourceId,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
+  if (sourceId === "context") return "/context";
+  if (sourceId === "iiko") return "/settings#iiko";
+  if (sourceId === "field") {
     return buildTeamHref({
       venueId,
       hash: "#shift-summary",
       periodParams: teamPeriodParams,
     });
   }
-  if (source.id === "learning") {
+  if (sourceId === "learning") {
     return buildTeamHref({
       venueId,
       hash: "#learning-progress",
@@ -248,6 +258,17 @@ function brainSourceHref(
     hash: "#team-actions",
     periodParams: teamPeriodParams,
   });
+}
+
+function brainSnapshotHref(
+  item: OwnerBrainMemorySnapshot,
+  fallback: OwnerBrainSource,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
+  return item.sourceId
+    ? brainSourceIdHref(item.sourceId, venueId, teamPeriodParams)
+    : brainSourceHref(fallback, venueId, teamPeriodParams);
 }
 
 function actionCta(action: OwnerReviewAction): string {
@@ -507,52 +528,67 @@ export function OwnerCommandPanel({
                 {brainReadiness.summary}
               </p>
 
-              <Link
-                href={brainSourceHref(
-                  brainReadiness.nextSource,
-                  venueId,
-                  teamPeriodParams,
-                )}
-                className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-              >
-                <span className="min-w-0">
-                  <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Следующий источник
-                  </span>
-                  <span className="mt-1 block text-sm font-medium text-foreground">
-                    {brainReadiness.nextSource.label}:{" "}
-                    {brainReadiness.nextSource.value}
-                  </span>
-                  <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
-                    {brainReadiness.nextSource.detail}
-                  </span>
-                </span>
-                <span className="inline-flex items-center gap-2 text-[12px] font-medium text-brand">
-                  {brainReadiness.nextSource.actionLabel}
-                  <ArrowRight className="size-3.5" />
-                </span>
-              </Link>
-
-              <div className="mt-3 grid grid-cols-5 gap-1.5">
-                {brainReadiness.sources.map((source) => (
+              <div className="mt-3 grid gap-2">
+                {brainReadiness.snapshot.map((item) => (
                   <Link
-                    key={source.id}
-                    href={brainSourceHref(source, venueId, teamPeriodParams)}
-                    className={
-                      "min-w-0 rounded-md border px-2 py-2 text-center transition-colors hover:bg-background/55 " +
-                      BRAIN_STATUS_CLASS[source.status]
-                    }
-                    title={`${source.label}: ${source.detail}`}
+                    key={item.id}
+                    href={brainSnapshotHref(
+                      item,
+                      brainReadiness.nextSource,
+                      venueId,
+                      teamPeriodParams,
+                    )}
+                    className="grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                   >
-                    <span className="block truncate text-[10px] font-medium">
-                      {source.label}
+                    <span className="min-w-0">
+                      <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {item.label}
+                      </span>
+                      <span className="mt-1 block text-sm font-medium text-foreground">
+                        {item.value}
+                      </span>
+                      <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
+                        {item.detail}
+                      </span>
                     </span>
-                    <span className="mt-1 block truncate text-[11px] opacity-80">
-                      {source.value}
+                    <span
+                      className={
+                        "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
+                        TONE_CLASS[item.tone]
+                      }
+                    >
+                      {item.id === "next" ? brainReadiness.nextSource.actionLabel : "открыть"}
+                      <ArrowRight className="size-3.5" />
                     </span>
                   </Link>
                 ))}
               </div>
+
+              <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+                <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                  Все источники памяти · {brainReadiness.sources.length}
+                </summary>
+                <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-5">
+                  {brainReadiness.sources.map((source) => (
+                    <Link
+                      key={source.id}
+                      href={brainSourceHref(source, venueId, teamPeriodParams)}
+                      className={
+                        "min-w-0 rounded-md border px-2 py-2 text-center transition-colors hover:bg-background/55 " +
+                        BRAIN_STATUS_CLASS[source.status]
+                      }
+                      title={`${source.label}: ${source.detail}`}
+                    >
+                      <span className="block truncate text-[10px] font-medium">
+                        {source.label}
+                      </span>
+                      <span className="mt-1 block truncate text-[11px] opacity-80">
+                        {source.value}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </details>
             </div>
           ) : null}
 
