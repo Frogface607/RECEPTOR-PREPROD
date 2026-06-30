@@ -68,6 +68,11 @@ describe("buildTeamOpsReadiness", () => {
       href: "#labor-rates",
     });
     expect(readiness.actions[1].detail).toContain("Шеф");
+    expect(readiness.actions[2]).toMatchObject({
+      id: "learning",
+      learningModuleId: "service-recommendation",
+      learningModuleTitle: "Как рекомендовать блюдо без давления",
+    });
   });
 
   test("returns a ready action when operational basics are closed", () => {

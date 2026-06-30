@@ -1156,8 +1156,10 @@ describe("buildOwnerReview", () => {
           id: "learning",
           tone: "setup",
           title: "Дожать обучение",
-          detail: "Маша: закрыть обязательный модуль роли.",
+          detail: "Маша: Восьмерка продаж и апселл в сервисе.",
           href: "#learning-progress",
+          learningModuleId: "sales-eight-upsell",
+          learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
         },
       ],
     } satisfies TeamOpsReadiness;
@@ -1189,13 +1191,25 @@ describe("buildOwnerReview", () => {
           target: "team-learning",
           role: "manager",
           title: "Дожать обучение",
+          learningModuleId: "sales-eight-upsell",
+          learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+          briefingQuestion:
+            "какой обязательный модуль мешает сотруднику выйти в смену",
         }),
       ]),
     );
     expect(review.tasks[0]).toMatchObject({
       roleId: "venue_manager",
       sourceLabel: "Команда",
+      learningModuleId: "sales-eight-upsell",
+      learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
+    expect(review.tasks[0].contextNote).toContain(
+      "Вопрос: какой обязательный модуль мешает сотруднику выйти в смену.",
+    );
+    expect(review.tasks[0].contextNote).toContain(
+      "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+    );
   });
 
   test("shows operational proof from open tasks and recently closed loops", () => {

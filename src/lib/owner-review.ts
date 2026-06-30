@@ -2417,6 +2417,7 @@ function ownerActionFromTeam(
 ): OwnerReviewAction | null {
   const action = input.actions.find((item) => item.id !== "ready");
   if (!action) return null;
+  const isLearningAction = action.id === "learning";
 
   return {
     title: action.title,
@@ -2425,6 +2426,11 @@ function ownerActionFromTeam(
     tone: ownerToneFromTeam(action.tone),
     target: teamActionTarget(action.href),
     impactLabel: `${input.score}% готово`,
+    learningModuleId: action.learningModuleId,
+    learningModuleTitle: action.learningModuleTitle,
+    briefingQuestion: isLearningAction
+      ? "какой обязательный модуль мешает сотруднику выйти в смену"
+      : undefined,
   };
 }
 

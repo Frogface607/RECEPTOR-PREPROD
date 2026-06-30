@@ -13,6 +13,8 @@ export type TeamOpsAction = {
   title: string;
   detail: string;
   href: string;
+  learningModuleId?: string;
+  learningModuleTitle?: string;
 };
 
 export type TeamOpsReadiness = {
@@ -173,6 +175,8 @@ export function buildTeamOpsReadiness(input: {
         "закрыть материалы роли",
       )}.`,
       href: "#learning-progress",
+      learningModuleId: learningBlocker.nextItem?.id,
+      learningModuleTitle: learningBlocker.nextItem?.title,
     });
   }
 
