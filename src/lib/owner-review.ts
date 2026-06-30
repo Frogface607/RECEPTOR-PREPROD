@@ -470,7 +470,7 @@ function taskChecklistForSource(
     learningModuleId === "shift-brief" &&
     sourceLabel === "Полевой контекст"
   ) {
-    return "После смены собери полевой факт";
+    return "Разбор: факт, вопрос, проверка, действие";
   }
   if (learningModuleId === "restaurant-numbers-basics") {
     return "Если BI показал перерасход ФОТ";

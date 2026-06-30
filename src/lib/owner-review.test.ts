@@ -1774,7 +1774,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           taskSourceLabel: "Полевой контекст",
           title: "Проверить стоп-лист и потерянные продажи",
-          learningChecklistTitle: "После смены собери полевой факт",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
         }),
       ]),
     );
@@ -1784,7 +1784,7 @@ describe("buildOwnerReview", () => {
           title: "Проверить стоп-лист и потерянные продажи",
           sourceLabel: "Полевой контекст",
           roleId: "venue_manager",
-          learningChecklistTitle: "После смены собери полевой факт",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
         }),
       ]),
     );
@@ -2335,7 +2335,7 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Полевой контекст",
           impactLabel: "3 сигнала",
           learningModuleId: "shift-brief",
-          learningChecklistTitle: "После смены собери полевой факт",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
           detail: expect.stringContaining("Связанные факты:"),
         }),
       ]),
@@ -2358,6 +2358,7 @@ describe("buildOwnerReview", () => {
           title: "Разобрать конфликт смены с цифрами",
           sourceLabel: "Полевой контекст",
           learningModuleTitle: "Брифинг смены и передача контекста",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
           contextNote: expect.stringContaining("Полевой факт: Маша"),
         }),
       ]),
@@ -2367,6 +2368,9 @@ describe("buildOwnerReview", () => {
     )?.contextNote;
     expect(fieldTaskContext).toContain(
       "Вопрос: что в смене объясняет эту цифру?",
+    );
+    expect(fieldTaskContext).toContain(
+      "Чеклист: Разбор: факт, вопрос, проверка, действие.",
     );
     expect(fieldTaskContext).toContain("Проверка: На брифинге");
     expect(fieldTaskContext).toContain("Связанные факты:");

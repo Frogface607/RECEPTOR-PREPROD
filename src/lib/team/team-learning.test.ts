@@ -64,6 +64,7 @@ describe("team learning catalog", () => {
   test("includes BI task checklists in linked learning standards", () => {
     const shift = getLearningItem("shift-open-close");
     const techCard = getLearningItem("tech-card-discipline");
+    const shiftBrief = getLearningItem("shift-brief");
 
     expect(shift?.sections).toEqual(
       expect.arrayContaining([
@@ -79,6 +80,13 @@ describe("team learning catalog", () => {
         }),
         expect.objectContaining({
           title: "Если BI показал недобор валовой прибыли",
+        }),
+      ]),
+    );
+    expect(shiftBrief?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разбор: факт, вопрос, проверка, действие",
         }),
       ]),
     );
