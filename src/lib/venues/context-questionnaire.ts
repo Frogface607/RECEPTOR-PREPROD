@@ -51,6 +51,24 @@ export type ContextCompletion = {
   missingRequired: string[];
 };
 
+export type ContextNextQuestion = {
+  id: string;
+  label: string;
+  prompt: string;
+  sectionTitle: string;
+  reason: string;
+};
+
+export type ContextMemoryReadiness = {
+  answeredSignals: number;
+  totalSignals: number;
+  percentage: number;
+  status: "starter" | "usable" | "strong";
+  title: string;
+  summary: string;
+  nextQuestion: ContextNextQuestion | null;
+};
+
 export const VENUE_CONTEXT_QUESTIONNAIRE: ContextSection[] = [
   {
     id: "identity",
@@ -262,6 +280,39 @@ export const DEMO_CONTEXT_ANSWERS: VenueContextAnswers = {
   red_lines: ["не увольнять сотрудников по данным без проверки", "не менять цены автоматически", "не публиковать контент без подтверждения"],
 };
 
+const MEMORY_SIGNAL_IDS = [
+  "format",
+  "positioning",
+  "audience",
+  "owner_goals",
+  "decision_metrics",
+  "daily_pains",
+  "knowledge_gaps",
+  "shift_summary_rules",
+  "team_roles",
+  "service_standards",
+  "pos_system",
+  "integration_pains",
+] as const;
+
+const NEXT_QUESTION_REASONS: Record<string, string> = {
+  format: "сначала нужно понять, что за место мы разбираем",
+  positioning: "советник должен отличать ресторан от соседей и сетевых шаблонов",
+  audience: "без сценариев гостей советы по сервису и меню будут общими",
+  owner_goals: "утренние выводы должны вести к целям владельца",
+  daily_pains: "здесь появляется реальность, которую не видно в отчетах",
+  knowledge_gaps: "это основа будущего обучения и чеклистов команды",
+  shift_summary_rules: "так команда будет каждый день пополнять память ресторана",
+  team_roles: "задачи и обучение должны попадать нужным людям",
+  service_standards: "общие стандарты убирают работу по наитию",
+  responsible_people: "система должна знать, кто отвечает за кухню, зал, кассу и маркетинг",
+  decision_metrics: "цифры становятся полезными, когда понятно, какие из них важны",
+  pos_system: "факты из учетной системы привязывают память к реальным данным",
+  integration_pains: "это показывает, где ресторан теряет время на ручную работу",
+  ai_provider_policy: "нужно заранее понимать ограничения по данным и моделям",
+  red_lines: "советник должен знать, где решение остается за человеком",
+};
+
 function normalizeAnswerValue(value: z.infer<typeof AnswerValueSchema>): string | string[] | null {
   if (Array.isArray(value)) {
     const items = value.map((item) => String(item).trim()).filter(Boolean);
@@ -284,6 +335,11 @@ export function normalizeContextAnswers(value: unknown): VenueContextAnswers {
       return normalized === null ? [] : [[key, normalized]];
     }),
   );
+}
+
+function hasContextAnswer(answers: VenueContextAnswers, id: string): boolean {
+  const answer = answers[id];
+  return Array.isArray(answer) ? answer.length > 0 : Boolean(answer?.trim());
 }
 
 export function listRequiredContextQuestionIds(
@@ -338,5 +394,67 @@ export function formatContextAnswersForPrompt(value: unknown): string {
   })
     .filter(Boolean)
     .join("\n\n");
+}
+
+export function buildContextMemoryReadiness(value: unknown): ContextMemoryReadiness {
+  const answers = normalizeContextAnswers(value);
+  const questions = VENUE_CONTEXT_QUESTIONNAIRE.flatMap((section) =>
+    section.questions.map((question) => ({ ...question, sectionTitle: section.title })),
+  );
+  const questionsById = new Map(questions.map((question) => [question.id, question]));
+  const answeredSignals = MEMORY_SIGNAL_IDS.filter((id) => hasContextAnswer(answers, id)).length;
+  const percentage = Math.round((answeredSignals / MEMORY_SIGNAL_IDS.length) * 100);
+  const nextQuestionId = [
+    "format",
+    "positioning",
+    "audience",
+    "owner_goals",
+    "daily_pains",
+    "knowledge_gaps",
+    "shift_summary_rules",
+    "team_roles",
+    "service_standards",
+    "responsible_people",
+    "decision_metrics",
+    "pos_system",
+    "integration_pains",
+    "ai_provider_policy",
+    "red_lines",
+  ].find((id) => !hasContextAnswer(answers, id));
+  const nextQuestionBase = nextQuestionId ? questionsById.get(nextQuestionId) : undefined;
+
+  const status =
+    percentage >= 85 ? "strong" : percentage >= 50 ? "usable" : "starter";
+
+  return {
+    answeredSignals,
+    totalSignals: MEMORY_SIGNAL_IDS.length,
+    percentage,
+    status,
+    title:
+      status === "strong"
+        ? "Память уже можно использовать"
+        : status === "usable"
+          ? "Память собирает реальность ресторана"
+          : "Память пока знает только основу",
+    summary:
+      status === "strong"
+        ? "Советник видит формат, цели, команду и операционные боли. Дальше важно регулярно добавлять итоги смен."
+        : status === "usable"
+          ? "Уже можно задавать рабочие вопросы, но не хватает деталей о людях, стандартах или ежедневной реальности."
+          : "Заполните несколько ключевых ответов: кто вы, что болит, чему учить команду и что фиксировать после смены.",
+    nextQuestion:
+      nextQuestionBase && nextQuestionId
+        ? {
+            id: nextQuestionBase.id,
+            label: nextQuestionBase.label,
+            prompt: nextQuestionBase.prompt,
+            sectionTitle: nextQuestionBase.sectionTitle,
+            reason:
+              NEXT_QUESTION_REASONS[nextQuestionId] ??
+              "этот ответ сделает советника точнее",
+          }
+        : null,
+  };
 }
 

@@ -17,6 +17,7 @@ import {
   updateVenueContextAction,
 } from "./actions";
 import {
+  buildContextMemoryReadiness,
   calculateContextCompletion,
   DEMO_CONTEXT_ANSWERS,
   formatContextAnswersForPrompt,
@@ -68,6 +69,10 @@ export function ContextBuilder({
   );
   const prompt = useMemo(
     () => formatContextAnswersForPrompt(answers),
+    [answers],
+  );
+  const memoryReadiness = useMemo(
+    () => buildContextMemoryReadiness(answers),
     [answers],
   );
 
@@ -184,6 +189,8 @@ export function ContextBuilder({
               value={`${completion.requiredAnswered}/${completion.requiredTotal}`}
             />
           </div>
+
+          <MemoryReadinessCard readiness={memoryReadiness} />
 
           <div className="mt-4 flex flex-wrap gap-2">
             <button
@@ -368,6 +375,54 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
+function MemoryReadinessCard({
+  readiness,
+}: {
+  readiness: ReturnType<typeof buildContextMemoryReadiness>;
+}) {
+  return (
+    <div className="mt-4 rounded-lg border border-brand/25 bg-brand/[0.05] p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+            Память ресторана
+          </p>
+          <h2 className="mt-2 text-base font-medium">{readiness.title}</h2>
+        </div>
+        <div className="shrink-0 rounded-md border border-brand/30 bg-background/60 px-2.5 py-1 text-xs text-brand">
+          {readiness.answeredSignals}/{readiness.totalSignals}
+        </div>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        {readiness.summary}
+      </p>
+      {readiness.nextQuestion ? (
+        <div className="mt-4 rounded-md border border-border/60 bg-background/55 p-3">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            Следующий вопрос
+          </p>
+          <p className="mt-2 text-sm font-medium">
+            {readiness.nextQuestion.prompt}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Почему: {readiness.nextQuestion.reason}.
+          </p>
+          <a
+            href={`#question-${readiness.nextQuestion.id}`}
+            className="mt-3 inline-flex h-8 items-center rounded-md border border-brand/35 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/10"
+          >
+            Ответить ниже
+          </a>
+        </div>
+      ) : (
+        <div className="mt-4 rounded-md border border-brand/25 bg-brand/10 p-3 text-xs leading-relaxed text-foreground/85">
+          Дальше память растет через итоги смен, задачи команды и ресерч.
+        </div>
+      )}
+    </div>
+  );
+}
+
 function QuestionSection({
   section,
   answers,
@@ -419,7 +474,7 @@ function QuestionControl({
       : [];
 
   return (
-    <label className="grid gap-2">
+    <label id={`question-${question.id}`} className="grid scroll-mt-24 gap-2">
       <span className="flex items-center gap-2 text-sm font-medium">
         {question.label}
         {question.required ? <span className="text-brand">*</span> : null}
