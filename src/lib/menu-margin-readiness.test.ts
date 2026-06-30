@@ -836,8 +836,39 @@ describe("buildMenuMarginReadiness", () => {
 
     expect(buildMenuMarginNextAction(readiness)).toMatchObject({
       kind: "ready",
-      title: "Маржу можно разбирать",
+      title: "Разобрать маржу: Chef steak",
+      detail: expect.stringContaining("недобор валовой прибыли"),
+      action: expect.stringContaining("Проверьте цену"),
       blocker: null,
+    });
+  });
+
+  test("keeps ready margin guidance concrete when no dish is below target", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Filter coffee",
+          dishGroup: "Bar",
+          dishAmountInt: 20,
+          dishSumInt: 10000,
+        },
+      ],
+      products: [
+        {
+          id: "coffee",
+          name: "Filter coffee",
+          purchasePrice: 100,
+          sizePrices: [],
+        },
+      ],
+      targetGrossMarginPct: 60,
+    });
+
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "ready",
+      title: "Маржу можно разбирать",
+      detail: expect.stringContaining("Средняя валовая маржа"),
+      action: expect.stringContaining("Следующий контроль"),
     });
   });
 });

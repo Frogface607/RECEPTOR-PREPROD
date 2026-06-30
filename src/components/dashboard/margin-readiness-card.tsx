@@ -83,6 +83,11 @@ export function MarginReadinessCard({
         </span>
       </div>
 
+      <MarginNextActionCard
+        nextAction={nextAction}
+        diagnosticsHref={diagnosticsHref}
+      />
+
       {topBlockers.length > 0 ? (
         <div className="mt-5 border-y border-border/45 py-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -125,11 +130,6 @@ export function MarginReadinessCard({
               }
             />
           </div>
-
-          <MarginNextActionCard
-            nextAction={nextAction}
-            diagnosticsHref={diagnosticsHref}
-          />
 
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
             {topBlockers.map((item) => (
@@ -205,6 +205,9 @@ function MarginNextActionCard({
         </p>
         <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
           {nextAction.detail}
+        </p>
+        <p className="mt-2 text-[12px] leading-relaxed text-foreground/80">
+          {nextAction.action}
         </p>
       </div>
       {href && label ? (

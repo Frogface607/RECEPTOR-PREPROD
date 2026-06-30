@@ -685,11 +685,24 @@ export function buildMenuMarginNextAction(
   }
 
   if (!blocker) {
+    const risk = readiness.topMarginRisks[0] ?? null;
+    if (risk) {
+      return {
+        kind: "ready",
+        title: `Разобрать маржу: ${risk.dishName}`,
+        detail: `Себестоимость доказана. Валовая маржа ${risk.grossMarginPct}% при цене ${formatRubles(risk.salePrice)} и себестоимости ${formatRubles(risk.costReference)}; недобор валовой прибыли к цели ${formatRubles(risk.grossProfitGapToTarget)}.`,
+        action:
+          "Проверьте цену, порцию, списания и состав техкарты до решения о продвижении блюда.",
+        blocker: null,
+      };
+    }
+
     return {
       kind: "ready",
       title: "Маржу можно разбирать",
-      detail: "Ключевые блюда связаны с iiko и имеют доказанную себестоимость.",
-      action: "Ищите слабую маржу, хвост меню и позиции с высоким оборотом.",
+      detail: `Ключевые блюда связаны с iiko и имеют доказанную себестоимость. Средняя валовая маржа ${readiness.averageGrossMarginPct ?? 0}%, валовая прибыль ${formatRubles(readiness.grossProfit)}.`,
+      action:
+        "Следующий контроль: сравнить маржу топ-блюд с ФОТ смен и не продвигать позиции без понятной валовой прибыли.",
       blocker: null,
     };
   }
