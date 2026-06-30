@@ -34,6 +34,7 @@ export function TeamFollowUpTaskButton({
         sourceLabel: draft.sourceLabel,
         learningModuleId: draft.learningModuleId,
         learningModuleTitle: draft.learningModuleTitle,
+        learningChecklistTitle: draft.learningChecklistTitle,
         dedupeOpenTask: true,
       });
 

@@ -61,6 +61,7 @@ export type TeamTask = {
   impactLabel?: string;
   learningModuleId?: string;
   learningModuleTitle?: string;
+  learningChecklistTitle?: string;
   priority: "high" | "medium" | "low";
   status: "new" | "accepted" | "in_progress" | "done" | "verified";
   venueId: string;

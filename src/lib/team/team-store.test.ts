@@ -154,6 +154,7 @@ describe("Team OS store mapping", () => {
       {
         moduleId: "shift-open-close",
         moduleTitle: "Открытие и закрытие смены без хаоса",
+        checklistTitle: "Если BI показал слабую смену",
       },
     );
 
@@ -161,6 +162,7 @@ describe("Team OS store mapping", () => {
     expect(task.learningModuleTitle).toBe(
       "Открытие и закрытие смены без хаоса",
     );
+    expect(task.learningChecklistTitle).toBe("Если BI показал слабую смену");
   });
 
   test("builds task source labels from task-created audit metadata", () => {
@@ -236,6 +238,7 @@ describe("Team OS store mapping", () => {
         metadata: {
           learningModuleId: "restaurant-numbers-basics",
           learningModuleTitle: "Цифры ресторана простым языком",
+          learningChecklistTitle: "Если BI показал перерасход ФОТ",
         },
       },
       {
@@ -252,6 +255,7 @@ describe("Team OS store mapping", () => {
     expect(learning.get("task-1")).toEqual({
       moduleId: "restaurant-numbers-basics",
       moduleTitle: "Цифры ресторана простым языком",
+      checklistTitle: "Если BI показал перерасход ФОТ",
     });
   });
 
@@ -264,6 +268,7 @@ describe("Team OS store mapping", () => {
         metadata: {
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          learningChecklistTitle: "Если BI показал слабую смену",
         },
       },
     ]);
@@ -271,6 +276,7 @@ describe("Team OS store mapping", () => {
     expect(learning.get("task-existing")).toEqual({
       moduleId: "shift-open-close",
       moduleTitle: "Открытие и закрытие смены без хаоса",
+      checklistTitle: "Если BI показал слабую смену",
     });
   });
 

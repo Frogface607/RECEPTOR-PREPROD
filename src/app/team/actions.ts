@@ -95,6 +95,12 @@ const CreateTeamTaskInput = z
       .max(160)
       .optional()
       .or(z.literal("")),
+    learningChecklistTitle: z
+      .string()
+      .trim()
+      .max(160)
+      .optional()
+      .or(z.literal("")),
     dedupeOpenTask: z.boolean().optional().default(false),
   })
   .superRefine((value, ctx) => {
@@ -1424,6 +1430,8 @@ export async function createTeamTaskAction(
   const contextNote = parsed.data.contextNote?.trim() || null;
   const learningModuleId = parsed.data.learningModuleId?.trim() || null;
   const learningModuleTitle = parsed.data.learningModuleTitle?.trim() || null;
+  const learningChecklistTitle =
+    parsed.data.learningChecklistTitle?.trim() || null;
 
   if (parsed.data.dedupeOpenTask) {
     try {
@@ -1442,7 +1450,7 @@ export async function createTeamTaskAction(
           impactLabel,
         });
         const learningContextProvided = Boolean(
-          learningModuleId || learningModuleTitle,
+          learningModuleId || learningModuleTitle || learningChecklistTitle,
         );
         const existingTaskContextUpdated =
           labelsUpdated || contextCommentSaved || learningContextProvided;
@@ -1458,6 +1466,7 @@ export async function createTeamTaskAction(
               impactLabel,
               learningModuleId,
               learningModuleTitle,
+              learningChecklistTitle,
               contextCommentSaved,
             },
           });
@@ -1553,6 +1562,7 @@ export async function createTeamTaskAction(
       impactLabel,
       learningModuleId,
       learningModuleTitle,
+      learningChecklistTitle,
       priority: parsed.data.priority,
       audienceType,
       audienceMemberId:

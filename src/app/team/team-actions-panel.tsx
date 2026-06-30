@@ -832,6 +832,8 @@ export function TeamActionsPanel({
                   const contextChecklistHint = taskChecklistHintFromContext(
                     context?.body,
                   );
+                  const checklistHint =
+                    task.learningChecklistTitle ?? contextChecklistHint;
                   const learningItem =
                     (task.learningModuleId
                       ? getLearningItem(task.learningModuleId)
@@ -941,9 +943,9 @@ export function TeamActionsPanel({
                             <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
                             <div className="min-w-0">
                               <p>Команде поможет: {learningHint}</p>
-                              {contextChecklistHint ? (
+                              {checklistHint ? (
                                 <p className="mt-1 text-sky-100">
-                                  Чеклист: {contextChecklistHint}
+                                  Чеклист: {checklistHint}
                                 </p>
                               ) : null}
                             </div>
@@ -955,12 +957,12 @@ export function TeamActionsPanel({
                           <Link
                             href={learningModuleHref(
                               learningItem.id,
-                              contextChecklistHint,
+                              checklistHint,
                             )}
                             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-sky-400/25 bg-sky-400/10 px-3 text-xs font-medium text-sky-100 transition-colors hover:bg-sky-400/15"
                           >
                             <BookOpenCheck className="size-3.5" />
-                            {contextChecklistHint
+                            {checklistHint
                               ? "Открыть чеклист"
                               : "Открыть стандарт"}
                           </Link>

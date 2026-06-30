@@ -288,6 +288,8 @@ export default async function MyCabinetPage({
   const nextActionContextChecklistTitle = taskChecklistHintFromContext(
     nextActionTaskContext?.body,
   );
+  const nextActionChecklistTitle =
+    nextActionTask?.learningChecklistTitle ?? nextActionContextChecklistTitle;
   const nextActionLearningItem =
     (nextActionTask?.learningModuleId
       ? getLearningItem(nextActionTask.learningModuleId)
@@ -443,9 +445,9 @@ export default async function MyCabinetPage({
                           <BookOpenCheck className="size-3.5 text-sky-200" />
                           <div className="min-w-0 flex-1">
                             <p>Поможет стандарт: {nextActionLearningTitle}</p>
-                            {nextActionContextChecklistTitle ? (
+                            {nextActionChecklistTitle ? (
                               <p className="mt-1 text-sky-100">
-                                Чеклист: {nextActionContextChecklistTitle}
+                                Чеклист: {nextActionChecklistTitle}
                               </p>
                             ) : null}
                           </div>
@@ -453,11 +455,11 @@ export default async function MyCabinetPage({
                             <Link
                               href={learningModuleHref(
                                 nextActionLearningItem.id,
-                                nextActionContextChecklistTitle,
+                                nextActionChecklistTitle,
                               )}
                               className="font-medium text-sky-100 underline-offset-4 hover:underline"
                             >
-                              {nextActionContextChecklistTitle
+                              {nextActionChecklistTitle
                                 ? "Открыть чеклист"
                                 : "Открыть"}
                             </Link>
@@ -768,6 +770,7 @@ function TaskCard({
   const sourceLabel = sourceBadgeLabel(task);
   const contextLearningTitle = taskLearningHintFromContext(context?.body);
   const contextChecklistTitle = taskChecklistHintFromContext(context?.body);
+  const checklistTitle = task.learningChecklistTitle ?? contextChecklistTitle;
   const learningItem =
     (task.learningModuleId
       ? getLearningItem(task.learningModuleId)
@@ -825,18 +828,16 @@ function TaskCard({
           <BookOpenCheck className="size-3.5 text-sky-200" />
           <div className="min-w-0 flex-1">
             <p>Поможет стандарт: {learningTitle}</p>
-            {contextChecklistTitle ? (
-              <p className="mt-1 text-sky-100">
-                Чеклист: {contextChecklistTitle}
-              </p>
+            {checklistTitle ? (
+              <p className="mt-1 text-sky-100">Чеклист: {checklistTitle}</p>
             ) : null}
           </div>
           {learningItem ? (
             <Link
-              href={learningModuleHref(learningItem.id, contextChecklistTitle)}
+              href={learningModuleHref(learningItem.id, checklistTitle)}
               className="font-medium text-sky-100 underline-offset-4 hover:underline"
             >
-              {contextChecklistTitle ? "Открыть чеклист" : "Открыть"}
+              {checklistTitle ? "Открыть чеклист" : "Открыть"}
             </Link>
           ) : null}
         </div>

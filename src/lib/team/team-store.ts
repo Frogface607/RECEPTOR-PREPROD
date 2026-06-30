@@ -265,7 +265,11 @@ export function mapTaskRow(
   row: DbTask,
   sourceLabel?: string,
   impactLabel?: string,
-  learning?: { moduleId?: string; moduleTitle?: string },
+  learning?: {
+    moduleId?: string;
+    moduleTitle?: string;
+    checklistTitle?: string;
+  },
 ): TeamTask {
   const roleId = normalizeTeamRoleId(row.audience_role);
   const audience =
@@ -285,6 +289,7 @@ export function mapTaskRow(
     impactLabel: normalizeTaskImpactLabel(row.impact_label) ?? impactLabel,
     learningModuleId: learning?.moduleId,
     learningModuleTitle: learning?.moduleTitle,
+    learningChecklistTitle: learning?.checklistTitle,
     priority: TASK_PRIORITIES.has(row.priority as TeamTask["priority"])
       ? (row.priority as TeamTask["priority"])
       : "medium",
@@ -485,10 +490,13 @@ export function buildTaskLearningMap(
     target_id: string | null;
     metadata?: unknown;
   }>,
-): Map<string, { moduleId?: string; moduleTitle?: string }> {
+): Map<
+  string,
+  { moduleId?: string; moduleTitle?: string; checklistTitle?: string }
+> {
   const learning = new Map<
     string,
-    { moduleId?: string; moduleTitle?: string }
+    { moduleId?: string; moduleTitle?: string; checklistTitle?: string }
   >();
 
   const addLearning = (eventType: string) => {
@@ -508,13 +516,20 @@ export function buildTaskLearningMap(
       const metadata = row.metadata as {
         learningModuleId?: unknown;
         learningModuleTitle?: unknown;
+        learningChecklistTitle?: unknown;
       };
       const moduleId =
         normalizeTaskLabel(metadata.learningModuleId) ?? undefined;
       const moduleTitle =
         normalizeTaskLabel(metadata.learningModuleTitle) ?? undefined;
-      if (moduleId || moduleTitle) {
-        learning.set(row.target_id, { moduleId, moduleTitle });
+      const checklistTitle =
+        normalizeTaskLabel(metadata.learningChecklistTitle) ?? undefined;
+      if (moduleId || moduleTitle || checklistTitle) {
+        learning.set(row.target_id, {
+          moduleId,
+          moduleTitle,
+          checklistTitle,
+        });
       }
     }
   };
