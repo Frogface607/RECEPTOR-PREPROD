@@ -87,6 +87,7 @@ describe("runOpenAIChatTurn", () => {
     expect(firstBody.instructions).toContain("Контекстная анкета ресторана");
     expect(firstBody.instructions).toContain("POS/back-office: iiko");
     expect(firstBody.instructions).toContain("Ты не отчетчик");
+    expect(firstBody.instructions).toContain("операционный ритм Receptor");
     expect(firstBody.instructions).toContain("короткий итог смены");
     expect(tool?.tool).toBe("get_revenue");
     expect(text?.text).toContain("Выручка");

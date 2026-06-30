@@ -68,6 +68,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Контекст ресторана:");
     expect(text?.text).toContain("Обучение:");
     expect(text?.text).toContain("итога смены");
+    expect(text?.text).toContain("короткий факт с поля");
   });
 
   test("greeting / off-topic → suggests prompts without tool calls", async () => {
@@ -76,6 +77,7 @@ describe("runMockChatTurn — routing", () => {
     const text = ev.find((e) => e.type === "text");
     expect(text?.text.toLowerCase()).toContain("спрос");
     expect(text?.text).toContain("Контекст анкеты");
+    expect(text?.text).toContain("Рабочий ритм Receptor");
   });
 });
 
