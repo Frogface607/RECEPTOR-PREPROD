@@ -187,11 +187,11 @@ export function FieldNoteForm() {
         <div>
           <div className="flex items-center gap-2">
             <Mic2 className="size-4 text-brand" />
-            <h2 className="text-xl font-medium">Что было на смене</h2>
+            <h2 className="text-xl font-medium">Итог смены</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Гости, стоп-лист, конфликт, событие, команда, продажи. Факт,
-            время/количество и что сделали.
+            Что случилось, почему это важно, что проверить утром и что сказать
+            на брифе. Можно надиктовать голосом.
           </p>
         </div>
         <button
@@ -227,15 +227,15 @@ export function FieldNoteForm() {
         onChange={(event) => setBody(event.target.value)}
         rows={4}
         maxLength={1500}
-        placeholder="Например: гости спрашивали безалкогольный коктейль, к 21:00 закончилась мята, кухня задержала два стола..."
+        placeholder="Например: из-за ливня отменили три брони, к 21:00 закончилась мята, гости спрашивали безалкогольные коктейли. Утром проверить стоп-лист и дать залу замену для брифа..."
         className="mt-4 min-h-28 w-full resize-y rounded-lg border border-border/60 bg-background/45 px-3 py-3 text-sm leading-relaxed text-foreground outline-none transition-colors placeholder:text-muted-foreground/65 focus:border-brand/45"
       />
 
       <div className="mt-3 flex flex-wrap gap-2">
         {[
           { label: "Факт", done: readiness.hasFact },
-          { label: "Когда/сколько", done: readiness.hasScale },
-          { label: "Что сделали", done: readiness.hasAction },
+          { label: "Когда/сколько/почему", done: readiness.hasScale },
+          { label: "Что проверить", done: readiness.hasAction },
         ].map((item) => (
           <span
             key={item.label}

@@ -4,8 +4,11 @@ export type TeamFieldSignalKind =
   | "conflict"
   | "stock"
   | "event"
+  | "shift"
+  | "weather"
   | "guest"
   | "team"
+  | "training"
   | "money"
   | "service";
 
@@ -56,6 +59,33 @@ const SIGNAL_RULES: Array<{
     keywords: ["банкет", "мероприят", "событи", "посадк", "гостей", "очеред"],
   },
   {
+    kind: "shift",
+    title: "Итог смены и бриф",
+    keywords: [
+      "итог смен",
+      "закрытие смен",
+      "что повлияло",
+      "что сказать на бриф",
+      "на брифе",
+    ],
+  },
+  {
+    kind: "weather",
+    title: "Погода и внешний контекст",
+    keywords: [
+      "погода",
+      "дожд",
+      "ливн",
+      "снег",
+      "жара",
+      "жарко",
+      "мороз",
+      "холод",
+      "ветер",
+      "отмен",
+    ],
+  },
+  {
     kind: "guest",
     title: "Вопросы гостей",
     keywords: [
@@ -70,6 +100,21 @@ const SIGNAL_RULES: Array<{
     kind: "team",
     title: "Трение в команде",
     keywords: ["неудоб", "не успев", "хаос", "долго", "меша", "устал"],
+  },
+  {
+    kind: "training",
+    title: "Знания и стандарты команды",
+    keywords: [
+      "не знают",
+      "не понима",
+      "не уме",
+      "обуч",
+      "онбординг",
+      "новеньк",
+      "инструкц",
+      "стандарт",
+      "чеклист",
+    ],
   },
   {
     kind: "money",
@@ -123,6 +168,9 @@ function isFieldContextTask(task: TeamTask | undefined): boolean {
 }
 
 function signalWeight(kind: TeamFieldSignalKind): number {
+  if (kind === "shift") return 530;
+  if (kind === "training") return 520;
+  if (kind === "weather") return 510;
   if (kind === "conflict" || kind === "stock") return 500;
   if (kind === "team") return 400;
   if (kind === "money") return 350;
@@ -156,8 +204,8 @@ function untaggedFieldSummary(
 
   const prefix =
     notes.length === 1
-      ? "Команда оставила заметку без явного BI-тега"
-      : `Команда оставила ${notes.length} заметок без явного BI-тега`;
+      ? "Команда оставила заметку без явной темы"
+      : `Команда оставила ${notes.length} заметок без явной темы`;
 
   return `${prefix}: ${commentTaskLabel(latest, tasksById)} — ${normalize(latest.body)}`;
 }

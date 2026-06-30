@@ -3115,7 +3115,7 @@ describe("buildOwnerReview", () => {
     expect(fieldTaskContext).toContain("Связанные факты:");
     expect(fieldTaskContext).toContain("Стоп-лист и заготовки");
   expect(fieldTaskContext).toContain(
-    "Зачем: связать факты смены с BI, назначить ответственного и убрать повторяемую причину.",
+    "Зачем: связать факты смены с цифрами, назначить ответственного и убрать повторяемую причину.",
   );
   });
 
@@ -3359,6 +3359,66 @@ describe("buildOwnerReview", () => {
           contextNote: expect.stringContaining(
             "Вопрос: какая цифра подтверждает этот факт",
           ),
+        }),
+      ]),
+    );
+  });
+
+  test("turns shift summary notes into a next-day briefing task", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-shift-context",
+        title: "Полевой контекст смены",
+        source: "manager",
+        sourceLabel: "Поле",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "ежедневно",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-shift-summary",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Маша",
+        body: "Итог смены: ливень, отменили 3 брони после 19:00. Что сказать на брифе: предлагать горячие напитки и проверить стоп-лист.",
+        createdAtLabel: "23:00",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Превратить итог смены в план на завтра",
+          taskSourceLabel: "Полевой контекст",
+          learningModuleId: "shift-brief",
+          learningChecklistTitle: "После смены собери итог смены",
+          briefingQuestion:
+            "что из итога смены повторить, исправить или проверить утром",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Превратить итог смены в план на завтра",
+          sourceLabel: "Полевой контекст",
+          contextNote: expect.stringContaining("Полевой факт: Маша"),
         }),
       ]),
     );

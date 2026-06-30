@@ -127,7 +127,7 @@ describe("buildTeamFieldContextDigest", () => {
       signals: [],
     });
     expect(digest?.summary).toContain("Команда оставила заметку");
-    expect(digest?.summary).toContain("BI-тега");
+    expect(digest?.summary).toContain("явной темы");
     expect(digest?.summary).toContain(
       "Сегодня есть пара наблюдений для утреннего разбора.",
     );
@@ -182,5 +182,48 @@ describe("buildTeamFieldContextDigest", () => {
         }),
       ]),
     });
+  });
+
+  test("recognizes shift summaries, weather and training gaps", () => {
+    const digest = buildTeamFieldContextDigest({
+      comments: [
+        {
+          id: "comment-shift",
+          venueId: "venue-1",
+          taskId: "task-field",
+          authorName: "Маша",
+          body: "Итог смены: из-за ливня отменили 3 брони после 19:00. На брифе сказать про горячие напитки.",
+          createdAtLabel: "23:10",
+        },
+        {
+          id: "comment-training",
+          venueId: "venue-1",
+          taskId: "task-field",
+          authorName: "Оля",
+          body: "Новенькие не понимают, как закрывать спорный чек и кому передавать конфликт.",
+          createdAtLabel: "23:20",
+        },
+      ],
+      tasks,
+    });
+
+    expect(digest?.totalNotes).toBe(2);
+    expect(digest?.signals).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "shift",
+          title: "Итог смены и бриф",
+        }),
+        expect.objectContaining({
+          kind: "weather",
+          title: "Погода и внешний контекст",
+        }),
+        expect.objectContaining({
+          kind: "training",
+          title: "Знания и стандарты команды",
+        }),
+      ]),
+    );
+    expect(digest?.summary).toContain("Знания и стандарты команды");
   });
 });
