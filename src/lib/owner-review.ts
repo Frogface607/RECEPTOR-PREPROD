@@ -2867,7 +2867,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   ).slice(0, 4);
   const questions: OwnerReviewQuestion[] = visibleHypotheses.map((item) => ({
     role: item.role,
-    text: item.check,
+    text: item.briefingQuestion ?? item.check,
   }));
   const bridgeHypotheses = visibleHypotheses.filter((item) =>
     Boolean(item.taskSourceLabel),

@@ -323,6 +323,14 @@ describe("buildOwnerReview", () => {
     expect(review.tasks[0].contextNote).toContain(
       "Чеклист: Если BI показал перерасход ФОТ.",
     );
+    expect(review.questions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "manager",
+          text: "какая смена, человек или ставка съедает прибыль",
+        }),
+      ]),
+    );
   });
 
   test("opens linked employee when personal FOT efficiency is risky", () => {
@@ -1803,6 +1811,14 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.questions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "manager",
+          text: "что закончилось, сколько продаж потеряли и кто отвечает за запас",
+        }),
+      ]),
+    );
   });
 
   test("connects sales hypotheses with the upsell learning module", () => {
@@ -2368,6 +2384,14 @@ describe("buildOwnerReview", () => {
           learningModuleId: "shift-brief",
           briefingQuestion:
             "что стало причиной конфликта и повторяется ли это в сменах",
+        }),
+      ]),
+    );
+    expect(review.questions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "manager",
+          text: "что стало причиной конфликта и повторяется ли это в сменах",
         }),
       ]),
     );
