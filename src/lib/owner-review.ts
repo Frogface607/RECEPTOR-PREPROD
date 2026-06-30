@@ -5,6 +5,7 @@ import type { DailyBrief } from "@/lib/brief/daily-brief";
 import type { RevenueDataQuality } from "@/lib/iiko/data-quality";
 import {
   buildMenuMarginNextAction,
+  type MenuMarginBlocker,
   type MenuMarginReadiness,
 } from "@/lib/menu-margin-readiness";
 import {
@@ -2538,6 +2539,9 @@ function ownerActionFromMargin(
   const briefingQuestion = missingTechCardPrices
     ? "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost"
     : "каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже";
+  const ingredientPhrase = nextAction.blocker
+    ? marginBlockerIngredientPhrase(nextAction.blocker)
+    : null;
 
   return {
     title: nextAction.title,
@@ -2545,7 +2549,10 @@ function ownerActionFromMargin(
     role: nextAction.kind === "missing-cost" ? "owner" : "chef",
     tone: input.status === "blocked" ? "risk" : "watch",
     impactLabel: nextAction.blocker
-      ? formatRubles(nextAction.blocker.revenue)
+      ? impactLabelWithIngredients(
+          formatRubles(nextAction.blocker.revenue),
+          ingredientPhrase,
+        )
       : `${input.revenueCoveragePct}%`,
     target:
       nextAction.kind === "missing-cost"
@@ -2567,6 +2574,24 @@ function marginLearningHint(): Pick<
     learningModuleId: "tech-card-discipline",
     learningModuleTitle: "Техкарта как договор внутри команды",
   };
+}
+
+function marginBlockerIngredientPhrase(blocker: MenuMarginBlocker): string | null {
+  if (!blocker.hasTechCard) return null;
+  if (blocker.missingIngredientPriceNames.length > 0) {
+    return blocker.missingIngredientPriceNames.join(", ");
+  }
+  if (blocker.techCardUnpricedIngredientRows > 0) {
+    return `${blocker.techCardUnpricedIngredientRows} строк без цены`;
+  }
+  return null;
+}
+
+function impactLabelWithIngredients(
+  impactLabel: string,
+  ingredientPhrase: string | null,
+): string {
+  return ingredientPhrase ? `${impactLabel} · ${ingredientPhrase}` : impactLabel;
 }
 
 function ownerActionFromLaborMargin(input: {
@@ -2721,7 +2746,12 @@ function laborMarginHypothesis(input: {
     ? "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost"
     : "каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже";
   const blockerText = topBlocker
-    ? `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки): ${nextAction.title}.`
+    ? joinSentences([
+        `Первым закрыть «${topBlocker.dishName}» (${formatRubles(topBlocker.revenue)} выручки): ${nextAction.title}.`,
+        marginBlockerIngredientPhrase(topBlocker)
+          ? `Без цены: ${marginBlockerIngredientPhrase(topBlocker)}.`
+          : null,
+      ])
     : "Начните с топ-позиций без себестоимости.";
   const marginAction = nextAction.action;
 
@@ -2734,7 +2764,10 @@ function laborMarginHypothesis(input: {
     taskSourceLabel: "Маржа и техкарты",
     taskTitle: nextAction.title,
     impactLabel: topBlocker
-      ? formatRubles(topBlocker.revenue)
+      ? impactLabelWithIngredients(
+          formatRubles(topBlocker.revenue),
+          marginBlockerIngredientPhrase(topBlocker),
+        )
       : `${input.margin.revenueCoveragePct}% маржа`,
     learningChecklistTitle,
     briefingQuestion,

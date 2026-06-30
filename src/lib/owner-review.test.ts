@@ -1072,6 +1072,7 @@ describe("buildOwnerReview", () => {
           learningChecklistTitle: "Если в техкарте нет цен ингредиентов",
           briefingQuestion:
             "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost",
+          impactLabel: expect.stringContaining("Egg"),
           detail: expect.stringContaining("Egg"),
         }),
       ]),
@@ -1081,7 +1082,9 @@ describe("buildOwnerReview", () => {
       contextNote: expect.stringContaining(
         "Чеклист: Если в техкарте нет цен ингредиентов.",
       ),
+      impactLabel: expect.stringContaining("Egg"),
     });
+    expect(review.tasks[0].contextNote).toContain("Egg");
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -1094,6 +1097,11 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    const marginHypothesis = review.hypotheses.find(
+      (item) => item.taskTitle === "Техкарта есть, не хватает цен ингредиентов",
+    );
+    expect(marginHypothesis?.why).toContain("Без цены: Egg");
+    expect(marginHypothesis?.impactLabel).toContain("Egg");
   });
 
   test("turns proven low margin into an owner review action", () => {
