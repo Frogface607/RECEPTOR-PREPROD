@@ -11,6 +11,18 @@ export type FieldNotePrompt = {
   example: string;
 };
 
+export type FieldNoteMemoryCopy = {
+  label: string;
+  title: string;
+  detail: string;
+  action: string;
+};
+
+export type FieldNoteSavedMemoryCopy = {
+  title: string;
+  detail: string;
+};
+
 export type FieldNoteReadiness = {
   hasFact: boolean;
   hasContext: boolean;
@@ -26,6 +38,20 @@ export type FieldNoteReadinessSummary = {
   bestScore: number;
   bestMissing: string[];
   followUpQuestions: string[];
+};
+
+export const FIELD_NOTE_MEMORY_LINK_COPY: FieldNoteMemoryCopy = {
+  label: "Что связываем в памяти",
+  title: "Собрать итог",
+  detail:
+    "После смены этот итог свяжет человека, событие, задачи и утренний разбор.",
+  action: "Сохранить связь",
+};
+
+export const FIELD_NOTE_SAVED_MEMORY_COPY: FieldNoteSavedMemoryCopy = {
+  title: "Связь добавлена в память ресторана.",
+  detail:
+    "Управляющий и владелец увидят эту связь в разборе, а советник будет опираться на нее в задачах, обучении и цифрах.",
 };
 
 export const FIELD_NOTE_MEMORY_PROMPTS: FieldNotePrompt[] = [

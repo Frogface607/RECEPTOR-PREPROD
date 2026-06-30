@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
+  FIELD_NOTE_MEMORY_LINK_COPY,
   FIELD_NOTE_MEMORY_PROMPTS,
+  FIELD_NOTE_SAVED_MEMORY_COPY,
   FIELD_NOTE_TEMPLATES,
   buildFieldNoteFollowUpQuestions,
   buildFieldNoteFollowUpTaskDraft,
@@ -11,6 +13,21 @@ import {
 } from "./field-note-input";
 
 describe("field note input", () => {
+  test("keeps shift memory form copy aligned with restaurant memory", () => {
+    expect(FIELD_NOTE_MEMORY_LINK_COPY).toMatchObject({
+      label: "Что связываем в памяти",
+      title: "Собрать итог",
+      action: "Сохранить связь",
+    });
+    expect(FIELD_NOTE_MEMORY_LINK_COPY.detail).toContain("человека");
+    expect(FIELD_NOTE_MEMORY_LINK_COPY.detail).toContain("задачи");
+    expect(FIELD_NOTE_MEMORY_LINK_COPY.detail).toContain("утренний разбор");
+    expect(FIELD_NOTE_SAVED_MEMORY_COPY.title).toContain("память ресторана");
+    expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("задачах");
+    expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("обучении");
+    expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("цифрах");
+  });
+
   test("rejects empty guided templates", () => {
     expect(hasMeaningfulFieldNoteBody(FIELD_NOTE_TEMPLATES[0].text)).toBe(
       false,

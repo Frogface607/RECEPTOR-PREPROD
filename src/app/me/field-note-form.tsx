@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
 import {
+  FIELD_NOTE_MEMORY_LINK_COPY,
   FIELD_NOTE_MEMORY_PROMPTS,
+  FIELD_NOTE_SAVED_MEMORY_COPY,
   FIELD_NOTE_TEMPLATES,
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
@@ -224,6 +226,17 @@ export function FieldNoteForm() {
             За 90 секунд: что случилось, почему это важно, что проверить утром
             и что сказать на брифе.
           </p>
+          <div className="mt-3 max-w-xl rounded-lg border border-brand/25 bg-brand/10 p-3">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+              {FIELD_NOTE_MEMORY_LINK_COPY.label}
+            </p>
+            <p className="mt-1 text-sm font-medium text-foreground">
+              {FIELD_NOTE_MEMORY_LINK_COPY.title}
+            </p>
+            <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+              {FIELD_NOTE_MEMORY_LINK_COPY.detail}
+            </p>
+          </div>
         </div>
         <button
           type="button"
@@ -333,7 +346,7 @@ export function FieldNoteForm() {
           ) : (
             <SendHorizontal className="size-3.5" />
           )}
-          Сохранить
+          {FIELD_NOTE_MEMORY_LINK_COPY.action}
         </button>
       </div>
 
@@ -349,11 +362,10 @@ export function FieldNoteForm() {
             <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                Итог попал в память смены.
+                {FIELD_NOTE_SAVED_MEMORY_COPY.title}
               </p>
               <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-                Управляющий и владелец увидят этот контекст в разборе, а
-                советник будет связывать его с задачами, обучением и цифрами.
+                {FIELD_NOTE_SAVED_MEMORY_COPY.detail}
               </p>
             </div>
           </div>
